@@ -2547,7 +2547,6 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     elementInsertionSubject,
   )
-
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
     (s) => s.file,

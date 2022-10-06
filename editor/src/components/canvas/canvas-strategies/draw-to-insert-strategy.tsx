@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
@@ -26,7 +27,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { foldAndApplyCommandsInner } from '../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import {
   createFakeMetadataForElement,
@@ -34,19 +35,25 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  canvasRectangle,
+  canvasPoint,
+  CanvasRectangle,
+  Size,
+} from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
-import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
   name: () => 'Draw to insert',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -55,54 +62,58 @@ export const drawToInsertStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: DragOutlineControl,
+      props: {},
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: FlexReparentTargetIndicator,
+      props: {},
       key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return drawToInsertStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      ((interactionState.interactionData.type === 'DRAG' &&
-        interactionState.activeControl.type === 'RESIZE_HANDLE') ||
-        interactionState.interactionData.type === 'HOVER')
+      ((interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
+        interactionSession.interactionData.type === 'HOVER')
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
       canvasState.interactionTarget.subjects[0].type === 'Element'
     ) {
-      if (interactionState.interactionData.type === 'DRAG') {
-        if (interactionState.interactionData.drag != null) {
+      if (interactionSession.interactionData.type === 'DRAG') {
+        if (interactionSession.interactionData.drag != null) {
           const insertionSubject = canvasState.interactionTarget.subjects[0]
 
           const insertionCommand = getInsertionCommands(
             insertionSubject,
-            interactionState,
-            canvasState.interactionTarget.subjects[0],
+            interactionSession,
+            insertionSubject.defaultSize,
             'zero-size',
           )
 
@@ -114,7 +125,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
@@ -130,7 +141,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   commandLifecycle,
                   insertionSubject,
                   insertionCommand.frame,
@@ -150,8 +161,8 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
           const insertionCommand = getInsertionCommands(
             insertionSubject,
-            interactionState,
-            canvasState.interactionTarget.subjects[0],
+            interactionSession,
+            insertionSubject.defaultSize,
             'default-size',
           )
 
@@ -163,7 +174,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
@@ -174,26 +185,18 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
             return strategyApplicationResult([insertionCommand.command, reparentCommand])
           }
+        } else {
+          // drag is null, the cursor is not moved yet, but the mousedown already happened
+          const pointOnCanvas = interactionSession.interactionData.dragStart
+          return strategyApplicationResult(
+            getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
+          )
         }
-      } else if (interactionState.interactionData.type === 'HOVER') {
-        const pointOnCanvas = interactionState.interactionData.point
-        const parent = getReparentTargetUnified(
-          newReparentSubjects(),
-          pointOnCanvas,
-          true,
-          canvasState,
-          canvasState.startingMetadata,
-          canvasState.startingAllElementProps,
-          'allow-missing-bounds',
+      } else if (interactionSession.interactionData.type === 'HOVER') {
+        const pointOnCanvas = interactionSession.interactionData.point
+        return strategyApplicationResult(
+          getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
         )
-
-        if (parent != null && parent.shouldReparent && parent.newParent != null) {
-          const highlightParentCommand = updateHighlightedViews('mid-interaction', [
-            parent.newParent,
-          ])
-
-          return strategyApplicationResult([highlightParentCommand])
-        }
       }
     }
     // Fallback for when the checks above are not satisfied.
@@ -201,17 +204,44 @@ export const drawToInsertStrategy: CanvasStrategy = {
   },
 }
 
+function getHighlightAndReorderIndicatorCommands(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+): Array<CanvasCommand> {
+  const parent = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+  )
+
+  if (parent != null && parent.shouldReparent && parent.newParent != null) {
+    const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
+
+    if (parent.newIndex !== -1) {
+      return [highlightParentCommand, showReorderIndicator(parent.newParent, parent.newIndex)]
+    } else {
+      return [highlightParentCommand]
+    }
+  } else {
+    return []
+  }
+}
+
 function getInsertionCommands(
   subject: ElementInsertionSubject,
-  interactionState: InteractionSession,
-  insertionSubject: ElementInsertionSubject,
+  interactionSession: InteractionSession,
+  insertionSubjectSize: Size,
   sizing: 'zero-size' | 'default-size',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
-    interactionState.interactionData.type === 'DRAG' &&
-    (sizing === 'default-size' || interactionState.interactionData.drag != null)
+    interactionSession.interactionData.type === 'DRAG' &&
+    (sizing === 'default-size' || interactionSession.interactionData.drag != null)
   ) {
-    const pointOnCanvas = interactionState.interactionData.dragStart
+    const pointOnCanvas = interactionSession.interactionData.dragStart
 
     const frame =
       sizing === 'zero-size'
@@ -222,10 +252,10 @@ function getInsertionCommands(
             height: 0,
           })
         : canvasRectangle({
-            x: pointOnCanvas.x - DefaultInsertWidth / 2,
-            y: pointOnCanvas.y - DefaultInsertHeight / 2,
-            width: insertionSubject.size?.width ?? DefaultInsertWidth,
-            height: insertionSubject.size?.height ?? DefaultInsertHeight,
+            x: pointOnCanvas.x - insertionSubjectSize.width / 2,
+            y: pointOnCanvas.y - insertionSubjectSize.height / 2,
+            width: insertionSubjectSize.width,
+            height: insertionSubjectSize.height,
           })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
@@ -246,8 +276,8 @@ function getInsertionCommands(
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
       frame: frame,
     }
-  } else if (interactionState.interactionData.type === 'HOVER') {
-    const pointOnCanvas = interactionState.interactionData.point
+  } else if (interactionSession.interactionData.type === 'HOVER') {
+    const pointOnCanvas = interactionSession.interactionData.point
 
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
@@ -306,7 +336,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
@@ -327,7 +357,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     [EP.toString(path)]: fakeMetadata,
   }
 
-  const interactionData = interactionState.interactionData
+  const interactionData = interactionSession.interactionData
   // patching the interaction with the cmd modifier is just temporarily needed because reparenting is not default without
   const patchedInteractionData =
     interactionData.type === 'DRAG'
@@ -338,8 +368,8 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
         }
       : interactionData
 
-  const patchedInteractionState: InteractionSession = {
-    ...interactionState,
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
@@ -354,7 +384,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const { strategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     null,
   )
@@ -364,7 +394,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   }
   const reparentCommands = strategy.strategy.apply(
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     strategyLifecycle,
   ).commands
@@ -377,7 +407,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
@@ -392,8 +422,8 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     [EP.toString(path)]: fakeMetadata,
   }
 
-  const patchedInteractionState: InteractionSession = {
-    ...interactionState,
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
     startingTargetParentsToFilterOut: null,
   }
 
@@ -411,7 +441,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const { strategy: resizeStrategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     null,
   )
@@ -420,7 +450,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     resizeStrategy != null
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
-          patchedInteractionState,
+          patchedInteractionSession,
           customStrategyState,
           strategyLifecycle,
         ).commands
