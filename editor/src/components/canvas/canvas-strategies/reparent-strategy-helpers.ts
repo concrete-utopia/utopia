@@ -671,8 +671,6 @@ function createPseudoElements(
   const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
 
   if (parentFlexDirection === 'row') {
-    // TODO handle row-reverse or col-reverse
-
     const marginLeftAndGapOffset = ((firstElementMargin?.left ?? 0) + flexGap) * 2
     const marginRightAndGapOffset = ((lastElementMargin?.right ?? 0) + flexGap) * 2
     return {
