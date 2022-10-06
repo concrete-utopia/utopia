@@ -43,7 +43,7 @@ import { runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,
-} from '../canvas-strategies/add-to-reparented-to-paths-command'
+} from './add-to-reparented-to-paths-command'
 import {
   InsertElementInsertionSubject,
   runInsertElementInsertionSubject,
