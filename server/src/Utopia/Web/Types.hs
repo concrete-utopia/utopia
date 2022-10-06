@@ -22,7 +22,7 @@ import           Servant.HTML.Blaze
 import           Servant.RawM.Server
 import qualified Text.Blaze.Html5        as H
 import           Utopia.ClientModel
-import           Utopia.Web.Github
+import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
@@ -131,6 +131,10 @@ type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "fi
 
 type GithubSaveAPI = "v1" :> "github" :> "save" :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
 
+type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
+
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> Get '[JSON] GetBranchContentResponse
+
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
@@ -184,6 +188,8 @@ type Protected = LogoutAPI
             :<|> GithubFinishAuthenticationAPI
             :<|> GithubAuthenticatedAPI
             :<|> GithubSaveAPI
+            :<|> GithubBranchesAPI
+            :<|> GithubBranchLoadAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

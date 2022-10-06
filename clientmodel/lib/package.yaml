@@ -27,6 +27,8 @@ default-extensions:
   - DeriveDataTypeable
   - DataKinds
   - DeriveAnyClass
+  - Strict
+  - StrictData
 
 dependencies:
   - base

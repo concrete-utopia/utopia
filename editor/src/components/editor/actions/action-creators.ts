@@ -214,12 +214,14 @@ import type {
   ElementPaste,
   SetGithubState,
   SaveToGithub,
+  UpdateProjectContents,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -955,6 +957,13 @@ export function updateFile(
   }
 }
 
+export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateProjectContents {
+  return {
+    action: 'UPDATE_PROJECT_CONTENTS',
+    contents: contents,
+  }
+}
+
 export function workerCodeUpdate(
   filePath: string,
   code: string,
@@ -1526,7 +1535,7 @@ export function toggleSelectionLock(
   }
 }
 
-export function saveToGithub(targetRepository: string): SaveToGithub {
+export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,

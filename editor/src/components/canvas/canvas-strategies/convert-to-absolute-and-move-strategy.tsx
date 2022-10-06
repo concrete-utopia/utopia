@@ -36,6 +36,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -63,16 +64,18 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionSession, customStrategyState) => {
     return convertToAbsoluteAndMoveStrategy.isApplicable(

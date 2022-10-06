@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
@@ -70,6 +71,8 @@ import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
 import { CursorOverlay } from './select-mode/cursor-overlay'
 import { FlexReparentTargetIndicator } from './select-mode/flex-reparent-target-indicator'
+import { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -457,7 +460,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <OutlineHighlightControl />
           {when(
             isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
-            <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+            <>
+              {strategyControls.map((c) => (
+                <RenderControlMemoized key={c.key} control={c} />
+              ))}
+            </>,
           )}
         </>,
       )}
@@ -473,3 +480,11 @@ function isCanvasStrategyOnAndSelectMode(mode: Mode): boolean {
 function isCanvasStrategyOnAndSelectOrInsertMode(mode: Mode): boolean {
   return isFeatureEnabled('Canvas Strategies') && (mode.type === 'select' || mode.type === 'insert')
 }
+
+const RenderControlMemoized = React.memo(({ control }: { control: ControlWithProps<any> }) => {
+  const ControlToRender = control.control.control
+
+  const propsMemoized = useKeepShallowReferenceEquality(control.props)
+
+  return <ControlToRender {...propsMemoized} />
+})

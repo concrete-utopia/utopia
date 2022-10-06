@@ -23,6 +23,7 @@ import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-con
 import { honoursPropsSize } from './absolute-utils'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -47,14 +48,30 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
-    {
+    controlWithProps({
+      control: AbsoluteResizeControl,
+      props: {},
+      key: 'absolute-resize-control',
+      show: 'always-visible',
+    }),
+    controlWithProps({
       control: ZeroSizeResizeControlWrapper,
+      props: {},
       key: 'zero-size-resize-control',
       show: 'always-visible',
-    },
-    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
-    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
+    }),
+    controlWithProps({
+      control: ParentOutlines,
+      props: {},
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: {},
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
   ],
   fitness: (canvasState, interactionSession, customStrategyState) => {
     return flexResizeBasicStrategy.isApplicable(
