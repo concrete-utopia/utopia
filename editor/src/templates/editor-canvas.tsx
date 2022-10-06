@@ -124,7 +124,6 @@ import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
-import { insertionSubjects } from '../components/canvas/canvas-strategies/canvas-strategy-types'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

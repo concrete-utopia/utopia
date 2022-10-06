@@ -106,17 +106,30 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
-let MOCK_NEXT_GENERATED_UID: string | null = null
+let MOCK_NEXT_GENERATED_UIDS: Array<string> = []
+let MOCK_NEXT_GENERATED_UIDS_IDX = 0
+
 export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
-  MOCK_NEXT_GENERATED_UID = nextUid
+  MOCK_NEXT_GENERATED_UIDS = [nextUid]
+  MOCK_NEXT_GENERATED_UIDS_IDX = 0
+}
+
+export function FOR_TESTS_setNextGeneratedUids(uids: Array<string>): void {
+  MOCK_NEXT_GENERATED_UIDS = uids
+  MOCK_NEXT_GENERATED_UIDS_IDX = 0
+}
+
+export function FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS(): void {
+  MOCK_NEXT_GENERATED_UIDS = []
+  MOCK_NEXT_GENERATED_UIDS_IDX = 0
 }
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
-  if (MOCK_NEXT_GENERATED_UID != null) {
-    const toReturn = MOCK_NEXT_GENERATED_UID
-    MOCK_NEXT_GENERATED_UID = null
-    return toReturn
+  if (MOCK_NEXT_GENERATED_UIDS.length > 0) {
+    MOCK_NEXT_GENERATED_UIDS_IDX += 1
+    return MOCK_NEXT_GENERATED_UIDS[MOCK_NEXT_GENERATED_UIDS_IDX - 1]
   }
+
   const existingUIDS = getAllUniqueUids(projectContents)
   return generateUID(existingUIDS)
 }
@@ -125,10 +138,9 @@ export function generateUidWithExistingComponentsAndExtraUids(
   projectContents: ProjectContentTreeRoot,
   additionalUids: Array<string>,
 ): string {
-  if (MOCK_NEXT_GENERATED_UID != null) {
-    const toReturn = MOCK_NEXT_GENERATED_UID
-    MOCK_NEXT_GENERATED_UID = null
-    return toReturn
+  if (MOCK_NEXT_GENERATED_UIDS.length > 0) {
+    MOCK_NEXT_GENERATED_UIDS_IDX += 1
+    return MOCK_NEXT_GENERATED_UIDS[MOCK_NEXT_GENERATED_UIDS_IDX - 1]
   }
 
   const existingUIDSFromProject = getAllUniqueUids(projectContents)
