@@ -1208,6 +1208,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
+    const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
@@ -1218,7 +1219,6 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     ).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
-    const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1237,14 +1237,14 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientWidthResult &&
       clientHeightResult &&
       parentFlexDirectionResult &&
+      flexGapEquals &&
       flexDirectionResult &&
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
       globalContentBoxEquals &&
       floatEquals &&
-      hasPositionOffsetEquals &&
-      flexGapEquals
+      hasPositionOffsetEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1267,13 +1267,13 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientWidth,
         newSize.clientHeight,
         newSize.parentFlexDirection,
+        newSize.parentFlexGap,
         newSize.flexDirection,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
         newSize.float,
         newSize.hasPositionOffset,
-        newSize.parentFlexGap,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

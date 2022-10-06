@@ -259,6 +259,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     clientWidth: 300,
     clientHeight: 400,
     parentFlexDirection: 'row',
+    parentFlexGap: 0,
     flexDirection: 'column',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
@@ -270,7 +271,6 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     }),
     float: 'none',
     hasPositionOffset: false,
-    parentFlexGap: 0,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -315,6 +315,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     clientWidth: 300,
     clientHeight: 400,
     parentFlexDirection: 'row',
+    parentFlexGap: 0,
     flexDirection: 'column',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
@@ -326,7 +327,6 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     }),
     float: 'none',
     hasPositionOffset: false,
-    parentFlexGap: 0,
   }
 
   it('same reference returns the same reference', () => {
@@ -426,6 +426,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       clientWidth: 300,
       clientHeight: 400,
       parentFlexDirection: 'row',
+      parentFlexGap: 0,
       flexDirection: 'column',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
@@ -437,7 +438,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       }),
       float: 'none',
       hasPositionOffset: false,
-      parentFlexGap: 0,
     },
     computedStyle: {
       a: 'a',
@@ -510,6 +510,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       clientWidth: 300,
       clientHeight: 400,
       parentFlexDirection: 'row',
+      parentFlexGap: 0,
       flexDirection: 'column',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
@@ -521,7 +522,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       }),
       float: 'none',
       hasPositionOffset: false,
-      parentFlexGap: 0,
     },
     computedStyle: {
       a: 'a',
@@ -620,6 +620,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         clientWidth: 300,
         clientHeight: 400,
         parentFlexDirection: 'row',
+        parentFlexGap: 0,
         flexDirection: 'column',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
@@ -631,7 +632,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        parentFlexGap: 0,
       },
       computedStyle: {
         a: 'a',
@@ -685,6 +685,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
+        parentFlexGap: 0,
         layoutSystemForChildren: 'flex',
         providesBoundsForAbsoluteChildren: true,
         display: 'flex',
@@ -717,7 +718,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        parentFlexGap: 0,
       },
       computedStyle: {
         a: 'a',
@@ -792,6 +792,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         clientWidth: 300,
         clientHeight: 400,
         parentFlexDirection: 'row',
+        parentFlexGap: 0,
         flexDirection: 'column',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
@@ -803,7 +804,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        parentFlexGap: 0,
       },
       computedStyle: {
         a: 'a',

@@ -929,13 +929,13 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parsedFlexGapValue,
     flexDirection,
     element.localName,
     childrenCount,
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
-    parsedFlexGapValue,
   )
 }
 

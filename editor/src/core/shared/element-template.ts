@@ -1599,13 +1599,13 @@ export interface SpecialSizeMeasurements {
   clientWidth: number
   clientHeight: number
   parentFlexDirection: string | null
+  parentFlexGap: number
   flexDirection: string | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
   float: string
   hasPositionOffset: boolean
-  parentFlexGap: number
 }
 
 export function specialSizeMeasurements(
@@ -1627,13 +1627,13 @@ export function specialSizeMeasurements(
   clientWidth: number,
   clientHeight: number,
   parentFlexDirection: string | null,
+  parentFlexGap: number,
   flexDirection: string | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
-  parentFlexGap: number,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1654,13 +1654,13 @@ export function specialSizeMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentFlexGap,
     flexDirection,
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
     float,
     hasPositionOffset,
-    parentFlexGap,
   }
 }
 
@@ -1686,13 +1686,13 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   0,
   null,
+  0,
   null,
   'div',
   0,
   null,
   'none',
   false,
-  0,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
