@@ -101,18 +101,6 @@ export function defaultTextElementStyle(): JSXAttribute {
   )
 }
 
-export function defaultTextElement(uid: string): JSXElement {
-  return jsxElement(
-    jsxElementName('Text', []),
-    uid,
-    jsxAttributesFromMap({
-      style: defaultTextElementStyle(),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
-    }),
-    [jsxTextBlock('Text')],
-  )
-}
-
 export function defaultRectangleElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Rectangle', []),

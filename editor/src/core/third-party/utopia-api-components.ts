@@ -53,7 +53,6 @@ const BasicUtopiaComponentDescriptor = (
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
   Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultViewElementStyle()),
   Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultViewElementStyle()),
-  Text: BasicUtopiaComponentDescriptor('Text', defaultTextElementStyle()),
   View: BasicUtopiaComponentDescriptor('View', defaultViewElementStyle()),
   FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
   FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),
