@@ -12,7 +12,6 @@ import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
@@ -30,7 +29,7 @@ import {
   InteractionCanvasState,
   InteractionTarget,
 } from './canvas-strategy-types'
-import { createEmptyStrategyState, InteractionSession } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 
 export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
   canvasSate,
@@ -51,12 +50,11 @@ export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  return [tweakStrategy(result.strategies[0], result.effectiveTarget, result.componentsInSubtree)]
+  return [tweakStrategy(result.strategies[0], result.componentsInSubtree)]
 }
 
 function tweakStrategy(
   strategy: CanvasStrategy,
-  effectiveTarget: Array<ElementPath>,
   componentsInSubtree: Array<ElementPath>,
 ): CanvasStrategy {
   const { controlsToRender } = strategy

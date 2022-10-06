@@ -191,7 +191,7 @@ function reorderElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = flexReorderStrategy.apply(
+  const strategyResult = flexReorderStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
@@ -199,17 +199,17 @@ function reorderElement(
     ),
     interactionSession,
     defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )?.apply('end-interaction')
 
-  expect(strategyResult.customStatePatch?.lastReorderIdx).toEqual(newIndex)
+  expect(strategyResult).toBeDefined()
+  expect(strategyResult!.customStatePatch?.lastReorderIdx).toEqual(newIndex)
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult.commands,
+    strategyResult!.commands,
     'end-interaction',
   ).editorState
 

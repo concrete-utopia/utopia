@@ -54,38 +54,50 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 
+export type CanvasStrategyFactory = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => CanvasStrategy | null
+
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => Array<CanvasStrategy>
 
+const existingStrategyFactories: Array<CanvasStrategyFactory> = [
+  absoluteMoveStrategy,
+  absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
+  absoluteDuplicateStrategy,
+  keyboardAbsoluteMoveStrategy,
+  keyboardAbsoluteResizeStrategy,
+  absoluteResizeBoundingBoxStrategy,
+  flexReorderStrategy,
+  flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
+  flexReparentToFlexStrategy,
+  convertToAbsoluteAndMoveStrategy,
+  absoluteReparentToFlexStrategy,
+  dragToInsertStrategy,
+  drawToInsertStrategy,
+  flowReorderStrategy,
+  flowReorderSliderStategy,
+  flexResizeBasicStrategy,
+  relativeMoveStrategy,
+]
+
 export const existingStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> =>
-  stripNulls([
-    absoluteMoveStrategy(canvasState, interactionSession),
-    absoluteReparentStrategy(canvasState, interactionSession),
-    forcedAbsoluteReparentStrategy(canvasState, interactionSession),
-    absoluteDuplicateStrategy(canvasState, interactionSession, customStrategyState),
-    keyboardAbsoluteMoveStrategy(canvasState, interactionSession),
-    keyboardAbsoluteResizeStrategy(canvasState, interactionSession),
-    absoluteResizeBoundingBoxStrategy(canvasState, interactionSession),
-    flexReorderStrategy(canvasState, interactionSession, customStrategyState),
-    flexReparentToAbsoluteStrategy(canvasState, interactionSession, customStrategyState),
-    forcedFlexReparentToAbsoluteStrategy(canvasState, interactionSession, customStrategyState),
-    flexReparentToFlexStrategy(canvasState, interactionSession),
-    convertToAbsoluteAndMoveStrategy(canvasState, interactionSession),
-    absoluteReparentToFlexStrategy(canvasState, interactionSession),
-    dragToInsertStrategy(canvasState, interactionSession, customStrategyState),
-    drawToInsertStrategy(canvasState, interactionSession, customStrategyState),
-    flowReorderStrategy(canvasState, interactionSession, customStrategyState),
-    flowReorderSliderStategy(canvasState, interactionSession),
-    flexResizeBasicStrategy(canvasState, interactionSession),
-    relativeMoveStrategy(canvasState, interactionSession),
-  ])
+  stripNulls(
+    existingStrategyFactories.map((factory) =>
+      factory(canvasState, interactionSession, customStrategyState),
+    ),
+  )
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,

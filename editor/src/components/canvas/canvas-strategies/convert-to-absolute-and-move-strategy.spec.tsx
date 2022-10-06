@@ -183,23 +183,22 @@ function dragByPixels(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = convertToAbsoluteAndMoveStrategy.apply(
-    pickCanvasStateFromEditorStateWithMetadata(
-      editorState,
-      createBuiltInDependenciesList(null),
-      metadata,
-    ),
-    interactionSession,
-    { ...defaultCustomStrategyState(), escapeHatchActivated: true },
-    'end-interaction',
-  )
+  const strategyResultCommands =
+    convertToAbsoluteAndMoveStrategy(
+      pickCanvasStateFromEditorStateWithMetadata(
+        editorState,
+        createBuiltInDependenciesList(null),
+        metadata,
+      ),
+      interactionSession,
+    )?.apply('end-interaction').commands ?? []
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult.commands,
+    strategyResultCommands,
     'end-interaction',
   ).editorState
 
