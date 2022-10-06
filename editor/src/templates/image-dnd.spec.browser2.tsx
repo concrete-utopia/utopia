@@ -1,3 +1,4 @@
+import { createEvent, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
   mouseDownAtPoint,
@@ -6,6 +7,7 @@ import {
 } from '../components/canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCode,
+  renderTestEditorWithCode,
   renderTestEditorWithProjectContent,
 } from '../components/canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
@@ -245,6 +247,12 @@ describe('image dnd', () => {
     mouseMoveToPoint(imageDragHandle, handleCenter)
     mouseDownAtPoint(imageDragHandle, handleCenter)
     mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(
+      editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
+    ).toBeGreaterThan(0)
+
     mouseUpAtPoint(canvasControlsLayer, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -275,8 +283,8 @@ export var storyboard = (
         position: 'absolute',
         width: 200,
         height: 62,
-        top: 456,
-        left: 53,
+        top: 475,
+        left: 3,
       }}
       data-uid='imgimgimg'
     />
@@ -284,4 +292,112 @@ export var storyboard = (
 )
 `)
   })
+
+  it('dragging from the "finder" works', async () => {
+    const newUID = 'imgimgimg'
+    FOR_TESTS_setNextGeneratedUid(newUID)
+
+    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const file = await makeImageFile(imgBase64, 'chucknorris.png')
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, [file]),
+    )
+
+    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, [file]))
+
+    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await wait(1000) // read the image
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    />
+    <img
+      alt=''
+      src='./assets/chucknorris.png'
+      style={{
+        position: 'absolute',
+        left: 602.5,
+        top: 505.5,
+        width: 1,
+        height: 1,
+      }}
+      data-uid='imgimgimg'
+      data-aspect-ratio-locked
+    />
+  </Storyboard>
+)
+`)
+  })
 })
+
+// https://github.com/testing-library/react-testing-library/issues/339
+function makeDragEvent(
+  type: 'drag' | 'drop',
+  target: Element | Node,
+  clientCoords: { x: number; y: number },
+  fileList: Array<File>,
+): Event {
+  const opts = {
+    clientX: clientCoords.x,
+    clientY: clientCoords.y,
+    buttons: 1,
+    bubbles: true,
+    cancelable: true,
+  }
+  const fileDropEvent =
+    type === 'drop' ? createEvent.drop(target, opts) : createEvent.drag(target, opts)
+
+  Object.defineProperty(fileDropEvent, 'dataTransfer', {
+    value: {
+      getData: () => '',
+      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
+      files: {
+        item: (itemIndex: number) => fileList[itemIndex],
+        length: fileList.length,
+      },
+    },
+  })
+
+  return fileDropEvent
+}
+
+const imgBase64 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=`
+
+// https://stackoverflow.com/a/47497249
+const makeImageFile = (base64: string, name: string) =>
+  fetch(base64)
+    .then((res) => res.blob())
+    .then((blob) => new File([blob], name, { type: 'image/png' }))
