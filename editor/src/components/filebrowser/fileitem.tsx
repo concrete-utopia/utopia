@@ -922,6 +922,7 @@ const DragHandle = (props: DragHandleProps) => {
   const { onDragHandleStart: onDragStart, onDragHandleCancelled: onDragCancelled } = props
   return (
     <div
+      data-testid={'file-image-drag-handle'}
       style={{ padding: 5, cursor: 'pointer' }}
       onMouseDown={onDragStart}
       onMouseUp={onDragCancelled}
