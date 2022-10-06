@@ -115,16 +115,14 @@ function dragByPixels(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = absoluteMoveStrategy.apply(
+  const strategyResult = absoluteMoveStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
       metadata ?? defaultMetadata,
     ),
     interactionSession,
-    defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')

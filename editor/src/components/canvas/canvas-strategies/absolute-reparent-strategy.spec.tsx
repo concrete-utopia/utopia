@@ -193,16 +193,14 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = absoluteReparentStrategy.apply(
+  const strategyResult = absoluteReparentStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
       startingMetadata,
     ),
     interactionSession,
-    defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')

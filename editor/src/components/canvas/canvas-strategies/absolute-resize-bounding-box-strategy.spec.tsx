@@ -52,7 +52,7 @@ function multiselectResizeElements(
     drag,
   )
 
-  const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
+  const strategyResult = absoluteResizeBoundingBoxStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       initialEditor,
       createBuiltInDependenciesList(null),
@@ -64,9 +64,7 @@ function multiselectResizeElements(
       latestAllElementProps: {},
       startingTargetParentsToFilterOut: null,
     },
-    defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
