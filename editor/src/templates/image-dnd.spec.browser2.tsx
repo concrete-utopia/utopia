@@ -394,6 +394,8 @@ function makeDragEvent(
   return fileDropEvent
 }
 
+// minimal PNG image
+// https://stackoverflow.com/a/36610159
 const imgBase64 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=`
 
 // https://stackoverflow.com/a/47497249
