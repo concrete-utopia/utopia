@@ -4,6 +4,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -17,7 +18,7 @@ import {
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: () => 'Move',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -33,38 +34,40 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return absoluteMoveStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
       return applyMoveCommon(
         canvasState,
-        interactionState,
-        getAdjustMoveCommands(canvasState, interactionState),
+        interactionSession,
+        getAdjustMoveCommands(canvasState, interactionSession),
       )
     }
     // Fallback for when the checks above are not satisfied.

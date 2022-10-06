@@ -3,6 +3,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
@@ -38,38 +39,41 @@ export const flowReorderStrategy: CanvasStrategy = {
   name: () => 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: FlowReorderDragOutline,
+      props: {},
       key: 'flow-reorder-drag-outline',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return flowReorderStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
       ? 3
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     return applyReorderCommon(
       canvasState,
-      interactionState,
+      interactionSession,
       customStrategyState,
       isValidFlowReorderTarget,
     )

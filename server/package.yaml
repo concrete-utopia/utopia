@@ -5,7 +5,21 @@ description: Utopia Web
 github: concrete-utopia/utopia
 category: Development
 license: MIT
-ghc-options: -Wall -threaded -rtsopts
+
+ghc-options:
+  - -Wall
+  - -Werror
+  - -threaded
+  - -fno-warn-orphans
+  - -Wno-unused-imports
+  - -Wno-deprecations
+  - -rtsopts
+
+default-extensions:
+  - Strict
+  - StrictData
+  - NoImplicitPrelude
+
 flags:
   enable-external-tests:
     description: Enable the external tests.
@@ -47,7 +61,9 @@ dependencies:
   - github 
   - lens
   - lens-aeson <1.2
+  - lifted-async
   - lifted-base
+  - mime
   - mime-types
   - modern-uri
   - monad-control
@@ -99,8 +115,6 @@ dependencies:
   - wreq
 extra-libraries:
   - z
-default-extensions:
-  - NoImplicitPrelude
 executable:
   main: Main.hs
   source-dirs: src

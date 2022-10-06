@@ -33,6 +33,7 @@ import {
 } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -51,7 +52,7 @@ import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: () => 'Resize',
-  isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
+  isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -63,51 +64,63 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: AbsoluteResizeControl,
+      props: {},
       key: 'absolute-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ZeroSizeResizeControlWrapper,
+      props: {},
       key: 'zero-size-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
-    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
+    }),
+    controlWithProps({
+      control: ParentOutlines,
+      props: {},
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: {},
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return absoluteResizeBoundingBoxStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'RESIZE_HANDLE'
     ) {
-      const edgePosition = interactionState.activeControl.edgePosition
+      const edgePosition = interactionSession.activeControl.edgePosition
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      if (interactionState.interactionData.drag != null) {
-        const drag = interactionState.interactionData.drag
+      if (interactionSession.interactionData.drag != null) {
+        const drag = interactionSession.interactionData.drag
         const filteredSelectedElements = getDragTargets(selectedElements)
         const originalBoundingBox = getMultiselectBounds(
           canvasState.startingMetadata,
           filteredSelectedElements,
         )
         if (originalBoundingBox != null) {
-          const keepAspectRatio = interactionState.interactionData.modifiers.shift
+          const keepAspectRatio = interactionSession.interactionData.modifiers.shift
           const lockedAspectRatio = keepAspectRatio
             ? originalBoundingBox.width / originalBoundingBox.height
             : null
-          const centerBased = interactionState.interactionData.modifiers.alt
+          const centerBased = interactionSession.interactionData.modifiers.alt
             ? 'center-based'
             : 'non-center-based'
           const newBoundingBox = resizeBoundingBox(

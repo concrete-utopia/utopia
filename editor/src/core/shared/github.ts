@@ -5,7 +5,8 @@ import { trimUpToAndIncluding } from './string-utils'
 import { HEADERS, MODE } from '../../common/server'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { notice } from '../../components/common/notice'
-import { showToast } from '../../components/editor/actions/action-creators'
+import { showToast, updateProjectContents } from '../../components/editor/actions/action-creators'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -30,12 +31,32 @@ export interface SaveToGithubSuccess {
   url: string
 }
 
-export interface SaveToGithubFailure {
+export interface GithubFailure {
   type: 'FAILURE'
   failureReason: string
 }
 
-export type SaveToGithubResponse = SaveToGithubSuccess | SaveToGithubFailure
+export type SaveToGithubResponse = SaveToGithubSuccess | GithubFailure
+
+export interface GetBranchesBranch {
+  name: string
+}
+
+export type GetBranchesResult = Array<GetBranchesBranch>
+
+export interface GetBranchesSuccess {
+  type: 'SUCCESS'
+  branches: GetBranchesResult
+}
+
+export type GetBranchesResponse = GetBranchesSuccess | GithubFailure
+
+export interface GetBranchContentSuccess {
+  type: 'SUCCESS'
+  content: ProjectContentTreeRoot
+}
+
+export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export async function saveProjectToGithub(
   persistentModel: PersistentModel,
@@ -67,6 +88,82 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO'))],
+          'everyone',
+        )
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+}
+
+export async function getBranchesForGithubRepository(
+  githubRepo: GithubRepo,
+): Promise<GetBranchesResponse> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'branches', githubRepo.owner, githubRepo.repository)
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: GetBranchesResponse = await response.json()
+    return responseBody
+  } else {
+    return {
+      type: 'FAILURE',
+      failureReason: 'Server error.',
+    }
+  }
+}
+
+export async function getBranchContent(
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  branchName: string,
+): Promise<void> {
+  const url = urljoin(
+    UTOPIA_BACKEND,
+    'github',
+    'branches',
+    githubRepo.owner,
+    githubRepo.repository,
+    branchName,
+  )
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: GetBranchContentResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        dispatch(
+          [
+            updateProjectContents(responseBody.content),
+            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
+          ],
           'everyone',
         )
         break

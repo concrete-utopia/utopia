@@ -50,7 +50,7 @@ import           Utopia.Web.Database             (projectContentTreeFromDecodedP
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
-import           Utopia.Web.Github
+import           Utopia.Web.Github.Types
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
@@ -674,6 +674,14 @@ githubSaveEndpoint :: Maybe Text -> PersistentModel -> ServerMonad SaveToGithubR
 githubSaveEndpoint cookie persistentModel = requireUser cookie $ \sessionUser -> do
   saveToGithubRepo (view (field @"_id") sessionUser) persistentModel
 
+getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
+getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
+  getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
+
+getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchContentResponse
+getGithubBranchContentEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -697,6 +705,8 @@ protected authCookie = logoutPage authCookie
                   :<|> githubFinishAuthenticationEndpoint authCookie
                   :<|> githubAuthenticatedEndpoint authCookie
                   :<|> githubSaveEndpoint authCookie
+                  :<|> getGithubBranchesEndpoint authCookie
+                  :<|> getGithubBranchContentEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

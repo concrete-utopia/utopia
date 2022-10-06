@@ -11,19 +11,17 @@ export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  size: Size | null
+  defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
-}
-
-export interface SceneInsertionSubject {
-  type: 'Scene'
 }
 
 export interface DragAndDropInsertionSubject {
   type: 'DragAndDrop'
   imageAssets: Array<ImageInsertionSubject>
 }
+
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
 export function elementInsertionSubject(
   uid: string,
@@ -36,15 +34,9 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    size: size,
+    defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
-  }
-}
-
-export function sceneInsertionSubject(): SceneInsertionSubject {
-  return {
-    type: 'Scene',
   }
 }
 
@@ -69,21 +61,12 @@ export function dragAndDropInsertionSubject(
   }
 }
 
-export type InsertionSubject =
-  | ElementInsertionSubject
-  | SceneInsertionSubject
-  | DragAndDropInsertionSubject
+export type InsertionSubject = ElementInsertionSubject | DragAndDropInsertionSubject
 
 export function insertionSubjectIsJSXElement(
   insertionSubject: InsertionSubject,
 ): insertionSubject is ElementInsertionSubject {
   return insertionSubject.type === 'Element'
-}
-
-export function insertionSubjectIsScene(
-  insertionSubject: InsertionSubject,
-): insertionSubject is SceneInsertionSubject {
-  return insertionSubject.type === 'Scene'
 }
 
 export function insertionSubjectIsDragAndDrop(

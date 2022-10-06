@@ -23,6 +23,7 @@ import {
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -47,7 +48,7 @@ function getFlexReparentToAbsoluteStrategy(
   return {
     id: id,
     name: () => name,
-    isApplicable: (canvasState, _interactionState, metadata) => {
+    isApplicable: (canvasState, interactionSession, metadata) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       if (selectedElements.length == 1) {
         return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -59,32 +60,35 @@ function getFlexReparentToAbsoluteStrategy(
       }
     },
     controlsToRender: [
-      {
+      controlWithProps({
         control: DragOutlineControl,
+        props: {},
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
-      },
-      {
+      }),
+      controlWithProps({
         control: ParentOutlines,
+        props: {},
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
-      },
-      {
+      }),
+      controlWithProps({
         control: ParentBounds,
+        props: {},
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
-      },
+      }),
     ],
-    fitness: (canvasState, interactionState, customStrategyState) => {
+    fitness: (canvasState, interactionSession, customStrategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
       return getFitnessForReparentStrategy(
         'FLEX_REPARENT_TO_ABSOLUTE',
         canvasState,
-        interactionState,
+        interactionSession,
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
+    apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(
@@ -93,21 +97,21 @@ function getFlexReparentToAbsoluteStrategy(
         filteredSelectedElements,
         () => {
           if (
-            interactionState.interactionData.type !== 'DRAG' ||
-            interactionState.interactionData.drag == null
+            interactionSession.interactionData.type !== 'DRAG' ||
+            interactionSession.interactionData.drag == null
           ) {
             return emptyStrategyApplicationResult
           }
 
           const pointOnCanvas = offsetPoint(
-            interactionState.interactionData.originalDragStart,
-            interactionState.interactionData.drag,
+            interactionSession.interactionData.originalDragStart,
+            interactionSession.interactionData.drag,
           )
 
           const { newParent } = getReparentTargetUnified(
             existingReparentSubjects(filteredSelectedElements),
             pointOnCanvas,
-            interactionState.interactionData.modifiers.cmd,
+            interactionSession.interactionData.modifiers.cmd,
             canvasState,
             canvasState.startingMetadata,
             canvasState.startingAllElementProps,
@@ -160,7 +164,7 @@ function getFlexReparentToAbsoluteStrategy(
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   commandLifecycle,
                   missingBoundsHandling,
                   strategyLifecycle,
@@ -178,7 +182,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   missingBoundsHandling: MissingBoundsHandling,
   strategyLifeCycle: InteractionLifecycle,
@@ -191,7 +195,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     : absoluteReparentStrategy
   const reparentCommands = absoluteReparentStrategyToUse.apply(
     canvasState,
-    interactionState,
+    interactionSession,
     customStrategyState,
     strategyLifeCycle,
   ).commands

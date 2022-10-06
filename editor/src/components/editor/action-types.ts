@@ -44,6 +44,7 @@ import {
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -63,6 +64,7 @@ import {
 } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
+import { ProjectContentTreeRoot } from '../assets'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -600,6 +602,11 @@ export interface UpdateFile {
   addIfNotInFiles: boolean
 }
 
+export interface UpdateProjectContents {
+  action: 'UPDATE_PROJECT_CONTENTS'
+  contents: ProjectContentTreeRoot
+}
+
 export interface WorkerCodeUpdate {
   type: 'WORKER_CODE_UPDATE'
   filePath: string
@@ -982,7 +989,7 @@ export type ToggleSelectionLock = {
 
 export interface SaveToGithub {
   action: 'SAVE_TO_GITHUB'
-  targetRepository: string
+  targetRepository: GithubRepo
 }
 
 export type EditorAction =
@@ -1073,6 +1080,7 @@ export type EditorAction =
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile
+  | UpdateProjectContents
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight

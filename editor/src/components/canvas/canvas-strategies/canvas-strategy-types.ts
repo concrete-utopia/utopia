@@ -1,3 +1,4 @@
+import React from 'react'
 import { AllElementProps } from '../../../components/editor/store/editor-state'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -49,13 +50,29 @@ export function strategyApplicationResult(
   }
 }
 
-export interface ControlWithKey {
-  control: React.FC<React.PropsWithChildren<unknown>>
+export interface ControlForStrategy<P> {
+  type: 'ControlForStrategy'
+  control: React.FC<P>
+}
+
+export function controlForStrategyMemoized<P>(control: React.FC<P>): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: React.memo<any>(control) }
+}
+
+export type WhenToShowControl =
+  | 'always-visible'
+  | 'visible-only-while-active'
+  | 'visible-except-when-other-strategy-is-active'
+
+export interface ControlWithProps<P> {
+  control: ControlForStrategy<P>
+  props: P
   key: string
-  show:
-    | 'always-visible'
-    | 'visible-only-while-active'
-    | 'visible-except-when-other-strategy-is-active'
+  show: WhenToShowControl
+}
+
+export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProps<P> {
+  return value
 }
 
 export interface InteractionCanvasState {
@@ -112,27 +129,7 @@ export function getInsertionSubjectsFromInteractionTarget(
   return []
 }
 
-export type CanvasStrategyId =
-  | 'ABSOLUTE_MOVE'
-  | 'ABSOLUTE_REPARENT'
-  | 'FORCED_ABSOLUTE_REPARENT'
-  | 'ABSOLUTE_DUPLICATE'
-  | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
-  | 'KEYBOARD_ABSOLUTE_MOVE'
-  | 'KEYBOARD_ABSOLUTE_RESIZE'
-  | 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
-  | 'FLEX_REORDER'
-  | 'ABSOLUTE_REPARENT_TO_FLEX'
-  | 'FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FLEX_REPARENT_TO_FLEX'
-  | 'DRAG_TO_INSERT'
-  | 'FLOW_REORDER'
-  | 'FLOW_REORDER_SLIDER'
-  | 'LOOK_FOR_APPLICABLE_PARENT_ID'
-  | 'DRAW_TO_INSERT'
-  | 'FLEX_RESIZE_BASIC'
-  | 'RELATIVE_MOVE'
+export type CanvasStrategyId = string
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
@@ -154,7 +151,7 @@ export interface CanvasStrategy {
   ) => boolean
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  controlsToRender: Array<ControlWithKey>
+  controlsToRender: Array<ControlWithProps<unknown>>
 
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
   fitness: (

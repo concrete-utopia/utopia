@@ -1,6 +1,15 @@
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { right } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  jsxElement,
+} from '../../../core/shared/element-template'
+import { canvasPoint } from '../../../core/shared/math-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import {
   FakeLinterWorker,
@@ -8,8 +17,37 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
+import { emptyModifiers } from '../../../utils/modifiers'
+import CanvasActions from '../../canvas/canvas-actions'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  InteractionCanvasState,
+  strategyApplicationResult,
+  StrategyApplicationResult,
+} from '../../canvas/canvas-strategies/canvas-strategy-types'
+import {
+  boundingArea,
+  createEmptyStrategyState,
+  createInteractionViaKeyboard,
+  createInteractionViaMouse,
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+} from '../../canvas/canvas-strategies/interaction-state'
+import { runCanvasCommand } from '../../canvas/commands/commands'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import {
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestAppUID,
+  TestSceneUID,
+} from '../../canvas/ui-jsx.test-utils'
+import { toggleBackgroundLayers, toggleStylePropPaths } from '../../inspector/common/css-utils'
 import { EditorDispatch, notLoggedIn } from '../action-types'
+import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
@@ -20,55 +58,7 @@ import {
   interactionStart,
   interactionUpdate,
 } from './dispatch-strategies'
-import { AllElementProps, createEditorState, deriveState, EditorStoreFull } from './editor-state'
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import {
-  ElementInstanceMetadata,
-  elementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsxAttributeValue,
-  jsxElement,
-} from '../../../core/shared/element-template'
-import {
-  boundingArea,
-  createEmptyStrategyState,
-  createInteractionViaKeyboard,
-  createInteractionViaMouse,
-  InteractionSession,
-  InteractionSessionWithoutMetadata,
-  StrategyState,
-  updateInteractionViaMouse,
-} from '../../canvas/canvas-strategies/interaction-state'
-import {
-  CanvasStrategy,
-  CanvasStrategyId,
-  defaultCustomStrategyState,
-  InteractionCanvasState,
-  strategyApplicationResult,
-  StrategyApplicationResult,
-} from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { canvasPoint } from '../../../core/shared/math-utils'
-import { WildcardPatch, wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
-import { runCanvasCommand } from '../../canvas/commands/commands'
-import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from '../../canvas/canvas-strategies/canvas-strategies'
-import { right } from '../../../core/shared/either'
-import { act } from 'react-dom/test-utils'
-import { emptyModifiers } from '../../../utils/modifiers'
-import CanvasActions from '../../canvas/canvas-actions'
-import {
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-  TestAppUID,
-  TestSceneUID,
-} from '../../canvas/ui-jsx.test-utils'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
-import { toggleBackgroundLayers, toggleStylePropPaths } from '../../inspector/common/css-utils'
+import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -165,7 +155,7 @@ describe('interactionCancel', () => {
 
 const testStrategy: MetaCanvasStrategy = () => [
   {
-    id: 'TEST_STRATEGY' as CanvasStrategyId,
+    id: 'TEST_STRATEGY',
     name: () => 'Test Strategy',
     isApplicable: function (
       canvasState: InteractionCanvasState,
@@ -332,7 +322,7 @@ describe('interactionUpdatex', () => {
         boundingArea(),
       ),
     )
-    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY'
     const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
@@ -633,7 +623,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     )
 
     const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY'
     // the currentStrategyCommands should be added to accumulatedCommands
     editorStore.strategyState.currentStrategyCommands = [
       wildcardPatch('always', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
@@ -708,7 +698,7 @@ describe('interactionUpdate with user changed strategy', () => {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
       interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
-      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
+      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY'
     }
     const editorStore = createEditorStore(interactionSession)
 
@@ -719,7 +709,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ...result.unpatchedEditor.canvas,
         interactionSession: {
           ...result.unpatchedEditor.canvas.interactionSession!,
-          userPreferredStrategy: 'TEST_STRATEGY' as CanvasStrategyId,
+          userPreferredStrategy: 'TEST_STRATEGY',
         },
       },
     }
@@ -967,7 +957,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       [
         () => [
           {
-            id: 'TEST_STRATEGY' as CanvasStrategyId,
+            id: 'TEST_STRATEGY',
             name: () => 'Test Strategy',
             isApplicable: function (): boolean {
               return true
@@ -1003,7 +993,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
       () => [
         {
-          id: 'TEST_STRATEGY' as CanvasStrategyId,
+          id: 'TEST_STRATEGY',
           name: () => 'Test Strategy',
           isApplicable: function (): boolean {
             return true

@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -73,7 +74,7 @@ function pressesToVectorAndEdges(
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
   name: () => 'Resize',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
@@ -84,23 +85,24 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: AbsoluteResizeControl,
+      props: {},
       key: 'absolute-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
+    }),
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
-        interactionState,
+        interactionSession,
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
       ) &&
-      interactionState.interactionData.type === 'KEYBOARD'
+      interactionSession.interactionData.type === 'KEYBOARD'
     ) {
-      const { interactionData } = interactionState
+      const { interactionData } = interactionSession
       const lastKeyPress = getLastKeyPressState(interactionData.keyStates)
       if (lastKeyPress != null) {
         const cmdAndOptionallyShiftModifier =
@@ -113,10 +115,10 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (interactionState.interactionData.type === 'KEYBOARD') {
-      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+    if (interactionSession.interactionData.type === 'KEYBOARD') {
+      const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
       const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
 
       // Start with the frame as it is at the start of the interaction.
@@ -171,7 +173,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
           })
         }
       })
-      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))

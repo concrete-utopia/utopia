@@ -349,7 +349,26 @@ innerServerExecutor (SaveToGithubRepo user model action) = do
     Just githubResources -> do
       result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
       pure $ action result
-
+innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getGithubBranches githubResources logger metrics pool user owner repository
+      pure $ action result
+innerServerExecutor (GetBranchContent user owner repository branchName action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName
+      pure $ action result
 {-|
   Invokes a service call using the supplied resources.
 -}

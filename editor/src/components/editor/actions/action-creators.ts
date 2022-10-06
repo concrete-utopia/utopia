@@ -35,6 +35,7 @@ import { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import { IndexPosition } from '../../../utils/utils'
 import type { CSSCursor } from '../../../uuiui-deps'
+import { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
 import type { EditorPane, EditorPanel } from '../../common/actions'
@@ -206,12 +207,14 @@ import type {
   SetGithubState,
   SetProperty,
   SaveToGithub,
+  UpdateProjectContents,
 } from '../action-types'
-import { EditorModes, elementInsertionSubject, Mode, sceneInsertionSubject } from '../editor-modes'
+import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -455,10 +458,6 @@ export function enableInsertModeForJSXElement(
   return switchEditorMode(
     EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
-}
-
-export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {
@@ -961,6 +960,13 @@ export function updateFile(
     filePath: filePath,
     file: file,
     addIfNotInFiles: addIfNotInFiles,
+  }
+}
+
+export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateProjectContents {
+  return {
+    action: 'UPDATE_PROJECT_CONTENTS',
+    contents: contents,
   }
 }
 
@@ -1540,7 +1546,7 @@ export function toggleSelectionLock(
   }
 }
 
-export function saveToGithub(targetRepository: string): SaveToGithub {
+export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,

@@ -390,8 +390,6 @@ import {
   InsertMode,
   LiveCanvasMode,
   Mode,
-  sceneInsertionSubject,
-  SceneInsertionSubject,
   SelectMode,
   targetedInsertionParent,
   TargetedInsertionParent,
@@ -2541,7 +2539,7 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     StringKeepDeepEquality,
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
-    (subject) => subject.size,
+    (subject) => subject.defaultSize,
     nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
@@ -2549,15 +2547,6 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     elementInsertionSubject,
   )
-
-// Here to trigger failure in the case of `SceneInsertionSubject` changing it's definition.
-sceneInsertionSubject()
-export const SceneInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<SceneInsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
 
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
@@ -2583,11 +2572,6 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     case 'Element':
       if (newValue.type === oldValue.type) {
         return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'Scene':
-      if (newValue.type === oldValue.type) {
-        return SceneInsertionSubjectKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'DragAndDrop':

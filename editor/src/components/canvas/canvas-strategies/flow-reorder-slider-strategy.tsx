@@ -9,6 +9,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { FlowSliderControl } from '../controls/flow-slider-control'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -32,26 +33,27 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: FlowSliderControl,
+      props: {},
       key: 'flow-slider-control',
       show: 'always-visible',
-    },
+    }),
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return flowReorderSliderStategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'FLOW_SLIDER'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'FLOW_SLIDER'
       ? 100
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
-    if (interactionState.interactionData.type !== 'DRAG') {
+  apply: (canvasState, interactionSession, customStrategyState) => {
+    if (interactionSession.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }
 
@@ -70,12 +72,12 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       )
     }
 
-    if (interactionState.interactionData.drag != null) {
+    if (interactionSession.interactionData.drag != null) {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
 
       const newIndex = findNewIndex(
         unpatchedIndex,
-        interactionState.interactionData.drag,
+        interactionSession.interactionData.drag,
         siblingsOfTarget,
         'rounded-value',
       )

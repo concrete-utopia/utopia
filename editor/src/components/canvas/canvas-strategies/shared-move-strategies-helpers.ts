@@ -62,7 +62,7 @@ export interface MoveCommandsOptions {
 export const getAdjustMoveCommands =
   (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionSession,
+    interactionSession: InteractionSession,
     options?: MoveCommandsOptions,
   ) =>
   (
@@ -80,7 +80,7 @@ export const getAdjustMoveCommands =
         selectedElement,
         snappedDragVector,
         canvasState,
-        interactionState,
+        interactionSession,
         options,
       )
       commands.push(...elementResult.commands)
@@ -91,19 +91,19 @@ export const getAdjustMoveCommands =
 
 export function applyMoveCommon(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   getMoveCommands: (snappedDragVector: CanvasPoint) => {
     commands: Array<CanvasCommand>
     intendedBounds: Array<CanvasFrameAndTarget>
   },
 ): StrategyApplicationResult {
   if (
-    interactionState.interactionData.type === 'DRAG' &&
-    interactionState.interactionData.drag != null
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.interactionData.drag != null
   ) {
-    const drag = interactionState.interactionData.drag
-    const shiftKeyPressed = interactionState.interactionData.modifiers.shift
-    const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
+    const drag = interactionSession.interactionData.drag
+    const shiftKeyPressed = interactionSession.interactionData.modifiers.shift
+    const cmdKeyPressed = interactionSession.interactionData.modifiers.cmd
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
@@ -120,7 +120,7 @@ export function applyMoveCommon(
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
 
       const targetsForSnapping = selectedElements.map(
-        (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
+        (path) => interactionSession.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         canvasState.startingMetadata,
@@ -155,7 +155,7 @@ export function getMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   options?: MoveCommandsOptions,
 ): {
   commands: Array<AdjustCssLengthProperty>
@@ -192,7 +192,7 @@ export function getMoveCommandsForSelectedElement(
   }
 
   const mappedPath =
-    interactionState.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
+    interactionSession.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
 
   return createMoveCommandsForElement(
     element,

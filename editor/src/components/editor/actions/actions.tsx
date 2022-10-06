@@ -295,6 +295,7 @@ import {
   SetGithubState,
   SetProperty,
   SaveToGithub,
+  UpdateProjectContents,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
@@ -3687,6 +3688,12 @@ export const UPDATE_FNS = {
       },
     }
   },
+  UPDATE_PROJECT_CONTENTS: (action: UpdateProjectContents, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      projectContents: action.contents,
+    }
+  },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
@@ -4933,23 +4940,18 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const updatedRepo = parseGithubProjectString(action.targetRepository)
-    if (updatedRepo == null) {
-      return editor
-    } else {
-      const updatedEditor = {
-        ...editor,
-        githubSettings: {
-          ...editor.githubSettings,
-          targetRepository: updatedRepo,
-        },
-      }
-      // Side effect - Pushing this to the server to get that to save to Github.
-      const persistentModel = persistentModelFromEditorModel(updatedEditor)
-      void saveProjectToGithub(persistentModel, dispatch)
-
-      return editor
+    const updatedEditor = {
+      ...editor,
+      githubSettings: {
+        ...editor.githubSettings,
+        targetRepository: action.targetRepository,
+      },
     }
+    // Side effect - Pushing this to the server to get that to save to Github.
+    const persistentModel = persistentModelFromEditorModel(updatedEditor)
+    void saveProjectToGithub(persistentModel, dispatch)
+
+    return editor
   },
 }
 

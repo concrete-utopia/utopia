@@ -6,6 +6,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
@@ -20,7 +21,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
   name: () => 'Move (Relative)',
 
-  isApplicable: (canvasState, _interactionState, instanceMetadata) => {
+  isApplicable: (canvasState, interactionSession, instanceMetadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length === 0) {
       return false
@@ -38,20 +39,22 @@ export const relativeMoveStrategy: CanvasStrategy = {
   },
 
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
 
-  fitness: (canvasState, interactionState, _sessionState) => {
-    const { interactionData, activeControl } = interactionState
+  fitness: (canvasState, interactionSession, _sessionState) => {
+    const { interactionData, activeControl } = interactionSession
     if (!(interactionData.type === 'DRAG' && interactionData.drag != null)) {
       return 0
     }
@@ -65,7 +68,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
     }
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const metadata = MetadataUtils.findElementByElementPath(interactionState.latestMetadata, last)
+    const metadata = MetadataUtils.findElementByElementPath(interactionSession.latestMetadata, last)
     if (!metadata) {
       return 0
     }
@@ -82,17 +85,17 @@ export const relativeMoveStrategy: CanvasStrategy = {
       : 1 // there should be a more structured way to define priorities (:
   },
 
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     const isFitting =
-      relativeMoveStrategy.fitness(canvasState, interactionState, customStrategyState) > 0
+      relativeMoveStrategy.fitness(canvasState, interactionSession, customStrategyState) > 0
     if (!isFitting) {
       return emptyStrategyApplicationResult
     }
 
     return applyMoveCommon(
       canvasState,
-      interactionState,
-      getAdjustMoveCommands(canvasState, interactionState, {
+      interactionSession,
+      getAdjustMoveCommands(canvasState, interactionSession, {
         ignoreLocalFrame: true,
       }),
     )

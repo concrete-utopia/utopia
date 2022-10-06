@@ -141,7 +141,7 @@ loadFileFromS3 bucketName objectKey possibleETag = do
       fileContents <- sinkBody (view gorsBody successfulResponse) sinkLazy
       let etagFromS3 = firstOf (gorsETag . _Just . _Ctor @"ETag" . utf8) successfulResponse
       pure $ AssetLoaded fileContents etagFromS3
-    Left serviceError ->
+    Left _ ->
       pure AssetUnmodified
 
 checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
