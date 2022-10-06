@@ -5,6 +5,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategy,
+  controlWithProps,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
@@ -33,26 +34,30 @@ export function absoluteReparentToFlexStrategy(
         id: 'ABSOLUTE_REPARENT_TO_FLEX',
         name: 'Reparent (Flex)',
         controlsToRender: [
-          {
+          controlWithProps({
             control: DragOutlineControl,
+            props: {},
             key: 'ghost-outline-control',
             show: 'visible-only-while-active',
-          },
-          {
+          }),
+          controlWithProps({
             control: ParentOutlines,
+            props: {},
             key: 'parent-outlines-control',
             show: 'visible-only-while-active',
-          },
-          {
+          }),
+          controlWithProps({
             control: ParentBounds,
+            props: {},
             key: 'parent-bounds-control',
             show: 'visible-only-while-active',
-          },
-          {
+          }),
+          controlWithProps({
             control: FlexReparentTargetIndicator,
+            props: {},
             key: 'flex-reparent-target-indicator',
             show: 'visible-only-while-active',
-          },
+          }),
         ],
         fitness: getFitnessForReparentStrategy(
           'ABSOLUTE_REPARENT_TO_FLEX',

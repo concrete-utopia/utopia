@@ -9,6 +9,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { FlowSliderControl } from '../controls/flow-slider-control'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -35,11 +36,12 @@ export function flowReorderSliderStategy(
         id: 'FLOW_REORDER_SLIDER',
         name: 'Reorder (Slider)',
         controlsToRender: [
-          {
+          controlWithProps({
             control: FlowSliderControl,
+            props: {},
             key: 'flow-slider-control',
             show: 'always-visible',
-          },
+          }),
         ],
         fitness:
           interactionSession != null &&

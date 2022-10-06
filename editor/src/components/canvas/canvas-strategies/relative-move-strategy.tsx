@@ -6,6 +6,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -42,16 +43,18 @@ export function relativeMoveStrategy(
         id: 'RELATIVE_MOVE',
         name: 'Move (Relative)',
         controlsToRender: [
-          {
+          controlWithProps({
             control: ParentOutlines,
+            props: {},
             key: 'parent-outlines-control',
             show: 'visible-only-while-active',
-          },
-          {
+          }),
+          controlWithProps({
             control: ParentBounds,
+            props: {},
             key: 'parent-bounds-control',
             show: 'visible-only-while-active',
-          },
+          }),
         ],
         fitness:
           interactionSession != null &&

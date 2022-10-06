@@ -22,6 +22,7 @@ import {
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -58,21 +59,24 @@ function baseFlexReparentToAbsoluteStrategy(
       id: id,
       name: name,
       controlsToRender: [
-        {
+        controlWithProps({
           control: DragOutlineControl,
+          props: {},
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
-        },
-        {
+        }),
+        controlWithProps({
           control: ParentOutlines,
+          props: {},
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
-        },
-        {
+        }),
+        controlWithProps({
           control: ParentBounds,
+          props: {},
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
-        },
+        }),
       ],
       fitness:
         interactionSession == null

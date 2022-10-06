@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -29,21 +30,24 @@ export function flexReorderStrategy(
       id: 'FLEX_REORDER',
       name: 'Reorder (Flex)',
       controlsToRender: [
-        {
+        controlWithProps({
           control: DragOutlineControl,
+          props: {},
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
-        },
-        {
+        }),
+        controlWithProps({
           control: ParentOutlines,
+          props: {},
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
-        },
-        {
+        }),
+        controlWithProps({
           control: ParentBounds,
+          props: {},
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
-        },
+        }),
       ],
       fitness:
         interactionSession != null &&

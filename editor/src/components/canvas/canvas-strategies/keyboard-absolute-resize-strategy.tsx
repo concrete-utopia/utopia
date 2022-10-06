@@ -17,6 +17,7 @@ import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-c
 import { supportsAbsoluteResize } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -103,11 +104,12 @@ export function keyboardAbsoluteResizeStrategy(
       id: 'KEYBOARD_ABSOLUTE_RESIZE',
       name: 'Resize',
       controlsToRender: [
-        {
+        controlWithProps({
           control: AbsoluteResizeControl,
+          props: {},
           key: 'absolute-resize-control',
           show: 'visible-except-when-other-strategy-is-active',
-        },
+        }),
       ],
       fitness: getFitness(interactionSession),
       apply: () => {
