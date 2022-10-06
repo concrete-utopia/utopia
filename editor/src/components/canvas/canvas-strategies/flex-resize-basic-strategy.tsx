@@ -125,47 +125,42 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
 
         const makeResizeCommand = (
           name: 'width' | 'height',
-          original: number,
-          resized: number,
           parent: number | undefined,
-          dimension: number | null,
+          value: number,
         ) => {
-          const newValue = resized - (dimension != null ? original : 0)
           return adjustCssLengthProperty(
             'always',
             selectedElement,
             stylePropPathMappingFn(name, ['style']),
-            newValue,
+            value,
             parent,
             true,
           )
         }
 
+        const makeNewDimension = (original: number, resized: number, dimension?: number | null) =>
+          resized - (dimension != null ? original : 0)
+
         const resizeCommands: Array<AdjustCssLengthProperty> = []
 
-        if (edgePosition.x === 1) {
+        const newWidth = makeNewDimension(
+          originalBounds.width,
+          resizedBounds.width,
+          dimensions?.width,
+        )
+        if (dimensions?.width != null || originalBounds.width !== newWidth) {
           // it moves horizontally
-          resizeCommands.push(
-            makeResizeCommand(
-              'width',
-              originalBounds.width,
-              resizedBounds.width,
-              elementParentBounds?.width,
-              dimensions?.width || null,
-            ),
-          )
+          resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
         }
-        if (edgePosition.y === 1) {
+
+        const newHeight = makeNewDimension(
+          originalBounds.height,
+          resizedBounds.height,
+          dimensions?.height,
+        )
+        if (dimensions?.height != null || originalBounds.height !== newHeight) {
           // it moves vertically
-          resizeCommands.push(
-            makeResizeCommand(
-              'height',
-              originalBounds.height,
-              resizedBounds.height,
-              elementParentBounds?.height,
-              dimensions?.height || null,
-            ),
-          )
+          resizeCommands.push(makeResizeCommand('height', elementParentBounds?.height, newHeight))
         }
 
         return strategyApplicationResult([
