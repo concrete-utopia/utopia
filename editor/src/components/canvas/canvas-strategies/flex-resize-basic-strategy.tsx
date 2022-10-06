@@ -237,7 +237,12 @@ export function resizeWidthHeight(
   }
 }
 
-const getDimensions = (metadata: ElementInstanceMetadata) => {
+const getDimensions = (
+  metadata: ElementInstanceMetadata,
+): {
+  width: number | null
+  height: number | null
+} | null => {
   const getOffsetPropValue = (
     name: 'width' | 'height',
     attrs: PropsOrJSXAttributes,
