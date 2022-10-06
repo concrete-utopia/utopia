@@ -1071,7 +1071,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 width: elementSize.width,
                 height: elementSize.height,
                 top: mousePosition.canvasPositionRounded.y,
-                left: mousePosition.canvasPositionRaw.x,
+                left: mousePosition.canvasPositionRounded.x,
                 src: src,
               })
 
