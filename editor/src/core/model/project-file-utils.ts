@@ -151,16 +151,6 @@ export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMeta
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
-export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
-  return isJSXElement(element) && isTextAgainstImports(element.name, imports)
-}
-
-export function isUtopiaAPITextElementFromMetadata(
-  elementInstanceMetadata: ElementInstanceMetadata,
-): boolean {
-  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Text')
-}
-
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
 }
@@ -182,10 +172,6 @@ export function isViewLikeFromMetadata(elementInstanceMetadata: ElementInstanceM
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexRow') ||
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexCol')
   )
-}
-
-export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
-  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Text')
 }
 
 export function isImg(jsxElementName: JSXElementName): boolean {

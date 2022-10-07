@@ -12,6 +12,7 @@ import {
   transformFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
@@ -111,10 +112,11 @@ export function absoluteResizeBoundingBoxStrategy(
               filteredSelectedElements,
             )
             if (originalBoundingBox != null) {
-              const keepAspectRatio = interactionSession.interactionData.modifiers.shift
-              const lockedAspectRatio = keepAspectRatio
-                ? originalBoundingBox.width / originalBoundingBox.height
-                : null
+              const lockedAspectRatio = getLockedAspectRatio(
+                interactionSession,
+                interactionSession.interactionData.modifiers,
+                originalBoundingBox,
+              )
               const centerBased = interactionSession.interactionData.modifiers.alt
                 ? 'center-based'
                 : 'non-center-based'
@@ -284,4 +286,18 @@ function snapBoundingBox(
     snappedBoundingBox,
     guidelinesWithSnappingVector,
   }
+}
+
+function getLockedAspectRatio(
+  interactionData: InteractionSession,
+  modifiers: Modifiers,
+  originalBoundingBox: CanvasRectangle,
+): number | null {
+  if (interactionData.aspectRatioLock != null) {
+    return interactionData.aspectRatioLock
+  }
+  if (modifiers.shift) {
+    return originalBoundingBox.width / originalBoundingBox.height
+  }
+  return null
 }

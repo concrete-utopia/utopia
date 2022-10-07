@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
+import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
   canvasRectangle,
@@ -12,7 +15,10 @@ import {
   isEdgePositionAHorizontalEdge,
   pickPointOnRect,
 } from '../canvas-utils'
-import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../commands/adjust-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -103,28 +109,62 @@ export function flexResizeBasicStrategy(
 
             const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
 
+            const metadata = MetadataUtils.findElementByElementPath(
+              canvasState.startingMetadata,
+              selectedElement,
+            )
+            if (!metadata) {
+              return emptyStrategyApplicationResult
+            }
             const elementParentBounds =
-              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
-                ?.specialSizeMeasurements.immediateParentBounds ?? null
+              metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+            const dimensions = getDimensions(metadata)
 
-            const resizeCommands = [
-              adjustCssLengthProperty(
+            const makeResizeCommand = (
+              name: 'width' | 'height',
+              parent: number | undefined,
+              value: number,
+            ) => {
+              return adjustCssLengthProperty(
                 'always',
                 selectedElement,
-                stylePropPathMappingFn('width', ['style']),
-                resizedBounds.width - originalBounds.width,
-                elementParentBounds?.width,
+                stylePropPathMappingFn(name, ['style']),
+                value,
+                parent,
                 true,
-              ),
-              adjustCssLengthProperty(
-                'always',
-                selectedElement,
-                stylePropPathMappingFn('height', ['style']),
-                resizedBounds.height - originalBounds.height,
-                elementParentBounds?.height,
-                true,
-              ),
-            ]
+              )
+            }
+
+            const makeNewDimension = (
+              original: number,
+              resized: number,
+              dimension?: number | null,
+            ) => resized - (dimension != null ? original : 0)
+
+            const resizeCommands: Array<AdjustCssLengthProperty> = []
+
+            const newWidth = makeNewDimension(
+              originalBounds.width,
+              resizedBounds.width,
+              dimensions?.width,
+            )
+            if (dimensions?.width != null || originalBounds.width !== newWidth) {
+              // it moves horizontally
+              resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
+            }
+
+            const newHeight = makeNewDimension(
+              originalBounds.height,
+              resizedBounds.height,
+              dimensions?.height,
+            )
+            if (dimensions?.height != null || originalBounds.height !== newHeight) {
+              // it moves vertically
+              resizeCommands.push(
+                makeResizeCommand('height', elementParentBounds?.height, newHeight),
+              )
+            }
+
             return strategyApplicationResult([
               ...resizeCommands,
               updateHighlightedViews('mid-interaction', []),
@@ -194,5 +234,38 @@ export function resizeWidthHeight(
         height: boundingBox.height,
       })
     }
+  }
+}
+
+const getDimensions = (
+  metadata: ElementInstanceMetadata,
+): {
+  width: number | null
+  height: number | null
+} | null => {
+  const getOffsetPropValue = (
+    name: 'width' | 'height',
+    attrs: PropsOrJSXAttributes,
+  ): number | null => {
+    return foldEither(
+      (_) => null,
+      (v) => v?.value ?? null,
+      getLayoutProperty(name, attrs, ['style']),
+    )
+  }
+
+  if (isLeft(metadata.element)) {
+    return null
+  }
+  const { value } = metadata.element
+  if (!isJSXElement(value)) {
+    return null
+  }
+
+  const attrs = right(value.props)
+
+  return {
+    width: getOffsetPropValue('width', attrs),
+    height: getOffsetPropValue('height', attrs),
   }
 }

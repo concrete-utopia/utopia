@@ -423,59 +423,6 @@ describe('targetElementSupportsChildren', () => {
     )
     expect(actualResult).toEqual(true)
   })
-  it('returns false for a parsed div with only a single text child', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxTextBlock('Some Dummy Text')],
-    )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
-    expect(actualResult).toEqual(false)
-  })
-  it('returns false for a parsed div with only text children', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxTextBlock('Some'), jsxTextBlock('Dummy'), jsxTextBlock('Text')],
-    )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
-    expect(actualResult).toEqual(false)
-  })
-  it('returns true for a parsed div with mixed text and other element children', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [
-        jsxTextBlock('Some'),
-        jsxTextBlock('Dummy'),
-        jsxTextBlock('Text'),
-        jsxTestElement('div', [], []),
-      ],
-    )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
-    expect(actualResult).toEqual(true)
-  })
   it('returns true for a parsed div with an arbitrary jsx block child', () => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('div', []),
@@ -524,22 +471,6 @@ describe('targetElementSupportsChildren', () => {
     )
     expect(actualResult).toEqual(true)
   })
-  it('returns false for a parsed div with only text children inside a fragment', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxFragment([jsxTextBlock('Some'), jsxTextBlock('Dummy'), jsxTextBlock('Text')], false)],
-    )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
-    expect(actualResult).toEqual(false)
-  })
   it('returns true for a parsed div with a fragment child containing another parsed div', () => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('div', []),
@@ -573,32 +504,6 @@ describe('targetElementSupportsChildren', () => {
                 jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
               ],
             ),
-          ],
-          false,
-        ),
-      ],
-    )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
-    expect(actualResult).toEqual(true)
-  })
-  it('returns false for a parsed div with a fragment containing mixed text and element children', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [
-        jsxFragment(
-          [
-            jsxTextBlock('Some'),
-            jsxTextBlock('Dummy'),
-            jsxTextBlock('Text'),
-            jsxTestElement('div', [], []),
           ],
           false,
         ),
