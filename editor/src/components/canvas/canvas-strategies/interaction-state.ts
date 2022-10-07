@@ -263,7 +263,7 @@ export function updateInteractionViaDragDelta(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
-      aspectRatioLock: null,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
@@ -297,7 +297,7 @@ export function updateInteractionViaMouse(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
-      aspectRatioLock: null,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
@@ -323,7 +323,7 @@ export function updateHoverInteractionViaMouse(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
-      aspectRatioLock: null,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
