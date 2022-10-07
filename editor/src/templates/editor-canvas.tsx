@@ -31,7 +31,12 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch, isLoggedIn } from '../components/editor/action-types'
+import {
+  EditorAction,
+  EditorDispatch,
+  isLoggedIn,
+  LoginState,
+} from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import {
   EditorModes,
@@ -42,6 +47,7 @@ import {
   ElementInsertionSubject,
   elementInsertionSubject,
   elementInsertionSubjects,
+  InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
@@ -124,6 +130,7 @@ import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
+import { ProjectContentTreeRoot } from '../components/assets'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1041,24 +1048,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 ])
               }
 
-              let actions: Array<EditorAction> = []
-              let uidsSoFar: Array<string> = []
-              let subjects: Array<ElementInsertionSubject> = []
-              for (const image of images) {
-                const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
-                  generateUid: () =>
-                    generateUidWithExistingComponentsAndExtraUids(
-                      this.props.editor.projectContents,
-                      uidsSoFar,
-                    ),
-                  scale: this.props.model.scale,
-                  mousePosition: mousePosition.canvasPositionRounded,
-                  isUserLoggedIn: isLoggedIn(this.props.userState.loginState),
-                })
-                actions = [...actions, ...actionsForImage]
-                uidsSoFar = [...uidsSoFar, singleSubject.uid]
-                subjects = [...subjects, singleSubject]
-              }
+              const { actions, subjects } = actionsForDroppedImages(images, {
+                scale: this.props.model.scale,
+                projectContents: this.props.editor.projectContents,
+                loginState: this.props.userState.loginState,
+                mousePosition: mousePosition.canvasPositionRounded,
+              })
 
               this.props.dispatch(
                 [
@@ -1699,4 +1694,39 @@ function actionsForDroppedImage(
     actions: saveImageActions,
     singleSubject: elementInsertionSubject(newUID, newElement, elementSize, {}, null),
   }
+}
+
+interface ActionsForDroppedImagesResult {
+  subjects: Array<ElementInsertionSubject>
+  actions: Array<EditorAction>
+}
+
+interface ActionsForDroppedImagesContext {
+  projectContents: ProjectContentTreeRoot
+  mousePosition: CanvasPoint
+  scale: number
+  loginState: LoginState
+}
+
+function actionsForDroppedImages(
+  images: Array<ImageResult>,
+  context: ActionsForDroppedImagesContext,
+): ActionsForDroppedImagesResult {
+  let actions: Array<EditorAction> = []
+  let uidsSoFar: Array<string> = []
+  let subjects: Array<ElementInsertionSubject> = []
+  for (const image of images) {
+    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
+      generateUid: () =>
+        generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
+      scale: context.scale,
+      mousePosition: context.mousePosition,
+      isUserLoggedIn: isLoggedIn(context.loginState),
+    })
+    actions = [...actions, ...actionsForImage]
+    uidsSoFar = [...uidsSoFar, singleSubject.uid]
+    subjects = [...subjects, singleSubject]
+  }
+
+  return { actions, subjects }
 }
