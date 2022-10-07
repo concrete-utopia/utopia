@@ -84,6 +84,7 @@ executable utopia-web
     , cryptohash-sha256
     , cryptonite
     , data-default
+    , diff3
     , directory
     , exceptions
     , fast-logger
@@ -160,6 +161,7 @@ test-suite utopia-web-test
   other-modules:
       Test.Utopia.Web.Endpoints
       Test.Utopia.Web.Executors.Test
+      Test.Utopia.Web.Github.Conflict
       Test.Utopia.Web.Packager.NPM
       Test.Utopia.Web.Servant
       Main
@@ -222,6 +224,7 @@ test-suite utopia-web-test
     , cryptohash-sha256
     , cryptonite
     , data-default
+    , diff3
     , directory
     , exceptions
     , fast-logger

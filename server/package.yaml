@@ -45,6 +45,7 @@ dependencies:
   - cryptohash-sha256
   - cryptonite
   - data-default
+  - diff3
   - directory
   - exceptions
   - fast-logger
