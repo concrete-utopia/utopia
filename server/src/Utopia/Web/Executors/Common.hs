@@ -16,6 +16,7 @@ import           Control.Concurrent.ReadWriteLock
 import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
+import           Control.Monad.Trans.Control
 import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
@@ -52,6 +53,7 @@ import           Utopia.Web.Auth.Types            (Auth0Resources)
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Github
+import           Utopia.Web.Github.Types
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
@@ -383,3 +385,20 @@ createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
       createGitBranchForCommit accessToken model (view (field @"sha") commitResult) branchName
     pure (branchName, view (field @"url") branchResult)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
+
+getGithubBranches :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
+getGithubBranches githubResources logger metrics pool userID owner repository = do
+  result <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      getGitBranches accessToken owner repository
+  pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
+
+getGithubBranch :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
+getGithubBranch githubResources logger metrics pool userID owner repository branchName = do
+  result <- runExceptT $ do
+    branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      getGitBranch accessToken owner repository branchName
+    let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      getRecursiveGitTreeAsContent accessToken owner repository treeSha
+  pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result

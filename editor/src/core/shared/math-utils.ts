@@ -1032,3 +1032,47 @@ export function segmentIntersection(
 export function mod(n: number, m: number): number {
   return ((n % m) + m) % m
 }
+
+interface ResizeOptions {
+  desiredWidth: number
+  desiredHeight: number
+  keepAspectRatio: boolean
+  centerPoint: CanvasPoint
+}
+
+export function resizeCanvasRectangle(
+  rectangle: CanvasRectangle,
+  options: ResizeOptions,
+): CanvasRectangle {
+  const resizeI = (dimensions: { width: number; height: number }): CanvasRectangle => {
+    const { width, height } = dimensions
+    return canvasRectangle({
+      x: options.centerPoint.x - width / 2,
+      y: options.centerPoint.y - height / 2,
+      width: width,
+      height: height,
+    })
+  }
+
+  if (options.keepAspectRatio) {
+    const aspectRatio = rectangle.width / rectangle.height
+    options.desiredHeight = (options.desiredWidth / aspectRatio) ^ 0
+    return resizeI({ width: options.desiredWidth, height: options.desiredHeight })
+  }
+
+  return resizeI({ width: options.desiredWidth, height: options.desiredHeight })
+}
+
+export function resize(
+  originalSize: Size,
+  desiredSize: Size,
+  mode: 'force' | 'keep-aspect-ratio',
+): Size {
+  if (mode === 'force') {
+    return desiredSize
+  }
+
+  const aspectRatio = originalSize.width / originalSize.height
+  const desiredHeight = (desiredSize.width / aspectRatio) ^ 0
+  return size(desiredSize.width, desiredHeight)
+}

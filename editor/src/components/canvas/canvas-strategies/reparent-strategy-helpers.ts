@@ -57,7 +57,7 @@ import { stylePropPathMappingFn } from '../../../components/inspector/common/pro
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { LayoutPinnedProp, framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { isRight, right } from '../../../core/shared/either'
-import { FlexDirection, isHorizontalPoint } from 'utopia-api/core'
+import { FlexDirection, isHorizontalPoint, sides } from 'utopia-api/core'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -71,6 +71,7 @@ import {
 } from '../../../core/layout/layout-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -629,47 +630,88 @@ export function siblingAndPseudoPositions(
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-) {
-  const pseudoElementBefore: CanvasRectangle =
-    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-      ? canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y,
-          width: 0,
-          height: parentRect.height,
-        })
-      : canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y,
-          height: 0,
-          width: parentRect.width,
-        })
-
-  const pseudoElementAfter: CanvasRectangle =
-    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-      ? canvasRectangle({
-          x: parentRect.x + parentRect.width,
-          y: parentRect.y,
-          width: 0,
-          height: parentRect.height,
-        })
-      : canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y + parentRect.height,
-          height: 0,
-          width: parentRect.width,
-        })
-
+): Array<CanvasRectangle> {
   const siblingsPossiblyReversed =
     forwardsOrBackwards === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
+
+  const pseudoElements = createPseudoElements(
+    siblingsPossiblyReversed,
+    parentFlexDirection,
+    parentRect,
+    metadata,
+  )
+
   const siblingPositions: Array<CanvasRectangle> = [
-    pseudoElementBefore,
+    pseudoElements.before,
     ...siblingsPossiblyReversed.map((sibling) => {
       return MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect
     }),
-    pseudoElementAfter,
+    pseudoElements.after,
   ]
   return siblingPositions
+}
+
+function createPseudoElements(
+  siblings: Array<ElementPath>,
+  parentFlexDirection: SimpleFlexDirection,
+  parentFrame: CanvasRectangle,
+  metadata: ElementInstanceMetadataMap,
+): { before: CanvasRectangle; after: CanvasRectangle } {
+  const firstElementPath = siblings[0]
+  const lastElementPath = siblings[siblings.length - 1]
+
+  const flexGap = MetadataUtils.getParentFlexGap(firstElementPath, metadata)
+
+  const firstElementFrame =
+    MetadataUtils.getFrameInCanvasCoords(firstElementPath, metadata) ?? zeroCanvasRect
+  const firstElementMargin = MetadataUtils.getElementMargin(firstElementPath, metadata)
+
+  const lastElementFrame =
+    MetadataUtils.getFrameInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
+  const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
+
+  if (parentFlexDirection === 'row') {
+    const marginLeftAndGapOffset = ((firstElementMargin?.left ?? 0) + flexGap) * 2
+    const marginRightAndGapOffset = ((lastElementMargin?.right ?? 0) + flexGap) * 2
+    return {
+      before: canvasRectangle({
+        x: Math.max(firstElementFrame.x - marginLeftAndGapOffset, parentFrame.x),
+        y: firstElementFrame.y,
+        width: 0,
+        height: firstElementFrame.height,
+      }),
+      after: canvasRectangle({
+        x: Math.min(
+          lastElementFrame.x + lastElementFrame.width + marginRightAndGapOffset,
+          parentFrame.x + parentFrame.width,
+        ),
+        y: lastElementFrame.y,
+        width: 0,
+        height: lastElementFrame.height,
+      }),
+    }
+  } else {
+    const marginTopAndGapOffset = ((firstElementMargin?.top ?? 0) + flexGap) * 2
+    const marginBottomAndGapOffset = ((lastElementMargin?.bottom ?? 0) + flexGap) * 2
+
+    return {
+      before: canvasRectangle({
+        x: firstElementFrame.x,
+        y: Math.max(firstElementFrame.y - marginTopAndGapOffset, parentFrame.y),
+        height: 0,
+        width: firstElementFrame.width,
+      }),
+      after: canvasRectangle({
+        x: lastElementFrame.x,
+        y: Math.min(
+          lastElementFrame.y + lastElementFrame.height + marginBottomAndGapOffset,
+          parentFrame.y + parentFrame.height,
+        ),
+        height: 0,
+        width: lastElementFrame.width,
+      }),
+    }
+  }
 }
 
 export function applyFlexReparent(
@@ -677,8 +719,6 @@ export function applyFlexReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
 ): StrategyApplicationResult {
-  const FlexReparentIndicatorSize = 2 / canvasState.scale
-
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
 
@@ -714,22 +754,9 @@ export function applyFlexReparent(
 
           const newIndex = reparentResult.newIndex
           const newParent = reparentResult.newParent
-          const newParentMetadata = MetadataUtils.findElementByElementPath(
-            canvasState.startingMetadata,
-            newParent,
-          )
           const parentRect =
             MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.startingMetadata) ??
             zeroCanvasRect
-          const flexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
-          const newParentFlexDirection = forceNotNull(
-            'Should have a valid flex direction.',
-            flexDirectionToSimpleFlexDirection(flexDirection),
-          )
-          const forwardsOrBackwards = forceNotNull(
-            'Should have a valid flex orientation.',
-            flexDirectionToFlexForwardsOrBackwards(flexDirection),
-          )
 
           const siblingsOfTarget = MetadataUtils.getChildrenPaths(
             canvasState.startingMetadata,
@@ -772,18 +799,12 @@ export function applyFlexReparent(
               setCursorCommand('mid-interaction', CSSCursor.Move),
             ]
 
-            function midInteractionCommandsForTarget(
-              targetLine: CanvasRectangle,
-            ): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
               return [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                wildcardPatch('mid-interaction', {
-                  canvas: {
-                    controls: { flexReparentTargetLines: { $set: [targetLine] } },
-                  },
-                }),
+                showReorderIndicator(newParent, newIndex),
                 newParentADescendantOfCurrentParent
                   ? wildcardPatch('mid-interaction', {
                       hiddenInstances: { $push: [target] },
@@ -799,46 +820,7 @@ export function applyFlexReparent(
             let midInteractionCommands: Array<CanvasCommand>
 
             if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-              const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
-                newParentFlexDirection,
-                forwardsOrBackwards,
-                parentRect,
-                siblingsOfTarget,
-                canvasState.startingMetadata,
-              )
-
-              const precedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex]
-              const succeedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex + 1]
-
-              const targetLineBeforeSibling: CanvasRectangle =
-                newParentFlexDirection === 'row'
-                  ? canvasRectangle({
-                      x:
-                        getSiblingMidPointPosition(
-                          precedingSiblingPosition,
-                          succeedingSiblingPosition,
-                          'row',
-                        ) -
-                        FlexReparentIndicatorSize / 2,
-                      y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
-                      height:
-                        (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
-                      width: FlexReparentIndicatorSize,
-                    })
-                  : canvasRectangle({
-                      x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-                      y:
-                        getSiblingMidPointPosition(
-                          precedingSiblingPosition,
-                          succeedingSiblingPosition,
-                          'column',
-                        ) -
-                        FlexReparentIndicatorSize / 2,
-                      width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
-                      height: FlexReparentIndicatorSize,
-                    })
-
-              midInteractionCommands = midInteractionCommandsForTarget(targetLineBeforeSibling)
+              midInteractionCommands = midInteractionCommandsForTarget()
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
@@ -847,24 +829,7 @@ export function applyFlexReparent(
               ]
             } else {
               if (parentRect != null) {
-                const targetLineBeginningOfParent: CanvasRectangle =
-                  newParentFlexDirection === 'row'
-                    ? canvasRectangle({
-                        x: parentRect.x,
-                        y: parentRect.y,
-                        height: parentRect.height,
-                        width: FlexReparentIndicatorSize,
-                      })
-                    : canvasRectangle({
-                        x: parentRect.x,
-                        y: parentRect.y,
-                        width: parentRect.width,
-                        height: FlexReparentIndicatorSize,
-                      })
-
-                midInteractionCommands = midInteractionCommandsForTarget(
-                  targetLineBeginningOfParent,
-                )
+                midInteractionCommands = midInteractionCommandsForTarget()
               } else {
                 // this should be an error because parentRect should never be null
                 midInteractionCommands = []

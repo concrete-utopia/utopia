@@ -5,6 +5,7 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -44,6 +45,7 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -52,7 +54,27 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "backgroundColor": "#0091FFAA",
+                  "position": "absolute",
+                },
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -68,6 +90,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -92,6 +115,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -116,6 +140,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -140,6 +165,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -164,6 +190,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -188,6 +215,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -212,6 +240,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -321,6 +350,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -402,6 +432,7 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -441,6 +472,7 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -449,7 +481,27 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "backgroundColor": "#0091FFAA",
+                  "position": "absolute",
+                },
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -465,6 +517,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -489,6 +542,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -513,6 +567,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -537,6 +592,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -561,6 +617,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -585,6 +642,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -609,6 +667,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -718,6 +777,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -786,6 +846,7 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -820,6 +881,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -983,6 +1045,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1017,6 +1080,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1100,6 +1164,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1311,6 +1376,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1394,6 +1460,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1573,6 +1640,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1642,6 +1710,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1695,6 +1764,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {
@@ -1731,6 +1801,7 @@ Array [
         ],
       },
       Object {
+        "defaultSize": null,
         "element": Object {
           "children": Array [],
           "name": Object {

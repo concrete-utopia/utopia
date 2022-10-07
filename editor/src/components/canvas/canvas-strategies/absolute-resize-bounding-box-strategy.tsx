@@ -33,6 +33,7 @@ import {
 } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -46,6 +47,8 @@ import {
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { InteractionSession } from './interaction-state'
+import { Modifiers } from '../../../utils/modifiers'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -62,18 +65,30 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: AbsoluteResizeControl,
+      props: {},
       key: 'absolute-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ZeroSizeResizeControlWrapper,
+      props: {},
       key: 'zero-size-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
-    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
+    }),
+    controlWithProps({
+      control: ParentOutlines,
+      props: {},
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: {},
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
   ],
   fitness: (canvasState, interactionSession, customStrategyState) => {
     return absoluteResizeBoundingBoxStrategy.isApplicable(
@@ -102,10 +117,11 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           filteredSelectedElements,
         )
         if (originalBoundingBox != null) {
-          const keepAspectRatio = interactionSession.interactionData.modifiers.shift
-          const lockedAspectRatio = keepAspectRatio
-            ? originalBoundingBox.width / originalBoundingBox.height
-            : null
+          const lockedAspectRatio = getLockedAspectRatio(
+            interactionSession,
+            interactionSession.interactionData.modifiers,
+            originalBoundingBox,
+          )
           const centerBased = interactionSession.interactionData.modifiers.alt
             ? 'center-based'
             : 'non-center-based'
@@ -271,4 +287,18 @@ function snapBoundingBox(
     snappedBoundingBox,
     guidelinesWithSnappingVector,
   }
+}
+
+function getLockedAspectRatio(
+  interactionData: InteractionSession,
+  modifiers: Modifiers,
+  originalBoundingBox: CanvasRectangle,
+): number | null {
+  if (interactionData.aspectRatioLock != null) {
+    return interactionData.aspectRatioLock
+  }
+  if (modifiers.shift) {
+    return originalBoundingBox.width / originalBoundingBox.height
+  }
+  return null
 }

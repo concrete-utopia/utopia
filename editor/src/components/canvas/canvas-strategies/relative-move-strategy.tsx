@@ -6,6 +6,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
@@ -38,16 +39,18 @@ export const relativeMoveStrategy: CanvasStrategy = {
   },
 
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
 
   fitness: (canvasState, interactionSession, _sessionState) => {

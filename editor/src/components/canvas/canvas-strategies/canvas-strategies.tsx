@@ -14,7 +14,7 @@ import {
   CanvasStrategy,
   CanvasStrategyId,
   ControlDelay,
-  ControlWithKey,
+  ControlWithProps,
   insertionSubjects,
   InteractionCanvasState,
   InteractionTarget,
@@ -22,6 +22,7 @@ import {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  controlWithProps,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -366,16 +367,17 @@ export const useDelayedCurrentStrategy = () => {
   return useDelayedEditorState<CanvasStrategyId | null>(selector)
 }
 
-const notResizableControls: ControlWithKey = {
+const notResizableControls = controlWithProps({
   control: NonResizableControl,
+  props: {},
   key: 'not-resizable-control',
   show: 'visible-except-when-other-strategy-is-active',
-}
+})
 
 export function getApplicableControls(
   currentStrategy: CanvasStrategyId | null,
   strategy: CanvasStrategy,
-): Array<ControlWithKey> {
+): Array<ControlWithProps<unknown>> {
   return strategy.controlsToRender.filter((control) => {
     return (
       control.show === 'always-visible' ||
@@ -413,14 +415,14 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
+export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState((store) => {
     return interactionInProgress(store.editor.canvas.interactionSession)
   }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithKey> = []
+    let applicableControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {

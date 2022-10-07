@@ -4,6 +4,8 @@ import {
   renderTestEditorWithCode,
   getPrintedUiJsCode,
   EditorRenderResult,
+  TestSceneUID,
+  TestAppUID,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
@@ -16,6 +18,10 @@ import {
 } from '../event-helpers.test-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -36,8 +42,11 @@ async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
   return renderResult
 }
 
-async function enterInsertModeFromInsertMenu(renderResult: EditorRenderResult) {
-  const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
+async function enterInsertModeFromInsertMenu(
+  renderResult: EditorRenderResult,
+  elementType: 'div' | 'img' = 'div',
+) {
+  const insertButton = renderResult.renderedDOM.getByTestId(`insert-item-${elementType}`)
   const insertButtonBounds = insertButton.getBoundingClientRect()
 
   const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
@@ -64,6 +73,65 @@ async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRender
   mouseDownAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+function isIndicatorBeforeSiblingBBB(
+  metadata: ElementInstanceMetadataMap,
+  reparentLine: CanvasRectangle,
+): boolean {
+  const targetSibling = EP.fromString(
+    `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+  )
+  const targetParent = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa`)
+
+  const parentFrame = MetadataUtils.getFrameInCanvasCoords(targetParent, metadata)
+  const nextSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSibling, metadata)
+
+  if (parentFrame == null || nextSiblingFrame == null) {
+    return false
+  } else {
+    return (
+      reparentLine.x >= parentFrame.x &&
+      reparentLine.y >= parentFrame.y &&
+      reparentLine.x <= nextSiblingFrame.x &&
+      reparentLine.y <= nextSiblingFrame.y
+    )
+  }
+}
+
+function isIndicatorBetweenSiblingsBBBCCC(
+  metadata: ElementInstanceMetadataMap,
+  reparentLine: CanvasRectangle,
+  flexDirection: 'row' | 'column',
+): boolean {
+  const targetSiblingBefore = EP.fromString(
+    `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+  )
+  const targetSiblingAfter = EP.fromString(
+    `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`,
+  )
+  const prevSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSiblingBefore, metadata)
+  const nextSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSiblingAfter, metadata)
+  if (prevSiblingFrame == null || nextSiblingFrame == null) {
+    return false
+  } else {
+    const prevSiblingEdge =
+      flexDirection === 'row'
+        ? {
+            x: prevSiblingFrame.x + prevSiblingFrame.width,
+            y: prevSiblingFrame.y,
+          }
+        : {
+            x: prevSiblingFrame.x,
+            y: prevSiblingFrame.y + prevSiblingFrame.height,
+          }
+    return (
+      reparentLine.x >= prevSiblingEdge.x &&
+      reparentLine.y >= prevSiblingEdge.y &&
+      reparentLine.x <= nextSiblingFrame.x &&
+      reparentLine.y <= nextSiblingFrame.y
+    )
+  }
 }
 
 describe('Inserting into absolute', () => {
@@ -157,6 +225,7 @@ describe('Inserting into absolute', () => {
           >
             <div              
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -236,6 +305,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -311,6 +381,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 15,
                 top: 5,
@@ -411,6 +482,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -45,
                 top: -45,
@@ -479,6 +551,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -589,6 +662,15 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag horizontally close to the zero position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -611,6 +693,7 @@ describe('Inserting into flex row', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 20,
               height: 300,
@@ -658,6 +741,15 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click horizontally close to the zero position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -680,6 +772,7 @@ describe('Inserting into flex row', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -731,6 +824,16 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag horizontally close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -763,6 +866,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 20,
               height: 300,
@@ -798,6 +902,16 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click horizontally close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -830,6 +944,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -871,6 +986,17 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts horizontally close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -903,6 +1029,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 20,
               height: 300,
@@ -976,6 +1103,7 @@ describe('Inserting into flex row', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 10,
                 top: 10,
@@ -1048,6 +1176,7 @@ describe('Inserting into flex row', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -40,
                 top: -40,
@@ -1092,6 +1221,16 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag starts inside bbb, but very close to its edge (3px)
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1114,6 +1253,7 @@ describe('Inserting into flex row', () => {
       >
         <div
           style={{
+            backgroundColor: '#0091FFAA',
             position: 'relative',
             width: 20,
             height: 30,
@@ -1161,6 +1301,16 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click inside bbb, but very close to its edge (3px)
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1183,6 +1333,7 @@ describe('Inserting into flex row', () => {
       >
         <div
           style={{
+            backgroundColor: '#0091FFAA',
             position: 'relative',
             width: 100,
             height: 100,
@@ -1270,6 +1421,16 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1293,6 +1454,7 @@ describe('Inserting into flex column', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 300,
               height: 20,
@@ -1340,6 +1502,16 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click vertically close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1363,6 +1535,7 @@ describe('Inserting into flex column', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -1414,6 +1587,17 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1447,6 +1631,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 300,
               height: 20,
@@ -1484,6 +1669,16 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click vertically close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1517,6 +1712,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -1558,6 +1754,16 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
+    )
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts vertically close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1591,6 +1797,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 300,
               height: 20,
@@ -1601,6 +1808,124 @@ describe('Inserting into flex column', () => {
             data-uid='ccc'
             style={{
               width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+})
+
+describe('Inserting an image', () => {
+  const inputCode = makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+      }}
+    >
+      <div
+        data-uid='bbb'
+        data-testid='bbb'
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 10,
+          width: 380,
+          height: 180,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+      <div
+        data-uid='ccc'
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 200,
+          width: 380,
+          height: 190,
+          backgroundColor: '#FF0000',
+        }}
+      />
+    </div>
+  `)
+
+  it('Draw to insert to an absolute layout keeps aspect ratio', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+    await enterInsertModeFromInsertMenu(renderResult, 'img')
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 15, // with aspect ratio lock this 10px with should be ignored
+      y: targetElementBounds.y + 305,
+    })
+
+    // Move before starting dragging
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+    // Drag from inside bbb to inside ccc
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <img              
+              style={{
+                width: 300,
+                height: 300,
+                position: 'absolute',
+                left: 5,
+                top: 5,
+              }}
+              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+              data-uid='ddd'
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 380,
               height: 190,
               backgroundColor: '#FF0000',
             }}

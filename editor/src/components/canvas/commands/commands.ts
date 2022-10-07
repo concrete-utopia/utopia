@@ -43,7 +43,7 @@ import { runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,
-} from '../canvas-strategies/add-to-reparented-to-paths-command'
+} from './add-to-reparented-to-paths-command'
 import {
   InsertElementInsertionSubject,
   runInsertElementInsertionSubject,
@@ -52,6 +52,7 @@ import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { runShowReorderIndicator, ShowReorderIndicator } from './show-reorder-indicator-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -81,6 +82,7 @@ export type CanvasCommand =
   | SetCssLengthProperty
   | ReorderElement
   | ShowOutlineHighlight
+  | ShowReorderIndicator
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | PushIntendedBounds
@@ -127,6 +129,8 @@ export const runCanvasCommand = (
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
       return runShowOutlineHighlight(editorState, command)
+    case 'SHOW_REORDER_INDICATOR':
+      return runShowReorderIndicator(editorState, command)
     case 'SET_CURSOR_COMMAND':
       return runSetCursor(editorState, command)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':

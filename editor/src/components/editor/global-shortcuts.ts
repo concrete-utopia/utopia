@@ -1,9 +1,5 @@
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
-  isUtopiaAPITextElement,
-  isUtopiaAPITextElementFromMetadata,
-} from '../../core/model/project-file-utils'
 import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
@@ -27,7 +23,6 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
@@ -35,7 +30,6 @@ import {
   defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
-  defaultTextElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
@@ -54,7 +48,6 @@ import {
   INSERT_ELLIPSE_SHORTCUT,
   INSERT_IMAGE_SHORTCUT,
   INSERT_RECTANGLE_SHORTCUT,
-  INSERT_TEXT_SHORTCUT,
   INSERT_VIEW_SHORTCUT,
   JUMP_TO_PARENT_SHORTCUT,
   MOVE_ELEMENT_BACKWARD_SHORTCUT,
@@ -93,9 +86,6 @@ import {
   TOGGLE_PREVIEW_SHORTCUT,
   TOGGLE_RIGHT_MENU_SHORTCUT,
   TOGGLE_SHADOW_SHORTCUT,
-  TOGGLE_TEXT_BOLD_SHORTCUT,
-  TOGGLE_TEXT_ITALIC_SHORTCUT,
-  TOGGLE_TEXT_UNDERLINE_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
   WRAP_ELEMENT_DEFAULT_SHORTCUT,
@@ -522,9 +512,6 @@ export function handleKeyDown(
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
         return [EditorActions.selectAllSiblings()]
       },
-      [TOGGLE_TEXT_BOLD_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'bold')
-      },
       [TOGGLE_BORDER_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) =>
@@ -576,9 +563,6 @@ export function handleKeyDown(
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
-      },
-      [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'italic') : []
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
@@ -652,22 +636,6 @@ export function handleKeyDown(
           ),
         )
       },
-      [INSERT_TEXT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultTextElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-              null,
-            ),
-            modifiers,
-          )
-        } else {
-          return []
-        }
-      },
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
@@ -723,9 +691,6 @@ export function handleKeyDown(
       },
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
-      },
-      [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
       },
       [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('leftmenu')]

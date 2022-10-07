@@ -1,5 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  controlWithProps,
+  getTargetPathsFromInteractionTarget,
+} from './canvas-strategy-types'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -20,21 +24,24 @@ export const flexReorderStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: DragOutlineControl,
+      props: {},
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
   fitness: (canvasState, interactionSession, customStrategyState) => {
     return flexReorderStrategy.isApplicable(

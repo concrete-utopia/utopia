@@ -10,7 +10,6 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
-  CreateDragState,
   CSSCursor,
   DragState,
   DuplicateNewUID,
@@ -31,15 +30,13 @@ import {
   getDragStateStart,
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
-import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import { EditorAction, EditorDispatch, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import {
   EditorModes,
   Mode,
   isLiveMode,
-  dragAndDropInsertionSubject,
   InsertMode,
   insertionSubjectIsJSXElement,
 } from '../components/editor/editor-modes'
@@ -50,7 +47,7 @@ import {
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
-  RightMenuTab,
+  UserState,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -69,7 +66,7 @@ import {
   createDirectInsertImageActions,
 } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
-import { Modifier } from '../utils/modifiers'
+import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import {
@@ -81,14 +78,15 @@ import {
   offsetPoint,
   Point,
   RawPoint,
+  resize,
+  size,
+  Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
-  zeroPoint,
 } from '../core/shared/math-utils'
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
-import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
 import {
   CanvasMousePositionRaw,
@@ -97,6 +95,7 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import {
+  boundingArea,
   createInteractionViaMouse,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
@@ -112,6 +111,9 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
+import { imagePathURL } from '../common/server'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
@@ -743,6 +745,7 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
 interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
+  userState: UserState
   dispatch: EditorDispatch
 }
 
@@ -924,57 +927,182 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.canvasWrapperRef = ref
         },
 
+        onDragOver: (event) => {
+          if (this.props.editor.canvas.interactionSession != null) {
+            this.handleMouseMove(event.nativeEvent)
+            return
+          }
+
+          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+          const newElement = createJsxImage(newUID, {
+            width: 1,
+            height: 1,
+          })
+
+          this.props.dispatch(
+            [
+              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+              ),
+            ],
+            'everyone',
+          )
+        },
+
+        onDragLeave: (event) => {
+          if (event.clientX <= 0 && event.clientY <= 0) {
+            this.props.dispatch([
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+            ])
+          }
+        },
+
         onDrop: (event: React.DragEvent) => {
           event.preventDefault()
           event.stopPropagation()
+          const mousePosition = this.getPosition(event.nativeEvent)
 
-          if (this.props.editor.mode.type === 'insert') {
-            const insertionSubject = this.props.editor.mode.subject
-            if (insertionSubject.type === 'DragAndDrop') {
-              const mousePosition = this.getPosition(event.nativeEvent)
-              const insertionTarget = arrayToMaybe(this.props.editor.highlightedViews)
-
-              if (insertionSubject.imageAssets == null) {
-                // Clear the insert mode ahead of doing anything, because we don't want it
-                // lingering for a brief moment while anything image related happens.
-                this.props.dispatch(
-                  [EditorActions.switchEditorMode(EditorModes.selectMode())],
-                  'everyone',
-                )
-                void parseClipboardData(event.dataTransfer).then((result) => {
-                  // Snip out the images only from the result.
-                  let pastedImages: Array<ImageResult> = []
-                  fastForEach(result.files, (pastedFile) => {
-                    if (pastedFile.type === 'IMAGE_RESULT') {
-                      pastedImages.push({
-                        ...pastedFile,
-                        filename: `/assets/${pastedFile.filename}`,
-                      })
-                    }
-                  })
-                  const actions = createDirectInsertImageActions(
-                    pastedImages,
-                    mousePosition.canvasPositionRounded,
-                    insertionTarget,
-                    null,
-                  )
-
-                  this.props.dispatch(actions, 'everyone')
+          const getPastedImages = async () => {
+            const result = await parseClipboardData(event.dataTransfer)
+            // Snip out the images only from the result.
+            let pastedImages: Array<ImageResult> = []
+            fastForEach(result.files, (pastedFile) => {
+              if (pastedFile.type === 'IMAGE_RESULT') {
+                pastedImages.push({
+                  ...pastedFile,
+                  filename: `/assets/${pastedFile.filename}`,
                 })
-              } else {
-                let actions: Array<EditorAction> = []
-                fastForEach(insertionSubject.imageAssets, (imageAsset) => {
-                  actions.push(
-                    EditorActions.insertDroppedImage(
-                      imageAsset,
-                      mousePosition.canvasPositionRounded,
-                    ),
-                  )
-                })
-                actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-                this.props.dispatch(actions, 'everyone')
               }
-            }
+            })
+            return pastedImages
+          }
+
+          const insertImageFromClipboard = async (elementPath: ElementPath) => {
+            this.props.dispatch(
+              [
+                CanvasActions.clearInteractionSession(false),
+                EditorActions.switchEditorMode(EditorModes.selectMode()),
+              ],
+              'everyone',
+            )
+            const result = await parseClipboardData(event.dataTransfer)
+            const pastedImages = await getPastedImages()
+
+            const actions = createDirectInsertImageActions(
+              pastedImages,
+              mousePosition.canvasPositionRounded,
+              this.props.model.scale,
+              elementPath,
+            )
+
+            this.props.dispatch(actions, 'everyone')
+
+            return result.files[0].filename
+          }
+
+          if (this.props.editor.mode.type === 'select') {
+            const insertionTarget = this.props.editor.highlightedViews[0]
+            return insertImageFromClipboard(insertionTarget)
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'DragAndDrop' &&
+            this.props.editor.mode.subject.imageAssets == null
+          ) {
+            const insertionTarget = this.props.editor.highlightedViews[0]
+            return insertImageFromClipboard(insertionTarget)
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'Element'
+          ) {
+            void getPastedImages().then((images) => {
+              if (images.length === 0) {
+                return this.props.dispatch([
+                  CanvasActions.clearInteractionSession(false),
+                  EditorActions.switchEditorMode(EditorModes.selectMode()),
+                  EditorActions.showToast({
+                    id: 'image-drag-drop',
+                    level: 'WARNING',
+                    message: "Didn't find any images to insert",
+                    persistent: false,
+                  }),
+                ])
+              }
+              const image = images[0]
+
+              const { frame } = getFrameAndMultiplierWithResize(
+                mousePosition.canvasPositionRounded,
+                image.filename,
+                image.size,
+                this.props.editor.canvas.scale,
+              )
+
+              const { saveImageActions, src } = isLoggedIn(this.props.userState.loginState)
+                ? {
+                    saveImageActions: [
+                      EditorActions.saveAsset(
+                        image.filename,
+                        image.fileType,
+                        image.base64Bytes,
+                        image.hash,
+                        EditorActions.saveImageDetails(
+                          image.size,
+                          EditorActions.saveImageReplace(),
+                        ),
+                      ),
+                    ],
+                    src: imagePathURL(image.filename),
+                  }
+                : { saveImageActions: [], src: image.base64Bytes }
+
+              const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+              const elementSize: Size = resize(
+                size(frame.width ?? 100, frame.height ?? 100),
+                size(200, 200),
+                'keep-aspect-ratio',
+              )
+              const newElement = createJsxImage(newUID, {
+                width: elementSize.width,
+                height: elementSize.height,
+                top: mousePosition.canvasPositionRounded.y,
+                left: mousePosition.canvasPositionRounded.x,
+                src: src,
+              })
+
+              this.props.dispatch(
+                [
+                  ...saveImageActions,
+                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
+                ],
+                'everyone',
+              )
+              this.handleMouseUp(event.nativeEvent)
+            })
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'DragAndDrop' &&
+            this.props.editor.mode.subject.imageAssets != null
+          ) {
+            let actions: Array<EditorAction> = []
+            fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
+              actions.push(
+                EditorActions.insertDroppedImage(
+                  imageAsset.file,
+                  imageAsset.path,
+                  mousePosition.canvasPositionRounded,
+                ),
+              )
+            })
+            actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
+            return this.props.dispatch(actions, 'everyone')
           }
         },
 
@@ -1222,7 +1350,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event: 'DRAG_END',
           modifiers: Modifier.modifiersForEvent(event),
           dragState: this.props.model.dragState,
-          cursor: null, // FIXME: this.props.model.dragState.cursor,
+          cursor: null,
           nativeEvent: event,
         })
       }
@@ -1478,6 +1606,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             selectedViews,
             editor.pasteTargetsToIgnore,
             editor.jsxMetadata,
+            this.props.model.scale,
           )
           this.props.dispatch(actions, 'everyone')
         })
