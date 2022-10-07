@@ -82,8 +82,8 @@ export type InsertionSubject =
 
 export function insertionSubjectIsJSXElement(
   insertionSubject: InsertionSubject,
-): insertionSubject is ElementInsertionSubjects {
-  return insertionSubject.type === 'Elements'
+): insertionSubject is ElementInsertionSubject {
+  return insertionSubject.type === 'Element'
 }
 
 export function insertionSubjectIsDragAndDrop(

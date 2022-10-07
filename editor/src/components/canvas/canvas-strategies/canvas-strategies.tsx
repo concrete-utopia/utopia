@@ -40,7 +40,7 @@ import {
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { flowReorderStrategy } from './flow-reorder-strategy'
-import { InsertionSubject, isInsertMode } from '../../editor/editor-modes'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
