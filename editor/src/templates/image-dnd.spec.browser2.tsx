@@ -14,7 +14,6 @@ import {
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
 import { LeftMenuTab } from '../components/editor/store/editor-state'
 import {
-  FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS,
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
@@ -325,8 +324,6 @@ export var storyboard = (
 
     await wait(250) // read the image
 
-    FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS()
-
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
@@ -398,8 +395,6 @@ export var storyboard = (
     await editor.getDispatchFollowUpActionsFinished()
 
     await wait(250) // read the image
-
-    FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
