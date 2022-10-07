@@ -32,154 +32,161 @@ import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
 import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
 
-export const flexResizeBasicStrategy: CanvasStrategy = {
-  id: 'FLEX_RESIZE_BASIC',
-  name: () => 'Flex Resize (Basic)',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    // no multiselection support yet
-    if (selectedElements.length === 1) {
-      return (
-        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          selectedElements[0],
-          metadata,
-        ) && honoursPropsSize(canvasState, selectedElements[0])
-      )
-    } else {
-      return false
-    }
-  },
-  controlsToRender: [
-    controlWithProps({
-      control: AbsoluteResizeControl,
-      props: {},
-      key: 'absolute-resize-control',
-      show: 'always-visible',
-    }),
-    controlWithProps({
-      control: ZeroSizeResizeControlWrapper,
-      props: {},
-      key: 'zero-size-resize-control',
-      show: 'always-visible',
-    }),
-    controlWithProps({
-      control: ParentOutlines,
-      props: {},
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: ParentBounds,
-      props: {},
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    }),
-  ],
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    return flexResizeBasicStrategy.isApplicable(
-      canvasState,
-      interactionSession,
+export function flexResizeBasicStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const isApplicable =
+    selectedElements.length === 1 &&
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      selectedElements[0],
       canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
     ) &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE'
-      ? 1
-      : 0
-  },
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    if (
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE'
-    ) {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      // no multiselection support yet
-      const selectedElement = selectedElements[0]
-      const edgePosition = interactionSession.activeControl.edgePosition
-      if (interactionSession.interactionData.drag != null) {
-        const drag = interactionSession.interactionData.drag
-        const originalBounds = MetadataUtils.getFrameInCanvasCoords(
-          selectedElement,
-          canvasState.startingMetadata,
-        )
+    honoursPropsSize(canvasState, selectedElements[0])
 
-        if (originalBounds == null) {
-          return emptyStrategyApplicationResult
+  if (isApplicable) {
+    return {
+      id: 'FLEX_RESIZE_BASIC',
+      name: 'Flex Resize (Basic)',
+      controlsToRender: [
+        controlWithProps({
+          control: AbsoluteResizeControl,
+          props: {},
+          key: 'absolute-resize-control',
+          show: 'always-visible',
+        }),
+        controlWithProps({
+          control: ZeroSizeResizeControlWrapper,
+          props: {},
+          key: 'zero-size-resize-control',
+          show: 'always-visible',
+        }),
+        controlWithProps({
+          control: ParentOutlines,
+          props: {},
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ParentBounds,
+          props: {},
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+      ],
+      fitness:
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'RESIZE_HANDLE'
+          ? 1
+          : 0,
+      apply: (strategyLifecycle: InteractionLifecycle) => {
+        if (
+          interactionSession != null &&
+          interactionSession.interactionData.type === 'DRAG' &&
+          interactionSession.activeControl.type === 'RESIZE_HANDLE'
+        ) {
+          // no multiselection support yet
+          const selectedElement = selectedElements[0]
+          const edgePosition = interactionSession.activeControl.edgePosition
+          if (interactionSession.interactionData.drag != null) {
+            const drag = interactionSession.interactionData.drag
+            const originalBounds = MetadataUtils.getFrameInCanvasCoords(
+              selectedElement,
+              canvasState.startingMetadata,
+            )
+
+            if (originalBounds == null) {
+              return emptyStrategyApplicationResult
+            }
+
+            const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
+
+            const metadata = MetadataUtils.findElementByElementPath(
+              canvasState.startingMetadata,
+              selectedElement,
+            )
+            if (!metadata) {
+              return emptyStrategyApplicationResult
+            }
+            const elementParentBounds =
+              metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+            const dimensions = getDimensions(metadata)
+
+            const makeResizeCommand = (
+              name: 'width' | 'height',
+              parent: number | undefined,
+              value: number,
+            ) => {
+              return adjustCssLengthProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(name, ['style']),
+                value,
+                parent,
+                true,
+              )
+            }
+
+            const makeNewDimension = (
+              original: number,
+              resized: number,
+              dimension?: number | null,
+            ) => resized - (dimension != null ? original : 0)
+
+            const resizeCommands: Array<AdjustCssLengthProperty> = []
+
+            const newWidth = makeNewDimension(
+              originalBounds.width,
+              resizedBounds.width,
+              dimensions?.width,
+            )
+            if (dimensions?.width != null || originalBounds.width !== newWidth) {
+              // it moves horizontally
+              resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
+            }
+
+            const newHeight = makeNewDimension(
+              originalBounds.height,
+              resizedBounds.height,
+              dimensions?.height,
+            )
+            if (dimensions?.height != null || originalBounds.height !== newHeight) {
+              // it moves vertically
+              resizeCommands.push(
+                makeResizeCommand('height', elementParentBounds?.height, newHeight),
+              )
+            }
+
+            return strategyApplicationResult([
+              ...resizeCommands,
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+              setElementsToRerenderCommand(selectedElements),
+            ])
+          } else {
+            return strategyApplicationResult([
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            ])
+          }
         }
-
-        const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
-
-        const metadata = MetadataUtils.findElementByElementPath(
-          canvasState.startingMetadata,
-          selectedElement,
-        )
-        if (!metadata) {
-          return emptyStrategyApplicationResult
-        }
-        const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-        const dimensions = getDimensions(metadata)
-
-        const makeResizeCommand = (
-          name: 'width' | 'height',
-          parent: number | undefined,
-          value: number,
-        ) => {
-          return adjustCssLengthProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(name, ['style']),
-            value,
-            parent,
-            true,
-          )
-        }
-
-        const makeNewDimension = (original: number, resized: number, dimension?: number | null) =>
-          resized - (dimension != null ? original : 0)
-
-        const resizeCommands: Array<AdjustCssLengthProperty> = []
-
-        const newWidth = makeNewDimension(
-          originalBounds.width,
-          resizedBounds.width,
-          dimensions?.width,
-        )
-        if (dimensions?.width != null || originalBounds.width !== newWidth) {
-          // it moves horizontally
-          resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
-        }
-
-        const newHeight = makeNewDimension(
-          originalBounds.height,
-          resizedBounds.height,
-          dimensions?.height,
-        )
-        if (dimensions?.height != null || originalBounds.height !== newHeight) {
-          // it moves vertically
-          resizeCommands.push(makeResizeCommand('height', elementParentBounds?.height, newHeight))
-        }
-
-        return strategyApplicationResult([
-          ...resizeCommands,
-          updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-          setElementsToRerenderCommand(selectedElements),
-        ])
-      } else {
-        return strategyApplicationResult([
-          updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-        ])
-      }
+        // Fallback for when the checks above are not satisfied.
+        return emptyStrategyApplicationResult
+      },
     }
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
-  },
+  }
+  return null
 }
+
 export function resizeWidthHeight(
   boundingBox: CanvasRectangle,
   drag: CanvasPoint,
