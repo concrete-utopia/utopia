@@ -208,6 +208,7 @@ import type {
   SetProperty,
   SaveToGithub,
   UpdateProjectContents,
+  UpdateGithubSettings,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
 import type {
@@ -219,6 +220,7 @@ import type {
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
+  ProjectGithubSettings,
   RightMenuTab,
   Theme,
 } from '../store/editor-state'
@@ -967,6 +969,13 @@ export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateP
   return {
     action: 'UPDATE_PROJECT_CONTENTS',
     contents: contents,
+  }
+}
+
+export function updateGithubSettings(settings: ProjectGithubSettings): UpdateGithubSettings {
+  return {
+    action: 'UPDATE_GITHUB_SETTINGS',
+    settings: settings,
   }
 }
 
