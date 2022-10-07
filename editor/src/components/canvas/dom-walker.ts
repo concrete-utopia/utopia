@@ -907,6 +907,9 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.bottom) ||
     !positionValueIsDefault(elementStyle.left)
 
+  const flexGapValue = parseCSSLength(parentElementStyle?.gap)
+  const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -926,6 +929,7 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parsedFlexGapValue,
     flexDirection,
     element.localName,
     childrenCount,

@@ -53,7 +53,6 @@ export const MOVE_ELEMENT_RIGHT_SHORTCUT = 'move-element-right'
 export const MOVE_ELEMENT_RIGHT_MORE_SHORTCUT = 'move-element-right-more'
 
 export const SELECT_ALL_SIBLINGS_SHORTCUT = 'select-all-siblings'
-export const TOGGLE_TEXT_BOLD_SHORTCUT = 'toggle-text-bold'
 export const TOGGLE_BORDER_SHORTCUT = 'toggle-border'
 export const COPY_SELECTION_SHORTCUT = 'copy-selection'
 export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
@@ -64,7 +63,6 @@ export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
 export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
-export const TOGGLE_TEXT_ITALIC_SHORTCUT = 'toggle-text-italic'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
 export const TOGGLE_PREVIEW_SHORTCUT = 'toggle-preview'
 export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
@@ -74,7 +72,6 @@ export const INSERT_ELLIPSE_SHORTCUT = 'insert-ellipse'
 export const ADD_ELEMENT_SHORTCUT = 'add-element'
 export const SAVE_CURRENT_FILE_SHORTCUT = 'save-current-file'
 export const TOGGLE_SHADOW_SHORTCUT = 'toggle-shadow'
-export const INSERT_TEXT_SHORTCUT = 'insert-text'
 export const INSERT_VIEW_SHORTCUT = 'insert-view'
 export const INSERT_DIV_SHORTCUT = 'insert-div'
 export const CUT_SELECTION_SHORTCUT = 'cut-selection'
@@ -86,7 +83,6 @@ export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
 export const FOCUS_CLASS_NAME_INPUT = 'focus-inspector-class-name-input'
 export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
-export const TOGGLE_TEXT_UNDERLINE_SHORTCUT = 'toggle-text-underline'
 export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
 export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
@@ -180,10 +176,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Select all siblings of currently selected element.',
     key('a', 'cmd'),
   ),
-  [TOGGLE_TEXT_BOLD_SHORTCUT]: shortcut(
-    'Toggle the bold attribute of the current text element.',
-    key('b', 'cmd'),
-  ),
   [TOGGLE_BORDER_SHORTCUT]: shortcut(
     'Toggle the border of the currently selected text element.',
     key('b', []),
@@ -212,10 +204,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
-  [TOGGLE_TEXT_ITALIC_SHORTCUT]: shortcut(
-    'Toggle the italic attribute of the current text element.',
-    key('i', 'cmd'),
-  ),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
   [TOGGLE_PREVIEW_SHORTCUT]: shortcut('Toggle the preview panel.', key('p', 'cmd')),
   [TOGGLE_LIVE_CANVAS_SHORTCUT]: shortcut(
@@ -233,7 +221,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the shadow of the currently selected element.',
     key('s', []),
   ),
-  [INSERT_TEXT_SHORTCUT]: shortcut('Insert a text element.', key('t', [])),
   [INSERT_VIEW_SHORTCUT]: shortcut('Insert a view.', key('v', [])),
   [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', key('d', [])),
   [CUT_SELECTION_SHORTCUT]: shortcut(
@@ -268,10 +255,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [TOGGLE_FOCUSED_OMNIBOX_TAB]: shortcut(
     'Focus the omnibox or toggle its current tab.',
     key('forwardslash', 'cmd'),
-  ),
-  [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: shortcut(
-    'Toggle the underline attribute of the current text element.',
-    key('u', 'cmd'),
   ),
   [TOGGLE_LEFT_MENU_SHORTCUT]: shortcut(
     'Toggle the left hand menu panel.',
