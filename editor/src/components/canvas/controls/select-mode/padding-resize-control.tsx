@@ -1,6 +1,5 @@
 import React from 'react'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -10,7 +9,6 @@ import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
-  CanvasControlType,
   createInteractionViaMouse,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
@@ -20,6 +18,7 @@ import { SimpleCSSPadding, simplePaddingFromMetadata } from '../../padding-utils
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
+import { ALWAYS_SHOW_PADDING_CONTROLS } from './padding-resize-controls.test-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 type Orientation = 'vertical' | 'horizontal'
@@ -77,7 +76,7 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = !(props.hiddenByParent && hidden)
+    const shown = ALWAYS_SHOW_PADDING_CONTROLS || !(props.hiddenByParent && hidden)
 
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
