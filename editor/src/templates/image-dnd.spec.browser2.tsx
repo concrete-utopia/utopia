@@ -219,6 +219,8 @@ const contents = {
 } as ProjectContentTreeRoot
 
 describe('image dnd', () => {
+  afterEach(() => FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS())
+
   it('dragging from the sidebar works', async () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)

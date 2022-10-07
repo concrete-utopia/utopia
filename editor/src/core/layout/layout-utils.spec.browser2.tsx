@@ -23,7 +23,10 @@ import {
   emptySpecialSizeMeasurements,
   emptyComments,
 } from '../shared/element-template'
-import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
+import {
+  FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS,
+  FOR_TESTS_setNextGeneratedUid,
+} from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { emptyImports } from '../workers/common/project-file-utils'
@@ -31,6 +34,7 @@ import { emptyImports } from '../workers/common/project-file-utils'
 const NewUID = 'catdog'
 
 describe('pasteJSXElements', () => {
+  afterEach(() => FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS())
   it('removes pin related layout props when pasting to flex element', async () => {
     const renderResult = await createStarterEditor()
 
