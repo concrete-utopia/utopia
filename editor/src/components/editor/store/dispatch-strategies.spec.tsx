@@ -227,6 +227,7 @@ describe('interactionStart', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -295,6 +296,7 @@ describe('interactionStart', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -360,6 +362,7 @@ describe('interactionUpdatex', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -429,6 +432,7 @@ describe('interactionUpdatex', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -522,6 +526,7 @@ describe('interactionHardReset', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -596,6 +601,7 @@ describe('interactionHardReset', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -750,6 +756,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
@@ -825,6 +832,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "aspectRatioLock": null,
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
