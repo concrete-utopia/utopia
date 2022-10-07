@@ -120,7 +120,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   }
 }
 
-function insertionSubjectsFromInsertMode(subject: InsertionSubject): InsertionSubjects {
+function getInsertionSubjectsFromInsertMode(subject: InsertionSubject): InsertionSubjects {
   switch (subject.type) {
     case 'Elements':
       return insertionSubjects(subject.elements)
@@ -135,7 +135,7 @@ function insertionSubjectsFromInsertMode(subject: InsertionSubject): InsertionSu
 function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
   switch (editor.mode.type) {
     case 'insert':
-      return insertionSubjectsFromInsertMode(editor.mode.subject)
+      return getInsertionSubjectsFromInsertMode(editor.mode.subject)
     case 'live':
     case 'select':
       return targetPaths(editor.selectedViews)
