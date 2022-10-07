@@ -151,7 +151,7 @@ export interface CanvasStrategy {
   ) => boolean
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  controlsToRender: Array<ControlWithProps<unknown>>
+  controlsToRender: Array<ControlWithProps<any>>
 
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
   fitness: (
