@@ -125,7 +125,10 @@ export function FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS(): void {
 }
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
-  if (MOCK_NEXT_GENERATED_UIDS.length > 0) {
+  if (
+    MOCK_NEXT_GENERATED_UIDS.length > 0 &&
+    MOCK_NEXT_GENERATED_UIDS_IDX < MOCK_NEXT_GENERATED_UIDS.length
+  ) {
     MOCK_NEXT_GENERATED_UIDS_IDX += 1
     return MOCK_NEXT_GENERATED_UIDS[MOCK_NEXT_GENERATED_UIDS_IDX - 1]
   }
