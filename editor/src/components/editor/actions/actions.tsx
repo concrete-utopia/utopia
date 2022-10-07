@@ -3071,21 +3071,6 @@ export const UPDATE_FNS = {
       height: action.height,
     } as LocalRectangle
 
-    const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.element)
-    const elementProps = editor.allElementProps[EP.toString(action.element)] ?? {}
-    if (
-      element != null &&
-      MetadataUtils.isTextAgainstImports(element) &&
-      elementProps.textSizing == 'auto'
-    ) {
-      const alignment = elementProps.style.textAlign
-      if (alignment === 'center') {
-        frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-      } else if (alignment === 'right') {
-        frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
-      }
-    }
-
     const parentPath = EP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint
     if (parentPath != null) {

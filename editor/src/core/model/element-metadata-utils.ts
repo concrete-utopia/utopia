@@ -382,6 +382,14 @@ export const MetadataUtils = {
   getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
+  getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
+    const instance = MetadataUtils.findElementByElementPath(metadata, path)
+    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+      return instance?.specialSizeMeasurements?.parentFlexGap ?? 0
+    } else {
+      return 0
+    }
+  },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
     const parentPath = EP.parentPath(target)
 
@@ -641,9 +649,6 @@ export const MetadataUtils = {
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
-  isTextAgainstImports(instance: ElementInstanceMetadata | null): boolean {
-    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Text')
-  },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')
   },
@@ -679,11 +684,7 @@ export const MetadataUtils = {
               )
             } else if (isUtopiaAPIComponentFromMetadata(instance)) {
               // Explicitly prevent components / elements that we *know* don't support children
-              return (
-                isViewLikeFromMetadata(instance) ||
-                isSceneFromMetadata(instance) ||
-                isGivenUtopiaElementFromMetadata(instance, 'Text')
-              )
+              return isViewLikeFromMetadata(instance) || isSceneFromMetadata(instance)
             } else {
               return MetadataUtils.targetUsesProperty(
                 projectContents,
@@ -1059,13 +1060,6 @@ export const MetadataUtils = {
                     return '<Base64 data>'
                   }
                   return src
-                }
-              }
-              // For Text elements, use their text property if it exists.
-              if (lastNamePart === 'Text') {
-                const text = elementProps['text']
-                if (text != null && typeof text === 'string' && text.length > 0) {
-                  return text
                 }
               }
 

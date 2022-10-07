@@ -172,6 +172,7 @@ function createPasteElementAction(
         0,
         0,
         null,
+        0,
         null,
         'div',
         0,

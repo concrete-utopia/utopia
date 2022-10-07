@@ -23,13 +23,6 @@ import {
   importsEquals,
 } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import {
-  defaultAnimatedDivElement,
-  defaultEllipseElement,
-  defaultRectangleElement,
-  defaultTextElement,
-  defaultDivElement,
-} from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement } from './actions/action-creators'
