@@ -17,7 +17,7 @@ import {
   mouseMoveToPoint,
 } from '../event-helpers.test-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../core/shared/math-utils'

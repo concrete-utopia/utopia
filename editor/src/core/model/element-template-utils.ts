@@ -106,31 +106,16 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
-let MOCK_NEXT_GENERATED_UIDS: Array<string> = []
-let MOCK_NEXT_GENERATED_UIDS_IDX = 0
-
-export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
-  MOCK_NEXT_GENERATED_UIDS = [nextUid]
-  MOCK_NEXT_GENERATED_UIDS_IDX = 0
-}
-
-export function FOR_TESTS_setNextGeneratedUids(uids: Array<string>): void {
-  MOCK_NEXT_GENERATED_UIDS = uids
-  MOCK_NEXT_GENERATED_UIDS_IDX = 0
-}
-
-export function FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS(): void {
-  MOCK_NEXT_GENERATED_UIDS = []
-  MOCK_NEXT_GENERATED_UIDS_IDX = 0
-}
+export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
+export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   if (
-    MOCK_NEXT_GENERATED_UIDS.length > 0 &&
-    MOCK_NEXT_GENERATED_UIDS_IDX < MOCK_NEXT_GENERATED_UIDS.length
+    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
+    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
   ) {
-    MOCK_NEXT_GENERATED_UIDS_IDX += 1
-    return MOCK_NEXT_GENERATED_UIDS[MOCK_NEXT_GENERATED_UIDS_IDX - 1]
+    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
+    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
   }
 
   const existingUIDS = getAllUniqueUids(projectContents)
@@ -141,9 +126,9 @@ export function generateUidWithExistingComponentsAndExtraUids(
   projectContents: ProjectContentTreeRoot,
   additionalUids: Array<string>,
 ): string {
-  if (MOCK_NEXT_GENERATED_UIDS.length > 0) {
-    MOCK_NEXT_GENERATED_UIDS_IDX += 1
-    return MOCK_NEXT_GENERATED_UIDS[MOCK_NEXT_GENERATED_UIDS_IDX - 1]
+  if (MOCK_NEXT_GENERATED_UIDS.current.length > 0) {
+    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
+    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
   }
 
   const existingUIDSFromProject = getAllUniqueUids(projectContents)

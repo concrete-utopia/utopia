@@ -17,7 +17,7 @@ import {
   FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS,
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
-} from '../core/model/element-template-utils'
+} from '../core/model/element-template-utils.test-utils'
 import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../utils/utils.test-utils'
 
 const contents = {
