@@ -5,10 +5,7 @@ import {
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import {
-  FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS,
-  FOR_TESTS_setNextGeneratedUid,
-} from '../../../core/model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
@@ -33,8 +30,6 @@ function dragElement(
 }
 
 describe('Absolute Duplicate Strategy', () => {
-  afterEach(() => FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS())
-
   it('duplicates the selected absolute element when pressing alt', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

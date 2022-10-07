@@ -1,7 +1,4 @@
-import {
-  FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS,
-  FOR_TESTS_setNextGeneratedUid,
-} from '../../../core/model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab } from '../../editor/store/editor-state'
@@ -51,7 +48,6 @@ async function dragFromInsertMenuDivButtonToPoint(
 }
 
 describe('Dragging from the insert menu into an absolute layout', () => {
-  afterEach(() => FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS())
   const inputCode = makeTestProjectCodeWithSnippet(`
     <div
       data-uid='aaa'
@@ -219,7 +215,6 @@ describe('Dragging from the insert menu into an absolute layout', () => {
 })
 
 describe('Dragging from the insert menu into a flex layout', () => {
-  afterEach(() => FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS())
   const inputCode = makeTestProjectCodeWithSnippet(`
     <div
       data-uid='aaa'
