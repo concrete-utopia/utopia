@@ -49,6 +49,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
 import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { isImg } from '../../../core/model/project-file-utils'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -427,6 +428,13 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     startingTargetParentsToFilterOut: null,
   }
 
+  const patchedCustomStrategyState: CustomStrategyState = {
+    ...customStrategyState,
+    aspectRatioLock: isImg(insertionSubject.element.name)
+      ? insertionSubject.defaultSize.width / insertionSubject.defaultSize.height
+      : null,
+  }
+
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,
@@ -442,7 +450,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionSession,
-    customStrategyState,
+    patchedCustomStrategyState,
     null,
   )
 
@@ -451,7 +459,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
           patchedInteractionSession,
-          customStrategyState,
+          patchedCustomStrategyState,
           strategyLifecycle,
         ).commands
       : []

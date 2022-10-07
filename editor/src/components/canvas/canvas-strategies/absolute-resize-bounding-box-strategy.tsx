@@ -34,6 +34,7 @@ import {
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -48,6 +49,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { DragInteractionData } from './interaction-state'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -116,10 +118,11 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           filteredSelectedElements,
         )
         if (originalBoundingBox != null) {
-          const keepAspectRatio = interactionSession.interactionData.modifiers.shift
-          const lockedAspectRatio = keepAspectRatio
-            ? originalBoundingBox.width / originalBoundingBox.height
-            : null
+          const lockedAspectRatio = getLockedAspectRatio(
+            interactionSession.interactionData,
+            customStrategyState,
+            originalBoundingBox,
+          )
           const centerBased = interactionSession.interactionData.modifiers.alt
             ? 'center-based'
             : 'non-center-based'
@@ -285,4 +288,18 @@ function snapBoundingBox(
     snappedBoundingBox,
     guidelinesWithSnappingVector,
   }
+}
+
+function getLockedAspectRatio(
+  interactionData: DragInteractionData,
+  customStrategyState: CustomStrategyState,
+  originalBoundingBox: CanvasRectangle,
+): number | null {
+  if (customStrategyState.aspectRatioLock != null) {
+    return customStrategyState.aspectRatioLock
+  }
+  if (interactionData.modifiers.shift) {
+    return originalBoundingBox.width / originalBoundingBox.height
+  }
+  return null
 }
