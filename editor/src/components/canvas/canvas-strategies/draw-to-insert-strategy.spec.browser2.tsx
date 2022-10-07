@@ -1868,7 +1868,7 @@ describe('Inserting an image', () => {
       y: targetElementBounds.y + 5,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 15,
+      x: targetElementBounds.x + 15, // with aspect ratio lock this 10px with should be ignored
       y: targetElementBounds.y + 305,
     })
 

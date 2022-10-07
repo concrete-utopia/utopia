@@ -14,7 +14,6 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  aspectRatioLock: number | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -24,7 +23,6 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    aspectRatioLock: null,
   }
 }
 

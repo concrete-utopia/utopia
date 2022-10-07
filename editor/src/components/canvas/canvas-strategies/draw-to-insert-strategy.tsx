@@ -426,10 +426,6 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const patchedInteractionSession: InteractionSession = {
     ...interactionSession,
     startingTargetParentsToFilterOut: null,
-  }
-
-  const patchedCustomStrategyState: CustomStrategyState = {
-    ...customStrategyState,
     aspectRatioLock: isImg(insertionSubject.element.name)
       ? insertionSubject.defaultSize.width / insertionSubject.defaultSize.height
       : null,
@@ -450,7 +446,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionSession,
-    patchedCustomStrategyState,
+    customStrategyState,
     null,
   )
 
@@ -459,7 +455,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
           patchedInteractionSession,
-          patchedCustomStrategyState,
+          customStrategyState,
           strategyLifecycle,
         ).commands
       : []
