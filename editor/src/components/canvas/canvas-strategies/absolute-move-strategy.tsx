@@ -35,45 +35,44 @@ export function absoluteMoveStrategy(
       )
     })
 
-  if (isApplicable) {
-    return {
-      id: 'ABSOLUTE_MOVE',
-      name: 'Move',
-      controlsToRender: [
-        controlWithProps({
-          control: ParentOutlines,
-          props: {},
-          key: 'parent-outlines-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ParentBounds,
-          props: {},
-          key: 'parent-bounds-control',
-          show: 'visible-only-while-active',
-        }),
-      ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness:
-        interactionSession?.interactionData.type === 'DRAG' &&
-        interactionSession?.activeControl.type === 'BOUNDING_AREA'
-          ? 1
-          : 0,
-      apply: () => {
-        if (
-          interactionSession?.interactionData.type === 'DRAG' &&
-          interactionSession?.interactionData.drag != null
-        ) {
-          return applyMoveCommon(
-            canvasState,
-            interactionSession,
-            getAdjustMoveCommands(canvasState, interactionSession),
-          )
-        }
-        // Fallback for when the checks above are not satisfied.
-        return emptyStrategyApplicationResult
-      },
-    }
-  } else {
+  if (!isApplicable) {
     return null
+  }
+  return {
+    id: 'ABSOLUTE_MOVE',
+    name: 'Move',
+    controlsToRender: [
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+    ], // Uses existing hooks in select-mode-hooks.tsx
+    fitness:
+      interactionSession?.interactionData.type === 'DRAG' &&
+      interactionSession?.activeControl.type === 'BOUNDING_AREA'
+        ? 1
+        : 0,
+    apply: () => {
+      if (
+        interactionSession?.interactionData.type === 'DRAG' &&
+        interactionSession?.interactionData.drag != null
+      ) {
+        return applyMoveCommon(
+          canvasState,
+          interactionSession,
+          getAdjustMoveCommands(canvasState, interactionSession),
+        )
+      }
+      // Fallback for when the checks above are not satisfied.
+      return emptyStrategyApplicationResult
+    },
   }
 }

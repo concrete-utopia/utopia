@@ -20,53 +20,52 @@ export function flexReorderStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    selectedElements.length == 1 &&
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+    selectedElements.length !== 1 ||
+    !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       selectedElements[0],
       canvasState.startingMetadata,
     )
   ) {
-    return {
-      id: 'FLEX_REORDER',
-      name: 'Reorder (Flex)',
-      controlsToRender: [
-        controlWithProps({
-          control: DragOutlineControl,
-          props: {},
-          key: 'ghost-outline-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ParentOutlines,
-          props: {},
-          key: 'parent-outlines-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ParentBounds,
-          props: {},
-          key: 'parent-bounds-control',
-          show: 'visible-only-while-active',
-        }),
-      ],
-      fitness:
-        interactionSession != null &&
-        interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'BOUNDING_AREA'
-          ? 1
-          : 0,
-      apply: () => {
-        return interactionSession == null
-          ? emptyStrategyApplicationResult
-          : applyReorderCommon(
-              canvasState,
-              interactionSession,
-              customStrategyState,
-              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
-            )
-      },
-    }
+    return null
   }
-
-  return null
+  return {
+    id: 'FLEX_REORDER',
+    name: 'Reorder (Flex)',
+    controlsToRender: [
+      controlWithProps({
+        control: DragOutlineControl,
+        props: {},
+        key: 'ghost-outline-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+    ],
+    fitness:
+      interactionSession != null &&
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
+        ? 1
+        : 0,
+    apply: () => {
+      return interactionSession == null
+        ? emptyStrategyApplicationResult
+        : applyReorderCommon(
+            canvasState,
+            interactionSession,
+            customStrategyState,
+            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
+          )
+    },
+  }
 }

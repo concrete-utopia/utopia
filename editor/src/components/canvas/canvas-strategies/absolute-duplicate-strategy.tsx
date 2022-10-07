@@ -35,115 +35,95 @@ export function absoluteDuplicateStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    selectedElements.length > 0 &&
-    interactionSession != null &&
-    interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.activeControl.type === 'BOUNDING_AREA' &&
-    interactionSession.interactionData.modifiers.alt
+    selectedElements.length === 0 ||
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    !interactionSession.interactionData.modifiers.alt
   ) {
-    const isDragging = interactionSession.interactionData.drag != null
-    const filteredSelectedElements = getDragTargets(selectedElements)
-    const isApplicable = filteredSelectedElements.every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        element,
-      )
-
-      // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
-      // otherwise this would lead to an unpredictable behavior
-      // we can revisit this once we have a more predictable reparenting
-      const allDraggedElementsHaveTheSameParent = EP.pathsEqual(
-        EP.parentPath(filteredSelectedElements[0]),
-        EP.parentPath(element),
-      )
-
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        allDraggedElementsHaveTheSameParent &&
-        !EP.isRootElementOfInstance(element)
-      )
-    })
-    if (isApplicable) {
-      return {
-        id: 'ABSOLUTE_DUPLICATE',
-        name: 'Duplicate',
-        controlsToRender: [
-          controlWithProps({
-            control: ParentOutlines,
-            props: {},
-            key: 'parent-outlines-control',
-            show: 'visible-only-while-active',
-          }),
-          controlWithProps({
-            control: ParentBounds,
-            props: {},
-            key: 'parent-bounds-control',
-            show: 'visible-only-while-active',
-          }),
-        ],
-        fitness: 2,
-        apply: (strategyLifecycle) => {
-          if (isDragging) {
-            let duplicatedElementNewUids = {
-              ...customStrategyState.duplicatedElementNewUids,
-            }
-            let withDuplicatedMetadata: ElementInstanceMetadataMap = {
-              ...canvasState.startingMetadata,
-            }
-            let duplicateCommands: Array<DuplicateElement> = []
-            let newPaths: Array<ElementPath> = []
-
-            filteredSelectedElements.forEach((selectedElement) => {
-              const selectedElementString = EP.toString(selectedElement)
-              const newUid =
-                duplicatedElementNewUids[selectedElementString] ??
-                generateUidWithExistingComponents(canvasState.projectContents)
-              const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-              const newPathString = EP.toString(newPath)
-
-              duplicatedElementNewUids[selectedElementString] = newUid
-              withDuplicatedMetadata[newPathString] = {
-                ...withDuplicatedMetadata[EP.toString(selectedElement)],
-                elementPath: newPath,
-              }
-
-              duplicateCommands.push(duplicateElement('always', selectedElement, newUid))
-              newPaths.push(newPath)
-            })
-
-            return strategyApplicationResult(
-              [
-                ...duplicateCommands,
-                setElementsToRerenderCommand([...selectedElements, ...newPaths]),
-                updateSelectedViews('always', newPaths),
-                updateFunctionCommand('always', (editorState, commandLifecycle) =>
-                  runMoveStrategyForFreshlyDuplicatedElements(
-                    canvasState.builtInDependencies,
-                    editorState,
-                    interactionSession,
-                    commandLifecycle,
-                    strategyLifecycle,
-                    withDuplicatedMetadata,
-                  ),
-                ),
-                setCursorCommand('mid-interaction', CSSCursor.Duplicate),
-              ],
-              {
-                duplicatedElementNewUids: duplicatedElementNewUids,
-              },
-            )
-          } else {
-            // Fallback for when the checks above are not satisfied.
-            return strategyApplicationResult([
-              setCursorCommand('mid-interaction', CSSCursor.Duplicate),
-            ])
-          }
-        },
-      }
-    }
+    return null
   }
 
-  return null
+  const isDragging = interactionSession.interactionData.drag != null
+  const filteredSelectedElements = getDragTargets(selectedElements)
+  if (!isApplicable(canvasState, filteredSelectedElements)) {
+    return null
+  }
+
+  return {
+    id: 'ABSOLUTE_DUPLICATE',
+    name: 'Duplicate',
+    controlsToRender: [
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+    ],
+    fitness: 2,
+    apply: (strategyLifecycle) => {
+      if (isDragging) {
+        let duplicatedElementNewUids = {
+          ...customStrategyState.duplicatedElementNewUids,
+        }
+        let withDuplicatedMetadata: ElementInstanceMetadataMap = {
+          ...canvasState.startingMetadata,
+        }
+        let duplicateCommands: Array<DuplicateElement> = []
+        let newPaths: Array<ElementPath> = []
+
+        filteredSelectedElements.forEach((selectedElement) => {
+          const selectedElementString = EP.toString(selectedElement)
+          const newUid =
+            duplicatedElementNewUids[selectedElementString] ??
+            generateUidWithExistingComponents(canvasState.projectContents)
+          const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
+          const newPathString = EP.toString(newPath)
+
+          duplicatedElementNewUids[selectedElementString] = newUid
+          withDuplicatedMetadata[newPathString] = {
+            ...withDuplicatedMetadata[EP.toString(selectedElement)],
+            elementPath: newPath,
+          }
+
+          duplicateCommands.push(duplicateElement('always', selectedElement, newUid))
+          newPaths.push(newPath)
+        })
+
+        return strategyApplicationResult(
+          [
+            ...duplicateCommands,
+            setElementsToRerenderCommand([...selectedElements, ...newPaths]),
+            updateSelectedViews('always', newPaths),
+            updateFunctionCommand('always', (editorState, commandLifecycle) =>
+              runMoveStrategyForFreshlyDuplicatedElements(
+                canvasState.builtInDependencies,
+                editorState,
+                interactionSession,
+                commandLifecycle,
+                strategyLifecycle,
+                withDuplicatedMetadata,
+              ),
+            ),
+            setCursorCommand('mid-interaction', CSSCursor.Duplicate),
+          ],
+          {
+            duplicatedElementNewUids: duplicatedElementNewUids,
+          },
+        )
+      } else {
+        // Fallback for when the checks above are not satisfied.
+        return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Duplicate)])
+      }
+    },
+  }
 }
 
 function runMoveStrategyForFreshlyDuplicatedElements(
@@ -164,4 +144,30 @@ function runMoveStrategyForFreshlyDuplicatedElements(
     absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle).commands ?? []
 
   return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches
+}
+
+function isApplicable(
+  canvasState: InteractionCanvasState,
+  filteredSelectedElements: ElementPath[],
+) {
+  return filteredSelectedElements.every((element) => {
+    const elementMetadata = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      element,
+    )
+
+    // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
+    // otherwise this would lead to an unpredictable behavior
+    // we can revisit this once we have a more predictable reparenting
+    const allDraggedElementsHaveTheSameParent = EP.pathsEqual(
+      EP.parentPath(filteredSelectedElements[0]),
+      EP.parentPath(element),
+    )
+
+    return (
+      elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+      allDraggedElementsHaveTheSameParent &&
+      !EP.isRootElementOfInstance(element)
+    )
+  })
 }

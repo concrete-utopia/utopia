@@ -20,57 +20,59 @@ export function absoluteReparentToFlexStrategy(
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
   if (
-    filteredSelectedElements.length === 1 &&
-    interactionSession != null &&
-    interactionSession.interactionData.type === 'DRAG'
+    filteredSelectedElements.length !== 1 ||
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG'
   ) {
-    const elementMetadata = MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      filteredSelectedElements[0],
-    )
-
-    if (elementMetadata?.specialSizeMeasurements.position === 'absolute') {
-      return {
-        id: 'ABSOLUTE_REPARENT_TO_FLEX',
-        name: 'Reparent (Flex)',
-        controlsToRender: [
-          controlWithProps({
-            control: DragOutlineControl,
-            props: {},
-            key: 'ghost-outline-control',
-            show: 'visible-only-while-active',
-          }),
-          controlWithProps({
-            control: ParentOutlines,
-            props: {},
-            key: 'parent-outlines-control',
-            show: 'visible-only-while-active',
-          }),
-          controlWithProps({
-            control: ParentBounds,
-            props: {},
-            key: 'parent-bounds-control',
-            show: 'visible-only-while-active',
-          }),
-          controlWithProps({
-            control: FlexReparentTargetIndicator,
-            props: {},
-            key: 'flex-reparent-target-indicator',
-            show: 'visible-only-while-active',
-          }),
-        ],
-        fitness: getFitnessForReparentStrategy(
-          'ABSOLUTE_REPARENT_TO_FLEX',
-          canvasState,
-          interactionSession,
-          'use-strict-bounds',
-        ),
-        apply: () => {
-          return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
-        },
-      }
-    }
+    return null
   }
 
-  return null
+  if (
+    MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      filteredSelectedElements[0],
+    )?.specialSizeMeasurements.position !== 'absolute'
+  ) {
+    return null
+  }
+
+  return {
+    id: 'ABSOLUTE_REPARENT_TO_FLEX',
+    name: 'Reparent (Flex)',
+    controlsToRender: [
+      controlWithProps({
+        control: DragOutlineControl,
+        props: {},
+        key: 'ghost-outline-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: FlexReparentTargetIndicator,
+        props: {},
+        key: 'flex-reparent-target-indicator',
+        show: 'visible-only-while-active',
+      }),
+    ],
+    fitness: getFitnessForReparentStrategy(
+      'ABSOLUTE_REPARENT_TO_FLEX',
+      canvasState,
+      interactionSession,
+      'use-strict-bounds',
+    ),
+    apply: () => {
+      return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
+    },
+  }
 }
