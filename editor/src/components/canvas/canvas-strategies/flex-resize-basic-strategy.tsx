@@ -244,7 +244,7 @@ const getDimensions = (
   ): number | null => {
     return foldEither(
       (_) => null,
-      (v) => (v != null ? v.value : null),
+      (v) => v?.value ?? null,
       getLayoutProperty(name, attrs, ['style']),
     )
   }
