@@ -33,6 +33,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
@@ -43,15 +44,15 @@ export function flexResizeBasicStrategy(
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  // no multiselection support yet
-  if (
+  const isApplicable =
     selectedElements.length === 1 &&
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       selectedElements[0],
       canvasState.startingMetadata,
     ) &&
     honoursPropsSize(canvasState, selectedElements[0])
-  ) {
+
+  if (isApplicable) {
     return {
       id: 'FLEX_RESIZE_BASIC',
       name: 'Flex Resize (Basic)',
@@ -87,7 +88,7 @@ export function flexResizeBasicStrategy(
         interactionSession.activeControl.type === 'RESIZE_HANDLE'
           ? 1
           : 0,
-      apply: () => {
+      apply: (strategyLifecycle: InteractionLifecycle) => {
         if (
           interactionSession != null &&
           interactionSession.interactionData.type === 'DRAG' &&
@@ -185,6 +186,7 @@ export function flexResizeBasicStrategy(
   }
   return null
 }
+
 export function resizeWidthHeight(
   boundingBox: CanvasRectangle,
   drag: CanvasPoint,
