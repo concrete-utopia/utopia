@@ -22,7 +22,9 @@ import {
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
+  CanvasStrategyFactory,
   findCanvasStrategy,
+  MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
@@ -46,24 +48,122 @@ import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
+import {
+  findReparentStrategies,
+  getReparentTargetUnified,
+  newReparentSubjects,
+} from './reparent-strategy-helpers'
 import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { isImg } from '../../../core/model/project-file-utils'
+import { assertNever } from '../../../core/shared/utils'
+import {
+  absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
+} from './absolute-reparent-strategy'
+import {
+  flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
+} from './flex-reparent-to-absolute-strategy'
+import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
+import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { stripNulls } from '../../../core/shared/array-utils'
+
+export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  if (interactionSession == null) {
+    return []
+  }
+  const dragStart =
+    interactionSession.interactionData.type === 'DRAG'
+      ? interactionSession.interactionData.dragStart
+      : null
+  const hoverPoint =
+    interactionSession.interactionData.type === 'HOVER'
+      ? interactionSession.interactionData.point
+      : null
+  if (dragStart == null && hoverPoint == null) {
+    return []
+  }
+  const pointOnCanvas = hoverPoint ?? dragStart!
+  const foundReparentStrategies = findReparentStrategies(canvasState, pointOnCanvas)
+
+  return stripNulls(
+    foundReparentStrategies.map((result): CanvasStrategy | null => {
+      switch (result.strategy) {
+        case 'do-not-reparent':
+          return drawToInsertStrategy(
+            'draw-to-insert-to-canvas',
+            'Draw to insert (Canvas)',
+            null,
+            canvasState,
+            interactionSession,
+            customStrategyState,
+          )
+        case 'ABSOLUTE_REPARENT_TO_ABSOLUTE':
+          return drawToInsertStrategy(
+            `insert-absolute-absolute-strategy-${result.forcingRequired ? 'forced' : ''}`,
+            result.forcingRequired ? 'Draw to insert (Abs, Forced)' : 'Draw to insert (Abs)',
+            result.forcingRequired ? forcedAbsoluteReparentStrategy : absoluteReparentStrategy,
+            canvasState,
+            interactionSession,
+            customStrategyState,
+          )
+        case 'FLEX_REPARENT_TO_ABSOLUTE':
+          return drawToInsertStrategy(
+            `insert-flex-absolute-strategy-${result.forcingRequired ? 'forced' : ''}`,
+            result.forcingRequired ? 'Draw to insert (Flex, Forced)' : 'Draw to insert (Flex)',
+            result.forcingRequired
+              ? forcedFlexReparentToAbsoluteStrategy
+              : flexReparentToAbsoluteStrategy,
+            canvasState,
+            interactionSession,
+            customStrategyState,
+          )
+        case 'ABSOLUTE_REPARENT_TO_FLEX':
+          return drawToInsertStrategy(
+            `insert-absolute-absolute-strategy`,
+            'Draw to insert (Flex)',
+            absoluteReparentToFlexStrategy,
+            canvasState,
+            interactionSession,
+            customStrategyState,
+          )
+        case 'FLEX_REPARENT_TO_FLEX':
+          return drawToInsertStrategy(
+            `insert-flex-flex-strategy`,
+            'Draw to insert (Flex)',
+            flexReparentToFlexStrategy,
+            canvasState,
+            interactionSession,
+            customStrategyState,
+          )
+        default:
+          assertNever(result)
+      }
+    }),
+  )
+}
 
 export function drawToInsertStrategy(
+  id: string,
+  name: string,
+  reparentStrategyToUse: CanvasStrategyFactory | null, // TODO maybe this can be refactored to be a CanvasStrategy, and then maybe we can remove an updateFunctionCommand
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
-  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget) // TODO share insertionSubjects in the metastrategy
   if (insertionSubjects.length !== 1) {
     return null
   }
   const insertionSubject = insertionSubjects[0]
   return {
-    id: 'DRAW_TO_INSERT',
-    name: 'Draw to insert',
+    id: id,
+    name: name,
     controlsToRender: [
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
@@ -114,6 +214,7 @@ export function drawToInsertStrategy(
                 'always',
                 (editorState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                    reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
                     customStrategyState,
@@ -161,6 +262,7 @@ export function drawToInsertStrategy(
                 'always',
                 (editorState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                    reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
                     customStrategyState,
@@ -324,6 +426,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
 }
 
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
+  reparentStrategyToUse: CanvasStrategyFactory | null,
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
@@ -372,18 +475,16 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     startingMetadata: patchedMetadata,
   }
 
-  const { strategy } = findCanvasStrategy(
-    RegisteredCanvasStrategies,
+  const strategy = reparentStrategyToUse?.(
     patchedCanvasState,
     patchedInteractionSession,
     customStrategyState,
-    null,
   )
 
   if (strategy == null) {
     return []
   }
-  const reparentCommands = strategy.strategy.apply(strategyLifecycle).commands
+  const reparentCommands = strategy.apply(strategyLifecycle).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
     .statePatches

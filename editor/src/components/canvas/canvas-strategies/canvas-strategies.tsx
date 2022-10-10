@@ -50,7 +50,7 @@ import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
-import { drawToInsertStrategy } from './draw-to-insert-strategy'
+import { drawToInsertMetaStrategy, drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
@@ -84,7 +84,6 @@ const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   convertToAbsoluteAndMoveStrategy,
   // absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
-  drawToInsertStrategy,
   flowReorderStrategy,
   flowReorderSliderStategy,
   flexResizeBasicStrategy,
@@ -106,6 +105,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
   lookForApplicableParentStrategy,
   reparentMetaStrategy,
+  drawToInsertMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(

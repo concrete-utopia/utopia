@@ -176,8 +176,14 @@ export function findReparentStrategies(
   canvasState: InteractionCanvasState,
   pointOnCanvas: CanvasPoint,
 ): Array<FindReparentStrategyResult> {
+  const reparentSubjects =
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
+      ? newReparentSubjects()
+      : existingReparentSubjects(
+          getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
+        )
   const withCmdPressedStrict = getReparentTargetUnified(
-    newReparentSubjects(),
+    reparentSubjects,
     pointOnCanvas,
     true,
     canvasState,
@@ -186,7 +192,7 @@ export function findReparentStrategies(
     'use-strict-bounds',
   )
   const withCmdPressedAllowMissingBounds = getReparentTargetUnified(
-    newReparentSubjects(),
+    reparentSubjects,
     pointOnCanvas,
     true,
     canvasState,
@@ -195,7 +201,7 @@ export function findReparentStrategies(
     'allow-missing-bounds',
   )
   const withoutCmdPressedStrict = getReparentTargetUnified(
-    newReparentSubjects(),
+    reparentSubjects,
     pointOnCanvas,
     true,
     canvasState,
@@ -204,7 +210,7 @@ export function findReparentStrategies(
     'use-strict-bounds',
   )
   const withoutCmdPressedAllowMissingBounds = getReparentTargetUnified(
-    newReparentSubjects(),
+    reparentSubjects,
     pointOnCanvas,
     false,
     canvasState,

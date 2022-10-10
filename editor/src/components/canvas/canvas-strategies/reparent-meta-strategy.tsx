@@ -7,14 +7,20 @@ import {
 } from './absolute-reparent-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { MetaCanvasStrategy } from './canvas-strategies'
-import { InteractionCanvasState, CustomStrategyState } from './canvas-strategy-types'
+import {
+  InteractionCanvasState,
+  CustomStrategyState,
+  getTargetPathsFromInteractionTarget,
+  CanvasStrategy,
+} from './canvas-strategy-types'
 import {
   forcedFlexReparentToAbsoluteStrategy,
   flexReparentToAbsoluteStrategy,
 } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { InteractionSession } from './interaction-state'
-import { findReparentStrategies } from './reparent-strategy-helpers'
+import { existingReparentSubjects, findReparentStrategies } from './reparent-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
 export const reparentMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -33,7 +39,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     interactionSession.interactionData.drag,
   )
   return stripNulls(
-    findReparentStrategies(canvasState, pointOnCanvas).map((result) => {
+    findReparentStrategies(canvasState, pointOnCanvas).map((result): CanvasStrategy | null => {
       switch (result.strategy) {
         case 'do-not-reparent':
           return null
