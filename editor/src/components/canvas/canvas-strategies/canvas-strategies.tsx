@@ -55,6 +55,7 @@ import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
+import { reparentMetaStrategy } from './reparent-meta-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -70,18 +71,18 @@ export type MetaCanvasStrategy = (
 
 const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   absoluteMoveStrategy,
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
+  // absoluteReparentStrategy,
+  // forcedAbsoluteReparentStrategy,
   absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
+  // flexReparentToAbsoluteStrategy,
+  // forcedFlexReparentToAbsoluteStrategy,
+  // flexReparentToFlexStrategy,
   convertToAbsoluteAndMoveStrategy,
-  absoluteReparentToFlexStrategy,
+  // absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
   drawToInsertStrategy,
   flowReorderStrategy,
@@ -104,6 +105,7 @@ export const existingStrategies: MetaCanvasStrategy = (
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
   lookForApplicableParentStrategy,
+  reparentMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(

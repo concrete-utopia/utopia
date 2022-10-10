@@ -1,12 +1,20 @@
+import { isHorizontalPoint } from 'utopia-api/core'
+import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
+import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import {
+  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToSimpleFlexDirection,
+  FlexForwardsOrBackwards,
+  SimpleFlexDirection,
+} from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../core/shared/array-utils'
+import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  JSXElement,
-} from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -25,15 +33,23 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { assertNever } from '../../../core/shared/utils'
+import { absolute } from '../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../commands/adjust-css-length-command'
 import { CanvasCommand } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { getAllTargetsAtPointAABB } from '../dom-lookup'
@@ -51,27 +67,6 @@ import {
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
-import { absolute } from '../../../utils/utils'
-import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
-import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { LayoutPinnedProp, framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
-import { isRight, right } from '../../../core/shared/either'
-import { FlexDirection, isHorizontalPoint, sides } from 'utopia-api/core'
-import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
-} from '../commands/adjust-css-length-command'
-import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
-import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../../../core/layout/layout-utils'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { assertNever } from '../../../core/shared/utils'
-import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -134,6 +129,109 @@ export function reparentStrategyForParent(
     }
   }
   return { strategy: 'do-not-reparent' }
+}
+
+export function reparentStrategyForParentOnly(
+  targetMetadata: ElementInstanceMetadataMap,
+  allDraggedElementsFlex: boolean,
+  allDraggedElementsAbsolute: boolean,
+  newParent: ElementPath,
+): FindReparentStrategyResult {
+  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+
+  const parentProvidesBoundsForAbsoluteChildren =
+    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+  const parentIsStoryboard = EP.isStoryboardPath(newParent)
+  const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
+  const forcingRequiredForAbsoluteReparent = !isAbsoluteFriendlyParent
+
+  if (allDraggedElementsAbsolute) {
+    if (parentIsFlexLayout) {
+      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
+    } else {
+      return {
+        strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
+    }
+  }
+  if (allDraggedElementsFlex) {
+    if (parentIsFlexLayout) {
+      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
+    } else {
+      return {
+        strategy: 'FLEX_REPARENT_TO_ABSOLUTE',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
+    }
+  }
+  return { strategy: 'do-not-reparent' }
+}
+
+export function findReparentStrategies(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+): Array<FindReparentStrategyResult> {
+  const withCmdPressedStrict = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'use-strict-bounds',
+  )
+  const withCmdPressedAllowMissingBounds = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+  )
+  const withoutCmdPressedStrict = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'use-strict-bounds',
+  )
+  const withoutCmdPressedAllowMissingBounds = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    false,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+  )
+
+  return [
+    withCmdPressedStrict,
+    withCmdPressedAllowMissingBounds,
+    withoutCmdPressedStrict,
+    withoutCmdPressedAllowMissingBounds,
+  ].flatMap((reparentResult) => [
+    reparentStrategyForParentOnly(
+      canvasState.startingMetadata,
+      true,
+      false,
+      reparentResult.newParent!,
+    ),
+    reparentStrategyForParentOnly(
+      canvasState.startingMetadata,
+      false,
+      true,
+      reparentResult.newParent!,
+    ),
+  ])
 }
 
 function isReparentToAbsoluteStrategy(reparentStrategy: ReparentStrategy): boolean {
