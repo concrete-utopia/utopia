@@ -162,7 +162,7 @@ export function flexResizeBasicStrategy(
             resizedBounds.height,
             dimensions?.height,
           )
-          if (lockedAspectRatio) {
+          if (lockedAspectRatio != null) {
             if (newWidth !== 0) {
               // diagonal + horizontal lock
               newHeight = newWidth * lockedAspectRatio
