@@ -1,12 +1,4 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { KeyCharacter } from '../../../utils/keyboard'
-import {
-  CanvasStrategy,
-  controlWithProps,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
-  strategyApplicationResult,
-} from './canvas-strategy-types'
 import {
   canvasRectangle,
   CanvasVector,
@@ -14,23 +6,33 @@ import {
   scaleVector,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
-import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
+import { KeyCharacter } from '../../../utils/keyboard'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { CanvasFrameAndTarget, EdgePosition } from '../canvas-types'
-import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { CanvasCommand } from '../commands/commands'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
+import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import {
+  CanvasStrategy,
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+  strategyApplicationResult,
+} from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
+import { supportsAbsoluteResize } from './resize-helpers'
+import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import {
   AccumulatedPresses,
   accumulatePresses,
-  getMovementDeltaFromKey,
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
+  getMovementDeltaFromKey,
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
-import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
-import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { supportsAbsoluteResize } from './resize-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -71,117 +73,117 @@ function pressesToVectorAndEdges(
   return result
 }
 
-export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
-  id: 'KEYBOARD_ABSOLUTE_RESIZE',
-  name: () => 'Resize',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length > 0) {
-      return selectedElements.every((element) => {
-        return supportsAbsoluteResize(metadata, element, canvasState)
-      })
-    } else {
-      return false
-    }
-  },
-  controlsToRender: [
-    controlWithProps({
-      control: AbsoluteResizeControl,
-      props: {},
-      key: 'absolute-resize-control',
-      show: 'visible-except-when-other-strategy-is-active',
-    }),
-  ],
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    if (
-      keyboardAbsoluteResizeStrategy.isApplicable(
-        canvasState,
-        interactionSession,
-        canvasState.startingMetadata,
-        canvasState.startingAllElementProps,
-      ) &&
-      interactionSession.interactionData.type === 'KEYBOARD'
-    ) {
-      const { interactionData } = interactionSession
-      const lastKeyPress = getLastKeyPressState(interactionData.keyStates)
-      if (lastKeyPress != null) {
-        const cmdAndOptionallyShiftModifier =
-          lastKeyPress.modifiers.cmd && !lastKeyPress.modifiers.alt && !lastKeyPress.modifiers.ctrl
+function getFitness(interactionSession: InteractionSession | null): number {
+  if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
+    const lastKeyState = getLastKeyPressState(interactionSession.interactionData.keyStates)
+    if (lastKeyState != null) {
+      const cmdAndOptionallyShiftModifier =
+        lastKeyState.modifiers.cmd && !lastKeyState.modifiers.alt && !lastKeyState.modifiers.ctrl
 
-        if (cmdAndOptionallyShiftModifier) {
-          return 1
-        }
+      if (cmdAndOptionallyShiftModifier) {
+        return 1
       }
     }
-    return 0
-  },
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (interactionSession.interactionData.type === 'KEYBOARD') {
-      const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-      const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
+  }
 
-      // Start with the frame as it is at the start of the interaction.
-      let newFrame =
-        getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
-        canvasRectangle(zeroRectangle)
+  return 0
+}
 
-      let commands: Array<CanvasCommand> = []
-      let intendedBounds: Array<CanvasFrameAndTarget> = []
+export function keyboardAbsoluteResizeStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    selectedElements.length === 0 ||
+    !selectedElements.every((element) => {
+      return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
+    })
+  ) {
+    return null
+  }
 
-      movementsWithEdges.forEach((movementWithEdge) => {
-        if (movementWithEdge.movement.x !== 0 || movementWithEdge.movement.y !== 0) {
-          newFrame = resizeBoundingBox(
-            newFrame,
-            movementWithEdge.movement,
-            movementWithEdge.edge,
-            null,
-            'non-center-based',
-          )
-          selectedElements.forEach((selectedElement) => {
-            const element = withUnderlyingTarget(
-              selectedElement,
-              canvasState.projectContents,
-              {},
-              canvasState.openFile,
+  return {
+    id: 'KEYBOARD_ABSOLUTE_RESIZE',
+    name: 'Resize',
+    controlsToRender: [
+      controlWithProps({
+        control: AbsoluteResizeControl,
+        props: {},
+        key: 'absolute-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
+    fitness: getFitness(interactionSession),
+    apply: () => {
+      if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
+        const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
+        const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
+
+        // Start with the frame as it is at the start of the interaction.
+        let newFrame =
+          getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
+          canvasRectangle(zeroRectangle)
+
+        let commands: Array<CanvasCommand> = []
+        let intendedBounds: Array<CanvasFrameAndTarget> = []
+
+        movementsWithEdges.forEach((movementWithEdge) => {
+          if (movementWithEdge.movement.x !== 0 || movementWithEdge.movement.y !== 0) {
+            newFrame = resizeBoundingBox(
+              newFrame,
+              movementWithEdge.movement,
+              movementWithEdge.edge,
               null,
-              (_, e) => e,
+              'non-center-based',
             )
-            const elementParentBounds =
-              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
-                ?.specialSizeMeasurements.immediateParentBounds ?? null
-
-            const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
-              selectedElement,
-              canvasState.startingMetadata,
-            )
-
-            if (element != null) {
-              const elementResult = createResizeCommands(
-                element,
+            selectedElements.forEach((selectedElement) => {
+              const element = withUnderlyingTarget(
                 selectedElement,
-                movementWithEdge.edge,
-                movementWithEdge.movement,
-                elementGlobalFrame,
-                elementParentBounds,
+                canvasState.projectContents,
+                {},
+                canvasState.openFile,
+                null,
+                (_, e) => e,
               )
-              commands.push(...elementResult.commands)
-              if (elementResult.intendedBounds != null) {
-                intendedBounds.push(elementResult.intendedBounds)
+              const elementParentBounds =
+                MetadataUtils.findElementByElementPath(
+                  canvasState.startingMetadata,
+                  selectedElement,
+                )?.specialSizeMeasurements.immediateParentBounds ?? null
+
+              const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
+                selectedElement,
+                canvasState.startingMetadata,
+              )
+
+              if (element != null) {
+                const elementResult = createResizeCommands(
+                  element,
+                  selectedElement,
+                  movementWithEdge.edge,
+                  movementWithEdge.movement,
+                  elementGlobalFrame,
+                  elementParentBounds,
+                )
+                commands.push(...elementResult.commands)
+                if (elementResult.intendedBounds != null) {
+                  intendedBounds.push(elementResult.intendedBounds)
+                }
               }
-            }
-          })
-        }
-      })
-      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
-      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-      commands.push(pushIntendedBounds(intendedBounds))
-      commands.push(setElementsToRerenderCommand(selectedElements))
-      return strategyApplicationResult(commands)
-    } else {
-      return emptyStrategyApplicationResult
-    }
-  },
+            })
+          }
+        })
+        const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
+        commands.push(setSnappingGuidelines('mid-interaction', guidelines))
+        commands.push(pushIntendedBounds(intendedBounds))
+        commands.push(setElementsToRerenderCommand(selectedElements))
+        return strategyApplicationResult(commands)
+      } else {
+        return emptyStrategyApplicationResult
+      }
+    },
+  }
 }
 
 function getEdgePositionFromKey(key: KeyCharacter): EdgePosition | null {

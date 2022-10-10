@@ -24,6 +24,14 @@ import {
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
+import {
+  CanvasStrategy,
+  CustomStrategyState,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
+import { stripNulls } from '../../../core/shared/array-utils'
+import { CanvasStrategyFactory, MetaCanvasStrategy } from './canvas-strategies'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -163,21 +171,32 @@ ${snippet}
 `)
 }
 
-const allReparentStrategies = () => [
+function metaStrategyForFactories(factories: Array<CanvasStrategyFactory>): MetaCanvasStrategy {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ) =>
+    stripNulls(
+      factories.map((factory) => factory(canvasState, interactionSession, customStrategyState)),
+    )
+}
+
+const allReparentStrategies = metaStrategyForFactories([
   absoluteReparentStrategy,
   absoluteReparentToFlexStrategy,
   forcedAbsoluteReparentStrategy,
   flexReparentToAbsoluteStrategy,
   forcedFlexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
-]
+])
 
 describe('Forced Absolute Reparent Strategies', () => {
   it('Absolute to forced absolute can be applied', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [() => [forcedAbsoluteReparentStrategy]],
+      [metaStrategyForFactories([forcedAbsoluteReparentStrategy])],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -396,7 +415,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [() => [forcedFlexReparentToAbsoluteStrategy]],
+      [metaStrategyForFactories([forcedFlexReparentToAbsoluteStrategy])],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()

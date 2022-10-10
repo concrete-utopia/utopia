@@ -19,9 +19,10 @@ import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
-import { InteractionSession } from './interaction-state'
+import { boundingArea, InteractionSession } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
   return {
@@ -67,7 +68,7 @@ function dragByPixelsIsApplicable(
     ...createMouseInteractionForTests(
       null as any, // the strategy does not use this
       modifiers,
-      null as any, // the strategy does not use this
+      boundingArea(),
       vector,
     ),
     latestMetadata: null as any, // the strategy does not use this
@@ -75,15 +76,16 @@ function dragByPixelsIsApplicable(
     startingTargetParentsToFilterOut: null,
   }
 
-  return absoluteDuplicateStrategy.isApplicable(
-    pickCanvasStateFromEditorStateWithMetadata(
-      editorState,
-      createBuiltInDependenciesList(null),
-      metadata,
-    ),
-    interactionSession,
-    metadata,
-    editorState.allElementProps,
+  return (
+    absoluteDuplicateStrategy(
+      pickCanvasStateFromEditorStateWithMetadata(
+        editorState,
+        createBuiltInDependenciesList(null),
+        metadata,
+      ),
+      interactionSession,
+      defaultCustomStrategyState(),
+    ) != null
   )
 }
 

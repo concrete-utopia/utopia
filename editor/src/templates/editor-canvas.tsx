@@ -31,7 +31,12 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch, isLoggedIn } from '../components/editor/action-types'
+import {
+  EditorAction,
+  EditorDispatch,
+  isLoggedIn,
+  LoginState,
+} from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import {
   EditorModes,
@@ -39,6 +44,10 @@ import {
   isLiveMode,
   InsertMode,
   insertionSubjectIsJSXElement,
+  ElementInsertionSubject,
+  elementInsertionSubject,
+  elementInsertionSubjects,
+  InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
@@ -58,7 +67,7 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -111,13 +120,17 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import {
+  generateUidWithExistingComponents,
+  generateUidWithExistingComponentsAndExtraUids,
+} from '../core/model/element-template-utils'
 import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
 import { imagePathURL } from '../common/server'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
+import { ProjectContentTreeRoot } from '../components/assets'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1034,54 +1047,24 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   }),
                 ])
               }
-              const image = images[0]
 
-              const { frame } = getFrameAndMultiplierWithResize(
-                mousePosition.canvasPositionRounded,
-                image.filename,
-                image.size,
-                this.props.editor.canvas.scale,
-              )
-
-              const { saveImageActions, src } = isLoggedIn(this.props.userState.loginState)
-                ? {
-                    saveImageActions: [
-                      EditorActions.saveAsset(
-                        image.filename,
-                        image.fileType,
-                        image.base64Bytes,
-                        image.hash,
-                        EditorActions.saveImageDetails(
-                          image.size,
-                          EditorActions.saveImageReplace(),
-                        ),
-                      ),
-                    ],
-                    src: imagePathURL(image.filename),
-                  }
-                : { saveImageActions: [], src: image.base64Bytes }
-
-              const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-              const elementSize: Size = resize(
-                size(frame.width ?? 100, frame.height ?? 100),
-                size(200, 200),
-                'keep-aspect-ratio',
-              )
-              const newElement = createJsxImage(newUID, {
-                width: elementSize.width,
-                height: elementSize.height,
-                top: mousePosition.canvasPositionRounded.y,
-                left: mousePosition.canvasPositionRounded.x,
-                src: src,
+              const { actions, subjects } = actionsForDroppedImages(images, {
+                scale: this.props.model.scale,
+                projectContents: this.props.editor.projectContents,
+                loginState: this.props.userState.loginState,
+                mousePosition: mousePosition.canvasPositionRounded,
               })
 
               this.props.dispatch(
                 [
-                  ...saveImageActions,
-                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
+                  ...actions,
+                  EditorActions.switchEditorMode(
+                    EditorModes.insertMode(elementInsertionSubjects(subjects)),
+                  ),
                 ],
                 'everyone',
               )
+              this.handleMouseMove(event.nativeEvent)
               this.handleMouseUp(event.nativeEvent)
             })
           }
@@ -1654,4 +1637,96 @@ function isTargetInPopup(target: HTMLElement, popupId: string | null): boolean {
     const popupElement = document.getElementById(popupId)
     return popupElement != null && popupElement.contains(target)
   }
+}
+
+interface ActionsForDroppedImageContext {
+  generateUid: () => string
+  scale: number
+  isUserLoggedIn: boolean
+  mousePosition: CanvasPoint
+}
+
+interface ActionForDroppedImageResult {
+  actions: EditorAction[]
+  singleSubject: ElementInsertionSubject
+}
+
+function actionsForDroppedImage(
+  image: ImageResult,
+  context: ActionsForDroppedImageContext,
+): ActionForDroppedImageResult {
+  const { frame } = getFrameAndMultiplierWithResize(
+    context.mousePosition,
+    image.filename,
+    image.size,
+    context.scale,
+  )
+
+  const { saveImageActions, src } = context.isUserLoggedIn
+    ? {
+        saveImageActions: [
+          EditorActions.saveAsset(
+            image.filename,
+            image.fileType,
+            image.base64Bytes,
+            image.hash,
+            EditorActions.saveImageDetails(image.size, EditorActions.saveImageReplace()),
+          ),
+        ],
+        src: imagePathURL(image.filename),
+      }
+    : { saveImageActions: [], src: image.base64Bytes }
+
+  const newUID = context.generateUid()
+  const elementSize: Size = resize(
+    size(frame.width ?? 100, frame.height ?? 100),
+    size(200, 200),
+    'keep-aspect-ratio',
+  )
+  const newElement = createJsxImage(newUID, {
+    width: elementSize.width,
+    height: elementSize.height,
+    top: context.mousePosition.y,
+    left: context.mousePosition.x,
+    src: src,
+  })
+  return {
+    actions: saveImageActions,
+    singleSubject: elementInsertionSubject(newUID, newElement, elementSize, {}, null),
+  }
+}
+
+interface ActionsForDroppedImagesResult {
+  subjects: Array<ElementInsertionSubject>
+  actions: Array<EditorAction>
+}
+
+interface ActionsForDroppedImagesContext {
+  projectContents: ProjectContentTreeRoot
+  mousePosition: CanvasPoint
+  scale: number
+  loginState: LoginState
+}
+
+function actionsForDroppedImages(
+  images: Array<ImageResult>,
+  context: ActionsForDroppedImagesContext,
+): ActionsForDroppedImagesResult {
+  let actions: Array<EditorAction> = []
+  let uidsSoFar: Array<string> = []
+  let subjects: Array<ElementInsertionSubject> = []
+  for (const image of images) {
+    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
+      generateUid: () =>
+        generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
+      scale: context.scale,
+      mousePosition: context.mousePosition,
+      isUserLoggedIn: isLoggedIn(context.loginState),
+    })
+    actions = [...actions, ...actionsForImage]
+    uidsSoFar = [...uidsSoFar, singleSubject.uid]
+    subjects = [...subjects, singleSubject]
+  }
+
+  return { actions, subjects }
 }

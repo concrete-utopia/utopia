@@ -44,91 +44,88 @@ import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 
-export const dragToInsertStrategy: CanvasStrategy = {
-  id: 'DRAG_TO_INSERT',
-  name: () => 'Insert',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
-      canvasState.interactionTarget,
-    )
-    const insertionElementSubjects = insertionSubjects.filter((s) => s.type === 'Element')
-    return insertionElementSubjects.length > 0
-  },
-  controlsToRender: [
-    // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
-    controlWithProps({
-      control: ParentOutlines,
-      props: {},
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: ParentBounds,
-      props: {},
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: DragOutlineControl,
-      props: {},
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: FlexReparentTargetIndicator,
-      props: {},
-      key: 'flex-reparent-target-indicator',
-      show: 'visible-only-while-active',
-    }),
-  ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    return dragToInsertStrategy.isApplicable(
-      canvasState,
-      interactionSession,
-      canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
-    ) &&
+export function dragToInsertStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): CanvasStrategy | null {
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  const insertionElementSubjects = insertionSubjects.filter((s) => s.type === 'Element')
+  if (insertionElementSubjects.length === 0) {
+    return null
+  }
+
+  return {
+    id: 'DRAG_TO_INSERT',
+    name: 'Insert',
+    controlsToRender: [
+      // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: DragOutlineControl,
+        props: {},
+        key: 'ghost-outline-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: FlexReparentTargetIndicator,
+        props: {},
+        key: 'flex-reparent-target-indicator',
+        show: 'visible-only-while-active',
+      }),
+    ], // Uses existing hooks in select-mode-hooks.tsx
+    fitness:
+      interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-      ? 1
-      : 0
-  },
-  apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
-    const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
-      canvasState.interactionTarget,
-    )
-    if (
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.drag != null
-    ) {
-      const insertionCommands = insertionSubjects.flatMap((s) => {
-        const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
-        return getInsertionCommands(s, interactionSession, size)
-      })
+        ? 1
+        : 0,
+    apply: (strategyLifecycle) => {
+      if (
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.interactionData.drag != null
+      ) {
+        const insertionCommands = insertionSubjects.flatMap((s) => {
+          const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
+          return getInsertionCommands(s, interactionSession, size)
+        })
 
-      const reparentCommand = updateFunctionCommand(
-        'always',
-        (editorState, transient): Array<EditorStatePatch> => {
-          return runTargetStrategiesForFreshlyInsertedElement(
-            canvasState.builtInDependencies,
-            editorState,
-            customStrategyState,
-            interactionSession,
-            transient,
-            insertionCommands,
-            strategyLifecycle,
-          )
-        },
-      )
+        const reparentCommand = updateFunctionCommand(
+          'always',
+          (editorState, transient): Array<EditorStatePatch> => {
+            return runTargetStrategiesForFreshlyInsertedElement(
+              canvasState.builtInDependencies,
+              editorState,
+              customStrategyState,
+              interactionSession,
+              transient,
+              insertionCommands,
+              strategyLifecycle,
+            )
+          },
+        )
 
-      return strategyApplicationResult([
-        ...insertionCommands.map((c) => c.command),
-        reparentCommand,
-      ])
-    }
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
-  },
+        return strategyApplicationResult([
+          ...insertionCommands.map((c) => c.command),
+          reparentCommand,
+        ])
+      }
+      // Fallback for when the checks above are not satisfied.
+      return emptyStrategyApplicationResult
+    },
+  }
 }
 
 function getInsertionCommands(
@@ -272,12 +269,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   if (strategy == null) {
     return []
   } else {
-    const reparentCommands = strategy.strategy.apply(
-      patchedCanvasState,
-      patchedInteractionSession,
-      customStrategyState,
-      strategyLifeCycle,
-    ).commands
+    const reparentCommands = strategy.strategy.apply(strategyLifeCycle).commands
 
     return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
       .statePatches
