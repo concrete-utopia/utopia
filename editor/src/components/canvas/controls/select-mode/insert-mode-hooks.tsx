@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
-import { insertionSubjectIsJSXElement, isInsertMode } from '../../../editor/editor-modes'
+import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 

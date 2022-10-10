@@ -42,10 +42,7 @@ import {
   EditorModes,
   Mode,
   isLiveMode,
-  InsertMode,
-  insertionSubjectIsJSXElement,
-  ElementInsertionSubject,
-  elementInsertionSubject,
+  insertionSubject,
   InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
@@ -1601,7 +1598,7 @@ interface ActionsForDroppedImageContext {
 
 interface ActionForDroppedImageResult {
   actions: EditorAction[]
-  singleSubject: ElementInsertionSubject
+  singleSubject: InsertionSubject
 }
 
 function actionsForDroppedImage(
@@ -1645,12 +1642,12 @@ function actionsForDroppedImage(
   })
   return {
     actions: saveImageActions,
-    singleSubject: elementInsertionSubject(newUID, newElement, elementSize, {}, null),
+    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
   }
 }
 
 interface ActionsForDroppedImagesResult {
-  subjects: Array<ElementInsertionSubject>
+  subjects: Array<InsertionSubject>
   actions: Array<EditorAction>
 }
 
@@ -1667,7 +1664,7 @@ function actionsForDroppedImages(
 ): ActionsForDroppedImagesResult {
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
-  let subjects: Array<ElementInsertionSubject> = []
+  let subjects: Array<InsertionSubject> = []
   for (const image of images) {
     const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
       generateUid: () =>

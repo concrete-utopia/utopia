@@ -382,8 +382,7 @@ import {
 import {
   ImageInsertionSubject,
   EditorModes,
-  elementInsertionSubject,
-  ElementInsertionSubject,
+  insertionSubject,
   InsertionSubject,
   InsertMode,
   LiveCanvasMode,
@@ -2536,7 +2535,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
-export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubject> =
+export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine5EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
@@ -2548,7 +2547,7 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
-    elementInsertionSubject,
+    insertionSubject,
   )
 
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
@@ -2559,23 +2558,6 @@ export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageIn
     StringKeepDeepEquality,
     imageInsertionSubject,
   )
-
-export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'Element':
-      if (newValue.type === oldValue.type) {
-        return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    // default:
-    //   const _exhaustiveCheck: never = oldValue
-    //   throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
 
 export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
   (mode) => mode.subjects,

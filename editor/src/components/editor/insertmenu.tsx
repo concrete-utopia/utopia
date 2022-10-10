@@ -26,8 +26,7 @@ import Utils from '../../utils/utils'
 import { FontSettings } from '../inspector/common/css-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement } from './actions/action-creators'
-import { ElementInsertionSubject, Mode, insertionSubjectIsJSXElement } from './editor-modes'
-import { insertImage } from './image-insert'
+import { InsertionSubject, Mode } from './editor-modes'
 import { getOpenFilename } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
 import { WarningIcon } from '../../uuiui/warning-icon'
@@ -178,7 +177,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   render() {
     let currentlyBeingInserted: ComponentBeingInserted | null = null
     if (this.props.mode.type === 'insert' && this.props.mode.subjects.length === 1) {
-      const insertionSubject: ElementInsertionSubject = this.props.mode.subjects[0]
+      const insertionSubject: InsertionSubject = this.props.mode.subjects[0]
       currentlyBeingInserted = componentBeingInserted(
         insertionSubject.importsToAdd,
         insertionSubject.element.name,

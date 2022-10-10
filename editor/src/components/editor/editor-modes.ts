@@ -9,8 +9,7 @@ import type { Size } from '../../core/shared/math-utils'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
-export interface ElementInsertionSubject {
-  type: 'Element'
+export interface InsertionSubject {
   uid: string
   element: JSXElement
   defaultSize: Size
@@ -18,15 +17,14 @@ export interface ElementInsertionSubject {
   parent: InsertionParent
 }
 
-export function elementInsertionSubject(
+export function insertionSubject(
   uid: string,
   element: JSXElement,
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
-): ElementInsertionSubject {
+): InsertionSubject {
   return {
-    type: 'Element',
     uid: uid,
     element: element,
     defaultSize: size ?? DefaultInsertSize,
@@ -45,14 +43,6 @@ export function imageInsertionSubject(file: ImageFile, path: string): ImageInser
     file: file,
     path: path,
   }
-}
-
-export type InsertionSubject = ElementInsertionSubject
-
-export function insertionSubjectIsJSXElement(
-  insertionSubject: InsertionSubject,
-): insertionSubject is ElementInsertionSubject {
-  return insertionSubject.type === 'Element'
 }
 
 export interface TargetedInsertionParent {

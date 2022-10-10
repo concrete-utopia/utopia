@@ -123,7 +123,6 @@ import {
   Size,
   vectorDifference,
 } from '../../core/shared/math-utils'
-import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
   DerivedState,
   EditorState,

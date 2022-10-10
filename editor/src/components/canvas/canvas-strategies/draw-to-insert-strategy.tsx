@@ -12,7 +12,7 @@ import {
   targetPaths,
 } from './canvas-strategy-types'
 import { boundingArea, InteractionSession } from './interaction-state'
-import { ElementInsertionSubject, insertionSubjectIsJSXElement } from '../../editor/editor-modes'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { foldEither } from '../../../core/shared/either'
 import {
@@ -57,11 +57,10 @@ export function drawToInsertStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  const insertionElementSubjects = insertionSubjects.filter(insertionSubjectIsJSXElement)
-  if (insertionElementSubjects.length !== 1) {
+  if (insertionSubjects.length !== 1) {
     return null
   }
-  const insertionSubject = insertionElementSubjects[0]
+  const insertionSubject = insertionSubjects[0]
   return {
     id: 'DRAW_TO_INSERT',
     name: 'Draw to insert',
@@ -224,7 +223,7 @@ function getHighlightAndReorderIndicatorCommands(
 }
 
 function getInsertionCommands(
-  subject: ElementInsertionSubject,
+  subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
   sizing: 'zero-size' | 'default-size',
@@ -255,7 +254,7 @@ function getInsertionCommands(
       frame,
     )
 
-    const updatedInsertionSubject: ElementInsertionSubject = {
+    const updatedInsertionSubject: InsertionSubject = {
       ...subject,
       parent: subject.parent,
       element: {
@@ -283,7 +282,7 @@ function getInsertionCommands(
       frame,
     )
 
-    const updatedInsertionSubject: ElementInsertionSubject = {
+    const updatedInsertionSubject: InsertionSubject = {
       ...subject,
       parent: subject.parent,
       element: {
@@ -301,7 +300,7 @@ function getInsertionCommands(
 }
 
 function getStyleAttributesForFrameInAbsolutePosition(
-  subject: ElementInsertionSubject,
+  subject: InsertionSubject,
   frame: CanvasRectangle,
 ) {
   return foldEither(
@@ -329,7 +328,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
-  insertionSubject: ElementInsertionSubject,
+  insertionSubject: InsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
   startingMetadata: ElementInstanceMetadataMap,
@@ -396,7 +395,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
-  insertionSubject: ElementInsertionSubject,
+  insertionSubject: InsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
