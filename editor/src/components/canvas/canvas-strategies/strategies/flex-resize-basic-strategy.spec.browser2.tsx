@@ -1,4 +1,11 @@
 /* eslint-disable jest/expect-expect */
+import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
+import * as EP from '../../../../core/shared/element-path'
+import { canvasPoint, CanvasVector, offsetPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/action-creators'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -7,21 +14,16 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import * as EP from '../../../../core/shared/element-path'
-import { selectComponents } from '../../../editor/actions/action-creators'
-import { canvasPoint, CanvasVector, offsetPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
 import { EdgePosition, edgePosition } from '../../canvas-types'
-import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
-import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
-import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 
 async function dragResizeControl(
   renderResult: EditorRenderResult,
   target: ElementPath,
   pos: EdgePosition,
   dragDelta: CanvasVector,
+  modifiers?: Modifiers,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
   const resizeControl = renderResult.renderedDOM.getByTestId(`resize-control-${pos.x}-${pos.y}`)
@@ -39,7 +41,7 @@ async function dragResizeControl(
 
   mouseMoveToPoint(resizeControl, startPoint)
   mouseDownAtPoint(resizeControl, startPoint)
-  mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+  mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 }, modifiers })
   mouseUpAtPoint(canvasControlsLayer, endPoint)
 
   await renderResult.getDispatchFollowUpActionsFinished()
@@ -354,6 +356,87 @@ describe('Flex Resize', () => {
       })
     })
   })
+
+  describe('when aspect ratio is locked', () => {
+    describe('horizontal', () => {
+      it('respects ratio (right)', async () => {
+        await resizeWithModifiers(
+          edgePosition(1, 0.5),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 115, height: 207.5 },
+          shiftModifier,
+        )
+      })
+      it('respects ratio (left)', async () => {
+        await resizeWithModifiers(
+          edgePosition(0, 0.5),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 85, height: 192.5 },
+          shiftModifier,
+        )
+      })
+    })
+    describe('vertical', () => {
+      it('respects ratio (bottom)', async () => {
+        await resizeWithModifiers(
+          edgePosition(0.5, 1),
+          canvasPoint({ x: 20, y: 15 }),
+          { width: 100, height: 200 },
+          { width: 107.5, height: 215 },
+          shiftModifier,
+        )
+      })
+      it('respects ratio (top)', async () => {
+        await resizeWithModifiers(
+          edgePosition(0.5, 0),
+          canvasPoint({ x: 20, y: 15 }),
+          { width: 100, height: 200 },
+          { width: 92.5, height: 185 },
+          shiftModifier,
+        )
+      })
+    })
+    describe('diagonal', () => {
+      it('respects ratio (br)', async () => {
+        await resizeWithModifiers(
+          edgePosition(1, 1),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 115, height: 207.5 },
+          shiftModifier,
+        )
+      })
+      it('respects ratio (tr)', async () => {
+        await resizeWithModifiers(
+          edgePosition(1, 0),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 115, height: 207.5 },
+          shiftModifier,
+        )
+      })
+      it('respects ratio (tl)', async () => {
+        await resizeWithModifiers(
+          edgePosition(0, 0),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 85, height: 192.5 },
+          shiftModifier,
+        )
+      })
+      it('respects ratio (bl)', async () => {
+        await resizeWithModifiers(
+          edgePosition(0, 1),
+          canvasPoint({ x: 15, y: 20 }),
+          { width: 100, height: 200 },
+          { width: 85, height: 192.5 },
+          shiftModifier,
+        )
+      })
+    })
+  })
 })
 
 async function resizeTestRow(
@@ -635,6 +718,61 @@ const resizeWithoutDimensions = async (
             width: 50,
             height: 110,
             backgroundColor: '#FF0000',
+          }}
+        />
+      </div>
+      `),
+  )
+}
+
+async function resizeWithModifiers(
+  pos: EdgePosition,
+  dragVector: CanvasVector,
+  initial: { width: number; height: number },
+  expected: { width: number; height: number },
+  modifiers: Modifiers,
+) {
+  const inputCode = makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+        }}
+      >
+        <div
+          data-uid='ccc'
+          style={{
+            width: ${initial.width},
+            height: ${initial.height},
+            backgroundColor: '#09f',
+          }}
+        />
+      </div>
+    `)
+
+  const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+  const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
+
+  await dragResizeControl(renderResult, target, pos, dragVector, modifiers)
+
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+    makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+        }}
+      >
+        <div
+          data-uid='ccc'
+          style={{
+            width: ${expected.width},
+            height: ${expected.height},
+            backgroundColor: '#09f',
           }}
         />
       </div>

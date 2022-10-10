@@ -37,6 +37,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { getLockedAspectRatio } from './resize-helpers'
 import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
 
 export function flexResizeBasicStrategy(
@@ -91,7 +92,7 @@ export function flexResizeBasicStrategy(
       interactionSession.activeControl.type === 'RESIZE_HANDLE'
         ? 1
         : 0,
-    apply: (strategyLifecycle: InteractionLifecycle) => {
+    apply: (_strategyLifecycle: InteractionLifecycle) => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
@@ -112,7 +113,11 @@ export function flexResizeBasicStrategy(
           }
 
           const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
-
+          const lockedAspectRatio = getLockedAspectRatio(
+            interactionSession,
+            interactionSession.interactionData.modifiers,
+            originalBounds,
+          )
           const metadata = MetadataUtils.findElementByElementPath(
             canvasState.startingMetadata,
             selectedElement,
@@ -144,24 +149,36 @@ export function flexResizeBasicStrategy(
 
           const resizeCommands: Array<AdjustCssLengthProperty> = []
 
-          const newWidth = makeNewDimension(
+          const parentWidth = elementParentBounds?.width
+          const parentHeight = elementParentBounds?.height
+
+          let newWidth = makeNewDimension(
             originalBounds.width,
             resizedBounds.width,
             dimensions?.width,
           )
-          if (dimensions?.width != null || originalBounds.width !== newWidth) {
-            // it moves horizontally
-            resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
-          }
-
-          const newHeight = makeNewDimension(
+          let newHeight = makeNewDimension(
             originalBounds.height,
             resizedBounds.height,
             dimensions?.height,
           )
+          if (lockedAspectRatio != null) {
+            if (newWidth !== 0) {
+              // diagonal + horizontal lock
+              newHeight = newWidth * lockedAspectRatio
+            } else if (newHeight !== 0) {
+              // vertical lock
+              newWidth = newHeight * lockedAspectRatio
+            }
+          }
+
+          if (dimensions?.width != null || originalBounds.width !== newWidth) {
+            // it moves horizontally
+            resizeCommands.push(makeResizeCommand('width', parentWidth, newWidth))
+          }
           if (dimensions?.height != null || originalBounds.height !== newHeight) {
             // it moves vertically
-            resizeCommands.push(makeResizeCommand('height', elementParentBounds?.height, newHeight))
+            resizeCommands.push(makeResizeCommand('height', parentHeight, newHeight))
           }
 
           return strategyApplicationResult([

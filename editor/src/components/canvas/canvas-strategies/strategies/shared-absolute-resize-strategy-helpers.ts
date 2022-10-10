@@ -33,7 +33,7 @@ import {
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import { AbsolutePin } from './absolute-resize-helpers'
+import { AbsolutePin } from './resize-helpers'
 
 export function createResizeCommands(
   element: JSXElement,

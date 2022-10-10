@@ -14,7 +14,6 @@ import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
-import { supportsAbsoluteResize } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -24,6 +23,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { supportsAbsoluteResize } from './resize-helpers'
 import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import {
   AccumulatedPresses,
