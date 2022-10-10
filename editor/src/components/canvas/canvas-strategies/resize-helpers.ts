@@ -1,11 +1,14 @@
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { Modifiers } from '../../../utils/modifiers'
 import { EdgePosition } from '../canvas-types'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 import { InteractionCanvasState } from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -74,4 +77,18 @@ export function supportsAbsoluteResize(
     honoursPropsPosition(canvasState, element) &&
     honoursPropsSize(canvasState, element)
   )
+}
+
+export function getLockedAspectRatio(
+  interactionData: InteractionSession,
+  modifiers: Modifiers,
+  originalBoundingBox: CanvasRectangle,
+): number | null {
+  if (interactionData.aspectRatioLock != null) {
+    return interactionData.aspectRatioLock
+  }
+  if (modifiers.shift) {
+    return originalBoundingBox.width / originalBoundingBox.height
+  }
+  return null
 }

@@ -44,16 +44,15 @@ import {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../guideline'
-import { AbsolutePin } from './absolute-resize-helpers'
 import {
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession } from './interaction-state'
+import { AbsolutePin } from './resize-helpers'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
