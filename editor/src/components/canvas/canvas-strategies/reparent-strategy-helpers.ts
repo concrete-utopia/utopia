@@ -203,7 +203,7 @@ export function findReparentStrategies(
   const withoutCmdPressedStrict = getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
-    true,
+    false,
     canvasState,
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
@@ -227,7 +227,7 @@ export function findReparentStrategies(
   ].flatMap((reparentResult) => [
     reparentStrategyForParentOnly(
       canvasState.startingMetadata,
-      true,
+      true, // TODO this should be a parameter!
       false,
       reparentResult.newParent!,
     ),
