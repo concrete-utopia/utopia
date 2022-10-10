@@ -21,7 +21,9 @@ import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
-import           Data.Conduit.Combinators         hiding (encodeUtf8, foldMap)
+import qualified Data.Conduit                     as C
+import qualified Data.Conduit.Combinators         as C hiding (concatMap)
+import qualified Data.Conduit.List                as C hiding (map)
 import           Data.Generics.Product
 import           Data.IORef
 import           Data.Pool
@@ -312,8 +314,8 @@ cachePackagerContent locksRef versionedPackageName fallback = do
 filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
 filePairsToBytes filePairs =
   let pairToBytes (filePath, pathValue) = BL.toStrict (encode filePath) <> ": " <> BL.toStrict (encode pathValue)
-      pairsAsBytes = filePairs .| map pairToBytes
-      withCommas = pairsAsBytes .| intersperse ", "
+      pairsAsBytes = filePairs .| C.map pairToBytes
+      withCommas = pairsAsBytes .| C.intersperse ", "
    in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
 
 getPackagerContent :: (MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
@@ -388,11 +390,24 @@ createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
     pure (branchName, view (field @"url") branchResult, commitSha)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
 
+convertBranchesResultToUnfold :: Int -> GetBranchesResult -> Maybe (GetBranchesResult, Int)
+convertBranchesResultToUnfold page result =
+  case Protolude.null result of
+    True  -> Nothing
+    False -> Just (result, page + 1)
+
 getGithubBranches :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
 getGithubBranches githubResources logger metrics pool userID owner repository = do
   result <- runExceptT $ do
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getGitBranches accessToken owner repository
+      -- Gives us a function that just takes the page.
+      let getPage = getGitBranches accessToken owner repository
+      -- Now we have a function compatible with `unfoldM`.
+      let getUnfoldStep page = fmap (\result -> convertBranchesResultToUnfold page result) $ getPage page
+      -- Run the steps and then combines the branches returned from each step.
+      collatedBranches <- fmap join $ sourceToList $ C.unfoldM getUnfoldStep 1
+      -- Ensure the branches are sorted.
+      pure $ sortOn (view (field @"name")) collatedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
 getGithubBranch :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
