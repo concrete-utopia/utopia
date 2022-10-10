@@ -313,10 +313,10 @@ export var storyboard = (
 
     fireEvent(
       canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, [file]),
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
     )
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, [file]))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
 
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
 
@@ -385,16 +385,14 @@ export var storyboard = (
 
     fireEvent(
       canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, files),
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
     )
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, files))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
 
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
 
     await editor.getDispatchFollowUpActionsFinished()
-
-    await wait(250) // read the image
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
