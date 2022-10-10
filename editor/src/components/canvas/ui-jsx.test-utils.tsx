@@ -105,7 +105,6 @@ import {
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
-import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
 import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
@@ -226,7 +225,12 @@ export async function renderTestEditorWithModel(
 
   const augmentedEffects: EditorEffects = {
     parseClipboardData: async (data) => {
-      editorDispatchPromises.push(new Promise((resolve) => resolve()))
+      editorDispatchPromises.push(
+        new Promise((r) => {
+          // console.log('here')
+          r()
+        }),
+      )
       return await context.effects.parseClipboardData(data)
     },
   }

@@ -410,6 +410,8 @@ export var storyboard = (
 
     await editor.getDispatchFollowUpActionsFinished()
 
+    // await wait(100000)
+
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'

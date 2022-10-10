@@ -127,6 +127,7 @@ import {
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { ProjectContentTreeRoot } from '../components/assets'
+import { PasteResult } from '../utils/clipboard-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -975,9 +976,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.stopPropagation()
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          const getPastedImages = async () => {
-            const result = await this.props.effects.parseClipboardData(event.dataTransfer)
-            // Snip out the images only from the result.
+          const getPastedImagesFromPasteResult = (result: PasteResult) => {
             let pastedImages: Array<ImageResult> = []
             fastForEach(result.files, (pastedFile) => {
               if (pastedFile.type === 'IMAGE_RESULT') {
@@ -991,15 +990,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
 
           const insertImageFromClipboard = async (elementPath: ElementPath) => {
-            this.props.dispatch(
-              [
-                CanvasActions.clearInteractionSession(false),
-                EditorActions.switchEditorMode(EditorModes.selectMode()),
-              ],
-              'everyone',
-            )
             const result = await this.props.effects.parseClipboardData(event.dataTransfer)
-            const pastedImages = await getPastedImages()
+            const pastedImages = getPastedImagesFromPasteResult(result)
 
             const actions = createDirectInsertImageActions(
               pastedImages,
@@ -1008,14 +1000,19 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               elementPath,
             )
 
-            this.props.dispatch(actions, 'everyone')
-
-            return result.files[0].filename
+            this.props.dispatch(
+              [
+                CanvasActions.clearInteractionSession(false),
+                EditorActions.switchEditorMode(EditorModes.selectMode()),
+                ...actions,
+              ],
+              'everyone',
+            )
           }
 
           if (this.props.editor.mode.type === 'select') {
             const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
+            void insertImageFromClipboard(insertionTarget)
           }
 
           if (
@@ -1024,46 +1021,49 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.editor.mode.subject.imageAssets == null
           ) {
             const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
+            void insertImageFromClipboard(insertionTarget)
           }
 
           if (
             this.props.editor.mode.type === 'insert' &&
             this.props.editor.mode.subject.type === 'Element'
           ) {
-            void getPastedImages().then((images) => {
-              if (images.length === 0) {
-                return this.props.dispatch([
-                  CanvasActions.clearInteractionSession(false),
-                  EditorActions.switchEditorMode(EditorModes.selectMode()),
-                  EditorActions.showToast({
-                    id: 'image-drag-drop',
-                    level: 'WARNING',
-                    message: "Didn't find any images to insert",
-                    persistent: false,
-                  }),
-                ])
-              }
+            void this.props.effects
+              .parseClipboardData(event.dataTransfer)
+              .then(getPastedImagesFromPasteResult)
+              .then((images) => {
+                if (images.length === 0) {
+                  return this.props.dispatch([
+                    CanvasActions.clearInteractionSession(false),
+                    EditorActions.switchEditorMode(EditorModes.selectMode()),
+                    EditorActions.showToast({
+                      id: 'image-drag-drop',
+                      level: 'WARNING',
+                      message: "Didn't find any images to insert",
+                      persistent: false,
+                    }),
+                  ])
+                }
 
-              const { actions, subjects } = actionsForDroppedImages(images, {
-                scale: this.props.model.scale,
-                projectContents: this.props.editor.projectContents,
-                loginState: this.props.userState.loginState,
-                mousePosition: mousePosition.canvasPositionRounded,
+                const { actions, subjects } = actionsForDroppedImages(images, {
+                  scale: this.props.model.scale,
+                  projectContents: this.props.editor.projectContents,
+                  loginState: this.props.userState.loginState,
+                  mousePosition: mousePosition.canvasPositionRounded,
+                })
+
+                this.props.dispatch(
+                  [
+                    ...actions,
+                    EditorActions.switchEditorMode(
+                      EditorModes.insertMode(elementInsertionSubjects(subjects)),
+                    ),
+                  ],
+                  'everyone',
+                )
+                this.handleMouseMove(event.nativeEvent)
+                this.handleMouseUp(event.nativeEvent)
               })
-
-              this.props.dispatch(
-                [
-                  ...actions,
-                  EditorActions.switchEditorMode(
-                    EditorModes.insertMode(elementInsertionSubjects(subjects)),
-                  ),
-                ],
-                'everyone',
-              )
-              this.handleMouseMove(event.nativeEvent)
-              this.handleMouseUp(event.nativeEvent)
-            })
           }
 
           if (
