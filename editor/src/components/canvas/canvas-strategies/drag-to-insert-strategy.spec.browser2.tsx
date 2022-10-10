@@ -1,4 +1,4 @@
-import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab } from '../../editor/store/editor-state'

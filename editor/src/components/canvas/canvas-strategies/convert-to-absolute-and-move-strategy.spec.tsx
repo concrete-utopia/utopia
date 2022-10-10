@@ -21,7 +21,7 @@ import {
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
@@ -175,7 +175,7 @@ function dragByPixels(
     ...createMouseInteractionForTests(
       null as any, // the strategy does not use this
       emptyModifiers,
-      null as any, // the strategy does not use this
+      boundingArea(),
       dragVector,
     ),
     latestMetadata: null as any, // the strategy does not use this
@@ -183,23 +183,22 @@ function dragByPixels(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = convertToAbsoluteAndMoveStrategy.apply(
-    pickCanvasStateFromEditorStateWithMetadata(
-      editorState,
-      createBuiltInDependenciesList(null),
-      metadata,
-    ),
-    interactionSession,
-    { ...defaultCustomStrategyState(), escapeHatchActivated: true },
-    'end-interaction',
-  )
+  const strategyResultCommands =
+    convertToAbsoluteAndMoveStrategy(
+      pickCanvasStateFromEditorStateWithMetadata(
+        editorState,
+        createBuiltInDependenciesList(null),
+        metadata,
+      ),
+      interactionSession,
+    )?.apply('end-interaction').commands ?? []
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult.commands,
+    strategyResultCommands,
     'end-interaction',
   ).editorState
 

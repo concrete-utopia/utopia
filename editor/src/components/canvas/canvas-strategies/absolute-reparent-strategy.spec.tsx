@@ -21,7 +21,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import * as EP from '../../../core/shared/element-path'
 import { left, right } from '../../../core/shared/either'
@@ -140,6 +140,7 @@ function reparentElement(
       ),
       globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
       specialSizeMeasurements: {
+        position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         providesBoundsForAbsoluteChildren: true,
@@ -173,6 +174,7 @@ function reparentElement(
       ),
       globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
       specialSizeMeasurements: {
+        position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         providesBoundsForAbsoluteChildren: true,
@@ -185,7 +187,7 @@ function reparentElement(
     ...createMouseInteractionForTests(
       canvasPoint({ x: 95, y: 80 }),
       { cmd: true, alt: false, shift: false, ctrl: false },
-      null as any, // the strategy does not use this
+      boundingArea(),
       dragVector,
     ),
     latestMetadata: null as any, // the strategy does not use this
@@ -193,16 +195,14 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = absoluteReparentStrategy.apply(
+  const strategyResult = absoluteReparentStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
       startingMetadata,
     ),
     interactionSession,
-    defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')

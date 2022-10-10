@@ -1,6 +1,4 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { AllElementProps } from '../../editor/store/editor-state'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -8,86 +6,73 @@ import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-repare
 import {
   CanvasStrategy,
   controlWithProps,
-  CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
-  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
 import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export const absoluteReparentToFlexStrategy: CanvasStrategy = {
-  id: 'ABSOLUTE_REPARENT_TO_FLEX',
-  name: () => 'Reparent (Flex)',
-  isApplicable: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
-  ): boolean {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (
-      selectedElements.length === 1 &&
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG'
-    ) {
-      const filteredSelectedElements = getDragTargets(selectedElements)
-      if (filteredSelectedElements.length === 1) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(
-          metadata,
-          filteredSelectedElements[0],
-        )
+export function absoluteReparentToFlexStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const filteredSelectedElements = getDragTargets(selectedElements)
+  if (
+    filteredSelectedElements.length !== 1 ||
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG'
+  ) {
+    return null
+  }
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
-      }
-    }
-    return false
-  },
-  controlsToRender: [
-    controlWithProps({
-      control: DragOutlineControl,
-      props: {},
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: ParentOutlines,
-      props: {},
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: ParentBounds,
-      props: {},
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: FlexReparentTargetIndicator,
-      props: {},
-      key: 'flex-reparent-target-indicator',
-      show: 'visible-only-while-active',
-    }),
-  ],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    customStrategyState: CustomStrategyState,
-  ): number {
-    // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-    return getFitnessForReparentStrategy(
+  if (
+    MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      filteredSelectedElements[0],
+    )?.specialSizeMeasurements.position !== 'absolute'
+  ) {
+    return null
+  }
+
+  return {
+    id: 'ABSOLUTE_REPARENT_TO_FLEX',
+    name: 'Reparent (Flex)',
+    controlsToRender: [
+      controlWithProps({
+        control: DragOutlineControl,
+        props: {},
+        key: 'ghost-outline-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: FlexReparentTargetIndicator,
+        props: {},
+        key: 'flex-reparent-target-indicator',
+        show: 'visible-only-while-active',
+      }),
+    ],
+    fitness: getFitnessForReparentStrategy(
       'ABSOLUTE_REPARENT_TO_FLEX',
       canvasState,
       interactionSession,
       'use-strict-bounds',
-    )
-  },
-  apply: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    customStrategyState: CustomStrategyState,
-  ): StrategyApplicationResult {
-    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
-  },
+    ),
+    apply: () => {
+      return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
+    },
+  }
 }

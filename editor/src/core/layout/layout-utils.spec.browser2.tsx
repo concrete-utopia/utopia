@@ -23,7 +23,7 @@ import {
   emptySpecialSizeMeasurements,
   emptyComments,
 } from '../shared/element-template'
-import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils.test-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { emptyImports } from '../workers/common/project-file-utils'

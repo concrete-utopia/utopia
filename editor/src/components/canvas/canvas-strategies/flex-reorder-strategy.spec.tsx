@@ -20,7 +20,7 @@ import {
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { flexReorderStrategy } from './flex-reorder-strategy'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 function getDefaultMetadata(flexDirection: string): ElementInstanceMetadataMap {
@@ -180,18 +180,13 @@ function reorderElement(
   newIndex?: number,
 ): EditorState {
   const interactionSession: InteractionSession = {
-    ...createMouseInteractionForTests(
-      dragStart,
-      emptyModifiers,
-      null as any, // the strategy does not use this
-      drag,
-    ),
+    ...createMouseInteractionForTests(dragStart, emptyModifiers, boundingArea(), drag),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = flexReorderStrategy.apply(
+  const strategyResult = flexReorderStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
@@ -199,17 +194,17 @@ function reorderElement(
     ),
     interactionSession,
     defaultCustomStrategyState(),
-    'end-interaction',
-  )
+  )?.apply('end-interaction')
 
-  expect(strategyResult.customStatePatch?.lastReorderIdx).toEqual(newIndex)
+  expect(strategyResult).toBeDefined()
+  expect(strategyResult!.customStatePatch?.lastReorderIdx).toEqual(newIndex)
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult.commands,
+    strategyResult!.commands,
     'end-interaction',
   ).editorState
 

@@ -102,6 +102,7 @@ export interface InteractionSession {
 
   startingTargetParentsToFilterOut: ReparentTargetsToFilter | null
   updatedTargetPaths: UpdatedPathMap
+  aspectRatioLock: number | null
 }
 
 export function interactionSession(
@@ -115,6 +116,7 @@ export function interactionSession(
   allElementProps: AllElementProps,
   startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
+  aspectRatioLock: number | null,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -127,6 +129,7 @@ export function interactionSession(
     latestAllElementProps: allElementProps,
     startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
+    aspectRatioLock: aspectRatioLock,
   }
 }
 
@@ -199,6 +202,7 @@ export function createInteractionViaMouse(
     userPreferredStrategy: null,
     startedAt: Date.now(),
     updatedTargetPaths: {},
+    aspectRatioLock: null,
   }
 }
 
@@ -219,6 +223,7 @@ export function createHoverInteractionViaMouse(
     userPreferredStrategy: null,
     startedAt: Date.now(),
     updatedTargetPaths: {},
+    aspectRatioLock: null,
   }
 }
 
@@ -258,6 +263,7 @@ export function updateInteractionViaDragDelta(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
@@ -291,6 +297,7 @@ export function updateInteractionViaMouse(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
@@ -316,6 +323,7 @@ export function updateHoverInteractionViaMouse(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
+      aspectRatioLock: currentState.aspectRatioLock,
     }
   } else {
     return currentState
@@ -343,6 +351,7 @@ export function createInteractionViaKeyboard(
     userPreferredStrategy: null,
     startedAt: Date.now(),
     updatedTargetPaths: {},
+    aspectRatioLock: null,
   }
 }
 
@@ -383,6 +392,7 @@ export function updateInteractionViaKeyboard(
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
         updatedTargetPaths: currentState.updatedTargetPaths,
+        aspectRatioLock: currentState.aspectRatioLock,
       }
     }
     case 'DRAG': {
@@ -404,6 +414,7 @@ export function updateInteractionViaKeyboard(
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
         updatedTargetPaths: currentState.updatedTargetPaths,
+        aspectRatioLock: currentState.aspectRatioLock,
       }
     }
     case 'HOVER': {
@@ -419,6 +430,7 @@ export function updateInteractionViaKeyboard(
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
         updatedTargetPaths: currentState.updatedTargetPaths,
+        aspectRatioLock: currentState.aspectRatioLock,
       }
     }
     default:

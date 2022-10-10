@@ -101,7 +101,7 @@ export function targetPaths(elements: Array<ElementPath>): TargetPaths {
   }
 }
 
-interface InsertionSubjects {
+export interface InsertionSubjects {
   type: 'INSERTION_SUBJECTS'
   subjects: Array<InsertionSubject>
 }
@@ -135,38 +135,16 @@ export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
-
-  name: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    customStrategyState: CustomStrategyState,
-  ) => string
-
-  // Determines if we should show the controls that this strategy renders
-  isApplicable: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
-  ) => boolean
+  name: string
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  controlsToRender: Array<ControlWithProps<unknown>>
+  controlsToRender: Array<ControlWithProps<any>>
 
-  // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
-  fitness: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    customStrategyState: CustomStrategyState,
-  ) => number
+  // For determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
+  fitness: number
 
   // Returns the commands that inform how the model and the editor should be updated
-  apply: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    customStrategyState: CustomStrategyState,
-    strategyLifecycle: InteractionLifecycle,
-  ) => StrategyApplicationResult
+  apply: (strategyLifecycle: InteractionLifecycle) => StrategyApplicationResult
 }
 
 export const ControlDelay = 600

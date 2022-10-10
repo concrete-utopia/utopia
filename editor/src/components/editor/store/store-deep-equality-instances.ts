@@ -394,6 +394,8 @@ import {
   targetedInsertionParent,
   TargetedInsertionParent,
   imageInsertionSubject,
+  ElementInsertionSubjects,
+  elementInsertionSubjects,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -1791,7 +1793,7 @@ const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTarg
   )
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1812,6 +1814,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
+    (session) => session.aspectRatioLock,
+    nullableDeepEquality(createCallWithTripleEquals()),
     interactionSession,
   )
 
@@ -2550,6 +2554,16 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     elementInsertionSubject,
   )
+
+export const ElementInsertionSubjectsKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubjects> =
+  combine2EqualityCalls(
+    (s) => s.elements,
+    arrayDeepEquality(ElementInsertionSubjectKeepDeepEquality),
+    (s) => s.type,
+    StringKeepDeepEquality,
+    elementInsertionSubjects,
+  )
+
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
     (s) => s.file,
@@ -2579,6 +2593,11 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     case 'DragAndDrop':
       if (newValue.type === oldValue.type) {
         return DragAndDropInsertionSubjectKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'Elements':
+      if (newValue.type === oldValue.type) {
+        return ElementInsertionSubjectsKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -3015,9 +3034,11 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
 )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine1EqualityCall(
+  combine2EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
+    (settings) => settings.originCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )
 

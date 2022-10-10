@@ -42,82 +42,86 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 
-export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
-  id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
-  name: () => 'Move (Abs)',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length > 0) {
-      const filteredSelectedElements = getDragTargets(selectedElements)
-      return filteredSelectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
-          honoursPropsPosition(canvasState, element)
-        )
-      })
-    } else {
-      return false
-    }
-  },
-  controlsToRender: [
-    controlWithProps({
-      control: ParentOutlines,
-      props: {},
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    }),
-    controlWithProps({
-      control: ParentBounds,
-      props: {},
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    }),
-  ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    return convertToAbsoluteAndMoveStrategy.isApplicable(
-      canvasState,
-      interactionSession,
-      canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
-    ) &&
+export function convertToAbsoluteAndMoveStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const filteredSelectedElements = getDragTargets(selectedElements)
+  if (
+    filteredSelectedElements.length === 0 ||
+    !filteredSelectedElements.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        element,
+      )
+      return (
+        elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
+        honoursPropsPosition(canvasState, element)
+      )
+    })
+  ) {
+    return null
+  }
+
+  return {
+    id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
+    name: 'Move (Abs)',
+    controlsToRender: [
+      controlWithProps({
+        control: ParentOutlines,
+        props: {},
+        key: 'parent-outlines-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ParentBounds,
+        props: {},
+        key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+    ], // Uses existing hooks in select-mode-hooks.tsx
+    fitness:
+      interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-      ? 0.5
-      : 0
-  },
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    if (
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.drag != null
-    ) {
-      const getConversionAndMoveCommands = (
-        snappedDragVector: CanvasPoint,
-      ): {
-        commands: Array<CanvasCommand>
-        intendedBounds: Array<CanvasFrameAndTarget>
-      } => {
-        return getEscapeHatchCommands(
-          getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-          canvasState.startingMetadata,
+        ? 0.5
+        : 0,
+    apply: () => {
+      if (
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.interactionData.drag != null
+      ) {
+        const getConversionAndMoveCommands = (
+          snappedDragVector: CanvasPoint,
+        ): {
+          commands: Array<CanvasCommand>
+          intendedBounds: Array<CanvasFrameAndTarget>
+        } => {
+          return getEscapeHatchCommands(
+            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+            canvasState.startingMetadata,
+            canvasState,
+            snappedDragVector,
+          )
+        }
+        const absoluteMoveApplyResult = applyMoveCommon(
           canvasState,
-          snappedDragVector,
+          interactionSession,
+          getConversionAndMoveCommands,
         )
-      }
-      const absoluteMoveApplyResult = applyMoveCommon(
-        canvasState,
-        interactionSession,
-        getConversionAndMoveCommands,
-      )
 
-      return strategyApplicationResult(absoluteMoveApplyResult.commands)
-    }
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
-  },
+        return strategyApplicationResult(absoluteMoveApplyResult.commands)
+      }
+      // Fallback for when the checks above are not satisfied.
+      return emptyStrategyApplicationResult
+    },
+  }
 }
 
 export function getEscapeHatchCommands(
