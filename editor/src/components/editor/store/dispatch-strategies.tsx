@@ -397,11 +397,7 @@ function handleUserChangedStrategy(
         commands: [
           strategySwitched(
             'user-input',
-            strategy.strategy.name(
-              canvasState,
-              newEditorState.canvas.interactionSession,
-              strategyState.customStrategyState,
-            ),
+            strategy.strategy.name,
             true,
             previousStrategy?.fitness ?? NaN,
             strategy.fitness,

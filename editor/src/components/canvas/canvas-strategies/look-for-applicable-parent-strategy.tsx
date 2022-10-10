@@ -12,7 +12,6 @@ import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
@@ -25,17 +24,17 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  CustomStrategyState,
   defaultCustomStrategyState,
   InteractionCanvasState,
   InteractionTarget,
 } from './canvas-strategy-types'
-import { createEmptyStrategyState, InteractionSession } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 
 export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
   canvasSate,
   interactionSession,
-  metadata,
-  allElementProps,
+  customStrategyState,
 ) => {
   if (interactionSession == null) {
     return []
@@ -44,41 +43,26 @@ export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
   const result = lookForApplicableParentStrategyInner(
     canvasSate,
     interactionSession,
-    metadata,
-    allElementProps,
+    customStrategyState,
   )
 
   if (result == null || result.strategies.length < 1) {
     return []
   }
 
-  return [tweakStrategy(result.strategies[0], result.effectiveTarget, result.componentsInSubtree)]
+  return [tweakStrategy(result.strategies[0], result.componentsInSubtree)]
 }
 
 function tweakStrategy(
   strategy: CanvasStrategy,
-  effectiveTarget: Array<ElementPath>,
   componentsInSubtree: Array<ElementPath>,
 ): CanvasStrategy {
   const { controlsToRender } = strategy
 
-  const isApplicable: CanvasStrategy['isApplicable'] = () => true
+  const fitness: CanvasStrategy['fitness'] = 1
 
-  const fitness: CanvasStrategy['fitness'] = () => 1
-
-  const apply: CanvasStrategy['apply'] = (
-    canvasState,
-    interactionSession,
-    strategyState,
-    strategyLifecycle,
-  ) => {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
-    const result = strategy.apply(
-      patchedCanvasState,
-      interactionSession,
-      strategyState,
-      strategyLifecycle,
-    )
+  const apply: CanvasStrategy['apply'] = (strategyLifecycle) => {
+    const result = strategy.apply(strategyLifecycle)
     return {
       ...result,
       commands: [
@@ -89,12 +73,11 @@ function tweakStrategy(
     }
   }
 
-  const name: CanvasStrategy['name'] = (canvasState, interactionSession, customStrategyState) =>
-    strategy.name(canvasState, interactionSession, customStrategyState) + ' *'
+  const name: CanvasStrategy['name'] = strategy.name + ' *'
 
   const id: CanvasStrategyId = 'LOOK_FOR_APPLICABLE_PARENT_ID'
 
-  return { apply, name, fitness, id, isApplicable, controlsToRender }
+  return { apply, name, fitness, id, controlsToRender }
 }
 
 function* elementAncestry(path: ElementPath) {
@@ -131,8 +114,7 @@ function patchCanvasStateInteractionTargetPath(
 function lookForApplicableParentStrategyInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
+  customStrategyState: CustomStrategyState,
 ): ParentApplicableStrategyResult | null {
   if (interactionSession.interactionData.type !== 'DRAG') {
     return null
@@ -149,19 +131,13 @@ function lookForApplicableParentStrategyInner(
     !isParentFindingStrategyApplicable(
       sortedStrategies,
       pathsFromInteractionTarget(canvasState.interactionTarget),
-      metadata,
-      allElementProps,
+      canvasState.startingMetadata,
     )
   ) {
     return null
   }
 
-  const result = isApplicableTraverseMemo(
-    canvasState,
-    interactionSession,
-    metadata,
-    allElementProps,
-  )
+  const result = isApplicableTraverseMemo(canvasState, interactionSession)
 
   if (result == null || result.strategies.length < 1) {
     return null
@@ -174,7 +150,6 @@ function isParentFindingStrategyApplicable(
   applicableStrategies: Array<CanvasStrategy>,
   interactionTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
 ): boolean {
   if (interactionTarget.length !== 1) {
     return false
@@ -201,8 +176,6 @@ interface ParentApplicableStrategyResult {
 function isApplicableTraverse(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
   const customStrategyState = defaultCustomStrategyState() // TODO I'm using the default state here to not change behavior, but I _think_ this should use the real customStrategyState instead
 

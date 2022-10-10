@@ -15,37 +15,33 @@ import { mouseDownAtPoint, mouseMoveToPoint, pressKey } from '../../event-helper
 
 const BestStrategy: CanvasStrategy = {
   id: 'BEST_STRATEGY',
-  name: () => 'Best Strategy',
-  isApplicable: () => true,
+  name: 'Best Strategy',
   controlsToRender: [],
-  fitness: () => 10,
+  fitness: 10,
   apply: () => strategyApplicationResult([]),
 }
 
 const AverageStrategy: CanvasStrategy = {
   id: 'AVERAGE_STRATEGY',
-  name: () => 'Average Strategy',
-  isApplicable: () => true,
+  name: 'Average Strategy',
   controlsToRender: [],
-  fitness: () => 5,
+  fitness: 5,
   apply: () => strategyApplicationResult([]),
 }
 
 const WorstStrategy: CanvasStrategy = {
   id: 'WORST_STRATEGY',
-  name: () => 'Worst Strategy',
-  isApplicable: () => true,
+  name: 'Worst Strategy',
   controlsToRender: [],
-  fitness: () => 1,
+  fitness: 1,
   apply: () => strategyApplicationResult([]),
 }
 
 const UnfitStrategy: CanvasStrategy = {
   id: 'UNFIT_STRATEGY',
-  name: () => 'Unfit Strategy',
-  isApplicable: () => false,
+  name: 'Unfit Strategy',
   controlsToRender: [],
-  fitness: () => 0,
+  fitness: 0,
   apply: () => strategyApplicationResult([]),
 }
 
@@ -96,7 +92,7 @@ async function startDraggingDefaultTarget(
 }
 
 function applicableStrategyForStrategy(strategy: CanvasStrategy): ApplicableStrategy {
-  return applicableStrategy(strategy, strategy.name({} as any, {} as any, {} as any))
+  return applicableStrategy(strategy, strategy.name)
 }
 
 function pressTab() {

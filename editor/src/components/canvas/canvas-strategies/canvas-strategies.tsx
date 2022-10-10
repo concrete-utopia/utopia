@@ -1,6 +1,11 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import {
+  addAllUniquelyBy,
+  mapDropNulls,
+  sortBy,
+  stripNulls,
+} from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
@@ -51,14 +56,19 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 
+export type CanvasStrategyFactory = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => CanvasStrategy | null
+
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
+  customStrategyState: CustomStrategyState,
 ) => Array<CanvasStrategy>
 
-export const existingStrategies: MetaCanvasStrategy = () => [
+const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   forcedAbsoluteReparentStrategy,
@@ -79,6 +89,17 @@ export const existingStrategies: MetaCanvasStrategy = () => [
   flexResizeBasicStrategy,
   relativeMoveStrategy,
 ]
+
+export const existingStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> =>
+  stripNulls(
+    existingStrategyFactories.map((factory) =>
+      factory(canvasState, interactionSession, customStrategyState),
+    ),
+  )
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
@@ -160,14 +181,9 @@ export function getApplicableStrategies(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
+  customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> {
-  return strategies
-    .flatMap((s) => s(canvasState, interactionSession, metadata, allElementProps))
-    .filter((strategy) => {
-      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-    })
+  return strategies.flatMap((s) => s(canvasState, interactionSession, customStrategyState))
 }
 
 const getApplicableStrategiesSelector = createSelector(
@@ -180,14 +196,12 @@ const getApplicableStrategiesSelector = createSelector(
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched) => store.editor.allElementProps,
+  (store: EditorStorePatched) => store.strategyState.customStrategyState,
   (
     applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
+    customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
     if (applicableStrategiesFromStrategyState != null) {
       return applicableStrategiesFromStrategyState
@@ -196,8 +210,7 @@ const getApplicableStrategiesSelector = createSelector(
         RegisteredCanvasStrategies,
         canvasState,
         interactionSession,
-        metadata,
-        allElementProps,
+        customStrategyState,
       )
     }
   },
@@ -222,13 +235,11 @@ export function getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
+    customStrategyState,
   )
 
-  // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
-    const fitness = strategy.fitness(canvasState, interactionSession, customStrategyState)
+    const fitness = strategy.fitness
     if (fitness <= 0) {
       return null
     } else {
@@ -307,7 +318,7 @@ export function findCanvasStrategy(
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
     sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
       strategy: s.strategy,
-      name: s.strategy.name(canvasState, interactionSession, customStrategyState),
+      name: s.strategy.name,
     })),
   }
 }
@@ -319,7 +330,7 @@ export function applyCanvasStrategy(
   customStrategyState: CustomStrategyState,
   strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, customStrategyState, strategyLifecycle)
+  return strategy.apply(strategyLifecycle)
 }
 
 export function useDelayedEditorState<T>(
