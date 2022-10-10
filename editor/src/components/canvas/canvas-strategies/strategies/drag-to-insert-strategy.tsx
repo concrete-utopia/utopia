@@ -1,5 +1,32 @@
+import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
+import {
+  createFakeMetadataForElement,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import { isLeft } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
+import { elementPath } from '../../../../core/shared/element-path'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { CanvasRectangle, canvasRectangle, Size } from '../../../../core/shared/math-utils'
+import { cmdModifier } from '../../../../utils/modifiers'
+import { InsertionSubject } from '../../../editor/editor-modes'
+import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
+import {
+  InsertElementInsertionSubject,
+  insertElementInsertionSubject,
+} from '../../commands/insert-element-insertion-subject'
+import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
+import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import {
+  findCanvasStrategy,
+  pickCanvasStateFromEditorStateWithMetadata,
+  RegisteredCanvasStrategies,
+} from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -11,38 +38,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import {
-  DefaultInsertSize,
-  ElementInsertionSubject,
-  InsertionSubject,
-} from '../../../editor/editor-modes'
 import { InteractionSession } from '../interaction-state'
-import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
-import { isLeft } from '../../../../core/shared/either'
-import {
-  InsertElementInsertionSubject,
-  insertElementInsertionSubject,
-} from '../../commands/insert-element-insertion-subject'
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
-import {
-  findCanvasStrategy,
-  pickCanvasStateFromEditorStateWithMetadata,
-  RegisteredCanvasStrategies,
-} from '../canvas-strategies'
-import { foldAndApplyCommandsInner } from '../../commands/commands'
-import { updateFunctionCommand } from '../../commands/update-function-command'
-import {
-  createFakeMetadataForElement,
-  MetadataUtils,
-} from '../../../../core/model/element-metadata-utils'
-import { elementPath } from '../../../../core/shared/element-path'
-import * as EP from '../../../../core/shared/element-path'
-import { CanvasRectangle, canvasRectangle, Size } from '../../../../core/shared/math-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { cmdModifier } from '../../../../utils/modifiers'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
-import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 
 export function dragToInsertStrategy(
   canvasState: InteractionCanvasState,
@@ -50,8 +46,7 @@ export function dragToInsertStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  const insertionElementSubjects = insertionSubjects.filter((s) => s.type === 'Element')
-  if (insertionElementSubjects.length === 0) {
+  if (insertionSubjects.length === 0) {
     return null
   }
 
@@ -98,7 +93,7 @@ export function dragToInsertStrategy(
         interactionSession.interactionData.drag != null
       ) {
         const insertionCommands = insertionSubjects.flatMap((s) => {
-          const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
+          const size = s.defaultSize
           return getInsertionCommands(s, interactionSession, size)
         })
 
@@ -133,10 +128,6 @@ function getInsertionCommands(
   interactionSession: InteractionSession,
   size: Size,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
-  if (subject.type !== 'Element') {
-    // non-element subjects are not supported
-    return []
-  }
   if (
     interactionSession.interactionData.type === 'DRAG' &&
     interactionSession.interactionData.drag != null
@@ -174,7 +165,7 @@ function getInsertionCommands(
 }
 
 function getStyleAttributesForFrameInAbsolutePosition(
-  subject: ElementInsertionSubject,
+  subject: InsertionSubject,
   frame: CanvasRectangle,
 ) {
   const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(

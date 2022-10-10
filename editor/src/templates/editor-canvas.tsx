@@ -42,11 +42,7 @@ import {
   EditorModes,
   Mode,
   isLiveMode,
-  InsertMode,
-  insertionSubjectIsJSXElement,
-  ElementInsertionSubject,
-  elementInsertionSubject,
-  elementInsertionSubjects,
+  insertionSubject,
   InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
@@ -227,16 +223,14 @@ function handleCanvasEvent(
 
       optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
-      if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
-        optionalDragStateAction = [
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-              type: 'RESIZE_HANDLE',
-              edgePosition: { x: 1, y: 1 },
-            }),
-          ),
-        ]
-      }
+      optionalDragStateAction = [
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+            type: 'RESIZE_HANDLE',
+            edgePosition: { x: 1, y: 1 },
+          }),
+        ),
+      ]
     }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -879,14 +873,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getModeSpecificCursor(): CSSCursor | null {
     if (this.props.editor.mode.type === 'insert') {
-      if (
-        this.props.editor.mode.subject != null &&
-        Utils.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
-      ) {
-        return CSSCursor.TextInsert
-      } else {
-        return CSSCursor.Insert
-      }
+      return CSSCursor.Insert
     } else {
       return null
     }
@@ -1019,21 +1006,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           if (this.props.editor.mode.type === 'select') {
             const insertionTarget = this.props.editor.highlightedViews[0]
             return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets == null
-          ) {
-            const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'Element'
-          ) {
+          } else if (this.props.editor.mode.type === 'insert') {
             void getPastedImages().then((images) => {
               if (images.length === 0) {
                 return this.props.dispatch([
@@ -1056,37 +1029,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               })
 
               this.props.dispatch(
-                [
-                  ...actions,
-                  EditorActions.switchEditorMode(
-                    EditorModes.insertMode(elementInsertionSubjects(subjects)),
-                  ),
-                ],
+                [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
                 'everyone',
               )
               this.handleMouseMove(event.nativeEvent)
               this.handleMouseUp(event.nativeEvent)
             })
           }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets != null
-          ) {
-            let actions: Array<EditorAction> = []
-            fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
-              actions.push(
-                EditorActions.insertDroppedImage(
-                  imageAsset.file,
-                  imageAsset.path,
-                  mousePosition.canvasPositionRounded,
-                ),
-              )
-            })
-            actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-            return this.props.dispatch(actions, 'everyone')
-          }
+          return
         },
 
         onWheel: (event) => {
@@ -1648,7 +1598,7 @@ interface ActionsForDroppedImageContext {
 
 interface ActionForDroppedImageResult {
   actions: EditorAction[]
-  singleSubject: ElementInsertionSubject
+  singleSubject: InsertionSubject
 }
 
 function actionsForDroppedImage(
@@ -1692,12 +1642,12 @@ function actionsForDroppedImage(
   })
   return {
     actions: saveImageActions,
-    singleSubject: elementInsertionSubject(newUID, newElement, elementSize, {}, null),
+    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
   }
 }
 
 interface ActionsForDroppedImagesResult {
-  subjects: Array<ElementInsertionSubject>
+  subjects: Array<InsertionSubject>
   actions: Array<EditorAction>
 }
 
@@ -1714,7 +1664,7 @@ function actionsForDroppedImages(
 ): ActionsForDroppedImagesResult {
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
-  let subjects: Array<ElementInsertionSubject> = []
+  let subjects: Array<InsertionSubject> = []
   for (const image of images) {
     const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
       generateUid: () =>
