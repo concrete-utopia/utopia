@@ -133,17 +133,17 @@ createCommitHandleErrorCases status | status == notFound404             = throwE
                                     | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
                                     | otherwise                         = throwE "Unexpected error."
 
-createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> ExceptT Text m CreateGitCommitResult
-createGitCommit accessToken GithubRepo{..} treeSha = do
+createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> [Text] -> ExceptT Text m CreateGitCommitResult
+createGitCommit accessToken GithubRepo{..} treeSha parentCommits = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits"
-  let request = CreateGitCommit "Committed automatically." treeSha
+  let request = CreateGitCommit "Committed automatically." treeSha parentCommits
   callGithub postToGithub [] createCommitHandleErrorCases accessToken repoUrl request
 
-createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> ExceptT Text m CreateGitCommitResult
-createGitCommitForTree accessToken PersistentModel{..} treeSha = do
+createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> [Text] -> ExceptT Text m CreateGitCommitResult
+createGitCommitForTree accessToken PersistentModel{..} treeSha parentCommits = do
   let possibleGithubRepo = targetRepository githubSettings
   case possibleGithubRepo of
-    Just repo -> createGitCommit accessToken repo treeSha
+    Just repo -> createGitCommit accessToken repo treeSha parentCommits
     Nothing   -> throwE "No repository set on project."
 
 createBranchHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
