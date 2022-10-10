@@ -629,7 +629,7 @@ function editorDispatchInner(
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
 ): InnerDispatchResult {
-  // console.trace('DISPATCH', simpleStringifyActions(dispatchedActions))
+  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED

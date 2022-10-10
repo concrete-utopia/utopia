@@ -10,8 +10,10 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -27,35 +29,43 @@ import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { MissingBoundsHandling, UpdatedPathMap } from './interaction-state'
+import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from './interaction-state'
 
-function getAbsoluteReparentStrategy(
+function baseAbsoluteReparentStrategy(
   id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT',
   name: string,
   missingBoundsHandling: MissingBoundsHandling,
-): CanvasStrategy {
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    selectedElements.length === 0 ||
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG'
+  ) {
+    return null
+  }
+
+  const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
+  const filteredSelectedElements = getDragTargets(selectedElements)
+  const isApplicable = filteredSelectedElements.every((element) => {
+    const elementMetadata = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      element,
+    )
+
+    return (
+      elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+      honoursPropsPosition(canvasState, element)
+    )
+  })
+  if (!isApplicable) {
+    return null
+  }
   return {
     id: id,
-    name: () => name,
-    isApplicable: (canvasState, interactionSession, metadata) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      if (
-        selectedElements.length > 0 &&
-        interactionSession != null &&
-        interactionSession.interactionData.type === 'DRAG'
-      ) {
-        const filteredSelectedElements = getDragTargets(selectedElements)
-        return filteredSelectedElements.every((element) => {
-          const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-          return (
-            elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-            honoursPropsPosition(canvasState, element)
-          )
-        })
-      }
-      return false
-    },
+    name: name,
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
@@ -70,41 +80,32 @@ function getAbsoluteReparentStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness: (canvasState, interactionSession, customStrategyState) => {
-      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-      return getFitnessForReparentStrategy(
-        'ABSOLUTE_REPARENT_TO_ABSOLUTE',
-        canvasState,
-        interactionSession,
-        missingBoundsHandling,
-      )
-    },
-    apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
-      const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
-      const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
-      const filteredSelectedElements = getDragTargets(selectedElements)
-
+    fitness: getFitnessForReparentStrategy(
+      'ABSOLUTE_REPARENT_TO_ABSOLUTE',
+      canvasState,
+      interactionSession,
+      missingBoundsHandling,
+    ),
+    apply: (strategyLifecycle) => {
+      const { projectContents, openFile, nodeModules } = canvasState
       return ifAllowedToReparent(
         canvasState,
         canvasState.startingMetadata,
         filteredSelectedElements,
         () => {
-          if (
-            interactionSession.interactionData.type != 'DRAG' ||
-            interactionSession.interactionData.drag == null
-          ) {
+          if (dragInteractionData.drag == null) {
             return emptyStrategyApplicationResult
           }
 
           const pointOnCanvas = offsetPoint(
-            interactionSession.interactionData.originalDragStart,
-            interactionSession.interactionData.drag,
+            dragInteractionData.originalDragStart,
+            dragInteractionData.drag,
           )
 
           const reparentTarget = getReparentTargetUnified(
             existingReparentSubjects(filteredSelectedElements),
             pointOnCanvas,
-            interactionSession.interactionData.modifiers.cmd,
+            dragInteractionData.modifiers.cmd,
             canvasState,
             canvasState.startingMetadata,
             canvasState.startingAllElementProps,
@@ -161,32 +162,25 @@ function getAbsoluteReparentStrategy(
               updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
             })
 
-            const moveCommands = absoluteMoveStrategy.apply(
-              canvasState,
-              {
+            const moveCommands =
+              absoluteMoveStrategy(canvasState, {
                 ...interactionSession,
                 updatedTargetPaths: updatedTargetPaths,
-              },
-              customStrategyState,
-              strategyLifecycle,
-            )
+              })?.apply(strategyLifecycle).commands ?? []
 
             return strategyApplicationResult([
-              ...moveCommands.commands,
+              ...moveCommands,
               ...commands.flatMap((c) => c.commands),
               updateSelectedViews('always', newPaths),
               setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
               setCursorCommand('mid-interaction', CSSCursor.Move),
             ])
           } else {
-            const moveCommands = absoluteMoveStrategy.apply(
-              canvasState,
-              interactionSession,
-              customStrategyState,
-              strategyLifecycle,
-            )
+            const moveCommands =
+              absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle)
+                .commands ?? []
 
-            return strategyApplicationResult(moveCommands.commands)
+            return strategyApplicationResult(moveCommands)
           }
         },
       )
@@ -194,13 +188,26 @@ function getAbsoluteReparentStrategy(
   }
 }
 
-export const absoluteReparentStrategy = getAbsoluteReparentStrategy(
-  'ABSOLUTE_REPARENT',
-  'Reparent (Abs)',
-  'use-strict-bounds',
-)
-export const forcedAbsoluteReparentStrategy = getAbsoluteReparentStrategy(
-  'FORCED_ABSOLUTE_REPARENT',
-  'Reparent (Abs, Force)',
-  'allow-missing-bounds',
-)
+export const absoluteReparentStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null =>
+  baseAbsoluteReparentStrategy(
+    'ABSOLUTE_REPARENT',
+    'Reparent (Abs)',
+    'use-strict-bounds',
+    canvasState,
+    interactionSession,
+  )
+
+export const forcedAbsoluteReparentStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null =>
+  baseAbsoluteReparentStrategy(
+    'FORCED_ABSOLUTE_REPARENT',
+    'Reparent (Abs, Force)',
+    'allow-missing-bounds',
+    canvasState,
+    interactionSession,
+  )

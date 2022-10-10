@@ -1,4 +1,3 @@
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import {
@@ -7,9 +6,9 @@ import {
   parentPath,
   toString,
 } from '../../../core/shared/element-path'
-import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
+import { canvasPoint, offsetPoint } from '../../../core/shared/math-utils'
+import { EditorStatePatch } from '../../editor/store/editor-state'
+import { foldAndApplyCommandsInner } from '../commands/commands'
 import { duplicateElement } from '../commands/duplicate-element-command'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -27,7 +26,7 @@ import {
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionLifecycle,
+  InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
@@ -40,25 +39,28 @@ import {
 } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-function getFlexReparentToAbsoluteStrategy(
+function baseFlexReparentToAbsoluteStrategy(
   id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
   name: string,
   missingBoundsHandling: MissingBoundsHandling,
-): CanvasStrategy {
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    selectedElements.length !== 1 ||
+    !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      selectedElements[0],
+      canvasState.startingMetadata,
+    )
+  ) {
+    return null
+  }
+
   return {
     id: id,
-    name: () => name,
-    isApplicable: (canvasState, interactionSession, metadata) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      if (selectedElements.length == 1) {
-        return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          selectedElements[0],
-          metadata,
-        )
-      } else {
-        return false
-      }
-    },
+    name: name,
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
@@ -79,17 +81,17 @@ function getFlexReparentToAbsoluteStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness: (canvasState, interactionSession, customStrategyState) => {
-      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-      return getFitnessForReparentStrategy(
-        'FLEX_REPARENT_TO_ABSOLUTE',
-        canvasState,
-        interactionSession,
-        missingBoundsHandling,
-      )
-    },
-    apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    fitness:
+      interactionSession == null
+        ? 0
+        : // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
+          getFitnessForReparentStrategy(
+            'FLEX_REPARENT_TO_ABSOLUTE',
+            canvasState,
+            interactionSession,
+            missingBoundsHandling,
+          ),
+    apply: (strategyLifecycle) => {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(
         canvasState,
@@ -97,6 +99,7 @@ function getFlexReparentToAbsoluteStrategy(
         filteredSelectedElements,
         () => {
           if (
+            interactionSession == null ||
             interactionSession.interactionData.type !== 'DRAG' ||
             interactionSession.interactionData.drag == null
           ) {
@@ -160,15 +163,27 @@ function getFlexReparentToAbsoluteStrategy(
             updateFunctionCommand(
               'always',
               (editorState, commandLifecycle): Array<EditorStatePatch> => {
-                return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-                  canvasState.builtInDependencies,
+                const updatedCanvasState = pickCanvasStateFromEditorState(
                   editorState,
-                  customStrategyState,
-                  interactionSession,
-                  commandLifecycle,
-                  missingBoundsHandling,
-                  strategyLifecycle,
+                  canvasState.builtInDependencies,
                 )
+                const isForced = missingBoundsHandling === 'allow-missing-bounds'
+
+                const absoluteReparentStrategyToUse = isForced
+                  ? forcedAbsoluteReparentStrategy
+                  : absoluteReparentStrategy
+                const reparentCommands =
+                  absoluteReparentStrategyToUse(updatedCanvasState, interactionSession)?.apply(
+                    strategyLifecycle,
+                  ).commands ?? []
+
+                return foldAndApplyCommandsInner(
+                  editorState,
+                  [],
+                  [],
+                  reparentCommands,
+                  commandLifecycle,
+                ).statePatches
               },
             ),
           ])
@@ -178,39 +193,29 @@ function getFlexReparentToAbsoluteStrategy(
   }
 }
 
-function runAbsoluteReparentStrategyForFreshlyConvertedElement(
-  builtInDependencies: BuiltInDependencies,
-  editorState: EditorState,
+export const flexReparentToAbsoluteStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-  interactionSession: InteractionSession,
-  commandLifecycle: InteractionLifecycle,
-  missingBoundsHandling: MissingBoundsHandling,
-  strategyLifeCycle: InteractionLifecycle,
-): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
-  const isForced = missingBoundsHandling === 'allow-missing-bounds'
-
-  const absoluteReparentStrategyToUse = isForced
-    ? forcedAbsoluteReparentStrategy
-    : absoluteReparentStrategy
-  const reparentCommands = absoluteReparentStrategyToUse.apply(
+) =>
+  baseFlexReparentToAbsoluteStrategy(
+    'FLEX_REPARENT_TO_ABSOLUTE',
+    'Reparent (Abs)',
+    'use-strict-bounds',
     canvasState,
     interactionSession,
     customStrategyState,
-    strategyLifeCycle,
-  ).commands
-
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
-    .statePatches
-}
-
-export const flexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
-  'FLEX_REPARENT_TO_ABSOLUTE',
-  'Reparent (Abs)',
-  'use-strict-bounds',
-)
-export const forcedFlexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
-  'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
-  'Reparent (Abs, Force)',
-  'allow-missing-bounds',
-)
+  )
+export const forcedFlexReparentToAbsoluteStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) =>
+  baseFlexReparentToAbsoluteStrategy(
+    'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
+    'Reparent (Abs, Force)',
+    'allow-missing-bounds',
+    canvasState,
+    interactionSession,
+    customStrategyState,
+  )
