@@ -54,7 +54,9 @@ export function flowReorderStrategy(
       }),
       controlWithProps({
         control: FlowReorderDragOutline,
-        props: {},
+        props: {
+          targets: selectedElements, // should this be a single target element?
+        },
         key: 'flow-reorder-drag-outline',
         show: 'visible-only-while-active',
       }),

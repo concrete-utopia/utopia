@@ -43,7 +43,7 @@ export function flowReorderSliderStategy(
     controlsToRender: [
       controlWithProps({
         control: FlowSliderControl,
-        props: {},
+        props: { target },
         key: 'flow-slider-control',
         show: 'always-visible',
       }),
