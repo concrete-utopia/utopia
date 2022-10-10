@@ -27,6 +27,7 @@ import { saveStoredState } from '../stored-state'
 import {
   DerivedState,
   deriveState,
+  EditorEffects,
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
@@ -88,6 +89,7 @@ export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): st
 
 function processAction(
   dispatchEvent: EditorDispatch,
+  effects: EditorEffects,
   working: EditorStoreUnpatched,
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
@@ -96,10 +98,10 @@ function processAction(
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
     // Drill into the array.
-    return processActions(dispatchEvent, working, action.transientActions, spyCollector)
+    return processActions(dispatchEvent, effects, working, action.transientActions, spyCollector)
   } else if (action.action === 'ATOMIC') {
     // Drill into the array.
-    return processActions(dispatchEvent, working, action.actions, spyCollector)
+    return processActions(dispatchEvent, effects, working, action.actions, spyCollector)
   } else if (action.action === 'UNDO' && !History.canUndo(workingHistory)) {
     // Bail early and make no changes.
     return working
@@ -176,19 +178,20 @@ function processAction(
       dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
       builtInDependencies: working.builtInDependencies,
-      effects: { parseClipboardData: parseClipboardData },
+      effects: effects,
     }
   }
 }
 
 function processActions(
   dispatchEvent: EditorDispatch,
+  effects: EditorEffects,
   working: EditorStoreUnpatched,
   actions: Array<EditorAction>,
   spyCollector: UiJsxCanvasContextData,
 ): EditorStoreUnpatched {
   return actions.reduce((workingFuture: EditorStoreUnpatched, action: EditorAction) => {
-    return processAction(dispatchEvent, workingFuture, action, spyCollector)
+    return processAction(dispatchEvent, effects, workingFuture, action, spyCollector)
   }, working)
 }
 
@@ -345,6 +348,7 @@ export function resetDispatchGlobals(): void {
 
 export function editorDispatch(
   boundDispatch: EditorDispatch,
+  effects: EditorEffects,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
@@ -406,6 +410,7 @@ export function editorDispatch(
     (working: InnerDispatchResult, actions) => {
       const newStore = editorDispatchInner(
         boundDispatch,
+        effects,
         actions,
         working,
         spyCollector,
@@ -499,7 +504,7 @@ export function editorDispatch(
     ]),
     alreadySaved: alreadySaved || shouldSave,
     builtInDependencies: storedState.builtInDependencies,
-    effects: { parseClipboardData: parseClipboardData },
+    effects: effects,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -625,6 +630,7 @@ function applyProjectChanges(
 
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
+  effects: EditorEffects,
   dispatchedActions: EditorAction[],
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
@@ -640,7 +646,13 @@ function editorDispatchInner(
   }
   if (dispatchedActions.length > 0) {
     // Run everything in a big chain.
-    let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
+    let result = processActions(
+      boundDispatch,
+      effects,
+      storedState,
+      dispatchedActions,
+      spyCollector,
+    )
 
     const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 

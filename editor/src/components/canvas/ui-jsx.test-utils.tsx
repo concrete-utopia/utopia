@@ -224,6 +224,13 @@ export async function renderTestEditorWithModel(
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
+  const augmentedEffects: EditorEffects = {
+    parseClipboardData: async (data) => {
+      editorDispatchPromises.push(new Promise((resolve) => resolve()))
+      return await context.effects.parseClipboardData(data)
+    },
+  }
+
   // Reset canvas globals
   resetDispatchGlobals()
   clearAllRegisteredControls()
@@ -238,6 +245,7 @@ export async function renderTestEditorWithModel(
     recordedActions.push(...actions)
     const result = editorDispatch(
       asyncTestDispatch,
+      augmentedEffects,
       actions,
       workingEditorState,
       spyCollector,
@@ -286,6 +294,7 @@ export async function renderTestEditorWithModel(
       recordedActions.push(saveDomReportAction)
       const editorWithNewMetadata = editorDispatch(
         asyncTestDispatch,
+        augmentedEffects,
         [saveDomReportAction],
         workingEditorState,
         spyCollector,
@@ -332,7 +341,7 @@ export async function renderTestEditorWithModel(
     dispatch: asyncTestDispatch,
     alreadySaved: false,
     builtInDependencies: builtInDependencies,
-    effects: context.effects,
+    effects: augmentedEffects,
   }
 
   const canvasStoreHook = create<

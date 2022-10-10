@@ -17,6 +17,7 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
+import { parseClipboardData } from '../../../utils/clipboard'
 import { emptyModifiers } from '../../../utils/modifiers'
 import CanvasActions from '../../canvas/canvas-actions'
 import {
@@ -43,6 +44,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
+  testEditorContext,
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { toggleBackgroundLayers, toggleStylePropPaths } from '../../inspector/common/css-utils'
@@ -58,7 +60,7 @@ import {
   interactionStart,
   interactionUpdate,
 } from './dispatch-strategies'
-import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
+import { createEditorState, deriveState, EditorEffects, EditorStoreFull } from './editor-state'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -88,8 +90,10 @@ function createEditorStore(
   const history = History.init(emptyEditorState, derivedState)
   const spyCollector = emptyUiJsxCanvasContextData()
 
+  const effects: EditorEffects = { parseClipboardData: parseClipboardData }
+
   const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, storeHook.getState(), spyCollector)
+    const result = editorDispatch(dispatch, effects, actions, storeHook.getState(), spyCollector)
     storeHook.setState(result)
   }
 
@@ -116,6 +120,7 @@ function createEditorStore(
     dispatch: dispatch,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
+    effects: effects,
   }
 
   const storeHook = create<EditorStoreFull>(subscribeWithSelector((set) => initialEditorStore))
@@ -938,6 +943,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div data-uid="aaa" style={{}}>hello!</div>`),
       'await-first-dom-report',
+      testEditorContext({}),
     )
 
     const targetElement = EP.elementPath([

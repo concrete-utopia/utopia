@@ -374,8 +374,6 @@ export var storyboard = (
   it('dragging multiple images from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
 
-    let dankPromise = new Promise<void>((resolve) => resolve())
-
     const files = [
       await makeImageFile(imgBase64, 'chucknorris.png'),
       await makeImageFile(imgBase64, 'budspencer.png'),
@@ -387,11 +385,7 @@ export var storyboard = (
       'await-first-dom-report',
       testEditorContext({
         effects: {
-          parseClipboardData: async (dataTransfer) => {
-            const result = await parseClipboardData(dataTransfer)
-            await dankPromise
-            return result
-          },
+          parseClipboardData: parseClipboardData,
         },
       }),
     )
@@ -415,8 +409,6 @@ export var storyboard = (
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
 
     await editor.getDispatchFollowUpActionsFinished()
-
-    await dankPromise
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
