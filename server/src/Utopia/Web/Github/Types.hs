@@ -24,6 +24,7 @@ import qualified Data.HashMap.Strict        as M
 import qualified Data.Text                  as T
 import           Data.Text.Encoding
 import           Data.Text.Encoding.Base64
+import           Data.Time.Clock
 import           Data.Typeable
 import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
@@ -238,8 +239,22 @@ instance FromJSON GitCommitTree where
 instance ToJSON GitCommitTree where
   toJSON = genericToJSON defaultOptions
 
+data GitAuthor = GitAuthor
+                   { name  :: Text
+                   , email :: Text
+                   , date  :: UTCTime
+                   }
+               deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GitAuthor where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GitAuthor where
+  toJSON = genericToJSON defaultOptions
+
 data GitCommit = GitCommit
-               { tree  :: GitCommitTree
+               { tree   :: GitCommitTree
+               , author :: GitAuthor
                }
                deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -262,7 +277,8 @@ instance ToJSON GitBranchCommit where
   toJSON = genericToJSON defaultOptions
 
 data GetBranchResult = GetBranchResult
-                     { commit     :: GitBranchCommit
+                     { commit :: GitBranchCommit
+                     , name   :: Text
                      }
                deriving (Eq, Show, Generic, Data, Typeable)
 
