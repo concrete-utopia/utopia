@@ -177,11 +177,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
 
   render() {
     let currentlyBeingInserted: ComponentBeingInserted | null = null
-    if (
-      this.props.mode.type === 'insert' &&
-      insertionSubjectIsJSXElement(this.props.mode.subject)
-    ) {
-      const insertionSubject: ElementInsertionSubject = this.props.mode.subject
+    if (this.props.mode.type === 'insert' && this.props.mode.subjects.length === 1) {
+      const insertionSubject: ElementInsertionSubject = this.props.mode.subjects[0]
       currentlyBeingInserted = componentBeingInserted(
         insertionSubject.importsToAdd,
         insertionSubject.element.name,

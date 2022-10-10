@@ -1874,57 +1874,6 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (
-          insertionSubjectIsJSXElement(editorMode.subject) &&
-          !isFeatureEnabled('Canvas Strategies')
-        ) {
-          const insertionElement = editorMode.subject.element
-          const importsToAdd = editorMode.subject.importsToAdd
-          const insertionParent = editorMode.subject.parent?.target ?? null
-
-          // Not actually modifying the underlying target, but we'll exploit the functionality.
-          modifyUnderlyingTarget(
-            insertionParent,
-            currentOpenFile,
-            editorState,
-            (element) => element,
-            (parseSuccess, underlying, underlyingFilePath) => {
-              const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-
-              const updatedComponents = insertJSXElementChild(
-                editorState.projectContents,
-                currentOpenFile,
-                underlying,
-                insertionElement,
-                openComponents,
-                {
-                  type: 'front',
-                },
-              )
-              const updatedImports: Imports = mergeImports(
-                underlyingFilePath,
-                parseSuccess.imports,
-                importsToAdd,
-              )
-
-              // Sync these back up.
-              const topLevelElements = applyUtopiaJSXComponentsChanges(
-                parseSuccess.topLevelElements,
-                updatedComponents,
-              )
-
-              transientState = transientCanvasState(
-                editorState.selectedViews,
-                editorState.highlightedViews,
-                {
-                  [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
-                },
-                [],
-              )
-              return parseSuccess
-            },
-          )
-        }
         break
       case 'select':
         if (

@@ -25,9 +25,11 @@ function useGetHighlightableViewsForInsertMode() {
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata)
       const insertTargets = allPaths.filter((path) => {
-        return (
-          insertionSubjectIsJSXElement(mode.subject) &&
-          MetadataUtils.targetSupportsChildren(projectContents, openFile, componentMetadata, path)
+        return MetadataUtils.targetSupportsChildren(
+          projectContents,
+          openFile,
+          componentMetadata,
+          path,
         )
       })
       return insertTargets

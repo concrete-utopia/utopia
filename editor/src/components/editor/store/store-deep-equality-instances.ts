@@ -392,8 +392,6 @@ import {
   targetedInsertionParent,
   TargetedInsertionParent,
   imageInsertionSubject,
-  ElementInsertionSubjects,
-  elementInsertionSubjects,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2553,15 +2551,6 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     elementInsertionSubject,
   )
 
-export const ElementInsertionSubjectsKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubjects> =
-  combine2EqualityCalls(
-    (s) => s.elements,
-    arrayDeepEquality(ElementInsertionSubjectKeepDeepEquality),
-    (s) => s.type,
-    StringKeepDeepEquality,
-    elementInsertionSubjects,
-  )
-
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
     (s) => s.file,
@@ -2581,21 +2570,16 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
         return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'Elements':
-      if (newValue.type === oldValue.type) {
-        return ElementInsertionSubjectsKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+    // default:
+    //   const _exhaustiveCheck: never = oldValue
+    //   throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
   }
   return keepDeepEqualityResult(newValue, false)
 }
 
 export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
-  (mode) => mode.subject,
-  InsertionSubjectKeepDeepEquality,
+  (mode) => mode.subjects,
+  arrayDeepEquality(InsertionSubjectKeepDeepEquality),
   EditorModes.insertMode,
 )
 

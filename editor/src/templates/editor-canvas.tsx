@@ -46,7 +46,6 @@ import {
   insertionSubjectIsJSXElement,
   ElementInsertionSubject,
   elementInsertionSubject,
-  elementInsertionSubjects,
   InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
@@ -227,16 +226,14 @@ function handleCanvasEvent(
 
       optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
-      if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
-        optionalDragStateAction = [
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-              type: 'RESIZE_HANDLE',
-              edgePosition: { x: 1, y: 1 },
-            }),
-          ),
-        ]
-      }
+      optionalDragStateAction = [
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+            type: 'RESIZE_HANDLE',
+            edgePosition: { x: 1, y: 1 },
+          }),
+        ),
+      ]
     }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -879,14 +876,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getModeSpecificCursor(): CSSCursor | null {
     if (this.props.editor.mode.type === 'insert') {
-      if (
-        this.props.editor.mode.subject != null &&
-        Utils.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
-      ) {
-        return CSSCursor.TextInsert
-      } else {
-        return CSSCursor.Insert
-      }
+      return CSSCursor.Insert
     } else {
       return null
     }
@@ -1042,12 +1032,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               })
 
               this.props.dispatch(
-                [
-                  ...actions,
-                  EditorActions.switchEditorMode(
-                    EditorModes.insertMode(elementInsertionSubjects(subjects)),
-                  ),
-                ],
+                [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
                 'everyone',
               )
               this.handleMouseMove(event.nativeEvent)

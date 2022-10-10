@@ -7,6 +7,8 @@ import type {
 import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
+
 export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
@@ -15,13 +17,6 @@ export interface ElementInsertionSubject {
   importsToAdd: Imports
   parent: InsertionParent
 }
-
-export interface ElementInsertionSubjects {
-  type: 'Elements'
-  elements: Array<ElementInsertionSubject>
-}
-
-export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
 export function elementInsertionSubject(
   uid: string,
@@ -40,15 +35,6 @@ export function elementInsertionSubject(
   }
 }
 
-export function elementInsertionSubjects(
-  elements: Array<ElementInsertionSubject>,
-): ElementInsertionSubjects {
-  return {
-    type: 'Elements',
-    elements: elements,
-  }
-}
-
 export interface ImageInsertionSubject {
   file: ImageFile
   path: string
@@ -61,7 +47,7 @@ export function imageInsertionSubject(file: ImageFile, path: string): ImageInser
   }
 }
 
-export type InsertionSubject = ElementInsertionSubject | ElementInsertionSubjects
+export type InsertionSubject = ElementInsertionSubject
 
 export function insertionSubjectIsJSXElement(
   insertionSubject: InsertionSubject,
@@ -102,7 +88,7 @@ export function insertionParent(
 
 export interface InsertMode {
   type: 'insert'
-  subject: InsertionSubject
+  subjects: Array<InsertionSubject>
 }
 
 export interface SelectMode {
@@ -119,10 +105,10 @@ export type Mode = InsertMode | SelectMode | LiveCanvasMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
-  insertMode: function (subject: InsertionSubject): InsertMode {
+  insertMode: function (subjects: Array<InsertionSubject>): InsertMode {
     return {
       type: 'insert',
-      subject: subject,
+      subjects: subjects,
     }
   },
   selectMode: function (controlId: string | null = null): SelectMode {
