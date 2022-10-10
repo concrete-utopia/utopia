@@ -425,7 +425,7 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import {
   reparentTarget,
   ReparentTarget,
-} from '../../canvas/canvas-strategies/reparent-strategy-helpers'
+} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,

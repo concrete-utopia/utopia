@@ -7,7 +7,7 @@ import { arrayEquals } from '../../../core/shared/utils'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
-import { getMultiselectBounds } from '../canvas-strategies/shared-move-strategies-helpers'
+import { getMultiselectBounds } from '../canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 

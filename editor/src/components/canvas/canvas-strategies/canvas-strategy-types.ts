@@ -1,5 +1,5 @@
 import React from 'react'
-import { AllElementProps } from '../../../components/editor/store/editor-state'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'

@@ -12,7 +12,7 @@ import { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-} from '../canvas-strategies/reparent-strategy-helpers'
+} from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   flexDirectionToFlexForwardsOrBackwards,
   flexDirectionToSimpleFlexDirection,
