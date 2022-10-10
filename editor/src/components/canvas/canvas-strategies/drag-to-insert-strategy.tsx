@@ -11,11 +11,6 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import {
-  DefaultInsertSize,
-  ElementInsertionSubject,
-  InsertionSubject,
-} from '../../editor/editor-modes'
 import { InteractionSession } from './interaction-state'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft } from '../../../core/shared/either'
@@ -43,6 +38,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
+import { InsertionSubject } from '../../editor/editor-modes'
 
 export function dragToInsertStrategy(
   canvasState: InteractionCanvasState,
@@ -50,8 +46,7 @@ export function dragToInsertStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  const insertionElementSubjects = insertionSubjects.filter((s) => s.type === 'Element')
-  if (insertionElementSubjects.length === 0) {
+  if (insertionSubjects.length === 0) {
     return null
   }
 
@@ -98,7 +93,7 @@ export function dragToInsertStrategy(
         interactionSession.interactionData.drag != null
       ) {
         const insertionCommands = insertionSubjects.flatMap((s) => {
-          const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
+          const size = s.defaultSize
           return getInsertionCommands(s, interactionSession, size)
         })
 
@@ -133,10 +128,6 @@ function getInsertionCommands(
   interactionSession: InteractionSession,
   size: Size,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
-  if (subject.type !== 'Element') {
-    // non-element subjects are not supported
-    return []
-  }
   if (
     interactionSession.interactionData.type === 'DRAG' &&
     interactionSession.interactionData.drag != null
@@ -174,7 +165,7 @@ function getInsertionCommands(
 }
 
 function getStyleAttributesForFrameInAbsolutePosition(
-  subject: ElementInsertionSubject,
+  subject: InsertionSubject,
   frame: CanvasRectangle,
 ) {
   const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
