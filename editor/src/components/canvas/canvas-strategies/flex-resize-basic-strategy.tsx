@@ -26,7 +26,6 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
-import { getLockedAspectRatio } from './resize-helpers'
 import { honoursPropsSize } from './absolute-utils'
 import {
   CanvasStrategy,
@@ -38,6 +37,7 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
+import { getLockedAspectRatio } from './resize-helpers'
 import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
 
 export function flexResizeBasicStrategy(
@@ -163,10 +163,10 @@ export function flexResizeBasicStrategy(
             dimensions?.height,
           )
           if (lockedAspectRatio) {
-            if (newWidth) {
+            if (newWidth !== 0) {
               // diagonal + horizontal lock
               newHeight = newWidth * lockedAspectRatio
-            } else if (newHeight) {
+            } else if (newHeight !== 0) {
               // vertical lock
               newWidth = newHeight * lockedAspectRatio
             }
