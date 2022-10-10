@@ -12,7 +12,6 @@ import {
   transformFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
@@ -31,11 +30,6 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import {
-  AbsolutePin,
-  ensureAtLeastTwoPinsForEdgePosition,
-  supportsAbsoluteResize,
-} from './absolute-resize-helpers'
-import {
   CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -44,6 +38,12 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
+import {
+  AbsolutePin,
+  ensureAtLeastTwoPinsForEdgePosition,
+  getLockedAspectRatio,
+  supportsAbsoluteResize,
+} from './resize-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
@@ -286,18 +286,4 @@ function snapBoundingBox(
     snappedBoundingBox,
     guidelinesWithSnappingVector,
   }
-}
-
-function getLockedAspectRatio(
-  interactionData: InteractionSession,
-  modifiers: Modifiers,
-  originalBoundingBox: CanvasRectangle,
-): number | null {
-  if (interactionData.aspectRatioLock != null) {
-    return interactionData.aspectRatioLock
-  }
-  if (modifiers.shift) {
-    return originalBoundingBox.width / originalBoundingBox.height
-  }
-  return null
 }
