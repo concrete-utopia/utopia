@@ -145,7 +145,6 @@ function getInsertionSubjectsFromInsertMode(subject: InsertionSubject): Insertio
   switch (subject.type) {
     case 'Elements':
       return insertionSubjects(subject.elements)
-    case 'DragAndDrop':
     case 'Element':
       return insertionSubjects([subject])
     default:

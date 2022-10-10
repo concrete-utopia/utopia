@@ -21,11 +21,6 @@ export interface ElementInsertionSubjects {
   elements: Array<ElementInsertionSubject>
 }
 
-export interface DragAndDropInsertionSubject {
-  type: 'DragAndDrop'
-  imageAssets: Array<ImageInsertionSubject>
-}
-
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
 export function elementInsertionSubject(
@@ -66,30 +61,12 @@ export function imageInsertionSubject(file: ImageFile, path: string): ImageInser
   }
 }
 
-export function dragAndDropInsertionSubject(
-  assets: Array<ImageInsertionSubject>,
-): DragAndDropInsertionSubject {
-  return {
-    type: 'DragAndDrop',
-    imageAssets: assets,
-  }
-}
-
-export type InsertionSubject =
-  | ElementInsertionSubject
-  | ElementInsertionSubjects
-  | DragAndDropInsertionSubject
+export type InsertionSubject = ElementInsertionSubject | ElementInsertionSubjects
 
 export function insertionSubjectIsJSXElement(
   insertionSubject: InsertionSubject,
 ): insertionSubject is ElementInsertionSubject {
   return insertionSubject.type === 'Element'
-}
-
-export function insertionSubjectIsDragAndDrop(
-  insertionSubject: InsertionSubject,
-): insertionSubject is DragAndDropInsertionSubject {
-  return insertionSubject.type === 'DragAndDrop'
 }
 
 export interface TargetedInsertionParent {

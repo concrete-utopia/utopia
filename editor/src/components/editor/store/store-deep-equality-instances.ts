@@ -380,8 +380,6 @@ import {
   FileEvaluationCache,
 } from '../../../core/es-modules/package-manager/package-manager'
 import {
-  dragAndDropInsertionSubject,
-  DragAndDropInsertionSubject,
   ImageInsertionSubject,
   EditorModes,
   elementInsertionSubject,
@@ -2573,13 +2571,6 @@ export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageIn
     imageInsertionSubject,
   )
 
-export const DragAndDropInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<DragAndDropInsertionSubject> =
-  combine1EqualityCall(
-    (subject) => subject.imageAssets,
-    arrayDeepEquality(ImageInsertionSubjectKeepDeepEquality),
-    dragAndDropInsertionSubject,
-  )
-
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> = (
   oldValue,
   newValue,
@@ -2588,11 +2579,6 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     case 'Element':
       if (newValue.type === oldValue.type) {
         return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DragAndDrop':
-      if (newValue.type === oldValue.type) {
-        return DragAndDropInsertionSubjectKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'Elements':

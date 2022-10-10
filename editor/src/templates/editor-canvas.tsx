@@ -1019,21 +1019,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           if (this.props.editor.mode.type === 'select') {
             const insertionTarget = this.props.editor.highlightedViews[0]
             return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets == null
-          ) {
-            const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'Element'
-          ) {
+          } else if (this.props.editor.mode.type === 'insert') {
             void getPastedImages().then((images) => {
               if (images.length === 0) {
                 return this.props.dispatch([
@@ -1068,25 +1054,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               this.handleMouseUp(event.nativeEvent)
             })
           }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets != null
-          ) {
-            let actions: Array<EditorAction> = []
-            fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
-              actions.push(
-                EditorActions.insertDroppedImage(
-                  imageAsset.file,
-                  imageAsset.path,
-                  mousePosition.canvasPositionRounded,
-                ),
-              )
-            })
-            actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-            return this.props.dispatch(actions, 'everyone')
-          }
+          return
         },
 
         onWheel: (event) => {
