@@ -26,6 +26,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
+import { getLockedAspectRatio } from './resize-helpers'
 import { honoursPropsSize } from './absolute-utils'
 import {
   CanvasStrategy,
@@ -112,6 +113,11 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         }
 
         const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
+        const lockedAspectRatio = getLockedAspectRatio(
+          interactionSession,
+          interactionSession.interactionData.modifiers,
+          originalBounds,
+        )
 
         const metadata = MetadataUtils.findElementByElementPath(
           canvasState.startingMetadata,
@@ -143,24 +149,36 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
 
         const resizeCommands: Array<AdjustCssLengthProperty> = []
 
-        const newWidth = makeNewDimension(
+        const parentWidth = elementParentBounds?.width
+        const parentHeight = elementParentBounds?.height
+
+        let newWidth = makeNewDimension(
           originalBounds.width,
           resizedBounds.width,
           dimensions?.width,
         )
-        if (dimensions?.width != null || originalBounds.width !== newWidth) {
-          // it moves horizontally
-          resizeCommands.push(makeResizeCommand('width', elementParentBounds?.width, newWidth))
-        }
-
-        const newHeight = makeNewDimension(
+        let newHeight = makeNewDimension(
           originalBounds.height,
           resizedBounds.height,
           dimensions?.height,
         )
+        if (lockedAspectRatio) {
+          if (newWidth) {
+            // diagonal + horizontal
+            newHeight = newWidth * lockedAspectRatio
+          } else if (newHeight) {
+            // vertical
+            newWidth = newHeight * lockedAspectRatio
+          }
+        }
+
+        if (dimensions?.width != null || originalBounds.width !== newWidth) {
+          // it moves horizontally
+          resizeCommands.push(makeResizeCommand('width', parentWidth, newWidth))
+        }
         if (dimensions?.height != null || originalBounds.height !== newHeight) {
           // it moves vertically
-          resizeCommands.push(makeResizeCommand('height', elementParentBounds?.height, newHeight))
+          resizeCommands.push(makeResizeCommand('height', parentHeight, newHeight))
         }
 
         return strategyApplicationResult([
