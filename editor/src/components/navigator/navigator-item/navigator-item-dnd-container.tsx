@@ -23,7 +23,7 @@ import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-componen
 import { JSXElementName } from '../../../core/shared/element-template'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
 import { useRefEditorState } from '../../../components/editor/store/store-hook'
-import { isAllowedToReparent } from '../../../components/canvas/canvas-strategies/reparent-helpers'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 const BaseRowHeight = 35

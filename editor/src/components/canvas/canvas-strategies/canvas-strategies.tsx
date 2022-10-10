@@ -10,11 +10,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { absoluteMoveStrategy } from './strategies/absolute-move-strategy'
 import {
   absoluteReparentStrategy,
   forcedAbsoluteReparentStrategy,
-} from './absolute-reparent-strategy'
+} from './strategies/absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -31,30 +31,30 @@ import {
   InsertionSubjects,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
-import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
-import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
-import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
-import { flexReorderStrategy } from './flex-reorder-strategy'
-import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
-import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
+import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
+import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
+import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
+import { flexReorderStrategy } from './strategies/flex-reorder-strategy'
+import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
+import { absoluteReparentToFlexStrategy } from './strategies/absolute-reparent-to-flex-strategy'
 import {
   flexReparentToAbsoluteStrategy,
   forcedFlexReparentToAbsoluteStrategy,
-} from './flex-reparent-to-absolute-strategy'
-import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+} from './strategies/flex-reparent-to-absolute-strategy'
+import { flexReparentToFlexStrategy } from './strategies/flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { flowReorderStrategy } from './flow-reorder-strategy'
+import { flowReorderStrategy } from './strategies/flow-reorder-strategy'
 import { InsertionSubject } from '../../editor/editor-modes'
-import { dragToInsertStrategy } from './drag-to-insert-strategy'
+import { dragToInsertStrategy } from './strategies/drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
-import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
+import { flowReorderSliderStategy } from './strategies/flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
-import { drawToInsertStrategy } from './draw-to-insert-strategy'
-import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
+import { drawToInsertStrategy } from './strategies/draw-to-insert-strategy'
+import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
-import { relativeMoveStrategy } from './relative-move-strategy'
+import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
+import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
