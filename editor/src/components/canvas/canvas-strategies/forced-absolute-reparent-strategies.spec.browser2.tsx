@@ -39,8 +39,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
-  const targetElement = targetElements[0]
+  const targetElement = await renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -638,6 +637,99 @@ describe('Forced Absolute Reparent Strategies', () => {
           data-testid='flexchild1'
         />
       </div>`),
+    )
+  })
+  it('Absolute to absolute on a target parent element without size', async () => {
+    const testCode = `
+      <div
+        style={{
+          position: 'relative',
+          width: 400,
+          height: 400,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{ position: 'absolute' }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: 'hotpink',
+            left: 10,
+            top: 10,
+            height: 40,
+            width: 40,
+          }}
+          data-uid='ccc'
+          data-testid='ccc'
+        />
+      </div>
+    `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+      [allReparentStrategies],
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
+    const draggedElementRect = draggedElement.getBoundingClientRect()
+    const draggedElementRectCenter = {
+      x: draggedElementRect.x + draggedElementRect.width / 2,
+      y: draggedElementRect.y + draggedElementRect.height / 2,
+    }
+
+    const zeroSizeParentTarget = await renderResult.renderedDOM.findByTestId('bbb')
+    const zeroSizeParentTargetRect = zeroSizeParentTarget.getBoundingClientRect()
+    const zeroSizeParentTargetCenter = {
+      x: zeroSizeParentTargetRect.x + zeroSizeParentTargetRect.width / 2,
+      y: zeroSizeParentTargetRect.y + zeroSizeParentTargetRect.height / 2,
+    }
+
+    const dragDelta = windowPoint({
+      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x,
+      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y,
+    })
+    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'relative',
+          width: 400,
+          height: 400,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{ position: 'absolute' }}
+          data-uid='bbb'
+          data-testid='bbb'
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: 'hotpink',
+              left: -20,
+              top: -20,
+              height: 40,
+              width: 40,
+            }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      </div>
+      `),
     )
   })
 })
