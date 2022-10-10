@@ -19,6 +19,8 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
@@ -26,11 +28,13 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import {
   AbsolutePin,
   ensureAtLeastTwoPinsForEdgePosition,
+  getLockedAspectRatio,
   supportsAbsoluteResize,
-} from './absolute-resize-helpers'
+} from './resize-helpers'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -38,18 +42,12 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
-import * as EP from '../../../core/shared/element-path'
-import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
-import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
-import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { InteractionSession } from './interaction-state'
-import { Modifiers } from '../../../utils/modifiers'
+import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -288,18 +286,4 @@ function snapBoundingBox(
     snappedBoundingBox,
     guidelinesWithSnappingVector,
   }
-}
-
-function getLockedAspectRatio(
-  interactionData: InteractionSession,
-  modifiers: Modifiers,
-  originalBoundingBox: CanvasRectangle,
-): number | null {
-  if (interactionData.aspectRatioLock != null) {
-    return interactionData.aspectRatioLock
-  }
-  if (modifiers.shift) {
-    return originalBoundingBox.width / originalBoundingBox.height
-  }
-  return null
 }

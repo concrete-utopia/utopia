@@ -30,7 +30,7 @@ import {
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { supportsAbsoluteResize } from './absolute-resize-helpers'
+import { supportsAbsoluteResize } from './resize-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
