@@ -7,8 +7,9 @@ import type {
 import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
-export interface ElementInsertionSubject {
-  type: 'Element'
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
+
+export interface InsertionSubject {
   uid: string
   element: JSXElement
   defaultSize: Size
@@ -16,41 +17,19 @@ export interface ElementInsertionSubject {
   parent: InsertionParent
 }
 
-export interface ElementInsertionSubjects {
-  type: 'Elements'
-  elements: Array<ElementInsertionSubject>
-}
-
-export interface DragAndDropInsertionSubject {
-  type: 'DragAndDrop'
-  imageAssets: Array<ImageInsertionSubject>
-}
-
-export const DefaultInsertSize: Size = { width: 100, height: 100 }
-
-export function elementInsertionSubject(
+export function insertionSubject(
   uid: string,
   element: JSXElement,
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
-): ElementInsertionSubject {
+): InsertionSubject {
   return {
-    type: 'Element',
     uid: uid,
     element: element,
     defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
-  }
-}
-
-export function elementInsertionSubjects(
-  elements: Array<ElementInsertionSubject>,
-): ElementInsertionSubjects {
-  return {
-    type: 'Elements',
-    elements: elements,
   }
 }
 
@@ -64,32 +43,6 @@ export function imageInsertionSubject(file: ImageFile, path: string): ImageInser
     file: file,
     path: path,
   }
-}
-
-export function dragAndDropInsertionSubject(
-  assets: Array<ImageInsertionSubject>,
-): DragAndDropInsertionSubject {
-  return {
-    type: 'DragAndDrop',
-    imageAssets: assets,
-  }
-}
-
-export type InsertionSubject =
-  | ElementInsertionSubject
-  | ElementInsertionSubjects
-  | DragAndDropInsertionSubject
-
-export function insertionSubjectIsJSXElement(
-  insertionSubject: InsertionSubject,
-): insertionSubject is ElementInsertionSubject {
-  return insertionSubject.type === 'Element'
-}
-
-export function insertionSubjectIsDragAndDrop(
-  insertionSubject: InsertionSubject,
-): insertionSubject is DragAndDropInsertionSubject {
-  return insertionSubject.type === 'DragAndDrop'
 }
 
 export interface TargetedInsertionParent {
@@ -125,7 +78,7 @@ export function insertionParent(
 
 export interface InsertMode {
   type: 'insert'
-  subject: InsertionSubject
+  subjects: Array<InsertionSubject>
 }
 
 export interface SelectMode {
@@ -142,10 +95,10 @@ export type Mode = InsertMode | SelectMode | LiveCanvasMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
-  insertMode: function (subject: InsertionSubject): InsertMode {
+  insertMode: function (subjects: Array<InsertionSubject>): InsertMode {
     return {
       type: 'insert',
-      subject: subject,
+      subjects: subjects,
     }
   },
   selectMode: function (controlId: string | null = null): SelectMode {

@@ -210,7 +210,7 @@ import type {
   UpdateProjectContents,
   UpdateGithubSettings,
 } from '../action-types'
-import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
@@ -458,7 +458,7 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
   )
 }
 
