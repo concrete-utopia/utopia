@@ -39,6 +39,7 @@ import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { InsertionSubject } from '../../editor/editor-modes'
+import { Utils } from '../../../uuiui-deps'
 
 export function dragToInsertStrategy(
   canvasState: InteractionCanvasState,
@@ -132,7 +133,9 @@ function getInsertionCommands(
     interactionSession.interactionData.type === 'DRAG' &&
     interactionSession.interactionData.drag != null
   ) {
-    const pointOnCanvas = interactionSession.interactionData.dragStart
+    const pointOnCanvas = Utils.roundPointToNearestHalf(
+      interactionSession.interactionData.dragStart,
+    )
 
     const frame = canvasRectangle({
       x: pointOnCanvas.x - size.width / 2,

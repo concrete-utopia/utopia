@@ -17,7 +17,7 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
-import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../utils/utils.test-utils'
+import { wait } from '../utils/utils.test-utils'
 
 const contents = {
   'package.json': {
@@ -233,10 +233,10 @@ describe('image dnd', () => {
 
     const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
     const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = slightlyOffsetPointBecauseVeryWeirdIssue({
+    const handleCenter = {
       x: dragHandleBounds.x + dragHandleBounds.width / 2,
       y: dragHandleBounds.y + dragHandleBounds.height / 2,
-    })
+    }
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
