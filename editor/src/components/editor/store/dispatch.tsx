@@ -15,11 +15,10 @@ import {
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import Utils from '../../../utils/utils'
 import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
+import { EditorAction, EditorDispatch, isLoggedIn } from '../action-types'
 import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -62,7 +61,7 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { parseClipboardData } from '../../../utils/clipboard'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -177,6 +176,7 @@ function processAction(
       dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
       builtInDependencies: working.builtInDependencies,
+      effects: { parseClipboardData: parseClipboardData },
     }
   }
 }
@@ -499,6 +499,7 @@ export function editorDispatch(
     ]),
     alreadySaved: alreadySaved || shouldSave,
     builtInDependencies: storedState.builtInDependencies,
+    effects: { parseClipboardData: parseClipboardData },
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -773,6 +774,7 @@ function editorDispatchInner(
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,
       builtInDependencies: storedState.builtInDependencies,
+      effects: { parseClipboardData: parseClipboardData },
     }
   } else {
     //empty return

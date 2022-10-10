@@ -47,12 +47,12 @@ import {
   ElementInsertionSubject,
   elementInsertionSubject,
   elementInsertionSubjects,
-  InsertionSubject,
 } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
   DerivedState,
+  EditorEffects,
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
@@ -67,13 +67,9 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap, JSXElement } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
-import {
-  getActionsForClipboardItems,
-  parseClipboardData,
-  createDirectInsertImageActions,
-} from '../utils/clipboard'
+import { getActionsForClipboardItems, createDirectInsertImageActions } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
@@ -759,6 +755,7 @@ interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
   userState: UserState
+  effects: EditorEffects
   dispatch: EditorDispatch
 }
 
@@ -979,7 +976,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const mousePosition = this.getPosition(event.nativeEvent)
 
           const getPastedImages = async () => {
-            const result = await parseClipboardData(event.dataTransfer)
+            const result = await this.props.effects.parseClipboardData(event.dataTransfer)
             // Snip out the images only from the result.
             let pastedImages: Array<ImageResult> = []
             fastForEach(result.files, (pastedFile) => {
@@ -1001,7 +998,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               ],
               'everyone',
             )
-            const result = await parseClipboardData(event.dataTransfer)
+            const result = await this.props.effects.parseClipboardData(event.dataTransfer)
             const pastedImages = await getPastedImages()
 
             const actions = createDirectInsertImageActions(
@@ -1580,7 +1577,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        void parseClipboardData(event.clipboardData).then((result) => {
+        void this.props.effects.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,
             editor.canvas.openFile?.filename ?? null,

@@ -6,7 +6,7 @@ import { SaveDOMReport } from '../editor/action-types'
 import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
-import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
+import { renderTestEditorWithProjectContent, testEditorContext } from './ui-jsx.test-utils'
 import { act } from '@testing-library/react'
 import { wait } from '../../utils/utils.test-utils'
 
@@ -18,6 +18,7 @@ describe('Dom-walker Caching', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       projectContentsTreeRoot,
       'await-first-dom-report',
+      testEditorContext({}),
     )
     // unfortunately we have to dispatch a non-action to allow the dom-walker to run for a second time.
     // It needs to run for a second time to "settle".

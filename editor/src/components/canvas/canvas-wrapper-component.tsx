@@ -57,12 +57,13 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
-  const { dispatch, editorState, derivedState, userState } = useEditorState(
+  const { dispatch, editorState, derivedState, userState, effects } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       editorState: store.editor,
       derivedState: store.derived,
       userState: store.userState,
+      effects: store.effects,
     }),
     'CanvasWrapperComponent',
   )
@@ -100,6 +101,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           userState={userState}
           editor={editorState}
           model={createCanvasModelKILLME(editorState, derivedState)}
+          effects={effects}
           dispatch={dispatch}
         />
       ) : null}

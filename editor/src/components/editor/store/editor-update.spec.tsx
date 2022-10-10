@@ -79,6 +79,7 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithProjectContent,
   TestAppUID,
+  testEditorContext,
   TestScenePath,
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
@@ -622,6 +623,7 @@ describe('action DELETE_SELECTED', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       contentsToTree(projectContents),
       'dont-await-first-dom-report',
+      testEditorContext({}),
     )
     const targetPath = EP.appendNewElementPath(TestScenePath, [
       'app-outer-div',

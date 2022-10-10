@@ -7,12 +7,17 @@ import {
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
 } from './event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
+import {
+  EditorRenderResult,
+  renderTestEditorWithProjectContent,
+  testEditorContext,
+} from './ui-jsx.test-utils'
 
 function createExampleProject(): Promise<EditorRenderResult> {
   return renderTestEditorWithProjectContent(
     contentsToTree(createComplexDefaultProjectContents()),
     'await-first-dom-report',
+    testEditorContext({}),
   )
 }
 

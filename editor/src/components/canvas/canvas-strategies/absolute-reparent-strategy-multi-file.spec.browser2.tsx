@@ -10,7 +10,11 @@ import { cmdModifier } from '../../../utils/modifiers'
 import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { mouseDragFromPointToPoint } from '../event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithProjectContent } from '../ui-jsx.test-utils'
+import {
+  EditorRenderResult,
+  renderTestEditorWithProjectContent,
+  testEditorContext,
+} from '../ui-jsx.test-utils'
 
 const defaultAbsoluteChildCode = `
 import * as React from 'react'
@@ -217,6 +221,7 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       makeTestProjectContents(),
       'await-first-dom-report',
+      testEditorContext({}),
     )
 
     await act(() => {

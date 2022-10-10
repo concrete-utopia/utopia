@@ -2,6 +2,7 @@ import { contentsToTree } from '../components/assets'
 import {
   renderTestEditorWithProjectContent,
   TestAppUID,
+  testEditorContext,
   TestScenePath,
   TestSceneUID,
 } from '../components/canvas/ui-jsx.test-utils'
@@ -82,6 +83,7 @@ export var Card = (props) => {
     const renderResult = await renderTestEditorWithProjectContent(
       contentsToTree(projectContents),
       'dont-await-first-dom-report',
+      testEditorContext({}),
     )
     const targetPath1 = EP.appendNewElementPath(TestScenePath, [
       'app-outer-div',

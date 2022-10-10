@@ -10,6 +10,7 @@ import {
 import {
   getPrintedUiJsCode,
   renderTestEditorWithProjectContent,
+  testEditorContext,
 } from '../components/canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
 import { LeftMenuTab } from '../components/editor/store/editor-state'
@@ -17,6 +18,7 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
+import { parseClipboardData } from '../utils/clipboard'
 import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../utils/utils.test-utils'
 
 const contents = {
@@ -222,7 +224,11 @@ describe('image dnd', () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      testEditorContext({}),
+    )
     await editor.dispatch(
       [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
       true,
@@ -298,7 +304,11 @@ export var storyboard = (
   it('dragging from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      testEditorContext({}),
+    )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const file = await makeImageFile(imgBase64, 'chucknorris.png')
@@ -321,8 +331,6 @@ export var storyboard = (
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
 
     await editor.getDispatchFollowUpActionsFinished()
-
-    await wait(250) // read the image
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -366,14 +374,28 @@ export var storyboard = (
   it('dragging multiple images from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    let dankPromise = new Promise<void>((resolve) => resolve())
 
     const files = [
       await makeImageFile(imgBase64, 'chucknorris.png'),
       await makeImageFile(imgBase64, 'budspencer.png'),
       await makeImageFile(imgBase64, 'brucelee.png'),
     ]
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      testEditorContext({
+        effects: {
+          parseClipboardData: async (dataTransfer) => {
+            const result = await parseClipboardData(dataTransfer)
+            await dankPromise
+            return result
+          },
+        },
+      }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
@@ -394,7 +416,7 @@ export var storyboard = (
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(250) // read the image
+    await dankPromise
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

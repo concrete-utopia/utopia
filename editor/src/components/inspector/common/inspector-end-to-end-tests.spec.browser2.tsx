@@ -14,6 +14,7 @@ import {
   renderTestEditorWithCode,
   renderTestEditorWithProjectContent,
   TestAppUID,
+  testEditorContext,
   TestScenePath,
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
@@ -2037,6 +2038,7 @@ describe('inspector tests with real metadata', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       contentsToTree(projectContents),
       'await-first-dom-report',
+      testEditorContext({}),
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])

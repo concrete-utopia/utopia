@@ -38,7 +38,10 @@ import {
 } from '../../../components/editor/store/editor-state'
 import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
-import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
+import {
+  renderTestEditorWithProjectContent,
+  testEditorContext,
+} from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
 
 function addCodeFileToProjectContents(
@@ -221,6 +224,7 @@ describe('parseCode', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       contentsToTree(projectContents),
       'dont-await-first-dom-report',
+      testEditorContext({}),
     )
 
     const uniqueIDs = getAllUniqueUids(
@@ -283,6 +287,7 @@ describe('parseCode', () => {
     const renderResult = await renderTestEditorWithProjectContent(
       contentsToTree(projectContents),
       'dont-await-first-dom-report',
+      testEditorContext({}),
     )
 
     const uniqueIDsBefore = getAllUniqueUids(
