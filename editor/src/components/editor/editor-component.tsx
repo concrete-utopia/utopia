@@ -32,8 +32,6 @@ import {
   StoryboardFilePath,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
-import { isParsedTextFile } from '../../core/shared/project-file-types'
-import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'

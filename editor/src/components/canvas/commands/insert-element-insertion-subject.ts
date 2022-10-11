@@ -4,7 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import { ElementInsertionSubject } from '../../editor/editor-modes'
+import { InsertionSubject } from '../../editor/editor-modes'
 import {
   EditorState,
   EditorStatePatch,
@@ -15,12 +15,12 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
-  subject: ElementInsertionSubject
+  subject: InsertionSubject
 }
 
 export function insertElementInsertionSubject(
   whenToRun: WhenToRun,
-  subject: ElementInsertionSubject,
+  subject: InsertionSubject,
 ): InsertElementInsertionSubject {
   return {
     type: 'INSERT_ELEMENT_INSERTION_SUBJECT',
