@@ -19,7 +19,11 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { defer } from '../utils/utils'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../utils/utils.test-utils'
-import { FOR_TESTS_SET_DROP_HOOK, FOR_TESTS_UNSET_DROP_HOOK } from './image-drop.test-utils'
+import { FOR_TESTS_SET_DROP_HOOK } from './image-drop.test-utils'
+
+const MOCK_UIDS = Array(10)
+  .fill(0)
+  .map((_, i) => `${i}`)
 
 const contents = {
   'package.json': {
@@ -246,8 +250,8 @@ describe('image dnd', () => {
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     mouseMoveToPoint(imageDragHandle, handleCenter)
@@ -300,7 +304,7 @@ export var storyboard = (
   })
 
   it('dragging from the "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
     const dropDone = defer()
 
     FOR_TESTS_SET_DROP_HOOK(() => dropDone.resolve())
@@ -314,8 +318,8 @@ export var storyboard = (
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     fireEvent(
@@ -351,27 +355,29 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
   })
 
   it('dragging multiple images from the "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+    const dropDone = defer()
+
+    FOR_TESTS_SET_DROP_HOOK(() => dropDone.resolve())
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -386,8 +392,8 @@ export var storyboard = (
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     fireEvent(
@@ -400,6 +406,7 @@ export var storyboard = (
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
 
     await editor.getDispatchFollowUpActionsFinished()
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -421,46 +428,41 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/budspencer.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='2'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/brucelee.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='3'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
