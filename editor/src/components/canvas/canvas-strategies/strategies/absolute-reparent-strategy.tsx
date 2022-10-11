@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -22,15 +21,12 @@ import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from '../in
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
-import {
-  existingReparentSubjects,
-  getAbsoluteReparentPropertyChanges,
-  getReparentTargetUnified,
-} from './reparent-strategy-helpers'
+import { getAbsoluteReparentPropertyChanges, ReparentTarget } from './reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
+  reparentTarget: ReparentTarget,
   missingBoundsHandling: MissingBoundsHandling,
   isFallback: boolean,
 ): CanvasStrategyFactory {
@@ -93,20 +89,6 @@ export function baseAbsoluteReparentStrategy(
               return emptyStrategyApplicationResult
             }
 
-            const pointOnCanvas = offsetPoint(
-              dragInteractionData.originalDragStart,
-              dragInteractionData.drag,
-            )
-
-            const reparentTarget = getReparentTargetUnified(
-              existingReparentSubjects(filteredSelectedElements),
-              pointOnCanvas,
-              dragInteractionData.modifiers.cmd,
-              canvasState,
-              canvasState.startingMetadata,
-              canvasState.startingAllElementProps,
-              missingBoundsHandling,
-            )
             const newParent = reparentTarget.newParent
             const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
               return isAllowedToReparent(
@@ -117,7 +99,7 @@ export function baseAbsoluteReparentStrategy(
               )
             })
 
-            if (reparentTarget.shouldReparent && newParent != null && allowedToReparent) {
+            if (reparentTarget.shouldReparent && allowedToReparent) {
               const commands = mapDropNulls((selectedElement) => {
                 const reparentResult = getReparentOutcome(
                   canvasState.builtInDependencies,

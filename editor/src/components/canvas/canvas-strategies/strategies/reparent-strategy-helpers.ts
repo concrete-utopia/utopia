@@ -68,24 +68,24 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export type PartialReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
 export type FindPartialReparentStrategyResult = {
   strategy: PartialReparentStrategy
-  newParent: ElementPath
+  target: ReparentTarget
   missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
 }
 
 export function partialReparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
-  newParent: ElementPath,
+  target: ReparentTarget,
   convertToAbsolute: boolean,
 ): FindPartialReparentStrategyResult {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
+  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, target.newParent)
   const parentIsFlexLayout =
     !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   const parentProvidesBoundsForAbsoluteChildren =
     newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
 
-  const parentIsStoryboard = EP.isStoryboardPath(newParent)
+  const parentIsStoryboard = EP.isStoryboardPath(target.newParent)
   const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
   const missingBoundsHandling: MissingBoundsHandling = isAbsoluteFriendlyParent
     ? 'use-strict-bounds'
@@ -94,13 +94,13 @@ export function partialReparentStrategyForParent(
   return parentIsFlexLayout
     ? {
         strategy: 'REPARENT_TO_FLEX',
-        newParent: newParent,
+        target: target,
         missingBoundsHandling: missingBoundsHandling,
         isFallback: false,
       }
     : {
         strategy: 'REPARENT_TO_ABSOLUTE',
-        newParent: newParent,
+        target: target,
         missingBoundsHandling: missingBoundsHandling,
         isFallback: convertToAbsolute,
       }
@@ -131,12 +131,15 @@ export function findPartialReparentStrategies(
       missingBoundsHandling,
     )
 
-  const strictTarget = getReparentTargetInner('use-strict-bounds').newParent
+  const strictTarget = getReparentTargetInner('use-strict-bounds')
   const strictStrategy =
     strictTarget == null ? null : partialReparentStrategyForParent(metadata, strictTarget, false)
 
-  const forcedTarget = getReparentTargetInner('allow-missing-bounds').newParent
-  const sameTargets = EP.pathsEqual(forcedTarget, strictTarget)
+  const forcedTarget = getReparentTargetInner('allow-missing-bounds')
+  const sameTargets =
+    strictTarget != null &&
+    forcedTarget != null &&
+    EP.pathsEqual(forcedTarget.newParent, strictTarget.newParent)
   const convertToAbsolute = sameTargets && strictStrategy?.strategy === 'REPARENT_TO_FLEX'
   const skipForcedTarget = sameTargets && !convertToAbsolute
   const forcedStrategy =
@@ -149,14 +152,14 @@ export function findPartialReparentStrategies(
 
 export interface ReparentTarget {
   shouldReparent: boolean
-  newParent: ElementPath | null
+  newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
 }
 
 export function reparentTarget(
   shouldReparent: boolean,
-  newParent: ElementPath | null,
+  newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
 ): ReparentTarget {
@@ -200,7 +203,7 @@ export function getReparentTargetUnified(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   missingBoundsHandling: MissingBoundsHandling,
-): ReparentTarget {
+): ReparentTarget | null {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
   const canvasScale = canvasState.scale
@@ -222,12 +225,14 @@ export function getReparentTargetUnified(
 
   if (allElementsUnderPoint.length === 0) {
     const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
-    return {
-      shouldReparent: storyboardComponent != null,
-      newParent: storyboardComponent,
-      shouldReorder: false,
-      newIndex: -1,
-    }
+    return storyboardComponent == null
+      ? null
+      : {
+          shouldReparent: true,
+          newParent: storyboardComponent,
+          shouldReorder: false,
+          newIndex: -1,
+        }
   }
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
@@ -320,12 +325,7 @@ export function getReparentTargetUnified(
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
-    return {
-      shouldReparent: false,
-      shouldReorder: false,
-      newParent: null,
-      newIndex: -1,
-    }
+    return null
   }
   const element = MetadataUtils.findElementByElementPath(metadata, targetParentPath)
   const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
@@ -615,6 +615,7 @@ export function applyFlexReparent(
   stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -628,25 +629,7 @@ export function applyFlexReparent(
         interactionSession.interactionData.type == 'DRAG' &&
         interactionSession.interactionData.drag != null
       ) {
-        const pointOnCanvas = offsetPoint(
-          interactionSession.interactionData.originalDragStart,
-          interactionSession.interactionData.drag,
-        )
-        const reparentResult = getReparentTargetUnified(
-          existingReparentSubjects(filteredSelectedElements),
-          pointOnCanvas,
-          interactionSession.interactionData.modifiers.cmd,
-          canvasState,
-          canvasState.startingMetadata,
-          canvasState.startingAllElementProps,
-          'use-strict-bounds',
-        )
-
-        if (
-          reparentResult.shouldReparent &&
-          reparentResult.newParent != null &&
-          filteredSelectedElements.length === 1
-        ) {
+        if (reparentResult.shouldReparent && filteredSelectedElements.length === 1) {
           const target = filteredSelectedElements[0]
 
           const newIndex = reparentResult.newIndex

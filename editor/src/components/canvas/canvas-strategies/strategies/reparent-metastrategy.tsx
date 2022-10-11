@@ -12,9 +12,9 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
-import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
+import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { findPartialReparentStrategies } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -67,7 +67,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     } else if (startingTargetsToFilter == null) {
       return true
     } else {
-      const targetToFilter = startingTargetsToFilter[missingBoundsHandling].newParent
+      const targetToFilter = startingTargetsToFilter[missingBoundsHandling]?.newParent ?? null
       return !pathsEqual(target, targetToFilter)
     }
   }
@@ -80,7 +80,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   const cmdPressed = interactionSession.interactionData.modifiers.cmd
   const partialStrategies = findPartialReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
   const filteredPartialStrategies = partialStrategies.filter((partialStrategy) =>
-    targetIsValid(partialStrategy.newParent, partialStrategy.missingBoundsHandling),
+    targetIsValid(partialStrategy.target.newParent, partialStrategy.missingBoundsHandling),
   )
 
   const factories = filteredPartialStrategies.map((result) => {
@@ -88,15 +88,23 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     switch (result.strategy) {
       case 'REPARENT_TO_ABSOLUTE':
         if (allDraggedElementsAbsolute) {
-          return baseAbsoluteReparentStrategy(missingBoundsHandling, result.isFallback)
+          return baseAbsoluteReparentStrategy(
+            result.target,
+            missingBoundsHandling,
+            result.isFallback,
+          )
         } else {
-          return baseFlexReparentToAbsoluteStrategy(missingBoundsHandling, result.isFallback)
+          return baseFlexReparentToAbsoluteStrategy(
+            result.target,
+            missingBoundsHandling,
+            result.isFallback,
+          )
         }
       case 'REPARENT_TO_FLEX':
         if (allDraggedElementsAbsolute) {
-          return absoluteReparentToFlexStrategy
+          return baseAbsoluteReparentToFlexStrategy(result.target)
         } else {
-          return flexReparentToFlexStrategy
+          return baseFlexReparentToFlexStrategy(result.target)
         }
       default:
         assertNever(result.strategy)

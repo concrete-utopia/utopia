@@ -70,15 +70,15 @@ export function isHoverInteractionData(inputData: InputData): inputData is Hover
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
 export interface ReparentTargetsToFilter {
-  'use-strict-bounds': ReparentTarget
-  'allow-missing-bounds': ReparentTarget
+  'use-strict-bounds': ReparentTarget | null
+  'allow-missing-bounds': ReparentTarget | null
 }
 
 export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
 
 export function reparentTargetsToFilter(
-  strictBoundsTarget: ReparentTarget,
-  missingBoundsTarget: ReparentTarget,
+  strictBoundsTarget: ReparentTarget | null,
+  missingBoundsTarget: ReparentTarget | null,
 ): ReparentTargetsToFilter {
   return {
     'use-strict-bounds': strictBoundsTarget,

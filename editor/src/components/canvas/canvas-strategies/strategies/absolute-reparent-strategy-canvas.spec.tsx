@@ -30,7 +30,7 @@ import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
 import { boundingArea, InteractionSession } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
-import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
+import { reparentMetaStrategy } from './reparent-metastrategy'
 
 jest.mock('../../canvas-utils', () => ({
   ...jest.requireActual('../../canvas-utils'),
@@ -114,9 +114,10 @@ function reparentElement(
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
+  const startPoint = canvasPoint({ x: 0, y: 0 })
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      canvasPoint({ x: 0, y: 0 }),
+      startPoint,
       { cmd: true, alt: false, shift: false, ctrl: false },
       boundingArea(),
       dragVector,
@@ -126,15 +127,21 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = baseAbsoluteReparentStrategy('use-strict-bounds', false)(
-    pickCanvasStateFromEditorStateWithMetadata(
-      editorState,
-      createBuiltInDependenciesList(null),
-      startingMetadata,
-    ),
+  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState,
+    createBuiltInDependenciesList(null),
+    startingMetadata,
+  )
+
+  const reparentStrategies = reparentMetaStrategy(
+    canvasState,
     interactionSession,
     defaultCustomStrategyState(),
-  )!.apply('end-interaction')
+  )
+
+  expect(reparentStrategies.length).toBeGreaterThan(0)
+
+  const strategyResult = reparentStrategies[0].apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')

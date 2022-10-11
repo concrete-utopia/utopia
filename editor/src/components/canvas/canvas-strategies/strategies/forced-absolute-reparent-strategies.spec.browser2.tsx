@@ -2,7 +2,6 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -15,11 +14,9 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
+import { MetaCanvasStrategy } from '../canvas-strategies'
 import { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
-import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 
 async function dragElement(
@@ -159,15 +156,17 @@ ${snippet}
 `)
 }
 
-function metaStrategyForFactories(factories: Array<CanvasStrategyFactory>): MetaCanvasStrategy {
-  return (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    customStrategyState: CustomStrategyState,
-  ) =>
-    stripNulls(
-      factories.map((factory) => factory(canvasState, interactionSession, customStrategyState)),
-    )
+const forcedAbsoluteReparentMetastrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => {
+  const allReparentingStrategies = reparentMetaStrategy(
+    canvasState,
+    interactionSession,
+    customStrategyState,
+  )
+  return allReparentingStrategies.filter((strategy) => strategy.id.startsWith('FORCED'))
 }
 
 describe('Forced Absolute Reparent Strategies', () => {
@@ -175,7 +174,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([baseAbsoluteReparentStrategy('allow-missing-bounds', false)])],
+      [forcedAbsoluteReparentMetastrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -394,11 +393,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [
-        metaStrategyForFactories([
-          baseFlexReparentToAbsoluteStrategy('allow-missing-bounds', false),
-        ]),
-      ],
+      [forcedAbsoluteReparentMetastrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()

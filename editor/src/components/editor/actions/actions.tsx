@@ -407,6 +407,7 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import {
   getReparentPropertyChanges,
   partialReparentStrategyForParent,
+  reparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -2765,7 +2766,7 @@ export const UPDATE_FNS = {
 
           const partialReparentStrategy = partialReparentStrategyForParent(
             workingEditorState.jsxMetadata,
-            action.pasteInto,
+            reparentTarget(true, action.pasteInto, false, -1), // FIXME We shouldn't be doing this here
             false,
           )
           const pastedElementIsFlex =

@@ -209,7 +209,7 @@ function getHighlightAndReorderIndicatorCommands(
     'allow-missing-bounds',
   )
 
-  if (parent != null && parent.shouldReparent && parent.newParent != null) {
+  if (parent != null && parent.shouldReparent) {
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
 
     if (parent.newIndex !== -1) {

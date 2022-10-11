@@ -1770,7 +1770,7 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     (target) => target.shouldReparent,
     BooleanKeepDeepEquality,
     (target) => target.newParent,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
+    ElementPathKeepDeepEquality,
     (target) => target.shouldReorder,
     BooleanKeepDeepEquality,
     (target) => target.newIndex,
@@ -1781,9 +1781,9 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
 const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
   combine2EqualityCalls(
     (target) => target['use-strict-bounds'],
-    ReparentTargetKeepDeepEquality,
+    nullableDeepEquality(ReparentTargetKeepDeepEquality),
     (target) => target['allow-missing-bounds'],
-    ReparentTargetKeepDeepEquality,
+    nullableDeepEquality(ReparentTargetKeepDeepEquality),
     reparentTargetsToFilter,
   )
 

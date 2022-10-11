@@ -6,7 +6,7 @@ import {
   parentPath,
   toString,
 } from '../../../../core/shared/element-path'
-import { canvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint } from '../../../../core/shared/math-utils'
 import { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { duplicateElement } from '../../commands/duplicate-element-command'
@@ -29,10 +29,11 @@ import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { existingReparentSubjects, getReparentTargetUnified } from './reparent-strategy-helpers'
+import { ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
+  reparentTarget: ReparentTarget,
   missingBoundsHandling: MissingBoundsHandling,
   isFallback: boolean,
 ): CanvasStrategyFactory {
@@ -92,28 +93,17 @@ export function baseFlexReparentToAbsoluteStrategy(
               return emptyStrategyApplicationResult
             }
 
-            const pointOnCanvas = offsetPoint(
-              interactionSession.interactionData.originalDragStart,
-              interactionSession.interactionData.drag,
-            )
-
-            const { newParent } = getReparentTargetUnified(
-              existingReparentSubjects(filteredSelectedElements),
-              pointOnCanvas,
-              interactionSession.interactionData.modifiers.cmd,
-              canvasState,
-              canvasState.startingMetadata,
-              canvasState.startingAllElementProps,
-              missingBoundsHandling,
-            )
+            const newParent = reparentTarget.newParent
 
             let duplicatedElementNewUids = {
               ...customStrategyState.duplicatedElementNewUids,
             }
 
             const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
-              const newParentADescendantOfCurrentParent =
-                newParent != null && isDescendantOf(newParent, parentPath(element))
+              const newParentADescendantOfCurrentParent = isDescendantOf(
+                newParent,
+                parentPath(element),
+              )
 
               if (newParentADescendantOfCurrentParent) {
                 // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
@@ -154,6 +144,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                     canvasState.builtInDependencies,
                   )
                   const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
+                    reparentTarget,
                     missingBoundsHandling,
                     isFallback,
                   )
