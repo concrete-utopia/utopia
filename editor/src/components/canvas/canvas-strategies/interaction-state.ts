@@ -21,7 +21,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
-import type { ReparentTarget } from './reparent-strategy-helpers'
+import type { ReparentTarget } from './strategies/reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
