@@ -1,5 +1,8 @@
 import { fireEvent } from '@testing-library/react'
+import Sinon from 'sinon'
+import { loggedInUser } from '../common/user'
 import { ProjectContentTreeRoot } from '../components/assets'
+import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
   makeDragEvent,
@@ -17,7 +20,12 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
-import { wait } from '../utils/utils.test-utils'
+import { defer } from '../utils/utils'
+import * as ImageDrop from './image-drop'
+
+const MOCK_UIDS = Array(10)
+  .fill(0)
+  .map((_, i) => `${i}`)
 
 const contents = {
   'package.json': {
@@ -218,6 +226,20 @@ const contents = {
 } as ProjectContentTreeRoot
 
 describe('image dnd', () => {
+  var dropDone: ReturnType<typeof defer> = defer()
+  var sandbox = Sinon.createSandbox()
+  var originalOnDrop = ImageDrop.DropHandlers.onDrop
+
+  beforeEach(() => {
+    dropDone = defer()
+    const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
+    onDropStub.callsFake((e, f, c) => originalOnDrop(e, f, c).then(() => dropDone.resolve()))
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   it('dragging from the sidebar works', async () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)
@@ -296,7 +318,7 @@ export var storyboard = (
   })
 
   it('dragging from the "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -307,22 +329,22 @@ export var storyboard = (
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     fireEvent(
       canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, [file]),
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
     )
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, [file]))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
 
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(250) // read the image
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -344,29 +366,33 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
   })
 
   it('dragging existing filename from the "finder" autoincrements filename', async () => {
-    FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const file = await makeImageFile(imgBase64, 'stuff.png')
@@ -381,16 +407,16 @@ export var storyboard = (
 
     fireEvent(
       canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, [file]),
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
     )
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, [file]))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
 
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(250) // read the image
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -412,27 +438,26 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/stuff_2.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='./assets/stuff_2.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
   })
 
   it('dragging multiple images from the "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -447,22 +472,21 @@ export var storyboard = (
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     fireEvent(
       canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, files),
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
     )
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, files))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
 
     fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
 
     await editor.getDispatchFollowUpActionsFinished()
-
-    await wait(250) // read the image
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -484,83 +508,85 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/budspencer.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='2'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/brucelee.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='3'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
   })
-})
 
-it('dragging multiple images with the same name from the "finder" works', async () => {
-  FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+  it('dragging multiple images with the same name from the "finder" works', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
-  const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
-  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  const files = [
-    await makeImageFile(imgBase64, 'chucknorris.png'),
-    await makeImageFile(imgBase64, 'chucknorris.png'),
-    await makeImageFile(imgBase64, 'brucelee.png'),
-  ]
+    const files = [
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'brucelee.png'),
+    ]
 
-  const target = editor.renderedDOM.getByTestId('scene')
-  const targetBounds = target.getBoundingClientRect()
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
 
-  const endPoint = {
-    x: targetBounds.x + targetBounds.width / 2,
-    y: targetBounds.y + targetBounds.height / 2,
-  }
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
 
-  fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, files))
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
+    )
 
-  fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, files))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
 
-  fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
 
-  await editor.getDispatchFollowUpActionsFinished()
+    await editor.getDispatchFollowUpActionsFinished()
 
-  await wait(250) // read the image
+    await dropDone
 
-  expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 import { View, Rectangle } from 'utopia-api'
@@ -580,49 +606,45 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='1'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris_2.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='2'
-      data-aspect-ratio-locked
-    />
-    <img
-      alt=''
-      src='./assets/brucelee.png'
-      style={{
-        position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
-      }}
-      data-uid='3'
-      data-aspect-ratio-locked
-    />
+    >
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='./assets/brucelee.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
   </Storyboard>
 )
 `)
+  })
 })
 
 // minimal PNG image

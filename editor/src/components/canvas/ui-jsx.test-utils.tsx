@@ -55,7 +55,7 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
-import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
+import { DispatchPriority, EditorAction, LoginState, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
@@ -173,12 +173,14 @@ export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
+  loginState: LoginState = notLoggedIn,
 ) {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
     undefined,
     strategiesToUse,
+    loginState,
   )
 }
 
@@ -187,6 +189,7 @@ export async function renderTestEditorWithModel(
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
+  loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
@@ -302,7 +305,7 @@ export async function renderTestEditorWithModel(
     patchedDerived: derivedState,
     history: history,
     userState: {
-      loginState: notLoggedIn,
+      loginState: loginState,
       shortcutConfig: {},
       githubState: {
         authenticated: false,
