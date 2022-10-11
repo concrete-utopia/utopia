@@ -110,7 +110,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  <KeyIndicator key={index + 1} keyNumber={index + 1} />
+                  <KeyIndicator keyNumber={index + 1} />
                   {name}
                 </FlexRow>
               )
