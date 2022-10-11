@@ -73,16 +73,6 @@ export type FindPartialReparentStrategyResult = {
   isFallback: boolean
 }
 
-export type ReparentStrategy =
-  | 'FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FLEX_REPARENT_TO_FLEX'
-  | 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
-  | 'ABSOLUTE_REPARENT_TO_FLEX'
-
-export type FindReparentStrategyResult =
-  | { strategy: ReparentStrategy; newParent: ElementPath; forcingRequired: boolean }
-  | { strategy: 'do-not-reparent' }
-
 export function partialReparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
   newParent: ElementPath,
@@ -863,7 +853,7 @@ export function getFlexReparentPropertyChanges(
 }
 
 export function getReparentPropertyChanges(
-  reparentStrategy: ReparentStrategy,
+  reparentStrategy: PartialReparentStrategy,
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
@@ -872,8 +862,7 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
-    case 'FLEX_REPARENT_TO_ABSOLUTE':
-    case 'ABSOLUTE_REPARENT_TO_ABSOLUTE':
+    case 'REPARENT_TO_ABSOLUTE':
       return getAbsoluteReparentPropertyChanges(
         target,
         newParent,
@@ -882,8 +871,7 @@ export function getReparentPropertyChanges(
         projectContents,
         openFile,
       )
-    case 'ABSOLUTE_REPARENT_TO_FLEX':
-    case 'FLEX_REPARENT_TO_FLEX':
+    case 'REPARENT_TO_FLEX':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       return getFlexReparentPropertyChanges('strip-absolute-props', newPath)
   }

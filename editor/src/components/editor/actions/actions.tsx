@@ -407,7 +407,6 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import {
   getReparentPropertyChanges,
   partialReparentStrategyForParent,
-  ReparentStrategy,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -2784,11 +2783,8 @@ export const UPDATE_FNS = {
           if (!(pastedElementIsAbsolute || pastedElementIsFlex)) {
             return workingEditorState
           } else {
-            const strategyPrefix = pastedElementIsAbsolute ? 'ABSOLUTE' : 'FLEX'
-            const strategyToUse: ReparentStrategy = `${strategyPrefix}_${partialReparentStrategy.strategy}`
-
             const propertyChangeCommands = getReparentPropertyChanges(
-              strategyToUse,
+              partialReparentStrategy.strategy,
               newPath,
               action.pasteInto,
               action.targetOriginalContextMetadata,
