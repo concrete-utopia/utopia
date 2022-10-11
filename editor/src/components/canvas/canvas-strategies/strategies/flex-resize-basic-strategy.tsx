@@ -63,7 +63,7 @@ export function flexResizeBasicStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: {},
+        props: { targets: selectedElements },
         key: 'absolute-resize-control',
         show: 'always-visible',
       }),

@@ -72,7 +72,7 @@ export function absoluteResizeBoundingBoxStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
