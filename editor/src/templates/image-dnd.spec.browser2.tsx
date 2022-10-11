@@ -17,7 +17,9 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
-import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../utils/utils.test-utils'
+import { defer } from '../utils/utils'
+import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../utils/utils.test-utils'
+import { FOR_TESTS_SET_DROP_HOOK, FOR_TESTS_UNSET_DROP_HOOK } from './image-drop.test-utils'
 
 const contents = {
   'package.json': {
@@ -218,6 +220,8 @@ const contents = {
 } as ProjectContentTreeRoot
 
 describe('image dnd', () => {
+  // afterEach(() => FOR_TESTS_UNSET_DROP_HOOK())
+
   it('dragging from the sidebar works', async () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)
@@ -297,6 +301,9 @@ export var storyboard = (
 
   it('dragging from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(['1', '2', '3'])
+    const dropDone = defer()
+
+    FOR_TESTS_SET_DROP_HOOK(() => dropDone.resolve())
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -322,7 +329,7 @@ export var storyboard = (
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(250) // read the image
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

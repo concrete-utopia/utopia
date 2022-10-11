@@ -19,6 +19,7 @@ import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/ele
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { EditorState } from '../components/editor/store/editor-state'
+import { IMAGE_DROP_HOOK } from './image-drop.test-utils'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -73,7 +74,11 @@ interface DropContext {
   scale: number
 }
 
-export function onDrop(event: React.DragEvent, cont: () => void, context: DropContext): void {
+export async function onDrop(
+  event: React.DragEvent,
+  cont: () => void,
+  context: DropContext,
+): Promise<void> {
   if (context.editor.mode.type === 'select' && event.dataTransfer != null) {
     const insertionTarget = context.editor.highlightedViews[0]
     void insertImageFromClipboard(event.dataTransfer, {
@@ -83,33 +88,33 @@ export function onDrop(event: React.DragEvent, cont: () => void, context: DropCo
       elementPath: insertionTarget,
     })
   } else if (context.editor.mode.type === 'insert' && event.dataTransfer != null) {
-    void getPastedImages(event.dataTransfer).then((images) => {
-      if (images.length === 0) {
-        return context.dispatch([
-          CanvasActions.clearInteractionSession(false),
-          EditorActions.switchEditorMode(EditorModes.selectMode()),
-          EditorActions.showToast({
-            id: 'image-drag-drop',
-            level: 'WARNING',
-            message: "Didn't find any images to insert",
-            persistent: false,
-          }),
-        ])
-      }
+    const images = await getPastedImages(event.dataTransfer)
+    if (images.length === 0) {
+      return context.dispatch([
+        CanvasActions.clearInteractionSession(false),
+        EditorActions.switchEditorMode(EditorModes.selectMode()),
+        EditorActions.showToast({
+          id: 'image-drag-drop',
+          level: 'WARNING',
+          message: "Didn't find any images to insert",
+          persistent: false,
+        }),
+      ])
+    }
 
-      const { actions, subjects } = actionsForDroppedImages(images, {
-        scale: context.scale,
-        projectContents: context.editor.projectContents,
-        loginState: context.loginState,
-        mousePosition: context.mousePosition.canvasPositionRounded,
-      })
-
-      context.dispatch(
-        [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
-        'everyone',
-      )
-      cont()
+    const { actions, subjects } = actionsForDroppedImages(images, {
+      scale: context.scale,
+      projectContents: context.editor.projectContents,
+      loginState: context.loginState,
+      mousePosition: context.mousePosition.canvasPositionRounded,
     })
+
+    context.dispatch(
+      [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
+      'everyone',
+    )
+    cont()
+    IMAGE_DROP_HOOK.current()
   }
   return
 }
