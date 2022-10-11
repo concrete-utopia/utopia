@@ -567,60 +567,60 @@ import { View, Rectangle } from 'utopia-api'
 import { FlexRow } from 'utopia-api'
 
 export var storyboard = (
-<Storyboard data-uid='0cd'>
-  <Scene
-    style={{
-      width: 700,
-      height: 759,
-      position: 'absolute',
-      left: 207,
-      top: 126,
-      paddingLeft: 91,
-    }}
-    data-testid='scene'
-    data-label='Playground'
-    data-uid='3fc'
-  />
-  <img
-    alt=''
-    src='./assets/chucknorris.png'
-    style={{
-      position: 'absolute',
-      left: 602.5,
-      top: 505.5,
-      width: 1,
-      height: 1,
-    }}
-    data-uid='1'
-    data-aspect-ratio-locked
-  />
-  <img
-    alt=''
-    src='./assets/chucknorris_2.png'
-    style={{
-      position: 'absolute',
-      left: 602.5,
-      top: 505.5,
-      width: 1,
-      height: 1,
-    }}
-    data-uid='2'
-    data-aspect-ratio-locked
-  />
-  <img
-    alt=''
-    src='./assets/brucelee.png'
-    style={{
-      position: 'absolute',
-      left: 602.5,
-      top: 505.5,
-      width: 1,
-      height: 1,
-    }}
-    data-uid='3'
-    data-aspect-ratio-locked
-  />
-</Storyboard>
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    />
+    <img
+      alt=''
+      src='./assets/chucknorris.png'
+      style={{
+        position: 'absolute',
+        left: 602.5,
+        top: 505.5,
+        width: 1,
+        height: 1,
+      }}
+      data-uid='1'
+      data-aspect-ratio-locked
+    />
+    <img
+      alt=''
+      src='./assets/chucknorris_2.png'
+      style={{
+        position: 'absolute',
+        left: 602.5,
+        top: 505.5,
+        width: 1,
+        height: 1,
+      }}
+      data-uid='2'
+      data-aspect-ratio-locked
+    />
+    <img
+      alt=''
+      src='./assets/brucelee.png'
+      style={{
+        position: 'absolute',
+        left: 602.5,
+        top: 505.5,
+        width: 1,
+        height: 1,
+      }}
+      data-uid='3'
+      data-aspect-ratio-locked
+    />
+  </Storyboard>
 )
 `)
 })
