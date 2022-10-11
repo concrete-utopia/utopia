@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react'
+import Sinon from 'sinon'
 import { ProjectContentTreeRoot } from '../components/assets'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
@@ -18,7 +19,7 @@ import {
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
 import { defer } from '../utils/utils'
-import { FOR_TESTS_SET_DROP_HOOK } from './image-drop.test-utils'
+import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
   .fill(0)
@@ -223,7 +224,18 @@ const contents = {
 } as ProjectContentTreeRoot
 
 describe('image dnd', () => {
-  // afterEach(() => FOR_TESTS_UNSET_DROP_HOOK())
+  var dropDone: ReturnType<typeof defer> = defer()
+  var sandbox = Sinon.createSandbox()
+
+  beforeEach(() => {
+    dropDone = defer()
+    const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
+    onDropStub.callsFake((e, f, c) => ImageDrop.onDropI(e, f, c).then(() => dropDone.resolve()))
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+  })
 
   it('dragging from the sidebar works', async () => {
     const newUID = 'imgimgimg'
@@ -304,9 +316,6 @@ export var storyboard = (
 
   it('dragging from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-    const dropDone = defer()
-
-    FOR_TESTS_SET_DROP_HOOK(() => dropDone.resolve())
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -374,9 +383,6 @@ export var storyboard = (
 
   it('dragging multiple images from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-    const dropDone = defer()
-
-    FOR_TESTS_SET_DROP_HOOK(() => dropDone.resolve())
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)

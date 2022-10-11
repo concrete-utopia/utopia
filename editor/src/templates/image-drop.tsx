@@ -19,7 +19,6 @@ import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/ele
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { EditorState } from '../components/editor/store/editor-state'
-import { IMAGE_DROP_HOOK } from './image-drop.test-utils'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -74,7 +73,7 @@ interface DropContext {
   scale: number
 }
 
-export async function onDrop(
+export async function onDropI(
   event: React.DragEvent,
   cont: () => void,
   context: DropContext,
@@ -114,9 +113,16 @@ export async function onDrop(
       'everyone',
     )
     cont()
-    IMAGE_DROP_HOOK.current()
   }
   return
+}
+
+async function onDrop(
+  event: React.DragEvent,
+  cont: () => void,
+  context: DropContext,
+): Promise<void> {
+  return onDropI(event, cont, context)
 }
 
 interface ActionsForDroppedImageContext {
@@ -209,4 +215,8 @@ function actionsForDroppedImages(
   }
 
   return { actions, subjects }
+}
+
+export const DropHandlers = {
+  onDrop: onDrop,
 }

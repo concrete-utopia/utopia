@@ -160,6 +160,7 @@ specifiers:
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5
+  karma-sinon: ^1.0.5
   karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
   keycode: 2.2.1
@@ -483,6 +484,7 @@ devDependencies:
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5_karma@6.3.4
+  karma-sinon: 1.0.5_karma@6.3.4+sinon@14.0.0
   karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.52.0
   lint-staged: 8.1.7
@@ -10514,6 +10516,17 @@ packages:
       minimist: 1.2.5
     dev: true
 
+  /karma-sinon/1.0.5_karma@6.3.4+sinon@14.0.0:
+    resolution: {integrity: sha512-wrkyAxJmJbn75Dqy17L/8aILJWFm7znd1CE8gkyxTBFnjMSOe2XTJ3P30T8SkxWZHmoHX0SCaUJTDBEoXs25Og==}
+    engines: {node: '>= 0.10.0'}
+    peerDependencies:
+      karma: '>=0.10'
+      sinon: '*'
+    dependencies:
+      karma: 6.3.4
+      sinon: 14.0.0
+    dev: true
+
   /karma-viewport/1.0.8:
     resolution: {integrity: sha512-KIN8zteDBmvh5Fvac/jet05cEtT+dag583DlSTMGKNvdib9NM2dMWWA/u1zfnkHxSQEQVE/zyxlqBgmOTqdqQg==}
     dependencies:
@@ -12078,7 +12091,7 @@ packages:
     dev: true
 
   /performance-now/2.1.0:
-    resolution: {integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=}
+    resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
 
   /picocolors/1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}

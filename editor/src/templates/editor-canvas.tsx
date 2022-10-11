@@ -31,20 +31,9 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import {
-  EditorAction,
-  EditorDispatch,
-  isLoggedIn,
-  LoginState,
-} from '../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  EditorModes,
-  Mode,
-  isLiveMode,
-  insertionSubject,
-  InsertionSubject,
-} from '../components/editor/editor-modes'
+import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
@@ -63,13 +52,9 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap, JSXElement } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
-import {
-  getActionsForClipboardItems,
-  parseClipboardData,
-  createDirectInsertImageActions,
-} from '../utils/clipboard'
+import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
@@ -83,15 +68,10 @@ import {
   offsetPoint,
   Point,
   RawPoint,
-  resize,
-  size,
-  Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { ImageResult } from '../core/shared/file-utils'
-import { fastForEach } from '../core/shared/utils'
 import { UtopiaStyles } from '../uuiui'
 import {
   CanvasMousePositionRaw,
@@ -116,18 +96,13 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  generateUidWithExistingComponents,
-  generateUidWithExistingComponentsAndExtraUids,
-} from '../core/model/element-template-utils'
-import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
-import { imagePathURL } from '../common/server'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { createJsxImage } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
-import { ProjectContentTreeRoot } from '../components/assets'
-import { onDrop } from './image-drop'
+import { DropHandlers } from './image-drop'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -972,7 +947,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.stopPropagation()
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          void onDrop(
+          void DropHandlers.onDrop(
             event,
             () => {
               this.handleMouseMove(event.nativeEvent)
