@@ -57,7 +57,7 @@ export function dragToInsertStrategy(
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
         control: ParentOutlines,
-        props: {},
+        props: { targets: [] }, // <<<- TODO feed it with targetParents
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),

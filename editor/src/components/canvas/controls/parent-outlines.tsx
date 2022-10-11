@@ -2,13 +2,18 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-export const ParentOutlines = controlForStrategyMemoized(() => {
+interface ParentOutlinesProps {
+  targets: Array<ElementPath>
+}
+
+export const ParentOutlines = controlForStrategyMemoized(({ targets }: ParentOutlinesProps) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentOutlines canvas scale')
   const parentFrame = useEditorState((store) => {
@@ -19,14 +24,12 @@ export const ParentOutlines = controlForStrategyMemoized(() => {
 
     if (!isInsertMode(store.editor.mode)) {
       const targetParents = uniqBy(
-        stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
+        stripNulls(targets.map((view) => EP.parentPath(view))),
         EP.pathsEqual,
       )
       if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-        return MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          store.editor.selectedViews[0],
-        )?.specialSizeMeasurements.immediateParentBounds
+        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
+          ?.specialSizeMeasurements.immediateParentBounds
       }
     }
     return null

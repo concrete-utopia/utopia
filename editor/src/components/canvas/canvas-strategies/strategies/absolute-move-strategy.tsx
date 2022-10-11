@@ -44,7 +44,7 @@ export function absoluteMoveStrategy(
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
-        props: {},
+        props: { targets: selectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),

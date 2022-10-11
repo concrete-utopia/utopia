@@ -49,7 +49,7 @@ export function relativeMoveStrategy(
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
