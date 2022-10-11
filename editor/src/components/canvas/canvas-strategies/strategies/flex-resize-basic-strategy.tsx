@@ -69,7 +69,7 @@ export function flexResizeBasicStrategy(
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
-        props: {},
+        props: { targets: selectedElements },
         key: 'zero-size-resize-control',
         show: 'always-visible',
       }),

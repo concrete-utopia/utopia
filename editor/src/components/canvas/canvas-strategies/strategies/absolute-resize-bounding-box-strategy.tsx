@@ -78,7 +78,7 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'zero-size-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
