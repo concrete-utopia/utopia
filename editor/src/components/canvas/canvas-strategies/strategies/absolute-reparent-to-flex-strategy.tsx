@@ -42,7 +42,7 @@ export function absoluteReparentToFlexStrategy(
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),

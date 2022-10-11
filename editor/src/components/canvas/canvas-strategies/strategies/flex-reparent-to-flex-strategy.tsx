@@ -34,7 +34,7 @@ export function flexReparentToFlexStrategy(
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: { targets: selectedElements },
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),

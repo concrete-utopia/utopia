@@ -69,7 +69,7 @@ export function dragToInsertStrategy(
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: { targets: [] }, // <---- TODO feed it with real props!
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
