@@ -8,6 +8,7 @@ import {
   CanvasRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -26,7 +27,6 @@ import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
-import { honoursPropsSize } from './absolute-utils'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -37,6 +37,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { honoursPropsSize } from './absolute-utils'
 import { getLockedAspectRatio } from './resize-helpers'
 import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
 
@@ -112,12 +113,6 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
-          const lockedAspectRatio = getLockedAspectRatio(
-            interactionSession,
-            interactionSession.interactionData.modifiers,
-            originalBounds,
-          )
           const metadata = MetadataUtils.findElementByElementPath(
             canvasState.startingMetadata,
             selectedElement,
@@ -127,7 +122,23 @@ export function flexResizeBasicStrategy(
           }
           const elementParentBounds =
             metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-          const dimensions = getDimensions(metadata)
+          const dimensions = getElementDimensions(metadata)
+
+          const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
+          const lockedAspectRatio = getSpecializedLockedAspectRatio(
+            interactionSession,
+            interactionSession.interactionData.modifiers,
+            originalBounds,
+            metadata,
+          )
+
+          const newDimensions = makeNewDimensions(
+            originalBounds,
+            resizedBounds,
+            dimensions,
+            lockedAspectRatio,
+          )
+          const { width: newWidth, height: newHeight } = newDimensions
 
           const makeResizeCommand = (
             name: 'width' | 'height',
@@ -144,33 +155,10 @@ export function flexResizeBasicStrategy(
             )
           }
 
-          const makeNewDimension = (original: number, resized: number, dimension?: number | null) =>
-            resized - (dimension != null ? original : 0)
-
           const resizeCommands: Array<AdjustCssLengthProperty> = []
 
           const parentWidth = elementParentBounds?.width
           const parentHeight = elementParentBounds?.height
-
-          let newWidth = makeNewDimension(
-            originalBounds.width,
-            resizedBounds.width,
-            dimensions?.width,
-          )
-          let newHeight = makeNewDimension(
-            originalBounds.height,
-            resizedBounds.height,
-            dimensions?.height,
-          )
-          if (lockedAspectRatio != null) {
-            if (newWidth !== 0) {
-              // diagonal + horizontal lock
-              newHeight = newWidth * lockedAspectRatio
-            } else if (newHeight !== 0) {
-              // vertical lock
-              newWidth = newHeight * lockedAspectRatio
-            }
-          }
 
           if (dimensions?.width != null || originalBounds.width !== newWidth) {
             // it moves horizontally
@@ -198,6 +186,60 @@ export function flexResizeBasicStrategy(
       return emptyStrategyApplicationResult
     },
   }
+}
+
+interface ResizeDimensions {
+  width: number
+  height: number
+}
+
+const makeNewDimensions = (
+  originalBounds: CanvasRectangle,
+  resizedBounds: CanvasRectangle,
+  elementDimensions: ElementDimensions,
+  lockedAspectRatio: number | null,
+): ResizeDimensions => {
+  const makeNewDimension = (original: number, resized: number, dimension?: number | null) => {
+    return resized - (dimension != null ? original : 0)
+  }
+
+  const width = makeNewDimension(
+    originalBounds.width,
+    resizedBounds.width,
+    elementDimensions?.width,
+  )
+  const height = makeNewDimension(
+    originalBounds.height,
+    resizedBounds.height,
+    elementDimensions?.height,
+  )
+
+  if (lockedAspectRatio != null) {
+    if (width !== 0) {
+      return {
+        width,
+        height: width * lockedAspectRatio,
+      }
+    } else if (height !== 0) {
+      return {
+        width: height * lockedAspectRatio,
+        height,
+      }
+    }
+  }
+  return { width, height }
+}
+
+const getSpecializedLockedAspectRatio = (
+  interactionSession: InteractionSession,
+  modifiers: Modifiers,
+  rectangle: CanvasRectangle,
+  metadata: ElementInstanceMetadata,
+) => {
+  if (MetadataUtils.isImg(metadata)) {
+    return rectangle.width / rectangle.height
+  }
+  return getLockedAspectRatio(interactionSession, modifiers, rectangle)
 }
 
 export function resizeWidthHeight(
@@ -252,12 +294,12 @@ export function resizeWidthHeight(
   }
 }
 
-const getDimensions = (
-  metadata: ElementInstanceMetadata,
-): {
+type ElementDimensions = {
   width: number | null
   height: number | null
-} | null => {
+} | null
+
+const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
   const getOffsetPropValue = (
     name: 'width' | 'height',
     attrs: PropsOrJSXAttributes,
