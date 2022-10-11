@@ -112,8 +112,8 @@ import { MouseButtonsPressed } from '../utils/mouse'
 import {
   existingReparentSubjects,
   getReparentTargetUnified,
-} from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
-import { getDragTargets } from '../components/canvas/canvas-strategies/shared-move-strategies-helpers'
+} from '../components/canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {

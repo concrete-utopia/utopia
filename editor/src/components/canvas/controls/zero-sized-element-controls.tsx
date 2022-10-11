@@ -327,6 +327,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       <div
         onMouseMove={onControlMouseMove}
         onMouseDown={onControlStopPropagation}
+        onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
         style={{
