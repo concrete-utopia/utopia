@@ -19,7 +19,6 @@ module.exports = function (config) {
       'karma-chrome-launcher',
       'karma-viewport',
       'karma-mocha-reporter',
-      'karma-sinon',
       require('./test/karma-custom-reporter/short-console-messages'),
     ],
     reporters: config.debug ? ['mocha'] : ['mocha', 'utopia'],
@@ -30,7 +29,7 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'viewport', 'sinon'],
+    frameworks: ['mocha', 'viewport'],
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser

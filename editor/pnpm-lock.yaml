@@ -160,7 +160,6 @@ specifiers:
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5
-  karma-sinon: ^1.0.5
   karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
   keycode: 2.2.1
@@ -484,7 +483,6 @@ devDependencies:
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5_karma@6.3.4
-  karma-sinon: 1.0.5_karma@6.3.4+sinon@14.0.0
   karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.52.0
   lint-staged: 8.1.7
@@ -10514,17 +10512,6 @@ packages:
     resolution: {integrity: sha512-Tzd5HBjm8his2OA4bouAsATYEpZrp9vC7z5E5j4C5Of5Rrs1jY67RAwXNcVmd/Bnk1wgvQRou0zGVLey44G4tQ==}
     dependencies:
       minimist: 1.2.5
-    dev: true
-
-  /karma-sinon/1.0.5_karma@6.3.4+sinon@14.0.0:
-    resolution: {integrity: sha512-wrkyAxJmJbn75Dqy17L/8aILJWFm7znd1CE8gkyxTBFnjMSOe2XTJ3P30T8SkxWZHmoHX0SCaUJTDBEoXs25Og==}
-    engines: {node: '>= 0.10.0'}
-    peerDependencies:
-      karma: '>=0.10'
-      sinon: '*'
-    dependencies:
-      karma: 6.3.4
-      sinon: 14.0.0
     dev: true
 
   /karma-viewport/1.0.8:
