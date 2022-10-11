@@ -941,11 +941,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             height: 1,
           })
 
+          const position = this.getPosition(event.nativeEvent)
+
           this.props.dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
               CanvasActions.createInteractionSession(
-                createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+                createInteractionViaMouse(
+                  position.canvasPositionRounded,
+                  emptyModifiers,
+                  boundingArea(),
+                ),
               ),
             ],
             'everyone',
@@ -966,7 +972,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.stopPropagation()
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          onDrop(
+          void onDrop(
             event,
             () => {
               this.handleMouseMove(event.nativeEvent)
@@ -975,7 +981,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             {
               scale: this.props.model.scale,
               editor: this.props.editor,
-              mousePosition,
+              mousePosition: mousePosition,
               dispatch: this.props.dispatch,
               loginState: this.props.userState.loginState,
             },
