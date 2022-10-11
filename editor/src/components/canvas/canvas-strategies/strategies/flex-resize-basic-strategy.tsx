@@ -205,7 +205,11 @@ const getSpecializedLockedAspectRatio = (
   rectangle: CanvasRectangle,
   metadata: ElementInstanceMetadata,
 ) => {
-  if (MetadataUtils.isImg(metadata) && rectangle.width !== 0 && rectangle.width !== 0) {
+  if (rectangle.width === 0 || rectangle.height === 0) {
+    // if dimensions are missing, there's no point in calculating the ratio
+    return null
+  }
+  if (MetadataUtils.isImg(metadata)) {
     return rectangle.width / rectangle.height
   }
   return getLockedAspectRatio(interactionSession, modifiers, rectangle)
