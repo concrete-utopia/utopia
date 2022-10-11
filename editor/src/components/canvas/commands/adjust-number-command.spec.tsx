@@ -9,6 +9,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
+  renderTestEditorWithModelContext,
 } from '../ui-jsx.test-utils'
 import { adjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { updateEditorStateWithPatches } from './commands'
@@ -18,7 +19,9 @@ describe('adjustNumberProperty', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      createBuiltInDependenciesList(null),
+      renderTestEditorWithModelContext({
+        mockBuiltInDependencies: createBuiltInDependenciesList(null),
+      }),
     )
 
     const cardInstancePath = EP.elementPath([

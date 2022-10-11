@@ -4,7 +4,7 @@ import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel, renderTestEditorWithModelContext } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { runSetCssLengthProperty, setCssLengthProperty } from './set-css-length-command'
 
@@ -13,7 +13,9 @@ describe('setCssLengthProperty', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      createBuiltInDependenciesList(null),
+      renderTestEditorWithModelContext({
+        mockBuiltInDependencies: createBuiltInDependenciesList(null),
+      }),
     )
 
     const cardInstancePath = EP.elementPath([

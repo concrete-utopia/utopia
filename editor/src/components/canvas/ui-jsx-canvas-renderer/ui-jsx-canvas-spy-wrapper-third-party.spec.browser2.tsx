@@ -2,7 +2,7 @@
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
-import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel, renderTestEditorWithModelContext } from '../ui-jsx.test-utils'
 import {
   ParsedTextFile,
   textFile,
@@ -20,7 +20,6 @@ import type { EditorStorePatched } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { NO_OP } from '../../../core/shared/utils'
 import CanvasActions from '../canvas-actions'
 import { CanvasVector } from '../../../core/shared/math-utils'
 
@@ -136,7 +135,7 @@ async function renderTestProject() {
   const renderTestResult = await renderTestEditorWithModel(
     updatedProject,
     'await-first-dom-report',
-    builtInDependencies,
+    renderTestEditorWithModelContext({ mockBuiltInDependencies: builtInDependencies }),
   )
   // Pause to let R3F do what it needs to do.
   await wait(500)

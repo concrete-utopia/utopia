@@ -55,7 +55,7 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
-import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
+import { DispatchPriority, EditorAction, LoginState, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
@@ -104,7 +104,6 @@ import {
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
-import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
 import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
@@ -160,33 +159,48 @@ export interface EditorRenderResult {
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
-) {
+  context: RenderTestEditorWithModelContext = renderTestEditorWithModelContext(),
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
-    undefined,
-    strategiesToUse,
+    context,
   )
 }
 export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
-) {
+  context: RenderTestEditorWithModelContext = renderTestEditorWithModelContext(),
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
-    undefined,
-    strategiesToUse,
+    context,
   )
+}
+
+interface RenderTestEditorWithModelContext {
+  mockBuiltInDependencies?: BuiltInDependencies
+  strategiesToUse: Array<MetaCanvasStrategy>
+  loginState: LoginState
+}
+
+export function renderTestEditorWithModelContext(
+  options?: Partial<RenderTestEditorWithModelContext>,
+): RenderTestEditorWithModelContext {
+  const optionsFull: Partial<RenderTestEditorWithModelContext> = options ?? {}
+  const defaults: RenderTestEditorWithModelContext = {
+    mockBuiltInDependencies: undefined,
+    strategiesToUse: RegisteredCanvasStrategies,
+    loginState: notLoggedIn,
+  }
+  return { ...defaults, ...optionsFull }
 }
 
 export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  mockBuiltInDependencies?: BuiltInDependencies,
-  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
+  context: RenderTestEditorWithModelContext = renderTestEditorWithModelContext(),
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
@@ -214,7 +228,7 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
-    innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
+    innerStrategiesToUse: Array<MetaCanvasStrategy> = context.strategiesToUse,
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(
@@ -291,8 +305,8 @@ export async function renderTestEditorWithModel(
   )
 
   const builtInDependencies =
-    mockBuiltInDependencies != null
-      ? mockBuiltInDependencies
+    context.mockBuiltInDependencies != null
+      ? context.mockBuiltInDependencies
       : createBuiltInDependenciesList(workers)
   const initialEditorStore: EditorStoreFull = {
     strategyState: createEmptyStrategyState({}, {}),
@@ -302,7 +316,7 @@ export async function renderTestEditorWithModel(
     patchedDerived: derivedState,
     history: history,
     userState: {
-      loginState: notLoggedIn,
+      loginState: context.loginState,
       shortcutConfig: {},
       githubState: {
         authenticated: false,
@@ -378,7 +392,7 @@ export async function renderTestEditorWithModel(
               ],
               undefined,
               true,
-              strategiesToUse,
+              context.strategiesToUse,
             )
             resolve()
           } catch (e) {
@@ -398,7 +412,7 @@ export async function renderTestEditorWithModel(
     dispatch: async (
       actions: ReadonlyArray<EditorAction>,
       waitForDOMReport: boolean,
-      innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
+      innerStrategiesToUse: Array<MetaCanvasStrategy> = context.strategiesToUse,
     ) => {
       return await act(async () => {
         await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)

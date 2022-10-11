@@ -2,7 +2,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel, renderTestEditorWithModelContext } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
 
@@ -11,7 +11,9 @@ describe('runReparentElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      createBuiltInDependenciesList(null),
+      renderTestEditorWithModelContext({
+        mockBuiltInDependencies: createBuiltInDependenciesList(null),
+      }),
     )
 
     const targetPath = EP.elementPath([
@@ -62,7 +64,9 @@ describe('runReparentElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      createBuiltInDependenciesList(null),
+      renderTestEditorWithModelContext({
+        mockBuiltInDependencies: createBuiltInDependenciesList(null),
+      }),
     )
 
     const targetPath = EP.elementPath([
