@@ -1666,14 +1666,14 @@ interface ActionsForDroppedImagesContext {
 function actionsForDroppedImages(
   images: Array<ImageResult>,
   context: ActionsForDroppedImagesContext,
-  overwriteExistingFilename: 'overwrite' | 'autoincrement',
+  overwriteExistingFile: 'overwrite' | 'autoincrement',
 ): ActionsForDroppedImagesResult {
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
   let subjects: Array<InsertionSubject> = []
   for (const image of images) {
     const filename =
-      overwriteExistingFilename === 'autoincrement'
+      overwriteExistingFile === 'autoincrement'
         ? uniqueProjectContentID(image.filename, context.projectContents)
         : image.filename
     const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(
