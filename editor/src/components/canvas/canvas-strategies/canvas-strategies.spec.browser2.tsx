@@ -25,7 +25,7 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { forceNotNull } from '../../..//core/shared/optional-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 

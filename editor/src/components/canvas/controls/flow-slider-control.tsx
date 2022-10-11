@@ -23,7 +23,7 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
-import { findNewIndex } from '../canvas-strategies/flow-reorder-helpers'
+import { findNewIndex } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 
 export const IconSize = 16

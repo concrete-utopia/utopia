@@ -10,7 +10,7 @@ import type { EditorState, EditorStatePatch } from '../../editor/store/editor-st
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-} from '../canvas-strategies/reparent-strategy-helpers'
+} from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ShowReorderIndicator extends BaseCommand {
