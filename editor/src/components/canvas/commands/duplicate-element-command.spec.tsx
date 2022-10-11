@@ -6,7 +6,6 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
-  renderTestEditorWithModelContext,
 } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { duplicateElement, runDuplicateElement } from './duplicate-element-command'
@@ -16,9 +15,7 @@ describe('runDuplicateElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      renderTestEditorWithModelContext({
-        mockBuiltInDependencies: createBuiltInDependenciesList(null),
-      }),
+      createBuiltInDependenciesList(null),
     )
 
     const targetPath = EP.elementPath([
@@ -55,9 +52,7 @@ describe('runDuplicateElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      renderTestEditorWithModelContext({
-        mockBuiltInDependencies: createBuiltInDependenciesList(null),
-      }),
+      createBuiltInDependenciesList(null),
     )
 
     const targetPath = EP.elementPath([

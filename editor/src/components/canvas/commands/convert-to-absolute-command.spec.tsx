@@ -8,7 +8,7 @@ import {
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { renderTestEditorWithModel, renderTestEditorWithModelContext } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { convertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 
@@ -17,9 +17,7 @@ describe('convertToAbsolute', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      renderTestEditorWithModelContext({
-        mockBuiltInDependencies: createBuiltInDependenciesList(null),
-      }),
+      createBuiltInDependenciesList(null),
     )
 
     const appInstancePath = EP.elementPath([['storyboard-entity', 'scene-1-entity', 'app-entity']])
