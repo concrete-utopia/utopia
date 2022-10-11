@@ -18,7 +18,7 @@ import {
   insertElementInsertionSubject,
 } from '../../commands/insert-element-insertion-subject'
 import { updateFunctionCommand } from '../../commands/update-function-command'
-import { ParentBounds } from '../../controls/parent-bounds'
+import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
@@ -62,8 +62,8 @@ export function dragToInsertStrategy(
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ParentBoundsForInsertion,
+        props: { targetParents: [] }, // <<<- TODO feed it with real props
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

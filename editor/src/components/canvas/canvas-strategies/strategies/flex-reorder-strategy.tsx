@@ -46,7 +46,7 @@ export function flexReorderStrategy(
       }),
       controlWithProps({
         control: ParentBounds,
-        props: {},
+        props: { targets: selectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

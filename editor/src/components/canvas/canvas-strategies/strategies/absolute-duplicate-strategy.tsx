@@ -62,7 +62,7 @@ export function absoluteDuplicateStrategy(
       }),
       controlWithProps({
         control: ParentBounds,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

@@ -1,19 +1,16 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { useColorTheme } from '../../../uuiui'
+import { ColorTheme, useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { getMultiselectBounds } from '../canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-const useColorForDisplayType = (colorTheme: any) => {
+const useColorForDisplayType = (colorTheme: ColorTheme, targets: Array<ElementPath>) => {
   return useEditorState((store) => {
-    if (store.editor.selectedViews.length > 0) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
+    if (targets.length > 0) {
+      const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
       return metadata?.specialSizeMeasurements.display === 'block'
         ? colorTheme.canvasDragOutlineBlock.value
         : colorTheme.canvasDragOutlineInline.value
@@ -43,8 +40,8 @@ export const FlowReorderDragOutline = controlForStrategyMemoized(
       }
     }, 'FlowReorderDragOutline dragVector')
 
-    const colorTheme = useColorTheme()
-    const color = useColorForDisplayType(colorTheme)
+    const colorTheme: ColorTheme = useColorTheme()
+    const color = useColorForDisplayType(colorTheme, targets)
 
     if (frame == null || dragVector == null) {
       return null

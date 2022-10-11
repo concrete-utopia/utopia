@@ -27,7 +27,7 @@ import {
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
+import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
@@ -73,8 +73,8 @@ export function drawToInsertStrategy(
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ParentBoundsForInsertion,
+        props: { targetParents: [] }, // <<<- TODO feed it with real props
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

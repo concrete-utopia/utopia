@@ -90,7 +90,7 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
       controlWithProps({
         control: ParentBounds,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

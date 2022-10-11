@@ -30,7 +30,10 @@ export function relativeMoveStrategy(
   const filteredSelectedElements = getDragTargets(selectedElements)
   const last = filteredSelectedElements[filteredSelectedElements.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
-  if (metadata == null || metadata.specialSizeMeasurements.position !== 'relative') {
+  if (
+    metadata == null ||
+    metadata.specialSizeMeasurements.position !== 'relative' // I think this check should be filteredSelectedElements.every
+  ) {
     return null
   }
   // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
@@ -52,7 +55,7 @@ export function relativeMoveStrategy(
       }),
       controlWithProps({
         control: ParentBounds,
-        props: {},
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
