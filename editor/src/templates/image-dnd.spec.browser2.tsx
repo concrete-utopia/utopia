@@ -242,8 +242,8 @@ describe('image dnd', () => {
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: (targetBounds.x + targetBounds.width / 2) ^ 0,
-      y: (targetBounds.y + targetBounds.height / 2) ^ 0,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
     mouseMoveToPoint(imageDragHandle, handleCenter)
