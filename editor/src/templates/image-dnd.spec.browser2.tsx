@@ -18,7 +18,6 @@ import {
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
 import { defer } from '../utils/utils'
-import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../utils/utils.test-utils'
 import { FOR_TESTS_SET_DROP_HOOK } from './image-drop.test-utils'
 
 const MOCK_UIDS = Array(10)
@@ -241,10 +240,10 @@ describe('image dnd', () => {
 
     const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
     const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = slightlyOffsetPointBecauseVeryWeirdIssue({
+    const handleCenter = {
       x: dragHandleBounds.x + dragHandleBounds.width / 2,
       y: dragHandleBounds.y + dragHandleBounds.height / 2,
-    })
+    }
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
