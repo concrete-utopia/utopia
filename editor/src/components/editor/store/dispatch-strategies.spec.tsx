@@ -153,28 +153,16 @@ describe('interactionCancel', () => {
   })
 })
 
-const testStrategy: MetaCanvasStrategy = () => [
+const testStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+) => [
   {
     id: 'TEST_STRATEGY',
-    name: () => 'Test Strategy',
-    isApplicable: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession | null,
-      metadata: ElementInstanceMetadataMap,
-    ): boolean {
-      return true
-    },
+    name: 'Test Strategy',
     controlsToRender: [],
-    fitness: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession,
-    ): number {
-      return 10
-    },
-    apply: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession,
-    ): StrategyApplicationResult {
+    fitness: 10,
+    apply: function (): StrategyApplicationResult {
       return strategyApplicationResult([
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
       ])
@@ -237,10 +225,9 @@ describe('interactionStart', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -370,10 +357,9 @@ describe('interactionUpdatex', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -532,10 +518,9 @@ describe('interactionHardReset', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -760,10 +745,9 @@ describe('interactionUpdate with user changed strategy', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -955,21 +939,16 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
       true,
       [
-        () => [
+        (canvasState: InteractionCanvasState, interactionSession: InteractionSession | null) => [
           {
             id: 'TEST_STRATEGY',
-            name: () => 'Test Strategy',
-            isApplicable: function (): boolean {
-              return true
-            },
+            name: 'Test Strategy',
             controlsToRender: [],
-            fitness: function (): number {
-              return 10
-            },
-            apply: function (
-              canvasState: InteractionCanvasState,
-              interactionSession: InteractionSession,
-            ): StrategyApplicationResult {
+            fitness: 10,
+            apply: function (): StrategyApplicationResult {
+              if (interactionSession == null) {
+                return strategyApplicationResult([])
+              }
               expect(canvasState.startingMetadata).toBe(interactionSession.latestMetadata)
               expect(canvasState.startingAllElementProps).toBe(
                 interactionSession.latestAllElementProps,
@@ -991,21 +970,16 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     // dispatching a no-op change to the interaction session to trigger the strategies
 
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
-      () => [
+      (canvasState: InteractionCanvasState, interactionSession: InteractionSession | null) => [
         {
           id: 'TEST_STRATEGY',
-          name: () => 'Test Strategy',
-          isApplicable: function (): boolean {
-            return true
-          },
+          name: 'Test Strategy',
           controlsToRender: [],
-          fitness: function (): number {
-            return 10
-          },
-          apply: function (
-            canvasState: InteractionCanvasState,
-            interactionSession: InteractionSession,
-          ): StrategyApplicationResult {
+          fitness: 10,
+          apply: function (): StrategyApplicationResult {
+            if (interactionSession == null) {
+              return strategyApplicationResult([])
+            }
             expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
             expect(canvasState.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,

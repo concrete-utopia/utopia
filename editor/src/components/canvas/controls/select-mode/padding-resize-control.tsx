@@ -8,6 +8,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
   createInteractionViaMouse,
   paddingResizeHandle,
@@ -122,7 +123,7 @@ const PaddingResizeControlI = React.memo(
   }),
 )
 
-export const PaddingResizeControl = React.memo(() => {
+export const PaddingResizeControl = controlForStrategyMemoized(() => {
   const selectedElements = useEditorState(
     (store: EditorStorePatched) => store.editor.selectedViews,
     'selectedElementsSelector selectedElements',

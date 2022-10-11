@@ -381,12 +381,9 @@ import {
   FileEvaluationCache,
 } from '../../../core/es-modules/package-manager/package-manager'
 import {
-  dragAndDropInsertionSubject,
-  DragAndDropInsertionSubject,
   ImageInsertionSubject,
   EditorModes,
-  elementInsertionSubject,
-  ElementInsertionSubject,
+  insertionSubject,
   InsertionSubject,
   InsertMode,
   LiveCanvasMode,
@@ -429,7 +426,7 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import {
   reparentTarget,
   ReparentTarget,
-} from '../../canvas/canvas-strategies/reparent-strategy-helpers'
+} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2551,7 +2548,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
-export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubject> =
+export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine5EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
@@ -2563,8 +2560,9 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
-    elementInsertionSubject,
+    insertionSubject,
   )
+
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
     (s) => s.file,
@@ -2574,38 +2572,9 @@ export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageIn
     imageInsertionSubject,
   )
 
-export const DragAndDropInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<DragAndDropInsertionSubject> =
-  combine1EqualityCall(
-    (subject) => subject.imageAssets,
-    arrayDeepEquality(ImageInsertionSubjectKeepDeepEquality),
-    dragAndDropInsertionSubject,
-  )
-
-export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'Element':
-      if (newValue.type === oldValue.type) {
-        return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DragAndDrop':
-      if (newValue.type === oldValue.type) {
-        return DragAndDropInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
-  (mode) => mode.subject,
-  InsertionSubjectKeepDeepEquality,
+  (mode) => mode.subjects,
+  arrayDeepEquality(InsertionSubjectKeepDeepEquality),
   EditorModes.insertMode,
 )
 
@@ -3030,9 +2999,11 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
 )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine1EqualityCall(
+  combine2EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
+    (settings) => settings.originCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )
 

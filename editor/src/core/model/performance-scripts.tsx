@@ -117,6 +117,7 @@ async function loadProject(
     },
     githubSettings: {
       targetRepository: null,
+      originCommit: null,
     },
   }
 

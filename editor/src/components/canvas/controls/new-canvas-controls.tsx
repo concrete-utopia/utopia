@@ -52,8 +52,9 @@ import { DistanceGuidelineControl } from './select-mode/distance-guideline-contr
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
 import { CursorOverlay } from './select-mode/cursor-overlay'
-import { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -443,7 +444,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
             <>
               {strategyControls.map((c) => (
-                <RenderControlMemoized key={c.key} control={c} />
+                <RenderControlMemoized
+                  key={c.key}
+                  control={c.control.control}
+                  propsForControl={c.props}
+                />
               ))}
             </>,
           )}
@@ -462,10 +467,21 @@ function isCanvasStrategyOnAndSelectOrInsertMode(mode: Mode): boolean {
   return isFeatureEnabled('Canvas Strategies') && (mode.type === 'select' || mode.type === 'insert')
 }
 
-const RenderControlMemoized = React.memo(({ control }: { control: ControlWithProps<any> }) => {
-  const ControlToRender = control.control.control
+interface RenderControlMemoizedProps {
+  control: React.FC
+  propsForControl: any
+}
 
-  const propsMemoized = useKeepShallowReferenceEquality(control.props)
+const RenderControlMemoized = React.memo(
+  ({ control, propsForControl }: RenderControlMemoizedProps) => {
+    const ControlToRender = control
 
-  return <ControlToRender {...propsMemoized} />
-})
+    return <ControlToRender {...propsForControl} />
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.control === nextProps.control &&
+      shallowEqual(prevProps.propsForControl, nextProps.propsForControl)
+    )
+  },
+)

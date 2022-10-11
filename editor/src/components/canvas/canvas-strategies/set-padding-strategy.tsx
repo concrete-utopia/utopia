@@ -13,104 +13,106 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { isZeroSizedElement } from '../controls/outline-utils'
 import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
 import { paddingForEdge, simplePaddingFromMetadata } from '../padding-utils'
+import { CanvasStrategyFactory } from './canvas-strategies'
 import {
-  CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { getDragTargets, getMultiselectBounds } from './strategies/shared-move-strategies-helpers'
 
-export const setPaddingStrategy: CanvasStrategy = {
-  id: 'SET_PADDING_STRATEGY',
-  name: () => 'Set Padding',
-  controlsToRender: [
-    {
-      control: PaddingResizeControl,
-      key: 'padding-resize-control',
-      show: 'visible-except-when-other-strategy-is-active',
-    },
-  ],
-  isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length === 0) {
-      return false
-    }
+export const setPaddingStrategy: CanvasStrategyFactory = (
+  canvasState,
+  interactionSession,
+  customStrategyState,
+) => {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE' ||
+    selectedElements.length === 0
+  ) {
+    return null
+  }
 
-    return supportsPaddingControls(metadata, selectedElements[0])
-  },
-  fitness: (canvasState, interactionState, sessionState) => {
-    return setPaddingStrategy.isApplicable(
-      canvasState,
-      interactionState,
-      canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
-    ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE'
-      ? 1
-      : 0
-  },
-  apply: (canvasState, interactionState, sessionState) => {
-    if (
-      interactionState.interactionData.type !== 'DRAG' ||
-      interactionState.activeControl.type !== 'PADDING_RESIZE_HANDLE'
-    ) {
-      return emptyStrategyApplicationResult
-    }
+  if (!supportsPaddingControls(canvasState.startingMetadata, selectedElements[0])) {
+    return null
+  }
 
-    const drag = interactionState.interactionData.drag
-    if (drag == null) {
-      return emptyStrategyApplicationResult
-    }
+  return {
+    id: 'SET_PADDING_STRATEGY',
+    name: 'Set Padding',
+    controlsToRender: [
+      controlWithProps({
+        control: PaddingResizeControl,
+        props: {},
+        key: 'padding-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
+    fitness: 1,
+    apply: () => {
+      if (
+        interactionSession.interactionData.type !== 'DRAG' ||
+        interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE'
+      ) {
+        return emptyStrategyApplicationResult
+      }
 
-    const edgePiece = interactionState.activeControl.edgePiece
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+      const drag = interactionSession.interactionData.drag
+      if (drag == null) {
+        return emptyStrategyApplicationResult
+      }
 
-    if (interactionState.interactionData.drag == null) {
-      return emptyStrategyApplicationResult
-    }
+      const edgePiece = interactionSession.activeControl.edgePiece
 
-    const filteredSelectedElements = getDragTargets(selectedElements)
-    const originalBoundingBox = getMultiselectBounds(
-      canvasState.startingMetadata,
-      filteredSelectedElements,
-    )
+      if (interactionSession.interactionData.drag == null) {
+        return emptyStrategyApplicationResult
+      }
 
-    if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
+      const filteredSelectedElements = getDragTargets(selectedElements)
+      const originalBoundingBox = getMultiselectBounds(
+        canvasState.startingMetadata,
+        filteredSelectedElements,
+      )
+
+      if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
+        return strategyApplicationResult([
+          setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+          updateHighlightedViews('mid-interaction', []),
+        ])
+      }
+
+      const selectedElement = filteredSelectedElements[0]
+
+      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+
+      const startingPadding = paddingForEdge(edgePiece, padding)
+      const delta = deltaFromEdge(drag, edgePiece)
+
+      const newPadding = Math.max(-startingPadding, delta)
+
+      const commandsForSelectedElements = [
+        adjustCssLengthProperty(
+          'always',
+          selectedElement,
+          stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
+          newPadding,
+          0,
+          true,
+        ),
+      ]
+
       return strategyApplicationResult([
-        setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+        ...commandsForSelectedElements,
         updateHighlightedViews('mid-interaction', []),
+        setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+        setElementsToRerenderCommand(selectedElements),
       ])
-    }
-
-    const selectedElement = filteredSelectedElements[0]
-
-    const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
-
-    const startingPadding = paddingForEdge(edgePiece, padding)
-    const delta = deltaFromEdge(drag, edgePiece)
-
-    const newPadding = Math.max(-startingPadding, delta)
-
-    const commandsForSelectedElements = [
-      adjustCssLengthProperty(
-        'always',
-        selectedElement,
-        stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
-        newPadding,
-        0,
-        true,
-      ),
-    ]
-
-    return strategyApplicationResult([
-      ...commandsForSelectedElements,
-      updateHighlightedViews('mid-interaction', []),
-      setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
-      setElementsToRerenderCommand(selectedElements),
-    ])
-  },
+    },
+  }
 }
 
 function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {

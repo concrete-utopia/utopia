@@ -296,6 +296,7 @@ import {
   SetProperty,
   SaveToGithub,
   UpdateProjectContents,
+  UpdateGithubSettings,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
@@ -420,24 +421,24 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/convert-to-absolute-and-move-strategy'
+import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
-import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-move-strategies-helpers'
+import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
   pathToReparent,
-} from '../../canvas/canvas-strategies/reparent-utils'
+} from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
-import { isAllowedToReparent } from '../../../components/canvas/canvas-strategies/reparent-helpers'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
 import {
   getReparentPropertyChanges,
   reparentStrategyForParent,
-} from '../../../components/canvas/canvas-strategies/reparent-strategy-helpers'
+} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import { parseGithubProjectString, saveProjectToGithub } from '../../../core/shared/github'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
@@ -3677,6 +3678,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
+    }
+  },
+  UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubSettings: action.settings,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

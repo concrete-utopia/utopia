@@ -293,8 +293,8 @@ const Canvas = {
             canvasRectangle({
               x: frameWithPath.frame.x,
               y: frameWithPath.frame.y,
-              width: frameWithPath.frame.width ?? 1,
-              height: frameWithPath.frame.height ?? 1,
+              width: frameWithPath.frame.width === 0 ? 1 : frameWithPath.frame.width,
+              height: frameWithPath.frame.height === 0 ? 1 : frameWithPath.frame.height,
             }),
             canvasRectangle({
               x: canvasPosition.x - looseReparentThreshold,
