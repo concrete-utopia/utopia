@@ -1,6 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
 import { offsetPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
@@ -21,17 +23,20 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => {
-  if (
-    interactionSession == null ||
-    interactionSession.interactionData.type !== 'DRAG' ||
-    interactionSession.interactionData.drag == null
-  ) {
-    return []
-  }
-
   const reparentSubjects = getDragTargets(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
+
+  if (
+    reparentSubjects.length === 0 ||
+    interactionSession == null ||
+    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null ||
+    interactionSession.interactionData.modifiers.alt
+  ) {
+    return []
+  }
 
   const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
     MetadataUtils.isPositionAbsolute(
@@ -46,8 +51,25 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  if (!allDraggedElementsAbsolute && !allDraggedElementsFlex) {
+  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
     return []
+  }
+
+  const existingParents = reparentSubjects.map(parentPath)
+  const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
+
+  const targetIsValid = (
+    target: ElementPath,
+    missingBoundsHandling: MissingBoundsHandling,
+  ): boolean => {
+    if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
+      return false
+    } else if (startingTargetsToFilter == null) {
+      return true
+    } else {
+      const targetToFilter = startingTargetsToFilter[missingBoundsHandling].newParent
+      return !pathsEqual(target, targetToFilter)
+    }
   }
 
   const pointOnCanvas = offsetPoint(
@@ -56,29 +78,30 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   const cmdPressed = interactionSession.interactionData.modifiers.cmd
-  const factories = findPartialReparentStrategies(canvasState, cmdPressed, pointOnCanvas).map(
-    (result) => {
-      const missingBoundsHandling: MissingBoundsHandling = result.forcingRequired
-        ? 'allow-missing-bounds'
-        : 'use-strict-bounds'
-      switch (result.strategy) {
-        case 'REPARENT_TO_ABSOLUTE':
-          if (allDraggedElementsAbsolute) {
-            return baseAbsoluteReparentStrategy(missingBoundsHandling)
-          } else {
-            return baseFlexReparentToAbsoluteStrategy(missingBoundsHandling)
-          }
-        case 'REPARENT_TO_FLEX':
-          if (allDraggedElementsAbsolute) {
-            return absoluteReparentToFlexStrategy
-          } else {
-            return flexReparentToFlexStrategy
-          }
-        default:
-          assertNever(result.strategy)
-      }
-    },
+  const partialStrategies = findPartialReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
+  const filteredPartialStrategies = partialStrategies.filter((partialStrategy) =>
+    targetIsValid(partialStrategy.newParent, partialStrategy.missingBoundsHandling),
   )
+
+  const factories = filteredPartialStrategies.map((result) => {
+    const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
+    switch (result.strategy) {
+      case 'REPARENT_TO_ABSOLUTE':
+        if (allDraggedElementsAbsolute) {
+          return baseAbsoluteReparentStrategy(missingBoundsHandling, result.isFallback)
+        } else {
+          return baseFlexReparentToAbsoluteStrategy(missingBoundsHandling, result.isFallback)
+        }
+      case 'REPARENT_TO_FLEX':
+        if (allDraggedElementsAbsolute) {
+          return absoluteReparentToFlexStrategy
+        } else {
+          return flexReparentToFlexStrategy
+        }
+      default:
+        assertNever(result.strategy)
+    }
+  })
 
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),

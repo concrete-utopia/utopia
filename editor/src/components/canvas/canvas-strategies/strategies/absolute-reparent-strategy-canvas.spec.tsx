@@ -126,7 +126,7 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = baseAbsoluteReparentStrategy('use-strict-bounds')(
+  const strategyResult = baseAbsoluteReparentStrategy('use-strict-bounds', false)(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),

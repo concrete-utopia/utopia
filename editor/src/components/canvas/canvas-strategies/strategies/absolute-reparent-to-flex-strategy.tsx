@@ -10,7 +10,7 @@ import {
   InteractionCanvasState,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
+import { applyFlexReparent } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function absoluteReparentToFlexStrategy(
@@ -65,12 +65,7 @@ export function absoluteReparentToFlexStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness: getFitnessForReparentStrategy(
-      'ABSOLUTE_REPARENT_TO_FLEX',
-      canvasState,
-      interactionSession,
-      'use-strict-bounds',
-    ),
+    fitness: 3,
     apply: () => {
       return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
     },

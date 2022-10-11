@@ -1,39 +1,38 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { offsetPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from '../interaction-state'
+import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { honoursPropsPosition } from './absolute-utils'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
   existingReparentSubjects,
   getAbsoluteReparentPropertyChanges,
-  getFitnessForReparentStrategy,
   getReparentTargetUnified,
 } from './reparent-strategy-helpers'
-import { offsetPoint } from '../../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { honoursPropsPosition } from './absolute-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from '../interaction-state'
-import { CanvasStrategyFactory } from '../canvas-strategies'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
   missingBoundsHandling: MissingBoundsHandling,
+  isFallback: boolean,
 ): CanvasStrategyFactory {
   const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
@@ -82,12 +81,7 @@ export function baseAbsoluteReparentStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: getFitnessForReparentStrategy(
-        'ABSOLUTE_REPARENT_TO_ABSOLUTE',
-        canvasState,
-        interactionSession,
-        missingBoundsHandling,
-      ),
+      fitness: forced ? 0.5 : isFallback ? 2 : 3,
       apply: (strategyLifecycle) => {
         const { projectContents, openFile, nodeModules } = canvasState
         return ifAllowedToReparent(

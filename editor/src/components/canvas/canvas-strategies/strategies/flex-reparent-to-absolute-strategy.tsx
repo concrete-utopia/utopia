@@ -15,7 +15,6 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
-import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -26,18 +25,16 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
+import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { ifAllowedToReparent } from './reparent-helpers'
-import {
-  existingReparentSubjects,
-  getFitnessForReparentStrategy,
-  getReparentTargetUnified,
-} from './reparent-strategy-helpers'
+import { existingReparentSubjects, getReparentTargetUnified } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
   missingBoundsHandling: MissingBoundsHandling,
+  isFallback: boolean,
 ): CanvasStrategyFactory {
   const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
@@ -79,16 +76,7 @@ export function baseFlexReparentToAbsoluteStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness:
-        interactionSession == null
-          ? 0
-          : // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-            getFitnessForReparentStrategy(
-              'FLEX_REPARENT_TO_ABSOLUTE',
-              canvasState,
-              interactionSession,
-              missingBoundsHandling,
-            ),
+      fitness: forced ? 0.5 : isFallback ? 2 : 3,
       apply: (strategyLifecycle) => {
         const filteredSelectedElements = getDragTargets(selectedElements)
         return ifAllowedToReparent(
@@ -165,8 +153,10 @@ export function baseFlexReparentToAbsoluteStrategy(
                     editorState,
                     canvasState.builtInDependencies,
                   )
-                  const absoluteReparentStrategyToUse =
-                    baseAbsoluteReparentStrategy(missingBoundsHandling)
+                  const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
+                    missingBoundsHandling,
+                    isFallback,
+                  )
                   const reparentCommands =
                     absoluteReparentStrategyToUse(
                       updatedCanvasState,

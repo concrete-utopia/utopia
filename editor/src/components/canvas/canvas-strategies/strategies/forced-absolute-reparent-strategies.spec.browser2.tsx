@@ -175,7 +175,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([baseAbsoluteReparentStrategy('allow-missing-bounds')])],
+      [metaStrategyForFactories([baseAbsoluteReparentStrategy('allow-missing-bounds', false)])],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -394,7 +394,11 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([baseFlexReparentToAbsoluteStrategy('allow-missing-bounds')])],
+      [
+        metaStrategyForFactories([
+          baseFlexReparentToAbsoluteStrategy('allow-missing-bounds', false),
+        ]),
+      ],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
