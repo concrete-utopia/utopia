@@ -1,6 +1,8 @@
 import { fireEvent } from '@testing-library/react'
 import Sinon from 'sinon'
+import { loggedInUser } from '../common/user'
 import { ProjectContentTreeRoot } from '../components/assets'
+import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
   makeDragEvent,
@@ -382,6 +384,78 @@ export var storyboard = (
 `)
   })
 
+  it('dragging existing filename from the "finder" autoincrements filename', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const file = await makeImageFile(imgBase64, 'stuff.png')
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
+    )
+
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
+
+    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='./assets/stuff_2.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
   it('dragging multiple images from the "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
@@ -459,6 +533,104 @@ export var storyboard = (
       />
       <img
         src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging multiple images with the same name from the "finder" works', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const files = [
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'brucelee.png'),
+    ]
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
+    )
+
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
+
+    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='./assets/brucelee.png'
         style={{
           position: 'absolute',
           width: 200,
