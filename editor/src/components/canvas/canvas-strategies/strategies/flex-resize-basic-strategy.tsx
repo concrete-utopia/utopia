@@ -38,8 +38,11 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsSize } from './absolute-utils'
-import { getLockedAspectRatio } from './resize-helpers'
-import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
+import {
+  getLockedAspectRatio,
+  pickCursorFromEdgePosition,
+  resizeBoundingBox,
+} from './resize-helpers'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -120,54 +123,62 @@ export function flexResizeBasicStrategy(
           if (!metadata) {
             return emptyStrategyApplicationResult
           }
-          const elementParentBounds =
-            metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-          const dimensions = getElementDimensions(metadata)
 
-          const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
           const lockedAspectRatio = getSpecializedLockedAspectRatio(
             interactionSession,
             interactionSession.interactionData.modifiers,
             originalBounds,
             metadata,
           )
-
-          const newDimensions = makeNewDimensions(
+          const resizedBounds = resizeBoundingBox(
             originalBounds,
-            resizedBounds,
-            dimensions,
+            drag,
+            edgePosition,
             lockedAspectRatio,
+            'non-center-based',
           )
-          const { width: newWidth, height: newHeight } = newDimensions
+          const elementParentBounds =
+            metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+          const elementDimensions = getElementDimensions(metadata)
 
           const makeResizeCommand = (
             name: 'width' | 'height',
+            elementDimension: number | null | undefined,
+            original: number,
+            resized: number,
             parent: number | undefined,
-            value: number,
-          ) => {
-            return adjustCssLengthProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(name, ['style']),
-              value,
-              parent,
-              true,
-            )
+          ): AdjustCssLengthProperty[] => {
+            if (elementDimension == null && original === resized) {
+              return []
+            }
+            return [
+              adjustCssLengthProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(name, ['style']),
+                elementDimension != null ? resized - original : resized,
+                parent,
+                true,
+              ),
+            ]
           }
 
-          const resizeCommands: Array<AdjustCssLengthProperty> = []
-
-          const parentWidth = elementParentBounds?.width
-          const parentHeight = elementParentBounds?.height
-
-          if (dimensions?.width != null || originalBounds.width !== newWidth) {
-            // it moves horizontally
-            resizeCommands.push(makeResizeCommand('width', parentWidth, newWidth))
-          }
-          if (dimensions?.height != null || originalBounds.height !== newHeight) {
-            // it moves vertically
-            resizeCommands.push(makeResizeCommand('height', parentHeight, newHeight))
-          }
+          const resizeCommands: Array<AdjustCssLengthProperty> = [
+            ...makeResizeCommand(
+              'width',
+              elementDimensions?.width,
+              originalBounds.width,
+              resizedBounds.width,
+              elementParentBounds?.width,
+            ),
+            ...makeResizeCommand(
+              'height',
+              elementDimensions?.height,
+              originalBounds.height,
+              resizedBounds.height,
+              elementParentBounds?.height,
+            ),
+          ]
 
           return strategyApplicationResult([
             ...resizeCommands,
@@ -186,48 +197,6 @@ export function flexResizeBasicStrategy(
       return emptyStrategyApplicationResult
     },
   }
-}
-
-interface ResizeDimensions {
-  width: number
-  height: number
-}
-
-const makeNewDimensions = (
-  originalBounds: CanvasRectangle,
-  resizedBounds: CanvasRectangle,
-  elementDimensions: ElementDimensions,
-  lockedAspectRatio: number | null,
-): ResizeDimensions => {
-  const makeNewDimension = (original: number, resized: number, dimension?: number | null) => {
-    return resized - (dimension != null ? original : 0)
-  }
-
-  const width = makeNewDimension(
-    originalBounds.width,
-    resizedBounds.width,
-    elementDimensions?.width,
-  )
-  const height = makeNewDimension(
-    originalBounds.height,
-    resizedBounds.height,
-    elementDimensions?.height,
-  )
-
-  if (lockedAspectRatio != null) {
-    if (width !== 0) {
-      return {
-        width,
-        height: width * lockedAspectRatio,
-      }
-    } else if (height !== 0) {
-      return {
-        width: height * lockedAspectRatio,
-        height,
-      }
-    }
-  }
-  return { width, height }
 }
 
 const getSpecializedLockedAspectRatio = (

@@ -364,7 +364,7 @@ describe('Flex Resize', () => {
           edgePosition(1, 0.5),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 115, height: 207.5 },
+          { width: 115, height: 230 },
           shiftModifier,
         )
       })
@@ -373,7 +373,7 @@ describe('Flex Resize', () => {
           edgePosition(0, 0.5),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 85, height: 192.5 },
+          { width: 85, height: 170 },
           shiftModifier,
         )
       })
@@ -404,7 +404,7 @@ describe('Flex Resize', () => {
           edgePosition(1, 1),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 115, height: 207.5 },
+          { width: 115, height: 230 },
           shiftModifier,
         )
       })
@@ -413,7 +413,7 @@ describe('Flex Resize', () => {
           edgePosition(1, 0),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 115, height: 207.5 },
+          { width: 115, height: 230 },
           shiftModifier,
         )
       })
@@ -422,7 +422,7 @@ describe('Flex Resize', () => {
           edgePosition(0, 0),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 85, height: 192.5 },
+          { width: 90, height: 180 },
           shiftModifier,
         )
       })
@@ -431,7 +431,7 @@ describe('Flex Resize', () => {
           edgePosition(0, 1),
           canvasPoint({ x: 15, y: 20 }),
           { width: 100, height: 200 },
-          { width: 85, height: 192.5 },
+          { width: 110, height: 220 },
           shiftModifier,
         )
       })
@@ -440,13 +440,13 @@ describe('Flex Resize', () => {
 
   describe('when the resized element is an image', () => {
     it('keeps the aspect ratio locked (horizontal)', async () => {
-      await resizeImage(edgePosition(1, 0.5), canvasPoint({ x: 20, y: 5 }), 80, 91)
+      await resizeImage(edgePosition(1, 0.5), canvasPoint({ x: 20, y: 5 }), 80, 100)
     })
     it('keeps the aspect ratio locked (vertical)', async () => {
       await resizeImage(edgePosition(0.5, 1), canvasPoint({ x: 20, y: 5 }), 64, 80)
     })
     it('keeps the aspect ratio locked (diagonal)', async () => {
-      await resizeImage(edgePosition(1, 1), canvasPoint({ x: 20, y: 5 }), 80, 91)
+      await resizeImage(edgePosition(1, 1), canvasPoint({ x: 20, y: 5 }), 80, 100)
     })
   })
 })
