@@ -226,11 +226,12 @@ const contents = {
 describe('image dnd', () => {
   var dropDone: ReturnType<typeof defer> = defer()
   var sandbox = Sinon.createSandbox()
+  var originalOnDrop = ImageDrop.DropHandlers.onDrop
 
   beforeEach(() => {
     dropDone = defer()
     const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
-    onDropStub.callsFake((e, f, c) => ImageDrop.onDropI(e, f, c).then(() => dropDone.resolve()))
+    onDropStub.callsFake((e, f, c) => originalOnDrop(e, f, c).then(() => dropDone.resolve()))
   })
 
   afterEach(() => {

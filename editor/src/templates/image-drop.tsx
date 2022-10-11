@@ -73,7 +73,7 @@ interface DropContext {
   scale: number
 }
 
-export async function onDropI(
+async function onDrop(
   event: React.DragEvent,
   cont: () => void,
   context: DropContext,
@@ -115,14 +115,6 @@ export async function onDropI(
     cont()
   }
   return
-}
-
-async function onDrop(
-  event: React.DragEvent,
-  cont: () => void,
-  context: DropContext,
-): Promise<void> {
-  return onDropI(event, cont, context)
 }
 
 interface ActionsForDroppedImageContext {
