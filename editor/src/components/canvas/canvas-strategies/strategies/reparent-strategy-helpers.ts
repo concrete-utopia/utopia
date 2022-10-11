@@ -157,59 +157,6 @@ export function findPartialReparentStrategies(
   return stripNulls([strictStrategy, forcedStrategy])
 }
 
-export function reparentStrategyForParent(
-  originalMetadata: ElementInstanceMetadataMap,
-  targetMetadata: ElementInstanceMetadataMap,
-  elements: Array<ElementPath>,
-  newParent: ElementPath,
-): FindReparentStrategyResult {
-  const allDraggedElementsFlex = elements.every((element) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      element,
-      originalMetadata,
-    ),
-  )
-  const allDraggedElementsAbsolute = elements.every((element) =>
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(originalMetadata, element),
-    ),
-  )
-
-  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-
-  const parentProvidesBoundsForAbsoluteChildren =
-    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
-  const parentIsStoryboard = EP.isStoryboardPath(newParent)
-  const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
-  const forcingRequiredForAbsoluteReparent = !isAbsoluteFriendlyParent
-
-  if (allDraggedElementsAbsolute) {
-    if (parentIsFlexLayout) {
-      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
-    } else {
-      return {
-        strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE',
-        newParent: newParent,
-        forcingRequired: forcingRequiredForAbsoluteReparent,
-      }
-    }
-  }
-  if (allDraggedElementsFlex) {
-    if (parentIsFlexLayout) {
-      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
-    } else {
-      return {
-        strategy: 'FLEX_REPARENT_TO_ABSOLUTE',
-        newParent: newParent,
-        forcingRequired: forcingRequiredForAbsoluteReparent,
-      }
-    }
-  }
-  return { strategy: 'do-not-reparent' }
-}
-
 export interface ReparentTarget {
   shouldReparent: boolean
   newParent: ElementPath | null
