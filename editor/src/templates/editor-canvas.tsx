@@ -127,6 +127,7 @@ import {
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { ProjectContentTreeRoot } from '../components/assets'
+import { uniqueProjectContentID } from '../core/model/project-file-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1021,12 +1022,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 ])
               }
 
-              const { actions, subjects } = actionsForDroppedImages(images, {
-                scale: this.props.model.scale,
-                projectContents: this.props.editor.projectContents,
-                loginState: this.props.userState.loginState,
-                mousePosition: mousePosition.canvasPositionRounded,
-              })
+              const { actions, subjects } = actionsForDroppedImages(
+                images,
+                {
+                  scale: this.props.model.scale,
+                  projectContents: this.props.editor.projectContents,
+                  loginState: this.props.userState.loginState,
+                  mousePosition: mousePosition.canvasPositionRounded,
+                },
+                'autoincrement',
+              )
 
               this.props.dispatch(
                 [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
@@ -1661,18 +1666,29 @@ interface ActionsForDroppedImagesContext {
 function actionsForDroppedImages(
   images: Array<ImageResult>,
   context: ActionsForDroppedImagesContext,
+  overwriteExistingFilename: 'overwrite' | 'autoincrement',
 ): ActionsForDroppedImagesResult {
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
   let subjects: Array<InsertionSubject> = []
   for (const image of images) {
-    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
-      generateUid: () =>
-        generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
-      scale: context.scale,
-      mousePosition: context.mousePosition,
-      isUserLoggedIn: isLoggedIn(context.loginState),
-    })
+    const filename =
+      overwriteExistingFilename === 'autoincrement'
+        ? uniqueProjectContentID(image.filename, context.projectContents)
+        : image.filename
+    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(
+      {
+        ...image,
+        filename: filename,
+      },
+      {
+        generateUid: () =>
+          generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
+        scale: context.scale,
+        mousePosition: context.mousePosition,
+        isUserLoggedIn: isLoggedIn(context.loginState),
+      },
+    )
     actions = [...actions, ...actionsForImage]
     uidsSoFar = [...uidsSoFar, singleSubject.uid]
     subjects = [...subjects, singleSubject]
