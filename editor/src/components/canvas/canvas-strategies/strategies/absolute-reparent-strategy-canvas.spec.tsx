@@ -1,3 +1,12 @@
+import * as Prettier from 'prettier/standalone'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import { right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptyComments,
@@ -17,24 +26,11 @@ import {
   testPrintCodeFromEditorState,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession, StrategyState } from '../interaction-state'
+import { boundingArea, InteractionSession } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
-import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import {
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../../../core/model/scene-utils'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
-import { right } from '../../../../core/shared/either'
-import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 
 jest.mock('../../canvas-utils', () => ({
   ...jest.requireActual('../../canvas-utils'),
@@ -130,13 +126,14 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = absoluteReparentStrategy(
+  const strategyResult = baseAbsoluteReparentStrategy('use-strict-bounds')(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
       startingMetadata,
     ),
     interactionSession,
+    defaultCustomStrategyState(),
   )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})

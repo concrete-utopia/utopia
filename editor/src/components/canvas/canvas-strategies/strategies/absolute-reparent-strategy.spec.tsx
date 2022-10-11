@@ -15,7 +15,6 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../../ui-jsx.test-utils'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
@@ -26,6 +25,7 @@ import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { left, right } from '../../../../core/shared/either'
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 
 jest.mock('../../canvas-utils', () => ({
   ...jest.requireActual('../../canvas-utils'),
@@ -195,13 +195,14 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = absoluteReparentStrategy(
+  const strategyResult = baseAbsoluteReparentStrategy('use-strict-bounds')(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
       startingMetadata,
     ),
     interactionSession,
+    defaultCustomStrategyState(),
   )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})

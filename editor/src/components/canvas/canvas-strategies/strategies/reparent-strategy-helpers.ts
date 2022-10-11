@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
+import { mapDropNulls, reverse, stripNulls, uniqBy } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -76,6 +76,13 @@ import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 
+export type PartialReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
+export type FindPartialReparentStrategyResult = {
+  strategy: PartialReparentStrategy
+  newParent: ElementPath
+  forcingRequired: boolean
+}
+
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
@@ -85,6 +92,76 @@ export type ReparentStrategy =
 export type FindReparentStrategyResult =
   | { strategy: ReparentStrategy; newParent: ElementPath; forcingRequired: boolean }
   | { strategy: 'do-not-reparent' }
+
+export function partialReparentStrategyForParent(
+  targetMetadata: ElementInstanceMetadataMap,
+  newParent: ElementPath,
+  convertToAbsolute: boolean,
+): FindPartialReparentStrategyResult {
+  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
+  const parentIsFlexLayout =
+    !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+
+  const parentProvidesBoundsForAbsoluteChildren =
+    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+  const parentIsStoryboard = EP.isStoryboardPath(newParent)
+  const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
+  const forcingRequiredForAbsoluteReparent = !isAbsoluteFriendlyParent
+
+  return parentIsFlexLayout
+    ? {
+        strategy: 'REPARENT_TO_FLEX',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
+    : {
+        strategy: 'REPARENT_TO_ABSOLUTE',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
+}
+
+export function findPartialReparentStrategies(
+  canvasState: InteractionCanvasState,
+  cmdPressed: boolean,
+  pointOnCanvas: CanvasPoint,
+): Array<FindPartialReparentStrategyResult> {
+  const metadata = canvasState.startingMetadata
+
+  const reparentSubjects =
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
+      ? newReparentSubjects()
+      : existingReparentSubjects(
+          getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
+        )
+
+  const getReparentTargetInner = (missingBoundsHandling: MissingBoundsHandling) =>
+    getReparentTargetUnified(
+      reparentSubjects,
+      pointOnCanvas,
+      cmdPressed,
+      canvasState,
+      metadata,
+      canvasState.startingAllElementProps,
+      missingBoundsHandling,
+    )
+
+  const strictTarget = getReparentTargetInner('use-strict-bounds').newParent
+  const strictStrategy =
+    strictTarget == null ? null : partialReparentStrategyForParent(metadata, strictTarget, false)
+
+  const forcedTarget = getReparentTargetInner('allow-missing-bounds').newParent
+  const sameTargets = EP.pathsEqual(forcedTarget, strictTarget)
+  const convertToAbsolute = sameTargets && strictStrategy?.strategy === 'REPARENT_TO_FLEX'
+  const skipForcedTarget = sameTargets && !convertToAbsolute
+  const forcedStrategy =
+    forcedTarget == null || skipForcedTarget
+      ? null
+      : partialReparentStrategyForParent(metadata, forcedTarget, convertToAbsolute)
+
+  return stripNulls([strictStrategy, forcedStrategy])
+}
 
 export function reparentStrategyForParent(
   originalMetadata: ElementInstanceMetadataMap,
