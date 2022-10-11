@@ -70,10 +70,15 @@ directoryGitTreeEntry _ =
 
 createGitEntryFromAssetOrImage :: (MonadIO m) => LoadAsset -> SimpleCreateBlob m -> Text -> ExceptT Text m (Maybe GitTreeEntry)
 createGitEntryFromAssetOrImage loadAsset createBlob fullPath = do
+  -- Load the asset if possible.
   assetResult <- liftIO $ loadAsset (T.splitOn "/" $ T.drop 1 fullPath) Nothing
+  -- Handle the result of loading the asset.
   assetContent <- liftIO $ assetContentsFromLoadAssetResult assetResult
+  -- Base64 encode the content so it's possible to assign it to the text content.
   let encodedContent = toS $ BLB64.encodeBase64 assetContent
+  -- Call the Github API to create the blob.
   createResult <- createBlob encodedContent
+  -- Retrieve the SHA from the API call result and construct the entry to be included in the git tree.
   let blobSha = view (field @"sha") createResult
   pure $ Just $ GitTreeEntry (stripPreceedingSlash fullPath) "100644" "blob" Nothing (Just blobSha)
 
@@ -136,6 +141,7 @@ createTreeHandleErrorCases status | status == forbidden403            = throwE "
 createGitTree :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> AccessToken -> GithubRepo -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTreeResult
 createGitTree loadAsset accessToken repo@GithubRepo{..} projectContents = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/trees"
+  -- Create a simpler function for creating a git blob.
   let createBlob = createGitBlob accessToken repo
   request <- createGitTreeFromProjectContent loadAsset createBlob projectContents
   callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl request
