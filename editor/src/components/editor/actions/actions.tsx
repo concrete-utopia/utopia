@@ -297,6 +297,7 @@ import {
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
+  SetFileBrowserDragState,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
@@ -4945,6 +4946,12 @@ export const UPDATE_FNS = {
     void saveProjectToGithub(persistentModel, dispatch)
 
     return editor
+  },
+  SET_FILE_BROWSER_DRAG_STATE: (
+    action: SetFileBrowserDragState,
+    editor: EditorModel,
+  ): EditorModel => {
+    return { ...editor, fileBrowserDndInProgress: action.inProgress }
   },
 }
 
