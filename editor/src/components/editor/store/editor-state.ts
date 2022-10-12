@@ -945,6 +945,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
+  fileBrowserDndInProgress: boolean
 }
 
 export function editorState(
@@ -1014,6 +1015,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
+  fileBrowserDndInProgress: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1082,6 +1084,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
+    fileBrowserDndInProgress: false,
   }
 }
 
@@ -1892,6 +1895,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
+    fileBrowserDndInProgress: false,
   }
 }
 
@@ -2186,6 +2190,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
+    fileBrowserDndInProgress: false,
   }
   return editor
 }

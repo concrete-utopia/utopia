@@ -998,6 +998,11 @@ export interface SaveToGithub {
   targetRepository: GithubRepo
 }
 
+export interface SetFileBrowserDragState {
+  action: 'SET_FILE_BROWSER_DRAG_STATE'
+  inProgress: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1159,6 +1164,7 @@ export type EditorAction =
   | SetElementsToRerender
   | ToggleSelectionLock
   | SaveToGithub
+  | SetFileBrowserDragState
 
 export type DispatchPriority =
   | 'everyone'

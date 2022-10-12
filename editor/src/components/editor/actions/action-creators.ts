@@ -209,6 +209,7 @@ import type {
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
+  SetFileBrowserDragState,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1559,5 +1560,12 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+  }
+}
+
+export function functionsSetFileBrowserDragState(inProgress: boolean): SetFileBrowserDragState {
+  return {
+    action: 'SET_FILE_BROWSER_DRAG_STATE',
+    inProgress: inProgress,
   }
 }

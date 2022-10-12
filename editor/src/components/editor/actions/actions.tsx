@@ -973,6 +973,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     allElementProps: poppedEditor.allElementProps,
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
+    fileBrowserDndInProgress: currentEditor.fileBrowserDndInProgress,
   }
 }
 
