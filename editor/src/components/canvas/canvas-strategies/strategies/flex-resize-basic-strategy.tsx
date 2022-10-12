@@ -8,6 +8,7 @@ import {
   CanvasRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -26,7 +27,6 @@ import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
-import { honoursPropsSize } from './absolute-utils'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -37,8 +37,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { getLockedAspectRatio } from './resize-helpers'
-import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
+import { honoursPropsSize } from './absolute-utils'
+import {
+  getLockedAspectRatio,
+  pickCursorFromEdgePosition,
+  resizeBoundingBox,
+} from './resize-helpers'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -112,12 +116,6 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
-          const lockedAspectRatio = getLockedAspectRatio(
-            interactionSession,
-            interactionSession.interactionData.modifiers,
-            originalBounds,
-          )
           const metadata = MetadataUtils.findElementByElementPath(
             canvasState.startingMetadata,
             selectedElement,
@@ -125,61 +123,60 @@ export function flexResizeBasicStrategy(
           if (!metadata) {
             return emptyStrategyApplicationResult
           }
+
+          const resizedBounds = resizeBoundingBox(
+            originalBounds,
+            drag,
+            edgePosition,
+            getLockedAspectRatio(
+              interactionSession,
+              interactionSession.interactionData.modifiers,
+              originalBounds,
+            ),
+            'non-center-based',
+          )
           const elementParentBounds =
             metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-          const dimensions = getDimensions(metadata)
+          const elementDimensions = getElementDimensions(metadata)
 
           const makeResizeCommand = (
             name: 'width' | 'height',
+            elementDimension: number | null | undefined,
+            original: number,
+            resized: number,
             parent: number | undefined,
-            value: number,
-          ) => {
-            return adjustCssLengthProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(name, ['style']),
-              value,
-              parent,
-              true,
-            )
-          }
-
-          const makeNewDimension = (original: number, resized: number, dimension?: number | null) =>
-            resized - (dimension != null ? original : 0)
-
-          const resizeCommands: Array<AdjustCssLengthProperty> = []
-
-          const parentWidth = elementParentBounds?.width
-          const parentHeight = elementParentBounds?.height
-
-          let newWidth = makeNewDimension(
-            originalBounds.width,
-            resizedBounds.width,
-            dimensions?.width,
-          )
-          let newHeight = makeNewDimension(
-            originalBounds.height,
-            resizedBounds.height,
-            dimensions?.height,
-          )
-          if (lockedAspectRatio != null) {
-            if (newWidth !== 0) {
-              // diagonal + horizontal lock
-              newHeight = newWidth * lockedAspectRatio
-            } else if (newHeight !== 0) {
-              // vertical lock
-              newWidth = newHeight * lockedAspectRatio
+          ): AdjustCssLengthProperty[] => {
+            if (elementDimension == null && original === resized) {
+              return []
             }
+            return [
+              adjustCssLengthProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(name, ['style']),
+                elementDimension != null ? resized - original : resized,
+                parent,
+                true,
+              ),
+            ]
           }
 
-          if (dimensions?.width != null || originalBounds.width !== newWidth) {
-            // it moves horizontally
-            resizeCommands.push(makeResizeCommand('width', parentWidth, newWidth))
-          }
-          if (dimensions?.height != null || originalBounds.height !== newHeight) {
-            // it moves vertically
-            resizeCommands.push(makeResizeCommand('height', parentHeight, newHeight))
-          }
+          const resizeCommands: Array<AdjustCssLengthProperty> = [
+            ...makeResizeCommand(
+              'width',
+              elementDimensions?.width,
+              originalBounds.width,
+              resizedBounds.width,
+              elementParentBounds?.width,
+            ),
+            ...makeResizeCommand(
+              'height',
+              elementDimensions?.height,
+              originalBounds.height,
+              resizedBounds.height,
+              elementParentBounds?.height,
+            ),
+          ]
 
           return strategyApplicationResult([
             ...resizeCommands,
@@ -252,12 +249,12 @@ export function resizeWidthHeight(
   }
 }
 
-const getDimensions = (
-  metadata: ElementInstanceMetadata,
-): {
+type ElementDimensions = {
   width: number | null
   height: number | null
-} | null => {
+} | null
+
+const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
   const getOffsetPropValue = (
     name: 'width' | 'height',
     attrs: PropsOrJSXAttributes,
