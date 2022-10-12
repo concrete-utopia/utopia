@@ -2766,7 +2766,7 @@ export const UPDATE_FNS = {
 
           const partialReparentStrategy = partialReparentStrategyForParent(
             workingEditorState.jsxMetadata,
-            reparentTarget(true, action.pasteInto, false, -1), // FIXME We shouldn't be doing this here
+            action.pasteInto,
             false,
           )
           const pastedElementIsFlex =

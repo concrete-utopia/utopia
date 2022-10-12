@@ -66,26 +66,30 @@ import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export type PartialReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
-export type FindPartialReparentStrategyResult = {
+
+export type PartialReparentStrategyForParent = {
   strategy: PartialReparentStrategy
-  target: ReparentTarget
   missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
 }
 
+export type FindPartialReparentStrategyResult = PartialReparentStrategyForParent & {
+  target: ReparentTarget
+}
+
 export function partialReparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
-  target: ReparentTarget,
+  parent: ElementPath,
   convertToAbsolute: boolean,
-): FindPartialReparentStrategyResult {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, target.newParent)
+): PartialReparentStrategyForParent {
+  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
   const parentIsFlexLayout =
     !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   const parentProvidesBoundsForAbsoluteChildren =
     newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
 
-  const parentIsStoryboard = EP.isStoryboardPath(target.newParent)
+  const parentIsStoryboard = EP.isStoryboardPath(parent)
   const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
   const missingBoundsHandling: MissingBoundsHandling = isAbsoluteFriendlyParent
     ? 'use-strict-bounds'
@@ -94,16 +98,25 @@ export function partialReparentStrategyForParent(
   return parentIsFlexLayout
     ? {
         strategy: 'REPARENT_TO_FLEX',
-        target: target,
         missingBoundsHandling: missingBoundsHandling,
         isFallback: false,
       }
     : {
         strategy: 'REPARENT_TO_ABSOLUTE',
-        target: target,
         missingBoundsHandling: missingBoundsHandling,
         isFallback: convertToAbsolute,
       }
+}
+
+function partialReparentStrategyForReparentTarget(
+  targetMetadata: ElementInstanceMetadataMap,
+  target: ReparentTarget,
+  convertToAbsolute: boolean,
+): FindPartialReparentStrategyResult {
+  return {
+    ...partialReparentStrategyForParent(targetMetadata, target.newParent, convertToAbsolute),
+    target: target,
+  }
 }
 
 export function findPartialReparentStrategies(
@@ -133,7 +146,9 @@ export function findPartialReparentStrategies(
 
   const strictTarget = getReparentTargetInner('use-strict-bounds')
   const strictStrategy =
-    strictTarget == null ? null : partialReparentStrategyForParent(metadata, strictTarget, false)
+    strictTarget == null
+      ? null
+      : partialReparentStrategyForReparentTarget(metadata, strictTarget, false)
 
   const forcedTarget = getReparentTargetInner('allow-missing-bounds')
   const sameTargets =
@@ -145,7 +160,7 @@ export function findPartialReparentStrategies(
   const forcedStrategy =
     forcedTarget == null || skipForcedTarget
       ? null
-      : partialReparentStrategyForParent(metadata, forcedTarget, convertToAbsolute)
+      : partialReparentStrategyForReparentTarget(metadata, forcedTarget, convertToAbsolute)
 
   return stripNulls([strictStrategy, forcedStrategy])
 }
