@@ -69,6 +69,9 @@ import {
   offsetPoint,
   Point,
   RawPoint,
+  resize,
+  size,
+  Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
@@ -925,13 +928,18 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
 
           const newElement = createJsxImage(newUID, newElementProps)
-          // itt kene tudni a filebrowserben melyik kepet draggeljuk
+
+          const elementSize: Size = resize(
+            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
+            size(200, 200),
+            'keep-aspect-ratio',
+          )
 
           const position = this.getPosition(event.nativeEvent)
 
           this.props.dispatch(
             [
-              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(
                   position.canvasPositionRounded,
