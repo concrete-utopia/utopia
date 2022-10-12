@@ -939,6 +939,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             width: 1,
             height: 1,
           })
+          // itt kene tudni a filebrowserben melyik kepet draggeljuk
 
           this.props.dispatch(
             [
@@ -952,6 +953,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: (event) => {
+          // if (this.isInsideCanvas(event.nativeEvent)) {
           if (event.clientX <= 0 && event.clientY <= 0) {
             this.props.dispatch([
               CanvasActions.clearInteractionSession(false),
@@ -963,6 +965,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         onDrop: (event: React.DragEvent) => {
           event.preventDefault()
           event.stopPropagation()
+
+          // itt kene tudni a filebrowserben melyik kepet draggeljuk, es akkor nem kell feltolteni
           const mousePosition = this.getPosition(event.nativeEvent)
 
           const getPastedImages = async () => {

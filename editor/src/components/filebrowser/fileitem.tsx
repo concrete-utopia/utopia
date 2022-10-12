@@ -543,8 +543,9 @@ class FileBrowserItemInner extends React.PureComponent<
     })
     const filesBeingDragged = e.dataTransfer?.items?.length ?? 0
     if (filesBeingDragged > 0) {
-      this.setState({ externalFilesDraggedIn: true })
+      this.setState({ externalFilesDraggedIn: true, isHovered: true })
     }
+    this.props.dispatch([CanvasActions.clearInteractionSession(false)])
   }
 
   onDragLeave = () => {
@@ -553,6 +554,7 @@ class FileBrowserItemInner extends React.PureComponent<
         currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter - 1,
         externalFilesDraggedIn:
           prevState.currentExternalFilesDragEventCounter > 1 && prevState.externalFilesDraggedIn,
+        isHovered: false,
       }
     })
   }
@@ -657,7 +659,8 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragEnter={this.onDragEnter}
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
-          onMouseDown={this.onItemMouseDown}
+          onMouseDown={this.props.onDragHandleStart}
+          onMouseUp={this.props.onDragHandleCancelled}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -695,12 +698,6 @@ class FileBrowserItemInner extends React.PureComponent<
                 textOverflow: 'ellipsis',
               }}
             >
-              {this.props.imageFile != null && (
-                <DragHandle
-                  onDragHandleStart={this.props.onDragHandleStart}
-                  onDragHandleCancelled={this.props.onDragHandleCancelled}
-                />
-              )}
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
@@ -795,20 +792,12 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     'FileBrowserItem projectContents',
   )
 
-  const interactionSession = useEditorState(
-    (store) => store.editor.canvas.interactionSession,
-    'FileBrowserItem interactionSession',
-  )
-
-  const imageDragInProgress =
-    interactionSession != null && interactionSession.activeControl.type === 'BOUNDING_AREA'
-
   const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
-      canDrag: () => !imageDragInProgress && canDragnDrop(props),
+      canDrag: () => canDragnDrop(props),
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
@@ -822,7 +811,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         ])
       },
     }),
-    [props, imageDragInProgress],
+    [props],
   )
   const [{ isOver }, drop] = useDrop(
     {
@@ -916,22 +905,4 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
 export interface DragHandleProps {
   onDragHandleCancelled: () => void
   onDragHandleStart: () => void
-}
-
-const DragHandle = (props: DragHandleProps) => {
-  const { onDragHandleStart: onDragStart, onDragHandleCancelled: onDragCancelled } = props
-  return (
-    <div
-      data-testid={'file-image-drag-handle'}
-      style={{ padding: 5, cursor: 'pointer' }}
-      onMouseDown={onDragStart}
-      onMouseUp={onDragCancelled}
-    >
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-      <div style={{ height: 2, background: 'transparent' }} />
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-      <div style={{ height: 2, background: 'transparent' }} />
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-    </div>
-  )
 }
