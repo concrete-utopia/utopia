@@ -67,13 +67,10 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export type ReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
 
-export type ReparentStrategyForParent = {
+export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
   missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
-}
-
-export type FindReparentStrategyResult = ReparentStrategyForParent & {
   target: ReparentTarget
 }
 
@@ -81,7 +78,11 @@ export function reparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
   parent: ElementPath,
   convertToAbsolute: boolean,
-): ReparentStrategyForParent {
+): {
+  strategy: ReparentStrategy
+  missingBoundsHandling: MissingBoundsHandling
+  isFallback: boolean
+} {
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
   const parentIsFlexLayout =
     !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
