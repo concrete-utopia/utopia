@@ -65,23 +65,23 @@ import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export type PartialReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
+export type ReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
 
-export type PartialReparentStrategyForParent = {
-  strategy: PartialReparentStrategy
+export type ReparentStrategyForParent = {
+  strategy: ReparentStrategy
   missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
 }
 
-export type FindPartialReparentStrategyResult = PartialReparentStrategyForParent & {
+export type FindReparentStrategyResult = ReparentStrategyForParent & {
   target: ReparentTarget
 }
 
-export function partialReparentStrategyForParent(
+export function reparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
   parent: ElementPath,
   convertToAbsolute: boolean,
-): PartialReparentStrategyForParent {
+): ReparentStrategyForParent {
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
   const parentIsFlexLayout =
     !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
@@ -108,22 +108,22 @@ export function partialReparentStrategyForParent(
       }
 }
 
-function partialReparentStrategyForReparentTarget(
+function reparentStrategyForReparentTarget(
   targetMetadata: ElementInstanceMetadataMap,
   target: ReparentTarget,
   convertToAbsolute: boolean,
-): FindPartialReparentStrategyResult {
+): FindReparentStrategyResult {
   return {
-    ...partialReparentStrategyForParent(targetMetadata, target.newParent, convertToAbsolute),
+    ...reparentStrategyForParent(targetMetadata, target.newParent, convertToAbsolute),
     target: target,
   }
 }
 
-export function findPartialReparentStrategies(
+export function findReparentStrategies(
   canvasState: InteractionCanvasState,
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
-): Array<FindPartialReparentStrategyResult> {
+): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
 
   const reparentSubjects =
@@ -146,9 +146,7 @@ export function findPartialReparentStrategies(
 
   const strictTarget = getReparentTargetInner('use-strict-bounds')
   const strictStrategy =
-    strictTarget == null
-      ? null
-      : partialReparentStrategyForReparentTarget(metadata, strictTarget, false)
+    strictTarget == null ? null : reparentStrategyForReparentTarget(metadata, strictTarget, false)
 
   const forcedTarget = getReparentTargetInner('allow-missing-bounds')
   const sameTargets =
@@ -160,7 +158,7 @@ export function findPartialReparentStrategies(
   const forcedStrategy =
     forcedTarget == null || skipForcedTarget
       ? null
-      : partialReparentStrategyForReparentTarget(metadata, forcedTarget, convertToAbsolute)
+      : reparentStrategyForReparentTarget(metadata, forcedTarget, convertToAbsolute)
 
   return stripNulls([strictStrategy, forcedStrategy])
 }
@@ -851,7 +849,7 @@ export function getFlexReparentPropertyChanges(
 }
 
 export function getReparentPropertyChanges(
-  reparentStrategy: PartialReparentStrategy,
+  reparentStrategy: ReparentStrategy,
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,

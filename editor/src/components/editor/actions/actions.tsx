@@ -406,7 +406,7 @@ import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategie
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
 import {
   getReparentPropertyChanges,
-  partialReparentStrategyForParent,
+  reparentStrategyForParent,
   reparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
@@ -2764,7 +2764,7 @@ export const UPDATE_FNS = {
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
 
-          const partialReparentStrategy = partialReparentStrategyForParent(
+          const reparentStrategy = reparentStrategyForParent(
             workingEditorState.jsxMetadata,
             action.pasteInto,
             false,
@@ -2785,7 +2785,7 @@ export const UPDATE_FNS = {
             return workingEditorState
           } else {
             const propertyChangeCommands = getReparentPropertyChanges(
-              partialReparentStrategy.strategy,
+              reparentStrategy.strategy,
               newPath,
               action.pasteInto,
               action.targetOriginalContextMetadata,

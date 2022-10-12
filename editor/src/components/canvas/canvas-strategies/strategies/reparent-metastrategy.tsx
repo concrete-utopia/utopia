@@ -15,7 +15,7 @@ import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import { findPartialReparentStrategies } from './reparent-strategy-helpers'
+import { findReparentStrategies } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export const reparentMetaStrategy: MetaCanvasStrategy = (
@@ -78,12 +78,12 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   const cmdPressed = interactionSession.interactionData.modifiers.cmd
-  const partialStrategies = findPartialReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
-  const filteredPartialStrategies = partialStrategies.filter((partialStrategy) =>
-    targetIsValid(partialStrategy.target.newParent, partialStrategy.missingBoundsHandling),
+  const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
+  const filteredReparentStrategies = reparentStrategies.filter((reparentStrategy) =>
+    targetIsValid(reparentStrategy.target.newParent, reparentStrategy.missingBoundsHandling),
   )
 
-  const factories = filteredPartialStrategies.map((result) => {
+  const factories = filteredReparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_TO_ABSOLUTE':
