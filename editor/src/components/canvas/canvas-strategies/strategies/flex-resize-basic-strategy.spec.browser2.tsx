@@ -437,18 +437,6 @@ describe('Flex Resize', () => {
       })
     })
   })
-
-  describe('when the resized element is an image', () => {
-    it('keeps the aspect ratio locked (horizontal)', async () => {
-      await resizeImage(edgePosition(1, 0.5), canvasPoint({ x: 20, y: 5 }), 80, 100)
-    })
-    it('keeps the aspect ratio locked (vertical)', async () => {
-      await resizeImage(edgePosition(0.5, 1), canvasPoint({ x: 20, y: 5 }), 64, 80)
-    })
-    it('keeps the aspect ratio locked (diagonal)', async () => {
-      await resizeImage(edgePosition(1, 1), canvasPoint({ x: 20, y: 5 }), 80, 100)
-    })
-  })
 })
 
 async function resizeTestRow(
@@ -789,58 +777,5 @@ async function resizeWithModifiers(
         />
       </div>
       `),
-  )
-}
-
-const resizeImage = async (
-  pos: EdgePosition,
-  dragVector: CanvasVector,
-  expectWidth: number,
-  expectHeight: number,
-) => {
-  const cat =
-    'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wCEAAsICAoIBwsKCQoNDAsNERwSEQ8PESIZGhQcKSQrKigkJyctMkA3LTA9MCcnOEw5PUNFSElIKzZPVU5GVEBHSEUBDA0NEQ8RIRISIUUuJy5FRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRf/AABEIADwAMgMBIgACEQEDEQH/xABxAAADAQEBAQAAAAAAAAAAAAAABQYEAwECEAACAQMDBAECBQUAAAAAAAABAgMABBEFEiETMUFRYQZxFBUjgZEiMkKh8AEBAQEBAAAAAAAAAAAAAAAAAgEAAxEBAQEBAQEAAAAAAAAAAAAAAAECESFB/9oADAMBAAIRAxEAPwCMkP6UjUy+mVAuYQVB3HH80sn4tyPZptooWOeAsSNpB4qRTjXpkntUSRNskWeQfHqphb4QuI41FU99Al1LBGzgtK/TY/4j7n9xUrqOnCxuGy5yrFf+/wBfyKSHNvqUMFoyMmN5yWz3rhkOcrnB9jFKkuniwiMpDdz6rdaNIysZMZ3HtWZpxRXtFZiW4OVjHs00sDm6iGCcEcClTjdJGPVN9MIFyPfmgtV8eiJKJLyNl6m3IRgMcDg5OcH5qJu4Li/na6WNVWdjsVmDFPn4zVzbX8en3HRmWRCeQ55Uik31FeW46j2oQFT+phcEg+adGIuW3dHO/ls8sOxpxap04VX4pdNO8sm1XV1PbYMYpnCf6Bn1Uiu1FeZopIWRy28rgmMg/FONHihF4p3MqseSfApW9zbxyLJGg2g809sdStreRLkrviI2njOK5ZxZ7101qX4tbuC2e1Vy4aPvk9sVHa1HbI522ygEZXaTufP7U3t76O8WSG2kDIgDrzxg+KT3txcz2RfopLCGOSO4P2phEfO/TZsZU57HxTOzkLQKSaWXkfJIj6WTnBOTW2zIFuACCcdq3V40Gfk0ViZzuP3oqoz3dpK90I0RiufHYVU2bR6bp6xl0YFeVxnBrlKoW3uSBgjAB9VPtdSrFKgbg5oZvi2etNpffhL6bpu0aSDweAO9PUk1KHRVli6CwOSV3/3Nyc1D7mJOWPIqv1ORvyuxtwxEYhU4B+M0olTd0zNKQcbmOWNZhNJDJ3IrvKAJ2A8V9FFkXDDNDVPIGpccqKKyGIAkZNFHhdf/2Q=='
-  const inputCode = makeTestProjectCodeWithSnippet(`
-    <div
-      data-uid='aaa'
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-      }}
-    >
-      <img
-        data-uid='ccc'
-        style={{
-          width: 60,
-          height: 75,
-        }}
-        src="${cat}"
-      />
-    </div>
-  `)
-
-  const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
-  const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
-
-  await dragResizeControl(renderResult, target, pos, dragVector)
-
-  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-    makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-        }}
-      >
-        <img
-          data-uid='ccc'
-          style={{ width: ${expectWidth}, height: ${expectHeight} }}
-          src="${cat}"
-        />
-      </div>
-    `),
   )
 }

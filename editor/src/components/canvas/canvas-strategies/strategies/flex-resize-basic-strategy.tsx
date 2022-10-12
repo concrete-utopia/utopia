@@ -124,17 +124,15 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          const lockedAspectRatio = getSpecializedLockedAspectRatio(
-            interactionSession,
-            interactionSession.interactionData.modifiers,
-            originalBounds,
-            metadata,
-          )
           const resizedBounds = resizeBoundingBox(
             originalBounds,
             drag,
             edgePosition,
-            lockedAspectRatio,
+            getLockedAspectRatio(
+              interactionSession,
+              interactionSession.interactionData.modifiers,
+              originalBounds,
+            ),
             'non-center-based',
           )
           const elementParentBounds =
@@ -197,18 +195,6 @@ export function flexResizeBasicStrategy(
       return emptyStrategyApplicationResult
     },
   }
-}
-
-const getSpecializedLockedAspectRatio = (
-  interactionSession: InteractionSession,
-  modifiers: Modifiers,
-  rectangle: CanvasRectangle,
-  metadata: ElementInstanceMetadata,
-) => {
-  if (MetadataUtils.isImg(metadata) && rectangle.width !== 0 && rectangle.height !== 0) {
-    return rectangle.width / rectangle.height
-  }
-  return getLockedAspectRatio(interactionSession, modifiers, rectangle)
 }
 
 export function resizeWidthHeight(
