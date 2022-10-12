@@ -15,6 +15,7 @@ import {
   canvasPoint,
   canvasRectangle,
   CanvasRectangle,
+  offsetPoint,
   Size,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -61,7 +62,29 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
-  const getReparentStrategyResult = getReparentFactories(canvasState, interactionSession)
+  if (
+    interactionSession == null ||
+    !(
+      interactionSession.interactionData.type === 'DRAG' ||
+      interactionSession.interactionData.type === 'HOVER'
+    )
+  ) {
+    return []
+  }
+  const pointOnCanvas =
+    interactionSession.interactionData.type === 'DRAG'
+      ? interactionSession.interactionData.originalDragStart
+      : interactionSession.interactionData.point
+
+  const cmdPressed = interactionSession.interactionData.modifiers.cmd
+
+  const getReparentStrategyResult = getReparentFactories(
+    canvasState,
+    pointOnCanvas,
+    cmdPressed,
+    true, // <- TODO this is an important assumption, make sure this is still true when inserting into a flex storyboard
+  )
+
   return mapDropNulls((result): CanvasStrategy | null => {
     const name = getDrawToInsertStrategyName(result.strategyType, result.missingBoundsHandling)
 

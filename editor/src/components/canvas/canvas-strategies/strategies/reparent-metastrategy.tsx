@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
-import { offsetPoint } from '../../../../core/shared/math-utils'
+import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
@@ -20,7 +20,9 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function getReparentFactories(
   canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
+  pointOnCanvas: CanvasPoint,
+  cmdPressed: boolean,
+  allDraggedElementsAbsolute: boolean,
 ): Array<{
   targetParent: ElementPath
   targetIndex: number | null
@@ -28,65 +30,7 @@ export function getReparentFactories(
   missingBoundsHandling: MissingBoundsHandling
   factory: CanvasStrategyFactory
 }> {
-  const reparentSubjects = getDragTargets(
-    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-  )
-
-  if (
-    reparentSubjects.length === 0 ||
-    interactionSession == null ||
-    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
-    interactionSession.interactionData.type !== 'DRAG' ||
-    interactionSession.interactionData.drag == null ||
-    interactionSession.interactionData.modifiers.alt
-  ) {
-    return []
-  }
-
-  const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
-    ),
-  )
-
-  const allDraggedElementsFlex = reparentSubjects.every((element) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      element,
-      canvasState.startingMetadata,
-    ),
-  )
-
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
-    return []
-  }
-
-  const existingParents = reparentSubjects.map(parentPath)
-  const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
-
-  const targetIsValid = (
-    target: ElementPath,
-    missingBoundsHandling: MissingBoundsHandling,
-  ): boolean => {
-    if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
-      return false
-    } else if (startingTargetsToFilter == null) {
-      return true
-    } else {
-      const targetToFilter = startingTargetsToFilter[missingBoundsHandling]?.newParent ?? null
-      return !pathsEqual(target, targetToFilter)
-    }
-  }
-
-  const pointOnCanvas = offsetPoint(
-    interactionSession.interactionData.originalDragStart,
-    interactionSession.interactionData.drag,
-  )
-
-  const cmdPressed = interactionSession.interactionData.modifiers.cmd
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
-  const filteredReparentStrategies = reparentStrategies.filter((reparentStrategy) =>
-    targetIsValid(reparentStrategy.target.newParent, reparentStrategy.missingBoundsHandling),
-  )
 
   const factories: Array<{
     // TODO share type
@@ -95,7 +39,7 @@ export function getReparentFactories(
     strategyType: ReparentStrategy // FIXME horrible name
     missingBoundsHandling: MissingBoundsHandling
     factory: CanvasStrategyFactory
-  }> = filteredReparentStrategies.map((result) => {
+  }> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_TO_ABSOLUTE':
@@ -155,10 +99,74 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => {
-  const factories = getReparentFactories(canvasState, interactionSession)
+  const reparentSubjects = getDragTargets(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+  )
+
+  if (
+    reparentSubjects.length === 0 ||
+    interactionSession == null ||
+    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null ||
+    interactionSession.interactionData.modifiers.alt
+  ) {
+    return []
+  }
+
+  const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
+    MetadataUtils.isPositionAbsolute(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
+    ),
+  )
+
+  const allDraggedElementsFlex = reparentSubjects.every((element) =>
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      element,
+      canvasState.startingMetadata,
+    ),
+  )
+
+  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
+    return []
+  }
+
+  const existingParents = reparentSubjects.map(parentPath)
+  const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
+
+  const pointOnCanvas = offsetPoint(
+    interactionSession.interactionData.originalDragStart,
+    interactionSession.interactionData.drag,
+  )
+
+  const cmdPressed = interactionSession.interactionData.modifiers.cmd
+  const factories = getReparentFactories(
+    canvasState,
+    pointOnCanvas,
+    cmdPressed,
+    allDraggedElementsAbsolute,
+  )
+
+  const targetIsValid = (
+    target: ElementPath,
+    missingBoundsHandling: MissingBoundsHandling,
+  ): boolean => {
+    if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
+      return false
+    } else if (startingTargetsToFilter == null) {
+      return true
+    } else {
+      const targetToFilter = startingTargetsToFilter[missingBoundsHandling]?.newParent ?? null
+      return !pathsEqual(target, targetToFilter)
+    }
+  }
+
+  const filteredReparentFactories = factories.filter((reparentStrategy) =>
+    targetIsValid(reparentStrategy.targetParent, reparentStrategy.missingBoundsHandling),
+  )
 
   return mapDropNulls(
     ({ factory }) => factory(canvasState, interactionSession, customStrategyState),
-    factories,
+    filteredReparentFactories,
   )
 }
