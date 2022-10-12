@@ -1084,7 +1084,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
-    fileBrowserDndInProgress: false,
+    fileBrowserDndInProgress: fileBrowserDndInProgress,
   }
 }
 

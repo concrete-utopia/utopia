@@ -870,29 +870,8 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       return
     }
 
-    const newUID = generateUidWithExistingComponents(projectContents)
-    const elementSize: Size = resize(
-      size(props.imageFile.width ?? 100, props.imageFile.height ?? 100),
-      size(200, 200),
-      'keep-aspect-ratio',
-    )
-    const newElement = createJsxImage(newUID, {
-      width: elementSize.width,
-      height: elementSize.height,
-      src: imagePathURL(props.path),
-    })
-
-    props.dispatch(
-      [
-        EditorActions.setFileBrowserDragState(true),
-        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-        ),
-      ],
-      'everyone',
-    )
-  }, [projectContents, props])
+    props.dispatch([EditorActions.setFileBrowserDragState(true)], 'everyone')
+  }, [props])
 
   const onMouseUp = React.useCallback(() => {
     props.dispatch([CanvasActions.clearInteractionSession(false)])
