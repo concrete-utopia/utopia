@@ -545,7 +545,15 @@ class FileBrowserItemInner extends React.PureComponent<
     if (filesBeingDragged > 0) {
       this.setState({ externalFilesDraggedIn: true, isHovered: true })
     }
-    this.props.dispatch([CanvasActions.clearInteractionSession(false)])
+    const targetDirectory =
+      this.props.fileType === 'DIRECTORY' ? this.props.path : getParentDirectory(this.props.path)
+    this.props.dispatch(
+      [
+        CanvasActions.clearInteractionSession(false),
+        EditorActions.setFilebrowserDropTarget(targetDirectory),
+      ],
+      'leftpane',
+    )
   }
 
   onDragLeave = () => {
