@@ -34,7 +34,6 @@ export const CursorOverlay = React.memo(() => {
     }
     if (cursor != null) {
       workingStyleProps.cursor = cursor
-      workingStyleProps.pointerEvents = 'all'
     }
     return workingStyleProps
   }, [cursor])
