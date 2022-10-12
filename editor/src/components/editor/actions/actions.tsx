@@ -4941,7 +4941,11 @@ export const UPDATE_FNS = {
     }
     // Side effect - Pushing this to the server to get that to save to Github.
     const persistentModel = persistentModelFromEditorModel(updatedEditor)
-    void saveProjectToGithub(persistentModel, dispatch)
+    void saveProjectToGithub(
+      forceNotNull('Should have a project ID at this point.', editor.id),
+      persistentModel,
+      dispatch,
+    )
 
     return editor
   },
