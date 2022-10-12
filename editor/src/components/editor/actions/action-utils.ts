@@ -176,6 +176,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
     case 'RUN_ESCAPE_HATCH':
+    case 'SET_FILE_BROWSER_DRAG_STATE':
       return false
     case 'SAVE_ASSET':
       return (

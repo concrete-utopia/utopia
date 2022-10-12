@@ -3222,6 +3222,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
+  const fileBrowserDndInProgressResults = BooleanKeepDeepEquality(
+    oldValue.fileBrowserDndInProgress,
+    newValue.fileBrowserDndInProgress,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3288,7 +3293,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
-    githubSettingsResults.areEqual
+    githubSettingsResults.areEqual &&
+    fileBrowserDndInProgressResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3360,6 +3366,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
+      fileBrowserDndInProgressResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
