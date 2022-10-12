@@ -810,9 +810,6 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        if (props.imageFile != null) {
-          dispatch([EditorActions.setFileBrowserDragState(true)])
-        }
         return props
       },
       end: () => {

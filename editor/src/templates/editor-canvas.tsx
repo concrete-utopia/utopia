@@ -959,6 +959,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.dispatch([
               EditorActions.setFileBrowserDragState(null),
               CanvasActions.clearInteractionSession(true),
+              EditorActions.switchEditorMode(EditorModes.selectMode()),
             ])
             return
           }
