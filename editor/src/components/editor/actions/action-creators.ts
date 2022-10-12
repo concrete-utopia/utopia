@@ -1563,7 +1563,7 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   }
 }
 
-export function functionsSetFileBrowserDragState(inProgress: boolean): SetFileBrowserDragState {
+export function setFileBrowserDragState(inProgress: boolean): SetFileBrowserDragState {
   return {
     action: 'SET_FILE_BROWSER_DRAG_STATE',
     inProgress: inProgress,

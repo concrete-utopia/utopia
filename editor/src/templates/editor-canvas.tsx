@@ -945,6 +945,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
+          if (this.props.editor.fileBrowserDndInProgress) {
+            // TODO
+            this.props.dispatch([EditorActions.setFileBrowserDragState(false)])
+            return
+          }
           event.preventDefault()
           event.stopPropagation()
 
