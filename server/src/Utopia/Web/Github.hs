@@ -167,10 +167,10 @@ getGitBranchesErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBranchesErrorCases status | status == notFound404  = throwE "Could not find repository."
                                     | otherwise                         = throwE "Unexpected error."
 
-getGitBranches :: (MonadIO m) => AccessToken -> Text -> Text -> ExceptT Text m GetBranchesResult
-getGitBranches accessToken owner repository = do
+getGitBranches :: (MonadIO m) => AccessToken -> Text -> Text -> Int -> ExceptT Text m GetBranchesResult
+getGitBranches accessToken owner repository page = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches"
-  callGithub getFromGithub [] getGitBranchesErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [("per_page", "100"), ("page", show page)] getGitBranchesErrorCases accessToken repoUrl ()
 
 getGitBranchErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBranchErrorCases status | status == notFound404  = throwE "Could not find branch."

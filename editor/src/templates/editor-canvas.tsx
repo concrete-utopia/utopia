@@ -31,20 +31,9 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import {
-  EditorAction,
-  EditorDispatch,
-  isLoggedIn,
-  LoginState,
-} from '../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  EditorModes,
-  Mode,
-  isLiveMode,
-  insertionSubject,
-  InsertionSubject,
-} from '../components/editor/editor-modes'
+import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
@@ -63,13 +52,9 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap, JSXElement } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
-import {
-  getActionsForClipboardItems,
-  parseClipboardData,
-  createDirectInsertImageActions,
-} from '../utils/clipboard'
+import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
@@ -83,15 +68,10 @@ import {
   offsetPoint,
   Point,
   RawPoint,
-  resize,
-  size,
-  Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { ImageResult } from '../core/shared/file-utils'
-import { fastForEach } from '../core/shared/utils'
 import { UtopiaStyles } from '../uuiui'
 import {
   CanvasMousePositionRaw,
@@ -116,17 +96,13 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  generateUidWithExistingComponents,
-  generateUidWithExistingComponentsAndExtraUids,
-} from '../core/model/element-template-utils'
-import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
-import { imagePathURL } from '../common/server'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { createJsxImage } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
-import { ProjectContentTreeRoot } from '../components/assets'
+import { DropHandlers } from './image-drop'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -941,11 +917,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           })
           // itt kene tudni a filebrowserben melyik kepet draggeljuk
 
+          const position = this.getPosition(event.nativeEvent)
+
           this.props.dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
               CanvasActions.createInteractionSession(
-                createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+                createInteractionViaMouse(
+                  position.canvasPositionRounded,
+                  emptyModifiers,
+                  boundingArea(),
+                ),
               ),
             ],
             'everyone',
@@ -969,77 +951,21 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           // itt kene tudni a filebrowserben melyik kepet draggeljuk, es akkor nem kell feltolteni
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          const getPastedImages = async () => {
-            const result = await parseClipboardData(event.dataTransfer)
-            // Snip out the images only from the result.
-            let pastedImages: Array<ImageResult> = []
-            fastForEach(result.files, (pastedFile) => {
-              if (pastedFile.type === 'IMAGE_RESULT') {
-                pastedImages.push({
-                  ...pastedFile,
-                  filename: `/assets/${pastedFile.filename}`,
-                })
-              }
-            })
-            return pastedImages
-          }
-
-          const insertImageFromClipboard = async (elementPath: ElementPath) => {
-            this.props.dispatch(
-              [
-                CanvasActions.clearInteractionSession(false),
-                EditorActions.switchEditorMode(EditorModes.selectMode()),
-              ],
-              'everyone',
-            )
-            const result = await parseClipboardData(event.dataTransfer)
-            const pastedImages = await getPastedImages()
-
-            const actions = createDirectInsertImageActions(
-              pastedImages,
-              mousePosition.canvasPositionRounded,
-              this.props.model.scale,
-              elementPath,
-            )
-
-            this.props.dispatch(actions, 'everyone')
-
-            return result.files[0].filename
-          }
-
-          if (this.props.editor.mode.type === 'select') {
-            const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
-          } else if (this.props.editor.mode.type === 'insert') {
-            void getPastedImages().then((images) => {
-              if (images.length === 0) {
-                return this.props.dispatch([
-                  CanvasActions.clearInteractionSession(false),
-                  EditorActions.switchEditorMode(EditorModes.selectMode()),
-                  EditorActions.showToast({
-                    id: 'image-drag-drop',
-                    level: 'WARNING',
-                    message: "Didn't find any images to insert",
-                    persistent: false,
-                  }),
-                ])
-              }
-
-              const { actions, subjects } = actionsForDroppedImages(images, {
-                scale: this.props.model.scale,
-                projectContents: this.props.editor.projectContents,
-                loginState: this.props.userState.loginState,
-                mousePosition: mousePosition.canvasPositionRounded,
-              })
-
-              this.props.dispatch(
-                [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
-                'everyone',
-              )
+          void DropHandlers.onDrop(
+            event,
+            () => {
               this.handleMouseMove(event.nativeEvent)
               this.handleMouseUp(event.nativeEvent)
-            })
-          }
+            },
+            {
+              scale: this.props.model.scale,
+              editor: this.props.editor,
+              mousePosition: mousePosition,
+              dispatch: this.props.dispatch,
+              loginState: this.props.userState.loginState,
+            },
+          )
+
           return
         },
 
@@ -1591,96 +1517,4 @@ function isTargetInPopup(target: HTMLElement, popupId: string | null): boolean {
     const popupElement = document.getElementById(popupId)
     return popupElement != null && popupElement.contains(target)
   }
-}
-
-interface ActionsForDroppedImageContext {
-  generateUid: () => string
-  scale: number
-  isUserLoggedIn: boolean
-  mousePosition: CanvasPoint
-}
-
-interface ActionForDroppedImageResult {
-  actions: EditorAction[]
-  singleSubject: InsertionSubject
-}
-
-function actionsForDroppedImage(
-  image: ImageResult,
-  context: ActionsForDroppedImageContext,
-): ActionForDroppedImageResult {
-  const { frame } = getFrameAndMultiplierWithResize(
-    context.mousePosition,
-    image.filename,
-    image.size,
-    context.scale,
-  )
-
-  const { saveImageActions, src } = context.isUserLoggedIn
-    ? {
-        saveImageActions: [
-          EditorActions.saveAsset(
-            image.filename,
-            image.fileType,
-            image.base64Bytes,
-            image.hash,
-            EditorActions.saveImageDetails(image.size, EditorActions.saveImageReplace()),
-          ),
-        ],
-        src: imagePathURL(image.filename),
-      }
-    : { saveImageActions: [], src: image.base64Bytes }
-
-  const newUID = context.generateUid()
-  const elementSize: Size = resize(
-    size(frame.width ?? 100, frame.height ?? 100),
-    size(200, 200),
-    'keep-aspect-ratio',
-  )
-  const newElement = createJsxImage(newUID, {
-    width: elementSize.width,
-    height: elementSize.height,
-    top: context.mousePosition.y,
-    left: context.mousePosition.x,
-    src: src,
-  })
-  return {
-    actions: saveImageActions,
-    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
-  }
-}
-
-interface ActionsForDroppedImagesResult {
-  subjects: Array<InsertionSubject>
-  actions: Array<EditorAction>
-}
-
-interface ActionsForDroppedImagesContext {
-  projectContents: ProjectContentTreeRoot
-  mousePosition: CanvasPoint
-  scale: number
-  loginState: LoginState
-}
-
-function actionsForDroppedImages(
-  images: Array<ImageResult>,
-  context: ActionsForDroppedImagesContext,
-): ActionsForDroppedImagesResult {
-  let actions: Array<EditorAction> = []
-  let uidsSoFar: Array<string> = []
-  let subjects: Array<InsertionSubject> = []
-  for (const image of images) {
-    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(image, {
-      generateUid: () =>
-        generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
-      scale: context.scale,
-      mousePosition: context.mousePosition,
-      isUserLoggedIn: isLoggedIn(context.loginState),
-    })
-    actions = [...actions, ...actionsForImage]
-    uidsSoFar = [...uidsSoFar, singleSubject.uid]
-    subjects = [...subjects, singleSubject]
-  }
-
-  return { actions, subjects }
 }
