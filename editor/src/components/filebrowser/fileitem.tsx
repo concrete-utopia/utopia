@@ -876,6 +876,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
 
     props.dispatch(
       [
+        EditorActions.setFileBrowserDragState(true),
         EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
         CanvasActions.createInteractionSession(
           createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
