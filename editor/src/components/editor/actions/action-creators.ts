@@ -213,6 +213,7 @@ import type {
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
+  DraggedImageProperties,
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
@@ -1563,9 +1564,11 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   }
 }
 
-export function setFileBrowserDragState(inProgress: boolean): SetFileBrowserDragState {
+export function setFileBrowserDragState(
+  draggedImageProperties: DraggedImageProperties | null,
+): SetFileBrowserDragState {
   return {
     action: 'SET_FILE_BROWSER_DRAG_STATE',
-    inProgress: inProgress,
+    draggedImageProperties: draggedImageProperties,
   }
 }

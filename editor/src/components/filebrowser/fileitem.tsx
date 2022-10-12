@@ -870,7 +870,16 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       return
     }
 
-    props.dispatch([EditorActions.setFileBrowserDragState(true)], 'everyone')
+    props.dispatch(
+      [
+        EditorActions.setFileBrowserDragState({
+          width: props.imageFile.width ?? 200,
+          height: props.imageFile.height ?? 200,
+          src: imagePathURL(props.path),
+        }),
+      ],
+      'everyone',
+    )
   }, [props])
 
   const onMouseUp = React.useCallback(() => {

@@ -38,6 +38,7 @@ import {
   BaseSnappingThreshold,
   CanvasCursor,
   DerivedState,
+  DraggedImageProperties,
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
@@ -911,10 +912,19 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElement = createJsxImage(newUID, {
+          let newElementProps: Partial<DraggedImageProperties> = {
             width: 1,
             height: 1,
-          })
+          }
+          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
+            newElementProps = {
+              width: this.props.editor.fileBrowser.draggedImageProperties.width,
+              height: this.props.editor.fileBrowser.draggedImageProperties.height,
+              src: this.props.editor.fileBrowser.draggedImageProperties.src,
+            }
+          }
+
+          const newElement = createJsxImage(newUID, newElementProps)
           // itt kene tudni a filebrowserben melyik kepet draggeljuk
 
           const position = this.getPosition(event.nativeEvent)
@@ -945,9 +955,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.fileBrowserDndInProgress) {
-            // TODO
-            this.props.dispatch([EditorActions.setFileBrowserDragState(false)])
+          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
+            this.props.dispatch([
+              EditorActions.setFileBrowserDragState(null),
+              CanvasActions.clearInteractionSession(true),
+            ])
             return
           }
           event.preventDefault()

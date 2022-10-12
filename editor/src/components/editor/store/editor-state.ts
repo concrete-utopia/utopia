@@ -727,21 +727,42 @@ export function editorStateInspector(
   }
 }
 
+export interface DraggedImageProperties {
+  width: number
+  height: number
+  src: string
+}
+
+export function draggedImageProperties(
+  width: number,
+  height: number,
+  src: string,
+): DraggedImageProperties {
+  return {
+    width,
+    height,
+    src,
+  }
+}
+
 export interface EditorStateFileBrowser {
   minimised: boolean
   renamingTarget: string | null
   dropTarget: string | null
+  draggedImageProperties: DraggedImageProperties | null
 }
 
 export function editorStateFileBrowser(
   minimised: boolean,
   renamingTarget: string | null,
   dropTarget: string | null,
+  draggedImage: DraggedImageProperties | null,
 ): EditorStateFileBrowser {
   return {
     minimised: minimised,
     renamingTarget: renamingTarget,
     dropTarget: dropTarget,
+    draggedImageProperties: draggedImage,
   }
 }
 
@@ -945,7 +966,6 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
-  fileBrowserDndInProgress: boolean
 }
 
 export function editorState(
@@ -1015,7 +1035,6 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
-  fileBrowserDndInProgress: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1084,7 +1103,6 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
-    fileBrowserDndInProgress: fileBrowserDndInProgress,
   }
 }
 
@@ -1895,7 +1913,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
-    fileBrowserDndInProgress: false,
   }
 }
 
@@ -2177,6 +2194,7 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       dropTarget: null,
       minimised: persistentModel.fileBrowser.minimised,
+      draggedImageProperties: null,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
@@ -2190,7 +2208,6 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
-    fileBrowserDndInProgress: false,
   }
   return editor
 }

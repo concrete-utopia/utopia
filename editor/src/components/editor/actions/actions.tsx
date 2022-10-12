@@ -974,7 +974,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     allElementProps: poppedEditor.allElementProps,
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
-    fileBrowserDndInProgress: currentEditor.fileBrowserDndInProgress,
   }
 }
 
@@ -4951,7 +4950,13 @@ export const UPDATE_FNS = {
     action: SetFileBrowserDragState,
     editor: EditorModel,
   ): EditorModel => {
-    return { ...editor, fileBrowserDndInProgress: action.inProgress }
+    return {
+      ...editor,
+      fileBrowser: {
+        ...editor.fileBrowser,
+        draggedImageProperties: action.draggedImageProperties,
+      },
+    }
   },
 }
 

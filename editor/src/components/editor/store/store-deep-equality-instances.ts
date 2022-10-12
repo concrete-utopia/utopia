@@ -306,6 +306,8 @@ import {
   GithubRepo,
   githubRepo,
   projectGithubSettings,
+  DraggedImageProperties,
+  draggedImageProperties,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2776,14 +2778,27 @@ export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorSt
     editorStateInspector,
   )
 
-export const EditorStateFileBrowserKeepDeepEquality: KeepDeepEqualityCall<EditorStateFileBrowser> =
+export const DraggedImagePropertiesDeepEquality: KeepDeepEqualityCall<DraggedImageProperties> =
   combine3EqualityCalls(
+    (draggedImage) => draggedImage.width,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.height,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.src,
+    StringKeepDeepEquality,
+    draggedImageProperties,
+  )
+
+export const EditorStateFileBrowserKeepDeepEquality: KeepDeepEqualityCall<EditorStateFileBrowser> =
+  combine4EqualityCalls(
     (fileBrowser) => fileBrowser.minimised,
     BooleanKeepDeepEquality,
     (fileBrowser) => fileBrowser.renamingTarget,
     NullableStringKeepDeepEquality,
     (fileBrowser) => fileBrowser.dropTarget,
     NullableStringKeepDeepEquality,
+    (fileBrowser) => fileBrowser.draggedImageProperties,
+    nullableDeepEquality(DraggedImagePropertiesDeepEquality),
     editorStateFileBrowser,
   )
 
@@ -3222,11 +3237,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
-  const fileBrowserDndInProgressResults = BooleanKeepDeepEquality(
-    oldValue.fileBrowserDndInProgress,
-    newValue.fileBrowserDndInProgress,
-  )
-
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3293,8 +3303,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
-    githubSettingsResults.areEqual &&
-    fileBrowserDndInProgressResults.areEqual
+    githubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3366,7 +3375,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
-      fileBrowserDndInProgressResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
