@@ -4,7 +4,7 @@ import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
 import { offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { MetaCanvasStrategy } from '../canvas-strategies'
+import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
   getTargetPathsFromInteractionTarget,
@@ -15,14 +15,19 @@ import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import { findReparentStrategies } from './reparent-strategy-helpers'
+import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export const reparentMetaStrategy: MetaCanvasStrategy = (
+export function getReparentFactories(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-) => {
+): Array<{
+  targetParent: ElementPath
+  targetIndex: number | null
+  strategyType: ReparentStrategy // FIXME horrible name
+  missingBoundsHandling: MissingBoundsHandling
+  factory: CanvasStrategyFactory
+}> {
   const reparentSubjects = getDragTargets(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
@@ -83,36 +88,77 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     targetIsValid(reparentStrategy.target.newParent, reparentStrategy.missingBoundsHandling),
   )
 
-  const factories = filteredReparentStrategies.map((result) => {
+  const factories: Array<{
+    // TODO share type
+    targetParent: ElementPath
+    targetIndex: number | null
+    strategyType: ReparentStrategy // FIXME horrible name
+    missingBoundsHandling: MissingBoundsHandling
+    factory: CanvasStrategyFactory
+  }> = filteredReparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_TO_ABSOLUTE':
         if (allDraggedElementsAbsolute) {
-          return baseAbsoluteReparentStrategy(
-            result.target,
-            missingBoundsHandling,
-            result.isFallback,
-          )
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: null,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            factory: baseAbsoluteReparentStrategy(
+              result.target,
+              missingBoundsHandling,
+              result.isFallback,
+            ),
+          }
         } else {
-          return baseFlexReparentToAbsoluteStrategy(
-            result.target,
-            missingBoundsHandling,
-            result.isFallback,
-          )
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: null,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            factory: baseFlexReparentToAbsoluteStrategy(
+              result.target,
+              missingBoundsHandling,
+              result.isFallback,
+            ),
+          }
         }
       case 'REPARENT_TO_FLEX':
         if (allDraggedElementsAbsolute) {
-          return baseAbsoluteReparentToFlexStrategy(result.target)
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            factory: baseAbsoluteReparentToFlexStrategy(result.target),
+          }
         } else {
-          return baseFlexReparentToFlexStrategy(result.target)
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            factory: baseFlexReparentToFlexStrategy(result.target),
+          }
         }
       default:
         assertNever(result.strategy)
     }
   })
 
+  return factories
+}
+
+export const reparentMetaStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => {
+  const factories = getReparentFactories(canvasState, interactionSession)
+
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    ({ factory }) => factory(canvasState, interactionSession, customStrategyState),
     factories,
   )
 }
