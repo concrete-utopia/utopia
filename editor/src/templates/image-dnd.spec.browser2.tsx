@@ -240,7 +240,7 @@ describe('image dnd', () => {
     sandbox.restore()
   })
 
-  it('dragging from the sidebar works', async () => {
+  it('dragging from the filebrowser to the canvas works', async () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)
 
@@ -253,11 +253,11 @@ describe('image dnd', () => {
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
-    const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = {
-      x: dragHandleBounds.x + dragHandleBounds.width / 2,
-      y: dragHandleBounds.y + dragHandleBounds.height / 2,
+    const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+    const fileItemBounds = fileItem.getBoundingClientRect()
+    const startPoint = {
+      x: fileItemBounds.x + fileItemBounds.width / 2,
+      y: fileItemBounds.y + fileItemBounds.height / 2,
     }
 
     const target = editor.renderedDOM.getByTestId('scene')
@@ -268,16 +268,21 @@ describe('image dnd', () => {
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    mouseMoveToPoint(imageDragHandle, handleCenter)
-    mouseDownAtPoint(imageDragHandle, handleCenter)
-    mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
-    await editor.getDispatchFollowUpActionsFinished()
+    mouseMoveToPoint(fileItem, startPoint)
+    mouseDownAtPoint(fileItem, startPoint)
+    fireEvent(fileItem, makeDragEvent('dragstart', fileItem, startPoint, []))
 
-    expect(
-      editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
-    ).toBeGreaterThan(0)
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('dragenter', canvasControlsLayer, { x: 10, y: 10 }, []),
+    )
+    fireEvent(
+      canvasControlsLayer,
+      makeDragEvent('dragover', canvasControlsLayer, { x: 10, y: 10 }, []),
+    )
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, []))
+    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, []))
 
-    mouseUpAtPoint(canvasControlsLayer, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -300,18 +305,19 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      src='./assets/stuff.png'
-      style={{
-        position: 'absolute',
-        width: 200,
-        height: 62,
-        top: 475,
-        left: 3,
-      }}
-      data-uid='imgimgimg'
-    />
+    >
+      <img
+        src='./assets/stuff.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 62,
+          top: 349,
+          left: 296,
+        }}
+        data-uid='${newUID}'
+      />
+    </Scene>
   </Storyboard>
 )
 `)

@@ -522,7 +522,7 @@ export function pressKey(
 
 // https://github.com/testing-library/react-testing-library/issues/339
 export function makeDragEvent(
-  type: 'dragover' | 'drop',
+  type: 'dragstart' | 'dragenter' | 'dragover' | 'dragleave' | 'dragend' | 'drop',
   target: Element | Node,
   clientCoords: { x: number; y: number },
   fileList: Array<File>,
@@ -534,8 +534,31 @@ export function makeDragEvent(
     bubbles: true,
     cancelable: true,
   }
-  const fileDropEvent =
-    type === 'drop' ? createEvent.drop(target, opts) : createEvent.dragOver(target, opts)
+
+  let createEventForType: (node: Node, options: any) => Event = createEvent.drop
+  switch (type) {
+    case 'dragend':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragenter':
+      createEventForType = createEvent.dragEnter
+      break
+    case 'dragover':
+      createEventForType = createEvent.dragOver
+      break
+    case 'dragleave':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragstart':
+      createEventForType = createEvent.dragStart
+      break
+    default:
+    case 'drop':
+      createEventForType = createEvent.drop
+      break
+  }
+
+  const fileDropEvent: Event = createEventForType(target, opts)
 
   Object.defineProperty(fileDropEvent, 'dataTransfer', {
     value: {

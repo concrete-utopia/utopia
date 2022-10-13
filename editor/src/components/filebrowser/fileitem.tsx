@@ -661,6 +661,7 @@ class FileBrowserItemInner extends React.PureComponent<
       <div style={{ width: '100%' }}>
         <div
           tabIndex={0}
+          data-testid={`fileitem-${this.props.path}`}
           onDrop={this.onItemDrop}
           onMouseEnter={this.setItemIsHovered}
           onMouseLeave={this.setItemIsNotHovered}
