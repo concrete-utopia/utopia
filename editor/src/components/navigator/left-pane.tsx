@@ -77,6 +77,11 @@ import { forEachLeft, forEachRight } from '../../core/shared/either'
 import { notice } from '../common/notice'
 import { when } from '../../utils/react-conditionals'
 
+import FS from '@isomorphic-git/lightning-fs'
+const fs = new FS('gitfs').promises
+import * as git from 'isomorphic-git'
+import * as http from 'isomorphic-git/http/web'
+
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -841,10 +846,29 @@ const GithubPane = React.memo(() => {
                   style={{ overflowY: 'auto', height: UtopiaTheme.layout.rowHeight.normal * 11.5 }}
                 >
                   {branchesForRepository.branches.map((branch, index) => {
+                    /*
                     function loadContentForBranch() {
                       if (parsedTargetRepository != null) {
                         void getBranchContent(dispatch, parsedTargetRepository, branch.name)
                       }
+                    }
+                    */
+                    async function loadContentForBranch() {
+                      const dir = '/test5'
+                      console.log('ABOUT TO MKDIR')
+                      await fs.mkdir(dir)
+                      console.log('ABOUT TO CLONE')
+                      await git.clone({
+                        fs: fs,
+                        dir: dir,
+                        http: http,
+                        corsProxy: 'https://cors.isomorphic-git.org',
+                        url: 'https://github.com/seanparsons/testrepository',
+                        ref: branch.name,
+                        singleBranch: true,
+                      })
+                      console.log('ABOUT TO READDIR')
+                      console.log('folder', await fs.readdir(dir))
                     }
                     return (
                       <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
