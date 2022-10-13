@@ -143,7 +143,8 @@ innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
-  application <- loadProjectAssetWithCall (loadProjectAssetFromS3 awsResource) path possibleETag
+  possibleAsset <- liftIO $ loadAsset (Just awsResource) path possibleETag
+  application <- loadProjectAssetWithAsset path possibleAsset
   return $ action application
 innerServerExecutor (SaveProjectAsset user projectID path action) = do
   pool <- fmap _projectPool ask
@@ -263,12 +264,13 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
-innerServerExecutor (SaveToGithubRepo user model action) = do
+innerServerExecutor (SaveToGithubRepo user projectID model action) = do
   githubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
+  result <- createTreeAndSaveToGithub githubResources (Just awsResource) logger metrics pool user projectID model
   pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
   githubResources <- fmap _githubResources ask
