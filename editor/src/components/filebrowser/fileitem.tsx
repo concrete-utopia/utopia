@@ -35,11 +35,19 @@ import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import CanvasActions from '../canvas/canvas-actions'
+import {
+  boundingArea,
+  createInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
+import { emptyModifiers } from '../../utils/modifiers'
+import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { imagePathURL } from '../../common/server'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
+import { createJsxImage } from '../images'
+import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
 import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
-import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -466,7 +474,6 @@ class FileBrowserItemInner extends React.PureComponent<
 
     void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
-      let overwriteFiles: Array<FileUploadInfo> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
         let targetPath: string | null = null
         let replace = false
@@ -486,16 +493,9 @@ class FileBrowserItemInner extends React.PureComponent<
         }
 
         if (targetPath != null) {
-          if (fileExists(this.props.projectContents, targetPath)) {
-            overwriteFiles.push({ fileResult: resultFile, targetPath: targetPath })
-          } else {
-            actions.push(fileResultUploadAction(resultFile, targetPath, replace))
-          }
+          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
         }
       })
-      if (overwriteFiles.length > 1) {
-        actions.push(EditorActions.showModal(fileOverwriteModal(overwriteFiles)))
-      }
       this.props.dispatch(actions, 'everyone')
     })
   }

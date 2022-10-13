@@ -73,6 +73,7 @@ function multiselectResizeElements(
     initialEditor,
     initialEditor,
     [],
+    [],
     strategyResult.commands,
     'end-interaction',
   ).editorState

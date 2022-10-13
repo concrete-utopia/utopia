@@ -1,12 +1,3 @@
-import * as Prettier from 'prettier/standalone'
-import { PrettierConfig } from 'utopia-vscode-common'
-import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../../../core/model/scene-utils'
-import { right } from '../../../../core/shared/either'
-import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptyComments,
@@ -26,11 +17,24 @@ import {
   testPrintCodeFromEditorState,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
+import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession } from '../interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
-import { reparentMetaStrategy } from './reparent-metastrategy'
+import * as EP from '../../../../core/shared/element-path'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
+import * as Prettier from 'prettier/standalone'
+import { right } from '../../../../core/shared/either'
+import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 jest.mock('../../canvas-utils', () => ({
   ...jest.requireActual('../../canvas-utils'),
@@ -114,10 +118,9 @@ function reparentElement(
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
-  const startPoint = canvasPoint({ x: 0, y: 0 })
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      startPoint,
+      canvasPoint({ x: 0, y: 0 }),
       { cmd: true, alt: false, shift: false, ctrl: false },
       boundingArea(),
       dragVector,
@@ -127,21 +130,14 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
-    editorState,
-    createBuiltInDependenciesList(null),
-    startingMetadata,
-  )
-
-  const reparentStrategies = reparentMetaStrategy(
-    canvasState,
+  const strategyResult = absoluteReparentStrategy(
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      startingMetadata,
+    ),
     interactionSession,
-    defaultCustomStrategyState(),
-  )
-
-  expect(reparentStrategies.length).toBeGreaterThan(0)
-
-  const strategyResult = reparentStrategies[0].apply('end-interaction')
+  )!.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
@@ -159,6 +155,7 @@ function reparentElement(
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
+    [],
     [],
     strategyResult.commands,
     'end-interaction',

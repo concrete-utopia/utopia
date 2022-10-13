@@ -6,7 +6,6 @@ module Utopia.Web.Assets where
 
 import           Conduit
 import           Control.Lens
-import           Control.Monad.Fail
 import           Control.Monad.Trans.AWS
 import qualified Data.ByteString.Lazy    as BL
 import           Data.Generics.Sum
@@ -31,11 +30,6 @@ data AWSResources = AWSResources
 data LoadAssetResult = AssetUnmodified
                      | AssetNotFound
                      | AssetLoaded BL.ByteString (Maybe Text)
-
-assetContentsFromLoadAssetResult :: LoadAssetResult -> IO BL.ByteString
-assetContentsFromLoadAssetResult AssetUnmodified          = fail "Asset is unmodified."
-assetContentsFromLoadAssetResult AssetNotFound            = fail "Asset not found."
-assetContentsFromLoadAssetResult (AssetLoaded content _)  = pure content
 
 type LoadAsset = [Text] -> Maybe Text -> IO LoadAssetResult
 

@@ -143,7 +143,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   const moveCommands =
     absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle).commands ?? []
 
-  return foldAndApplyCommandsInner(editorState, [], moveCommands, commandLifecycle).statePatches
+  return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches
 }
 
 function isApplicable(

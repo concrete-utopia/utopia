@@ -670,9 +670,9 @@ githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
   possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
   pure $ isJust possibleAuthDetails
 
-githubSaveEndpoint :: Maybe Text -> Text -> PersistentModel -> ServerMonad SaveToGithubResponse
-githubSaveEndpoint cookie projectID persistentModel = requireUser cookie $ \sessionUser -> do
-  saveToGithubRepo (view (field @"_id") sessionUser) projectID persistentModel
+githubSaveEndpoint :: Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
+githubSaveEndpoint cookie persistentModel = requireUser cookie $ \sessionUser -> do
+  saveToGithubRepo (view (field @"_id") sessionUser) persistentModel
 
 getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
 getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do

@@ -222,8 +222,9 @@ responseFromLoadAssetResult assetPath (AssetLoaded bytes possibleETag) =
   let headers = getAssetHeaders (Just assetPath) possibleETag
   in  Just $ responseLBS ok200 headers bytes
 
-loadProjectAssetWithAsset :: (MonadIO m, MonadThrow m) => [Text] -> LoadAssetResult -> m (Maybe Application)
-loadProjectAssetWithAsset assetPath possibleAsset = do
+loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> Maybe Text -> m (Maybe Application)
+loadProjectAssetWithCall loadCall assetPath possibleETag = do
+  possibleAsset <- liftIO $ loadCall assetPath possibleETag
   let possibleResponse = responseFromLoadAssetResult assetPath possibleAsset
   pure $ fmap (\response -> \_ -> \sendResponse -> sendResponse response) possibleResponse
 
@@ -374,12 +375,12 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> PersistentModel -> m SaveToGithubResponse
-createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID model = do
+createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
   let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
   result <- runExceptT $ do
     treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
+      createGitTreeFromModel accessToken model
     commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
     now <- liftIO getCurrentTime
@@ -428,9 +429,3 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
       getRecursiveGitTreeAsContent accessToken owner repository treeSha
     pure (projectContent, commitSha)
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
-
-loadAsset :: Maybe AWSResources -> LoadAsset
-loadAsset awsResource path possibleETag = do
-  let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
-  loadCall path possibleETag
-

@@ -197,6 +197,7 @@ function dragByPixels(
     editorState,
     editorState,
     [],
+    [],
     strategyResultCommands,
     'end-interaction',
   ).editorState

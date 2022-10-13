@@ -11,17 +11,45 @@ import {
 } from '../../../core/layout/layout-utils'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  DetectedLayoutSystem,
+  isJSXAttributeValue,
+  isJSXElement,
+  isPartOfJSXAttributeValue,
+  JSXAttributes,
+  jsxAttributeValue,
+  JSXAttributeValue,
+  JSXElement,
+  jsxElement,
+  jsxElementName,
+  UtopiaJSXComponent,
+  SettableLayoutSystem,
+  walkElements,
+  ElementInstanceMetadataMap,
+  jsxTextBlock,
+  getJSXAttribute,
+  jsxAttributesFromMap,
+  emptyJsxMetadata,
+  isImportStatement,
+  JSXElementChildren,
+  emptyComments,
+} from '../../../core/shared/element-template'
+import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   getUtopiaID,
-  getZIndexOfElement,
   transformJSXComponentAtElementPath,
+  getZIndexOfElement,
   transformJSXComponentAtPath,
+  getAllUniqueUids,
 } from '../../../core/model/element-template-utils'
 import {
-  applyToAllUIJSFiles,
-  applyUtopiaJSXComponentsChanges,
-  assetFile,
+  getJSXAttributeAtPath,
+  setJSXValueAtPath,
+  unsetJSXValueAtPath,
+  unsetJSXValuesAtPaths,
+  setJSXValuesAtPaths,
+  ValueAtPath,
+} from '../../../core/shared/jsx-attributes'
+import {
   canUpdateFile,
   directory,
   fileTypeFromFileName,
@@ -30,98 +58,65 @@ import {
   imageFile,
   isDirectory,
   isImageFile,
-  isImg,
   revertFile,
   saveFile,
-  saveTextFileContents,
   switchToFileType,
   uniqueProjectContentID,
-  updateFileContents,
   updateParsedTextFileHighlightBounds,
+  assetFile,
+  applyToAllUIJSFiles,
+  updateFileContents,
+  applyUtopiaJSXComponentsChanges,
+  saveTextFileContents,
+  isImg,
 } from '../../../core/model/project-file-utils'
-import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import {
   Either,
-  eitherToMaybe,
   foldEither,
-  forceRight,
   isLeft,
   isRight,
   left,
+  eitherToMaybe,
   mapEither,
+  forceRight,
 } from '../../../core/shared/either'
-import * as EP from '../../../core/shared/element-path'
-import {
-  DetectedLayoutSystem,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  emptyJsxMetadata,
-  getJSXAttribute,
-  isImportStatement,
-  isJSXAttributeValue,
-  isJSXElement,
-  isPartOfJSXAttributeValue,
-  JSXAttributes,
-  jsxAttributesFromMap,
-  jsxAttributeValue,
-  JSXAttributeValue,
-  JSXElement,
-  jsxElement,
-  JSXElementChildren,
-  jsxElementName,
-  jsxTextBlock,
-  SettableLayoutSystem,
-  UtopiaJSXComponent,
-  walkElements,
-} from '../../../core/shared/element-template'
-import {
-  getJSXAttributeAtPath,
-  setJSXValueAtPath,
-  setJSXValuesAtPaths,
-  unsetJSXValueAtPath,
-  unsetJSXValuesAtPaths,
-  ValueAtPath,
-} from '../../../core/shared/jsx-attributes'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  canvasRectangle,
-  LocalRectangle,
-  rectangleIntersection,
-  Size,
-} from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
   RequestedNpmDependency,
   requestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
-import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import {
-  codeFile,
-  ElementPath,
-  Imports,
-  importStatementFromImportDetails,
-  isAssetFile,
   isParseSuccess,
   isTextFile,
-  NodeModules,
   ParsedTextFile,
-  ParseSuccess,
   ProjectContents,
   ProjectFile,
   RevisionsState,
-  StaticElementPath,
   StaticElementPathPart,
+  ElementPath,
   TextFile,
-  textFile,
+  isAssetFile,
+  NodeModules,
+  StaticElementPath,
   textFileContents,
+  textFile,
+  codeFile,
   unparsed,
+  ParseSuccess,
+  Imports,
+  importStatementFromImportDetails,
 } from '../../../core/shared/project-file-types'
-import * as PP from '../../../core/shared/property-path'
-import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import Utils, { IndexPosition } from '../../../utils/utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  LocalRectangle,
+  Size,
+  canvasRectangle,
+  rectangleIntersection,
+} from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
   contentsToTree,
@@ -150,30 +145,24 @@ import {
 import { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
 import {
-  codeCacheToBuildResult,
   CodeResultCache,
   generateCodeResultCache,
+  codeCacheToBuildResult,
+  PropertyControlsInfo,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
-  PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
-import { getFrameAndMultiplierWithResize } from '../../images'
+import * as PP from '../../../core/shared/property-path'
+import * as EP from '../../../core/shared/element-path'
 import {
-  AddFolder,
-  AddImports,
-  AddMissingDimensions,
-  AddStoryboardFile,
-  AddTailwindConfig,
   AddTextFile,
-  AddToast,
+  AddFolder,
   Alignment,
   AlignSelectedViews,
   ClearHighlightedViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
-  ClearTransientProps,
-  CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
   CopySelectionToClipboard,
@@ -186,210 +175,228 @@ import {
   EditorAction,
   EditorDispatch,
   EditorModel,
-  FinishCheckpointTimer,
-  ForceParseFile,
   HideModal,
-  HideVSCodeLoadingScreen,
-  InsertDroppedImage,
   InsertImageIntoUI,
-  InsertInsertable,
   InsertJSXElement,
   InsertScene,
   isLoggedIn,
   Load,
-  MarkVSCodeBridgeReady,
   NavigatorReorder,
   NewProject,
   OpenCodeEditorFile,
-  OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
   RegenerateThumbnail,
-  RemoveFromNodeModulesContents,
-  RemoveToast,
   RenameComponent,
   RenameStyleSelector,
-  ResetCanvas,
   ResetPins,
   ResizeInterfaceDesignerCodePane,
-  RunEscapeHatch,
-  SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
-  SaveToGithub,
-  ScrollToElement,
+  SaveAsset,
   SelectAllSiblings,
   SelectComponents,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
   SetCodeEditorVisibility,
-  SetCurrentTheme,
   SetCursorOverlay,
-  SetElementsToRerender,
-  SetFilebrowserDropTarget,
   SetFilebrowserRenamingTarget,
-  SetFocusedElement,
-  SetFollowSelectionEnabled,
-  SetForkedFromProjectID,
-  SetGithubState,
   SetHighlightedView,
-  SetIndexedDBFailed,
-  SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
-  SetLoginState,
-  SetMainUIFile,
-  SetNavigatorRenamingTarget,
-  SetPackageStatus,
-  SetPanelVisibility,
-  SetProjectDescription,
-  SetProjectID,
-  SetProjectName,
-  SetProp,
-  SetProperty,
-  SetPropTransient,
-  SetPropWithElementPath,
-  SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
-  SetSafeMode,
-  SetSaveError,
-  SetScrollAnimation,
-  SetShortcut,
+  SetMainUIFile,
+  SetNavigatorRenamingTarget,
+  SetPanelVisibility,
+  SetProjectID,
+  SetProjectName,
+  SetProjectDescription,
+  SetProp,
+  SetPropWithElementPath,
   SetStoredFontSettings,
+  AddToast,
   SetZIndex,
   ShowContextMenu,
   ShowModal,
-  StartCheckpointTimer,
   SwitchEditorMode,
   SwitchLayoutSystem,
   ToggleCollapse,
   ToggleHidden,
-  ToggleInterfaceDesignerAdditionalControls,
   ToggleInterfaceDesignerCodeEditor,
+  ToggleInterfaceDesignerAdditionalControls,
   TogglePane,
   ToggleProperty,
-  ToggleSelectionLock,
   UnsetProperty,
   UnwrapGroupOrView,
-  UpdateChildText,
   UpdateCodeResultCache,
-  UpdateConfigFromVSCode,
   UpdateDuplicationState,
   UpdateEditorMode,
   UpdateFile,
   UpdateFilePath,
-  UpdateFormulaBarMode,
   UpdateFrameDimensions,
-  UpdateFromCodeEditor,
   UpdateFromWorker,
-  UpdateGithubSettings,
   UpdateJSXElementName,
   UpdateKeysPressed,
-  UpdateMouseButtonsPressed,
+  UpdatePreviewConnected,
+  UpdateThumbnailGenerated,
+  WrapInView,
+  SetSafeMode,
+  SetSaveError,
+  RemoveToast,
+  InsertDroppedImage,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
-  UpdateProjectContents,
-  SetFileBrowserDragState,
+  StartCheckpointTimer,
+  FinishCheckpointTimer,
+  AddMissingDimensions,
+  SetPackageStatus,
+  SetShortcut,
   UpdatePropertyControlsInfo,
-  UpdateThumbnailGenerated,
+  AddStoryboardFile,
+  UpdateChildText,
+  UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
+  SetFocusedElement,
+  AddImports,
+  ScrollToElement,
+  SetScrollAnimation,
+  SetFollowSelectionEnabled,
+  UpdateConfigFromVSCode,
+  SetLoginState,
+  ResetCanvas,
+  SetFilebrowserDropTarget,
+  SetForkedFromProjectID,
+  SetCurrentTheme,
+  UpdateFormulaBarMode,
+  OpenFloatingInsertMenu,
+  CloseFloatingInsertMenu,
+  InsertInsertable,
+  SetPropTransient,
+  ClearTransientProps,
+  AddTailwindConfig,
   WrapInElement,
-  WrapInView,
+  SetInspectorLayoutSectionHovered,
+  SetResizeOptionsTargetOptions,
+  HideVSCodeLoadingScreen,
+  SetIndexedDBFailed,
+  ForceParseFile,
+  RemoveFromNodeModulesContents,
+  RunEscapeHatch,
+  SetElementsToRerender,
+  UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
+  SetGithubState,
+  SetProperty,
+  SaveToGithub,
+  UpdateProjectContents,
+  UpdateGithubSettings,
+  SetFileBrowserDragState,
 } from '../action-types'
-import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
-import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
+import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
+import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
+  dependenciesWithEditorRequirements,
+  dependenciesFromPackageJsonContents,
+  updateDependenciesInEditorState,
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJson,
-  dependenciesFromPackageJsonContents,
-  dependenciesWithEditorRequirements,
   findLatestVersion,
-  updateDependenciesInEditorState,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence/persistence-backend'
 import {
   deleteAssetFile,
   saveAsset as saveAssetToServer,
-  saveUserConfiguration,
   updateAssetFileName,
+  saveUserConfiguration,
 } from '../server'
 import {
-  addNewScene,
   areGeneratedElementsTargeted,
-  BaseCanvasOffset,
-  BaseCanvasOffsetLeftPane,
   CanvasBase64Blobs,
   DerivedState,
   editorModelFromPersistentModel,
   EditorState,
   getAllBuildErrors,
   getAllLintErrors,
-  getElementPathsInBounds,
-  getHighlightBoundsForFile,
-  getJSXComponentsAndImportsForPathFromState,
   getMainUIFromModel,
-  getNewSceneName,
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   insertElementAtPath,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
   modifyOpenJSXElements,
   modifyOpenJSXElementsAndMetadata,
-  modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
-  modifyUnderlyingForOpenFile,
-  modifyUnderlyingTarget,
-  packageJsonFileFromProjectContents,
   PersistentModel,
-  persistentModelFromEditorModel,
   removeElementAtPath,
-  RightMenuTab,
   SimpleParseSuccess,
-  StoryboardFilePath,
-  transformElementAtPath,
   UIFileBase64Blobs,
   updateMainUIInEditorState,
-  UserConfiguration,
+  addNewScene,
   UserState,
-  vsCodeBridgeIdProjectId,
-  withUnderlyingTarget,
+  UserConfiguration,
+  getElementPathsInBounds,
+  StoryboardFilePath,
+  modifyUnderlyingTarget,
+  BaseCanvasOffsetLeftPane,
+  BaseCanvasOffset,
+  getJSXComponentsAndImportsForPathFromState,
   withUnderlyingTargetFromEditorState,
+  modifyUnderlyingForOpenFile,
+  getHighlightBoundsForFile,
+  modifyParseSuccessAtPath,
+  withUnderlyingTarget,
+  LeftPaneDefaultWidth,
+  LeftPaneMinimumWidth,
+  LeftMenuTab,
+  RightMenuTab,
+  transformElementAtPath,
+  getNewSceneName,
+  packageJsonFileFromProjectContents,
+  vsCodeBridgeIdProjectId,
+  persistentModelFromEditorModel,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
+import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
+import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
+import { getFrameAndMultiplierWithResize } from '../../images'
+import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
-import { defaultConfig } from 'utopia-vscode-common'
-import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
-import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
-import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
-import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { saveProjectToGithub } from '../../../core/shared/github'
+import { notice } from '../../common/notice'
 import { objectFilter } from '../../../core/shared/object-utils'
-import { emptySet } from '../../../core/shared/set-utils'
-import { fixUtopiaElement } from '../../../core/shared/uid-utils'
+import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
+import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { ShortcutConfiguration } from '../shortcut-definitions'
+import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
+import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
-  DefaultPostCSSConfig,
-  DefaultTailwindConfig,
-  PostCSSPath,
-  TailwindConfigPath,
-} from '../../../core/tailwind/tailwind-config'
+  showToast,
+  removeToast,
+  setPropWithElementPath_UNSAFE,
+  clearImageFileBlob,
+  updateFile,
+  enableInsertModeForJSXElement,
+  insertJSXElement,
+  updateThumbnailGenerated,
+  openCodeEditorFile,
+  setPackageStatus,
+  updateNodeModulesContents,
+  finishCheckpointTimer,
+  selectComponents,
+  addImports,
+  setScrollAnimation,
+  updatePackageJson,
+} from './action-creators'
 import {
   initVSCodeBridge,
   sendCodeEditorDecorations,
@@ -397,51 +404,43 @@ import {
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
-import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
-import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
-import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
-import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
+import { defaultConfig } from 'utopia-vscode-common'
+import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { emptySet } from '../../../core/shared/set-utils'
+import { stripLeadingSlash } from '../../../utils/path-utils'
+import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import {
-  getReparentPropertyChanges,
-  reparentStrategyForParent,
-  reparentTarget,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+  DefaultPostCSSConfig,
+  DefaultTailwindConfig,
+  PostCSSPath,
+  TailwindConfigPath,
+} from '../../../core/tailwind/tailwind-config'
+import { uniqToasts } from './toast-helpers'
+import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
+import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
+import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
-import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import { notice } from '../../common/notice'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { ShortcutConfiguration } from '../shortcut-definitions'
-import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
+import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
+import { fixUtopiaElement } from '../../../core/shared/uid-utils'
 import {
-  addImports,
-  clearImageFileBlob,
-  enableInsertModeForJSXElement,
-  finishCheckpointTimer,
-  insertJSXElement,
-  openCodeEditorFile,
-  removeToast,
-  selectComponents,
-  setPackageStatus,
-  setPropWithElementPath_UNSAFE,
-  setScrollAnimation,
-  showToast,
-  updateFile,
-  updateNodeModulesContents,
-  updatePackageJson,
-  updateThumbnailGenerated,
-} from './action-creators'
-import { uniqToasts } from './toast-helpers'
+  getReparentPropertyChanges,
+  reparentStrategyForParent,
+} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { parseGithubProjectString, saveProjectToGithub } from '../../../core/shared/github'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -2767,23 +2766,13 @@ export const UPDATE_FNS = {
           const { commands: reparentCommands, newPath } = outcomeResult
 
           const reparentStrategy = reparentStrategyForParent(
+            action.targetOriginalContextMetadata,
             workingEditorState.jsxMetadata,
+            [currentValue.originalElementPath],
             action.pasteInto,
-            false,
-          )
-          const pastedElementIsFlex =
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              currentValue.originalElementPath,
-              action.targetOriginalContextMetadata,
-            )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(
-            MetadataUtils.findElementByElementPath(
-              action.targetOriginalContextMetadata,
-              currentValue.originalElementPath,
-            ),
           )
 
-          if (!(pastedElementIsAbsolute || pastedElementIsFlex)) {
+          if (reparentStrategy.strategy === 'do-not-reparent') {
             return workingEditorState
           } else {
             const propertyChangeCommands = getReparentPropertyChanges(
@@ -4954,11 +4943,7 @@ export const UPDATE_FNS = {
     }
     // Side effect - Pushing this to the server to get that to save to Github.
     const persistentModel = persistentModelFromEditorModel(updatedEditor)
-    void saveProjectToGithub(
-      forceNotNull('Should have a project ID at this point.', editor.id),
-      persistentModel,
-      dispatch,
-    )
+    void saveProjectToGithub(persistentModel, dispatch)
 
     return editor
   },

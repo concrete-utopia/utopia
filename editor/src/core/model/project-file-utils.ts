@@ -680,11 +680,6 @@ export function uniqueProjectContentID(
   }
 }
 
-export function fileExists(projectContents: ProjectContentTreeRoot, filename: string) {
-  const filenameCorrected = correctProjectContentsPath(filename)
-  return getContentsTreeFileFromString(projectContents, filenameCorrected) != null
-}
-
 export function saveTextFileContents(
   file: TextFile,
   contents: TextFileContents,

@@ -70,15 +70,15 @@ export function isHoverInteractionData(inputData: InputData): inputData is Hover
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
 export interface ReparentTargetsToFilter {
-  'use-strict-bounds': ReparentTarget | null
-  'allow-missing-bounds': ReparentTarget | null
+  'use-strict-bounds': ReparentTarget
+  'allow-missing-bounds': ReparentTarget
 }
 
 export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
 
 export function reparentTargetsToFilter(
-  strictBoundsTarget: ReparentTarget | null,
-  missingBoundsTarget: ReparentTarget | null,
+  strictBoundsTarget: ReparentTarget,
+  missingBoundsTarget: ReparentTarget,
 ): ReparentTargetsToFilter {
   return {
     'use-strict-bounds': strictBoundsTarget,
@@ -150,6 +150,7 @@ export interface StrategyState {
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
+  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
@@ -168,6 +169,7 @@ export function createEmptyStrategyState(
     currentStrategy: null,
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
+    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,
     status: 'success',

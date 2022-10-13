@@ -94,6 +94,7 @@ export function interactionFinished(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
+      result.strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
       'end-interaction',
@@ -164,6 +165,7 @@ export function interactionHardReset(
         newEditorState,
         storedState.patchedEditor,
         [],
+        [],
         strategyResult.commands,
         'mid-interaction',
       )
@@ -171,6 +173,7 @@ export function interactionHardReset(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: strategyResult.commands,
+        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
@@ -314,6 +317,7 @@ export function interactionStart(
         newEditorState,
         storedState.patchedEditor,
         [],
+        [],
         strategyResult.commands,
         'mid-interaction',
       )
@@ -322,6 +326,7 @@ export function interactionStart(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: strategyResult.commands,
+        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
@@ -411,6 +416,7 @@ function handleUserChangedStrategy(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
+      strategyState.accumulatedPatches,
       strategyChangedLogCommands.flatMap((c) => c.commands),
       strategyResult.commands,
       'mid-interaction',
@@ -419,6 +425,7 @@ function handleUserChangedStrategy(
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: strategyResult.commands,
+      accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       status: strategyResult.status,
@@ -490,6 +497,7 @@ function handleAccumulatingKeypresses(
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
+        strategyState.accumulatedPatches,
         strategyState.currentStrategyCommands,
         strategyResult.commands,
         'mid-interaction',
@@ -498,6 +506,7 @@ function handleAccumulatingKeypresses(
         currentStrategy: strategy?.strategy.id ?? null,
         currentStrategyFitness: strategy?.fitness ?? 0,
         currentStrategyCommands: strategyResult.commands,
+        accumulatedPatches: commandResult.accumulatedPatches,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
@@ -551,6 +560,7 @@ function handleUpdate(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
+      strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
       'mid-interaction',
@@ -559,6 +569,7 @@ function handleUpdate(
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: strategyResult.commands,
+      accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       status: strategyResult.status,

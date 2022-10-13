@@ -84,30 +84,6 @@ instance FromJSON CreateGitTreeResult where
 instance ToJSON CreateGitTreeResult where
   toJSON = genericToJSON defaultOptions
 
-data CreateGitBlob = CreateGitBlob
-                   { content  :: Text
-                   , encoding :: Text
-                   }
-                   deriving (Eq, Show, Generic, Data, Typeable)
-
-instance FromJSON CreateGitBlob where
-  parseJSON = genericParseJSON defaultOptions
-
-instance ToJSON CreateGitBlob where
-  toJSON = genericToJSON defaultOptions
-
-data CreateGitBlobResult = CreateGitBlobResult
-                         { url :: Text
-                         , sha :: Text
-                         }
-                         deriving (Eq, Show, Generic, Data, Typeable)
-
-instance FromJSON CreateGitBlobResult where
-  parseJSON = genericParseJSON defaultOptions
-
-instance ToJSON CreateGitBlobResult where
-  toJSON = genericToJSON defaultOptions
-
 data CreateGitCommit = CreateGitCommit
                      { message :: Text
                      , tree    :: Text

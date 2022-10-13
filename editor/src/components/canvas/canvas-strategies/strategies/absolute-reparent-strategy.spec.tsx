@@ -1,6 +1,3 @@
-import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { left, right } from '../../../../core/shared/either'
-import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptyComments,
@@ -18,11 +15,17 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
+import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession } from '../interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
-import { reparentMetaStrategy } from './reparent-metastrategy'
+import * as EP from '../../../../core/shared/element-path'
+import { left, right } from '../../../../core/shared/either'
+import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 jest.mock('../../canvas-utils', () => ({
   ...jest.requireActual('../../canvas-utils'),
@@ -180,11 +183,9 @@ function reparentElement(
     } as ElementInstanceMetadata,
   }
 
-  const startPoint = canvasPoint({ x: 95, y: 80 })
-
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      startPoint,
+      canvasPoint({ x: 95, y: 80 }),
       { cmd: true, alt: false, shift: false, ctrl: false },
       boundingArea(),
       dragVector,
@@ -194,45 +195,38 @@ function reparentElement(
     startingTargetParentsToFilterOut: null,
   }
 
-  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
-    editorState,
-    createBuiltInDependenciesList(null),
-    startingMetadata,
-  )
-
-  const reparentStrategies = reparentMetaStrategy(
-    canvasState,
+  const strategyResult = absoluteReparentStrategy(
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      startingMetadata,
+    ),
     interactionSession,
-    defaultCustomStrategyState(),
-  )
+  )!.apply('end-interaction')
 
-  if (reparentStrategies.length === 0) {
-    return editorState
-  } else {
-    const defaultReparentStrategy = reparentStrategies[0]
-    const strategyResult = defaultReparentStrategy.apply('end-interaction')
+  expect(strategyResult.customStatePatch).toEqual({})
+  expect(strategyResult.status).toEqual('success')
 
-    expect(strategyResult.customStatePatch).toEqual({})
-    expect(strategyResult.status).toEqual('success')
+  // Check if there are set SetElementsToRerenderCommands with the new parent path
+  expect(
+    strategyResult.commands.find(
+      (c) =>
+        c.type === 'SET_ELEMENTS_TO_RERENDER_COMMAND' &&
+        c.value !== 'rerender-all-elements' &&
+        c.value.every((p) => EP.pathsEqual(EP.parentPath(p), newParent)),
+    ),
+  ).not.toBeNull()
 
-    // Check if there are set SetElementsToRerenderCommands with the new parent path
-    expect(
-      strategyResult.commands.find(
-        (c) =>
-          c.type === 'SET_ELEMENTS_TO_RERENDER_COMMAND' &&
-          c.value !== 'rerender-all-elements' &&
-          c.value.every((p) => EP.pathsEqual(EP.parentPath(p), newParent)),
-      ),
-    ).not.toBeNull()
+  const finalEditor = foldAndApplyCommands(
+    editorState,
+    editorState,
+    [],
+    [],
+    strategyResult.commands,
+    'end-interaction',
+  ).editorState
 
-    return foldAndApplyCommands(
-      editorState,
-      editorState,
-      [],
-      strategyResult.commands,
-      'end-interaction',
-    ).editorState
-  }
+  return finalEditor
 }
 
 describe('Absolute Reparent Strategy', () => {
