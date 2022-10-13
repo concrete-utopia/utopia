@@ -573,3 +573,60 @@ export function makeDragEvent(
 
   return fileDropEvent
 }
+
+export function dragElementToPoint(
+  eventSourceElement: HTMLElement | null,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  if (eventSourceElement != null) {
+    act(() => {
+      fireEvent(
+        eventSourceElement,
+        makeDragEvent('dragstart', eventSourceElement, startPoint, fileList),
+      )
+    })
+  }
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
+}
+
+export function dropElementToPoint(
+  targetElement: HTMLElement,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('drop', targetElement, endPoint, fileList))
+  })
+}
+
+export function switchDragAndDropElementTargets(
+  startingElement: HTMLElement,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(startingElement, makeDragEvent('dragleave', startingElement, startPoint, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
+}

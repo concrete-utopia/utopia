@@ -1,14 +1,14 @@
-import { fireEvent } from '@testing-library/react'
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
-  makeDragEvent,
+  dragElementToPoint,
+  dropElementToPoint,
   mouseDownAtPoint,
   mouseMoveToPoint,
-  mouseUpAtPoint,
+  switchDragAndDropElementTargets,
 } from '../components/canvas/event-helpers.test-utils'
 import {
   formatTestProjectCode,
@@ -23,7 +23,6 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
-import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -274,18 +273,8 @@ describe('image dnd', () => {
 
       mouseMoveToPoint(fileItem, startPoint)
       mouseDownAtPoint(fileItem, startPoint)
-      fireEvent(fileItem, makeDragEvent('dragstart', fileItem, startPoint, []))
-
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragenter', canvasControlsLayer, { x: 10, y: 10 }, []),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragover', canvasControlsLayer, { x: 10, y: 10 }, []),
-      )
-      fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, []))
-      fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, []))
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      dropElementToPoint(canvasControlsLayer, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -364,39 +353,23 @@ describe('image dnd', () => {
 
       mouseMoveToPoint(fileItem, startPoint)
       mouseDownAtPoint(fileItem, startPoint)
-      fireEvent(fileItem, makeDragEvent('dragstart', fileItem, startPoint, []))
 
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragenter', canvasControlsLayer, { x: 10, y: 10 }, []),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragover', canvasControlsLayer, { x: 10, y: 10 }, []),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragover', canvasControlsLayer, canvasPoint, []),
-      )
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
 
-      fireEvent(
-        canvasControlsLayer,
-        makeDragEvent('dragleave', canvasControlsLayer, canvasPoint, []),
-      )
-      fireEvent(targetFolder, makeDragEvent('dragenter', targetFolder, { x: 10, y: 10 }, []))
-      fireEvent(targetFolder, makeDragEvent('dragover', targetFolder, { x: 10, y: 10 }, []))
-      fireEvent(targetFolder, makeDragEvent('dragover', targetFolder, endPoint, []))
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
       expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
       expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
 
-      fireEvent(targetFolder, makeDragEvent('drop', targetFolder, endPoint, []))
+      dropElementToPoint(targetFolder, endPoint, [])
+
       await editor.getDispatchFollowUpActionsFinished()
 
       const expectedFileName = `${fileItemTargetFolder}/stuff.png`
@@ -427,14 +400,8 @@ describe('image dnd', () => {
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementToPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -499,14 +466,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementToPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -570,14 +531,8 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementToPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
     await dropDone
@@ -667,14 +622,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementToPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
 
