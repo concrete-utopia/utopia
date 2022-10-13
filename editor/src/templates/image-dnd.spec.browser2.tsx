@@ -241,7 +241,7 @@ describe('image dnd', () => {
     sandbox.restore()
   })
 
-  it('dragging from the sidebar works', async () => {
+  xit('dragging from the sidebar works', async () => {
     const newUID = 'imgimgimg'
     FOR_TESTS_setNextGeneratedUid(newUID)
 
