@@ -1000,7 +1000,7 @@ export interface SaveToGithub {
 }
 
 export interface SetFileBrowserDragState {
-  action: 'SET_DRAG_SESSION_STATE'
+  action: 'SET_IMAGE_DRAG_SESSION_STATE'
   dragSessionState: ImageDragSessionState
 }
 
