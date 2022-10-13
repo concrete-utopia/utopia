@@ -42,11 +42,11 @@ export const ConfirmOverwriteDialog: React.FunctionComponent<
 
   return (
     <Dialog
-      title='Overwrite file'
+      title='Replace file'
       content={<DialogBody targetPath={files[index].targetPath} />}
       defaultButton={
         <FormButton primary danger onClick={onOverwriteClick}>
-          Overwrite
+          Replace
         </FormButton>
       }
       secondaryButton={<FormButton onClick={switchToNextFile}>Skip</FormButton>}
@@ -61,8 +61,8 @@ const DialogBody: React.FunctionComponent<React.PropsWithChildren<{ targetPath: 
 ) => (
   <React.Fragment>
     <p>
-      Are you sure you want to overwrite <span>{props.targetPath}</span>?
+      Are you sure you want to replace <span>{props.targetPath}</span>?
     </p>
-    <p>Overwritten files are not recoverable.</p>
+    <p>Replaced files are not recoverable.</p>
   </React.Fragment>
 )
