@@ -795,11 +795,6 @@ class FileBrowserItemInner extends React.PureComponent<
 }
 
 export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
-  const projectContents = useEditorState(
-    (store) => store.editor.projectContents,
-    'FileBrowserItem projectContents',
-  )
-
   const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
