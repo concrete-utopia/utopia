@@ -1001,7 +1001,7 @@ export interface SaveToGithub {
 
 export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
-  dragSessionState: ImageDragSessionState
+  imageDragSessionState: ImageDragSessionState
 }
 
 export type EditorAction =

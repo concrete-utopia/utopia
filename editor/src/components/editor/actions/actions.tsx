@@ -4968,7 +4968,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      imageDragSessionState: action.dragSessionState,
+      imageDragSessionState: action.imageDragSessionState,
     }
   },
 }

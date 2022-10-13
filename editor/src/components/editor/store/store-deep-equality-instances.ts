@@ -3379,7 +3379,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
-  const dragSessionStateEqual = DragSessionStateKeepDeepEquality(
+  const imageDragSessionStateEqual = DragSessionStateKeepDeepEquality(
     oldValue.imageDragSessionState,
     newValue.imageDragSessionState,
   )
@@ -3451,7 +3451,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
-    dragSessionStateEqual.areEqual
+    imageDragSessionStateEqual.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3523,7 +3523,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
-      dragSessionStateEqual.value,
+      imageDragSessionStateEqual.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -1088,7 +1088,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
-  dragSessionState: ImageDragSessionState,
+  imageDragSessionState: ImageDragSessionState,
 ): EditorState {
   return {
     id: id,
@@ -1157,7 +1157,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
-    imageDragSessionState: dragSessionState,
+    imageDragSessionState: imageDragSessionState,
   }
 }
 

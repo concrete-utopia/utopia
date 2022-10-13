@@ -591,7 +591,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
     this.props.dispatch(
       [
-        EditorActions.setDragSessionState(
+        EditorActions.setImageDragSessionState(
           draggingFromSidebar({
             width: this.props.imageFile.width ?? 200,
             height: this.props.imageFile.height ?? 200,
@@ -607,7 +607,7 @@ class FileBrowserItemInner extends React.PureComponent<
     this.props.dispatch([
       CanvasActions.clearInteractionSession(false),
       EditorActions.switchEditorMode(EditorModes.selectMode()),
-      EditorActions.setDragSessionState(notDragging()),
+      EditorActions.setImageDragSessionState(notDragging()),
     ])
 
   showAddingFileRow = () => {

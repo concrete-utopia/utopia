@@ -1564,9 +1564,11 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   }
 }
 
-export function setDragSessionState(dragSessionState: ImageDragSessionState): SetDragSessionState {
+export function setImageDragSessionState(
+  imageDragSessionState: ImageDragSessionState,
+): SetDragSessionState {
   return {
     action: 'SET_IMAGE_DRAG_SESSION_STATE',
-    dragSessionState: dragSessionState,
+    imageDragSessionState: imageDragSessionState,
   }
 }
