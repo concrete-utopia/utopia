@@ -922,9 +922,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const position = this.getPosition(event.nativeEvent)
 
-          usingDispatch(this.props.dispatch, ({ addAction }) => {
+          usingDispatch(this.props.dispatch, ({ addActions }) => {
             if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
-              addAction(EditorActions.setFileBrowserDragState(draggingFromFS()))
+              addActions([EditorActions.setFileBrowserDragState(draggingFromFS())])
             }
 
             const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
@@ -949,7 +949,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               'keep-aspect-ratio',
             )
 
-            const actions = [
+            addActions([
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(
@@ -958,9 +958,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   boundingArea(),
                 ),
               ),
-            ]
-
-            actions.forEach((a) => addAction(a))
+            ])
           })
         },
 

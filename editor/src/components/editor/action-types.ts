@@ -1189,7 +1189,7 @@ export type DebugDispatch = (
 }
 
 interface EditorDispatchScratchPad {
-  addAction: (action: EditorAction) => void
+  addActions: (action: Array<EditorAction>) => void
 }
 
 export const usingDispatch = (
@@ -1197,7 +1197,7 @@ export const usingDispatch = (
   run: (builder: EditorDispatchScratchPad) => void,
 ): void => {
   let scratchPad: Array<EditorAction> = []
-  run({ addAction: (action: EditorAction) => scratchPad.push(action) })
+  run({ addActions: (actions: Array<EditorAction>) => (scratchPad = [...scratchPad, ...actions]) })
   dispatch(scratchPad)
 }
 
