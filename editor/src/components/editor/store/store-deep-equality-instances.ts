@@ -309,7 +309,7 @@ import {
   projectGithubSettings,
   DraggedImageProperties,
   draggedImageProperties,
-  DragSessionState,
+  ImageDragSessionState,
   DraggingFromSidebar,
   draggingFromSidebar,
   fileUploadInfo,
@@ -2815,7 +2815,7 @@ export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingF
     draggingFromSidebar,
   )
 
-export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<DragSessionState> = (
+export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<ImageDragSessionState> = (
   oldValue,
   newValue,
 ) => {

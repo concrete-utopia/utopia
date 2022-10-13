@@ -213,8 +213,7 @@ import type {
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
-  DraggedImageProperties,
-  DragSessionState,
+  ImageDragSessionState,
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
@@ -1565,7 +1564,7 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   }
 }
 
-export function setDragSessionState(dragSessionState: DragSessionState): SetDragSessionState {
+export function setDragSessionState(dragSessionState: ImageDragSessionState): SetDragSessionState {
   return {
     action: 'SET_DRAG_SESSION_STATE',
     dragSessionState: dragSessionState,

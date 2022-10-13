@@ -771,7 +771,7 @@ export interface DraggingFromSidebar {
   draggedImageProperties: DraggedImageProperties
 }
 
-export type DragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
+export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
 
 export function notDragging(): NotDragging {
   return { type: 'NOT_DRAGGING' }
@@ -1018,7 +1018,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
-  dragSessionState: DragSessionState
+  dragSessionState: ImageDragSessionState
 }
 
 export function editorState(
@@ -1088,7 +1088,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
-  dragSessionState: DragSessionState,
+  dragSessionState: ImageDragSessionState,
 ): EditorState {
   return {
     id: id,
