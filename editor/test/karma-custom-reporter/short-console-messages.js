@@ -1,10 +1,16 @@
 /* eslint-disable */
 var Levels = ['error', 'warn', 'info', 'debug', 'log']
-var UtopiaReporter = function (baseReporterDecorator, formatError, config) {
+var ShortConsoleMessages = function (baseReporterDecorator, formatError, config) {
   baseReporterDecorator(this)
   var self = this
-  var consoleMessagesForSpec = [] // {type: string, log: string }
-  var allConsoleMessages = [] // {type: string, log: string, specName: string}
+  /**
+   * @type Array<{type: string, log: string }>
+   */
+  var consoleMessagesForSpec = []
+  /**
+   * @type Array<{ {type: string, log: string, specName: string}}>
+   */
+  var allConsoleMessages = []
 
   function shortenMessage(message) {
     var truncated = message.length > 200 ? `${message.substring(0, 200)}...` : message
@@ -43,9 +49,20 @@ var UtopiaReporter = function (baseReporterDecorator, formatError, config) {
       }
     })
     Levels.forEach((l) => {
+      const OnlyShowFirstN = 3
       messagesGrouped[l].forEach((message) => {
         self.write(`\n${l.toUpperCase()} (${message.count}) ${message.log}`)
-        self.write(`\nthis console message is from: \n  ${message.specNames.join('\n  ')}\n`)
+        self.write(
+          `\nthis console message is from: \n  ${message.specNames
+            .slice(0, OnlyShowFirstN)
+            .map((n) => `• ${n}`)
+            .join('\n  ')}`,
+        )
+        if (message.count > OnlyShowFirstN) {
+          self.write(`\n ...and ${message.count - OnlyShowFirstN} more\n`)
+        } else {
+          self.write(`\n`)
+        }
       })
     })
     self.write(`\n`)
@@ -72,8 +89,8 @@ var UtopiaReporter = function (baseReporterDecorator, formatError, config) {
   }
 }
 
-UtopiaReporter.$inject = ['baseReporterDecorator', 'formatError', 'config']
+ShortConsoleMessages.$inject = ['baseReporterDecorator', 'formatError', 'config']
 
 module.exports = {
-  'reporter:utopia': ['type', UtopiaReporter],
+  'reporter:short-console-messages': ['type', ShortConsoleMessages],
 }

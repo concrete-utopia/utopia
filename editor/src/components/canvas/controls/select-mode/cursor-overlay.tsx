@@ -21,8 +21,8 @@ export const CursorOverlay = React.memo(() => {
     return getCursorForOverlay(store.editor)
   })
 
-  const noDragSessionInProgress = useDelayedEditorState(
-    (store) => store.editor.dragSessionState.type === 'NOT_DRAGGING',
+  const noImageDragSessionInProgress = useDelayedEditorState(
+    (store) => store.editor.imageDragSessionState.type === 'NOT_DRAGGING',
   )
 
   const styleProps = React.useMemo(() => {
@@ -38,11 +38,11 @@ export const CursorOverlay = React.memo(() => {
     if (cursor != null) {
       workingStyleProps.cursor = cursor
     }
-    if (noDragSessionInProgress) {
+    if (noImageDragSessionInProgress) {
       workingStyleProps.pointerEvents = 'all'
     }
     return workingStyleProps
-  }, [cursor, noDragSessionInProgress])
+  }, [cursor, noImageDragSessionInProgress])
 
   const portalDiv = document.getElementById('cursor-overlay-portal')
   if (portalDiv == null) {

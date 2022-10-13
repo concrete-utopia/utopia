@@ -23,6 +23,7 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
+import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)

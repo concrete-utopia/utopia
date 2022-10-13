@@ -39,6 +39,7 @@ import { imagePathURL } from '../../common/server'
 import { useEditorState } from '../editor/store/store-hook'
 import { EditorModes } from '../editor/editor-modes'
 import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
+import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
@@ -580,7 +581,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
     this.props.dispatch(
       [
-        EditorActions.setDragSessionState(
+        EditorActions.setImageDragSessionState(
           draggingFromSidebar({
             width: this.props.imageFile.width ?? 200,
             height: this.props.imageFile.height ?? 200,
@@ -596,7 +597,7 @@ class FileBrowserItemInner extends React.PureComponent<
     this.props.dispatch([
       CanvasActions.clearInteractionSession(false),
       EditorActions.switchEditorMode(EditorModes.selectMode()),
-      EditorActions.setDragSessionState(notDragging()),
+      EditorActions.setImageDragSessionState(notDragging()),
     ])
 
   showAddingFileRow = () => {

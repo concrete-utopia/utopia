@@ -2,7 +2,7 @@ import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
-import { NO_OP } from '../../core/shared/utils'
+import { assertNever, NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -525,7 +525,7 @@ export function makeDragEvent(
   type: 'dragstart' | 'dragenter' | 'dragover' | 'dragleave' | 'dragend' | 'drop',
   target: Element | Node,
   clientCoords: { x: number; y: number },
-  fileList: Array<File>,
+  fileList?: Array<File>,
 ): Event {
   const opts = {
     clientX: clientCoords.x,
@@ -560,16 +560,18 @@ export function makeDragEvent(
 
   const fileDropEvent: Event = createEventForType(target, opts)
 
-  Object.defineProperty(fileDropEvent, 'dataTransfer', {
-    value: {
-      getData: () => '',
-      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
-      files: {
-        item: (itemIndex: number) => fileList[itemIndex],
-        length: fileList.length,
+  if (fileList != null) {
+    Object.defineProperty(fileDropEvent, 'dataTransfer', {
+      value: {
+        getData: () => '',
+        items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
+        files: {
+          item: (itemIndex: number) => fileList[itemIndex],
+          length: fileList.length,
+        },
       },
-    },
-  })
+    })
+  }
 
   return fileDropEvent
 }

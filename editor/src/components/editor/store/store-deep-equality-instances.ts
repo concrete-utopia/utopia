@@ -309,12 +309,12 @@ import {
   projectGithubSettings,
   DraggedImageProperties,
   draggedImageProperties,
-  DragSessionState,
+  ImageDragSessionState,
   DraggingFromSidebar,
   draggingFromSidebar,
-  FileOverwriteModal,
-  FileUploadInfo,
   fileUploadInfo,
+  FileUploadInfo,
+  FileOverwriteModal,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2815,7 +2815,7 @@ export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingF
     draggingFromSidebar,
   )
 
-export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<DragSessionState> = (
+export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<ImageDragSessionState> = (
   oldValue,
   newValue,
 ) => {
@@ -3379,9 +3379,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
-  const dragSessionStateEqual = DragSessionStateKeepDeepEquality(
-    oldValue.dragSessionState,
-    newValue.dragSessionState,
+  const imageDragSessionStateEqual = DragSessionStateKeepDeepEquality(
+    oldValue.imageDragSessionState,
+    newValue.imageDragSessionState,
   )
 
   const areEqual =
@@ -3451,7 +3451,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
-    dragSessionStateEqual.areEqual
+    imageDragSessionStateEqual.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3523,7 +3523,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
-      dragSessionStateEqual.value,
+      imageDragSessionStateEqual.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
