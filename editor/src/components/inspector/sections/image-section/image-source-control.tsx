@@ -17,8 +17,8 @@ const getProjectImageFileNames = (projectContents: ProjectContents): string[] =>
   return Object.keys(projectContents).filter((key) => isImageFile(projectContents[key]))
 }
 
-const isImgSrcLocal = (src: string) => {
-  return src.startsWith('./')
+const isImgSrcLocal = (src: string, localFiles: string[]) => {
+  return src.startsWith('./') && localFiles.includes(src)
 }
 
 const chainControlOptions: Array<SelectOption> = [
@@ -34,25 +34,28 @@ export const ImageSourceControl = React.memo(() => {
     onSubmitValue: srcOnSubmitValue,
   } = useInspectorElementInfo('src')
 
-  const [srcType, setSrcType] = React.useState<ImageSrcType>(
-    isImgSrcLocal(srcValue) ? ImageSrcType.LOCAL : ImageSrcType.URL,
-  )
-
   const { projectContents } = useEditorState((store) => {
     return {
       projectContents: store.editor.projectContents,
     }
   }, 'ImgSection')
 
-  const localImageFiles = React.useMemo(() => {
+  const localImageFilenames = React.useMemo(() => {
     return getProjectImageFileNames(treeToContents(projectContents)).map((filename) => {
-      const localFilename = `.${filename}` // prepending '.' to the absolute path to make it reference project files correctly
-      return {
-        label: localFilename,
-        value: localFilename,
-      }
+      // prepending '.' to the absolute path to make it reference project files correctly
+      return `.${filename}`
     })
   }, [projectContents])
+
+  const localImageFilesOptions = React.useMemo(() => {
+    return localImageFilenames.map((filename) => ({ label: filename, value: filename }))
+  }, [localImageFilenames])
+
+  const [srcType, setSrcType] = React.useState<ImageSrcType>()
+
+  React.useEffect(() => {
+    setSrcType(isImgSrcLocal(srcValue, localImageFilenames) ? ImageSrcType.LOCAL : ImageSrcType.URL)
+  }, [srcValue, localImageFilenames])
 
   const onChangeSrcType = React.useCallback(
     (value: number) => {
@@ -79,7 +82,7 @@ export const ImageSourceControl = React.memo(() => {
           key='image-src-local'
           testId='image-src-local'
           value={srcValue}
-          options={localImageFiles}
+          options={localImageFilesOptions}
           onSubmitValue={srcOnSubmitValue}
           controlStyles={srcControlStyles}
           controlStatus={srcControlStatus}
