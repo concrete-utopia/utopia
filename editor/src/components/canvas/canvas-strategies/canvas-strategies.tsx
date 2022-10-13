@@ -43,7 +43,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
-import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-strategy'
+import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
