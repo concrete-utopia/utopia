@@ -47,7 +47,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
-import { draggingFromSidebar } from '../editor/store/editor-state'
+import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -592,7 +592,12 @@ class FileBrowserItemInner extends React.PureComponent<
     )
   }
 
-  onMouseUp = () => this.props.dispatch([CanvasActions.clearInteractionSession(false)])
+  onMouseUp = () =>
+    this.props.dispatch([
+      CanvasActions.clearInteractionSession(false),
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setFileBrowserDragState(notDragging()),
+    ])
 
   showAddingFileRow = () => {
     this.setState({
