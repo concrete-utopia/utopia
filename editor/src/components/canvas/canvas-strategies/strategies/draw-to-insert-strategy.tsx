@@ -209,7 +209,7 @@ function getHighlightAndReorderIndicatorCommands(
     'allow-missing-bounds',
   )
 
-  if (parent != null && parent.shouldReparent && parent.newParent != null) {
+  if (parent != null && parent.shouldReparent) {
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
 
     if (parent.newIndex !== -1) {
@@ -385,7 +385,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   }
   const reparentCommands = strategy.strategy.apply(strategyLifecycle).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
+  return foldAndApplyCommandsInner(editorState, [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
     .statePatches
 }
 
@@ -438,6 +438,5 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const resizeCommands =
     resizeStrategy != null ? resizeStrategy.strategy.apply(strategyLifecycle).commands : []
 
-  return foldAndApplyCommandsInner(editorState, [], [], resizeCommands, commandLifecycle)
-    .statePatches
+  return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
 }

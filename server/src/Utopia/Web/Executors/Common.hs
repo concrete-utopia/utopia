@@ -12,6 +12,7 @@
 module Utopia.Web.Executors.Common where
 
 import           Conduit
+import           Control.Concurrent.Async.Lifted
 import           Control.Concurrent.ReadWriteLock
 import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
@@ -21,7 +22,9 @@ import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
-import           Data.Conduit.Combinators         hiding (encodeUtf8, foldMap)
+import qualified Data.Conduit                     as C
+import qualified Data.Conduit.Combinators         as C hiding (concatMap)
+import qualified Data.Conduit.List                as C hiding (map)
 import           Data.Generics.Product
 import           Data.IORef
 import           Data.Pool
@@ -219,9 +222,8 @@ responseFromLoadAssetResult assetPath (AssetLoaded bytes possibleETag) =
   let headers = getAssetHeaders (Just assetPath) possibleETag
   in  Just $ responseLBS ok200 headers bytes
 
-loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> Maybe Text -> m (Maybe Application)
-loadProjectAssetWithCall loadCall assetPath possibleETag = do
-  possibleAsset <- liftIO $ loadCall assetPath possibleETag
+loadProjectAssetWithAsset :: (MonadIO m, MonadThrow m) => [Text] -> LoadAssetResult -> m (Maybe Application)
+loadProjectAssetWithAsset assetPath possibleAsset = do
   let possibleResponse = responseFromLoadAssetResult assetPath possibleAsset
   pure $ fmap (\response -> \_ -> \sendResponse -> sendResponse response) possibleResponse
 
@@ -312,8 +314,8 @@ cachePackagerContent locksRef versionedPackageName fallback = do
 filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
 filePairsToBytes filePairs =
   let pairToBytes (filePath, pathValue) = BL.toStrict (encode filePath) <> ": " <> BL.toStrict (encode pathValue)
-      pairsAsBytes = filePairs .| map pairToBytes
-      withCommas = pairsAsBytes .| intersperse ", "
+      pairsAsBytes = filePairs .| C.map pairToBytes
+      withCommas = pairsAsBytes .| C.intersperse ", "
    in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
 
 getPackagerContent :: (MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
@@ -372,12 +374,12 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m SaveToGithubResponse
-createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
+createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID model = do
   let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
   result <- runExceptT $ do
     treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitTreeFromModel accessToken model
+      createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
     commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
     now <- liftIO getCurrentTime
@@ -388,11 +390,31 @@ createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
     pure (branchName, view (field @"url") branchResult, commitSha)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
 
-getGithubBranches :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
+convertBranchesResultToUnfold :: Int -> GetBranchesResult -> Maybe (GetBranchesResult, Int)
+convertBranchesResultToUnfold page result =
+  case Protolude.null result of
+    True  -> Nothing
+    False -> Just (result, page + 1)
+
+getGithubBranches :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
 getGithubBranches githubResources logger metrics pool userID owner repository = do
   result <- runExceptT $ do
+    branchListing <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      -- Gives us a function that just takes the page.
+      let getPage = getGitBranches accessToken owner repository
+      -- Now we have a function compatible with `unfoldM`.
+      let getUnfoldStep page = fmap (\result -> convertBranchesResultToUnfold page result) $ getPage page
+      -- Run the steps and then combines the branches returned from each step.
+      fmap join $ sourceToList $ C.unfoldM getUnfoldStep 1
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getGitBranches accessToken owner repository
+      -- Simple function that just takes the branch name.
+      let getBranch = getGitBranch accessToken owner repository
+      -- Concurrently pull the details of the branches.
+      branches <- mapConcurrently (\branch -> getBranch (view (field @"name") branch)) branchListing
+      -- Sort the branches in reverse order of their latest commit date.
+      let sortedBranches = reverse $ sortOn (view (field @"commit" . field @"commit" . field @"author" . field @"date")) branches
+      -- Transform the result to match the response type
+      pure $ fmap (\branch -> GetBranchesBranch (view (field @"name") branch)) sortedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
 getGithubBranch :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
@@ -406,3 +428,9 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
       getRecursiveGitTreeAsContent accessToken owner repository treeSha
     pure (projectContent, commitSha)
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+
+loadAsset :: Maybe AWSResources -> LoadAsset
+loadAsset awsResource path possibleETag = do
+  let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
+  loadCall path possibleETag
+

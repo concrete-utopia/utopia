@@ -69,10 +69,11 @@ export interface GetBranchContentSuccess {
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export async function saveProjectToGithub(
+  projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): Promise<void> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'save')
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
   const postBody = JSON.stringify(persistentModel)
   const response = await fetch(url, {

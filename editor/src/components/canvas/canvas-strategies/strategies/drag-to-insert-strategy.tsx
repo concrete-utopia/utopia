@@ -10,6 +10,7 @@ import { elementPath } from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasRectangle, canvasRectangle, Size } from '../../../../core/shared/math-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
+import { Utils } from '../../../../uuiui-deps'
 import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
@@ -28,14 +29,14 @@ import {
   RegisteredCanvasStrategies,
 } from '../canvas-strategies'
 import {
-  CanvasStrategy,
-  controlWithProps,
-  CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
-  InteractionLifecycle,
+  CustomStrategyState,
+  CanvasStrategy,
+  getInsertionSubjectsFromInteractionTarget,
+  controlWithProps,
   strategyApplicationResult,
+  emptyStrategyApplicationResult,
+  InteractionLifecycle,
   targetPaths,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
@@ -132,7 +133,9 @@ function getInsertionCommands(
     interactionSession.interactionData.type === 'DRAG' &&
     interactionSession.interactionData.drag != null
   ) {
-    const pointOnCanvas = interactionSession.interactionData.dragStart
+    const pointOnCanvas = Utils.roundPointToNearestHalf(
+      interactionSession.interactionData.dragStart,
+    )
 
     const frame = canvasRectangle({
       x: pointOnCanvas.x - size.width / 2,
@@ -262,7 +265,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   } else {
     const reparentCommands = strategy.strategy.apply(strategyLifeCycle).commands
 
-    return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
+    return foldAndApplyCommandsInner(editorState, [], reparentCommands, commandLifecycle)
       .statePatches
   }
 }

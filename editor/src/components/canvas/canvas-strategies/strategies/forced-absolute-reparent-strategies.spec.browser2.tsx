@@ -1,4 +1,12 @@
 import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
   EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
@@ -6,32 +14,10 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../../core/model/scene-utils'
-import {
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
-} from './absolute-reparent-strategy'
-import {
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-} from './flex-reparent-to-absolute-strategy'
-import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
-import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import {
-  CanvasStrategy,
-  CustomStrategyState,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import { MetaCanvasStrategy } from '../canvas-strategies'
+import { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { stripNulls } from '../../../../core/shared/array-utils'
-import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
+import { reparentMetaStrategy } from './reparent-metastrategy'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -39,8 +25,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
-  const targetElement = targetElements[0]
+  const targetElement = await renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -171,32 +156,25 @@ ${snippet}
 `)
 }
 
-function metaStrategyForFactories(factories: Array<CanvasStrategyFactory>): MetaCanvasStrategy {
-  return (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    customStrategyState: CustomStrategyState,
-  ) =>
-    stripNulls(
-      factories.map((factory) => factory(canvasState, interactionSession, customStrategyState)),
-    )
+const forcedAbsoluteReparentMetastrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => {
+  const allReparentingStrategies = reparentMetaStrategy(
+    canvasState,
+    interactionSession,
+    customStrategyState,
+  )
+  return allReparentingStrategies.filter((strategy) => strategy.id.startsWith('FORCED'))
 }
-
-const allReparentStrategies = metaStrategyForFactories([
-  absoluteReparentStrategy,
-  absoluteReparentToFlexStrategy,
-  forcedAbsoluteReparentStrategy,
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
-])
 
 describe('Forced Absolute Reparent Strategies', () => {
   it('Absolute to forced absolute can be applied', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([forcedAbsoluteReparentStrategy])],
+      [forcedAbsoluteReparentMetastrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -307,7 +285,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [allReparentStrategies],
+      [reparentMetaStrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -415,7 +393,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([forcedFlexReparentToAbsoluteStrategy])],
+      [forcedAbsoluteReparentMetastrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -530,7 +508,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [allReparentStrategies],
+      [reparentMetaStrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -638,6 +616,99 @@ describe('Forced Absolute Reparent Strategies', () => {
           data-testid='flexchild1'
         />
       </div>`),
+    )
+  })
+  it('Absolute to absolute on a target parent element without size', async () => {
+    const testCode = `
+      <div
+        style={{
+          position: 'relative',
+          width: 400,
+          height: 400,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{ position: 'absolute' }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: 'hotpink',
+            left: 10,
+            top: 10,
+            height: 40,
+            width: 40,
+          }}
+          data-uid='ccc'
+          data-testid='ccc'
+        />
+      </div>
+    `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+      [reparentMetaStrategy],
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
+    const draggedElementRect = draggedElement.getBoundingClientRect()
+    const draggedElementRectCenter = {
+      x: draggedElementRect.x + draggedElementRect.width / 2,
+      y: draggedElementRect.y + draggedElementRect.height / 2,
+    }
+
+    const zeroSizeParentTarget = await renderResult.renderedDOM.findByTestId('bbb')
+    const zeroSizeParentTargetRect = zeroSizeParentTarget.getBoundingClientRect()
+    const zeroSizeParentTargetCenter = {
+      x: zeroSizeParentTargetRect.x + zeroSizeParentTargetRect.width / 2,
+      y: zeroSizeParentTargetRect.y + zeroSizeParentTargetRect.height / 2,
+    }
+
+    const dragDelta = windowPoint({
+      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x,
+      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y,
+    })
+    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'relative',
+          width: 400,
+          height: 400,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{ position: 'absolute' }}
+          data-uid='bbb'
+          data-testid='bbb'
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: 'hotpink',
+              left: -20,
+              top: -20,
+              height: 40,
+              width: 40,
+            }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      </div>
+      `),
     )
   })
 })

@@ -23,8 +23,8 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { supportsAbsoluteResize } from './resize-helpers'
-import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
+import { resizeBoundingBox, supportsAbsoluteResize } from './resize-helpers'
+import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import {
   AccumulatedPresses,
   accumulatePresses,

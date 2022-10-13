@@ -876,7 +876,7 @@ function update<T>(index: number, newValue: T, array: Array<T>): Array<T> {
   return result
 }
 
-function defer<T>(): Promise<T> & {
+export function defer<T>(): Promise<T> & {
   resolve: (value?: T) => void
   reject: (reason?: any) => void
 } {
