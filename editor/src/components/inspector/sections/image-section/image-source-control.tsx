@@ -1,4 +1,5 @@
 import React from 'react'
+import { imagePathURL } from '../../../../common/server'
 import { treeToContents } from '../../../../components/assets'
 import { isImageFile } from '../../../../core/model/project-file-utils'
 import { ProjectContents } from '../../../../core/shared/project-file-types'
@@ -45,10 +46,7 @@ export const ImageSourceControl = React.memo(() => {
   }, 'ImgSection')
 
   const localImageFilenames = React.useMemo(() => {
-    return getProjectImageFileNames(treeToContents(projectContents)).map((filename) => {
-      // prepending '.' to the absolute path to make it reference project files correctly
-      return `.${filename}`
-    })
+    return getProjectImageFileNames(treeToContents(projectContents)).map(imagePathURL)
   }, [projectContents])
 
   const localImageFilesOptions = React.useMemo(() => {
