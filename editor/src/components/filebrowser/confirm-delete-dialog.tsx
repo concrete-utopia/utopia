@@ -5,7 +5,6 @@ import React from 'react'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { CancelButton } from './cancel-button'
 
 interface ConfirmDeleteDialogProps {
   dispatch: EditorDispatch
@@ -55,4 +54,14 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmDelet
       Delete
     </FormButton>
   )
+}
+
+const CancelButton: React.FunctionComponent<React.PropsWithChildren<ConfirmDeleteDialogProps>> = (
+  props,
+) => {
+  const clickButton = React.useCallback(() => {
+    props.dispatch([EditorActions.hideModal()], 'everyone')
+  }, [props])
+
+  return <FormButton onClick={clickButton}>Cancel</FormButton>
 }

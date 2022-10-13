@@ -2,37 +2,61 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FileResult } from '../../core/shared/file-utils'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { fileResultUploadAction } from '../editor/image-insert'
-import { CancelButton } from './cancel-button'
+import { FileUploadInfo } from '../editor/store/editor-state'
 
 interface ConfirmOverwriteDialogProps {
   dispatch: EditorDispatch
-  fileResult: FileResult
-  targetPath: string
+  files: Array<FileUploadInfo>
 }
 
 export const ConfirmOverwriteDialog: React.FunctionComponent<
   React.PropsWithChildren<ConfirmOverwriteDialogProps>
 > = (props) => {
+  const { dispatch, files } = props
+
+  const [index, setIndex] = React.useState(0)
+
   const hide = React.useCallback(() => {
-    props.dispatch([EditorActions.hideModal()], 'everyone')
-  }, [props])
+    dispatch([EditorActions.hideModal()], 'everyone')
+  }, [dispatch])
+
+  const switchToNextFile = React.useCallback(() => {
+    if (index < files.length - 1) {
+      setIndex(index + 1)
+    } else {
+      hide()
+    }
+  }, [index, files, hide])
+
+  const onOverwriteClick = React.useCallback(() => {
+    dispatch(
+      [fileResultUploadAction(files[index].fileResult, files[index].targetPath, true)],
+      'everyone',
+    )
+    switchToNextFile()
+  }, [switchToNextFile, index, files, dispatch])
+
   return (
     <Dialog
       title='Overwrite file'
-      content={<DialogBody {...props} />}
-      defaultButton={<AcceptButton {...props} />}
-      secondaryButton={<CancelButton {...props} />}
+      content={<DialogBody targetPath={files[index].targetPath} />}
+      defaultButton={
+        <FormButton primary danger onClick={onOverwriteClick}>
+          Overwrite
+        </FormButton>
+      }
+      secondaryButton={<FormButton onClick={switchToNextFile}>Skip</FormButton>}
+      subduedButton={<FormButton onClick={hide}>Cancel all</FormButton>}
       closeCallback={hide}
     />
   )
 }
 
-const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmOverwriteDialogProps>> = (
+const DialogBody: React.FunctionComponent<React.PropsWithChildren<{ targetPath: string }>> = (
   props,
 ) => (
   <React.Fragment>
@@ -42,20 +66,3 @@ const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmOverwri
     <p>Overwritten files are not recoverable.</p>
   </React.Fragment>
 )
-
-const AcceptButton: React.FunctionComponent<
-  React.PropsWithChildren<ConfirmOverwriteDialogProps>
-> = (props) => {
-  const clickButton = React.useCallback(() => {
-    props.dispatch(
-      [fileResultUploadAction(props.fileResult, props.targetPath, true), EditorActions.hideModal()],
-      'everyone',
-    )
-  }, [props])
-
-  return (
-    <FormButton primary danger onClick={clickButton}>
-      Overwrite
-    </FormButton>
-  )
-}

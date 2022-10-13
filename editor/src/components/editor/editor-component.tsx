@@ -436,13 +436,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
       case 'file-delete':
         return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
       case 'file-overwrite':
-        return (
-          <ConfirmOverwriteDialog
-            dispatch={dispatch}
-            fileResult={modal.fileResult}
-            targetPath={modal.targetPath}
-          />
-        )
+        return <ConfirmOverwriteDialog dispatch={dispatch} files={modal.files} />
     }
   }
   return null

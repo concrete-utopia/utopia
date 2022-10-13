@@ -308,6 +308,8 @@ import {
   githubRepo,
   projectGithubSettings,
   FileOverwriteModal,
+  FileUploadInfo,
+  fileUploadInto,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2998,12 +3000,19 @@ export const FileResultKeepDeepEquality: KeepDeepEqualityCall<FileResult> = (
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =
+export const FileUploadInfoKeepDeepEquality: KeepDeepEqualityCall<FileUploadInfo> =
   combine2EqualityCalls(
-    (modal) => modal.fileResult,
+    (file) => file.fileResult,
     FileResultKeepDeepEquality,
-    (modal) => modal.targetPath,
+    (file) => file.targetPath,
     StringKeepDeepEquality,
+    fileUploadInto,
+  )
+
+export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =
+  combine1EqualityCall(
+    (modal) => modal.files,
+    arrayDeepEquality(FileUploadInfoKeepDeepEquality),
     fileOverwriteModal,
   )
 

@@ -304,17 +304,27 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
-export interface FileOverwriteModal {
-  type: 'file-overwrite'
+export interface FileUploadInfo {
   fileResult: FileResult
   targetPath: string
 }
 
-export function fileOverwriteModal(fileResult: FileResult, targetPath: string): FileOverwriteModal {
+export function fileUploadInto(fileResult: FileResult, targetPath: string): FileUploadInfo {
   return {
-    type: 'file-overwrite',
     fileResult: fileResult,
     targetPath: targetPath,
+  }
+}
+
+export interface FileOverwriteModal {
+  type: 'file-overwrite'
+  files: Array<FileUploadInfo>
+}
+
+export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteModal {
+  return {
+    type: 'file-overwrite',
+    files: files,
   }
 }
 
