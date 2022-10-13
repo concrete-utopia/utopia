@@ -47,6 +47,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
+import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -249,10 +250,10 @@ interface FileBrowserItemDragProps {
 }
 
 class FileBrowserItemInner extends React.PureComponent<
-  FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps,
+  FileBrowserItemProps & FileBrowserItemDragProps,
   FileBrowserItemState
 > {
-  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps) {
+  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps) {
     super(props)
     this.state = {
       isRenaming: false,
@@ -466,6 +467,11 @@ class FileBrowserItemInner extends React.PureComponent<
       currentExternalFilesDragEventCounter: 0,
     })
 
+    this.props.dispatch([
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setFilebrowserDropTarget(null),
+    ])
+
     void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
@@ -566,6 +572,32 @@ class FileBrowserItemInner extends React.PureComponent<
       }
     })
   }
+
+  onMouseDown = () => {
+    if (this.props.imageFile == null) {
+      return
+    }
+
+    this.props.dispatch(
+      [
+        EditorActions.setDragSessionState(
+          draggingFromSidebar({
+            width: this.props.imageFile.width ?? 200,
+            height: this.props.imageFile.height ?? 200,
+            src: imagePathURL(this.props.path),
+          }),
+        ),
+      ],
+      'everyone',
+    )
+  }
+
+  onMouseUp = () =>
+    this.props.dispatch([
+      CanvasActions.clearInteractionSession(false),
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setDragSessionState(notDragging()),
+    ])
 
   showAddingFileRow = () => {
     this.setState({
@@ -668,8 +700,8 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragEnter={this.onDragEnter}
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
-          onMouseDown={this.props.onDragHandleStart}
-          onMouseUp={this.props.onDragHandleCancelled}
+          onMouseDown={this.onMouseDown}
+          onMouseUp={this.onMouseUp}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -858,27 +890,6 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     [props],
   )
 
-  const onMouseDown = React.useCallback(() => {
-    if (props.imageFile == null) {
-      return
-    }
-
-    props.dispatch(
-      [
-        EditorActions.setFileBrowserDragState({
-          width: props.imageFile.width ?? 200,
-          height: props.imageFile.height ?? 200,
-          src: imagePathURL(props.path),
-        }),
-      ],
-      'everyone',
-    )
-  }, [props])
-
-  const onMouseUp = React.useCallback(() => {
-    props.dispatch([CanvasActions.clearInteractionSession(false)])
-  }, [props])
-
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
   return (
@@ -889,13 +900,6 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       connectDragPreview={dragPreview}
       // eslint-disable-next-line react/jsx-no-bind
       forwardedRef={forwardedRef}
-      onDragHandleCancelled={onMouseUp}
-      onDragHandleStart={onMouseDown}
     />
   )
-}
-
-export interface DragHandleProps {
-  onDragHandleCancelled: () => void
-  onDragHandleStart: () => void
 }

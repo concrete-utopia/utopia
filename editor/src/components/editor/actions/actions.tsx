@@ -974,6 +974,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     allElementProps: poppedEditor.allElementProps,
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
+    dragSessionState: currentEditor.dragSessionState,
   }
 }
 
@@ -4952,10 +4953,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      fileBrowser: {
-        ...editor.fileBrowser,
-        draggedImageProperties: action.draggedImageProperties,
-      },
+      dragSessionState: action.dragSessionState,
     }
   },
 }

@@ -352,7 +352,7 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     case 'SAVE_TO_GITHUB':
       return UPDATE_FNS.SAVE_TO_GITHUB(action, state, dispatch)
-    case 'SET_FILE_BROWSER_DRAG_STATE':
+    case 'SET_DRAG_SESSION_STATE':
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
     default:
       return state

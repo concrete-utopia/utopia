@@ -308,6 +308,9 @@ import {
   projectGithubSettings,
   DraggedImageProperties,
   draggedImageProperties,
+  DragSessionState,
+  DraggingFromSidebar,
+  draggingFromSidebar,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -428,6 +431,7 @@ import {
   reparentTarget,
   ReparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { assertNever } from '../../../core/shared/utils'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2789,16 +2793,49 @@ export const DraggedImagePropertiesDeepEquality: KeepDeepEqualityCall<DraggedIma
     draggedImageProperties,
   )
 
+export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingFromSidebar> =
+  combine2EqualityCalls(
+    (d) => d.draggedImageProperties,
+    DraggedImagePropertiesDeepEquality,
+    (d) => d.type,
+    StringKeepDeepEquality,
+    draggingFromSidebar,
+  )
+
+export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<DragSessionState> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'NOT_DRAGGING':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_FS':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_SIDEBAR':
+      if (newValue.type === oldValue.type) {
+        return DraggingFromSidebarKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateFileBrowserKeepDeepEquality: KeepDeepEqualityCall<EditorStateFileBrowser> =
-  combine4EqualityCalls(
+  combine3EqualityCalls(
     (fileBrowser) => fileBrowser.minimised,
     BooleanKeepDeepEquality,
     (fileBrowser) => fileBrowser.renamingTarget,
     NullableStringKeepDeepEquality,
     (fileBrowser) => fileBrowser.dropTarget,
     NullableStringKeepDeepEquality,
-    (fileBrowser) => fileBrowser.draggedImageProperties,
-    nullableDeepEquality(DraggedImagePropertiesDeepEquality),
     editorStateFileBrowser,
   )
 
@@ -3237,6 +3274,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
+  const dragSessionStateEqual = DragSessionStateKeepDeepEquality(
+    oldValue.dragSessionState,
+    newValue.dragSessionState,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3303,7 +3345,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
-    githubSettingsResults.areEqual
+    githubSettingsResults.areEqual &&
+    dragSessionStateEqual.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3375,6 +3418,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
+      dragSessionStateEqual.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

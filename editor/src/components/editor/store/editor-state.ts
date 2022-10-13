@@ -733,6 +733,36 @@ export interface DraggedImageProperties {
   src: string
 }
 
+interface NotDragging {
+  type: 'NOT_DRAGGING'
+}
+
+interface DraggingFromFS {
+  type: 'DRAGGING_FROM_FS'
+}
+
+export interface DraggingFromSidebar {
+  type: 'DRAGGING_FROM_SIDEBAR'
+  draggedImageProperties: DraggedImageProperties
+}
+
+export type DragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
+
+export function notDragging(): NotDragging {
+  return { type: 'NOT_DRAGGING' }
+}
+
+export function draggingFromFS(): DraggingFromFS {
+  return { type: 'DRAGGING_FROM_FS' }
+}
+
+export function draggingFromSidebar(draggedImage: DraggedImageProperties): DraggingFromSidebar {
+  return {
+    type: 'DRAGGING_FROM_SIDEBAR',
+    draggedImageProperties: draggedImage,
+  }
+}
+
 export function draggedImageProperties(
   width: number,
   height: number,
@@ -749,20 +779,17 @@ export interface EditorStateFileBrowser {
   minimised: boolean
   renamingTarget: string | null
   dropTarget: string | null
-  draggedImageProperties: DraggedImageProperties | null
 }
 
 export function editorStateFileBrowser(
   minimised: boolean,
   renamingTarget: string | null,
   dropTarget: string | null,
-  draggedImage: DraggedImageProperties | null,
 ): EditorStateFileBrowser {
   return {
     minimised: minimised,
     renamingTarget: renamingTarget,
     dropTarget: dropTarget,
-    draggedImageProperties: draggedImage,
   }
 }
 
@@ -966,6 +993,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
+  dragSessionState: DragSessionState
 }
 
 export function editorState(
@@ -1035,6 +1063,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
+  dragSessionState: DragSessionState,
 ): EditorState {
   return {
     id: id,
@@ -1103,6 +1132,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
+    dragSessionState: dragSessionState,
   }
 }
 
@@ -1913,6 +1943,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
+    dragSessionState: notDragging(),
   }
 }
 
@@ -2194,7 +2225,6 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       dropTarget: null,
       minimised: persistentModel.fileBrowser.minimised,
-      draggedImageProperties: null,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
@@ -2208,6 +2238,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
+    dragSessionState: notDragging(),
   }
   return editor
 }

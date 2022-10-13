@@ -40,6 +40,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import {
   DraggedImageProperties,
+  DragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
@@ -1000,8 +1001,8 @@ export interface SaveToGithub {
 }
 
 export interface SetFileBrowserDragState {
-  action: 'SET_FILE_BROWSER_DRAG_STATE'
-  draggedImageProperties: DraggedImageProperties | null
+  action: 'SET_DRAG_SESSION_STATE'
+  dragSessionState: DragSessionState
 }
 
 export type EditorAction =
@@ -1185,6 +1186,19 @@ export type DebugDispatch = (
   priority?: DispatchPriority,
 ) => {
   entireUpdateFinished: Promise<any>
+}
+
+interface EditorDispatchScratchPad {
+  addActions: (action: Array<EditorAction>) => void
+}
+
+export const usingDispatch = (
+  dispatch: EditorDispatch,
+  run: (builder: EditorDispatchScratchPad) => void,
+): void => {
+  let scratchPad: Array<EditorAction> = []
+  run({ addActions: (actions: Array<EditorAction>) => (scratchPad = [...scratchPad, ...actions]) })
+  dispatch(scratchPad)
 }
 
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'

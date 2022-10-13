@@ -31,7 +31,7 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import { EditorAction, EditorDispatch, usingDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
@@ -39,9 +39,11 @@ import {
   CanvasCursor,
   DerivedState,
   DraggedImageProperties,
+  draggingFromFS,
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
+  notDragging,
   UserState,
 } from '../components/editor/store/editor-state'
 import {
@@ -913,32 +915,36 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             return
           }
 
-          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-
-          let newElementProps: Partial<DraggedImageProperties> = {
-            width: 1,
-            height: 1,
-          }
-          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
-            newElementProps = {
-              width: this.props.editor.fileBrowser.draggedImageProperties.width,
-              height: this.props.editor.fileBrowser.draggedImageProperties.height,
-              src: this.props.editor.fileBrowser.draggedImageProperties.src,
-            }
-          }
-
-          const newElement = createJsxImage(newUID, newElementProps)
-
-          const elementSize: Size = resize(
-            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
-            size(200, 200),
-            'keep-aspect-ratio',
-          )
-
           const position = this.getPosition(event.nativeEvent)
 
-          this.props.dispatch(
-            [
+          usingDispatch(this.props.dispatch, ({ addActions }) => {
+            if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
+              addActions([EditorActions.setDragSessionState(draggingFromFS())])
+            }
+
+            const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+            const newElementProps: Partial<DraggedImageProperties> =
+              this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+                ? {
+                    width: this.props.editor.dragSessionState.draggedImageProperties.width,
+                    height: this.props.editor.dragSessionState.draggedImageProperties.height,
+                    src: this.props.editor.dragSessionState.draggedImageProperties.src,
+                  }
+                : {
+                    width: 1,
+                    height: 1,
+                  }
+
+            const newElement = createJsxImage(newUID, newElementProps)
+
+            const elementSize: Size = resize(
+              size(newElementProps.width ?? 100, newElementProps.height ?? 100),
+              size(200, 200),
+              'keep-aspect-ratio',
+            )
+
+            addActions([
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(
@@ -947,25 +953,24 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   boundingArea(),
                 ),
               ),
-            ],
-            'everyone',
-          )
+            ])
+          })
         },
 
         onDragLeave: (event) => {
-          // if (this.isInsideCanvas(event.nativeEvent)) {
           if (event.clientX <= 0 && event.clientY <= 0) {
             this.props.dispatch([
               CanvasActions.clearInteractionSession(false),
               EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+              EditorActions.setDragSessionState(notDragging()),
             ])
           }
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
+          if (this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
-              EditorActions.setFileBrowserDragState(null),
+              EditorActions.setDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
             ])
@@ -974,7 +979,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.preventDefault()
           event.stopPropagation()
 
-          // itt kene tudni a filebrowserben melyik kepet draggeljuk, es akkor nem kell feltolteni
           const mousePosition = this.getPosition(event.nativeEvent)
 
           void DropHandlers.onDrop(
