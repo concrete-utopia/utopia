@@ -5,7 +5,7 @@ import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategi
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
   dragElementToPoint,
-  dropElementToPoint,
+  dropElementAtPoint,
   mouseDownAtPoint,
   mouseMoveToPoint,
   switchDragAndDropElementTargets,
@@ -274,7 +274,7 @@ describe('image dnd', () => {
       mouseMoveToPoint(fileItem, startPoint)
       mouseDownAtPoint(fileItem, startPoint)
       dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
-      dropElementToPoint(canvasControlsLayer, endPoint, [])
+      dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -368,7 +368,7 @@ describe('image dnd', () => {
       expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
       expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
 
-      dropElementToPoint(targetFolder, endPoint, [])
+      dropElementAtPoint(targetFolder, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -401,7 +401,7 @@ describe('image dnd', () => {
     }
 
     dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
-    dropElementToPoint(canvasControlsLayer, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -467,7 +467,7 @@ export var storyboard = (
     }
 
     dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
-    dropElementToPoint(canvasControlsLayer, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -532,7 +532,7 @@ export var storyboard = (
     }
 
     dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    dropElementToPoint(canvasControlsLayer, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
     await dropDone
@@ -623,7 +623,7 @@ export var storyboard = (
     }
 
     dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    dropElementToPoint(canvasControlsLayer, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
 

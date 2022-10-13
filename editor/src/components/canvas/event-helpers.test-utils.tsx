@@ -600,7 +600,7 @@ export function dragElementToPoint(
   })
 }
 
-export function dropElementToPoint(
+export function dropElementAtPoint(
   targetElement: HTMLElement,
   endPoint: Point,
   fileList: Array<File>,
