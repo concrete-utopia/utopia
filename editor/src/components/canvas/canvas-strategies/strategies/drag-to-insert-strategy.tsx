@@ -265,7 +265,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   } else {
     const reparentCommands = strategy.strategy.apply(strategyLifeCycle).commands
 
-    return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
+    return foldAndApplyCommandsInner(editorState, [], reparentCommands, commandLifecycle)
       .statePatches
   }
 }

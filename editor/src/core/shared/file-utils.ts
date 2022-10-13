@@ -10,6 +10,23 @@ export interface ImageResult {
   hash: number
 }
 
+export function imageResult(
+  filename: string,
+  base64Bytes: string,
+  imageSize: Size,
+  fileType: string,
+  hash: number,
+): ImageResult {
+  return {
+    type: 'IMAGE_RESULT',
+    filename: filename,
+    base64Bytes: base64Bytes,
+    size: imageSize,
+    fileType: fileType,
+    hash: hash,
+  }
+}
+
 export interface AssetResult {
   type: 'ASSET_RESULT'
   filename: string
@@ -17,10 +34,27 @@ export interface AssetResult {
   hash: number
 }
 
+export function assetResult(filename: string, base64Bytes: string, hash: number): AssetResult {
+  return {
+    type: 'ASSET_RESULT',
+    filename: filename,
+    base64Bytes: base64Bytes,
+    hash: hash,
+  }
+}
+
 export interface TextResult {
   type: 'TEXT_RESULT'
   filename: string
   content: string
+}
+
+export function textResult(filename: string, content: string): TextResult {
+  return {
+    type: 'TEXT_RESULT',
+    filename: filename,
+    content: content,
+  }
 }
 
 export type FileResult = ImageResult | AssetResult | TextResult

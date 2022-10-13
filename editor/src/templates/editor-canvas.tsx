@@ -31,7 +31,7 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch, usingDispatch } from '../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {

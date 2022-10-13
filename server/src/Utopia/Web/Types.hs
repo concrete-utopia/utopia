@@ -129,7 +129,7 @@ type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "sta
 
 type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
 
-type GithubSaveAPI = "v1" :> "github" :> "save" :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
+type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
 
