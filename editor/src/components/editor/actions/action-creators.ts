@@ -209,7 +209,7 @@ import type {
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
-  SetFileBrowserDragState as SetDragSessionState,
+  SetImageDragSessionState as SetDragSessionState,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {

@@ -3380,8 +3380,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
 
   const dragSessionStateEqual = DragSessionStateKeepDeepEquality(
-    oldValue.dragSessionState,
-    newValue.dragSessionState,
+    oldValue.imageDragSessionState,
+    newValue.imageDragSessionState,
   )
 
   const areEqual =

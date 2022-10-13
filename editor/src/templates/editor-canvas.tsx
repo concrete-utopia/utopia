@@ -918,18 +918,18 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const position = this.getPosition(event.nativeEvent)
 
           const setDragSessionStateActions =
-            this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
+            this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
               ? [EditorActions.setDragSessionState(draggingFromFS())]
               : []
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
           const newElementProps: Partial<DraggedImageProperties> =
-            this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
               ? {
-                  width: this.props.editor.dragSessionState.draggedImageProperties.width,
-                  height: this.props.editor.dragSessionState.draggedImageProperties.height,
-                  src: this.props.editor.dragSessionState.draggedImageProperties.src,
+                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
+                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
+                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
                 }
               : {
                   width: 1,
@@ -968,7 +968,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+          if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
               EditorActions.setDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),

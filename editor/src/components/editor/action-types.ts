@@ -999,7 +999,7 @@ export interface SaveToGithub {
   targetRepository: GithubRepo
 }
 
-export interface SetFileBrowserDragState {
+export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   dragSessionState: ImageDragSessionState
 }
@@ -1165,7 +1165,7 @@ export type EditorAction =
   | SetElementsToRerender
   | ToggleSelectionLock
   | SaveToGithub
-  | SetFileBrowserDragState
+  | SetImageDragSessionState
 
 export type DispatchPriority =
   | 'everyone'

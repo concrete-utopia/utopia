@@ -1018,7 +1018,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
-  dragSessionState: ImageDragSessionState
+  imageDragSessionState: ImageDragSessionState
 }
 
 export function editorState(
@@ -1157,7 +1157,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
-    dragSessionState: dragSessionState,
+    imageDragSessionState: dragSessionState,
   }
 }
 
@@ -1968,7 +1968,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
-    dragSessionState: notDragging(),
+    imageDragSessionState: notDragging(),
   }
 }
 
@@ -2263,7 +2263,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
-    dragSessionState: notDragging(),
+    imageDragSessionState: notDragging(),
   }
   return editor
 }
