@@ -38,9 +38,26 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
       return null
     }, 'ImmediateParentBounds frame')
 
-    return parentFrame != null ? drawBounds(parentFrame, scale) : null
+    return parentFrame == null ? null : drawBounds(parentFrame, scale)
   },
 )
+
+interface ParentBoundsProps {
+  targetParent: ElementPath
+}
+export const ParentBounds = controlForStrategyMemoized(({ targetParent }: ParentBoundsProps) => {
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
+
+  const parentFrame = useEditorState((store) => {
+    if (!EP.isStoryboardPath(targetParent)) {
+      return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
+    } else {
+      return null
+    }
+  }, 'ParentBounds frame')
+
+  return parentFrame == null ? null : drawBounds(parentFrame, scale)
+})
 
 interface ParentBoundsForInsertionProps {
   targetParents: Array<ElementPath>
@@ -68,7 +85,7 @@ export const ParentBoundsForInsertion = controlForStrategyMemoized(
       return null
     }, 'ParentBoundsForInsertion frame')
 
-    return parentFrame != null ? drawBounds(parentFrame, scale) : null
+    return parentFrame == null ? null : drawBounds(parentFrame, scale)
   },
 )
 

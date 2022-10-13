@@ -6,8 +6,8 @@ import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { ImmediateParentBounds } from '../../controls/parent-bounds'
-import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import { ParentBounds } from '../../controls/parent-bounds'
+import { ParentOutlines } from '../../controls/parent-outlines'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -65,14 +65,14 @@ export function baseAbsoluteReparentStrategy(
       name: `Reparent (Abs${forced ? ', Force' : ''})`,
       controlsToRender: [
         controlWithProps({
-          control: ImmediateParentOutlines,
-          props: { targets: filteredSelectedElements },
+          control: ParentOutlines,
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
-          control: ImmediateParentBounds,
-          props: { targets: filteredSelectedElements },
+          control: ParentBounds,
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),

@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ImmediateParentBounds } from '../../controls/parent-bounds'
-import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import { ParentBounds } from '../../controls/parent-bounds'
+import { ParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategyFactory } from '../canvas-strategies'
@@ -43,14 +43,14 @@ export function baseFlexReparentToFlexStrategy(
           show: 'visible-only-while-active',
         }),
         controlWithProps({
-          control: ImmediateParentOutlines,
-          props: { targets: selectedElements },
+          control: ParentOutlines,
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
-          control: ImmediateParentBounds,
-          props: { targets: selectedElements },
+          control: ParentBounds,
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),

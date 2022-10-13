@@ -2,8 +2,9 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { useColorTheme } from '../../../uuiui'
+import { ColorTheme, useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
@@ -42,23 +43,50 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
       return null
     }, 'ImmediateParentOutlines frame')
 
-    return parentFrame != null ? (
-      <CanvasOffsetWrapper key={`immediate-parent-outlines`}>
-        <div
-          style={{
-            position: 'absolute',
-            left: parentFrame.x,
-            top: parentFrame.y,
-            width: parentFrame.width,
-            height: parentFrame.height,
-            outlineStyle: 'dotted',
-            outlineColor: colorTheme.primary.value,
-            outlineWidth: 1 / scale,
-            pointerEvents: 'none',
-          }}
-          data-testid='immediate-parent-outlines-control'
-        />
-      </CanvasOffsetWrapper>
-    ) : null
+    return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
   },
 )
+
+interface ParentOutlinesProps {
+  targetParent: ElementPath
+}
+export const ParentOutlines = controlForStrategyMemoized(
+  ({ targetParent }: ParentOutlinesProps) => {
+    const colorTheme = useColorTheme()
+    const scale = useEditorState(
+      (store) => store.editor.canvas.scale,
+      'ParentOutlines canvas scale',
+    )
+
+    const parentFrame = useEditorState((store) => {
+      if (!EP.isStoryboardPath(targetParent)) {
+        return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
+      } else {
+        return null
+      }
+    }, 'ImmediateParentOutlines frame')
+
+    return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
+  },
+)
+
+function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ColorTheme) {
+  return (
+    <CanvasOffsetWrapper key={`immediate-parent-outlines`}>
+      <div
+        style={{
+          position: 'absolute',
+          left: parentFrame.x,
+          top: parentFrame.y,
+          width: parentFrame.width,
+          height: parentFrame.height,
+          outlineStyle: 'dotted',
+          outlineColor: colorTheme.primary.value,
+          outlineWidth: 1 / scale,
+          pointerEvents: 'none',
+        }}
+        data-testid='immediate-parent-outlines-control'
+      />
+    </CanvasOffsetWrapper>
+  )
+}
