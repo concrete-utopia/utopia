@@ -140,11 +140,6 @@ describe('interactionCancel', () => {
         boundingArea(),
       ),
     )
-    // editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-    //   editorStore.unpatchedEditor,
-    //   wildcardPatch('always', { selectedViews: { $set: [] } }),
-    //   'end-interaction',
-    // ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
