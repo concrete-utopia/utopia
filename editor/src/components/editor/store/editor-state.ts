@@ -733,6 +733,11 @@ export interface DraggedImageProperties {
   src: string
 }
 
+export type DragSessionState =
+  | { type: 'NOT_DRAGGING' }
+  | { type: 'DRAGGING_FROM_FS' }
+  | { type: 'DRAGGING_FROM_SIDEBAR'; draggedImageProperties: DraggedImageProperties }
+
 export function draggedImageProperties(
   width: number,
   height: number,
