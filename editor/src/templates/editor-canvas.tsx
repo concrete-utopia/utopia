@@ -967,6 +967,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.dispatch([
               CanvasActions.clearInteractionSession(false),
               EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+              EditorActions.setDragSessionState(notDragging()),
             ])
           }
         },
