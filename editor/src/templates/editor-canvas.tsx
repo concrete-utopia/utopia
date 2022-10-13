@@ -31,7 +31,11 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import {
+  EditorAction,
+  EditorDispatch,
+  editorDispatchScratchPad,
+} from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
@@ -39,6 +43,7 @@ import {
   CanvasCursor,
   DerivedState,
   DraggedImageProperties,
+  draggingFromFS,
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
@@ -914,6 +919,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             return
           }
 
+          const scratchpad = editorDispatchScratchPad()
+
+          if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
+            scratchpad.addAction(EditorActions.setFileBrowserDragState(draggingFromFS()))
+          }
+
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
           const newElementProps: Partial<DraggedImageProperties> =
@@ -940,6 +951,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           this.props.dispatch(
             [
+              ...scratchpad.actions(),
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(

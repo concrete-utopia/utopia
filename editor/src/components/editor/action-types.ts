@@ -1188,5 +1188,18 @@ export type DebugDispatch = (
   entireUpdateFinished: Promise<any>
 }
 
+interface EditorDispatchScratchPad {
+  addAction: (action: EditorAction) => void
+  actions: () => Array<EditorAction>
+}
+
+export const editorDispatchScratchPad = (): EditorDispatchScratchPad => {
+  let scratchPad: Array<EditorAction> = []
+  return {
+    addAction: (action: EditorAction) => scratchPad.push(action),
+    actions: () => [...scratchPad],
+  }
+}
+
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
 export type Distribution = 'horizontal' | 'vertical'
