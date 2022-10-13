@@ -2,12 +2,11 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import {
   CanvasStrategy,
   controlWithProps,
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -48,13 +47,13 @@ export function relativeMoveStrategy(
     name: 'Move (Relative)',
     controlsToRender: [
       controlWithProps({
-        control: ParentOutlines,
+        control: ImmediateParentOutlines,
         props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
+        control: ImmediateParentBounds,
         props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',

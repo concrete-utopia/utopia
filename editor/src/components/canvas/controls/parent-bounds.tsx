@@ -10,32 +10,37 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CenteredCrossSVG } from './outline-control'
 
-interface ParentBoundsProps {
+interface ImmediateParentBoundsProps {
   targets: Array<ElementPath>
 }
-export const ParentBounds = controlForStrategyMemoized(({ targets }: ParentBoundsProps) => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
-  const parentFrame = useEditorState((store) => {
-    const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-    if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
-      return MetadataUtils.getFrameInCanvasCoords(parentHighlightPaths[0], store.editor.jsxMetadata)
-    }
-
-    if (!isInsertMode(store.editor.mode)) {
-      const targetParents = uniqBy(
-        stripNulls(targets.map((view) => EP.parentPath(view))),
-        EP.pathsEqual,
-      )
-      if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
-          ?.specialSizeMeasurements.immediateParentBounds
+export const ImmediateParentBounds = controlForStrategyMemoized(
+  ({ targets }: ImmediateParentBoundsProps) => {
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
+    const parentFrame = useEditorState((store) => {
+      const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
+      if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+        return MetadataUtils.getFrameInCanvasCoords(
+          parentHighlightPaths[0],
+          store.editor.jsxMetadata,
+        )
       }
-    }
-    return null
-  }, 'ParentOutlines frame')
 
-  return parentFrame != null ? drawBounds(parentFrame, scale) : null
-})
+      if (!isInsertMode(store.editor.mode)) {
+        const targetParents = uniqBy(
+          stripNulls(targets.map((view) => EP.parentPath(view))),
+          EP.pathsEqual,
+        )
+        if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+          return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
+            ?.specialSizeMeasurements.immediateParentBounds
+        }
+      }
+      return null
+    }, 'ImmediateParentBounds frame')
+
+    return parentFrame != null ? drawBounds(parentFrame, scale) : null
+  },
+)
 
 interface ParentBoundsForInsertionProps {
   targetParents: Array<ElementPath>
@@ -69,7 +74,7 @@ export const ParentBoundsForInsertion = controlForStrategyMemoized(
 
 function drawBounds(parentFrame: CanvasRectangle, scale: number) {
   return (
-    <CanvasOffsetWrapper key={`parent-outline`}>
+    <CanvasOffsetWrapper key={`parent-bounds`}>
       <div style={{ pointerEvents: 'none' }} data-testid='parent-bounds-control'>
         <CenteredCrossSVG
           id='parent-cross-top-left'

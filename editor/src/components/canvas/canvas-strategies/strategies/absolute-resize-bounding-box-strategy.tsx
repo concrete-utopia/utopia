@@ -25,8 +25,8 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import {
@@ -81,13 +81,13 @@ export function absoluteResizeBoundingBoxStrategy(
         show: 'visible-except-when-other-strategy-is-active',
       }),
       controlWithProps({
-        control: ParentOutlines,
+        control: ImmediateParentOutlines,
         props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
+        control: ImmediateParentBounds,
         props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',

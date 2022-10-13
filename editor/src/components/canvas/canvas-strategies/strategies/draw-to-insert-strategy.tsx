@@ -28,7 +28,7 @@ import { showReorderIndicator } from '../../commands/show-reorder-indicator-comm
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
@@ -67,7 +67,7 @@ export function drawToInsertStrategy(
     controlsToRender: [
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
-        control: ParentOutlines,
+        control: ImmediateParentOutlines,
         props: { targets: [] }, // <<<- TODO feed it with real props
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
