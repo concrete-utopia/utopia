@@ -2,7 +2,7 @@ import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
-import { NO_OP } from '../../core/shared/utils'
+import { assertNever, NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -522,10 +522,10 @@ export function pressKey(
 
 // https://github.com/testing-library/react-testing-library/issues/339
 export function makeDragEvent(
-  type: 'dragover' | 'drop',
+  type: 'dragstart' | 'dragover' | 'drop' | 'dragleave',
   target: Element | Node,
   clientCoords: { x: number; y: number },
-  fileList: Array<File>,
+  fileList?: Array<File>,
 ): Event {
   const opts = {
     clientX: clientCoords.x,
@@ -534,19 +534,33 @@ export function makeDragEvent(
     bubbles: true,
     cancelable: true,
   }
-  const fileDropEvent =
-    type === 'drop' ? createEvent.drop(target, opts) : createEvent.dragOver(target, opts)
+  const event = (() => {
+    switch (type) {
+      case 'drop':
+        return createEvent.drop(target, opts)
+      case 'dragover':
+        return createEvent.dragOver(target, opts)
+      case 'dragleave':
+        return createEvent.dragLeave(target, opts)
+      case 'dragstart':
+        return createEvent.dragStart(target, opts)
+      default:
+        assertNever(type)
+    }
+  })()
 
-  Object.defineProperty(fileDropEvent, 'dataTransfer', {
-    value: {
-      getData: () => '',
-      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
-      files: {
-        item: (itemIndex: number) => fileList[itemIndex],
-        length: fileList.length,
+  if (fileList != null) {
+    Object.defineProperty(event, 'dataTransfer', {
+      value: {
+        getData: () => '',
+        items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
+        files: {
+          item: (itemIndex: number) => fileList[itemIndex],
+          length: fileList.length,
+        },
       },
-    },
-  })
+    })
+  }
 
-  return fileDropEvent
+  return event
 }

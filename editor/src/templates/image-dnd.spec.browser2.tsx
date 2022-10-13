@@ -21,6 +21,7 @@ import {
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
 import { defer } from '../utils/utils'
+import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -253,11 +254,11 @@ describe('image dnd', () => {
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
-    const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = {
-      x: dragHandleBounds.x + dragHandleBounds.width / 2,
-      y: dragHandleBounds.y + dragHandleBounds.height / 2,
+    const imageToBeDragged = editor.renderedDOM.getByText('stuff.png')
+    const imageBounds = imageToBeDragged.getBoundingClientRect()
+    const imageCenter = {
+      x: imageBounds.x + imageBounds.width / 2,
+      y: imageBounds.y + imageBounds.height / 2,
     }
 
     const target = editor.renderedDOM.getByTestId('scene')
@@ -268,17 +269,28 @@ describe('image dnd', () => {
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    mouseMoveToPoint(imageDragHandle, handleCenter)
-    mouseDownAtPoint(imageDragHandle, handleCenter)
-    mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+    mouseMoveToPoint(imageToBeDragged, imageCenter)
+    mouseDownAtPoint(imageToBeDragged, imageCenter)
+    mouseMoveToPoint(canvasControlsLayer, endPoint)
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }))
+    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint))
     await editor.getDispatchFollowUpActionsFinished()
 
-    expect(
-      editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
-    ).toBeGreaterThan(0)
+    // await wait(1000)
+
+    // expect(
+    //   editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
+    // ).toBeGreaterThan(0)
 
     mouseUpAtPoint(canvasControlsLayer, endPoint)
+    try {
+      fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint))
+    } catch {
+      // TODO
+    }
     await editor.getDispatchFollowUpActionsFinished()
+
+    // await wait(100000)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
