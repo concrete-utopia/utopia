@@ -40,6 +40,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { EditorModes } from '../editor/editor-modes'
 import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
+import { fileExists } from '../../core/model/project-file-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
