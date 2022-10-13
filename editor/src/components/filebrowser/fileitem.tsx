@@ -467,6 +467,11 @@ class FileBrowserItemInner extends React.PureComponent<
       currentExternalFilesDragEventCounter: 0,
     })
 
+    this.props.dispatch([
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setFilebrowserDropTarget(null),
+    ])
+
     void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
