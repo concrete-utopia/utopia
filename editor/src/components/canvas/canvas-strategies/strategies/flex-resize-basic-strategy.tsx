@@ -64,9 +64,14 @@ export function flexResizeBasicStrategy(
     selectedElements[0],
   )
   const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
+  const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+
   const hasDimensions =
     elementDimensions != null &&
     (elementDimensions.width != null || elementDimensions.height != null)
+  const hasSizedParent =
+    elementParentBounds != null &&
+    (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
     id: 'FLEX_RESIZE_BASIC',
@@ -101,7 +106,7 @@ export function flexResizeBasicStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
-      hasDimensions
+      (hasDimensions || !hasSizedParent)
         ? 1
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
@@ -139,8 +144,6 @@ export function flexResizeBasicStrategy(
             ),
             'non-center-based',
           )
-          const elementParentBounds =
-            metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
           const makeResizeCommand = (
             name: 'width' | 'height',
@@ -149,7 +152,7 @@ export function flexResizeBasicStrategy(
             resized: number,
             parent: number | undefined,
           ): AdjustCssLengthProperty[] => {
-            if (elementDimension == null || original === resized) {
+            if (elementDimension == null && (original === resized || hasSizedParent)) {
               return []
             }
             return [
