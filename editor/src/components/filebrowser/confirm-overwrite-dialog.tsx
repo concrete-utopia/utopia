@@ -2,25 +2,28 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { FileResult } from '../../core/shared/file-utils'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
+import { fileResultUploadAction } from '../editor/image-insert'
 import { CancelButton } from './cancel-button'
 
-interface ConfirmDeleteDialogProps {
+interface ConfirmOverwriteDialogProps {
   dispatch: EditorDispatch
-  filePath: string
+  fileResult: FileResult
+  targetPath: string
 }
 
-export const ConfirmDeleteDialog: React.FunctionComponent<
-  React.PropsWithChildren<ConfirmDeleteDialogProps>
+export const ConfirmOverwriteDialog: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmOverwriteDialogProps>
 > = (props) => {
   const hide = React.useCallback(() => {
     props.dispatch([EditorActions.hideModal()], 'everyone')
   }, [props])
   return (
     <Dialog
-      title='Delete file'
+      title='Overwrite file'
       content={<DialogBody {...props} />}
       defaultButton={<AcceptButton {...props} />}
       secondaryButton={<CancelButton {...props} />}
@@ -29,30 +32,30 @@ export const ConfirmDeleteDialog: React.FunctionComponent<
   )
 }
 
-const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmDeleteDialogProps>> = (
+const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmOverwriteDialogProps>> = (
   props,
 ) => (
   <React.Fragment>
     <p>
-      Are you sure you want to delete <span>{props.filePath}</span>?
+      Are you sure you want to overwrite <span>{props.targetPath}</span>?
     </p>
-    <p>Deleted files are permanently removed.</p>
+    <p>Overwritten files are not recoverable.</p>
   </React.Fragment>
 )
 
-const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmDeleteDialogProps>> = (
-  props,
-) => {
+const AcceptButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmOverwriteDialogProps>
+> = (props) => {
   const clickButton = React.useCallback(() => {
     props.dispatch(
-      [EditorActions.deleteFile(props.filePath), EditorActions.hideModal()],
+      [fileResultUploadAction(props.fileResult, props.targetPath, true), EditorActions.hideModal()],
       'everyone',
     )
   }, [props])
 
   return (
     <FormButton primary danger onClick={clickButton}>
-      Delete
+      Overwrite
     </FormButton>
   )
 }

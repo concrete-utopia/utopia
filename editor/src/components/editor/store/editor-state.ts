@@ -164,6 +164,7 @@ import { Guideline, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../.
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
+import { FileResult } from '../../../core/shared/file-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -303,7 +304,21 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
-export type ModalDialog = FileDeleteModal
+export interface FileOverwriteModal {
+  type: 'file-overwrite'
+  fileResult: FileResult
+  targetPath: string
+}
+
+export function fileOverwriteModal(fileResult: FileResult, targetPath: string): FileOverwriteModal {
+  return {
+    type: 'file-overwrite',
+    fileResult: fileResult,
+    targetPath: targetPath,
+  }
+}
+
+export type ModalDialog = FileDeleteModal | FileOverwriteModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {

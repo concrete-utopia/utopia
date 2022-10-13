@@ -12,7 +12,6 @@ import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
-import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
@@ -60,6 +59,8 @@ import {
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
+import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
+import { modelRun } from 'fast-check/*'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -431,8 +432,17 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
     }
   }, 'ModalComponent')
   if (modal != null) {
-    if (modal.type === 'file-delete') {
-      return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
+    switch (modal.type) {
+      case 'file-delete':
+        return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
+      case 'file-overwrite':
+        return (
+          <ConfirmOverwriteDialog
+            dispatch={dispatch}
+            fileResult={modal.fileResult}
+            targetPath={modal.targetPath}
+          />
+        )
     }
   }
   return null

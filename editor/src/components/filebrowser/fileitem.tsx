@@ -47,6 +47,8 @@ import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
+import { fileExists } from '../../core/model/project-file-utils'
+import { fileOverwriteModal } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -487,7 +489,11 @@ class FileBrowserItemInner extends React.PureComponent<
         }
 
         if (targetPath != null) {
-          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          if (fileExists(this.props.projectContents, targetPath)) {
+            actions.push(EditorActions.showModal(fileOverwriteModal(resultFile, targetPath)))
+          } else {
+            actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          }
         }
       })
       this.props.dispatch(actions, 'everyone')
