@@ -1001,7 +1001,7 @@ export interface SaveToGithub {
 }
 
 export interface SetFileBrowserDragState {
-  action: 'SET_FILE_BROWSER_DRAG_STATE'
+  action: 'SET_DRAG_SESSION_STATE'
   dragSessionState: DragSessionState
 }
 

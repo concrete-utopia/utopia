@@ -209,7 +209,7 @@ import type {
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
-  SetFileBrowserDragState,
+  SetFileBrowserDragState as SetDragSessionState,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1565,11 +1565,9 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   }
 }
 
-export function setFileBrowserDragState(
-  dragSessionState: DragSessionState,
-): SetFileBrowserDragState {
+export function setDragSessionState(dragSessionState: DragSessionState): SetDragSessionState {
   return {
-    action: 'SET_FILE_BROWSER_DRAG_STATE',
+    action: 'SET_DRAG_SESSION_STATE',
     dragSessionState: dragSessionState,
   }
 }

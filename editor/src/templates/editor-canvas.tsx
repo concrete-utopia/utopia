@@ -924,7 +924,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           usingDispatch(this.props.dispatch, ({ addActions }) => {
             if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
-              addActions([EditorActions.setFileBrowserDragState(draggingFromFS())])
+              addActions([EditorActions.setDragSessionState(draggingFromFS())])
             }
 
             const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
@@ -974,7 +974,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         onDrop: (event: React.DragEvent) => {
           if (this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
-              EditorActions.setFileBrowserDragState(notDragging()),
+              EditorActions.setDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
             ])
