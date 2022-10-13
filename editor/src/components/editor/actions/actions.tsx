@@ -297,6 +297,7 @@ import {
   UpdatePackageJson,
   UpdatePreviewConnected,
   UpdateProjectContents,
+  SetImageDragSessionState,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
   WrapInElement,
@@ -974,6 +975,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     allElementProps: poppedEditor.allElementProps,
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
+    imageDragSessionState: currentEditor.imageDragSessionState,
   }
 }
 
@@ -4959,6 +4961,15 @@ export const UPDATE_FNS = {
     )
 
     return editor
+  },
+  SET_FILE_BROWSER_DRAG_STATE: (
+    action: SetImageDragSessionState,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      imageDragSessionState: action.imageDragSessionState,
+    }
   },
 }
 
