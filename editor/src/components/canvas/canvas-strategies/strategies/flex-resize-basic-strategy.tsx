@@ -8,7 +8,6 @@ import {
   CanvasRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
-import { Modifiers } from '../../../../utils/modifiers'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -60,6 +59,14 @@ export function flexResizeBasicStrategy(
   ) {
     return null
   }
+  const metadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
+  const hasDimensions =
+    elementDimensions != null &&
+    (elementDimensions.width != null || elementDimensions.height != null)
 
   return {
     id: 'FLEX_RESIZE_BASIC',
@@ -93,7 +100,8 @@ export function flexResizeBasicStrategy(
     fitness:
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
+      hasDimensions
         ? 1
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
@@ -116,10 +124,6 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          const metadata = MetadataUtils.findElementByElementPath(
-            canvasState.startingMetadata,
-            selectedElement,
-          )
           if (!metadata) {
             return emptyStrategyApplicationResult
           }
@@ -137,7 +141,6 @@ export function flexResizeBasicStrategy(
           )
           const elementParentBounds =
             metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-          const elementDimensions = getElementDimensions(metadata)
 
           const makeResizeCommand = (
             name: 'width' | 'height',
@@ -146,7 +149,7 @@ export function flexResizeBasicStrategy(
             resized: number,
             parent: number | undefined,
           ): AdjustCssLengthProperty[] => {
-            if (elementDimension == null && original === resized) {
+            if (elementDimension == null || original === resized) {
               return []
             }
             return [
