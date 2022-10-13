@@ -40,6 +40,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import {
   DraggedImageProperties,
+  DragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
@@ -1001,7 +1002,7 @@ export interface SaveToGithub {
 
 export interface SetFileBrowserDragState {
   action: 'SET_FILE_BROWSER_DRAG_STATE'
-  draggedImageProperties: DraggedImageProperties | null
+  dragSessionState: DragSessionState
 }
 
 export type EditorAction =

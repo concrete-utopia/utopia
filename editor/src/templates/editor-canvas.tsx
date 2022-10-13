@@ -42,6 +42,7 @@ import {
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
+  notDragging,
   UserState,
 } from '../components/editor/store/editor-state'
 import {
@@ -915,17 +916,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          let newElementProps: Partial<DraggedImageProperties> = {
-            width: 1,
-            height: 1,
-          }
-          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
-            newElementProps = {
-              width: this.props.editor.fileBrowser.draggedImageProperties.width,
-              height: this.props.editor.fileBrowser.draggedImageProperties.height,
-              src: this.props.editor.fileBrowser.draggedImageProperties.src,
-            }
-          }
+          const newElementProps: Partial<DraggedImageProperties> =
+            this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+              ? {
+                  width: this.props.editor.dragSessionState.draggedImageProperties.width,
+                  height: this.props.editor.dragSessionState.draggedImageProperties.height,
+                  src: this.props.editor.dragSessionState.draggedImageProperties.src,
+                }
+              : {
+                  width: 1,
+                  height: 1,
+                }
 
           const newElement = createJsxImage(newUID, newElementProps)
 
@@ -963,9 +964,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.fileBrowser.draggedImageProperties != null) {
+          if (this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
-              EditorActions.setFileBrowserDragState(null),
+              EditorActions.setFileBrowserDragState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
             ])

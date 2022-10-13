@@ -47,6 +47,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
+import { draggingFromSidebar } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -574,11 +575,13 @@ class FileBrowserItemInner extends React.PureComponent<
 
     this.props.dispatch(
       [
-        EditorActions.setFileBrowserDragState({
-          width: this.props.imageFile.width ?? 200,
-          height: this.props.imageFile.height ?? 200,
-          src: imagePathURL(this.props.path),
-        }),
+        EditorActions.setFileBrowserDragState(
+          draggingFromSidebar({
+            width: this.props.imageFile.width ?? 200,
+            height: this.props.imageFile.height ?? 200,
+            src: imagePathURL(this.props.path),
+          }),
+        ),
       ],
       'everyone',
     )
