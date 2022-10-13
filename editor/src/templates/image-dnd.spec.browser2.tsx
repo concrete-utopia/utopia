@@ -382,6 +382,61 @@ describe('image dnd', () => {
 
       expect(fileContent).toBeDefined()
     })
+    it('dragging from the "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const file = await makeImageFile(imgBase64, 'hello.png')
+
+      const canvasScene = editor.renderedDOM.getByTestId('scene')
+      const canvasSceneBounds = canvasScene.getBoundingClientRect()
+
+      const canvasPoint = {
+        x: Math.floor(canvasSceneBounds.x + canvasSceneBounds.width / 2),
+        y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
+      }
+
+      dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/hello.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
   })
 
   it('dragging from the "finder" works', async () => {
