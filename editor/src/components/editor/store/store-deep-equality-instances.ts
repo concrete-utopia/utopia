@@ -309,7 +309,7 @@ import {
   projectGithubSettings,
   FileOverwriteModal,
   FileUploadInfo,
-  fileUploadInto,
+  fileUploadInfo,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3006,7 +3006,7 @@ export const FileUploadInfoKeepDeepEquality: KeepDeepEqualityCall<FileUploadInfo
     FileResultKeepDeepEquality,
     (file) => file.targetPath,
     StringKeepDeepEquality,
-    fileUploadInto,
+    fileUploadInfo,
   )
 
 export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =

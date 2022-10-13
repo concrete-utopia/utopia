@@ -309,7 +309,7 @@ export interface FileUploadInfo {
   targetPath: string
 }
 
-export function fileUploadInto(fileResult: FileResult, targetPath: string): FileUploadInfo {
+export function fileUploadInfo(fileResult: FileResult, targetPath: string): FileUploadInfo {
   return {
     fileResult: fileResult,
     targetPath: targetPath,
