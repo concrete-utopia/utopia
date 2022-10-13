@@ -294,6 +294,7 @@ import {
   EditorStateHome,
   FileDeleteModal,
   fileDeleteModal,
+  fileOverwriteModal,
   ModalDialog,
   EditorStateCodeEditorErrors,
   ErrorMessages,
@@ -306,6 +307,9 @@ import {
   GithubRepo,
   githubRepo,
   projectGithubSettings,
+  FileOverwriteModal,
+  FileUploadInfo,
+  fileUploadInfo,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -426,6 +430,16 @@ import {
   reparentTarget,
   ReparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { assertNever } from '../../../core/shared/utils'
+import {
+  assetResult,
+  AssetResult,
+  imageResult,
+  ImageResult,
+  FileResult,
+  TextResult,
+  textResult,
+} from '../../../core/shared/file-utils'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2928,8 +2942,100 @@ export const FontSettingsKeepDeepEquality: KeepDeepEqualityCall<FontSettings> =
 export const FileDeleteModalKeepDeepEquality: KeepDeepEqualityCall<FileDeleteModal> =
   combine1EqualityCall((modal) => modal.filePath, StringKeepDeepEquality, fileDeleteModal)
 
-export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> =
-  FileDeleteModalKeepDeepEquality
+export const AssetResultKeepDeepEquality: KeepDeepEqualityCall<AssetResult> = combine3EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  assetResult,
+)
+
+export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = combine5EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.size,
+  SizeKeepDeepEquality,
+  (result) => result.fileType,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  imageResult,
+)
+
+export const TextResultKeepDeepEquality: KeepDeepEqualityCall<TextResult> = combine2EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.content,
+  StringKeepDeepEquality,
+  textResult,
+)
+
+export const FileResultKeepDeepEquality: KeepDeepEqualityCall<FileResult> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'ASSET_RESULT':
+      if (newValue.type === oldValue.type) {
+        return AssetResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMAGE_RESULT':
+      if (newValue.type === oldValue.type) {
+        return ImageResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TEXT_RESULT':
+      if (newValue.type === oldValue.type) {
+        return TextResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const FileUploadInfoKeepDeepEquality: KeepDeepEqualityCall<FileUploadInfo> =
+  combine2EqualityCalls(
+    (file) => file.fileResult,
+    FileResultKeepDeepEquality,
+    (file) => file.targetPath,
+    StringKeepDeepEquality,
+    fileUploadInfo,
+  )
+
+export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =
+  combine1EqualityCall(
+    (modal) => modal.files,
+    arrayDeepEquality(FileUploadInfoKeepDeepEquality),
+    fileOverwriteModal,
+  )
+
+export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'file-delete':
+      if (newValue.type === oldValue.type) {
+        return FileDeleteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-overwrite':
+      if (newValue.type === oldValue.type) {
+        return FileOverwriteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const ProjectListingKeepDeepEquality: KeepDeepEqualityCall<ProjectListing> =
   combine5EqualityCalls(

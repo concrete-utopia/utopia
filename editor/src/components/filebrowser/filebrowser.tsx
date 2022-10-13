@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { isModifiedFile } from '../../core/model/project-file-utils'
+import { fileExists, isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -40,6 +40,7 @@ export interface FileBrowserItemInfo {
   exportedFunction: boolean
   isUploadedAssetFile: boolean
   imageFile: ImageFile | null
+  projectContents: ProjectContentTreeRoot
 }
 
 export function filterErrorMessages(
@@ -76,6 +77,7 @@ function collectFileBrowserItems(
           (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE') &&
           element.base64 == undefined,
         imageFile: element.type === 'IMAGE_FILE' ? element : null,
+        projectContents: projectContents,
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -98,6 +100,7 @@ function collectFileBrowserItems(
                 exportedFunction: typeInformation.includes('=>'),
                 isUploadedAssetFile: false,
                 imageFile: null,
+                projectContents: projectContents,
               })
             }
           })

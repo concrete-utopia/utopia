@@ -443,7 +443,5 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
-  return (
-    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
-  )
+  return strategyState.currentStrategyCommands.length > 0
 }

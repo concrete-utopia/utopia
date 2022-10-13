@@ -150,7 +150,6 @@ export interface StrategyState {
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
-  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
@@ -169,7 +168,6 @@ export function createEmptyStrategyState(
     currentStrategy: null,
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
-    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,
     status: 'success',

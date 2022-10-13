@@ -158,7 +158,6 @@ export function baseFlexReparentToAbsoluteStrategy(
                   return foldAndApplyCommandsInner(
                     editorState,
                     [],
-                    [],
                     reparentCommands,
                     commandLifecycle,
                   ).statePatches
