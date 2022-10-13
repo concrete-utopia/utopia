@@ -39,6 +39,7 @@ import type {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import {
+  ImageDragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
@@ -998,6 +999,11 @@ export interface SaveToGithub {
   targetRepository: GithubRepo
 }
 
+export interface SetImageDragSessionState {
+  action: 'SET_IMAGE_DRAG_SESSION_STATE'
+  imageDragSessionState: ImageDragSessionState
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1159,6 +1165,7 @@ export type EditorAction =
   | SetElementsToRerender
   | ToggleSelectionLock
   | SaveToGithub
+  | SetImageDragSessionState
 
 export type DispatchPriority =
   | 'everyone'

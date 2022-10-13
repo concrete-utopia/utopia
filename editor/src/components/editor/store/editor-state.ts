@@ -752,6 +752,54 @@ export function editorStateInspector(
   }
 }
 
+export interface DraggedImageProperties {
+  width: number
+  height: number
+  src: string
+}
+
+interface NotDragging {
+  type: 'NOT_DRAGGING'
+}
+
+interface DraggingFromFS {
+  type: 'DRAGGING_FROM_FS'
+}
+
+export interface DraggingFromSidebar {
+  type: 'DRAGGING_FROM_SIDEBAR'
+  draggedImageProperties: DraggedImageProperties
+}
+
+export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
+
+export function notDragging(): NotDragging {
+  return { type: 'NOT_DRAGGING' }
+}
+
+export function draggingFromFS(): DraggingFromFS {
+  return { type: 'DRAGGING_FROM_FS' }
+}
+
+export function draggingFromSidebar(draggedImage: DraggedImageProperties): DraggingFromSidebar {
+  return {
+    type: 'DRAGGING_FROM_SIDEBAR',
+    draggedImageProperties: draggedImage,
+  }
+}
+
+export function draggedImageProperties(
+  width: number,
+  height: number,
+  src: string,
+): DraggedImageProperties {
+  return {
+    width,
+    height,
+    src,
+  }
+}
+
 export interface EditorStateFileBrowser {
   minimised: boolean
   renamingTarget: string | null
@@ -970,6 +1018,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
+  imageDragSessionState: ImageDragSessionState
 }
 
 export function editorState(
@@ -1039,6 +1088,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
+  imageDragSessionState: ImageDragSessionState,
 ): EditorState {
   return {
     id: id,
@@ -1107,6 +1157,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
+    imageDragSessionState: imageDragSessionState,
   }
 }
 
@@ -1917,6 +1968,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
+    imageDragSessionState: notDragging(),
   }
 }
 
@@ -2211,6 +2263,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
+    imageDragSessionState: notDragging(),
   }
   return editor
 }
