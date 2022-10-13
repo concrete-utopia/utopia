@@ -15,13 +15,8 @@ import {
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
-import {
-  useColorTheme,
-  InspectorSectionHeader,
-  Icons,
-  FunctionIcons,
-  InspectorSectionIcons,
-} from '../../../../uuiui'
+import { useColorTheme, InspectorSectionHeader, InspectorSectionIcons } from '../../../../uuiui'
+import { ImageSourceControl } from './image-source-control'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
@@ -37,17 +32,12 @@ export const ImgSection = React.memo(() => {
         store.editor.jsxMetadata,
         selectedViews[0],
       ),
+      projectContents: store.editor.projectContents,
     }
   }, 'ImgSection')
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
     zerothElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements
-  const {
-    value: srcValue,
-    controlStyles: srcControlStyles,
-    controlStatus: srcControlStatus,
-    onSubmitValue: srcOnSubmitValue,
-    onUnsetValues: srcOnUnsetValues,
-  } = useInspectorElementInfo('src')
+  const { value: srcValue, onUnsetValues: srcOnUnsetValues } = useInspectorElementInfo('src')
 
   const {
     value: altValue,
@@ -91,17 +81,13 @@ export const ImgSection = React.memo(() => {
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+        <UIGridRow
+          padded={true}
+          variant='<---1fr--->|------172px-------|'
+          style={{ alignItems: 'flex-start', paddingBottom: 1 }} // align the label to the top, give room to the border of the combo box
+        >
           <PropertyLabel target={imgSrcProp}>Source</PropertyLabel>
-          <StringControl
-            id='image-src'
-            key='image-src'
-            testId='image-src'
-            value={srcValue}
-            onSubmitValue={srcOnSubmitValue}
-            controlStyles={srcControlStyles}
-            controlStatus={srcControlStatus}
-          />
+          <ImageSourceControl />
         </UIGridRow>
       </InspectorContextMenuWrapper>
       <InspectorContextMenuWrapper
