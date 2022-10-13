@@ -60,7 +60,6 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
-import { modelRun } from 'fast-check/*'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
