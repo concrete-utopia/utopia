@@ -94,6 +94,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
       customStrategyState,
       result.factory,
       name,
+      result.fitness,
       result.targetParent,
       result.targetIndex,
     )
@@ -122,6 +123,7 @@ function drawToInsertStrategyFactory(
   customStrategyState: CustomStrategyState,
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
+  fitness: number,
   targetParent: ElementPath | null,
   targetIndex: number | null,
 ): CanvasStrategy | null {
@@ -165,8 +167,8 @@ function drawToInsertStrategyFactory(
       ((interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
         interactionSession.interactionData.type === 'HOVER')
-        ? 1
-        : 0,
+        ? fitness
+        : 0, // TODO is this still needed here?
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {

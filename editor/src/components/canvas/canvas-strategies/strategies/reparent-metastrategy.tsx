@@ -28,6 +28,7 @@ export function getReparentFactories(
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
   missingBoundsHandling: MissingBoundsHandling
+  fitness: number
   factory: CanvasStrategyFactory
 }> {
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
@@ -38,22 +39,22 @@ export function getReparentFactories(
     targetIndex: number | null
     strategyType: ReparentStrategy // FIXME horrible name
     missingBoundsHandling: MissingBoundsHandling
+    fitness: number
     factory: CanvasStrategyFactory
   }> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
-      case 'REPARENT_TO_ABSOLUTE':
+      case 'REPARENT_TO_ABSOLUTE': {
+        const fitness =
+          missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
         if (allDraggedElementsAbsolute) {
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
-            factory: baseAbsoluteReparentStrategy(
-              result.target,
-              missingBoundsHandling,
-              result.isFallback,
-            ),
+            fitness: fitness,
+            factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
           }
         } else {
           return {
@@ -61,21 +62,25 @@ export function getReparentFactories(
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
             factory: baseFlexReparentToAbsoluteStrategy(
               result.target,
               missingBoundsHandling,
-              result.isFallback,
+              fitness,
             ),
           }
         }
-      case 'REPARENT_TO_FLEX':
+      }
+      case 'REPARENT_TO_FLEX': {
+        const fitness = 3
         if (allDraggedElementsAbsolute) {
           return {
             targetParent: result.target.newParent,
             targetIndex: result.target.newIndex,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
-            factory: baseAbsoluteReparentToFlexStrategy(result.target),
+            fitness: fitness,
+            factory: baseAbsoluteReparentToFlexStrategy(result.target, fitness),
           }
         } else {
           return {
@@ -83,9 +88,11 @@ export function getReparentFactories(
             targetIndex: result.target.newIndex,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
-            factory: baseFlexReparentToFlexStrategy(result.target),
+            fitness: fitness,
+            factory: baseFlexReparentToFlexStrategy(result.target, fitness),
           }
         }
+      }
       default:
         assertNever(result.strategy)
     }

@@ -16,6 +16,7 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
+  fitness: number,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -69,7 +70,7 @@ export function baseAbsoluteReparentToFlexStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: 3,
+      fitness: fitness,
       apply: () => {
         return applyFlexReparent(
           'strip-absolute-props',
