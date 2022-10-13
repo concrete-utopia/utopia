@@ -72,7 +72,7 @@ export const ParentOutlines = controlForStrategyMemoized(
 
 function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ColorTheme) {
   return (
-    <CanvasOffsetWrapper key={`immediate-parent-outlines`}>
+    <CanvasOffsetWrapper key={`parent-outlines`}>
       <div
         style={{
           position: 'absolute',
@@ -85,7 +85,7 @@ function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: C
           outlineWidth: 1 / scale,
           pointerEvents: 'none',
         }}
-        data-testid='immediate-parent-outlines-control'
+        data-testid='parent-outlines-control'
       />
     </CanvasOffsetWrapper>
   )
