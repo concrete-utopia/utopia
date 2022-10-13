@@ -11,11 +11,9 @@ import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
-  CanvasPoint,
   canvasPoint,
   canvasRectangle,
   CanvasRectangle,
-  offsetPoint,
   Size,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -54,8 +52,8 @@ import {
   targetPaths,
 } from '../canvas-strategy-types'
 import { boundingArea, InteractionSession, MissingBoundsHandling } from '../interaction-state'
-import { getReparentFactories } from './reparent-metastrategy'
-import { newReparentSubjects, ReparentStrategy } from './reparent-strategy-helpers'
+import { getApplicableReparentFactories } from './reparent-metastrategy'
+import { ReparentStrategy } from './reparent-strategy-helpers'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -78,7 +76,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
 
   const cmdPressed = interactionSession.interactionData.modifiers.cmd
 
-  const getReparentStrategyResult = getReparentFactories(
+  const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
     cmdPressed,
@@ -98,7 +96,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
       result.targetParent,
       result.targetIndex,
     )
-  }, getReparentStrategyResult)
+  }, applicableReparentFactories)
 }
 
 function getDrawToInsertStrategyName(

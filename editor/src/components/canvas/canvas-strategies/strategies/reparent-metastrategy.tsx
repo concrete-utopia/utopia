@@ -18,7 +18,7 @@ import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function getReparentFactories(
+export function getApplicableReparentFactories(
   canvasState: InteractionCanvasState,
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
@@ -147,7 +147,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   const cmdPressed = interactionSession.interactionData.modifiers.cmd
-  const factories = getReparentFactories(
+  const factories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
     cmdPressed,
