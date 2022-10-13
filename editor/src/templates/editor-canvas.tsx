@@ -35,6 +35,7 @@ import {
   EditorAction,
   EditorDispatch,
   editorDispatchScratchPad,
+  usingDispatch,
 } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
@@ -919,39 +920,36 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             return
           }
 
-          const scratchpad = editorDispatchScratchPad()
-
-          if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
-            scratchpad.addAction(EditorActions.setFileBrowserDragState(draggingFromFS()))
-          }
-
-          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-
-          const newElementProps: Partial<DraggedImageProperties> =
-            this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
-              ? {
-                  width: this.props.editor.dragSessionState.draggedImageProperties.width,
-                  height: this.props.editor.dragSessionState.draggedImageProperties.height,
-                  src: this.props.editor.dragSessionState.draggedImageProperties.src,
-                }
-              : {
-                  width: 1,
-                  height: 1,
-                }
-
-          const newElement = createJsxImage(newUID, newElementProps)
-
-          const elementSize: Size = resize(
-            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
-            size(200, 200),
-            'keep-aspect-ratio',
-          )
-
           const position = this.getPosition(event.nativeEvent)
 
-          this.props.dispatch(
-            [
-              ...scratchpad.actions(),
+          usingDispatch(this.props.dispatch, ({ addAction }) => {
+            if (this.props.editor.dragSessionState.type !== 'DRAGGING_FROM_SIDEBAR') {
+              addAction(EditorActions.setFileBrowserDragState(draggingFromFS()))
+            }
+
+            const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+            const newElementProps: Partial<DraggedImageProperties> =
+              this.props.editor.dragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+                ? {
+                    width: this.props.editor.dragSessionState.draggedImageProperties.width,
+                    height: this.props.editor.dragSessionState.draggedImageProperties.height,
+                    src: this.props.editor.dragSessionState.draggedImageProperties.src,
+                  }
+                : {
+                    width: 1,
+                    height: 1,
+                  }
+
+            const newElement = createJsxImage(newUID, newElementProps)
+
+            const elementSize: Size = resize(
+              size(newElementProps.width ?? 100, newElementProps.height ?? 100),
+              size(200, 200),
+              'keep-aspect-ratio',
+            )
+
+            const actions = [
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(
@@ -960,9 +958,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   boundingArea(),
                 ),
               ),
-            ],
-            'everyone',
-          )
+            ]
+
+            actions.forEach((a) => addAction(a))
+          })
         },
 
         onDragLeave: (event) => {

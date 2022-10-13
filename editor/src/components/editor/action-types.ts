@@ -1190,15 +1190,15 @@ export type DebugDispatch = (
 
 interface EditorDispatchScratchPad {
   addAction: (action: EditorAction) => void
-  actions: () => Array<EditorAction>
 }
 
-export const editorDispatchScratchPad = (): EditorDispatchScratchPad => {
+export const usingDispatch = (
+  dispatch: EditorDispatch,
+  run: (builder: EditorDispatchScratchPad) => void,
+): void => {
   let scratchPad: Array<EditorAction> = []
-  return {
-    addAction: (action: EditorAction) => scratchPad.push(action),
-    actions: () => [...scratchPad],
-  }
+  run({ addAction: (action: EditorAction) => scratchPad.push(action) })
+  dispatch(scratchPad)
 }
 
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
