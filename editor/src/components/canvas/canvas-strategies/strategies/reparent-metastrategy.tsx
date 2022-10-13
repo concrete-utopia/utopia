@@ -18,30 +18,24 @@ import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function getApplicableReparentFactories(
-  canvasState: InteractionCanvasState,
-  pointOnCanvas: CanvasPoint,
-  cmdPressed: boolean,
-  allDraggedElementsAbsolute: boolean,
-): Array<{
+interface ReparentFactoryAndDetails {
   targetParent: ElementPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
   missingBoundsHandling: MissingBoundsHandling
   fitness: number
   factory: CanvasStrategyFactory
-}> {
+}
+
+export function getApplicableReparentFactories(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+  cmdPressed: boolean,
+  allDraggedElementsAbsolute: boolean,
+): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
 
-  const factories: Array<{
-    // TODO share type
-    targetParent: ElementPath
-    targetIndex: number | null
-    strategyType: ReparentStrategy // FIXME horrible name
-    missingBoundsHandling: MissingBoundsHandling
-    fitness: number
-    factory: CanvasStrategyFactory
-  }> = reparentStrategies.map((result) => {
+  const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_TO_ABSOLUTE': {
