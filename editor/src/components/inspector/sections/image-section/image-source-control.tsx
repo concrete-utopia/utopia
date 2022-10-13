@@ -21,6 +21,10 @@ const isImgSrcLocal = (src: string, localFiles: string[]) => {
   return src.startsWith('./') && localFiles.includes(src)
 }
 
+const srcTypeFromSrcValue = (value: string, filenames: string[]) => {
+  return isImgSrcLocal(value, filenames) ? ImageSrcType.LOCAL : ImageSrcType.URL
+}
+
 const chainControlOptions: Array<SelectOption> = [
   { value: ImageSrcType.URL, label: 'URL' },
   { value: ImageSrcType.LOCAL, label: 'Local' },
@@ -51,10 +55,12 @@ export const ImageSourceControl = React.memo(() => {
     return localImageFilenames.map((filename) => ({ label: filename, value: filename }))
   }, [localImageFilenames])
 
-  const [srcType, setSrcType] = React.useState<ImageSrcType>()
+  const [srcType, setSrcType] = React.useState<ImageSrcType>(
+    srcTypeFromSrcValue(srcValue, localImageFilenames),
+  )
 
   React.useEffect(() => {
-    setSrcType(isImgSrcLocal(srcValue, localImageFilenames) ? ImageSrcType.LOCAL : ImageSrcType.URL)
+    setSrcType(srcTypeFromSrcValue(srcValue, localImageFilenames))
   }, [srcValue, localImageFilenames])
 
   const onChangeSrcType = React.useCallback(
