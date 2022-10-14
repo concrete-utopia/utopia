@@ -18,12 +18,11 @@ const getProjectImageFileNames = (projectContents: ProjectContents): string[] =>
   return Object.keys(projectContents).filter((key) => isImageFile(projectContents[key]))
 }
 
-const isImgSrcLocal = (src: string, localFiles: string[]) => {
-  return src.startsWith('./') && localFiles.includes(src)
-}
-
-const srcTypeFromSrcValue = (value: string, filenames: string[]) => {
-  return isImgSrcLocal(value, filenames) ? ImageSrcType.LOCAL : ImageSrcType.URL
+const srcTypeFromSrcValue = (value: string, filenames: string[]): ImageSrcType => {
+  if (value.startsWith('./') && filenames.includes(value)) {
+    return ImageSrcType.LOCAL
+  }
+  return ImageSrcType.URL
 }
 
 const chainControlOptions: Array<SelectOption> = [
@@ -63,7 +62,7 @@ export const ImageSourceControl = React.memo(() => {
 
   const onChangeSrcType = React.useCallback(
     (value: number) => {
-      setSrcType(value === ImageSrcType.LOCAL ? ImageSrcType.LOCAL : ImageSrcType.URL)
+      setSrcType(value)
     },
     [setSrcType],
   )
