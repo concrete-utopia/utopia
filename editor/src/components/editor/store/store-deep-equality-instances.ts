@@ -294,6 +294,7 @@ import {
   EditorStateHome,
   FileDeleteModal,
   fileDeleteModal,
+  fileOverwriteModal,
   ModalDialog,
   EditorStateCodeEditorErrors,
   ErrorMessages,
@@ -306,6 +307,14 @@ import {
   GithubRepo,
   githubRepo,
   projectGithubSettings,
+  DraggedImageProperties,
+  draggedImageProperties,
+  ImageDragSessionState,
+  DraggingFromSidebar,
+  draggingFromSidebar,
+  fileUploadInfo,
+  FileUploadInfo,
+  FileOverwriteModal,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -380,12 +389,9 @@ import {
   FileEvaluationCache,
 } from '../../../core/es-modules/package-manager/package-manager'
 import {
-  dragAndDropInsertionSubject,
-  DragAndDropInsertionSubject,
   ImageInsertionSubject,
   EditorModes,
-  elementInsertionSubject,
-  ElementInsertionSubject,
+  insertionSubject,
   InsertionSubject,
   InsertMode,
   LiveCanvasMode,
@@ -428,7 +434,17 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import {
   reparentTarget,
   ReparentTarget,
-} from '../../canvas/canvas-strategies/reparent-strategy-helpers'
+} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { assertNever } from '../../../core/shared/utils'
+import {
+  assetResult,
+  AssetResult,
+  imageResult,
+  ImageResult,
+  FileResult,
+  TextResult,
+  textResult,
+} from '../../../core/shared/file-utils'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1773,7 +1789,7 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     (target) => target.shouldReparent,
     BooleanKeepDeepEquality,
     (target) => target.newParent,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
+    ElementPathKeepDeepEquality,
     (target) => target.shouldReorder,
     BooleanKeepDeepEquality,
     (target) => target.newIndex,
@@ -1784,9 +1800,9 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
 const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
   combine2EqualityCalls(
     (target) => target['use-strict-bounds'],
-    ReparentTargetKeepDeepEquality,
+    nullableDeepEquality(ReparentTargetKeepDeepEquality),
     (target) => target['allow-missing-bounds'],
-    ReparentTargetKeepDeepEquality,
+    nullableDeepEquality(ReparentTargetKeepDeepEquality),
     reparentTargetsToFilter,
   )
 
@@ -2538,7 +2554,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
-export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubject> =
+export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine5EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
@@ -2550,8 +2566,9 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
-    elementInsertionSubject,
+    insertionSubject,
   )
+
 export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
   combine2EqualityCalls(
     (s) => s.file,
@@ -2561,38 +2578,9 @@ export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageIn
     imageInsertionSubject,
   )
 
-export const DragAndDropInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<DragAndDropInsertionSubject> =
-  combine1EqualityCall(
-    (subject) => subject.imageAssets,
-    arrayDeepEquality(ImageInsertionSubjectKeepDeepEquality),
-    dragAndDropInsertionSubject,
-  )
-
-export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'Element':
-      if (newValue.type === oldValue.type) {
-        return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DragAndDrop':
-      if (newValue.type === oldValue.type) {
-        return DragAndDropInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
-  (mode) => mode.subject,
-  InsertionSubjectKeepDeepEquality,
+  (mode) => mode.subjects,
+  arrayDeepEquality(InsertionSubjectKeepDeepEquality),
   EditorModes.insertMode,
 )
 
@@ -2807,6 +2795,52 @@ export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorSt
     editorStateInspector,
   )
 
+export const DraggedImagePropertiesDeepEquality: KeepDeepEqualityCall<DraggedImageProperties> =
+  combine3EqualityCalls(
+    (draggedImage) => draggedImage.width,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.height,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.src,
+    StringKeepDeepEquality,
+    draggedImageProperties,
+  )
+
+export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingFromSidebar> =
+  combine2EqualityCalls(
+    (d) => d.draggedImageProperties,
+    DraggedImagePropertiesDeepEquality,
+    (d) => d.type,
+    StringKeepDeepEquality,
+    draggingFromSidebar,
+  )
+
+export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<ImageDragSessionState> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'NOT_DRAGGING':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_FS':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_SIDEBAR':
+      if (newValue.type === oldValue.type) {
+        return DraggingFromSidebarKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateFileBrowserKeepDeepEquality: KeepDeepEqualityCall<EditorStateFileBrowser> =
   combine3EqualityCalls(
     (fileBrowser) => fileBrowser.minimised,
@@ -2959,8 +2993,100 @@ export const FontSettingsKeepDeepEquality: KeepDeepEqualityCall<FontSettings> =
 export const FileDeleteModalKeepDeepEquality: KeepDeepEqualityCall<FileDeleteModal> =
   combine1EqualityCall((modal) => modal.filePath, StringKeepDeepEquality, fileDeleteModal)
 
-export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> =
-  FileDeleteModalKeepDeepEquality
+export const AssetResultKeepDeepEquality: KeepDeepEqualityCall<AssetResult> = combine3EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  assetResult,
+)
+
+export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = combine5EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.size,
+  SizeKeepDeepEquality,
+  (result) => result.fileType,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  imageResult,
+)
+
+export const TextResultKeepDeepEquality: KeepDeepEqualityCall<TextResult> = combine2EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.content,
+  StringKeepDeepEquality,
+  textResult,
+)
+
+export const FileResultKeepDeepEquality: KeepDeepEqualityCall<FileResult> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'ASSET_RESULT':
+      if (newValue.type === oldValue.type) {
+        return AssetResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMAGE_RESULT':
+      if (newValue.type === oldValue.type) {
+        return ImageResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TEXT_RESULT':
+      if (newValue.type === oldValue.type) {
+        return TextResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const FileUploadInfoKeepDeepEquality: KeepDeepEqualityCall<FileUploadInfo> =
+  combine2EqualityCalls(
+    (file) => file.fileResult,
+    FileResultKeepDeepEquality,
+    (file) => file.targetPath,
+    StringKeepDeepEquality,
+    fileUploadInfo,
+  )
+
+export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =
+  combine1EqualityCall(
+    (modal) => modal.files,
+    arrayDeepEquality(FileUploadInfoKeepDeepEquality),
+    fileOverwriteModal,
+  )
+
+export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'file-delete':
+      if (newValue.type === oldValue.type) {
+        return FileDeleteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-overwrite':
+      if (newValue.type === oldValue.type) {
+        return FileOverwriteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const ProjectListingKeepDeepEquality: KeepDeepEqualityCall<ProjectListing> =
   combine5EqualityCalls(
@@ -3253,6 +3379,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubSettings,
   )
 
+  const imageDragSessionStateEqual = DragSessionStateKeepDeepEquality(
+    oldValue.imageDragSessionState,
+    newValue.imageDragSessionState,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3319,7 +3450,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
-    githubSettingsResults.areEqual
+    githubSettingsResults.areEqual &&
+    imageDragSessionStateEqual.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3391,6 +3523,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
+      imageDragSessionStateEqual.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

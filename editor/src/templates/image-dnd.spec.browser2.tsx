@@ -1,20 +1,34 @@
-import { fireEvent } from '@testing-library/react'
-import { ProjectContentTreeRoot } from '../components/assets'
+import Sinon from 'sinon'
+import { loggedInUser } from '../common/user'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
-  makeDragEvent,
+  dragElementToPoint,
+  dropElementAtPoint,
   mouseDownAtPoint,
   mouseMoveToPoint,
-  mouseUpAtPoint,
+  switchDragAndDropElementTargets,
 } from '../components/canvas/event-helpers.test-utils'
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithProjectContent,
 } from '../components/canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
 import { LeftMenuTab } from '../components/editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUid } from '../core/model/element-template-utils'
-import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../utils/utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../core/model/element-template-utils.test-utils'
+import { correctProjectContentsPath } from '../core/model/project-file-utils'
+import { defer } from '../utils/utils'
+import { wait } from '../utils/utils.test-utils'
+import * as ImageDrop from './image-drop'
+
+const MOCK_UIDS = Array(10)
+  .fill(0)
+  .map((_, i) => `${i}`)
 
 const contents = {
   'package.json': {
@@ -215,86 +229,219 @@ const contents = {
 } as ProjectContentTreeRoot
 
 describe('image dnd', () => {
-  it('dragging from the sidebar works', async () => {
-    const newUID = 'imgimgimg'
-    FOR_TESTS_setNextGeneratedUid(newUID)
+  var dropDone: ReturnType<typeof defer> = defer()
+  var sandbox = Sinon.createSandbox()
+  var originalOnDrop = ImageDrop.DropHandlers.onDrop
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
-    await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
-      true,
-    )
-    await editor.getDispatchFollowUpActionsFinished()
+  beforeEach(() => {
+    dropDone = defer()
+    const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
+    onDropStub.callsFake((e, f, c) => originalOnDrop(e, f, c).then(() => dropDone.resolve()))
+  })
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  afterEach(() => {
+    sandbox.restore()
+  })
 
-    const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
-    const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = slightlyOffsetPointBecauseVeryWeirdIssue({
-      x: dragHandleBounds.x + dragHandleBounds.width / 2,
-      y: dragHandleBounds.y + dragHandleBounds.height / 2,
+  describe('filebrowser and canvas combined interactions', () => {
+    it('dragging from the filebrowser to the canvas inserts the image', async () => {
+      const newUID = 'imgimgimg'
+      FOR_TESTS_setNextGeneratedUid(newUID)
+
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
+
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
+
+      const endPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
+
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      dropElementAtPoint(canvasControlsLayer, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      import { App } from '/src/app.js'
+      import { View, Rectangle } from 'utopia-api'
+      import { FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='0cd'>
+          <Scene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 207,
+              top: 126,
+              paddingLeft: 91,
+            }}
+            data-testid='scene'
+            data-label='Playground'
+            data-uid='3fc'
+          >
+            <img
+              src='./assets/stuff.png'
+              style={{
+                position: 'absolute',
+                width: 200,
+                height: 62,
+                top: 349,
+                left: 296,
+              }}
+              data-uid='${newUID}'
+            />
+          </Scene>
+        </Storyboard>
+      )
+  `),
+      )
     })
+    it('dragging from the filebrowser to the canvas and back to the filebrowsers clears interaction session', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
 
-    const target = editor.renderedDOM.getByTestId('scene')
-    const targetBounds = target.getBoundingClientRect()
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
-    }
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
 
-    mouseMoveToPoint(imageDragHandle, handleCenter)
-    mouseDownAtPoint(imageDragHandle, handleCenter)
-    mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
-    await editor.getDispatchFollowUpActionsFinished()
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
 
-    expect(
-      editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
-    ).toBeGreaterThan(0)
+      const canvasPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
 
-    mouseUpAtPoint(canvasControlsLayer, endPoint)
-    await editor.getDispatchFollowUpActionsFinished()
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { App } from '/src/app.js'
-import { View, Rectangle } from 'utopia-api'
-import { FlexRow } from 'utopia-api'
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
 
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 207,
-        top: 126,
-        paddingLeft: 91,
-      }}
-      data-testid='scene'
-      data-label='Playground'
-      data-uid='3fc'
-    />
-    <img
-      src='./assets/stuff.png'
-      style={{
-        position: 'absolute',
-        width: 200,
-        height: 62,
-        top: 475,
-        left: 3,
-      }}
-      data-uid='imgimgimg'
-    />
-  </Storyboard>
-)
-`)
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/stuff.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
+    it('dragging from the "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const file = await makeImageFile(imgBase64, 'hello.png')
+
+      const canvasScene = editor.renderedDOM.getByTestId('scene')
+      const canvasSceneBounds = canvasScene.getBoundingClientRect()
+
+      const canvasPoint = {
+        x: Math.floor(canvasSceneBounds.x + canvasSceneBounds.width / 2),
+        y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
+      }
+
+      dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/hello.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
   })
 
   it('dragging from the "finder" works', async () => {
-    const newUID = 'imgimgimg'
-    FOR_TESTS_setNextGeneratedUid(newUID)
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -305,22 +452,16 @@ export var storyboard = (
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
-      x: targetBounds.x + targetBounds.width / 2,
-      y: targetBounds.y + targetBounds.height / 2,
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('drag', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drag', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(250) // read the image
+    await dropDone
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -342,20 +483,263 @@ export var storyboard = (
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
-    />
-    <img
-      alt=''
-      src='./assets/chucknorris.png'
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging existing filename from the "finder" autoincrements filename', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const file = await makeImageFile(imgBase64, 'stuff.png')
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
       style={{
+        width: 700,
+        height: 759,
         position: 'absolute',
-        left: 602.5,
-        top: 505.5,
-        width: 1,
-        height: 1,
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
       }}
-      data-uid='imgimgimg'
-      data-aspect-ratio-locked
-    />
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='./assets/stuff_2.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging multiple images from the "finder" works', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const files = [
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'budspencer.png'),
+      await makeImageFile(imgBase64, 'brucelee.png'),
+    ]
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
+    }
+
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='${imgBase64}'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging multiple images with the same name from the "finder" works', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const files = [
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'chucknorris.png'),
+      await makeImageFile(imgBase64, 'brucelee.png'),
+    ]
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+        paddingLeft: 91,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='1'
+      />
+      <img
+        src='./assets/chucknorris.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='2'
+      />
+      <img
+        src='./assets/brucelee.png'
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          top: 280,
+          left: 296,
+        }}
+        data-uid='3'
+      />
+    </Scene>
   </Storyboard>
 )
 `)

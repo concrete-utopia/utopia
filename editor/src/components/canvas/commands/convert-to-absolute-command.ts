@@ -1,8 +1,13 @@
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorState } from '../../editor/store/editor-state'
+import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -37,8 +42,33 @@ export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
     propsToUpdate,
   )
 
+  const updatedMetadataPatch = addPositionAbsoluteToMetadata(
+    editorState.jsxMetadata,
+    command.target,
+  )
+
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: [propertyUpdatePatch, updatedMetadataPatch],
     commandDescription: 'Switch Position to Absolute',
+  }
+}
+
+function addPositionAbsoluteToMetadata(
+  metadataMap: ElementInstanceMetadataMap,
+  target: ElementPath,
+): EditorStatePatch {
+  const existingMetadata = MetadataUtils.findElementByElementPath(metadataMap, target)
+  if (existingMetadata == null) {
+    return {}
+  }
+
+  return {
+    jsxMetadata: {
+      [EP.toString(target)]: {
+        specialSizeMeasurements: {
+          position: { $set: 'absolute' },
+        },
+      },
+    },
   }
 }

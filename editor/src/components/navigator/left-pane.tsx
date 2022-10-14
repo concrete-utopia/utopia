@@ -835,21 +835,28 @@ const GithubPane = React.memo(() => {
                   <span>NOTE: These will replace the current project contents.</span>
                 </UIGridRow>,
               )}
-              {branchesForRepository.branches.map((branch, index) => {
-                function loadContentForBranch() {
-                  if (parsedTargetRepository != null) {
-                    void getBranchContent(dispatch, parsedTargetRepository, branch.name)
-                  }
-                }
-                return (
-                  <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
-                    <span>{branch.name}</span>
-                    <Button spotlight highlight onMouseUp={loadContentForBranch}>
-                      Load
-                    </Button>
-                  </UIGridRow>
-                )
-              })}
+              {when(
+                branchesForRepository.branches.length > 0,
+                <div
+                  style={{ overflowY: 'auto', height: UtopiaTheme.layout.rowHeight.normal * 11.5 }}
+                >
+                  {branchesForRepository.branches.map((branch, index) => {
+                    function loadContentForBranch() {
+                      if (parsedTargetRepository != null) {
+                        void getBranchContent(dispatch, parsedTargetRepository, branch.name)
+                      }
+                    }
+                    return (
+                      <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
+                        <span>{branch.name}</span>
+                        <Button spotlight highlight onMouseUp={loadContentForBranch}>
+                          Load
+                        </Button>
+                      </UIGridRow>
+                    )
+                  })}
+                </div>,
+              )}
             </>
           )
 

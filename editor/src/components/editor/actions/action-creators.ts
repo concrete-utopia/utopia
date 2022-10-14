@@ -209,9 +209,11 @@ import type {
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
+  SetImageDragSessionState as SetDragSessionState,
 } from '../action-types'
-import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
+  ImageDragSessionState,
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
@@ -458,7 +460,7 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
   )
 }
 
@@ -1559,5 +1561,14 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+  }
+}
+
+export function setImageDragSessionState(
+  imageDragSessionState: ImageDragSessionState,
+): SetDragSessionState {
+  return {
+    action: 'SET_IMAGE_DRAG_SESSION_STATE',
+    imageDragSessionState: imageDragSessionState,
   }
 }

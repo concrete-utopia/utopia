@@ -2,7 +2,7 @@ import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
-import { NO_OP } from '../../core/shared/utils'
+import { assertNever, NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -522,10 +522,10 @@ export function pressKey(
 
 // https://github.com/testing-library/react-testing-library/issues/339
 export function makeDragEvent(
-  type: 'drag' | 'drop',
+  type: 'dragstart' | 'dragenter' | 'dragover' | 'dragleave' | 'dragend' | 'drop',
   target: Element | Node,
   clientCoords: { x: number; y: number },
-  fileList: Array<File>,
+  fileList?: Array<File>,
 ): Event {
   const opts = {
     clientX: clientCoords.x,
@@ -534,19 +534,101 @@ export function makeDragEvent(
     bubbles: true,
     cancelable: true,
   }
-  const fileDropEvent =
-    type === 'drop' ? createEvent.drop(target, opts) : createEvent.drag(target, opts)
 
-  Object.defineProperty(fileDropEvent, 'dataTransfer', {
-    value: {
-      getData: () => '',
-      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
-      files: {
-        item: (itemIndex: number) => fileList[itemIndex],
-        length: fileList.length,
+  let createEventForType: (node: Node, options: any) => Event = createEvent.drop
+  switch (type) {
+    case 'dragend':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragenter':
+      createEventForType = createEvent.dragEnter
+      break
+    case 'dragover':
+      createEventForType = createEvent.dragOver
+      break
+    case 'dragleave':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragstart':
+      createEventForType = createEvent.dragStart
+      break
+    default:
+    case 'drop':
+      createEventForType = createEvent.drop
+      break
+  }
+
+  const fileDropEvent: Event = createEventForType(target, opts)
+
+  if (fileList != null) {
+    Object.defineProperty(fileDropEvent, 'dataTransfer', {
+      value: {
+        getData: () => '',
+        items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
+        files: {
+          item: (itemIndex: number) => fileList[itemIndex],
+          length: fileList.length,
+        },
       },
-    },
-  })
+    })
+  }
 
   return fileDropEvent
+}
+
+export function dragElementToPoint(
+  eventSourceElement: HTMLElement | null,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  if (eventSourceElement != null) {
+    act(() => {
+      fireEvent(
+        eventSourceElement,
+        makeDragEvent('dragstart', eventSourceElement, startPoint, fileList),
+      )
+    })
+  }
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
+}
+
+export function dropElementAtPoint(
+  targetElement: HTMLElement,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('drop', targetElement, endPoint, fileList))
+  })
+}
+
+export function switchDragAndDropElementTargets(
+  startingElement: HTMLElement,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(startingElement, makeDragEvent('dragleave', startingElement, startPoint, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
 }

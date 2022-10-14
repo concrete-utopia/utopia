@@ -140,41 +140,23 @@ describe('interactionCancel', () => {
         boundingArea(),
       ),
     )
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { selectedViews: { $set: [] } }),
-      'end-interaction',
-    ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
-    expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategy).toBeNull()
   })
 })
 
-const testStrategy: MetaCanvasStrategy = () => [
+const testStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+) => [
   {
     id: 'TEST_STRATEGY',
-    name: () => 'Test Strategy',
-    isApplicable: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession | null,
-      metadata: ElementInstanceMetadataMap,
-    ): boolean {
-      return true
-    },
+    name: 'Test Strategy',
     controlsToRender: [],
-    fitness: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession,
-    ): number {
-      return 10
-    },
-    apply: function (
-      canvasState: InteractionCanvasState,
-      interactionSession: InteractionSession,
-    ): StrategyApplicationResult {
+    fitness: 10,
+    apply: function (): StrategyApplicationResult {
       return strategyApplicationResult([
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
       ])
@@ -198,7 +180,6 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -237,10 +218,9 @@ describe('interactionStart', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -289,7 +269,6 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -331,7 +310,6 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -370,10 +348,9 @@ describe('interactionUpdatex', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -423,7 +400,6 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -447,32 +423,6 @@ describe('interactionUpdatex', () => {
   })
 })
 
-describe('interactionUpdate without strategy', () => {
-  it('processes the accumulated commands', () => {
-    const editorStore = createEditorStore(
-      createInteractionViaMouse(
-        canvasPoint({ x: 100, y: 200 }),
-        { alt: false, shift: false, ctrl: false, cmd: false },
-        boundingArea(),
-      ),
-    )
-    editorStore.strategyState.currentStrategy = null
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
-      'end-interaction',
-    ).editorStatePatches
-    const actualResult = interactionUpdate(
-      [],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'non-interaction',
-    )
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-  })
-})
-
 describe('interactionHardReset', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
@@ -493,7 +443,6 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -532,10 +481,9 @@ describe('interactionHardReset', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -590,7 +538,6 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -611,79 +558,6 @@ describe('interactionHardReset', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(`undefined`)
-  })
-})
-
-describe('interactionUpdate with accumulating keypresses', () => {
-  it('steps an interaction session correctly', () => {
-    let interactionSession = createInteractionViaKeyboard(
-      ['left'],
-      { alt: false, shift: false, ctrl: false, cmd: false },
-      boundingArea(),
-    )
-
-    const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY'
-    // the currentStrategyCommands should be added to accumulatedCommands
-    editorStore.strategyState.currentStrategyCommands = [
-      wildcardPatch('always', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
-    ]
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { focusedPanel: { $set: 'codeEditor' } }),
-      'end-interaction',
-    ).editorStatePatches
-
-    const actualResult = interactionUpdate(
-      [testStrategy],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'interaction-create-or-update',
-    )
-
-    // accumulatedCommands should have the currentStrategyCommands added
-    expect(actualResult.newStrategyState.accumulatedPatches).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "focusedPanel": Object {
-            "$set": "codeEditor",
-          },
-        },
-        Object {
-          "selectedViews": Object {
-            "$set": Array [
-              Object {
-                "parts": Array [
-                  Array [
-                    "aaa",
-                  ],
-                ],
-                "type": "elementpath",
-              },
-            ],
-          },
-        },
-      ]
-    `)
-
-    // accumulatedCommands + currentStrategyCommands + the command coming from the strategy should all be applied to the patch
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "parts": Array [
-            Array [
-              "aaa",
-            ],
-          ],
-          "type": "elementpath",
-        },
-      ]
-    `)
-    expect(actualResult.unpatchedEditorState.selectedViews).toHaveLength(0)
-    expect(actualResult.patchedEditorState.focusedPanel).toEqual('codeEditor')
-    expect(actualResult.unpatchedEditorState.focusedPanel).toEqual('canvas')
   })
 })
 
@@ -717,7 +591,6 @@ describe('interactionUpdate with user changed strategy', () => {
     const actualResult = interactionUpdate([testStrategy], editorStore, result, 'non-interaction')
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
@@ -760,10 +633,9 @@ describe('interactionUpdate with user changed strategy', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
-              "fitness": [Function],
+              "fitness": 10,
               "id": "TEST_STRATEGY",
-              "isApplicable": [Function],
-              "name": [Function],
+              "name": "Test Strategy",
             },
           },
         ],
@@ -819,7 +691,6 @@ describe('interactionUpdate with user changed strategy', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -955,21 +826,16 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
       true,
       [
-        () => [
+        (canvasState: InteractionCanvasState, interactionSession: InteractionSession | null) => [
           {
             id: 'TEST_STRATEGY',
-            name: () => 'Test Strategy',
-            isApplicable: function (): boolean {
-              return true
-            },
+            name: 'Test Strategy',
             controlsToRender: [],
-            fitness: function (): number {
-              return 10
-            },
-            apply: function (
-              canvasState: InteractionCanvasState,
-              interactionSession: InteractionSession,
-            ): StrategyApplicationResult {
+            fitness: 10,
+            apply: function (): StrategyApplicationResult {
+              if (interactionSession == null) {
+                return strategyApplicationResult([])
+              }
               expect(canvasState.startingMetadata).toBe(interactionSession.latestMetadata)
               expect(canvasState.startingAllElementProps).toBe(
                 interactionSession.latestAllElementProps,
@@ -991,21 +857,16 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     // dispatching a no-op change to the interaction session to trigger the strategies
 
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
-      () => [
+      (canvasState: InteractionCanvasState, interactionSession: InteractionSession | null) => [
         {
           id: 'TEST_STRATEGY',
-          name: () => 'Test Strategy',
-          isApplicable: function (): boolean {
-            return true
-          },
+          name: 'Test Strategy',
           controlsToRender: [],
-          fitness: function (): number {
-            return 10
-          },
-          apply: function (
-            canvasState: InteractionCanvasState,
-            interactionSession: InteractionSession,
-          ): StrategyApplicationResult {
+          fitness: 10,
+          apply: function (): StrategyApplicationResult {
+            if (interactionSession == null) {
+              return strategyApplicationResult([])
+            }
             expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
             expect(canvasState.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,

@@ -1,46 +1,25 @@
-import { elementPath } from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
-import {
-  findCanvasStrategy,
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-  RegisteredCanvasStrategies,
-} from './canvas-strategies'
-import {
-  boundingArea,
-  createEmptyStrategyState,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
-import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act } from '@testing-library/react'
+import { elementPath } from '../../../core/shared/element-path'
+import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { selectComponents } from '../../editor/actions/action-creators'
+import CanvasActions from '../canvas-actions'
+import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { selectComponents } from '../../editor/actions/action-creators'
-import CanvasActions from '../canvas-actions'
-import { AllElementProps } from '../../editor/store/editor-state'
-import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { forceNotNull } from '../../..//core/shared/optional-utils'
+import {
+  findCanvasStrategy,
+  pickCanvasStateFromEditorState,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
-
-const baseStrategyState = (): StrategyState => ({
-  currentStrategy: null as any, // the strategy does not use this
-  currentStrategyFitness: null as any, // the strategy does not use this
-  currentStrategyCommands: null as any, // the strategy does not use this
-  accumulatedPatches: null as any, // the strategy does not use this
-  commandDescriptions: null as any, // the strategy does not use this
-  sortedApplicableStrategies: null as any, // the strategy does not use this
-  status: null as any, // the strategy does not use this
-  startingMetadata: null as any, // the strategy does not use this
-  startingAllElementProps: null as any, // the strategy does not use this
-  customStrategyState: defaultCustomStrategyState(),
-})
+import { boundingArea, InteractionSession } from './interaction-state'
+import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 interface StyleRectangle {
   left: string

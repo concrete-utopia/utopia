@@ -31,22 +31,19 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch, isLoggedIn } from '../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  EditorModes,
-  Mode,
-  isLiveMode,
-  InsertMode,
-  insertionSubjectIsJSXElement,
-} from '../components/editor/editor-modes'
+import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
   DerivedState,
+  DraggedImageProperties,
+  draggingFromFS,
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
+  notDragging,
   UserState,
 } from '../components/editor/store/editor-state'
 import {
@@ -60,11 +57,7 @@ import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
-import {
-  getActionsForClipboardItems,
-  parseClipboardData,
-  createDirectInsertImageActions,
-} from '../utils/clipboard'
+import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
@@ -85,8 +78,6 @@ import {
   WindowRectangle,
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { ImageResult } from '../core/shared/file-utils'
-import { fastForEach } from '../core/shared/utils'
 import { UtopiaStyles } from '../uuiui'
 import {
   CanvasMousePositionRaw,
@@ -107,17 +98,17 @@ import { MouseButtonsPressed } from '../utils/mouse'
 import {
   existingReparentSubjects,
   getReparentTargetUnified,
-} from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
-import { getDragTargets } from '../components/canvas/canvas-strategies/shared-move-strategies-helpers'
+} from '../components/canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
-import { imagePathURL } from '../common/server'
+import { createJsxImage } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
+import { DropHandlers } from './image-drop'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -214,16 +205,14 @@ function handleCanvasEvent(
 
       optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
-      if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
-        optionalDragStateAction = [
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-              type: 'RESIZE_HANDLE',
-              edgePosition: { x: 1, y: 1 },
-            }),
-          ),
-        ]
-      }
+      optionalDragStateAction = [
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+            type: 'RESIZE_HANDLE',
+            edgePosition: { x: 1, y: 1 },
+          }),
+        ),
+      ]
     }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -866,14 +855,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getModeSpecificCursor(): CSSCursor | null {
     if (this.props.editor.mode.type === 'insert') {
-      if (
-        this.props.editor.mode.subject != null &&
-        Utils.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
-      ) {
-        return CSSCursor.TextInsert
-      } else {
-        return CSSCursor.Insert
-      }
+      return CSSCursor.Insert
     } else {
       return null
     }
@@ -933,177 +915,86 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             return
           }
 
+          const position = this.getPosition(event.nativeEvent)
+
+          const setDragSessionStateActions =
+            this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
+              ? [EditorActions.setImageDragSessionState(draggingFromFS())]
+              : []
+
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElement = createJsxImage(newUID, {
-            width: 1,
-            height: 1,
-          })
+          const newElementProps: Partial<DraggedImageProperties> =
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+              ? {
+                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
+                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
+                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
+                }
+              : {
+                  width: 1,
+                  height: 1,
+                }
 
-          this.props.dispatch(
-            [
-              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
-              CanvasActions.createInteractionSession(
-                createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-              ),
-            ],
-            'everyone',
+          const newElement = createJsxImage(newUID, newElementProps)
+
+          const elementSize: Size = resize(
+            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
+            size(200, 200),
+            'keep-aspect-ratio',
           )
+
+          this.props.dispatch([
+            ...setDragSessionStateActions,
+            EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
+            CanvasActions.createInteractionSession(
+              createInteractionViaMouse(
+                position.canvasPositionRounded,
+                emptyModifiers,
+                boundingArea(),
+              ),
+            ),
+          ])
         },
 
         onDragLeave: (event) => {
-          if (event.clientX <= 0 && event.clientY <= 0) {
-            this.props.dispatch([
-              CanvasActions.clearInteractionSession(false),
-              EditorActions.switchEditorMode(EditorModes.selectMode(null)),
-            ])
-          }
+          this.props.dispatch([
+            CanvasActions.clearInteractionSession(false),
+            EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+            EditorActions.setImageDragSessionState(notDragging()),
+          ])
         },
 
         onDrop: (event: React.DragEvent) => {
+          if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+            this.props.dispatch([
+              EditorActions.setImageDragSessionState(notDragging()),
+              CanvasActions.clearInteractionSession(true),
+              EditorActions.switchEditorMode(EditorModes.selectMode()),
+            ])
+            return
+          }
           event.preventDefault()
           event.stopPropagation()
+
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          const getPastedImages = async () => {
-            const result = await parseClipboardData(event.dataTransfer)
-            // Snip out the images only from the result.
-            let pastedImages: Array<ImageResult> = []
-            fastForEach(result.files, (pastedFile) => {
-              if (pastedFile.type === 'IMAGE_RESULT') {
-                pastedImages.push({
-                  ...pastedFile,
-                  filename: `/assets/${pastedFile.filename}`,
-                })
-              }
-            })
-            return pastedImages
-          }
-
-          const insertImageFromClipboard = async (elementPath: ElementPath) => {
-            this.props.dispatch(
-              [
-                CanvasActions.clearInteractionSession(false),
-                EditorActions.switchEditorMode(EditorModes.selectMode()),
-              ],
-              'everyone',
-            )
-            const result = await parseClipboardData(event.dataTransfer)
-            const pastedImages = await getPastedImages()
-
-            const actions = createDirectInsertImageActions(
-              pastedImages,
-              mousePosition.canvasPositionRounded,
-              this.props.model.scale,
-              elementPath,
-            )
-
-            this.props.dispatch(actions, 'everyone')
-
-            return result.files[0].filename
-          }
-
-          if (this.props.editor.mode.type === 'select') {
-            const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets == null
-          ) {
-            const insertionTarget = this.props.editor.highlightedViews[0]
-            return insertImageFromClipboard(insertionTarget)
-          }
-
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'Element'
-          ) {
-            void getPastedImages().then((images) => {
-              if (images.length === 0) {
-                return this.props.dispatch([
-                  CanvasActions.clearInteractionSession(false),
-                  EditorActions.switchEditorMode(EditorModes.selectMode()),
-                  EditorActions.showToast({
-                    id: 'image-drag-drop',
-                    level: 'WARNING',
-                    message: "Didn't find any images to insert",
-                    persistent: false,
-                  }),
-                ])
-              }
-              const image = images[0]
-
-              const { frame } = getFrameAndMultiplierWithResize(
-                mousePosition.canvasPositionRounded,
-                image.filename,
-                image.size,
-                this.props.editor.canvas.scale,
-              )
-
-              const { saveImageActions, src } = isLoggedIn(this.props.userState.loginState)
-                ? {
-                    saveImageActions: [
-                      EditorActions.saveAsset(
-                        image.filename,
-                        image.fileType,
-                        image.base64Bytes,
-                        image.hash,
-                        EditorActions.saveImageDetails(
-                          image.size,
-                          EditorActions.saveImageReplace(),
-                        ),
-                      ),
-                    ],
-                    src: imagePathURL(image.filename),
-                  }
-                : { saveImageActions: [], src: image.base64Bytes }
-
-              const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-              const elementSize: Size = resize(
-                size(frame.width ?? 100, frame.height ?? 100),
-                size(200, 200),
-                'keep-aspect-ratio',
-              )
-              const newElement = createJsxImage(newUID, {
-                width: elementSize.width,
-                height: elementSize.height,
-                top: mousePosition.canvasPositionRounded.y,
-                left: mousePosition.canvasPositionRounded.x,
-                src: src,
-              })
-
-              this.props.dispatch(
-                [
-                  ...saveImageActions,
-                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-                ],
-                'everyone',
-              )
+          void DropHandlers.onDrop(
+            event,
+            () => {
+              this.handleMouseMove(event.nativeEvent)
               this.handleMouseUp(event.nativeEvent)
-            })
-          }
+            },
+            {
+              scale: this.props.model.scale,
+              editor: this.props.editor,
+              mousePosition: mousePosition,
+              dispatch: this.props.dispatch,
+              loginState: this.props.userState.loginState,
+            },
+          )
 
-          if (
-            this.props.editor.mode.type === 'insert' &&
-            this.props.editor.mode.subject.type === 'DragAndDrop' &&
-            this.props.editor.mode.subject.imageAssets != null
-          ) {
-            let actions: Array<EditorAction> = []
-            fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
-              actions.push(
-                EditorActions.insertDroppedImage(
-                  imageAsset.file,
-                  imageAsset.path,
-                  mousePosition.canvasPositionRounded,
-                ),
-              )
-            })
-            actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-            return this.props.dispatch(actions, 'everyone')
-          }
+          return
         },
 
         onWheel: (event) => {

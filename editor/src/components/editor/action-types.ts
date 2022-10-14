@@ -39,6 +39,7 @@ import type {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import {
+  ImageDragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
@@ -998,6 +999,11 @@ export interface SaveToGithub {
   targetRepository: GithubRepo
 }
 
+export interface SetImageDragSessionState {
+  action: 'SET_IMAGE_DRAG_SESSION_STATE'
+  imageDragSessionState: ImageDragSessionState
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1159,6 +1165,7 @@ export type EditorAction =
   | SetElementsToRerender
   | ToggleSelectionLock
   | SaveToGithub
+  | SetImageDragSessionState
 
 export type DispatchPriority =
   | 'everyone'
@@ -1178,6 +1185,19 @@ export type DebugDispatch = (
   priority?: DispatchPriority,
 ) => {
   entireUpdateFinished: Promise<any>
+}
+
+interface EditorDispatchScratchPad {
+  addActions: (action: Array<EditorAction>) => void
+}
+
+export const usingDispatch = (
+  dispatch: EditorDispatch,
+  run: (builder: EditorDispatchScratchPad) => void,
+): void => {
+  let scratchPad: Array<EditorAction> = []
+  run({ addActions: (actions: Array<EditorAction>) => (scratchPad = [...scratchPad, ...actions]) })
+  dispatch(scratchPad)
 }
 
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
