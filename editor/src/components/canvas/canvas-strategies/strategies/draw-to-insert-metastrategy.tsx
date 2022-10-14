@@ -136,7 +136,7 @@ function drawToInsertStrategyFactory(
       ? null // TODO does the Storyboard Path need to be used here?
       : EP.appendToPath(targetParent, insertionSubject.uid)
   return {
-    id: name, // TODO review this before merge
+    id: name,
     name: name,
     controlsToRender: [
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
