@@ -207,6 +207,7 @@ data BlobEntryType = TextEntryType
                    | AssetEntryType
                    deriving (Eq, Ord, Show)
 
+-- Keep in sync with core/model/project-file-utils.ts.
 expandedMimeMap :: MimeMap
 expandedMimeMap = defaultMimeMap <> M.fromList
   [ ("ts", "application/typescript")
@@ -214,12 +215,15 @@ expandedMimeMap = defaultMimeMap <> M.fromList
   , ("jsx", "application/javascript")
   ]
 
+-- Keep in sync with core/model/project-file-utils.ts.
 looksLikeJavaScript :: MimeType -> Bool
 looksLikeJavaScript mimeType = B.isSuffixOf "/javascript" mimeType || B.isSuffixOf "/typescript" mimeType
 
+-- Keep in sync with core/model/project-file-utils.ts.
 looksLikeText :: MimeType -> Bool
 looksLikeText mimeType = looksLikeJavaScript mimeType || B.isPrefixOf "text/" mimeType || B.isPrefixOf "application/json" mimeType
 
+-- Keep in sync with core/model/project-file-utils.ts.
 looksLikeImage :: MimeType -> Bool
 looksLikeImage mimeType = B.isPrefixOf "image/" mimeType
 
