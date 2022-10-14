@@ -11,11 +11,11 @@ import { StringControl } from '../../controls/string-control'
 
 type ImageSrcType = 'url' | 'local'
 
-const getProjectImageFileNames = (projectContents: ProjectContents): string[] => {
+function getProjectImageFileNames(projectContents: ProjectContents): string[] {
   return Object.keys(projectContents).filter((key) => isImageFile(projectContents[key]))
 }
 
-const srcTypeFromSrcValue = (value: string, filenames: string[]): ImageSrcType => {
+function srcTypeFromSrcValue(value: string, filenames: string[]): ImageSrcType {
   if (value.startsWith('./') && filenames.includes(value)) {
     return 'local'
   }
