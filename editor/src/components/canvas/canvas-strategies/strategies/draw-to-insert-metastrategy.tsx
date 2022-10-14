@@ -16,6 +16,7 @@ import {
   CanvasRectangle,
   Size,
 } from '../../../../core/shared/math-utils'
+import { maybeToArray } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { InsertionSubject } from '../../../editor/editor-modes'
@@ -130,6 +131,10 @@ function drawToInsertStrategyFactory(
     return null
   }
   const insertionSubject = insertionSubjects[0]
+  const predictedElementPath =
+    targetParent == null
+      ? null // TODO does the Storyboard Path need to be used here?
+      : EP.appendToPath(targetParent, insertionSubject.uid)
   return {
     id: name, // TODO review this before merge
     name: name,
@@ -137,19 +142,19 @@ function drawToInsertStrategyFactory(
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: [] }, // <<<- TODO feed it with real props
+        props: { targets: maybeToArray(targetParent) },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ParentBoundsForInsertion,
-        props: { targetParents: [] }, // <<<- TODO feed it with real props
+        props: { targetParents: maybeToArray(targetParent) },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: { targets: [] }, // <<<- TODO feed it with real props
+        props: { targets: maybeToArray(predictedElementPath) },
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
