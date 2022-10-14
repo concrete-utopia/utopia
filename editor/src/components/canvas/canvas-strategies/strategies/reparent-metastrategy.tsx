@@ -1,10 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
-import { offsetPoint } from '../../../../core/shared/math-utils'
+import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { MetaCanvasStrategy } from '../canvas-strategies'
+import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
   getTargetPathsFromInteractionTarget,
@@ -15,8 +15,85 @@ import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import { findReparentStrategies } from './reparent-strategy-helpers'
+import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
+
+interface ReparentFactoryAndDetails {
+  targetParent: ElementPath
+  targetIndex: number | null
+  strategyType: ReparentStrategy // FIXME horrible name
+  missingBoundsHandling: MissingBoundsHandling
+  fitness: number
+  factory: CanvasStrategyFactory
+}
+
+export function getApplicableReparentFactories(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+  cmdPressed: boolean,
+  allDraggedElementsAbsolute: boolean,
+): Array<ReparentFactoryAndDetails> {
+  const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
+
+  const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
+    const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
+    switch (result.strategy) {
+      case 'REPARENT_TO_ABSOLUTE': {
+        const fitness =
+          missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
+        if (allDraggedElementsAbsolute) {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: null,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
+          }
+        } else {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: null,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseFlexReparentToAbsoluteStrategy(
+              result.target,
+              missingBoundsHandling,
+              fitness,
+            ),
+          }
+        }
+      }
+      case 'REPARENT_TO_FLEX': {
+        const fitness = 3
+        if (allDraggedElementsAbsolute) {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseAbsoluteReparentToFlexStrategy(result.target, fitness),
+          }
+        } else {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseFlexReparentToFlexStrategy(result.target, fitness),
+          }
+        }
+      }
+      default:
+        assertNever(result.strategy)
+    }
+  })
+
+  return factories
+}
 
 export const reparentMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -58,6 +135,19 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   const existingParents = reparentSubjects.map(parentPath)
   const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
 
+  const pointOnCanvas = offsetPoint(
+    interactionSession.interactionData.originalDragStart,
+    interactionSession.interactionData.drag,
+  )
+
+  const cmdPressed = interactionSession.interactionData.modifiers.cmd
+  const factories = getApplicableReparentFactories(
+    canvasState,
+    pointOnCanvas,
+    cmdPressed,
+    allDraggedElementsAbsolute,
+  )
+
   const targetIsValid = (
     target: ElementPath,
     missingBoundsHandling: MissingBoundsHandling,
@@ -72,47 +162,12 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     }
   }
 
-  const pointOnCanvas = offsetPoint(
-    interactionSession.interactionData.originalDragStart,
-    interactionSession.interactionData.drag,
+  const filteredReparentFactories = factories.filter((reparentStrategy) =>
+    targetIsValid(reparentStrategy.targetParent, reparentStrategy.missingBoundsHandling),
   )
-
-  const cmdPressed = interactionSession.interactionData.modifiers.cmd
-  const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
-  const filteredReparentStrategies = reparentStrategies.filter((reparentStrategy) =>
-    targetIsValid(reparentStrategy.target.newParent, reparentStrategy.missingBoundsHandling),
-  )
-
-  const factories = filteredReparentStrategies.map((result) => {
-    const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
-    switch (result.strategy) {
-      case 'REPARENT_TO_ABSOLUTE':
-        if (allDraggedElementsAbsolute) {
-          return baseAbsoluteReparentStrategy(
-            result.target,
-            missingBoundsHandling,
-            result.isFallback,
-          )
-        } else {
-          return baseFlexReparentToAbsoluteStrategy(
-            result.target,
-            missingBoundsHandling,
-            result.isFallback,
-          )
-        }
-      case 'REPARENT_TO_FLEX':
-        if (allDraggedElementsAbsolute) {
-          return baseAbsoluteReparentToFlexStrategy(result.target)
-        } else {
-          return baseFlexReparentToFlexStrategy(result.target)
-        }
-      default:
-        assertNever(result.strategy)
-    }
-  })
 
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession, customStrategyState),
-    factories,
+    ({ factory }) => factory(canvasState, interactionSession, customStrategyState),
+    filteredReparentFactories,
   )
 }
