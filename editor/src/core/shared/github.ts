@@ -147,6 +147,7 @@ export async function getBranchesForGithubRepository(
 export async function getBranchContent(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
+  projectID: string,
   branchName: string,
 ): Promise<void> {
   const url = urljoin(
@@ -157,9 +158,12 @@ export async function getBranchContent(
     githubRepo.repository,
     branchName,
   )
+  const searchParams = new URLSearchParams({
+    project_id: projectID,
+  })
 
-  const response = await fetch(url, {
-    method: 'GET',
+  const response = await fetch(`${url}?${searchParams}`, {
+    method: 'POST',
     credentials: 'include',
     headers: HEADERS,
     mode: MODE,

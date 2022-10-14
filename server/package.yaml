@@ -41,6 +41,7 @@ dependencies:
   - cereal
   - concurrent-extra
   - conduit
+  - containers
   - cookie
   - cryptohash-sha256
   - cryptonite
@@ -50,15 +51,16 @@ dependencies:
   - fast-logger
   - filepath
   - free
-  - zlib
+  - generic-lens
+  - github 
+  - hashable
   - hoauth2 ==1.16.0
   - http-api-data
   - http-client
   - http-client-tls
   - http-media
   - http-types
-  - generic-lens
-  - github 
+  - JuicyPixels
   - lens
   - lens-aeson <1.2
   - lifted-async
@@ -102,8 +104,8 @@ dependencies:
   - transformers
   - unix
   - unordered-containers
-  - utopia-clientmodel
   - uri-bytestring
+  - utopia-clientmodel
   - uuid
   - vector
   - wai
@@ -113,6 +115,7 @@ dependencies:
   - warp
   - websockets
   - wreq
+  - zlib
 extra-libraries:
   - z
 executable:
@@ -132,11 +135,11 @@ tests:
       - test
       - src
     dependencies:
-      - servant-client-core
-      - hspec
       - hedgehog
+      - hspec
       - port-utils
       - random
+      - servant-client-core
       - tasty
       - tasty-hedgehog
       - tasty-hspec

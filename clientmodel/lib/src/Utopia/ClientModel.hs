@@ -185,7 +185,7 @@ data ImageFile = ImageFile
                , base64    :: Maybe Text
                , width     :: Maybe Double
                , height    :: Maybe Double
-               , hash      :: Integer
+               , hash      :: Int
                }
                deriving (Eq, Show, Generic, Data, Typeable)
 
