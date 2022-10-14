@@ -65,7 +65,8 @@ executable utopia-web
   extra-libraries:
       z
   build-depends:
-      aeson <2.1
+      JuicyPixels
+    , aeson <2.1
     , aeson-pretty
     , amazonka ==1.6.1
     , amazonka-core ==1.6.1
@@ -80,6 +81,7 @@ executable utopia-web
     , cereal
     , concurrent-extra
     , conduit
+    , containers
     , cookie
     , cryptohash-sha256
     , cryptonite
@@ -92,6 +94,7 @@ executable utopia-web
     , free
     , generic-lens
     , github
+    , hashable
     , hoauth2 ==1.16.0
     , http-api-data
     , http-client
@@ -205,7 +208,8 @@ test-suite utopia-web-test
   extra-libraries:
       z
   build-depends:
-      aeson <2.1
+      JuicyPixels
+    , aeson <2.1
     , aeson-pretty
     , amazonka ==1.6.1
     , amazonka-core ==1.6.1
@@ -220,6 +224,7 @@ test-suite utopia-web-test
     , cereal
     , concurrent-extra
     , conduit
+    , containers
     , cookie
     , cryptohash-sha256
     , cryptonite
@@ -232,6 +237,7 @@ test-suite utopia-web-test
     , free
     , generic-lens
     , github
+    , hashable
     , hedgehog
     , hoauth2 ==1.16.0
     , hspec

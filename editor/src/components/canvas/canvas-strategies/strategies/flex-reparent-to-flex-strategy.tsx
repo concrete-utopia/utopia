@@ -16,6 +16,7 @@ import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
 
 export function baseFlexReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
+  fitness: number,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -61,7 +62,7 @@ export function baseFlexReparentToFlexStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: 3,
+      fitness: fitness,
       apply: () => {
         return interactionSession == null
           ? emptyStrategyApplicationResult
