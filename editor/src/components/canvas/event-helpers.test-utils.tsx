@@ -337,6 +337,19 @@ export function mouseClickAtPoint(
         ...eventOptions,
       }),
     )
+
+    fireEvent(
+      eventSourceElement,
+      new MouseEvent('click', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        buttons: 1,
+        ...eventOptions,
+      }),
+    )
   })
 }
 

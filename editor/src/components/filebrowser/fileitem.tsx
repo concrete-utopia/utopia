@@ -558,7 +558,7 @@ class FileBrowserItemInner extends React.PureComponent<
     })
   }
 
-  onMouseDown = (e: React.MouseEvent) => {
+  onMouseClick = (e: React.MouseEvent) => {
     if (e.button === 0) {
       if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
         this.props.setSelected(this.props)
@@ -567,7 +567,9 @@ class FileBrowserItemInner extends React.PureComponent<
         }
       }
     }
+  }
 
+  onMouseDown = (e: React.MouseEvent) => {
     if (this.props.imageFile == null) {
       return
     }
@@ -696,6 +698,7 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragLeave={this.onDragLeave}
           onMouseDown={this.onMouseDown}
           onMouseUp={this.onMouseUp}
+          onClick={this.onMouseClick}
           key={this.props.key}
           className='FileItem'
           style={{
