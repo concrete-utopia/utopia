@@ -2,12 +2,11 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import {
   CanvasStrategy,
   controlWithProps,
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -30,7 +29,10 @@ export function relativeMoveStrategy(
   const filteredSelectedElements = getDragTargets(selectedElements)
   const last = filteredSelectedElements[filteredSelectedElements.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
-  if (metadata == null || metadata.specialSizeMeasurements.position !== 'relative') {
+  if (
+    metadata == null ||
+    metadata.specialSizeMeasurements.position !== 'relative' // I think this check should be filteredSelectedElements.every
+  ) {
     return null
   }
   // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
@@ -45,14 +47,14 @@ export function relativeMoveStrategy(
     name: 'Move (Relative)',
     controlsToRender: [
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

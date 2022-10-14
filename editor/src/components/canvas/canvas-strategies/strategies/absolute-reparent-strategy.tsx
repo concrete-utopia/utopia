@@ -66,13 +66,13 @@ export function baseAbsoluteReparentStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),

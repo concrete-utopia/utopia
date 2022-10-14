@@ -34,8 +34,8 @@ import { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
 import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
@@ -76,14 +76,14 @@ export function convertToAbsoluteAndMoveStrategy(
     name: 'Move (Abs)',
     controlsToRender: [
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

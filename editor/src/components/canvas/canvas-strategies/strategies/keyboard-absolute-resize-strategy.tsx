@@ -109,7 +109,7 @@ export function keyboardAbsoluteResizeStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: {},
+        props: { targets: selectedElements },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
