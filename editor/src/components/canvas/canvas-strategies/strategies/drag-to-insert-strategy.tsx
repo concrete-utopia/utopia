@@ -19,8 +19,8 @@ import {
   insertElementInsertionSubject,
 } from '../../commands/insert-element-insertion-subject'
 import { updateFunctionCommand } from '../../commands/update-function-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
@@ -57,20 +57,20 @@ export function dragToInsertStrategy(
     controlsToRender: [
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: [] }, // <<<- TODO feed it with targetParents
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ParentBoundsForInsertion,
+        props: { targetParents: [] }, // <<<- TODO feed it with real props
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: { targets: [] }, // <---- TODO feed it with real props!
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),

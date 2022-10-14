@@ -1187,5 +1187,18 @@ export type DebugDispatch = (
   entireUpdateFinished: Promise<any>
 }
 
+interface EditorDispatchScratchPad {
+  addActions: (action: Array<EditorAction>) => void
+}
+
+export const usingDispatch = (
+  dispatch: EditorDispatch,
+  run: (builder: EditorDispatchScratchPad) => void,
+): void => {
+  let scratchPad: Array<EditorAction> = []
+  run({ addActions: (actions: Array<EditorAction>) => (scratchPad = [...scratchPad, ...actions]) })
+  dispatch(scratchPad)
+}
+
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
 export type Distribution = 'horizontal' | 'vertical'

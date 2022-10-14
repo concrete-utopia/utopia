@@ -8,7 +8,6 @@ import {
   CanvasRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
-import { Modifiers } from '../../../../utils/modifiers'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -23,8 +22,8 @@ import {
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import {
@@ -60,6 +59,19 @@ export function flexResizeBasicStrategy(
   ) {
     return null
   }
+  const metadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
+  const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+
+  const hasDimensions =
+    elementDimensions != null &&
+    (elementDimensions.width != null || elementDimensions.height != null)
+  const hasSizedParent =
+    elementParentBounds != null &&
+    (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
     id: 'FLEX_RESIZE_BASIC',
@@ -67,25 +79,25 @@ export function flexResizeBasicStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: {},
+        props: { targets: selectedElements },
         key: 'absolute-resize-control',
         show: 'always-visible',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
-        props: {},
+        props: { targets: selectedElements },
         key: 'zero-size-resize-control',
         show: 'always-visible',
       }),
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: selectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: selectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -93,7 +105,8 @@ export function flexResizeBasicStrategy(
     fitness:
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
+      (hasDimensions || !hasSizedParent)
         ? 1
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
@@ -116,10 +129,6 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          const metadata = MetadataUtils.findElementByElementPath(
-            canvasState.startingMetadata,
-            selectedElement,
-          )
           if (!metadata) {
             return emptyStrategyApplicationResult
           }
@@ -135,9 +144,6 @@ export function flexResizeBasicStrategy(
             ),
             'non-center-based',
           )
-          const elementParentBounds =
-            metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-          const elementDimensions = getElementDimensions(metadata)
 
           const makeResizeCommand = (
             name: 'width' | 'height',
@@ -146,7 +152,7 @@ export function flexResizeBasicStrategy(
             resized: number,
             parent: number | undefined,
           ): AdjustCssLengthProperty[] => {
-            if (elementDimension == null && original === resized) {
+            if (elementDimension == null && (original === resized || hasSizedParent)) {
               return []
             }
             return [
