@@ -32,7 +32,6 @@ export const ImgSection = React.memo(() => {
         store.editor.jsxMetadata,
         selectedViews[0],
       ),
-      projectContents: store.editor.projectContents,
     }
   }, 'ImgSection')
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
