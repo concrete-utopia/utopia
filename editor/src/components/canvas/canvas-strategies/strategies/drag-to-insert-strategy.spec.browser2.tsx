@@ -1,4 +1,5 @@
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
@@ -26,6 +27,7 @@ async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
 
 async function dragFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
+  modifiers: Modifiers,
   renderResult: EditorRenderResult,
 ) {
   const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
@@ -41,8 +43,11 @@ async function dragFromInsertMenuDivButtonToPoint(
 
   mouseMoveToPoint(insertButton, startPoint)
   mouseDownAtPoint(insertButton, startPoint)
-  mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
-  mouseUpAtPoint(canvasControlsLayer, endPoint)
+  mouseMoveToPoint(canvasControlsLayer, endPoint, {
+    modifiers: modifiers,
+    eventOptions: { buttons: 1 },
+  })
+  mouseUpAtPoint(canvasControlsLayer, endPoint, { modifiers: modifiers })
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
@@ -95,7 +100,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -159,7 +164,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, cmdModifier, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -259,7 +264,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetNextSiblingBounds.y + 5,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -317,7 +322,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetPrevSiblingBounds.y + targetPrevSiblingBounds.height - 5,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -375,7 +380,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
