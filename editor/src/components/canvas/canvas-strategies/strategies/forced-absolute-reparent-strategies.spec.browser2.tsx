@@ -322,7 +322,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       dragDelta,
       cmdModifier,
       function midDragCallback() {
-        pressKey('3')
+        pressKey('3') // this should select the Reparent (Abs, Forced) strategy
       },
     )
 
