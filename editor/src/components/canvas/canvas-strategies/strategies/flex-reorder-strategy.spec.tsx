@@ -203,7 +203,6 @@ function reorderElement(
     editorState,
     editorState,
     [],
-    [],
     strategyResult!.commands,
     'end-interaction',
   ).editorState

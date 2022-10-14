@@ -42,13 +42,11 @@ import {
   AbsolutePin,
   ensureAtLeastTwoPinsForEdgePosition,
   getLockedAspectRatio,
-  supportsAbsoluteResize,
-} from './resize-helpers'
-import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
-  runLegacyAbsoluteResizeSnapping,
-} from './shared-absolute-resize-strategy-helpers'
+  supportsAbsoluteResize,
+} from './resize-helpers'
+import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(

@@ -30,6 +30,7 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
+  ActionSheet,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
@@ -47,6 +48,9 @@ import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
+import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
+import { fileExists } from '../../core/model/project-file-utils'
+import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -249,10 +253,10 @@ interface FileBrowserItemDragProps {
 }
 
 class FileBrowserItemInner extends React.PureComponent<
-  FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps,
+  FileBrowserItemProps & FileBrowserItemDragProps,
   FileBrowserItemState
 > {
-  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps) {
+  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps) {
     super(props)
     this.state = {
       isRenaming: false,
@@ -466,8 +470,14 @@ class FileBrowserItemInner extends React.PureComponent<
       currentExternalFilesDragEventCounter: 0,
     })
 
+    this.props.dispatch([
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setFilebrowserDropTarget(null),
+    ])
+
     void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
+      let overwriteFiles: Array<FileUploadInfo> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
         let targetPath: string | null = null
         let replace = false
@@ -487,9 +497,16 @@ class FileBrowserItemInner extends React.PureComponent<
         }
 
         if (targetPath != null) {
-          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          if (fileExists(this.props.projectContents, targetPath)) {
+            overwriteFiles.push({ fileResult: resultFile, targetPath: targetPath })
+          } else {
+            actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          }
         }
       })
+      if (overwriteFiles.length > 1) {
+        actions.push(EditorActions.showModal(fileOverwriteModal(overwriteFiles)))
+      }
       this.props.dispatch(actions, 'everyone')
     })
   }
@@ -543,8 +560,17 @@ class FileBrowserItemInner extends React.PureComponent<
     })
     const filesBeingDragged = e.dataTransfer?.items?.length ?? 0
     if (filesBeingDragged > 0) {
-      this.setState({ externalFilesDraggedIn: true })
+      this.setState({ externalFilesDraggedIn: true, isHovered: true })
     }
+    const targetDirectory =
+      this.props.fileType === 'DIRECTORY' ? this.props.path : getParentDirectory(this.props.path)
+    this.props.dispatch(
+      [
+        CanvasActions.clearInteractionSession(false),
+        EditorActions.setFilebrowserDropTarget(targetDirectory),
+      ],
+      'leftpane',
+    )
   }
 
   onDragLeave = () => {
@@ -553,9 +579,36 @@ class FileBrowserItemInner extends React.PureComponent<
         currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter - 1,
         externalFilesDraggedIn:
           prevState.currentExternalFilesDragEventCounter > 1 && prevState.externalFilesDraggedIn,
+        isHovered: false,
       }
     })
   }
+
+  onMouseDown = () => {
+    if (this.props.imageFile == null) {
+      return
+    }
+
+    this.props.dispatch(
+      [
+        EditorActions.setImageDragSessionState(
+          draggingFromSidebar({
+            width: this.props.imageFile.width ?? 200,
+            height: this.props.imageFile.height ?? 200,
+            src: imagePathURL(this.props.path),
+          }),
+        ),
+      ],
+      'everyone',
+    )
+  }
+
+  onMouseUp = () =>
+    this.props.dispatch([
+      CanvasActions.clearInteractionSession(false),
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setImageDragSessionState(notDragging()),
+    ])
 
   showAddingFileRow = () => {
     this.setState({
@@ -657,7 +710,8 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragEnter={this.onDragEnter}
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
-          onMouseDown={this.onItemMouseDown}
+          onMouseDown={this.onMouseDown}
+          onMouseUp={this.onMouseUp}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -695,12 +749,6 @@ class FileBrowserItemInner extends React.PureComponent<
                 textOverflow: 'ellipsis',
               }}
             >
-              {this.props.imageFile != null && (
-                <DragHandle
-                  onDragHandleStart={this.props.onDragHandleStart}
-                  onDragHandleCancelled={this.props.onDragHandleCancelled}
-                />
-              )}
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
@@ -790,25 +838,12 @@ class FileBrowserItemInner extends React.PureComponent<
 }
 
 export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
-  const projectContents = useEditorState(
-    (store) => store.editor.projectContents,
-    'FileBrowserItem projectContents',
-  )
-
-  const interactionSession = useEditorState(
-    (store) => store.editor.canvas.interactionSession,
-    'FileBrowserItem interactionSession',
-  )
-
-  const imageDragInProgress =
-    interactionSession != null && interactionSession.activeControl.type === 'BOUNDING_AREA'
-
   const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
-      canDrag: () => !imageDragInProgress && canDragnDrop(props),
+      canDrag: () => canDragnDrop(props),
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
@@ -822,7 +857,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         ])
       },
     }),
-    [props, imageDragInProgress],
+    [props],
   )
   const [{ isOver }, drop] = useDrop(
     {
@@ -865,38 +900,6 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     [props],
   )
 
-  const onMouseDown = React.useCallback(() => {
-    if (props.imageFile == null) {
-      return
-    }
-
-    const newUID = generateUidWithExistingComponents(projectContents)
-    const elementSize: Size = resize(
-      size(props.imageFile.width ?? 100, props.imageFile.height ?? 100),
-      size(200, 200),
-      'keep-aspect-ratio',
-    )
-    const newElement = createJsxImage(newUID, {
-      width: elementSize.width,
-      height: elementSize.height,
-      src: imagePathURL(props.path),
-    })
-
-    props.dispatch(
-      [
-        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-        ),
-      ],
-      'everyone',
-    )
-  }, [projectContents, props])
-
-  const onMouseUp = React.useCallback(() => {
-    props.dispatch([CanvasActions.clearInteractionSession(false)])
-  }, [props])
-
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
   return (
@@ -907,31 +910,6 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       connectDragPreview={dragPreview}
       // eslint-disable-next-line react/jsx-no-bind
       forwardedRef={forwardedRef}
-      onDragHandleCancelled={onMouseUp}
-      onDragHandleStart={onMouseDown}
     />
-  )
-}
-
-export interface DragHandleProps {
-  onDragHandleCancelled: () => void
-  onDragHandleStart: () => void
-}
-
-const DragHandle = (props: DragHandleProps) => {
-  const { onDragHandleStart: onDragStart, onDragHandleCancelled: onDragCancelled } = props
-  return (
-    <div
-      data-testid={'file-image-drag-handle'}
-      style={{ padding: 5, cursor: 'pointer' }}
-      onMouseDown={onDragStart}
-      onMouseUp={onDragCancelled}
-    >
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-      <div style={{ height: 2, background: 'transparent' }} />
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-      <div style={{ height: 2, background: 'transparent' }} />
-      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
-    </div>
   )
 }

@@ -164,6 +164,7 @@ import { Guideline, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../.
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
+import { FileResult } from '../../../core/shared/file-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -303,7 +304,31 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
-export type ModalDialog = FileDeleteModal
+export interface FileUploadInfo {
+  fileResult: FileResult
+  targetPath: string
+}
+
+export function fileUploadInfo(fileResult: FileResult, targetPath: string): FileUploadInfo {
+  return {
+    fileResult: fileResult,
+    targetPath: targetPath,
+  }
+}
+
+export interface FileOverwriteModal {
+  type: 'file-overwrite'
+  files: Array<FileUploadInfo>
+}
+
+export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteModal {
+  return {
+    type: 'file-overwrite',
+    files: files,
+  }
+}
+
+export type ModalDialog = FileDeleteModal | FileOverwriteModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -727,6 +752,54 @@ export function editorStateInspector(
   }
 }
 
+export interface DraggedImageProperties {
+  width: number
+  height: number
+  src: string
+}
+
+interface NotDragging {
+  type: 'NOT_DRAGGING'
+}
+
+interface DraggingFromFS {
+  type: 'DRAGGING_FROM_FS'
+}
+
+export interface DraggingFromSidebar {
+  type: 'DRAGGING_FROM_SIDEBAR'
+  draggedImageProperties: DraggedImageProperties
+}
+
+export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
+
+export function notDragging(): NotDragging {
+  return { type: 'NOT_DRAGGING' }
+}
+
+export function draggingFromFS(): DraggingFromFS {
+  return { type: 'DRAGGING_FROM_FS' }
+}
+
+export function draggingFromSidebar(draggedImage: DraggedImageProperties): DraggingFromSidebar {
+  return {
+    type: 'DRAGGING_FROM_SIDEBAR',
+    draggedImageProperties: draggedImage,
+  }
+}
+
+export function draggedImageProperties(
+  width: number,
+  height: number,
+  src: string,
+): DraggedImageProperties {
+  return {
+    width,
+    height,
+    src,
+  }
+}
+
 export interface EditorStateFileBrowser {
   minimised: boolean
   renamingTarget: string | null
@@ -945,6 +1018,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
+  imageDragSessionState: ImageDragSessionState
 }
 
 export function editorState(
@@ -1014,6 +1088,7 @@ export function editorState(
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
+  imageDragSessionState: ImageDragSessionState,
 ): EditorState {
   return {
     id: id,
@@ -1082,6 +1157,7 @@ export function editorState(
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
+    imageDragSessionState: imageDragSessionState,
   }
 }
 
@@ -1892,6 +1968,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       targetRepository: null,
       originCommit: null,
     },
+    imageDragSessionState: notDragging(),
   }
 }
 
@@ -2186,6 +2263,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
+    imageDragSessionState: notDragging(),
   }
   return editor
 }

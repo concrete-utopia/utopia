@@ -15,7 +15,6 @@ import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
-import { mergePatches } from './merge-patches'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
@@ -173,21 +172,16 @@ export function foldAndApplyCommandsSimple(
 
 export function foldAndApplyCommandsInner(
   editorState: EditorState,
-  patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   commandLifecycle: InteractionLifecycle,
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
-  accumulatedPatches: EditorStatePatch[]
   commandDescriptions: CommandDescription[]
 } {
-  let statePatches: Array<EditorStatePatch> = [...patches]
-  let accumulatedPatches: Array<EditorStatePatch> = [...patches]
-  let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
-    return update(workingState, patch)
-  }, editorState)
+  let statePatches: Array<EditorStatePatch> = []
+  let workingEditorState: EditorState = editorState
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
@@ -207,13 +201,6 @@ export function foldAndApplyCommandsInner(
       workingEditorState = updateEditorStateWithPatches(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(...statePatch)
-      // Do not accumulate commands that are not permanent.
-      if (
-        shouldAccumulatePatches &&
-        (command.whenToRun === 'always' || command.whenToRun === 'on-complete')
-      ) {
-        accumulatedPatches.push(...statePatch)
-      }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
         transient: command.whenToRun === 'mid-interaction',
@@ -227,7 +214,6 @@ export function foldAndApplyCommandsInner(
   return {
     statePatches: statePatches,
     updatedEditorState: workingEditorState,
-    accumulatedPatches: accumulatedPatches,
     commandDescriptions: workingCommandDescriptions,
   }
 }
@@ -235,23 +221,19 @@ export function foldAndApplyCommandsInner(
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
-  patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   commandLifecycle: InteractionLifecycle,
 ): {
   editorState: EditorState
-  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const { statePatches, accumulatedPatches, updatedEditorState, commandDescriptions } =
-    foldAndApplyCommandsInner(
-      editorState,
-      patches,
-      commandsToAccumulate,
-      commands,
-      commandLifecycle,
-    )
+  const { statePatches, updatedEditorState, commandDescriptions } = foldAndApplyCommandsInner(
+    editorState,
+    commandsToAccumulate,
+    commands,
+    commandLifecycle,
+  )
 
   let workingEditorState = updatedEditorState
   if (statePatches.length === 0) {
@@ -262,7 +244,6 @@ export function foldAndApplyCommands(
 
   return {
     editorState: workingEditorState,
-    accumulatedPatches: mergePatches(accumulatedPatches),
     commandDescriptions: commandDescriptions,
   }
 }
