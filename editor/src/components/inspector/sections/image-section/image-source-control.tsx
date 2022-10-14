@@ -9,10 +9,7 @@ import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
 import { StringControl } from '../../controls/string-control'
 
-enum ImageSrcType {
-  URL = 1,
-  LOCAL,
-}
+type ImageSrcType = 'url' | 'local'
 
 const getProjectImageFileNames = (projectContents: ProjectContents): string[] => {
   return Object.keys(projectContents).filter((key) => isImageFile(projectContents[key]))
@@ -20,14 +17,14 @@ const getProjectImageFileNames = (projectContents: ProjectContents): string[] =>
 
 const srcTypeFromSrcValue = (value: string, filenames: string[]): ImageSrcType => {
   if (value.startsWith('./') && filenames.includes(value)) {
-    return ImageSrcType.LOCAL
+    return 'local'
   }
-  return ImageSrcType.URL
+  return 'url'
 }
 
 const chainControlOptions: Array<SelectOption> = [
-  { value: ImageSrcType.URL, label: 'URL' },
-  { value: ImageSrcType.LOCAL, label: 'Local' },
+  { value: 'url', label: 'URL' },
+  { value: 'local', label: 'Local' },
 ]
 
 export const ImageSourceControl = React.memo(() => {
@@ -61,7 +58,7 @@ export const ImageSourceControl = React.memo(() => {
   }, [srcValue, localImageFilenames])
 
   const onChangeSrcType = React.useCallback(
-    (value: number) => {
+    (value: ImageSrcType) => {
       setSrcType(value)
     },
     [setSrcType],
@@ -79,7 +76,7 @@ export const ImageSourceControl = React.memo(() => {
         controlStatus={srcControlStatus}
         controlStyles={srcControlStyles}
       />
-      {srcType === ImageSrcType.LOCAL ? (
+      {srcType === 'local' ? (
         <SelectControl
           id='image-src-local'
           key='image-src-local'
