@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { FlowReorderDragOutline } from '../../controls/flow-reorder-indicators'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -41,20 +41,22 @@ export function flowReorderStrategy(
     name: 'Reorder (Flow)',
     controlsToRender: [
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: selectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: selectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: FlowReorderDragOutline,
-        props: {},
+        props: {
+          targets: selectedElements, // should this be a single target element?
+        },
         key: 'flow-reorder-drag-outline',
         show: 'visible-only-while-active',
       }),

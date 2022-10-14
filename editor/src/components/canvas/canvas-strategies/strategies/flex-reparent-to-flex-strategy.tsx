@@ -16,6 +16,7 @@ import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
 
 export function baseFlexReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
+  fitness: number,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -38,19 +39,19 @@ export function baseFlexReparentToFlexStrategy(
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: {},
+          props: { targets: selectedElements },
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentOutlines,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -61,7 +62,7 @@ export function baseFlexReparentToFlexStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: 3,
+      fitness: fitness,
       apply: () => {
         return interactionSession == null
           ? emptyStrategyApplicationResult

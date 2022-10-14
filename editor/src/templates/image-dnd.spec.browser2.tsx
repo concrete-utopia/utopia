@@ -1,16 +1,17 @@
-import { fireEvent } from '@testing-library/react'
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
-import { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
-  makeDragEvent,
+  dragElementToPoint,
+  dropElementAtPoint,
   mouseDownAtPoint,
   mouseMoveToPoint,
-  mouseUpAtPoint,
+  switchDragAndDropElementTargets,
 } from '../components/canvas/event-helpers.test-utils'
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithProjectContent,
 } from '../components/canvas/ui-jsx.test-utils'
@@ -20,6 +21,7 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
+import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
 import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
@@ -241,92 +243,201 @@ describe('image dnd', () => {
     sandbox.restore()
   })
 
-  xit('dragging from the sidebar works', async () => {
-    const newUID = 'imgimgimg'
-    FOR_TESTS_setNextGeneratedUid(newUID)
+  describe('filebrowser and canvas combined interactions', () => {
+    it('dragging from the filebrowser to the canvas inserts the image', async () => {
+      const newUID = 'imgimgimg'
+      FOR_TESTS_setNextGeneratedUid(newUID)
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
-    await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
-      true,
-    )
-    await editor.getDispatchFollowUpActionsFinished()
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const imageToBeDragged = editor.renderedDOM.getByText('stuff.png')
-    const imageBounds = imageToBeDragged.getBoundingClientRect()
-    const imageCenter = {
-      x: imageBounds.x + imageBounds.width / 2,
-      y: imageBounds.y + imageBounds.height / 2,
-    }
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
 
-    const target = editor.renderedDOM.getByTestId('scene')
-    const targetBounds = target.getBoundingClientRect()
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
 
-    const endPoint = {
-      x: Math.floor(targetBounds.x + targetBounds.width / 2),
-      y: Math.floor(targetBounds.y + targetBounds.height / 2),
-    }
+      const endPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
 
-    mouseMoveToPoint(imageToBeDragged, imageCenter)
-    mouseDownAtPoint(imageToBeDragged, imageCenter)
-    mouseMoveToPoint(canvasControlsLayer, endPoint)
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }))
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint))
-    await editor.getDispatchFollowUpActionsFinished()
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
-    // await wait(1000)
+      await editor.getDispatchFollowUpActionsFinished()
 
-    // expect(
-    //   editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
-    // ).toBeGreaterThan(0)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      import { App } from '/src/app.js'
+      import { View, Rectangle } from 'utopia-api'
+      import { FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='0cd'>
+          <Scene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 207,
+              top: 126,
+              paddingLeft: 91,
+            }}
+            data-testid='scene'
+            data-label='Playground'
+            data-uid='3fc'
+          >
+            <img
+              src='./assets/stuff.png'
+              style={{
+                position: 'absolute',
+                width: 200,
+                height: 62,
+                top: 349,
+                left: 296,
+              }}
+              data-uid='${newUID}'
+            />
+          </Scene>
+        </Storyboard>
+      )
+  `),
+      )
+    })
+    it('dragging from the filebrowser to the canvas and back to the filebrowsers clears interaction session', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
 
-    mouseUpAtPoint(canvasControlsLayer, endPoint)
-    try {
-      fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint))
-    } catch {
-      // TODO
-    }
-    await editor.getDispatchFollowUpActionsFinished()
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    // await wait(100000)
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { App } from '/src/app.js'
-import { View, Rectangle } from 'utopia-api'
-import { FlexRow } from 'utopia-api'
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
 
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 207,
-        top: 126,
-        paddingLeft: 91,
-      }}
-      data-testid='scene'
-      data-label='Playground'
-      data-uid='3fc'
-    />
-    <img
-      src='./assets/stuff.png'
-      style={{
-        position: 'absolute',
-        width: 200,
-        height: 62,
-        top: 475,
-        left: 3,
-      }}
-      data-uid='imgimgimg'
-    />
-  </Storyboard>
-)
-`)
+      const canvasPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
+
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/stuff.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
+    it('dragging from the "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const file = await makeImageFile(imgBase64, 'hello.png')
+
+      const canvasScene = editor.renderedDOM.getByTestId('scene')
+      const canvasSceneBounds = canvasScene.getBoundingClientRect()
+
+      const canvasPoint = {
+        x: Math.floor(canvasSceneBounds.x + canvasSceneBounds.width / 2),
+        y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
+      }
+
+      dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/hello.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
   })
 
   it('dragging from the "finder" works', async () => {
@@ -345,14 +456,8 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -417,14 +522,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -488,14 +587,8 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
     await dropDone
@@ -585,14 +678,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
 

@@ -28,7 +28,7 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
   missingBoundsHandling: MissingBoundsHandling,
-  isFallback: boolean,
+  fitness: number,
 ): CanvasStrategyFactory {
   const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
@@ -66,18 +66,18 @@ export function baseAbsoluteReparentStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: forced ? 0.5 : isFallback ? 2 : 3,
+      fitness: fitness,
       apply: (strategyLifecycle) => {
         const { projectContents, openFile, nodeModules } = canvasState
         return ifAllowedToReparent(

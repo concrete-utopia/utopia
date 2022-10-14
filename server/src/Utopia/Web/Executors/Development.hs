@@ -211,8 +211,7 @@ innerServerExecutor (SaveProjectAsset user projectID path action) = do
   awsResource <- fmap _awsResources ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
-  application <- saveProjectAssetWithCall metrics pool user projectID path saveCall
+  application <- saveProjectAssetWithCall metrics pool user projectID path $ saveAsset awsResource
   return $ action application
 innerServerExecutor (RenameProjectAsset user projectID oldPath newPath next) = do
   awsResource <- fmap _awsResources ask
@@ -360,15 +359,16 @@ innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = d
     Just githubResources -> do
       result <- getGithubBranches githubResources logger metrics pool user owner repository
       pure $ action result
-innerServerExecutor (GetBranchContent user owner repository branchName action) = do
+innerServerExecutor (GetBranchContent user owner repository branchName projectID action) = do
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
+  awsResource <- fmap _awsResources ask
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName
+      result <- getGithubBranch githubResources awsResource logger metrics pool user owner repository branchName projectID
       pure $ action result
 {-|
   Invokes a service call using the supplied resources.

@@ -535,6 +535,7 @@ export function isDirectory(projectFile: ProjectFile): projectFile is Directory 
 }
 
 // A layer over the mime-types library which means we can shim in things we need.
+// Keep this in sync with Utopia/Web/Assets.hs.
 export function mimeTypeLookup(filename: string): string | false {
   if (filename.endsWith('.ts')) {
     return 'application/x-typescript'

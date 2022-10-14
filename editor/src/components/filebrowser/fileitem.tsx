@@ -30,23 +30,13 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
-  ActionSheet,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import CanvasActions from '../canvas/canvas-actions'
-import {
-  boundingArea,
-  createInteractionViaMouse,
-} from '../canvas/canvas-strategies/interaction-state'
-import { emptyModifiers } from '../../utils/modifiers'
-import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { imagePathURL } from '../../common/server'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
-import { createJsxImage } from '../images'
-import { resize, size, Size } from '../../core/shared/math-utils'
 import { EditorModes } from '../editor/editor-modes'
 import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
 import { fileExists } from '../../core/model/project-file-utils'
@@ -528,22 +518,6 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  onItemMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) {
-      return
-    }
-
-    if (
-      this.props.fileType != null &&
-      this.props.fileType !== 'DIRECTORY' &&
-      this.props.fileType !== 'ASSET_FILE'
-    ) {
-      this.props.setSelected(this.props)
-      this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
-      return
-    }
-  }
-
   onDragEnter = (e: React.DragEvent) => {
     // this disables react-dnd while dropping external files
     if (
@@ -584,7 +558,18 @@ class FileBrowserItemInner extends React.PureComponent<
     })
   }
 
-  onMouseDown = () => {
+  onMouseClick = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
+        this.props.setSelected(this.props)
+        if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
+          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
+        }
+      }
+    }
+  }
+
+  onMouseDown = (e: React.MouseEvent) => {
     if (this.props.imageFile == null) {
       return
     }
@@ -704,6 +689,7 @@ class FileBrowserItemInner extends React.PureComponent<
       <div style={{ width: '100%' }}>
         <div
           tabIndex={0}
+          data-testid={`fileitem-${this.props.path}`}
           onDrop={this.onItemDrop}
           onMouseEnter={this.setItemIsHovered}
           onMouseLeave={this.setItemIsNotHovered}
@@ -712,6 +698,7 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragLeave={this.onDragLeave}
           onMouseDown={this.onMouseDown}
           onMouseUp={this.onMouseUp}
+          onClick={this.onMouseClick}
           key={this.props.key}
           className='FileItem'
           style={{

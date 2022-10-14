@@ -8,8 +8,8 @@ import {
   InteractionCanvasState,
 } from '../canvas-strategy-types'
 import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
-import { ParentOutlines } from '../../controls/parent-outlines'
-import { ParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
 
@@ -34,19 +34,19 @@ export function flexReorderStrategy(
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: { targets: selectedElements },
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: selectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: selectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),

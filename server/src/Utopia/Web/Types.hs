@@ -133,7 +133,7 @@ type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> 
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
 
-type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> Get '[JSON] GetBranchContentResponse
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> QueryParam "project_id" Text :> Post '[JSON] GetBranchContentResponse
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 

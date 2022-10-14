@@ -16,6 +16,7 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
+  fitness: number,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -46,19 +47,19 @@ export function baseAbsoluteReparentToFlexStrategy(
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: {},
+          props: { targets: filteredSelectedElements },
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentOutlines,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: {},
+          props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -69,7 +70,7 @@ export function baseAbsoluteReparentToFlexStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: 3,
+      fitness: fitness,
       apply: () => {
         return applyFlexReparent(
           'strip-absolute-props',

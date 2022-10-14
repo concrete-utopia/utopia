@@ -337,6 +337,19 @@ export function mouseClickAtPoint(
         ...eventOptions,
       }),
     )
+
+    fireEvent(
+      eventSourceElement,
+      new MouseEvent('click', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        buttons: 1,
+        ...eventOptions,
+      }),
+    )
   })
 }
 
@@ -522,7 +535,7 @@ export function pressKey(
 
 // https://github.com/testing-library/react-testing-library/issues/339
 export function makeDragEvent(
-  type: 'dragstart' | 'dragover' | 'drop' | 'dragleave',
+  type: 'dragstart' | 'dragenter' | 'dragover' | 'dragleave' | 'dragend' | 'drop',
   target: Element | Node,
   clientCoords: { x: number; y: number },
   fileList?: Array<File>,
@@ -534,23 +547,34 @@ export function makeDragEvent(
     bubbles: true,
     cancelable: true,
   }
-  const event = (() => {
-    switch (type) {
-      case 'drop':
-        return createEvent.drop(target, opts)
-      case 'dragover':
-        return createEvent.dragOver(target, opts)
-      case 'dragleave':
-        return createEvent.dragLeave(target, opts)
-      case 'dragstart':
-        return createEvent.dragStart(target, opts)
-      default:
-        assertNever(type)
-    }
-  })()
+
+  let createEventForType: (node: Node, options: any) => Event = createEvent.drop
+  switch (type) {
+    case 'dragend':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragenter':
+      createEventForType = createEvent.dragEnter
+      break
+    case 'dragover':
+      createEventForType = createEvent.dragOver
+      break
+    case 'dragleave':
+      createEventForType = createEvent.dragLeave
+      break
+    case 'dragstart':
+      createEventForType = createEvent.dragStart
+      break
+    default:
+    case 'drop':
+      createEventForType = createEvent.drop
+      break
+  }
+
+  const fileDropEvent: Event = createEventForType(target, opts)
 
   if (fileList != null) {
-    Object.defineProperty(event, 'dataTransfer', {
+    Object.defineProperty(fileDropEvent, 'dataTransfer', {
       value: {
         getData: () => '',
         items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
@@ -562,5 +586,62 @@ export function makeDragEvent(
     })
   }
 
-  return event
+  return fileDropEvent
+}
+
+export function dragElementToPoint(
+  eventSourceElement: HTMLElement | null,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  if (eventSourceElement != null) {
+    act(() => {
+      fireEvent(
+        eventSourceElement,
+        makeDragEvent('dragstart', eventSourceElement, startPoint, fileList),
+      )
+    })
+  }
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
+}
+
+export function dropElementAtPoint(
+  targetElement: HTMLElement,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('drop', targetElement, endPoint, fileList))
+  })
+}
+
+export function switchDragAndDropElementTargets(
+  startingElement: HTMLElement,
+  targetElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  fileList: Array<File>,
+) {
+  act(() => {
+    fireEvent(startingElement, makeDragEvent('dragleave', startingElement, startPoint, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
+  })
+  act(() => {
+    fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
 }

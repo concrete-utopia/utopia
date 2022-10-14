@@ -199,11 +199,11 @@ whenProjectOwner metrics pool user projectID whenOwner = do
   let correctUser = maybe False (\projectOwner -> projectOwner == user) maybeProjectOwner
   if correctUser then whenOwner else throwM DB.UserIDIncorrectException
 
-saveProjectAssetWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> DBPool -> Text -> Text -> [Text] -> ([Text] -> BL.ByteString -> IO ()) -> m Application
-saveProjectAssetWithCall metrics pool user projectID assetPath saveCall = do
+saveProjectAssetWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> DBPool -> Text -> Text -> [Text] -> SaveAsset -> m Application
+saveProjectAssetWithCall metrics pool user projectID assetPath assetSave = do
   whenProjectOwner metrics pool user projectID $ return $ \request -> \sendResponse -> do
     asset <- lazyRequestBody request
-    saveCall (projectID : assetPath) asset
+    assetSave projectID assetPath asset
     sendResponse $ responseLBS ok200 mempty mempty
 
 getPathMimeType :: [Text] -> MimeType
@@ -417,20 +417,26 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       pure $ fmap (\branch -> GetBranchesBranch (view (field @"name") branch)) sortedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
-getGithubBranch :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
-getGithubBranch githubResources logger metrics pool userID owner repository branchName = do
-  result <- runExceptT $ do
-    branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getGitBranch accessToken owner repository branchName
-    let commitSha = view (field @"commit" . field @"sha") branch
-    let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
-    projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getRecursiveGitTreeAsContent accessToken owner repository treeSha
-    pure (projectContent, commitSha)
-  pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
+getGithubBranch githubResources awsResource logger metrics pool userID owner repository branchName projectID = do
+  whenProjectOwner metrics pool userID projectID $ do
+    result <- runExceptT $ do
+      branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+        getGitBranch accessToken owner repository branchName
+      let commitSha = view (field @"commit" . field @"sha") branch
+      let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+      let uploadAsset = saveAsset awsResource 
+      projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+        getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID treeSha
+      pure (projectContent, commitSha)
+    pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
 
 loadAsset :: Maybe AWSResources -> LoadAsset
 loadAsset awsResource path possibleETag = do
   let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
   loadCall path possibleETag
 
+saveAsset :: Maybe AWSResources -> SaveAsset
+saveAsset awsResource projectID path assetContent = do
+  let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
+  saveCall (projectID : path) assetContent
