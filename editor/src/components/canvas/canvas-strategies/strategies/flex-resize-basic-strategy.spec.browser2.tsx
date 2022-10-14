@@ -253,53 +253,33 @@ describe('Flex Resize', () => {
   describe('when the element has missing dimensions', () => {
     describe('both missing', () => {
       describe('horizontal movement', () => {
-        it('adds only the width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(1, 0),
-            canvasPoint({ x: 15, y: 0 }),
-            {},
-            { width: 15 },
-          )
+        it('does nothing', async () => {
+          await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
         })
       })
 
       describe('vertical movement', () => {
-        it('adds only the height', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 0, y: 15 }),
-            {},
-            { height: 385 },
-          )
+        it('does nothing', async () => {
+          await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 0, y: 15 }), {}, {})
         })
       })
 
       describe('diagonal movement', () => {
-        it('adds width and height', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 10, y: 15 }),
-            {},
-            { width: 10, height: 385 },
-          )
+        it('does nothing', async () => {
+          await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 10, y: 15 }), {}, {})
         })
       })
     })
 
     describe('width missing', () => {
       describe('horizontal movement', () => {
-        it('updates only the width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(1, 0),
-            canvasPoint({ x: 15, y: 0 }),
-            { height: 10 },
-            { height: 10, width: 15 },
-          )
+        it('does nothing', async () => {
+          await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
         })
       })
 
       describe('vertical movement', () => {
-        it('does not add the width', async () => {
+        it('adds the height, does not add the width', async () => {
           await resizeWithoutDimensions(
             edgePosition(0, 0),
             canvasPoint({ x: 0, y: 15 }),
@@ -310,12 +290,12 @@ describe('Flex Resize', () => {
       })
 
       describe('diagonal movement', () => {
-        it('adds the width and updates height', async () => {
+        it('updates the height, does not add the width', async () => {
           await resizeWithoutDimensions(
             edgePosition(0, 0),
             canvasPoint({ x: 10, y: 15 }),
             { height: 20 },
-            { height: 5, width: 10 },
+            { height: 5 },
           )
         })
       })
@@ -334,23 +314,23 @@ describe('Flex Resize', () => {
       })
 
       describe('vertical movement', () => {
-        it('does not change the width', async () => {
+        it('does nothing', async () => {
           await resizeWithoutDimensions(
             edgePosition(0, 0),
             canvasPoint({ x: 0, y: 15 }),
             { width: 15 },
-            { width: 15, height: 385 },
+            { width: 15 },
           )
         })
       })
 
       describe('diagonal movement', () => {
-        it('adds the height and updates width', async () => {
+        it('does not add the height and updates width', async () => {
           await resizeWithoutDimensions(
             edgePosition(0, 0),
             canvasPoint({ x: 10, y: 15 }),
             { width: 15 },
-            { width: 5, height: 385 },
+            { width: 5 },
           )
         })
       })
