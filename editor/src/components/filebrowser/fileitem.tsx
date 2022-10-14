@@ -59,11 +59,6 @@ interface FileBrowserItemState {
   isRenaming: boolean
   isHovered: boolean
   adding: AddingFile | null
-  // we need the following to keep track of 'internal' exits,
-  // eg when moving from the outer folder div to a span with the folder name inside it
-  // see https://medium.com/@650egor/simple-drag-and-drop-file-upload-in-react-2cb409d88929
-  currentExternalFilesDragEventCounter: number
-  externalFilesDraggedIn: boolean
   filename: string
   pathParts: Array<string>
 }
@@ -252,8 +247,6 @@ class FileBrowserItemInner extends React.PureComponent<
       isRenaming: false,
       isHovered: false,
       adding: null,
-      currentExternalFilesDragEventCounter: 0,
-      externalFilesDraggedIn: false,
       filename: '',
       pathParts: [],
     }
@@ -455,11 +448,6 @@ class FileBrowserItemInner extends React.PureComponent<
       event.stopPropagation()
     }
 
-    this.setState({
-      externalFilesDraggedIn: false,
-      currentExternalFilesDragEventCounter: 0,
-    })
-
     this.props.dispatch([
       EditorActions.switchEditorMode(EditorModes.selectMode()),
       EditorActions.setFilebrowserDropTarget(null),
@@ -527,14 +515,9 @@ class FileBrowserItemInner extends React.PureComponent<
     ) {
       return
     }
-    this.setState((prevState) => {
-      return {
-        currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter + 1,
-      }
-    })
     const filesBeingDragged = e.dataTransfer?.items?.length ?? 0
     if (filesBeingDragged > 0) {
-      this.setState({ externalFilesDraggedIn: true, isHovered: true })
+      this.setState({ isHovered: true })
     }
     const targetDirectory =
       this.props.fileType === 'DIRECTORY' ? this.props.path : getParentDirectory(this.props.path)
@@ -548,13 +531,8 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onDragLeave = () => {
-    this.setState((prevState) => {
-      return {
-        currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter - 1,
-        externalFilesDraggedIn:
-          prevState.currentExternalFilesDragEventCounter > 1 && prevState.externalFilesDraggedIn,
-        isHovered: false,
-      }
+    this.setState({
+      isHovered: false,
     })
   }
 
@@ -647,18 +625,11 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  isCurrentDropTargetForInternalFiles = () => {
+  isCurrentDropTarget = () => {
     return this.props.dropTarget === this.props.path
   }
 
   render() {
-    const isCurrentDropTargetForInternalFiles = this.isCurrentDropTargetForInternalFiles()
-    const isCurrentDropTargetForExternalFiles =
-      this.state.externalFilesDraggedIn && this.props.fileType === 'DIRECTORY'
-
-    const isCurrentDropTargetForAnyFiles =
-      isCurrentDropTargetForInternalFiles || isCurrentDropTargetForExternalFiles
-
     const extraIndentationForExport = 0
     const indentation = this.state.pathParts.length + extraIndentationForExport - 1
 
@@ -667,7 +638,7 @@ class FileBrowserItemInner extends React.PureComponent<
         return colorTheme.subtleBackground.value
       } else if (this.state.isHovered) {
         return colorTheme.secondaryBackground.value
-      } else if (isCurrentDropTargetForAnyFiles) {
+      } else if (this.isCurrentDropTarget()) {
         return colorTheme.brandNeonYellow.value
       } else {
         return 'transparent'

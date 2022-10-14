@@ -954,6 +954,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 boundingArea(),
               ),
             ),
+            EditorActions.setFilebrowserDropTarget(null),
           ])
         },
 
