@@ -123,7 +123,7 @@ function drawToInsertStrategyFactory(
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
   fitness: number,
-  targetParent: ElementPath | null,
+  targetParent: ElementPath,
   targetIndex: number | null,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
@@ -131,10 +131,7 @@ function drawToInsertStrategyFactory(
     return null
   }
   const insertionSubject = insertionSubjects[0]
-  const predictedElementPath =
-    targetParent == null
-      ? null // TODO does the Storyboard Path need to be used here?
-      : EP.appendToPath(targetParent, insertionSubject.uid)
+  const predictedElementPath = EP.appendToPath(targetParent, insertionSubject.uid)
   return {
     id: name,
     name: name,
@@ -142,19 +139,19 @@ function drawToInsertStrategyFactory(
       // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: maybeToArray(targetParent) },
+        props: { targets: [targetParent] },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ParentBoundsForInsertion,
-        props: { targetParents: maybeToArray(targetParent) },
+        props: { targetParents: [targetParent] },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: { targets: maybeToArray(predictedElementPath) },
+        props: { targets: [predictedElementPath] },
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
