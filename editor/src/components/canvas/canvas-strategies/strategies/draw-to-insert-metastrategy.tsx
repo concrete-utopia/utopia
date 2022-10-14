@@ -136,7 +136,6 @@ function drawToInsertStrategyFactory(
     id: name,
     name: name,
     controlsToRender: [
-      // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
         control: ImmediateParentOutlines,
         props: { targets: [targetParent] },
@@ -168,7 +167,7 @@ function drawToInsertStrategyFactory(
         interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
         interactionSession.interactionData.type === 'HOVER')
         ? fitness
-        : 0, // TODO is this still needed here?
+        : 0,
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
