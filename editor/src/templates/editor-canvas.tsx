@@ -967,11 +967,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
               ...maybeSetDragSessionStateAction,
               interactionSessionAction,
+              EditorActions.setFilebrowserDropTarget(null),
             ])
           } else {
             return this.props.dispatch([
               EditorActions.switchEditorMode(EditorModes.insertMode([])),
               interactionSessionAction,
+              EditorActions.setFilebrowserDropTarget(null),
             ])
           }
         },
