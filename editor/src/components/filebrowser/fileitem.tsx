@@ -518,22 +518,6 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  onItemMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) {
-      return
-    }
-
-    if (
-      this.props.fileType != null &&
-      this.props.fileType !== 'DIRECTORY' &&
-      this.props.fileType !== 'ASSET_FILE'
-    ) {
-      this.props.setSelected(this.props)
-      this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
-      return
-    }
-  }
-
   onDragEnter = (e: React.DragEvent) => {
     // this disables react-dnd while dropping external files
     if (
@@ -574,7 +558,18 @@ class FileBrowserItemInner extends React.PureComponent<
     })
   }
 
-  onMouseDown = () => {
+  onMouseClick = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
+        this.props.setSelected(this.props)
+        if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
+          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
+        }
+      }
+    }
+  }
+
+  onMouseDown = (e: React.MouseEvent) => {
     if (this.props.imageFile == null) {
       return
     }
@@ -703,6 +698,7 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragLeave={this.onDragLeave}
           onMouseDown={this.onMouseDown}
           onMouseUp={this.onMouseUp}
+          onClick={this.onMouseClick}
           key={this.props.key}
           className='FileItem'
           style={{
