@@ -370,6 +370,18 @@ innerServerExecutor (GetBranchContent user owner repository branchName projectID
     Just githubResources -> do
       result <- getGithubBranch githubResources awsResource logger metrics pool user owner repository branchName projectID
       pure $ action result
+innerServerExecutor (UpdateBranchContent user owner repository branchName projectID commitSha model action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  awsResource <- fmap _awsResources ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- updateGithubBranch githubResources awsResource logger metrics pool user owner repository branchName projectID commitSha model
+      pure $ action result
+
 {-|
   Invokes a service call using the supplied resources.
 -}

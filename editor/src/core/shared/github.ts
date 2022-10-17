@@ -68,6 +68,14 @@ export interface GetBranchContentSuccess {
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
+export interface GetBranchUpdateSuccess {
+  type: 'SUCCESS'
+  possibleConflicts: ProjectContentTreeRoot
+  latestCommit: string
+}
+
+export type GetBranchUpdateResponse = GetBranchUpdateSuccess | GithubFailure
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
@@ -103,6 +111,7 @@ export async function saveProjectToGithub(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
                 responseBody.newCommit,
+                responseBody.branchName,
               ),
             ),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
@@ -185,7 +194,75 @@ export async function getBranchContent(
         dispatch(
           [
             updateProjectContents(responseBody.content),
-            updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+            ),
+            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
+          ],
+          'everyone',
+        )
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+}
+
+export async function updateAgainstGithub(
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  persistentModel: PersistentModel,
+  projectID: string,
+  branchName: string,
+  originCommit: string,
+): Promise<void> {
+  const url = urljoin(
+    UTOPIA_BACKEND,
+    'github',
+    'branches',
+    githubRepo.owner,
+    githubRepo.repository,
+    branchName,
+  )
+  const searchParams = new URLSearchParams({
+    project_id: projectID,
+    commit_sha: originCommit,
+  })
+
+  const putBody = JSON.stringify(persistentModel)
+  const response = await fetch(`${url}?${searchParams}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: putBody,
+  })
+  if (response.ok) {
+    const responseBody: GetBranchUpdateResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(`Error when updating from Github: ${responseBody.failureReason}`, 'ERROR'),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        dispatch(
+          [
+            updateProjectContents(responseBody.possibleConflicts),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.latestCommit, branchName),
+            ),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',

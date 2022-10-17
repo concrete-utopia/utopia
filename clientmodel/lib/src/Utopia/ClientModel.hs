@@ -1,4 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveFunctor #-}
 
 {-|
   Functionality for manipulating the data held in `PersistentModel` in the client.
@@ -254,50 +257,36 @@ instance Arbitrary ProjectFile where
   arbitrary = genericArbitrary
   shrink = genericShrink
 
-newtype ProjectContentTreeRoot = ProjectContentTreeRoot { root :: M.HashMap Text (ProjectContentsTree ProjectContentTreeRoot) }
-                               deriving (Eq, Show, Generic, Data, Typeable)
+type ProjectContentTreeRoot = M.HashMap Text ProjectContentsTree
 
-newtypeOptions :: Options
-newtypeOptions = defaultOptions { unwrapUnaryRecords = True }
-
-instance FromJSON ProjectContentTreeRoot where
-  parseJSON = genericParseJSON newtypeOptions
-
-instance ToJSON ProjectContentTreeRoot where
-  toJSON = genericToJSON newtypeOptions
-
-instance Arbitrary ProjectContentTreeRoot where
-  arbitrary = fmap ProjectContentTreeRoot $ liftArbitrary genericArbitrary
-  shrink = genericShrink
-
-data ProjectContentDirectory a = ProjectContentDirectory
+data ProjectContentDirectory = ProjectContentDirectory
                              { fullPath  :: Text
                              , directory :: Directory
-                             , children  :: a
+                             , children  :: ProjectContentTreeRoot
                              }
                              deriving (Eq, Show, Generic, Data, Typeable)
 
-instance (FromJSON a) => FromJSON (ProjectContentDirectory a) where
+instance FromJSON ProjectContentDirectory where
   parseJSON = genericParseJSON defaultOptions
 
-instance (ToJSON a) => ToJSON (ProjectContentDirectory a) where
+instance ToJSON ProjectContentDirectory where
   toJSON = genericToJSON defaultOptions
 
-generateProjectContentsTree :: Int -> Gen (ProjectContentsTree ProjectContentTreeRoot)
+generateProjectContentsTree :: Int -> Gen ProjectContentsTree
 generateProjectContentsTree 0 = fmap ProjectContentsTreeFile arbitrary
 generateProjectContentsTree depth = oneof
   [ fmap ProjectContentsTreeDirectory $ resize 3 $ generateProjectContentDirectory depth
   , fmap ProjectContentsTreeFile arbitrary
   ]
 
-generateProjectContentDirectory :: Int -> Gen (ProjectContentDirectory ProjectContentTreeRoot)
+generateProjectContentDirectory :: Int -> Gen ProjectContentDirectory
 generateProjectContentDirectory depth = do
   fullPath <- arbitrary
-  children <- fmap ProjectContentTreeRoot $ liftArbitrary $ generateProjectContentsTree (depth - 1)
+  children <- liftArbitrary $ generateProjectContentsTree (depth - 1)
   let directory = Directory
   pure ProjectContentDirectory{..}
 
-instance Arbitrary (ProjectContentDirectory ProjectContentTreeRoot) where
+instance Arbitrary ProjectContentDirectory where
   arbitrary = generateProjectContentDirectory 2
   shrink = genericShrink
 
@@ -317,15 +306,15 @@ instance Arbitrary ProjectContentFile where
   arbitrary = genericArbitrary
   shrink = genericShrink
 
-data ProjectContentsTree a = ProjectContentsTreeDirectory (ProjectContentDirectory a)
+data ProjectContentsTree = ProjectContentsTreeDirectory ProjectContentDirectory
                          | ProjectContentsTreeFile ProjectContentFile
                          deriving (Eq, Show, Generic, Data, Typeable)
 
-fullPathFromProjectContentsTree :: ProjectContentsTree a -> Text
+fullPathFromProjectContentsTree :: ProjectContentsTree -> Text
 fullPathFromProjectContentsTree (ProjectContentsTreeDirectory ProjectContentDirectory{..}) = fullPath
 fullPathFromProjectContentsTree (ProjectContentsTreeFile ProjectContentFile{..}) = fullPath
 
-instance (FromJSON a) => FromJSON (ProjectContentsTree a) where
+instance FromJSON ProjectContentsTree where
   parseJSON value =
     let fileType = firstOf (key "type" . _String) value
      in case fileType of
@@ -334,11 +323,11 @@ instance (FromJSON a) => FromJSON (ProjectContentsTree a) where
               (Just unknownType) -> fail ("Unknown type: " <> unpack unknownType)
               _ -> fail "No type for ProjectContentsTree specified."
 
-instance (ToJSON a) => ToJSON (ProjectContentsTree a) where
+instance ToJSON ProjectContentsTree where
   toJSON (ProjectContentsTreeDirectory dirEntry) = over _Object (M.insert "type" "PROJECT_CONTENT_DIRECTORY") $ toJSON dirEntry
   toJSON (ProjectContentsTreeFile fileEntry) = over _Object (M.insert "type" "PROJECT_CONTENT_FILE") $ toJSON fileEntry
 
-instance Arbitrary (ProjectContentsTree ProjectContentTreeRoot) where
+instance Arbitrary ProjectContentsTree where
   arbitrary = generateProjectContentsTree 2
   shrink = genericShrink
 
@@ -361,6 +350,7 @@ instance Arbitrary GithubRepo where
 data ProjectGithubSettings = ProjectGithubSettings
                            { targetRepository :: Maybe GithubRepo
                            , originCommit     :: Maybe Text
+                           , branchName       :: Maybe Text
                            }
                            deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -405,17 +395,26 @@ instance Arbitrary PersistentModel where
 getProjectContentsTreeFile :: ProjectContentTreeRoot -> [Text] -> Maybe ProjectFile
 getProjectContentsTreeFile _ [] =
   Nothing
-getProjectContentsTreeFile ProjectContentTreeRoot{..} [lastPart] =
+getProjectContentsTreeFile root [lastPart] =
   firstOf (at lastPart . _Just . _Ctor @"ProjectContentsTreeFile" . field @"content") root
-getProjectContentsTreeFile ProjectContentTreeRoot{..} (firstPart : restOfParts) = do
+getProjectContentsTreeFile root (firstPart : restOfParts) = do
   nextRoot <- firstOf (at firstPart . _Just . _Ctor @"ProjectContentsTreeDirectory" . field @"children") root
   getProjectContentsTreeFile nextRoot restOfParts
 
 
-type TreeWithConflicts = ProjectContentsTree ProjectContentTreeWithConflicts
+type TreeWithConflicts = M.HashMap Text PossibleConflicts 
+
+data NothingConflict = NothingConflict
+                     deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON NothingConflict where
+  parseJSON = const $ pure NothingConflict
+
+instance ToJSON NothingConflict where
+  toJSON = const $ object []
 
 data NoConflict = NoConflict
-                { normalTree   :: TreeWithConflicts
+                { normalTree   :: ProjectContentsTree
                 }
                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -426,7 +425,7 @@ instance ToJSON NoConflict where
   toJSON = genericToJSON defaultOptions
 
 data LeftDeleted = LeftDeleted
-                { rightTree   :: TreeWithConflicts
+                { rightTree   :: ProjectContentsTree
                 }
                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -437,7 +436,7 @@ instance ToJSON LeftDeleted where
   toJSON = genericToJSON defaultOptions
 
 data RightDeleted = RightDeleted
-                { leftTree   :: TreeWithConflicts
+                { leftTree   :: ProjectContentsTree
                 }
                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -448,8 +447,8 @@ instance ToJSON RightDeleted where
   toJSON = genericToJSON defaultOptions
 
 data IncompatibleEntry = IncompatibleEntry
-                { leftTree    :: TreeWithConflicts
-                , rightTree   :: TreeWithConflicts
+                { leftTree    :: ProjectContentsTree
+                , rightTree   :: ProjectContentsTree
                 }
                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -460,8 +459,8 @@ instance ToJSON IncompatibleEntry where
   toJSON = genericToJSON defaultOptions
 
 data ConflictedFile = ConflictedFile
-                { leftTree    :: TreeWithConflicts
-                , rightTree   :: TreeWithConflicts
+                { leftTree    :: ProjectFile
+                , rightTree   :: ProjectFile
                 }
                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -471,38 +470,47 @@ instance FromJSON ConflictedFile where
 instance ToJSON ConflictedFile where
   toJSON = genericToJSON defaultOptions
 
-data PossibleConflicts = PossibleConflictsNoConflict NoConflict
+data ConflictsDirectory = ConflictsDirectory
+                { directoryName :: Text
+                , directoryTree :: TreeWithConflicts
+                }
+                deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON ConflictsDirectory where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON ConflictsDirectory where
+  toJSON = genericToJSON defaultOptions
+
+data PossibleConflicts = PossibleConflictsNothingConflict NothingConflict
+                       | PossibleConflictsNoConflict NoConflict
                        | PossibleConflictsLeftDeleted LeftDeleted
                        | PossibleConflictsRightDeleted RightDeleted
                        | PossibleConflictsIncompatibleEntry IncompatibleEntry
                        | PossibleConflictsConflictedFile ConflictedFile
+                       | PossibleConflictsDirectory ConflictsDirectory
                        deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON PossibleConflicts where
   parseJSON value =
     let fileType = firstOf (key "type" . _String) value
      in case fileType of
+              (Just "NOTHING_CONFLICT") -> fmap PossibleConflictsNothingConflict $ parseJSON value
               (Just "NO_CONFLICT") -> fmap PossibleConflictsNoConflict $ parseJSON value
               (Just "LEFT_DELETED") -> fmap PossibleConflictsLeftDeleted $ parseJSON value
               (Just "RIGHT_DELETED") -> fmap PossibleConflictsRightDeleted $ parseJSON value
               (Just "INCOMPATIBLE_ENTRY") -> fmap PossibleConflictsIncompatibleEntry $ parseJSON value
               (Just "CONFLICTED_FILE") -> fmap PossibleConflictsConflictedFile $ parseJSON value
+              (Just "DIRECTORY") -> fmap PossibleConflictsDirectory $ parseJSON value
               (Just unknownType) -> fail ("Unknown type: " <> unpack unknownType)
               _ -> fail "No type for ProjectContentsTree specified."
 
 instance ToJSON PossibleConflicts where
+  toJSON (PossibleConflictsNothingConflict nothingConflict) = over _Object (M.insert "type" "NOTHING_CONFLICT") $ toJSON nothingConflict
   toJSON (PossibleConflictsNoConflict noConflict) = over _Object (M.insert "type" "NO_CONFLICT") $ toJSON noConflict
   toJSON (PossibleConflictsLeftDeleted leftDeleted) = over _Object (M.insert "type" "LEFT_DELETED") $ toJSON leftDeleted
   toJSON (PossibleConflictsRightDeleted rightDeleted) = over _Object (M.insert "type" "RIGHT_DELETED") $ toJSON rightDeleted
   toJSON (PossibleConflictsIncompatibleEntry incompatibleEntry) = over _Object (M.insert "type" "INCOMPATIBLE_ENTRY") $ toJSON incompatibleEntry
   toJSON (PossibleConflictsConflictedFile conflictedFile) = over _Object (M.insert "type" "CONFLICTED_FILE") $ toJSON conflictedFile
-
-newtype ProjectContentTreeWithConflicts = ProjectContentTreeWithConflicts { root :: M.HashMap Text PossibleConflicts }
-                                         deriving (Eq, Show, Generic, Data, Typeable)
-
-instance FromJSON ProjectContentTreeWithConflicts where
-  parseJSON = genericParseJSON newtypeOptions
-
-instance ToJSON ProjectContentTreeWithConflicts where
-  toJSON = genericToJSON newtypeOptions
+  toJSON (PossibleConflictsDirectory directory) = over _Object (M.insert "type" "DIRECTORY") $ toJSON directory
 

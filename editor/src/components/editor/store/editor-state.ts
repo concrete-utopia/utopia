@@ -938,15 +938,18 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
+  branchName: string | null
 }
 
 export function projectGithubSettings(
   targetRepository: GithubRepo | null,
   originCommit: string | null,
+  branchName: string | null,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
+    branchName: branchName,
   }
 }
 
@@ -1967,6 +1970,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     imageDragSessionState: notDragging(),
   }
@@ -2334,6 +2338,7 @@ export function persistentModelForProjectContents(
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
   }
 }

@@ -314,7 +314,7 @@ addProjectContentFromGitEntry :: ProjectContentTreeRoot -> ProjectContentsTree -
 addProjectContentFromGitEntry _ _ [] _ =
   Left "Empty path not allowed."
 addProjectContentFromGitEntry treeRoot treeContent (lastFilenamePart : []) _ =
-  Right $ M.insert lastFilenamePart (treeContent) treeRoot
+  Right $ M.insert lastFilenamePart treeContent treeRoot
 addProjectContentFromGitEntry treeRoot treeContent (filenamePart : filenameRemainder) pathSoFar =
   let currentSubTree = M.lookup filenamePart treeRoot
       newPathSoFar = pathSoFar <> [filenamePart]

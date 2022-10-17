@@ -8,32 +8,7 @@ import           Test.Tasty.Hspec
 import Protolude
 import Data.Algorithm.Diff3
 import qualified Data.Text as T
-
-makeConflictSegment :: [Text] -> [Text] -> [Text]
-makeConflictSegment leftBranchLines rightBranchLines =
-  ["<<<<<<<"] <> leftBranchLines <> ["======="] <> rightBranchLines <> [">>>>>>>"]
-
-createConflictMarkersForAHunk :: Hunk Text -> [Text]
-createConflictMarkersForAHunk (LeftChange textLines) = textLines
-createConflictMarkersForAHunk (RightChange textLines) = textLines
-createConflictMarkersForAHunk (Unchanged textLines) = textLines
-createConflictMarkersForAHunk (Conflict leftBranchLines _ rightBranchLines) =
-  makeConflictSegment leftBranchLines rightBranchLines
-
-createConflictMarkers :: [Hunk Text] -> Text
-createConflictMarkers hunks = T.unlines $ foldMap createConflictMarkersForAHunk hunks
-
-diffFiles :: Text -> Text -> Text -> (Bool, Text)
-diffFiles leftBranch origin rightBranch =
-  let leftBranchLines = T.lines leftBranch
-      originLines = T.lines origin
-      rightBranchLines = T.lines rightBranch
-      diffResult = diff3 leftBranchLines originLines rightBranchLines
-      branchesTheSame = leftBranch == rightBranch
-      combineLines textLines = (False, T.unlines textLines)
-      createConflictMarkersResult hunks = (True, createConflictMarkers hunks)
-      mergedResult = either createConflictMarkersResult combineLines $ merge diffResult
-   in if branchesTheSame then (False, leftBranch <> "\n") else mergedResult
+import Utopia.Web.Github.Conflict
 
 diffSpec :: Spec
 diffSpec = do

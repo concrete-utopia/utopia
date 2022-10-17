@@ -871,6 +871,10 @@ const GithubPane = React.memo(() => {
     }
   }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
 
+  const triggerUpdateAgainstGithub = React.useCallback(() => {
+    dispatch([EditorActions.updateAgainstGithub()], 'everyone')
+  }, [dispatch])
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -977,6 +981,16 @@ const GithubPane = React.memo(() => {
               onMouseUp={triggerSaveToGithub}
             >
               Save To Github
+            </Button>
+          </UIGridRow>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <Button
+              spotlight
+              highlight
+              disabled={!githubAuthenticated || parsedTargetRepository == null}
+              onMouseUp={triggerUpdateAgainstGithub}
+            >
+              Update Against Github
             </Button>
           </UIGridRow>
           {branchesUI}

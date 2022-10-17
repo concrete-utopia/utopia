@@ -355,6 +355,7 @@ instance ToJSON GetBlobResult where
   toJSON = genericToJSON defaultOptions
 
 
+
 data GetBranchContentSuccess = GetBranchContentSuccess
                          { content      :: ProjectContentTreeRoot
                          , originCommit :: Text
@@ -390,4 +391,37 @@ instance ToJSON GetBranchContentResponse where
   toJSON (GetBranchContentResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
   toJSON (GetBranchContentResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
+data GetBranchUpdateSuccess = GetBranchUpdateSuccess
+                            { possibleConflicts  :: ProjectContentTreeRoot
+                            , latestCommit       :: Text
+                            }
+                            deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GetBranchUpdateSuccess where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GetBranchUpdateSuccess where
+  toJSON = genericToJSON defaultOptions
+
+data GetBranchUpdateResponse = GetBranchUpdateResponseSuccess GetBranchUpdateSuccess
+                             | GetBranchUpdateResponseFailure GithubFailure
+
+instance FromJSON GetBranchUpdateResponse where
+  parseJSON value =
+    let fileType = firstOf (key "type" . _String) value
+     in case fileType of
+          (Just "SUCCESS")  -> fmap GetBranchUpdateResponseSuccess $ parseJSON value
+          (Just "FAILURE")  -> fmap GetBranchUpdateResponseFailure $ parseJSON value
+          (Just unknownType)  -> fail ("Unknown type: " <> T.unpack unknownType)
+          _                   -> fail "No type for GetBranchUpdateResponse specified."
+
+instance ToJSON GetBranchUpdateResponse where
+  toJSON (GetBranchUpdateResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
+  toJSON (GetBranchUpdateResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
+
+getBranchUpdateFailureFromReason :: Text -> GetBranchUpdateResponse
+getBranchUpdateFailureFromReason failureReason = GetBranchUpdateResponseFailure GithubFailure{..}
+
+getBranchUpdateSuccessFromContent :: (ProjectContentTreeRoot, Text) -> GetBranchUpdateResponse
+getBranchUpdateSuccessFromContent (possibleConflicts, latestCommit) = GetBranchUpdateResponseSuccess GetBranchUpdateSuccess{..}
 

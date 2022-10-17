@@ -3143,10 +3143,12 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
 )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchName,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )

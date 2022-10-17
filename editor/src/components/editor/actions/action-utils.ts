@@ -177,6 +177,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_TAILWIND_CONFIG':
     case 'RUN_ESCAPE_HATCH':
     case 'SET_IMAGE_DRAG_SESSION_STATE':
+    case 'UPDATE_AGAINST_GITHUB':
       return false
     case 'SAVE_ASSET':
       return (

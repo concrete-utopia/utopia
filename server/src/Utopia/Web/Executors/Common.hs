@@ -56,6 +56,7 @@ import           Utopia.Web.Auth.Types            (Auth0Resources)
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Github
+import           Utopia.Web.Github.Conflict
 import           Utopia.Web.Github.Types
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
@@ -430,6 +431,23 @@ getGithubBranch githubResources awsResource logger metrics pool userID owner rep
         getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID treeSha
       pure (projectContent, commitSha)
     pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+
+updateGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> Text -> PersistentModel -> m GetBranchUpdateResponse
+updateGithubBranch githubResources awsResource logger metrics pool userID owner repository branchName projectID originCommitSha model = do
+  let uploadAsset = saveAsset awsResource 
+  whenProjectOwner metrics pool userID projectID $ do
+    result <- runExceptT $ do
+      branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+        getGitBranch accessToken owner repository branchName
+      let commitSha = view (field @"commit" . field @"sha") branch
+      let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+      leftBranch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+        getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID treeSha
+      origin <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+        getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID originCommitSha
+      let diffed = diffProjectContents leftBranch origin (view (field @"projectContents") model)
+      pure (diffed, commitSha)
+    pure $ either getBranchUpdateFailureFromReason getBranchUpdateSuccessFromContent result
 
 loadAsset :: Maybe AWSResources -> LoadAsset
 loadAsset awsResource path possibleETag = do

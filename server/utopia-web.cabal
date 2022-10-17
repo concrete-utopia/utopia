@@ -41,6 +41,7 @@ executable utopia-web
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
       Utopia.Web.Github
+      Utopia.Web.Github.Conflict
       Utopia.Web.Github.Types
       Utopia.Web.JSON
       Utopia.Web.Logging
@@ -183,6 +184,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
       Utopia.Web.Github
+      Utopia.Web.Github.Conflict
       Utopia.Web.Github.Types
       Utopia.Web.JSON
       Utopia.Web.Logging

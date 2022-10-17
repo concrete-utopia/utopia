@@ -683,6 +683,12 @@ getGithubBranchContentEndpoint _ _ _ _ Nothing = badRequest
 getGithubBranchContentEndpoint cookie owner repository branchName (Just projectID) = requireUser cookie $ \sessionUser -> do
   getBranchContent (view (field @"_id") sessionUser) owner repository branchName projectID
 
+updateGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> PersistentModel -> ServerMonad GetBranchUpdateResponse
+updateGithubBranchContentEndpoint _ _ _ _ Nothing _ _ = badRequest
+updateGithubBranchContentEndpoint _ _ _ _ _ Nothing _ = badRequest
+updateGithubBranchContentEndpoint cookie owner repository branchName (Just projectID) (Just commitSha) persistentModel = requireUser cookie $ \sessionUser -> do
+  updateBranchContent (view (field @"_id") sessionUser) owner repository branchName projectID commitSha persistentModel
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -708,6 +714,7 @@ protected authCookie = logoutPage authCookie
                   :<|> githubSaveEndpoint authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> updateGithubBranchContentEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

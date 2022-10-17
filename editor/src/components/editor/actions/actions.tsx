@@ -302,6 +302,7 @@ import {
   UpdateThumbnailGenerated,
   WrapInElement,
   WrapInView,
+  UpdateAgainstGithub,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -380,7 +381,7 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { saveProjectToGithub } from '../../../core/shared/github'
+import { saveProjectToGithub, updateAgainstGithub } from '../../../core/shared/github'
 import { objectFilter } from '../../../core/shared/object-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
@@ -4960,6 +4961,29 @@ export const UPDATE_FNS = {
       dispatch,
     )
 
+    return editor
+  },
+  UPDATE_AGAINST_GITHUB: (
+    action: UpdateAgainstGithub,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    if (
+      editor.githubSettings.targetRepository != null &&
+      editor.githubSettings.originCommit != null &&
+      editor.githubSettings.branchName != null
+    ) {
+      // Side effect - Pushing this to the server to get that to update against Github.
+      const persistentModel = persistentModelFromEditorModel(editor)
+      void updateAgainstGithub(
+        dispatch,
+        editor.githubSettings.targetRepository,
+        persistentModel,
+        forceNotNull('Should have a project ID at this point.', editor.id),
+        editor.githubSettings.branchName,
+        editor.githubSettings.originCommit,
+      )
+    }
     return editor
   },
   SET_FILE_BROWSER_DRAG_STATE: (

@@ -210,6 +210,7 @@ import type {
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
+  UpdateAgainstGithub,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1561,6 +1562,12 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+  }
+}
+
+export function updateAgainstGithub(): UpdateAgainstGithub {
+  return {
+    action: 'UPDATE_AGAINST_GITHUB',
   }
 }
 

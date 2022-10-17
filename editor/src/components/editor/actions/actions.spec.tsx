@@ -936,6 +936,7 @@ describe('LOAD', () => {
       githubSettings: {
         targetRepository: null,
         originCommit: null,
+        branchName: null,
       },
     }
 
