@@ -35,10 +35,8 @@ export const CursorOverlay = React.memo(() => {
       pointerEvents: 'none',
       zIndex: 9999999,
     }
-    if (cursor != null) {
+    if (cursor != null && noImageDragSessionInProgress) {
       workingStyleProps.cursor = cursor
-    }
-    if (noImageDragSessionInProgress) {
       workingStyleProps.pointerEvents = 'all'
     }
     return workingStyleProps
