@@ -279,6 +279,7 @@ describe('image dnd', () => {
 
       await editor.getDispatchFollowUpActionsFinished()
 
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toBeNull()
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(`
       import * as React from 'react'
