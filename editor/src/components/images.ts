@@ -21,10 +21,12 @@ import {
 } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
-import { forceNotNull } from '../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
 import { isFeatureEnabled } from '../utils/feature-switches'
+import { last } from '../core/shared/array-utils'
+import { identity } from '../core/shared/utils'
 
 export function getImageSrc(
   projectId: string | null,
@@ -62,6 +64,86 @@ export function parseImageMultiplier(imagePath: string): number {
     multiplier = Number.parseInt(imageMultiplierResult[1])
   }
   return multiplier
+}
+
+export interface ImageFilenameParts {
+  filename: string
+  extension: string
+  multiplier?: number
+  deduplicationSeqNumber?: number
+}
+
+export function filenameFromParts(parts: ImageFilenameParts): string {
+  const { filename, multiplier, extension, deduplicationSeqNumber } = parts
+  const multiplierString = optionalMap((m) => `@${m}x`, multiplier) ?? ''
+  const dedupeString = optionalMap((n) => `_${n}`, deduplicationSeqNumber) ?? ''
+  return `${filename}${dedupeString}${multiplierString}.${extension}`
+}
+
+export interface LastPartSeparatedByResult<T> {
+  part: T
+  rest: string
+}
+
+function lastPartSeparatedBy<Separator extends string, T>(
+  sepBy: Separator,
+  make: (_: string) => T | null,
+  s: string,
+): LastPartSeparatedByResult<T> | null {
+  const parts = s.split(sepBy)
+  if (s.length < 2) {
+    return null
+  }
+
+  const made = make(parts[parts.length - 1])
+  if (made == null) {
+    return null
+  }
+
+  return {
+    rest: parts.slice(0, -1).join(''),
+    part: made,
+  }
+}
+
+const runNumberRegexp =
+  (re: RegExp) =>
+  (raw: string): number | null => {
+    const match = re.exec(raw)
+    if (match == null || match.length < 2) {
+      return null
+    }
+    return Number.parseInt(match[1])
+  }
+
+export const parseMultiplier = runNumberRegexp(/^(\d+)x$/g)
+
+export const parseDedupeId = runNumberRegexp(/^_(\d+)$/g)
+
+export function getImageFilenameParts(filename: string): ImageFilenameParts | null {
+  const extensionResult = lastPartSeparatedBy<'.', string>('.', identity, filename)
+  if (extensionResult == null) {
+    return null
+  }
+
+  const { part: extension, rest: restFromExtension } = extensionResult
+
+  const { part: multiplier, rest: restFromMultiplier } = lastPartSeparatedBy<
+    '@',
+    number | undefined
+  >('@', parseMultiplier, restFromExtension) ?? { part: undefined, rest: restFromExtension }
+
+  const { part: dedupSeqNumber, rest: restFromDedupe } = lastPartSeparatedBy<
+    '_',
+    number | undefined
+  >('_', parseDedupeId, restFromMultiplier) ?? { part: undefined, rest: restFromMultiplier }
+
+  return {
+    extension: extension,
+    multiplier: multiplier,
+    deduplicationSeqNumber: dedupSeqNumber,
+    filename: restFromDedupe,
+  }
 }
 
 interface FrameAndMultiplier {
