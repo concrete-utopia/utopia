@@ -10,7 +10,7 @@ import { elementPath } from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasRectangle, canvasRectangle, Size } from '../../../../core/shared/math-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { Utils } from '../../../../uuiui-deps'
+import { CSSCursor, Utils } from '../../../../uuiui-deps'
 import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
@@ -18,6 +18,7 @@ import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
 } from '../../commands/insert-element-insertion-subject'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -47,9 +48,6 @@ export function dragToInsertStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  if (insertionSubjects.length === 0) {
-    return null
-  }
 
   return {
     id: 'DRAG_TO_INSERT',
@@ -93,30 +91,38 @@ export function dragToInsertStrategy(
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
       ) {
-        const insertionCommands = insertionSubjects.flatMap((s) => {
-          const size = s.defaultSize
-          return getInsertionCommands(s, interactionSession, size)
-        })
+        if (insertionSubjects.length === 0) {
+          return strategyApplicationResult(
+            [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+            {},
+            'failure',
+          )
+        } else {
+          const insertionCommands = insertionSubjects.flatMap((s) => {
+            const size = s.defaultSize
+            return getInsertionCommands(s, interactionSession, size)
+          })
 
-        const reparentCommand = updateFunctionCommand(
-          'always',
-          (editorState, transient): Array<EditorStatePatch> => {
-            return runTargetStrategiesForFreshlyInsertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              customStrategyState,
-              interactionSession,
-              transient,
-              insertionCommands,
-              strategyLifecycle,
-            )
-          },
-        )
+          const reparentCommand = updateFunctionCommand(
+            'always',
+            (editorState, transient): Array<EditorStatePatch> => {
+              return runTargetStrategiesForFreshlyInsertedElement(
+                canvasState.builtInDependencies,
+                editorState,
+                customStrategyState,
+                interactionSession,
+                transient,
+                insertionCommands,
+                strategyLifecycle,
+              )
+            },
+          )
 
-        return strategyApplicationResult([
-          ...insertionCommands.map((c) => c.command),
-          reparentCommand,
-        ])
+          return strategyApplicationResult([
+            ...insertionCommands.map((c) => c.command),
+            reparentCommand,
+          ])
+        }
       }
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult

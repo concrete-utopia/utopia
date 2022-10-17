@@ -2809,7 +2809,7 @@ export const DraggedImagePropertiesDeepEquality: KeepDeepEqualityCall<DraggedIma
 export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingFromSidebar> =
   combine2EqualityCalls(
     (d) => d.draggedImageProperties,
-    DraggedImagePropertiesDeepEquality,
+    nullableDeepEquality(DraggedImagePropertiesDeepEquality),
     (d) => d.type,
     StringKeepDeepEquality,
     draggingFromSidebar,

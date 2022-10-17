@@ -361,7 +361,7 @@ describe('image dnd', () => {
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, endPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -417,7 +417,7 @@ describe('image dnd', () => {
         y: targetFolderBounds.y + targetFolderBounds.height / 2,
       }
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, endPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 

@@ -916,53 +916,67 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
 
           const position = this.getPosition(event.nativeEvent)
-
-          const setDragSessionStateActions =
-            this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
-              ? [EditorActions.setImageDragSessionState(draggingFromFS())]
-              : []
-
-          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-
-          const newElementProps: Partial<DraggedImageProperties> =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
-              ? {
-                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
-                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
-                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
-                }
-              : {
-                  width: 1,
-                  height: 1,
-                }
-
-          const newElement = createJsxImage(newUID, newElementProps)
-
-          const elementSize: Size = resize(
-            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
-            size(200, 200),
-            'keep-aspect-ratio',
+          const interactionSessionAction = CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              position.canvasPositionRounded,
+              emptyModifiers,
+              boundingArea(),
+            ),
           )
 
-          this.props.dispatch([
-            ...setDragSessionStateActions,
-            EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-            CanvasActions.createInteractionSession(
-              createInteractionViaMouse(
-                position.canvasPositionRounded,
-                emptyModifiers,
-                boundingArea(),
-              ),
-            ),
-          ])
+          if (
+            (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+              this.props.editor.imageDragSessionState.draggedImageProperties != null) ||
+            event.dataTransfer.types.includes('Files')
+          ) {
+            const maybeSetDragSessionStateAction =
+              this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
+                ? [EditorActions.setImageDragSessionState(draggingFromFS())]
+                : []
+
+            const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+            const newElementProps: Partial<DraggedImageProperties> =
+              this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+              this.props.editor.imageDragSessionState.draggedImageProperties != null
+                ? {
+                    width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
+                    height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
+                    src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
+                  }
+                : {
+                    width: 1,
+                    height: 1,
+                  }
+
+            const newElement = createJsxImage(newUID, newElementProps)
+
+            const elementSize: Size = resize(
+              size(newElementProps.width ?? 100, newElementProps.height ?? 100),
+              size(200, 200),
+              'keep-aspect-ratio',
+            )
+
+            return this.props.dispatch([
+              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
+              ...maybeSetDragSessionStateAction,
+              interactionSessionAction,
+            ])
+          } else {
+            return this.props.dispatch([
+              EditorActions.switchEditorMode(EditorModes.insertMode([])),
+              interactionSessionAction,
+            ])
+          }
         },
 
         onDragLeave: (event) => {
-          this.props.dispatch([
-            CanvasActions.clearInteractionSession(false),
-            EditorActions.switchEditorMode(EditorModes.selectMode(null)),
-            EditorActions.setImageDragSessionState(notDragging()),
-          ])
+          if (!this.isInsideCanvas(event.nativeEvent)) {
+            this.props.dispatch([
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+            ])
+          }
         },
 
         onDrop: (event: React.DragEvent) => {
