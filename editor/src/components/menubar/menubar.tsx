@@ -124,7 +124,7 @@ function useRequestVSCodeStatus(): () => void {
     [vscodeState],
   )
 }
-
+export const LeftMenuWidth = 44
 export const Menubar = React.memo(() => {
   const {
     dispatch,
@@ -238,7 +238,7 @@ export const Menubar = React.memo(() => {
       style={{
         flexGrow: 1,
         backgroundColor: colorTheme.leftMenuBackground.value,
-        width: 44,
+        width: LeftMenuWidth,
         overflowX: 'scroll',
       }}
     >
