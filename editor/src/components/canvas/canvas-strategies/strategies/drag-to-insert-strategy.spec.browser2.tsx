@@ -4,7 +4,12 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/util
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
+import {
+  mouseDownAtPoint,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -25,7 +30,7 @@ async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
   return renderResult
 }
 
-async function dragFromInsertMenuDivButtonToPoint(
+function startDraggingFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
@@ -47,7 +52,25 @@ async function dragFromInsertMenuDivButtonToPoint(
     modifiers: modifiers,
     eventOptions: { buttons: 1 },
   })
+}
+
+function finishDraggingToPoint(
+  targetPoint: { x: number; y: number },
+  modifiers: Modifiers,
+  renderResult: EditorRenderResult,
+) {
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const endPoint = slightlyOffsetPointBecauseVeryWeirdIssue(targetPoint)
   mouseUpAtPoint(canvasControlsLayer, endPoint, { modifiers: modifiers })
+}
+
+async function dragFromInsertMenuDivButtonToPoint(
+  targetPoint: { x: number; y: number },
+  modifiers: Modifiers,
+  renderResult: EditorRenderResult,
+) {
+  startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
+  finishDraggingToPoint(targetPoint, modifiers, renderResult)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
@@ -244,10 +267,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
       />
       <div
         data-uid='ccc'
+        data-testid='ccc'
         style={{
           width: 100,
           height: 190,
           backgroundColor: '#FF0000',
+          display: 'flex',
         }}
       />
     </div>
@@ -300,12 +325,145 @@ describe('Dragging from the insert menu into a flex layout', () => {
           /> 
           <div
             data-uid='ccc'
+            data-testid='ccc'
             style={{
               width: 100,
               height: 190,
               backgroundColor: '#FF0000',
+              display: 'flex',
             }}
           />
+        </div>
+      `),
+    )
+  })
+
+  it('Should insert a div into a flex layout with absolute positioning', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+
+    const targetSibling = renderResult.renderedDOM.getByTestId('bbb')
+    const targetSiblingBounds = targetSibling.getBoundingClientRect()
+    // Drag close to the right edge of the target sibling
+    const targetPoint = {
+      x: targetSiblingBounds.x + targetSiblingBounds.width - 5,
+      y: targetSiblingBounds.y + targetSiblingBounds.height - 5,
+    }
+
+    startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    // Tab once to switch from flex insert to abs
+    pressKey('Tab', { modifiers: emptyModifiers })
+    await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            data-testid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+              display: 'flex',
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 125,
+              top: 125,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='ddd'
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Should forcibly insert a div into a flex layout that does not provide bounds with absolute positioning', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+
+    const targetParent = renderResult.renderedDOM.getByTestId('ccc')
+    const targetParentBounds = targetParent.getBoundingClientRect()
+
+    const targetPoint = {
+      x: targetParentBounds.x + targetParentBounds.width / 2,
+      y: targetParentBounds.y + targetParentBounds.height / 2,
+    }
+
+    startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    // Tab once to switch from flex insert to forced abs
+    pressKey('Tab', { modifiers: emptyModifiers })
+    await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            data-testid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+              display: 'flex',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 190,
+                top: 45,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='ddd'
+            />
+          </div>
         </div>
       `),
     )
@@ -358,10 +516,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
           <div
             data-uid='ccc'
+            data-testid='ccc'
             style={{
               width: 100,
               height: 190,
               backgroundColor: '#FF0000',
+              display: 'flex',
             }}
           />
         </div>
@@ -419,10 +579,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
           </div>
           <div
             data-uid='ccc'
+            data-testid='ccc'
             style={{
               width: 100,
               height: 190,
               backgroundColor: '#FF0000',
+              display: 'flex',
             }}
           />
         </div>
