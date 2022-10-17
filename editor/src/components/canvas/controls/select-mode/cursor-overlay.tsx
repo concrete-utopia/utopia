@@ -16,6 +16,7 @@ export function getCursorForOverlay(editorState: EditorState): CSSCursor | null 
   )
 }
 
+// Please note during drag and drop events cursor is set to document body
 export const CursorOverlay = React.memo(() => {
   const cursor = useDelayedEditorState((store) => {
     return getCursorForOverlay(store.editor)

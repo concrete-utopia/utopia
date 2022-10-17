@@ -915,6 +915,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
         onDragOver: (event) => {
           event.preventDefault()
+          // during drag and drop events cursor is set to document body instead of the cursor overlay
           document.body.style.cursor = getCursorForOverlay(this.props.editor) ?? 'initial'
 
           if (this.props.editor.canvas.interactionSession != null) {
