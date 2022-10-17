@@ -14,12 +14,17 @@ import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
 import { ProjectContentTreeRoot } from '../components/assets'
-import { getFrameAndMultiplierWithResize, createJsxImage } from '../components/images'
+import {
+  getFrameAndMultiplierWithResize,
+  createJsxImage,
+  getFrameAndMultiplier,
+} from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { EditorState } from '../components/editor/store/editor-state'
 import { uniqueProjectContentID } from '../core/model/project-file-utils'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -138,7 +143,7 @@ function actionsForDroppedImage(
   image: ImageResult,
   context: ActionsForDroppedImageContext,
 ): ActionForDroppedImageResult {
-  const { frame } = getFrameAndMultiplierWithResize(
+  const { frame } = getFrameAndMultiplier(
     context.mousePosition,
     image.filename,
     image.size,
@@ -161,11 +166,23 @@ function actionsForDroppedImage(
     : { saveImageActions: [], src: image.base64Bytes }
 
   const newUID = context.generateUid()
-  const elementSize: Size = resize(
-    size(frame.width ?? 100, frame.height ?? 100),
-    size(200, 200),
-    'keep-aspect-ratio',
-  )
+
+  const defaultSize: Size = {
+    width: 200,
+    height: 200,
+  }
+
+  const originalSize: Size = {
+    width: frame.width ?? defaultSize.width,
+    height: frame.height ?? defaultSize.height,
+  }
+  const desiredSize: Size = isFeatureEnabled('Resize image on drop')
+    ? {
+        width: Math.min(originalSize.width, defaultSize.width),
+        height: Math.min(originalSize.height, defaultSize.height),
+      }
+    : originalSize
+  const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
   const newElement = createJsxImage(newUID, {
     width: elementSize.width,
     height: elementSize.height,

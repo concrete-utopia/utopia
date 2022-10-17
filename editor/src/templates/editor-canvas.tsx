@@ -103,12 +103,13 @@ import { getDragTargets } from '../components/canvas/canvas-strategies/strategie
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage } from '../components/images'
+import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -938,11 +939,23 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newElement = createJsxImage(newUID, newElementProps)
 
-          const elementSize: Size = resize(
-            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
-            size(200, 200),
-            'keep-aspect-ratio',
-          )
+          const defaultSize: Size = {
+            width: 200,
+            height: 200,
+          }
+
+          const originalSize: Size = {
+            width: newElementProps.width ?? defaultSize.width,
+            height: newElementProps.height ?? defaultSize.height,
+          }
+
+          const desiredSize: Size = isFeatureEnabled('Resize image on drop')
+            ? {
+                width: Math.min(originalSize.width, defaultSize.width),
+                height: Math.min(originalSize.height, 200),
+              }
+            : originalSize
+          const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
 
           this.props.dispatch([
             ...setDragSessionStateActions,
