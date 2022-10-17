@@ -109,6 +109,7 @@ import {
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
+import { getCursorForOverlay } from '../components/canvas/controls/select-mode/cursor-overlay'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -909,12 +910,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.canvasWrapperRef = ref
         },
 
+        onDragEnter: (event) => {
+          event.preventDefault()
+        },
         onDragOver: (event) => {
+          event.preventDefault()
+          document.body.style.cursor = getCursorForOverlay(this.props.editor) ?? 'initial'
+
           if (this.props.editor.canvas.interactionSession != null) {
             this.handleMouseMove(event.nativeEvent)
             return
           }
-
           const position = this.getPosition(event.nativeEvent)
           const interactionSessionAction = CanvasActions.createInteractionSession(
             createInteractionViaMouse(
@@ -971,6 +977,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: (event) => {
+          document.body.style.cursor = 'initial'
           if (!this.isInsideCanvas(event.nativeEvent)) {
             this.props.dispatch([
               CanvasActions.clearInteractionSession(false),
@@ -980,6 +987,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
+          document.body.style.cursor = 'initial'
           if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
               EditorActions.setImageDragSessionState(notDragging()),
