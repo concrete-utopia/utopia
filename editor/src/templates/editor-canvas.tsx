@@ -999,7 +999,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
         onDrop: (event: React.DragEvent) => {
           if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+            const { width, height, src } =
+              this.props.editor.imageDragSessionState.draggedImageProperties
+
+            const imageParams: Partial<JSXImageOptions> = { width: width, height: height, src: src }
+            const elementSize: Size = { width: width, height: height }
+            const uid = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+            const newElement = createJsxImage(uid, imageParams)
+
             this.props.dispatch([
+              EditorActions.enableInsertModeForJSXElement(newElement, uid, {}, elementSize),
               EditorActions.setImageDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
