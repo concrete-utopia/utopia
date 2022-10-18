@@ -239,8 +239,7 @@ describe('image drag and drop', () => {
 
   describe('filebrowser and canvas combined interactions', () => {
     it('dragging from the filebrowser to the canvas inserts the image', async () => {
-      const newUID = 'imgimgimg'
-      FOR_TESTS_setNextGeneratedUid(newUID)
+      FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
@@ -315,10 +314,10 @@ describe('image drag and drop', () => {
               position: 'absolute',
               width: 1830,
               height: 570,
-              top: -159,
               left: -708,
+              top: -159,
             }}
-            data-uid='${newUID}'
+            data-uid='1'
           />
         </Storyboard>
       )

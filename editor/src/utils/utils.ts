@@ -935,6 +935,17 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
   return results
 }
 
+function scrubUndefinedProps<T extends Record<string, any | undefined>>(o: T): T {
+  let scrubbed: T = { ...o }
+  for (const [k, v] of Object.entries(scrubbed)) {
+    if (v === undefined) {
+      delete scrubbed[k]
+    }
+  }
+
+  return scrubbed
+}
+
 export default {
   generateUUID: generateUUID,
   assert: assert,
@@ -1096,4 +1107,5 @@ export default {
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
   deduplicateBy: deduplicateBy,
+  scrubUndefinedProps: scrubUndefinedProps,
 }
