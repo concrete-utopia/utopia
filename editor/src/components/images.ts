@@ -101,24 +101,28 @@ function lastPartSeparatedBy<Separator extends string, T>(
   }
 
   return {
-    rest: parts.slice(0, -1).join(''),
+    rest: parts.slice(0, -1).join(sepBy),
     part: made,
   }
 }
 
-const runNumberRegexp =
+const safeParseInt = (raw: string): number | null => {
+  const result = Number.parseInt(raw)
+  return isNaN(result) ? null : result
+}
+
+const parseNumber =
   (re: RegExp) =>
   (raw: string): number | null => {
     const match = re.exec(raw)
     if (match == null || match.length < 2) {
       return null
     }
-    return Number.parseInt(match[1])
+    return safeParseInt(match[1])
   }
 
-export const parseMultiplier = runNumberRegexp(/^(\d+)x$/g)
-
-export const parseDedupeId = runNumberRegexp(/^_(\d+)$/g)
+export const parseMultiplier = parseNumber(/^(\d+)x$/)
+export const parseDedupeId = parseNumber(/^(\d+)$/)
 
 export function getImageFilenameParts(filename: string): ImageFilenameParts | null {
   const extensionResult = lastPartSeparatedBy<'.', string>('.', identity, filename)
@@ -131,12 +135,12 @@ export function getImageFilenameParts(filename: string): ImageFilenameParts | nu
   const { part: multiplier, rest: restFromMultiplier } = lastPartSeparatedBy<
     '@',
     number | undefined
-  >('@', parseMultiplier, restFromExtension) ?? { part: undefined, rest: restFromExtension }
+  >('@', parseMultiplier, restFromExtension) ?? { rest: restFromExtension }
 
   const { part: dedupSeqNumber, rest: restFromDedupe } = lastPartSeparatedBy<
     '_',
     number | undefined
-  >('_', parseDedupeId, restFromMultiplier) ?? { part: undefined, rest: restFromMultiplier }
+  >('_', parseDedupeId, restFromMultiplier) ?? { rest: restFromMultiplier }
 
   return {
     extension: extension,

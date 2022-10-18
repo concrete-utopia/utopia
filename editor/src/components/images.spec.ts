@@ -1,5 +1,4 @@
 import {
-  parseDedupeId,
   parseMultiplier,
   ImageFilenameParts,
   filenameFromParts,
@@ -20,32 +19,7 @@ describe('image related helper functions', () => {
     ]
 
     for (const [input, result] of inputs) {
-      const parsed = parseMultiplier(input)
-      if (parsed !== result) {
-        // console.log(input, parsed)
-      }
-      expect(parsed).toEqual(result)
-    }
-  })
-
-  it('parseDedupeId', () => {
-    const inputs: Array<[string, number | null]> = [
-      ['_2', 2],
-      ['_3', 3],
-      ['_22', 22],
-      ['_0', 0],
-      ['_3241', 3241],
-      ['___0', null],
-      ['_3241x', null],
-      ['x_32', null],
-    ]
-
-    for (const [input, result] of inputs) {
-      const parsed = parseDedupeId(input)
-      if (parsed !== result) {
-        // console.log(input, parsed)
-      }
-      expect(parsed).toEqual(result)
+      expect(parseMultiplier(input)).toEqual(result)
     }
   })
 
@@ -72,6 +46,40 @@ describe('image related helper functions', () => {
       [
         { filename: 'stuff', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
         'stuff_2@2x.png',
+      ],
+      [
+        { filename: 'stuff@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
+        'stuff@3_2@2x.png',
+      ],
+    ]
+
+    for (const [result, input] of filenames) {
+      const parsed = getImageFilenameParts(input)
+      expect(parsed).toEqual(result)
+    }
+  })
+
+  it('parse image filenames, off the happy path', () => {
+    const filenames: Array<[ImageFilenameParts, string]> = [
+      [
+        { filename: 'stuff@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
+        'stuff@3_2@2x.png',
+      ],
+      [
+        { filename: 'stuff_3@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
+        'stuff_3@3_2@2x.png',
+      ],
+      [
+        { filename: 'stuff_3@@@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
+        'stuff_3@@@3_2@2x.png',
+      ],
+      [
+        {
+          filename: 'stuff_3@3_2.jpeg',
+          extension: 'png',
+          multiplier: 3,
+        },
+        'stuff_3@3_2.jpeg@3x.png',
       ],
     ]
 
