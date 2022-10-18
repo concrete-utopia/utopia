@@ -84,6 +84,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     cmdPressed,
     true,
+    'show-reorder-indicator',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
