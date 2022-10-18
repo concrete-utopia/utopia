@@ -90,7 +90,6 @@ import {
   createInteractionViaMouse,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
-  updateHoverInteractionViaMouse,
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
@@ -205,14 +204,34 @@ function handleCanvasEvent(
 
       optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
-      optionalDragStateAction = [
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-            type: 'RESIZE_HANDLE',
-            edgePosition: { x: 1, y: 1 },
-          }),
-        ),
-      ]
+      if (model.editorState.canvas.interactionSession == null) {
+        optionalDragStateAction = [
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+              type: 'RESIZE_HANDLE',
+              edgePosition: { x: 1, y: 1 },
+            }),
+          ),
+        ]
+      } else if (
+        model.editorState.canvas.interactionSession.interactionData.type === 'DRAG' ||
+        model.editorState.canvas.interactionSession.interactionData.type === 'HOVER'
+      ) {
+        optionalDragStateAction = [
+          CanvasActions.updateInteractionSession(
+            updateInteractionViaMouse(
+              model.editorState.canvas.interactionSession,
+              'DRAG',
+              event.canvasPositionRounded,
+              event.modifiers,
+              {
+                type: 'RESIZE_HANDLE',
+                edgePosition: { x: 1, y: 1 },
+              },
+            ),
+          ),
+        ]
+      }
     }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -954,6 +973,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 boundingArea(),
               ),
             ),
+            EditorActions.setFilebrowserDropTarget(null),
           ])
         },
 
@@ -1289,8 +1309,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             modifiers: Modifier.modifiersForEvent(event),
             cursor: null,
             nativeEvent: event,
-            interactionSession: updateHoverInteractionViaMouse(
+            interactionSession: updateInteractionViaMouse(
               this.props.editor.canvas.interactionSession,
+              'HOVER',
               canvasPositions.canvasPositionRounded,
               Modifier.modifiersForEvent(event),
               null,
@@ -1330,6 +1351,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               nativeEvent: event,
               interactionSession: updateInteractionViaMouse(
                 this.props.editor.canvas.interactionSession,
+                'DRAG',
                 newDrag,
                 Modifier.modifiersForEvent(event),
                 null,

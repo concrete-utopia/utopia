@@ -221,7 +221,7 @@ const contents = {
   },
 } as ProjectContentTreeRoot
 
-describe('image dnd', () => {
+describe('image drag and drop', () => {
   var dropDone: ReturnType<typeof defer> = defer()
   var sandbox = Sinon.createSandbox()
   var originalOnDrop = ImageDrop.DropHandlers.onDrop
@@ -265,13 +265,25 @@ describe('image dnd', () => {
         y: Math.floor(targetBounds.y + targetBounds.height / 2),
       }
 
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+      expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
+
       mouseMoveToPoint(fileItem, startPoint)
       mouseDownAtPoint(fileItem, startPoint)
       dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual(
+        'DRAGGING_FROM_SIDEBAR',
+      )
+      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+
       dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toBeNull()
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(`
       import * as React from 'react'
@@ -448,12 +460,21 @@ describe('image dnd', () => {
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+    expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
+
     dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
+    expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
     dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
     await dropDone
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
