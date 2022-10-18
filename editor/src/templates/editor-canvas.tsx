@@ -38,7 +38,6 @@ import {
   BaseSnappingThreshold,
   CanvasCursor,
   DerivedState,
-  DraggedImageProperties,
   draggingFromFS,
   EditorState,
   editorStateCanvasControls,
@@ -72,7 +71,6 @@ import {
   Point,
   RawPoint,
   resize,
-  size,
   Size,
   WindowPoint,
   WindowRectangle,
@@ -102,7 +100,7 @@ import { getDragTargets } from '../components/canvas/canvas-strategies/strategie
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage, getFrameAndMultiplier } from '../components/images'
+import { createJsxImage, JSXImageOptions } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
@@ -944,12 +942,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElementProps: Partial<DraggedImageProperties> =
+          const newElementProps: Partial<JSXImageOptions> =
             this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
               ? {
                   width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
                   height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
                   src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
+                  opacity: 0.5,
                 }
               : {
                   width: 1,

@@ -199,6 +199,7 @@ export function getScaledImageDimensionsFromProps(props: any): Size {
 }
 
 export interface JSXImageOptions {
+  opacity: number
   width: number
   height: number
   top: number
@@ -216,6 +217,7 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
         height: options.height,
         top: options.top,
         left: options.left,
+        opacity: options.opacity,
       },
       emptyComments,
     ),
