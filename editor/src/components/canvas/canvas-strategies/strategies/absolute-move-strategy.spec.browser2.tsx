@@ -80,6 +80,7 @@ async function startDragUsingActions(
       CanvasActions.updateInteractionSession(
         updateInteractionViaMouse(
           startInteractionSession,
+          'DRAG',
           dragDelta,
           emptyModifiers,
           boundingArea(),
