@@ -147,12 +147,7 @@ function actionsForDroppedImage(
   image: ImageResult,
   context: ActionsForDroppedImageContext,
 ): ActionForDroppedImageResult {
-  const { frame } = getFrameAndMultiplier(
-    context.mousePosition,
-    image.filename,
-    image.size,
-    context.scale,
-  )
+  const { frame } = getFrameAndMultiplier(context.mousePosition, image.filename, image.size, null)
 
   const { saveImageActions, src } = context.isUserLoggedIn
     ? {

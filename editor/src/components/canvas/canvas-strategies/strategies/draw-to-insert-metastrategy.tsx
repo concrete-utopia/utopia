@@ -75,12 +75,10 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
       ? interactionSession.interactionData.originalDragStart
       : interactionSession.interactionData.point
 
-  const cmdPressed = interactionSession.interactionData.modifiers.cmd
-
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    cmdPressed,
+    true, // Draw to insert should always disregard the size of the potential target parent
     true, // <- TODO this is an important assumption, make sure this is still true when inserting into a flex storyboard
   )
 

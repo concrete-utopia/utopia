@@ -23,6 +23,7 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
+import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -52,19 +53,13 @@ const contents = {
       'storyboard.js': {
         content: {
           fileContents: {
-            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        paddingLeft: 91,\n      }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
+            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
             revisionsState: 'CODE_AHEAD',
             parsed: {
               type: 'UNPARSED',
             },
           },
-          lastSavedContents: {
-            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        paddingLeft: 91,\n      }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      <View\n        style={{\n          backgroundColor: '#7D94A7AB',\n          display: 'flex',\n          flexDirection: 'column',\n          width: '100%',\n          height: 404,\n          left: 87,\n          top: 281,\n          paddingLeft: 0,\n          paddingTop: 93,\n        }}\n        data-uid='932'\n      >\n        <View\n          style={{\n            backgroundColor: '#B37DB7AB',\n            width: '100%',\n            height: 104,\n          }}\n          data-uid='bb3'\n        >\n          <div\n            data-uid='a75'\n            data-testid='aaa'\n            style={{\n              backgroundColor: '#EB0A0A',\n              position: 'relative',\n              flexBasis: 50,\n              height: 54,\n            }}\n          />\n        </View>\n        <View\n          style={{ backgroundColor: '#7D94B7AB' }}\n          data-uid='fe1'\n        >\n          <Rectangle\n            style={{\n              backgroundColor: '#0091FFAA',\n              position: 'relative',\n              height: 54,\n              width: 220,\n            }}\n            data-uid='b8b'\n          />\n        </View>\n        <View\n          style={{\n            backgroundColor: '#90B77DAB',\n            height: 104,\n            left: 87,\n            top: 281,\n          }}\n          data-uid='ed3'\n        >\n          <div\n            style={{\n              backgroundColor: '#787EB7',\n              position: 'relative',\n              padding: 10,\n              flex: '0 1 aut0',\n              border: '0px solid rgb(0, 0, 0, 1)',\n              borderRadius: '50px',\n              fontFamily:\n                'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"',\n              fontStyle: 'normal',\n              fontWeight: 400,\n              display: 'flex',\n              justifyContent: 'center',\n              alignItems: 'center',\n            }}\n            data-uid='a9f'\n          >\n            <span\n              style={{\n                position: 'relative',\n                flexBasis: 49,\n                height: 19,\n                color: 'rgb(255, 255, 255, 1)',\n                textAlign: 'justify',\n                fontWeight: 700,\n                fontStyle: 'normal',\n              }}\n              data-uid='613'\n            >\n              Button\n            </span>\n          </div>\n        </View>\n      </View>\n    </Scene>\n  </Storyboard>\n)\n",
-            revisionsState: 'CODE_AHEAD',
-            parsed: {
-              type: 'UNPARSED',
-            },
-          },
+          lastSavedContents: null,
           lastRevisedTime: 0,
           type: 'TEXT_FILE',
           lastParseSuccess: null,
@@ -282,9 +277,10 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual(
         'DRAGGING_FROM_SIDEBAR',
       )
-      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+      await editor.getDispatchFollowUpActionsFinished()
 
       dropElementAtPoint(canvasControlsLayer, endPoint, [])
+      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -307,7 +303,6 @@ describe('image drag and drop', () => {
               position: 'absolute',
               left: 207,
               top: 126,
-              paddingLeft: 91,
             }}
             data-testid='scene'
             data-label='Playground'
@@ -370,7 +365,7 @@ describe('image drag and drop', () => {
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
       switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
 
@@ -418,7 +413,7 @@ describe('image drag and drop', () => {
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('DRAG_TO_INSERT')
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
       const fileItemTargetFolder = '/public'
       const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
@@ -498,7 +493,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -511,7 +505,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -527,7 +521,7 @@ export var storyboard = (
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const file = await makeImageFile(imgBase641x1, 'chucknorris@2.png')
+    const file = await makeImageFile(imgBase642x2, 'chucknorris@2x.png')
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
@@ -568,20 +562,19 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
       data-uid='3fc'
     >
       <img
-        src='${imgBase641x1}'
+        src='${imgBase642x2}'
         style={{
           position: 'absolute',
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -634,7 +627,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -647,7 +639,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -698,7 +690,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -711,7 +702,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -722,7 +713,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='2'
       />
@@ -733,7 +724,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='3'
       />
@@ -790,7 +781,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -803,7 +793,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -814,7 +804,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='2'
       />
@@ -825,7 +815,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 379.5,
-          left: 395.5,
+          left: 350,
         }}
         data-uid='3'
       />
