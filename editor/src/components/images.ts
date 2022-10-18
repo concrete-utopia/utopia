@@ -56,7 +56,7 @@ export function getImageSrc(
   }
 }
 
-export function parseImageMultiplier(imagePath: string): number {
+function parseImageMultiplierrrr(imagePath: string): number {
   const imageMultiplierRegex = /.*@(\d*)x\..*/
   const imageMultiplierResult = imageMultiplierRegex.exec(imagePath)
   let multiplier: number = 1
@@ -162,7 +162,9 @@ export function getFrameAndMultiplier(
   overrideDefaultMultiplier: number | null,
 ): FrameAndMultiplier {
   const multiplier =
-    overrideDefaultMultiplier == null ? parseImageMultiplier(filename) : overrideDefaultMultiplier
+    overrideDefaultMultiplier == null
+      ? getImageFilenameParts(filename)?.multiplier ?? 1
+      : overrideDefaultMultiplier
   const scaledSize = scaleImageDimensions(size, multiplier)
   const frame: CanvasRectangle = canvasRectangle({
     x: centerPoint.x - scaledSize.width / 2,
