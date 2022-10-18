@@ -76,7 +76,7 @@ async function startDragUsingActions(
   await renderResult.dispatch(
     [
       CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(startInteractionSession, dragDelta, emptyModifiers, {
+        updateInteractionViaMouse(startInteractionSession, 'DRAG', dragDelta, emptyModifiers, {
           type: 'RESIZE_HANDLE',
           edgePosition: edgePosition,
         }),

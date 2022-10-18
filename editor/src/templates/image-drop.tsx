@@ -22,7 +22,7 @@ import {
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
-import { EditorState } from '../components/editor/store/editor-state'
+import { EditorState, notDragging } from '../components/editor/store/editor-state'
 import { uniqueProjectContentID } from '../core/model/project-file-utils'
 import { isFeatureEnabled } from '../utils/feature-switches'
 
@@ -119,7 +119,11 @@ async function onDrop(
     )
 
     context.dispatch(
-      [...actions, EditorActions.switchEditorMode(EditorModes.insertMode(subjects))],
+      [
+        ...actions,
+        EditorActions.switchEditorMode(EditorModes.insertMode(subjects)),
+        EditorActions.setImageDragSessionState(notDragging()),
+      ],
       'everyone',
     )
     cont()

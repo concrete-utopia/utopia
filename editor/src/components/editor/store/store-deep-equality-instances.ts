@@ -1807,12 +1807,10 @@ const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTarg
   )
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine11EqualityCalls(
+  combine10EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
-    CanvasControlTypeKeepDeepEquality,
-    (session) => session.sourceOfUpdate,
     CanvasControlTypeKeepDeepEquality,
     (session) => session.lastInteractionTime,
     createCallWithTripleEquals(),
