@@ -317,10 +317,10 @@ describe('image drag and drop', () => {
               src='./assets/stuff.png'
               style={{
                 position: 'absolute',
-                width: 200,
-                height: 62,
-                top: 349,
-                left: 296,
+                width: 1830,
+                height: 570,
+                top: 95,
+                left: -519,
               }}
               data-uid='${newUID}'
             />
@@ -508,10 +508,10 @@ export var storyboard = (
         src='${imgBase64}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='1'
       />
@@ -574,10 +574,10 @@ export var storyboard = (
         src='./assets/stuff_2.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='1'
       />
@@ -638,10 +638,10 @@ export var storyboard = (
         src='${imgBase64}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='1'
       />
@@ -649,10 +649,10 @@ export var storyboard = (
         src='${imgBase64}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='2'
       />
@@ -660,10 +660,10 @@ export var storyboard = (
         src='${imgBase64}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='3'
       />
@@ -730,10 +730,10 @@ export var storyboard = (
         src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='1'
       />
@@ -741,10 +741,10 @@ export var storyboard = (
         src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='2'
       />
@@ -752,10 +752,10 @@ export var storyboard = (
         src='./assets/brucelee.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 280,
-          left: 296,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 395.5,
         }}
         data-uid='3'
       />
