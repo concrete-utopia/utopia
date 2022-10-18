@@ -262,8 +262,8 @@ describe('image drag and drop', () => {
       const targetBounds = target.getBoundingClientRect()
 
       const endPoint = {
-        x: Math.floor(targetBounds.x + targetBounds.width / 2),
-        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+        x: Math.floor(targetBounds.x - 5),
+        y: Math.floor(targetBounds.y - 5),
       }
 
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
@@ -277,10 +277,11 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual(
         'DRAGGING_FROM_SIDEBAR',
       )
+      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
       await editor.getDispatchFollowUpActionsFinished()
 
       dropElementAtPoint(canvasControlsLayer, endPoint, [])
-      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -307,19 +308,18 @@ describe('image drag and drop', () => {
             data-testid='scene'
             data-label='Playground'
             data-uid='3fc'
-          >
-            <img
-              src='./assets/stuff.png'
-              style={{
-                position: 'absolute',
-                width: 1830,
-                height: 570,
-                top: 95,
-                left: -519,
-              }}
-              data-uid='${newUID}'
-            />
-          </Scene>
+          />
+          <img
+            src='./assets/stuff.png'
+            style={{
+              position: 'absolute',
+              width: 1830,
+              height: 570,
+              top: -159,
+              left: -708,
+            }}
+            data-uid='${newUID}'
+          />
         </Storyboard>
       )
   `),
@@ -364,8 +364,6 @@ describe('image drag and drop', () => {
       dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
-
-      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
       switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
 
