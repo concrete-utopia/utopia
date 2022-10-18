@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
+import {
+  isRootElementOfInstance,
+  parentPath,
+  pathsEqual,
+} from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -128,7 +132,9 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
+  const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
+
+  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex) || anyDraggedElementsRootElements) {
     return []
   }
 
