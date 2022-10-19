@@ -943,7 +943,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
           const newElementProps: Partial<JSXImageOptions> =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+            isFeatureEnabled('Show preview on drop')
               ? {
                   width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
                   height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
@@ -967,10 +968,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             height: newElementProps.height ?? defaultSize.height,
           }
 
-          const desiredSize: Size = isFeatureEnabled('Resize image on drop')
+          const desiredSize: Size = isFeatureEnabled('Show preview on drop')
             ? {
                 width: Math.min(originalSize.width, defaultSize.width),
-                height: Math.min(originalSize.height, 200),
+                height: Math.min(originalSize.height, defaultSize.height),
               }
             : originalSize
           const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
