@@ -959,8 +959,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const newElement = createJsxImage(newUID, newElementProps)
 
           const defaultSize: Size = {
-            width: 200,
-            height: 200,
+            width: 40 / this.props.model.scale,
+            height: 40 / this.props.model.scale,
           }
 
           const originalSize: Size = {
