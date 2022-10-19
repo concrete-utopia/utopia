@@ -8,7 +8,10 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  getJSXElementNameLastPart,
+} from '../../../../core/shared/element-template'
 import {
   CanvasRectangle,
   canvasRectangle,
@@ -153,6 +156,11 @@ function dragToInsertStrategyFactory(
     }))
   })()
 
+  // we don't want outline for images for now
+  const nonImageInsertionSubjectsWithFrames = insertionSubjectsWithFrames.filter(
+    (s) => getJSXElementNameLastPart(s.subject.element.name) !== 'img',
+  )
+
   return {
     id: name,
     name: name,
@@ -171,7 +179,7 @@ function dragToInsertStrategyFactory(
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: dragTargetsFrame(insertionSubjectsWithFrames.map((s) => s.frame)),
+        props: dragTargetsFrame(nonImageInsertionSubjectsWithFrames.map((s) => s.frame)),
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
