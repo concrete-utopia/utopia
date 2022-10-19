@@ -436,7 +436,6 @@ import {
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
-  transientActions,
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
