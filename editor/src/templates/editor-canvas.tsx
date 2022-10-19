@@ -990,11 +990,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           ])
         },
 
-        onDragLeave: (event) => {
+        onDragLeave: () => {
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
             EditorActions.switchEditorMode(EditorModes.selectMode(null)),
-            EditorActions.setImageDragSessionState(notDragging()),
           ])
         },
 
