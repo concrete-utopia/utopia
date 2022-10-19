@@ -436,6 +436,7 @@ import {
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
+  transientActions,
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
@@ -3195,7 +3196,7 @@ export const UPDATE_FNS = {
       // Assume IMAGE_FILE otherwise.
       projectFile = imageFile(action.fileType, undefined, width, height, action.hash)
     }
-    actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
+    actionsToRunAfterSave.push(transientActions([updateFile(assetFilename, projectFile, true)]))
 
     // Side effects.
     let editorWithToast = editor
