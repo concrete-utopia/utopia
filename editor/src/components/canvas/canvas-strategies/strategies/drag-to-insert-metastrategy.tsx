@@ -13,7 +13,6 @@ import {
   CanvasRectangle,
   canvasRectangle,
   offsetPoint,
-  Size,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -28,7 +27,10 @@ import {
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import {
+  DragOutlineControl,
+  dragTargetsFrame,
+} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
@@ -129,9 +131,27 @@ function dragToInsertStrategyFactory(
   fitness: number,
   targetParent: ElementPath,
 ): CanvasStrategy | null {
-  const predictedElementPaths = insertionSubjects.map((insertionSubject) =>
-    EP.appendToPath(targetParent, insertionSubject.uid),
-  )
+  const insertionSubjectsWithFrames = (() => {
+    if (
+      interactionSession.interactionData.type !== 'DRAG' ||
+      interactionSession.interactionData.drag === null
+    ) {
+      return []
+    }
+
+    const pointOnCanvas = Utils.roundPointToNearestHalf(
+      interactionSession.interactionData.dragStart,
+    )
+    return insertionSubjects.map((s) => ({
+      subject: s,
+      frame: canvasRectangle({
+        x: pointOnCanvas.x - s.defaultSize.width / 2,
+        y: pointOnCanvas.y - s.defaultSize.height / 2,
+        width: s.defaultSize.width,
+        height: s.defaultSize.height,
+      }),
+    }))
+  })()
 
   return {
     id: name,
@@ -151,7 +171,7 @@ function dragToInsertStrategyFactory(
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: { targets: predictedElementPaths },
+        props: dragTargetsFrame(insertionSubjectsWithFrames.map((s) => s.frame)),
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
@@ -172,9 +192,8 @@ function dragToInsertStrategyFactory(
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
       ) {
-        const insertionCommands = insertionSubjects.flatMap((s) => {
-          const size = s.defaultSize
-          return getInsertionCommands(s, interactionSession, size)
+        const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
+          return getInsertionCommandsWithFrames(s.subject, s.frame)
         })
 
         const reparentCommand = updateFunctionCommand(
@@ -187,14 +206,14 @@ function dragToInsertStrategyFactory(
               customStrategyState,
               interactionSession,
               transient,
-              insertionCommands,
+              insertionCommandsWithFrames,
               strategyLifecycle,
             )
           },
         )
 
         return strategyApplicationResult([
-          ...insertionCommands.map((c) => c.command),
+          ...insertionCommandsWithFrames.map((c) => c.command),
           reparentCommand,
         ])
       }
@@ -204,47 +223,26 @@ function dragToInsertStrategyFactory(
   }
 }
 
-function getInsertionCommands(
+function getInsertionCommandsWithFrames(
   subject: InsertionSubject,
-  interactionSession: InteractionSession,
-  size: Size,
+  frame: CanvasRectangle,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
-  if (
-    interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.interactionData.drag != null
-  ) {
-    const pointOnCanvas = Utils.roundPointToNearestHalf(
-      interactionSession.interactionData.dragStart,
-    )
+  const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(subject, frame)
 
-    const frame = canvasRectangle({
-      x: pointOnCanvas.x - size.width / 2,
-      y: pointOnCanvas.y - size.height / 2,
-      width: size.width,
-      height: size.height,
-    })
-
-    const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
-      subject,
-      frame,
-    )
-
-    const updatedInsertionSubject = {
-      ...subject,
-      element: {
-        ...subject.element,
-        props: updatedAttributesWithPosition,
-      },
-    }
-
-    return [
-      {
-        command: insertElementInsertionSubject('always', updatedInsertionSubject),
-        frame: frame,
-      },
-    ]
+  const updatedInsertionSubject = {
+    ...subject,
+    element: {
+      ...subject.element,
+      props: updatedAttributesWithPosition,
+    },
   }
-  return []
+
+  return [
+    {
+      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      frame: frame,
+    },
+  ]
 }
 
 function getStyleAttributesForFrameInAbsolutePosition(
