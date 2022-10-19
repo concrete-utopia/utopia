@@ -1,6 +1,6 @@
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../../../utils/utils.test-utils'
+import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
