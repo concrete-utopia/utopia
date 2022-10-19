@@ -4,6 +4,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/util
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { DragOutlineControlTestId } from '../../controls/select-mode/drag-outline-control'
 import {
   mouseDownAtPoint,
   mouseMoveToPoint,
@@ -70,6 +71,8 @@ async function dragFromInsertMenuDivButtonToPoint(
   renderResult: EditorRenderResult,
 ) {
   startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
+  const dragOutlineControl = renderResult.renderedDOM.getByTestId(DragOutlineControlTestId)
+  expect(dragOutlineControl).not.toBeNull()
   finishDraggingToPoint(targetPoint, modifiers, renderResult)
 
   await renderResult.getDispatchFollowUpActionsFinished()

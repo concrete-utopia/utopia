@@ -1,7 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -40,7 +43,7 @@ export function baseFlexReparentToFlexStrategy(
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: { targets: selectedElements },
+          props: dragTargetsElementPaths(selectedElements),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),
