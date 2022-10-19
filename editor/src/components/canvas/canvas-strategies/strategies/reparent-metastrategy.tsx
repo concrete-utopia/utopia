@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
+import {
+  isRootElementOfInstance,
+  parentPath,
+  pathsEqual,
+} from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -32,6 +36,7 @@ export function getApplicableReparentFactories(
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
+  showFlexTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
 
@@ -74,7 +79,11 @@ export function getApplicableReparentFactories(
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
             fitness: fitness,
-            factory: baseAbsoluteReparentToFlexStrategy(result.target, fitness),
+            factory: baseAbsoluteReparentToFlexStrategy(
+              result.target,
+              fitness,
+              showFlexTargetOrReorderIndicator,
+            ),
           }
         } else {
           return {
@@ -83,7 +92,11 @@ export function getApplicableReparentFactories(
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
             fitness: fitness,
-            factory: baseFlexReparentToFlexStrategy(result.target, fitness),
+            factory: baseFlexReparentToFlexStrategy(
+              result.target,
+              fitness,
+              showFlexTargetOrReorderIndicator,
+            ),
           }
         }
       }
@@ -128,7 +141,9 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
+  const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
+
+  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex) || anyDraggedElementsRootElements) {
     return []
   }
 
@@ -146,6 +161,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     cmdPressed,
     allDraggedElementsAbsolute,
+    'show-reorder-indicator',
   )
 
   const targetIsValid = (

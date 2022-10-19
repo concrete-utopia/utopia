@@ -17,6 +17,7 @@ import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
 export function baseFlexReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
+  showTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -66,7 +67,13 @@ export function baseFlexReparentToFlexStrategy(
       apply: () => {
         return interactionSession == null
           ? emptyStrategyApplicationResult
-          : applyFlexReparent('do-not-strip-props', canvasState, interactionSession, reparentTarget)
+          : applyFlexReparent(
+              'do-not-strip-props',
+              canvasState,
+              interactionSession,
+              reparentTarget,
+              showTargetOrReorderIndicator,
+            )
       },
     }
   }

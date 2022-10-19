@@ -83,7 +83,8 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
     canvasState,
     pointOnCanvas,
     cmdPressed,
-    true, // <- TODO this is an important assumption, make sure this is still true when inserting into a flex storyboard
+    true,
+    'show-reorder-indicator',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {

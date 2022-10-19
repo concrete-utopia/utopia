@@ -79,7 +79,8 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     canvasState,
     pointOnCanvas,
     true, // Draw to insert should always disregard the size of the potential target parent
-    true, // <- TODO this is an important assumption, make sure this is still true when inserting into a flex storyboard
+    true,
+    'show-flex-target',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
@@ -442,7 +443,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   }
   const reparentCommands = strategy.apply(strategyLifecycle).commands
 
-  return foldAndApplyCommandsInner(editorState, [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
+  return foldAndApplyCommandsInner(editorState, [], reparentCommands, strategyLifecycle)
     .statePatches
 }
 
