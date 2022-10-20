@@ -123,7 +123,13 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   if (computedStyle.filter != null && computedStyle.filter !== 'none') {
     return true
   }
-  if (computedStyle.contain === 'paint') {
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/contain
+  if (
+    computedStyle.contain.includes('layout') ||
+    computedStyle.contain.includes('paint') ||
+    computedStyle.contain.includes('strict') ||
+    computedStyle.contain.includes('content')
+  ) {
     return true
   }
   return false

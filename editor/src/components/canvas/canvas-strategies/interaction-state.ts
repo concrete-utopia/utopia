@@ -9,6 +9,7 @@ import {
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
@@ -51,7 +52,9 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type InputData = KeyboardInteractionData | DragInteractionData | HoverInteractionData
+export type InputData = KeyboardInteractionData | MouseInteractionData
+
+export type MouseInteractionData = DragInteractionData | HoverInteractionData
 
 export function isDragInteractionData(inputData: InputData): inputData is DragInteractionData {
   return inputData.type === 'DRAG'
@@ -70,15 +73,15 @@ export function isHoverInteractionData(inputData: InputData): inputData is Hover
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
 export interface ReparentTargetsToFilter {
-  'use-strict-bounds': ReparentTarget
-  'allow-missing-bounds': ReparentTarget
+  'use-strict-bounds': ReparentTarget | null
+  'allow-missing-bounds': ReparentTarget | null
 }
 
 export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
 
 export function reparentTargetsToFilter(
-  strictBoundsTarget: ReparentTarget,
-  missingBoundsTarget: ReparentTarget,
+  strictBoundsTarget: ReparentTarget | null,
+  missingBoundsTarget: ReparentTarget | null,
 ): ReparentTargetsToFilter {
   return {
     'use-strict-bounds': strictBoundsTarget,
@@ -90,7 +93,6 @@ export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InputData
   activeControl: CanvasControlType
-  sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
@@ -108,7 +110,6 @@ export interface InteractionSession {
 export function interactionSession(
   interactionData: InputData,
   activeControl: CanvasControlType,
-  sourceOfUpdate: CanvasControlType,
   lastInteractionTime: number,
   metadata: ElementInstanceMetadataMap,
   userPreferredStrategy: CanvasStrategyId | null,
@@ -121,7 +122,6 @@ export function interactionSession(
   return {
     interactionData: interactionData,
     activeControl: activeControl,
-    sourceOfUpdate: sourceOfUpdate,
     lastInteractionTime: lastInteractionTime,
     latestMetadata: metadata,
     userPreferredStrategy: userPreferredStrategy,
@@ -150,7 +150,6 @@ export interface StrategyState {
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
-  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
@@ -169,7 +168,6 @@ export function createEmptyStrategyState(
     currentStrategy: null,
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
-    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,
     status: 'success',
@@ -197,7 +195,6 @@ export function createInteractionViaMouse(
       _accumulatedMovement: zeroCanvasPoint,
     },
     activeControl: activeControl,
-    sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
@@ -218,7 +215,6 @@ export function createHoverInteractionViaMouse(
       modifiers: modifiers,
     },
     activeControl: activeControl,
-    sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
@@ -257,8 +253,7 @@ export function updateInteractionViaDragDelta(
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
       },
-      activeControl: currentState.activeControl,
-      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
@@ -272,27 +267,23 @@ export function updateInteractionViaDragDelta(
 
 export function updateInteractionViaMouse(
   currentState: InteractionSessionWithoutMetadata,
+  newInteractionType: 'HOVER' | 'DRAG',
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
 ): InteractionSessionWithoutMetadata {
-  if (currentState.interactionData.type === 'DRAG') {
-    const dragThresholdPassed =
-      currentState.interactionData.drag != null || dragExceededThreshold(drag)
+  if (
+    currentState.interactionData.type === 'DRAG' ||
+    currentState.interactionData.type === 'HOVER'
+  ) {
     return {
-      interactionData: {
-        type: 'DRAG',
-        dragStart: currentState.interactionData.dragStart,
-        drag: dragThresholdPassed ? drag : null,
-        prevDrag: currentState.interactionData.drag,
-        originalDragStart: currentState.interactionData.originalDragStart,
-        modifiers: modifiers,
-        globalTime: Date.now(),
-        hasMouseMoved: true,
-        _accumulatedMovement: currentState.interactionData._accumulatedMovement,
-      },
-      activeControl: currentState.activeControl,
-      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      interactionData: updateInteractionDataViaMouse(
+        currentState.interactionData,
+        newInteractionType,
+        drag,
+        modifiers,
+      ),
+      activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
@@ -304,29 +295,53 @@ export function updateInteractionViaMouse(
   }
 }
 
-export function updateHoverInteractionViaMouse(
-  currentState: InteractionSessionWithoutMetadata,
+function updateInteractionDataViaMouse(
+  currentData: MouseInteractionData,
+  newInteractionType: 'HOVER' | 'DRAG',
   mousePoint: CanvasVector,
   modifiers: Modifiers,
-  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-): InteractionSessionWithoutMetadata {
-  if (currentState.interactionData.type === 'HOVER') {
-    return {
-      interactionData: {
+): MouseInteractionData {
+  switch (newInteractionType) {
+    case 'HOVER':
+      return {
         type: 'HOVER',
         point: mousePoint,
         modifiers: modifiers,
-      },
-      activeControl: currentState.activeControl,
-      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
-      lastInteractionTime: Date.now(),
-      userPreferredStrategy: currentState.userPreferredStrategy,
-      startedAt: currentState.startedAt,
-      updatedTargetPaths: currentState.updatedTargetPaths,
-      aspectRatioLock: currentState.aspectRatioLock,
-    }
-  } else {
-    return currentState
+      }
+
+    case 'DRAG':
+      switch (currentData.type) {
+        case 'DRAG':
+          const dragThresholdPassed = currentData.drag != null || dragExceededThreshold(mousePoint)
+          return {
+            type: 'DRAG',
+            dragStart: currentData.dragStart,
+            drag: dragThresholdPassed ? mousePoint : null,
+            prevDrag: currentData.drag,
+            originalDragStart: currentData.originalDragStart,
+            modifiers: modifiers,
+            globalTime: Date.now(),
+            hasMouseMoved: true,
+            _accumulatedMovement: currentData._accumulatedMovement,
+          }
+        case 'HOVER':
+          return {
+            type: 'DRAG',
+            dragStart: mousePoint,
+            drag: null,
+            prevDrag: null,
+            originalDragStart: mousePoint,
+            modifiers: modifiers,
+            globalTime: Date.now(),
+            hasMouseMoved: false,
+            _accumulatedMovement: zeroCanvasPoint,
+          }
+        default:
+          assertNever(currentData)
+      }
+      break
+    default:
+      assertNever(newInteractionType)
   }
 }
 
@@ -346,7 +361,6 @@ export function createInteractionViaKeyboard(
       ],
     },
     activeControl: activeControl,
-    sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
@@ -360,7 +374,7 @@ export function updateInteractionViaKeyboard(
   addedKeysPressed: Array<KeyCharacter>,
   keysReleased: Array<KeyCharacter>,
   modifiers: Modifiers,
-  sourceOfUpdate: CanvasControlType,
+  activeControl: CanvasControlType | null,
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
     case 'KEYBOARD': {
@@ -386,8 +400,7 @@ export function updateInteractionViaKeyboard(
           type: 'KEYBOARD',
           keyStates: [...currentState.interactionData.keyStates, newKeyState],
         },
-        activeControl: currentState.activeControl,
-        sourceOfUpdate: sourceOfUpdate,
+        activeControl: activeControl ?? currentState.activeControl,
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
@@ -409,7 +422,6 @@ export function updateInteractionViaKeyboard(
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
         },
         activeControl: currentState.activeControl,
-        sourceOfUpdate: currentState.activeControl,
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
@@ -425,7 +437,6 @@ export function updateInteractionViaKeyboard(
           modifiers: modifiers,
         },
         activeControl: currentState.activeControl,
-        sourceOfUpdate: currentState.activeControl,
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,

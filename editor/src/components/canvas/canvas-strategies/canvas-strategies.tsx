@@ -8,13 +8,9 @@ import {
 } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
-import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { absoluteMoveStrategy } from './strategies/absolute-move-strategy'
-import {
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
-} from './strategies/absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -28,7 +24,6 @@ import {
   InteractionLifecycle,
   CustomStrategyState,
   controlWithProps,
-  InsertionSubjects,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
@@ -37,25 +32,19 @@ import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-r
 import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
 import { flexReorderStrategy } from './strategies/flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
-import { absoluteReparentToFlexStrategy } from './strategies/absolute-reparent-to-flex-strategy'
-import {
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-} from './strategies/flex-reparent-to-absolute-strategy'
-import { flexReparentToFlexStrategy } from './strategies/flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { flowReorderStrategy } from './strategies/flow-reorder-strategy'
-import { InsertionSubject } from '../../editor/editor-modes'
-import { dragToInsertStrategy } from './strategies/drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './strategies/flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
-import { drawToInsertStrategy } from './strategies/draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './strategies/relative-move-strategy'
-import { setPaddingStrategy } from './set-padding-strategy'
+import { setPaddingStrategy } from './strategies/set-padding-strategy'
+import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
+import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
+import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -71,20 +60,12 @@ export type MetaCanvasStrategy = (
 
 const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   absoluteMoveStrategy,
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
   absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
   convertToAbsoluteAndMoveStrategy,
-  absoluteReparentToFlexStrategy,
-  dragToInsertStrategy,
-  drawToInsertStrategy,
   flowReorderStrategy,
   flowReorderSliderStategy,
   flexResizeBasicStrategy,
@@ -106,6 +87,9 @@ export const existingStrategies: MetaCanvasStrategy = (
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
   lookForApplicableParentStrategy,
+  reparentMetaStrategy,
+  drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -461,7 +445,5 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
-  return (
-    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
-  )
+  return strategyState.currentStrategyCommands.length > 0
 }

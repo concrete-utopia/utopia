@@ -37,7 +37,8 @@ export const Isolator: React.FunctionComponent<React.PropsWithChildren<IsolatorP
         backdropFilter: 'blur(1px)',
       }}
       onClick={() => props.onAbandonIntent()}
-      {...props}
-    />
+    >
+      {props.children}
+    </div>
   )
 }

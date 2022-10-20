@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { EditorState } from '../../../editor/store/editor-state'
-import { useEditorState } from '../../../editor/store/store-hook'
 import { cursorForMissingReparentedItems } from '../../canvas-strategies/strategies/reparent-utils'
 import { CSSCursor } from '../../canvas-types'
 import { getCursorFromDragState } from '../../canvas-utils'
@@ -22,6 +21,10 @@ export const CursorOverlay = React.memo(() => {
     return getCursorForOverlay(store.editor)
   })
 
+  const imageDragSessionInProgress =
+    useDelayedEditorState((store) => store.editor.imageDragSessionState.type !== 'NOT_DRAGGING') ??
+    false
+
   const styleProps = React.useMemo(() => {
     let workingStyleProps: React.CSSProperties = {
       position: 'fixed',
@@ -29,15 +32,18 @@ export const CursorOverlay = React.memo(() => {
       top: 0,
       width: '100vw',
       height: '100vh',
-      pointerEvents: 'none',
+      pointerEvents: pointerEventsFromWorldState({
+        isCursorSet: cursor != null,
+        imageDragInProgress: imageDragSessionInProgress,
+      }),
       zIndex: 9999999,
     }
     if (cursor != null) {
       workingStyleProps.cursor = cursor
-      workingStyleProps.pointerEvents = 'all'
     }
     return workingStyleProps
-  }, [cursor])
+  }, [cursor, imageDragSessionInProgress])
+
   const portalDiv = document.getElementById('cursor-overlay-portal')
   if (portalDiv == null) {
     return null
@@ -47,3 +53,21 @@ export const CursorOverlay = React.memo(() => {
     portalDiv,
   )
 })
+
+export interface WorldState {
+  imageDragInProgress: boolean
+  isCursorSet: boolean
+}
+
+export type RestrictedPointerEvents = 'all' | 'none'
+
+export function pointerEventsFromWorldState(worldState: WorldState): RestrictedPointerEvents {
+  if (worldState.imageDragInProgress) {
+    return 'none'
+  }
+  if (worldState.isCursorSet) {
+    return 'all'
+  }
+
+  return 'none'
+}

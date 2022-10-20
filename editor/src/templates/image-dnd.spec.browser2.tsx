@@ -1,16 +1,17 @@
-import { fireEvent } from '@testing-library/react'
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
-import { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
-  makeDragEvent,
+  dragElementToPoint,
+  dropElementAtPoint,
   mouseDownAtPoint,
   mouseMoveToPoint,
-  mouseUpAtPoint,
+  switchDragAndDropElementTargets,
 } from '../components/canvas/event-helpers.test-utils'
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithProjectContent,
 } from '../components/canvas/ui-jsx.test-utils'
@@ -20,6 +21,7 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../core/model/element-template-utils.test-utils'
+import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
 import * as ImageDrop from './image-drop'
 
@@ -50,19 +52,13 @@ const contents = {
       'storyboard.js': {
         content: {
           fileContents: {
-            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        paddingLeft: 91,\n      }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
+            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
             revisionsState: 'CODE_AHEAD',
             parsed: {
               type: 'UNPARSED',
             },
           },
-          lastSavedContents: {
-            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        paddingLeft: 91,\n      }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      <View\n        style={{\n          backgroundColor: '#7D94A7AB',\n          display: 'flex',\n          flexDirection: 'column',\n          width: '100%',\n          height: 404,\n          left: 87,\n          top: 281,\n          paddingLeft: 0,\n          paddingTop: 93,\n        }}\n        data-uid='932'\n      >\n        <View\n          style={{\n            backgroundColor: '#B37DB7AB',\n            width: '100%',\n            height: 104,\n          }}\n          data-uid='bb3'\n        >\n          <div\n            data-uid='a75'\n            data-testid='aaa'\n            style={{\n              backgroundColor: '#EB0A0A',\n              position: 'relative',\n              flexBasis: 50,\n              height: 54,\n            }}\n          />\n        </View>\n        <View\n          style={{ backgroundColor: '#7D94B7AB' }}\n          data-uid='fe1'\n        >\n          <Rectangle\n            style={{\n              backgroundColor: '#0091FFAA',\n              position: 'relative',\n              height: 54,\n              width: 220,\n            }}\n            data-uid='b8b'\n          />\n        </View>\n        <View\n          style={{\n            backgroundColor: '#90B77DAB',\n            height: 104,\n            left: 87,\n            top: 281,\n          }}\n          data-uid='ed3'\n        >\n          <div\n            style={{\n              backgroundColor: '#787EB7',\n              position: 'relative',\n              padding: 10,\n              flex: '0 1 aut0',\n              border: '0px solid rgb(0, 0, 0, 1)',\n              borderRadius: '50px',\n              fontFamily:\n                'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"',\n              fontStyle: 'normal',\n              fontWeight: 400,\n              display: 'flex',\n              justifyContent: 'center',\n              alignItems: 'center',\n            }}\n            data-uid='a9f'\n          >\n            <span\n              style={{\n                position: 'relative',\n                flexBasis: 49,\n                height: 19,\n                color: 'rgb(255, 255, 255, 1)',\n                textAlign: 'justify',\n                fontWeight: 700,\n                fontStyle: 'normal',\n              }}\n              data-uid='613'\n            >\n              Button\n            </span>\n          </div>\n        </View>\n      </View>\n    </Scene>\n  </Storyboard>\n)\n",
-            revisionsState: 'CODE_AHEAD',
-            parsed: {
-              type: 'UNPARSED',
-            },
-          },
+          lastSavedContents: null,
           lastRevisedTime: 0,
           type: 'TEXT_FILE',
           lastParseSuccess: null,
@@ -225,7 +221,7 @@ const contents = {
   },
 } as ProjectContentTreeRoot
 
-describe('image dnd', () => {
+describe('image drag and drop', () => {
   var dropDone: ReturnType<typeof defer> = defer()
   var sandbox = Sinon.createSandbox()
   var originalOnDrop = ImageDrop.DropHandlers.onDrop
@@ -240,81 +236,212 @@ describe('image dnd', () => {
     sandbox.restore()
   })
 
-  it('dragging from the sidebar works', async () => {
-    const newUID = 'imgimgimg'
-    FOR_TESTS_setNextGeneratedUid(newUID)
+  describe('filebrowser and canvas combined interactions', () => {
+    it('dragging from the filebrowser to the canvas inserts the image', async () => {
+      const newUID = 'imgimgimg'
+      FOR_TESTS_setNextGeneratedUid(newUID)
 
-    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
-    await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
-      true,
-    )
-    await editor.getDispatchFollowUpActionsFinished()
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const imageDragHandle = editor.renderedDOM.getByTestId('file-image-drag-handle')
-    const dragHandleBounds = imageDragHandle.getBoundingClientRect()
-    const handleCenter = {
-      x: dragHandleBounds.x + dragHandleBounds.width / 2,
-      y: dragHandleBounds.y + dragHandleBounds.height / 2,
-    }
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
 
-    const target = editor.renderedDOM.getByTestId('scene')
-    const targetBounds = target.getBoundingClientRect()
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
 
-    const endPoint = {
-      x: Math.floor(targetBounds.x + targetBounds.width / 2),
-      y: Math.floor(targetBounds.y + targetBounds.height / 2),
-    }
+      const endPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
 
-    mouseMoveToPoint(imageDragHandle, handleCenter)
-    mouseDownAtPoint(imageDragHandle, handleCenter)
-    mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
-    await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+      expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
 
-    expect(
-      editor.getEditorState().strategyState.sortedApplicableStrategies?.length,
-    ).toBeGreaterThan(0)
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      await editor.getDispatchFollowUpActionsFinished()
 
-    mouseUpAtPoint(canvasControlsLayer, endPoint)
-    await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual(
+        'DRAGGING_FROM_SIDEBAR',
+      )
+      expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { App } from '/src/app.js'
-import { View, Rectangle } from 'utopia-api'
-import { FlexRow } from 'utopia-api'
+      dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 207,
-        top: 126,
-        paddingLeft: 91,
-      }}
-      data-testid='scene'
-      data-label='Playground'
-      data-uid='3fc'
-    />
-    <img
-      src='./assets/stuff.png'
-      style={{
-        position: 'absolute',
-        width: 200,
-        height: 62,
-        top: 475,
-        left: 3,
-      }}
-      data-uid='imgimgimg'
-    />
-  </Storyboard>
-)
-`)
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toBeNull()
+      expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      import { App } from '/src/app.js'
+      import { View, Rectangle } from 'utopia-api'
+      import { FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='0cd'>
+          <Scene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 207,
+              top: 126,
+            }}
+            data-testid='scene'
+            data-label='Playground'
+            data-uid='3fc'
+          >
+            <img
+              src='./assets/stuff.png'
+              style={{
+                position: 'absolute',
+                width: 200,
+                height: 62,
+                top: 348.5,
+                left: 250,
+              }}
+              data-uid='${newUID}'
+            />
+          </Scene>
+        </Storyboard>
+      )
+  `),
+      )
+    })
+    it('dragging from the filebrowser to the canvas and back to the filebrowsers clears interaction session', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const fileItem = editor.renderedDOM.getByTestId('fileitem-/assets/stuff.png')
+      const fileItemBounds = fileItem.getBoundingClientRect()
+      const startPoint = {
+        x: fileItemBounds.x + fileItemBounds.width / 2,
+        y: fileItemBounds.y + fileItemBounds.height / 2,
+      }
+
+      const target = editor.renderedDOM.getByTestId('scene')
+      const targetBounds = target.getBoundingClientRect()
+
+      const canvasPoint = {
+        x: Math.floor(targetBounds.x + targetBounds.width / 2),
+        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+      }
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      mouseMoveToPoint(fileItem, startPoint)
+      mouseDownAtPoint(fileItem, startPoint)
+
+      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/stuff.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
+    it('dragging from the "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
+      const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+      await editor.dispatch(
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        true,
+      )
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const file = await makeImageFile(imgBase64, 'hello.png')
+
+      const canvasScene = editor.renderedDOM.getByTestId('scene')
+      const canvasSceneBounds = canvasScene.getBoundingClientRect()
+
+      const canvasPoint = {
+        x: Math.floor(canvasSceneBounds.x + canvasSceneBounds.width / 2),
+        y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
+      }
+
+      dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
+
+      const fileItemTargetFolder = '/public'
+      const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
+      const targetFolderBounds = targetFolder.getBoundingClientRect()
+      const endPoint = {
+        x: targetFolderBounds.x + targetFolderBounds.width / 2,
+        y: targetFolderBounds.y + targetFolderBounds.height / 2,
+      }
+
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
+
+      dropElementAtPoint(targetFolder, endPoint, [])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const expectedFileName = `${fileItemTargetFolder}/hello.png`
+
+      const filenameCorrected = correctProjectContentsPath(expectedFileName)
+      const fileContent = getContentsTreeFileFromString(
+        editor.getEditorState().editor.projectContents,
+        filenameCorrected,
+      )
+
+      expect(fileContent).toBeDefined()
+    })
   })
 
   it('dragging from the "finder" works', async () => {
@@ -333,18 +460,21 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+    expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
 
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await editor.getDispatchFollowUpActionsFinished()
 
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
+    expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
     await dropDone
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -361,7 +491,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -373,8 +502,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='1'
       />
@@ -405,14 +534,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, [file]),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, [file]))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, [file]))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -433,7 +556,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -445,8 +567,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='1'
       />
@@ -476,14 +598,8 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
     await dropDone
@@ -503,7 +619,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -515,8 +630,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='1'
       />
@@ -526,8 +641,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='2'
       />
@@ -537,8 +652,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='3'
       />
@@ -573,14 +688,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    fireEvent(
-      canvasControlsLayer,
-      makeDragEvent('dragover', canvasControlsLayer, { x: 5, y: 5 }, files),
-    )
-
-    fireEvent(canvasControlsLayer, makeDragEvent('dragover', canvasControlsLayer, endPoint, files))
-
-    fireEvent(canvasControlsLayer, makeDragEvent('drop', canvasControlsLayer, endPoint, files))
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -601,7 +710,6 @@ export var storyboard = (
         position: 'absolute',
         left: 207,
         top: 126,
-        paddingLeft: 91,
       }}
       data-testid='scene'
       data-label='Playground'
@@ -613,8 +721,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='1'
       />
@@ -624,8 +732,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='2'
       />
@@ -635,8 +743,8 @@ export var storyboard = (
           position: 'absolute',
           width: 200,
           height: 200,
-          top: 280,
-          left: 296,
+          top: 279.5,
+          left: 250,
         }}
         data-uid='3'
       />

@@ -12,8 +12,8 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
+import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import {
@@ -55,14 +55,14 @@ export function absoluteDuplicateStrategy(
     name: 'Duplicate',
     controlsToRender: [
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: filteredSelectedElements },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ImmediateParentBounds,
+        props: { targets: filteredSelectedElements },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -143,7 +143,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   const moveCommands =
     absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle).commands ?? []
 
-  return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches
+  return foldAndApplyCommandsInner(editorState, [], moveCommands, commandLifecycle).statePatches
 }
 
 function isApplicable(

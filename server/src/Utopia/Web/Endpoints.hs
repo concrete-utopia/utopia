@@ -670,17 +670,18 @@ githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
   possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
   pure $ isJust possibleAuthDetails
 
-githubSaveEndpoint :: Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
-githubSaveEndpoint cookie persistentModel = requireUser cookie $ \sessionUser -> do
-  saveToGithubRepo (view (field @"_id") sessionUser) persistentModel
+githubSaveEndpoint :: Maybe Text -> Text -> PersistentModel -> ServerMonad SaveToGithubResponse
+githubSaveEndpoint cookie projectID persistentModel = requireUser cookie $ \sessionUser -> do
+  saveToGithubRepo (view (field @"_id") sessionUser) projectID persistentModel
 
 getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
 getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
   getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
 
-getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchContentResponse
-getGithubBranchContentEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
-  getBranchContent (view (field @"_id") sessionUser) owner repository branchName
+getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> ServerMonad GetBranchContentResponse
+getGithubBranchContentEndpoint _ _ _ _ Nothing = badRequest
+getGithubBranchContentEndpoint cookie owner repository branchName (Just projectID) = requireUser cookie $ \sessionUser -> do
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName projectID
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.

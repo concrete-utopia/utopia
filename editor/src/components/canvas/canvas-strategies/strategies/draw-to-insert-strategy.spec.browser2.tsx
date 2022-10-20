@@ -15,6 +15,7 @@ import {
   mouseDragFromPointToPoint,
   mouseDragFromPointToPointNoMouseDown,
   mouseMoveToPoint,
+  pressKey,
 } from '../../event-helpers.test-utils'
 import { RightMenuTab } from '../../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
@@ -764,6 +765,196 @@ describe('Inserting into absolute', () => {
               data-uid='ddd'
             />
           </div>
+        </div>
+      `),
+    )
+  })
+})
+
+describe('Forced inserting into Static', () => {
+  const inputCode = makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+      }}
+    >
+      <div
+        data-uid='bbb'
+        data-testid='bbb'
+        style={{
+          position: 'static',
+          width: 380,
+          height: 180,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+      <div
+        data-uid='ccc'
+        style={{
+          position: 'static',
+          width: 380,
+          height: 190,
+          backgroundColor: '#FF0000',
+        }}
+      />
+    </div>
+  `)
+
+  it('By default, it refuses to insert into a static element', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+    await enterInsertModeFromInsertMenu(renderResult)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 25,
+      y: targetElementBounds.y + 25,
+    })
+
+    // Move before starting dragging
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+
+    // Drag from inside bbb to inside ccc
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'static',
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'static',
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 5,
+              top: 5,
+              width: 20,
+              height: 20,
+            }}
+            data-uid='ddd'
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Using the strategy picker, it happily inserts into a static element', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+    await enterInsertModeFromInsertMenu(renderResult)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 25,
+      y: targetElementBounds.y + 25,
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Move before starting dragging
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+      midDragCallback: () => {
+        pressKey('2') // this should select the 'Draw to Insert (Abs, Forced)' strategy
+      },
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'static',
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 5,
+              top: 5,
+              width: 20,
+              height: 20,
+            }}
+            data-uid='ddd'
+          />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'static',
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
         </div>
       `),
     )
@@ -1983,119 +2174,174 @@ describe('Inserting into flex column', () => {
 })
 
 describe('Inserting an image', () => {
-  const inputCode = makeTestProjectCodeWithSnippet(`
-    <div
-      data-uid='aaa'
-      style={{
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#FFFFFF',
-        position: 'relative',
-      }}
-    >
-      <div
-        data-uid='bbb'
-        data-testid='bbb'
-        style={{
-          position: 'absolute',
-          left: 10,
-          top: 10,
-          width: 380,
-          height: 180,
-          backgroundColor: '#d3d3d3',
-        }}
-      />
-      <div
-        data-uid='ccc'
-        style={{
-          position: 'absolute',
-          left: 10,
-          top: 200,
-          width: 380,
-          height: 190,
-          backgroundColor: '#FF0000',
-        }}
-      />
-    </div>
-  `)
-
   it('Draw to insert to an absolute layout keeps aspect ratio', async () => {
-    const renderResult = await setupInsertTest(inputCode)
-    await enterInsertModeFromInsertMenu(renderResult, 'img')
-
-    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
-    })
-    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 15, // with aspect ratio lock this 10px with should be ignored
-      y: targetElementBounds.y + 305,
-    })
-
-    // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
-
-    // Highlight should show the candidate parent
-    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
-
-    // Drag from inside bbb to inside ccc
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    // Check that the inserted element is a child of bbb
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+    const inputCode = `
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          position: 'relative',
+        }}
+      >
         <div
-          data-uid='aaa'
+          data-uid='bbb'
+          data-testid='bbb'
           style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#FFFFFF',
-            position: 'relative',
+            position: 'absolute',
+            left: 10,
+            top: 10,
+            width: 380,
+            height: 180,
+            backgroundColor: '#d3d3d3',
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            left: 10,
+            top: 200,
+            width: 380,
+            height: 190,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>
+    `
+    const expectedCode = `
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          position: 'relative',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          data-testid='bbb'
+          style={{
+            position: 'absolute',
+            left: 10,
+            top: 10,
+            width: 380,
+            height: 180,
+            backgroundColor: '#d3d3d3',
           }}
         >
-          <div
-            data-uid='bbb'
-            data-testid='bbb'
+          <img
             style={{
+              width: 300,
+              height: 300,
               position: 'absolute',
-              left: 10,
-              top: 10,
-              width: 380,
-              height: 180,
-              backgroundColor: '#d3d3d3',
+              left: 5,
+              top: 5,
             }}
-          >
-            <img              
-              style={{
-                width: 300,
-                height: 300,
-                position: 'absolute',
-                left: 5,
-                top: 5,
-              }}
-              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
-              data-uid='ddd'
-            />
-          </div>
-          <div
-            data-uid='ccc'
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: 200,
-              width: 380,
-              height: 190,
-              backgroundColor: '#FF0000',
-            }}
+            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            data-uid='ddd'
           />
         </div>
-      `),
-    )
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            left: 10,
+            top: 200,
+            width: 380,
+            height: 190,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>
+    `
+    await testDragToInsertImageAspectRatio(inputCode, expectedCode)
+  })
+
+  it('Draw to insert to a flex layout keeps aspect ratio', async () => {
+    const inputCode = `
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          data-testid='bbb'
+          style={{
+            backgroundColor: '#f09',
+            display: 'flex',
+            width: 400,
+            height: 400
+          }}
+        />
+      </div>
+    `
+    const expectedCode = `
+      <div
+        data-uid='aaa'
+        style={{ width: '100%', height: '100%' }}
+      >
+        <div
+          data-uid='bbb'
+          data-testid='bbb'
+          style={{
+            backgroundColor: '#f09',
+            display: 'flex',
+            width: 400,
+            height: 400
+          }}
+        >
+          <img
+            style={{
+              width: 300,
+              height: 300,
+              position: 'relative'
+            }}
+            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            data-uid='ddd'
+          />
+        </div>
+      </div>
+    `
+    await testDragToInsertImageAspectRatio(inputCode, expectedCode)
   })
 })
+
+const testDragToInsertImageAspectRatio = async (inputCode: string, expectedCode: string) => {
+  const renderResult = await setupInsertTest(makeTestProjectCodeWithSnippet(inputCode))
+  await enterInsertModeFromInsertMenu(renderResult, 'img')
+
+  const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+    x: targetElementBounds.x + 5,
+    y: targetElementBounds.y + 5,
+  })
+  const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+    x: targetElementBounds.x + 15, // with aspect ratio lock this 10px with should be ignored
+    y: targetElementBounds.y + 305,
+  })
+
+  // Move before starting dragging
+  mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+  // Highlight should show the candidate parent
+  expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+  // Drag from inside bbb to inside ccc
+  mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  // Check that the inserted element is a child of bbb
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+    makeTestProjectCodeWithSnippet(expectedCode),
+  )
+}

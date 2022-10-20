@@ -83,7 +83,6 @@ export function pressKeys(
     editorState,
     editorState,
     [],
-    [],
     strategyResult.commands,
     'end-interaction',
   ).editorState

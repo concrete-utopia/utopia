@@ -6,8 +6,10 @@ module Utopia.Web.Assets where
 
 import           Conduit
 import           Control.Lens
+import           Control.Monad.Fail
 import           Control.Monad.Trans.AWS
 import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString    as B
 import           Data.Generics.Sum
 import           Data.String
 import           Data.Text
@@ -21,6 +23,8 @@ import           Protolude               hiding (intercalate)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
+import Network.Mime
+import Data.Map.Strict as M
 
 data AWSResources = AWSResources
                   { _awsEnv :: Env
@@ -31,7 +35,14 @@ data LoadAssetResult = AssetUnmodified
                      | AssetNotFound
                      | AssetLoaded BL.ByteString (Maybe Text)
 
+assetContentsFromLoadAssetResult :: LoadAssetResult -> IO BL.ByteString
+assetContentsFromLoadAssetResult AssetUnmodified          = fail "Asset is unmodified."
+assetContentsFromLoadAssetResult AssetNotFound            = fail "Asset not found."
+assetContentsFromLoadAssetResult (AssetLoaded content _)  = pure content
+
 type LoadAsset = [Text] -> Maybe Text -> IO LoadAssetResult
+
+type SaveAsset = Text -> [Text] -> BL.ByteString -> IO ()
 
 type LoadThumbnail = Text -> Maybe Text -> IO LoadAssetResult
 
@@ -190,3 +201,39 @@ saveProjectThumbnailToS3 :: AWSResources -> Text -> BL.ByteString -> IO ()
 saveProjectThumbnailToS3 resources projectID contents = runInAWS resources $ do
   let putObjectRequest = putObject (_bucket resources) (projectIDToThumbnailObjectKey projectID) (toBody contents)
   void $ send putObjectRequest
+
+data BlobEntryType = TextEntryType
+                   | ImageEntryType
+                   | AssetEntryType
+                   deriving (Eq, Ord, Show)
+
+-- Keep in sync with core/model/project-file-utils.ts.
+expandedMimeMap :: MimeMap
+expandedMimeMap = defaultMimeMap <> M.fromList
+  [ ("ts", "application/typescript")
+  , ("tsx" , "application/typescript")
+  , ("jsx", "application/javascript")
+  ]
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeJavaScript :: MimeType -> Bool
+looksLikeJavaScript mimeType = B.isSuffixOf "/javascript" mimeType || B.isSuffixOf "/typescript" mimeType
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeText :: MimeType -> Bool
+looksLikeText mimeType = looksLikeJavaScript mimeType || B.isPrefixOf "text/" mimeType || B.isPrefixOf "application/json" mimeType
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeImage :: MimeType -> Bool
+looksLikeImage mimeType = B.isPrefixOf "image/" mimeType
+
+mimeLookup :: FileName -> MimeType
+mimeLookup = mimeByExt expandedMimeMap defaultMimeType
+
+blobEntryTypeFromFilename :: FileName -> BlobEntryType
+blobEntryTypeFromFilename filename =
+  let mimeType = mimeLookup filename
+      possiblyText = if looksLikeText mimeType then Just TextEntryType else Nothing
+      possiblyImage = if looksLikeImage mimeType then Just ImageEntryType else Nothing
+  in  fromMaybe AssetEntryType (possiblyText <|> possiblyImage)
+

@@ -69,10 +69,11 @@ export interface GetBranchContentSuccess {
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export async function saveProjectToGithub(
+  projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): Promise<void> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'save')
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
   const postBody = JSON.stringify(persistentModel)
   const response = await fetch(url, {
@@ -146,6 +147,7 @@ export async function getBranchesForGithubRepository(
 export async function getBranchContent(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
+  projectID: string,
   branchName: string,
 ): Promise<void> {
   const url = urljoin(
@@ -156,9 +158,12 @@ export async function getBranchContent(
     githubRepo.repository,
     branchName,
   )
+  const searchParams = new URLSearchParams({
+    project_id: projectID,
+  })
 
-  const response = await fetch(url, {
-    method: 'GET',
+  const response = await fetch(`${url}?${searchParams}`, {
+    method: 'POST',
     credentials: 'include',
     headers: HEADERS,
     mode: MODE,

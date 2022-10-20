@@ -805,6 +805,53 @@ describe('Unified Reparent Fitness Function Tests', () => {
       `),
     )
   })
+
+  it('dragging the root element of a component does not activate reparent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        left: 150,
+        top: 150,
+        backgroundColor: '#d3d3d3',
+      }}
+      data-uid='aaa'
+      data-testid='aaa'
+    />
+    `),
+      'await-first-dom-report',
+    )
+
+    // when dragging towards the left and top, we leave the original bounds of the dragged element
+    const dragDelta = windowPoint({ x: -75, y: -75 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    dragElement(renderResult, 'aaa', defaultMouseDownOffset, dragDelta, cmdModifier, true)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          left: 75,
+          top: 75,
+          backgroundColor: '#d3d3d3',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      />
+      `),
+    )
+  })
 })
 
 describe('Target parent filtering', () => {

@@ -1,4 +1,17 @@
 import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { wait } from '../../../../utils/utils.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import {
+  mouseClickAtPoint,
+  mouseDragFromPointWithDelta,
+  pressKey,
+} from '../../event-helpers.test-utils'
+import {
   EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
@@ -6,38 +19,17 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../../core/model/scene-utils'
-import {
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
-} from './absolute-reparent-strategy'
-import {
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-} from './flex-reparent-to-absolute-strategy'
-import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
-import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import {
-  CanvasStrategy,
-  CustomStrategyState,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import { MetaCanvasStrategy, RegisteredCanvasStrategies } from '../canvas-strategies'
+import { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { stripNulls } from '../../../../core/shared/array-utils'
-import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
+import { reparentMetaStrategy } from './reparent-metastrategy'
 
 async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
+  midDragCallback?: () => void,
 ): Promise<void> {
   const targetElement = await renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -51,6 +43,7 @@ async function dragElement(
   mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
+    midDragCallback: midDragCallback,
   })
 }
 
@@ -170,32 +163,25 @@ ${snippet}
 `)
 }
 
-function metaStrategyForFactories(factories: Array<CanvasStrategyFactory>): MetaCanvasStrategy {
-  return (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    customStrategyState: CustomStrategyState,
-  ) =>
-    stripNulls(
-      factories.map((factory) => factory(canvasState, interactionSession, customStrategyState)),
-    )
+const forcedAbsoluteReparentMetastrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => {
+  const allReparentingStrategies = reparentMetaStrategy(
+    canvasState,
+    interactionSession,
+    customStrategyState,
+  )
+  return allReparentingStrategies.filter((strategy) => strategy.id.startsWith('FORCED'))
 }
-
-const allReparentStrategies = metaStrategyForFactories([
-  absoluteReparentStrategy,
-  absoluteReparentToFlexStrategy,
-  forcedAbsoluteReparentStrategy,
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
-])
 
 describe('Forced Absolute Reparent Strategies', () => {
   it('Absolute to forced absolute can be applied', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([forcedAbsoluteReparentStrategy])],
+      [forcedAbsoluteReparentMetastrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -302,11 +288,133 @@ describe('Forced Absolute Reparent Strategies', () => {
   </div>`),
     )
   })
+
+  it('Absolute to forced absolute can be accessed by using the strategy selector', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(defaultTestCode),
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+    )
+
+    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
+    const absoluteChildRect = absoluteChild.getBoundingClientRect()
+    const absoluteChildCenter = {
+      x: absoluteChildRect.x + absoluteChildRect.width / 2,
+      y: absoluteChildRect.y + absoluteChildRect.height / 2,
+    }
+    const secondFlexChild = await renderResult.renderedDOM.findByTestId('flexchild2')
+    const secondFlexChildRect = secondFlexChild.getBoundingClientRect()
+    const secondFlexChildCenter = {
+      x: secondFlexChildRect.x + secondFlexChildRect.width / 2,
+      y: secondFlexChildRect.y + secondFlexChildRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const dragDelta = windowPoint({
+      x: secondFlexChildCenter.x - absoluteChildCenter.x,
+      y: secondFlexChildCenter.y - absoluteChildCenter.y,
+    })
+
+    await dragElement(
+      renderResult,
+      'absolutechild',
+      dragDelta,
+      cmdModifier,
+      function midDragCallback() {
+        pressKey('3') // this should select the Reparent (Abs, Forced) strategy
+      },
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+  <div
+    style={{
+      position: 'absolute',
+      width: 700,
+      height: 600,
+    }}
+    data-uid='container'
+    data-testid='container'
+  >
+    <div
+      style={{
+        width: 250,
+        height: 500,
+        backgroundColor: 'orange',
+      }}
+      data-uid='staticparent'
+      data-testid='staticparent'
+    />
+    <div
+      style={{
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 250,
+        top: 0,
+        backgroundColor: 'lightblue',
+      }}
+      data-uid='absoluteparent'
+      data-testid='absoluteparent'
+    />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 500,
+        top: 0,
+        backgroundColor: 'lightgreen',
+      }}
+      data-uid='flexparent'
+      data-testid='flexparent'
+    >
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'teal',
+        }}
+        data-uid='flexchild1'
+        data-testid='flexchild1'
+      />
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'red',
+        }}
+        data-uid='flexchild2'
+        data-testid='flexchild2'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: 100,
+            top: 0,
+            width: 100,
+            height: 100,
+            backgroundColor: 'yellow',
+          }}
+          data-uid='absolutechild'
+          data-testid='absolutechild'
+        />
+      </div>
+    </div>
+  </div>`),
+    )
+  })
+
   it('Absolute to forced absolute is not the default choice', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [allReparentStrategies],
+      [reparentMetaStrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -414,7 +522,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [metaStrategyForFactories([forcedFlexReparentToAbsoluteStrategy])],
+      [forcedAbsoluteReparentMetastrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -529,7 +637,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [allReparentStrategies],
+      [reparentMetaStrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -672,7 +780,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(testCode),
       'await-first-dom-report',
-      [allReparentStrategies],
+      [reparentMetaStrategy],
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()

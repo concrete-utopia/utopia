@@ -5,17 +5,19 @@ import {
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
-  CanvasPoint,
   canvasPoint,
   canvasRectangle,
   CanvasRectangle,
   Size,
 } from '../../../../core/shared/math-utils'
+import { maybeToArray } from '../../../../core/shared/optional-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
@@ -27,12 +29,17 @@ import {
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { ParentBounds } from '../../controls/parent-bounds'
-import { ParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
+import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
+  CanvasStrategyFactory,
   findCanvasStrategy,
+  MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
@@ -48,39 +55,104 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession } from '../interaction-state'
-import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
+import { boundingArea, InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { getApplicableReparentFactories } from './reparent-metastrategy'
+import { ReparentStrategy } from './reparent-strategy-helpers'
 
-export function drawToInsertStrategy(
+export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  if (
+    interactionSession == null ||
+    !(
+      interactionSession.interactionData.type === 'DRAG' ||
+      interactionSession.interactionData.type === 'HOVER'
+    )
+  ) {
+    return []
+  }
+  const pointOnCanvas =
+    interactionSession.interactionData.type === 'DRAG'
+      ? interactionSession.interactionData.originalDragStart
+      : interactionSession.interactionData.point
+
+  const applicableReparentFactories = getApplicableReparentFactories(
+    canvasState,
+    pointOnCanvas,
+    true, // Draw to insert should always disregard the size of the potential target parent
+    true,
+    'show-flex-target',
+  )
+
+  return mapDropNulls((result): CanvasStrategy | null => {
+    const name = getDrawToInsertStrategyName(result.strategyType, result.missingBoundsHandling)
+
+    return drawToInsertStrategyFactory(
+      canvasState,
+      interactionSession,
+      customStrategyState,
+      result.factory,
+      name,
+      result.fitness,
+      result.targetParent,
+      result.targetIndex,
+    )
+  }, applicableReparentFactories)
+}
+
+function getDrawToInsertStrategyName(
+  strategyType: ReparentStrategy,
+  missingBoundsHandling: MissingBoundsHandling,
+) {
+  switch (strategyType) {
+    case 'REPARENT_TO_ABSOLUTE':
+      if (missingBoundsHandling === 'use-strict-bounds') {
+        return 'Draw to Insert (Abs)'
+      } else {
+        return 'Draw to Insert (Abs, Forced)'
+      }
+    case 'REPARENT_TO_FLEX':
+      return 'Draw to Insert (Flex)'
+  }
+}
+
+function drawToInsertStrategyFactory(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+  reparentStrategyToUse: CanvasStrategyFactory,
+  name: string,
+  fitness: number,
+  targetParent: ElementPath,
+  targetIndex: number | null,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
   if (insertionSubjects.length !== 1) {
     return null
   }
   const insertionSubject = insertionSubjects[0]
+  const predictedElementPath = EP.appendToPath(targetParent, insertionSubject.uid)
   return {
-    id: 'DRAW_TO_INSERT',
-    name: 'Draw to insert',
+    id: name,
+    name: name,
     controlsToRender: [
-      // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
       controlWithProps({
-        control: ParentOutlines,
-        props: {},
+        control: ImmediateParentOutlines,
+        props: { targets: [targetParent] },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBounds,
-        props: {},
+        control: ParentBoundsForInsertion,
+        props: { targetParents: [targetParent] },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: {},
+        props: dragTargetsElementPaths([predictedElementPath]),
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
@@ -96,7 +168,7 @@ export function drawToInsertStrategy(
       ((interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
         interactionSession.interactionData.type === 'HOVER')
-        ? 1
+        ? fitness
         : 0,
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
@@ -114,6 +186,7 @@ export function drawToInsertStrategy(
                 'always',
                 (editorState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                    reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
                     customStrategyState,
@@ -161,6 +234,7 @@ export function drawToInsertStrategy(
                 'always',
                 (editorState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                    reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
                     customStrategyState,
@@ -177,15 +251,13 @@ export function drawToInsertStrategy(
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened
-            const pointOnCanvas = interactionSession.interactionData.dragStart
             return strategyApplicationResult(
-              getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
+              getHighlightAndReorderIndicatorCommands(targetParent, targetIndex),
             )
           }
         } else if (interactionSession.interactionData.type === 'HOVER') {
-          const pointOnCanvas = interactionSession.interactionData.point
           return strategyApplicationResult(
-            getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
+            getHighlightAndReorderIndicatorCommands(targetParent, targetIndex),
           )
         }
       }
@@ -196,24 +268,14 @@ export function drawToInsertStrategy(
 }
 
 function getHighlightAndReorderIndicatorCommands(
-  canvasState: InteractionCanvasState,
-  pointOnCanvas: CanvasPoint,
+  targetParent: ElementPath | null,
+  targetIndex: number | null,
 ): Array<CanvasCommand> {
-  const parent = getReparentTargetUnified(
-    newReparentSubjects(),
-    pointOnCanvas,
-    true,
-    canvasState,
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    'allow-missing-bounds',
-  )
+  if (targetParent != null) {
+    const highlightParentCommand = updateHighlightedViews('mid-interaction', [targetParent])
 
-  if (parent != null && parent.shouldReparent && parent.newParent != null) {
-    const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
-
-    if (parent.newIndex !== -1) {
-      return [highlightParentCommand, showReorderIndicator(parent.newParent, parent.newIndex)]
+    if (targetIndex != null) {
+      return [highlightParentCommand, showReorderIndicator(targetParent, targetIndex)]
     } else {
       return [highlightParentCommand]
     }
@@ -324,6 +386,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
 }
 
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
+  reparentStrategyToUse: CanvasStrategyFactory,
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
@@ -372,20 +435,18 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     startingMetadata: patchedMetadata,
   }
 
-  const { strategy } = findCanvasStrategy(
-    RegisteredCanvasStrategies,
+  const strategy = reparentStrategyToUse(
     patchedCanvasState,
     patchedInteractionSession,
     customStrategyState,
-    null,
   )
 
   if (strategy == null) {
     return []
   }
-  const reparentCommands = strategy.strategy.apply(strategyLifecycle).commands
+  const reparentCommands = strategy.apply(strategyLifecycle).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
+  return foldAndApplyCommandsInner(editorState, [], reparentCommands, strategyLifecycle)
     .statePatches
 }
 
@@ -438,6 +499,5 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const resizeCommands =
     resizeStrategy != null ? resizeStrategy.strategy.apply(strategyLifecycle).commands : []
 
-  return foldAndApplyCommandsInner(editorState, [], [], resizeCommands, commandLifecycle)
-    .statePatches
+  return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
 }

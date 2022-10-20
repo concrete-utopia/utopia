@@ -72,10 +72,8 @@ import {
   parseGithubProjectString,
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
-import { getURLImportDetails } from '../../core/model/project-import'
-import { forEachLeft, forEachRight } from '../../core/shared/either'
-import { notice } from '../common/notice'
 import { when } from '../../utils/react-conditionals'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -723,6 +721,7 @@ const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
+  const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
     if (repo == null) {
@@ -843,7 +842,12 @@ const GithubPane = React.memo(() => {
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
                       if (parsedTargetRepository != null) {
-                        void getBranchContent(dispatch, parsedTargetRepository, branch.name)
+                        void getBranchContent(
+                          dispatch,
+                          parsedTargetRepository,
+                          forceNotNull('Should have a project ID.', projectID),
+                          branch.name,
+                        )
                       }
                     }
                     return (
@@ -865,7 +869,7 @@ const GithubPane = React.memo(() => {
           throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
       }
     }
-  }, [branchesForRepository, parsedTargetRepository, dispatch])
+  }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
 
   return (
     <FlexColumn
