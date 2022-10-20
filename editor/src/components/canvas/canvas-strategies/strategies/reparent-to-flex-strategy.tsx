@@ -44,7 +44,7 @@ export function baseReparentToFlexStrategy(
 
     const isOriginallyFlex =
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedElements[0],
+        filteredSelectedElements[0],
         canvasState.startingMetadata,
       )
 
@@ -58,7 +58,7 @@ export function baseReparentToFlexStrategy(
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: dragTargetsElementPaths(selectedElements),
+          props: dragTargetsElementPaths(filteredSelectedElements),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),
@@ -83,14 +83,12 @@ export function baseReparentToFlexStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return interactionSession == null
-          ? emptyStrategyApplicationResult
-          : applyFlexReparent(
-              isOriginallyAbsolute ? 'strip-absolute-props' : 'do-not-strip-props',
-              canvasState,
-              interactionSession,
-              reparentTarget,
-            )
+        return applyFlexReparent(
+          isOriginallyAbsolute ? 'strip-absolute-props' : 'do-not-strip-props',
+          canvasState,
+          interactionSession,
+          reparentTarget,
+        )
       },
     }
   }
