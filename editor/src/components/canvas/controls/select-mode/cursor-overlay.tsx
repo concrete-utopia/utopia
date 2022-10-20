@@ -4,6 +4,7 @@ import { cursorForMissingReparentedItems } from '../../canvas-strategies/strateg
 import { CSSCursor } from '../../canvas-types'
 import { getCursorFromDragState } from '../../canvas-utils'
 import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
+import { EditorID } from '../../../../core/shared/utils'
 
 export function getCursorFromEditor(editorState: EditorState): CSSCursor | null {
   const forMissingReparentedItems = cursorForMissingReparentedItems(
@@ -21,13 +22,17 @@ export const CursorOverlay = React.memo(() => {
   })
 
   React.useEffect(() => {
+    const editor = document.getElementById(EditorID)
     if (cursor != null) {
       document.body.classList.add('customCursor')
       document.body.style.cursor = cursor
-    }
-    if (cursor == null) {
+    } else {
       document.body.classList.remove('customCursor')
       document.body.style.cursor = 'unset'
+    }
+
+    if (editor != null) {
+      editor.style.pointerEvents = 'initial'
     }
   }, [cursor])
 
@@ -36,7 +41,7 @@ export const CursorOverlay = React.memo(() => {
       body.customCursor * {
         cursor: inherit !important;
         pointer-events: none;
-      }
+      };
   `}</style>
   )
 })
