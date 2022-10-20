@@ -1,26 +1,26 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { assertNever } from '../../../core/shared/utils'
-import { CSSPadding } from '../../inspector/common/css-utils'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CSSCursor, EdgePiece } from '../canvas-types'
-import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
-import { setCursorCommand } from '../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { isZeroSizedElement } from '../controls/outline-utils'
-import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
-import { paddingForEdge, simplePaddingFromMetadata } from '../padding-utils'
-import { CanvasStrategyFactory } from './canvas-strategies'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { CanvasVector } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { assertNever } from '../../../../core/shared/utils'
+import { CSSPadding } from '../../../inspector/common/css-utils'
+import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { CSSCursor, EdgePiece } from '../../canvas-types'
+import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
+import { isZeroSizedElement } from '../../controls/outline-utils'
+import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
+import { paddingForEdge, simplePaddingFromMetadata } from '../../padding-utils'
+import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
-} from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './strategies/shared-move-strategies-helpers'
+} from '../canvas-strategy-types'
+import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export const setPaddingStrategy: CanvasStrategyFactory = (
   canvasState,
