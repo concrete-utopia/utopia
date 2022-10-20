@@ -32,6 +32,7 @@ import { optionalMap } from '../core/shared/optional-utils'
 import {
   emptyComments,
   getJSXAttribute,
+  getJSXElementNameLastPart,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
@@ -316,7 +317,7 @@ function updateImageSrcsActions(
   const actions: Array<EditorAction> = []
   walkContentsTreeForParseSuccess(projectContents, (filePath, success) => {
     walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
-      if (isJSXElement(element)) {
+      if (isJSXElement(element) && getJSXElementNameLastPart(element.name) === 'img') {
         const srcAttribute = getJSXAttribute(element.props, 'data-uid')
         if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
           const srcValue: JSXAttributeValue<any> = srcAttribute
