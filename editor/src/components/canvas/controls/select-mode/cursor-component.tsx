@@ -15,7 +15,7 @@ export function getCursorFromEditor(editorState: EditorState): CSSCursor | null 
   )
 }
 
-export const CursorOverlay = React.memo(() => {
+export const CursorComponent = React.memo(() => {
   const cursor = useDelayedEditorState((store) => {
     return getCursorFromEditor(store.editor)
   })

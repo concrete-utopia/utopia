@@ -15,7 +15,7 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { getCursorFromEditor } from '../../controls/select-mode/cursor-overlay'
+import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { CSSCursor } from '../../canvas-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
