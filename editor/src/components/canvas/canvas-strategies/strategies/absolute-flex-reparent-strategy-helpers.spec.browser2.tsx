@@ -854,6 +854,737 @@ describe('Unified Reparent Fitness Function Tests', () => {
   })
 })
 
+describe('Target parents with display: flow', () => {
+  describe('Reparent To Absolute', () => {
+    it('target parent display: flow with all children positioned absolutely', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 20,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 40,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-3'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -200, y: 0 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 20,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 40,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-3'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 30,
+                  top: 30,
+                  width: 100,
+                  height: 100,
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+
+    it('drag onto the padded area of display: flow target parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+                padding: 20,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'static',
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='static-child-1'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -220, y: 0 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+                padding: 20,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'static',
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='static-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 10,
+                  top: 30,
+                  width: 100,
+                  height: 100,
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+
+    it('empty target parent with both dimensions measured to be > 0', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            />
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -200, y: 0 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 30,
+                  top: 30,
+                  width: 100,
+                  height: 100,
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+  })
+
+  describe('Reparent to Flow', () => {
+    it('if target parent is not a contianing block', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            />
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -200, y: 0 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+
+    it('target parent display: flow with any children in flow', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'static',
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 20,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 40,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-3'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -200, y: 0 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'static',
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 20,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  position: 'absolute',
+                  left: 40,
+                  top: 0,
+                  width: 10,
+                  height: 10,
+                }}
+                data-uid='absolute-child-3'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+
+    it('empty display: flow target parent with measured width or height 0', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            />
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 250,
+                top: 50,
+                width: 100,
+                height: 100,
+              }} 
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -200, y: -30 })
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              backgroundColor: 'white',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+            data-uid='aaa'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 200,
+              }}
+              data-uid='targetparent'
+              data-testid='targetparent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0091FFAA',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }} 
+                data-uid='draggedElement'
+                data-testid='draggedElement'
+              />
+            </div>
+          </div>
+      `),
+      )
+    })
+  })
+})
+
 describe('Target parent filtering', () => {
   function makeFilteringProjectWithCode(code: string): string {
     const projectCode = `
