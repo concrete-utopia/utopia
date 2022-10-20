@@ -1,5 +1,6 @@
 import CanvasActions from '../components/canvas/canvas-actions'
 import * as EditorActions from '../components/editor/actions/action-creators'
+import * as PP from '../core/shared/property-path'
 import {
   EditorAction,
   EditorDispatch,
@@ -13,15 +14,30 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
-import { ProjectContentTreeRoot } from '../components/assets'
+import { ProjectContentTreeRoot, walkContentsTreeForParseSuccess } from '../components/assets'
 import { getFrameAndMultiplierWithResize, createJsxImage } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { EditorState, notDragging } from '../components/editor/store/editor-state'
-import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
-import { AssetToSave, saveAssets } from '../components/editor/server'
+import {
+  getUtopiaJSXComponentsFromSuccess,
+  imageFile,
+  uniqueProjectContentID,
+} from '../core/model/project-file-utils'
+import { saveAssets } from '../components/editor/server'
 import { notice } from '../components/common/notice'
+import { stripNulls } from '../core/shared/array-utils'
+import { optionalMap } from '../core/shared/optional-utils'
+import {
+  emptyComments,
+  getJSXAttribute,
+  isJSXAttributeValue,
+  isJSXElement,
+  jsxAttributeValue,
+  JSXAttributeValue,
+  walkElements,
+} from '../core/shared/element-template'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -70,7 +86,7 @@ export async function insertImageFromClipboard(
 
 interface DropContext {
   mousePosition: CanvasPositions
-  editor: EditorState
+  editor: () => EditorState
   dispatch: EditorDispatch
   loginState: LoginState
   scale: number
@@ -81,15 +97,15 @@ async function onDrop(
   cont: () => void,
   context: DropContext,
 ): Promise<void> {
-  if (context.editor.mode.type === 'select' && event.dataTransfer != null) {
-    const insertionTarget = context.editor.highlightedViews[0]
+  if (context.editor().mode.type === 'select' && event.dataTransfer != null) {
+    const insertionTarget = context.editor().highlightedViews[0]
     void insertImageFromClipboard(event.dataTransfer, {
       scale: context.scale,
       dispatch: context.dispatch,
       mousePosition: context.mousePosition.canvasPositionRounded,
       elementPath: insertionTarget,
     })
-  } else if (context.editor.mode.type === 'insert' && event.dataTransfer != null) {
+  } else if (context.editor().mode.type === 'insert' && event.dataTransfer != null) {
     const images = await getPastedImages(event.dataTransfer)
     if (images.length === 0) {
       return context.dispatch([
@@ -104,24 +120,49 @@ async function onDrop(
       ])
     }
 
+    const projectId = context.editor().id
+    if (projectId == null) {
+      return
+    }
+
     const { actions, subjects, assetInfo } = actionsForDroppedImages(
       images,
       {
         scale: context.scale,
-        projectContents: context.editor.projectContents,
+        projectContents: context.editor().projectContents,
         loginState: context.loginState,
         mousePosition: context.mousePosition.canvasPositionRounded,
       },
       'autoincrement',
     )
 
-    void saveAssets(context.editor.id!, assetInfo)
-      .then(() =>
-        context.dispatch([EditorActions.showToast(notice('Succesfully uploaded assets'))]),
-      )
-      .catch(() =>
-        context.dispatch([EditorActions.showToast(notice('Error uploading assets', 'ERROR'))]),
-      )
+    void saveAssets(projectId, assetInfo)
+      .then(() => {
+        const substitutionPaths = stripNulls(
+          assetInfo.flatMap((i) =>
+            i.projectPath == null ? [] : [{ uid: i.uid, path: i.projectPath }],
+          ),
+        )
+
+        const srcUpdateActions = updateImageSrcsActions(
+          context.editor().projectContents,
+          substitutionPaths,
+        )
+
+        context.dispatch([
+          EditorActions.transientActions(srcUpdateActions),
+          EditorActions.showToast(notice('Succesfully uploaded assets')),
+        ])
+      })
+      .catch(() => {
+        const deleteFileActions = stripNulls(
+          assetInfo.map((info) => optionalMap(EditorActions.deleteFile, info.projectPath)),
+        )
+        context.dispatch([
+          ...deleteFileActions,
+          EditorActions.showToast(notice('Error uploading assets', 'ERROR')),
+        ])
+      })
 
     context.dispatch(
       [
@@ -133,7 +174,6 @@ async function onDrop(
     )
     cont()
   }
-  return
 }
 
 interface ActionsForDroppedImageContext {
@@ -146,6 +186,15 @@ interface ActionsForDroppedImageContext {
 interface ActionForDroppedImageResult {
   actions: EditorAction[]
   singleSubject: InsertionSubject
+  imageAssetInfo: ImageAssetSaveInfo
+}
+
+interface ImageAssetSaveInfo {
+  uid: string
+  fileType: string
+  base64: string
+  fileName: string
+  projectPath: string | null
 }
 
 function actionsForDroppedImage(
@@ -170,9 +219,9 @@ function actionsForDroppedImage(
   const { saveImageActions, src } = context.isUserLoggedIn
     ? {
         saveImageActions: [EditorActions.updateFile(image.filename, projectFile, true)],
-        src: imagePathURL(image.filename),
+        src: image.filename,
       }
-    : { saveImageActions: [], src: image.base64Bytes }
+    : { saveImageActions: [], src: null }
 
   const newUID = context.generateUid()
   const elementSize: Size = resize(
@@ -185,18 +234,25 @@ function actionsForDroppedImage(
     height: elementSize.height,
     top: context.mousePosition.y,
     left: context.mousePosition.x,
-    src: src,
+    src: image.base64Bytes,
   })
   return {
     actions: saveImageActions,
     singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
+    imageAssetInfo: {
+      uid: newUID,
+      fileType: image.fileType,
+      base64: image.base64Bytes,
+      fileName: imagePathURL(image.filename),
+      projectPath: optionalMap(imagePathURL, src),
+    },
   }
 }
 
 interface ActionsForDroppedImagesResult {
   subjects: Array<InsertionSubject>
   actions: Array<EditorAction>
-  assetInfo: Array<AssetToSave>
+  assetInfo: Array<ImageAssetSaveInfo>
 }
 
 interface ActionsForDroppedImagesContext {
@@ -214,14 +270,18 @@ function actionsForDroppedImages(
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
   let subjects: Array<InsertionSubject> = []
-  let assetInfo: Array<AssetToSave> = []
+  let assetInfo: Array<ImageAssetSaveInfo> = []
 
   for (const image of images) {
     const filename =
       overwriteExistingFile === 'autoincrement'
         ? uniqueProjectContentID(image.filename, context.projectContents)
         : image.filename
-    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(
+    const {
+      actions: actionsForImage,
+      singleSubject,
+      imageAssetInfo,
+    } = actionsForDroppedImage(
       {
         ...image,
         filename: filename,
@@ -238,13 +298,46 @@ function actionsForDroppedImages(
     actions = [...actions, ...actionsForImage]
     uidsSoFar = [...uidsSoFar, singleSubject.uid]
     subjects = [...subjects, singleSubject]
-    assetInfo = [
-      ...assetInfo,
-      { fileType: image.fileType, base64: image.base64Bytes, fileName: filename },
-    ]
+    assetInfo = [...assetInfo, imageAssetInfo]
   }
 
   return { actions, subjects, assetInfo }
+}
+
+interface SrcSubstitutionData {
+  path: string
+  uid: string
+}
+
+function updateImageSrcsActions(
+  projectContents: ProjectContentTreeRoot,
+  srcs: Array<SrcSubstitutionData>,
+): Array<EditorAction> {
+  const actions: Array<EditorAction> = []
+  walkContentsTreeForParseSuccess(projectContents, (filePath, success) => {
+    walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
+      if (isJSXElement(element)) {
+        const srcAttribute = getJSXAttribute(element.props, 'data-uid')
+        if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
+          const srcValue: JSXAttributeValue<any> = srcAttribute
+          const subsititutionPath =
+            typeof srcValue.value === 'string'
+              ? srcs.find(({ uid }) => srcValue.value.startsWith(uid))?.path
+              : undefined
+          if (subsititutionPath != null) {
+            actions.push(
+              EditorActions.setPropWithElementPath_UNSAFE(
+                elementPath,
+                PP.create(['src']),
+                jsxAttributeValue(subsititutionPath, emptyComments),
+              ),
+            )
+          }
+        }
+      }
+    })
+  })
+  return actions
 }
 
 export const DropHandlers = {
