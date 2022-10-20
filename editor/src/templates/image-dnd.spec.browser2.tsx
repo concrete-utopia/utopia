@@ -562,7 +562,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='./assets/stuff_2.png'
+        src='${imgBase64}'
         style={{
           position: 'absolute',
           width: 200,
@@ -716,7 +716,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='./assets/chucknorris.png'
+        src='${imgBase64}'
         style={{
           position: 'absolute',
           width: 200,
@@ -727,7 +727,7 @@ export var storyboard = (
         data-uid='1'
       />
       <img
-        src='./assets/chucknorris.png'
+        src='${imgBase64}'
         style={{
           position: 'absolute',
           width: 200,
@@ -738,7 +738,7 @@ export var storyboard = (
         data-uid='2'
       />
       <img
-        src='./assets/brucelee.png'
+        src='${imgBase64}'
         style={{
           position: 'absolute',
           width: 200,
