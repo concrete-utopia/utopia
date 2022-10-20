@@ -43,6 +43,7 @@ export function baseReparentToFlexStrategy(
       )?.specialSizeMeasurements.position === 'absolute'
 
     const isOriginallyFlex =
+      !isOriginallyAbsolute &&
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         filteredSelectedElements[0],
         canvasState.startingMetadata,
