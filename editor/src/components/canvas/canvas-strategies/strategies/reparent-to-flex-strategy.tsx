@@ -10,6 +10,7 @@ import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
@@ -17,7 +18,7 @@ import { InteractionSession } from '../interaction-state'
 import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function baseAbsoluteReparentToFlexStrategy(
+export function baseReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
 ): CanvasStrategyFactory {
@@ -35,17 +36,25 @@ export function baseAbsoluteReparentToFlexStrategy(
       return null
     }
 
-    if (
+    const isOriginallyAbsolute =
       MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         filteredSelectedElements[0],
-      )?.specialSizeMeasurements.position !== 'absolute'
-    ) {
+      )?.specialSizeMeasurements.position === 'absolute'
+
+    const isOriginallyFlex =
+      !isOriginallyAbsolute &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        filteredSelectedElements[0],
+        canvasState.startingMetadata,
+      )
+
+    if (!isOriginallyAbsolute && !isOriginallyFlex) {
       return null
     }
 
     return {
-      id: 'ABSOLUTE_REPARENT_TO_FLEX',
+      id: 'REPARENT_TO_FLEX',
       name: 'Reparent (Flex)',
       controlsToRender: [
         controlWithProps({
@@ -76,7 +85,7 @@ export function baseAbsoluteReparentToFlexStrategy(
       fitness: fitness,
       apply: () => {
         return applyFlexReparent(
-          'strip-absolute-props',
+          isOriginallyAbsolute ? 'strip-absolute-props' : 'do-not-strip-props',
           canvasState,
           interactionSession,
           reparentTarget,
