@@ -633,7 +633,6 @@ export function applyFlexReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
-  showTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -697,8 +696,11 @@ export function applyFlexReparent(
               setCursorCommand('mid-interaction', CSSCursor.Move),
             ]
 
-            function showReorderIndicatorCommands(): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
               return [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
                 showReorderIndicator(newParent, newIndex),
                 newParentADescendantOfCurrentParent
                   ? wildcardPatch('mid-interaction', {
@@ -709,18 +711,6 @@ export function applyFlexReparent(
                     }),
                 wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
               ]
-            }
-
-            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
-              const commandsForTarget: Array<CanvasCommand> = [
-                wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-                }),
-              ]
-
-              return showTargetOrReorderIndicator === 'show-reorder-indicator'
-                ? commandsForTarget.concat(showReorderIndicatorCommands())
-                : commandsForTarget
             }
 
             let interactionFinishCommands: Array<CanvasCommand>
