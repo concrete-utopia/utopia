@@ -35,7 +35,6 @@ export function getApplicableReparentFactories(
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
-  showFlexTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
 
@@ -77,11 +76,7 @@ export function getApplicableReparentFactories(
           strategyType: result.strategy,
           missingBoundsHandling: result.missingBoundsHandling,
           fitness: fitness,
-          factory: baseReparentToFlexStrategy(
-            result.target,
-            fitness,
-            showFlexTargetOrReorderIndicator,
-          ),
+          factory: baseReparentToFlexStrategy(result.target, fitness),
         }
       }
       default:
@@ -145,7 +140,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     cmdPressed,
     allDraggedElementsAbsolute,
-    'show-reorder-indicator',
   )
 
   const targetIsValid = (

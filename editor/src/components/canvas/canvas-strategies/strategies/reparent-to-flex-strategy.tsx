@@ -21,7 +21,6 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export function baseReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
-  showTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -91,7 +90,6 @@ export function baseReparentToFlexStrategy(
               canvasState,
               interactionSession,
               reparentTarget,
-              showTargetOrReorderIndicator,
             )
       },
     }

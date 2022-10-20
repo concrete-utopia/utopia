@@ -59,36 +59,6 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
   return parentFrame == null ? null : drawBounds(parentFrame, scale)
 })
 
-interface ParentBoundsForInsertionProps {
-  targetParents: Array<ElementPath>
-}
-export const ParentBoundsForInsertion = controlForStrategyMemoized(
-  ({ targetParents }: ParentBoundsForInsertionProps) => {
-    const scale = useEditorState(
-      (store) => store.editor.canvas.scale,
-      'ParentBoundsForInsertion canvas scale',
-    )
-    const parentFrame = useEditorState((store) => {
-      const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-      if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
-        return MetadataUtils.getFrameInCanvasCoords(
-          parentHighlightPaths[0],
-          store.editor.jsxMetadata,
-        )
-      }
-
-      if (!isInsertMode(store.editor.mode)) {
-        if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-          return MetadataUtils.getFrameInCanvasCoords(targetParents[0], store.editor.jsxMetadata)
-        }
-      }
-      return null
-    }, 'ParentBoundsForInsertion frame')
-
-    return parentFrame == null ? null : drawBounds(parentFrame, scale)
-  },
-)
-
 function drawBounds(parentFrame: CanvasRectangle, scale: number) {
   return (
     <CanvasOffsetWrapper key={`parent-bounds`}>
