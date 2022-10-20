@@ -1,6 +1,5 @@
 import React from 'react'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -15,11 +14,10 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { SimpleCSSPadding, simplePaddingFromMetadata } from '../../padding-utils'
+import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { ALWAYS_SHOW_PADDING_CONTROLS } from './padding-resize-controls.test-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 type Orientation = 'vertical' | 'horizontal'
@@ -55,7 +53,7 @@ const PaddingResizeControlI = React.memo(
     const colorTheme = useColorTheme()
 
     const [hidden, setHidden] = React.useState<boolean>(true)
-    const [hoverStart, hoverEnd] = useHoverWithDelay(0, (h) => setHidden(!h))
+    const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHidden(!h))
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -77,7 +75,7 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = ALWAYS_SHOW_PADDING_CONTROLS || !(props.hiddenByParent && hidden)
+    const shown = !(props.hiddenByParent && hidden)
 
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
@@ -100,7 +98,7 @@ const PaddingResizeControlI = React.memo(
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
         }}
       >
-        {shown && (
+        {
           <div
             onMouseDown={onEdgeMouseDown}
             onMouseMove={onMouseMove}
@@ -110,14 +108,15 @@ const PaddingResizeControlI = React.memo(
               width: width,
               height: height,
               backgroundColor: color,
+              visibility: shown ? 'visible' : 'hidden',
               cursor: cursor,
               pointerEvents: 'initial',
               border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
               borderRadius: 2,
               transform: `rotate(${transformFromOrientation(orientation)})`,
             }}
-          ></div>
-        )}
+          />
+        }
       </div>
     )
   }),
@@ -218,15 +217,6 @@ function startResizeInteraction(
       ),
     ])
   }
-}
-
-function useElementPadding(elementPath: ElementPath): SimpleCSSPadding {
-  const elementMetadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'metadata for padding',
-  )
-
-  return simplePaddingFromMetadata(elementMetadata, elementPath)
 }
 
 function useHoverWithDelay(

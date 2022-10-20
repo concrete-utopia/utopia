@@ -28,12 +28,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
   customStrategyState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  if (
-    interactionSession == null ||
-    interactionSession.interactionData.type !== 'DRAG' ||
-    interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE' ||
-    selectedElements.length === 0
-  ) {
+  if (selectedElements.length === 0) {
     return null
   }
 
@@ -55,6 +50,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
     fitness: 1,
     apply: () => {
       if (
+        interactionSession == null ||
         interactionSession.interactionData.type !== 'DRAG' ||
         interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE'
       ) {
@@ -173,6 +169,7 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
   )
+
   if (childrenNotPositionAbsoluteOrSticky.length < 1) {
     return false
   }
