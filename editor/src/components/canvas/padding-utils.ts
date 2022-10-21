@@ -108,3 +108,26 @@ export function paddingForEdge(edgePiece: EdgePiece, padding: SimpleCSSPadding):
       assertNever(edgePiece)
   }
 }
+
+export function offsetPaddingByEdge(
+  edge: EdgePiece,
+  delta: number,
+  padding: SimpleCSSPadding,
+): SimpleCSSPadding {
+  switch (edge) {
+    case 'bottom':
+      return { ...padding, paddingBottom: padding.paddingBottom + delta }
+    case 'top':
+      return { ...padding, paddingTop: padding.paddingTop + delta }
+    case 'left':
+      return { ...padding, paddingLeft: padding.paddingLeft + delta }
+    case 'right':
+      return { ...padding, paddingRight: padding.paddingRight + delta }
+    default:
+      assertNever(edge)
+  }
+}
+
+export function paddingToPaddingString(padding: SimpleCSSPadding): string {
+  return `${padding.paddingTop}px ${padding.paddingRight}px ${padding.paddingBottom}px ${padding.paddingLeft}px`
+}

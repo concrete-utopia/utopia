@@ -3,16 +3,24 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { CanvasVector } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { CSSPadding } from '../../../inspector/common/css-utils'
+import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
+import { deleteProperties } from '../../commands/delete-properties-command'
+import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
-import { paddingForEdge, simplePaddingFromMetadata } from '../../padding-utils'
+import {
+  offsetPaddingByEdge,
+  paddingForEdge,
+  paddingToPaddingString,
+  simplePaddingFromMetadata,
+} from '../../padding-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
@@ -21,6 +29,14 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+
+const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
+const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
+  'paddingTop',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingRight',
+]
 
 export const setPaddingStrategy: CanvasStrategyFactory = (
   canvasState,
@@ -84,25 +100,16 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
       const selectedElement = filteredSelectedElements[0]
 
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
-
-      const startingPadding = paddingForEdge(edgePiece, padding)
-      const delta = deltaFromEdge(drag, edgePiece)
-
-      const newPadding = Math.max(-startingPadding, delta)
-
-      const commandsForSelectedElements = [
-        adjustCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
-          newPadding,
-          0,
-          true,
-        ),
-      ]
+      const currentPadding = paddingForEdge(edgePiece, padding)
+      const delta = Math.max(-currentPadding, deltaFromEdge(drag, edgePiece))
+      const newPadding = offsetPaddingByEdge(edgePiece, delta, padding)
+      const paddingString = paddingToPaddingString(newPadding)
 
       return strategyApplicationResult([
-        ...commandsForSelectedElements,
+        ...IndividualPaddingProps.map((p) =>
+          deleteProperties('always', selectedElement, [stylePropPathMappingFn(p, ['style'])]),
+        ),
+        setProperty('always', selectedElement, StylePaddingProp, paddingString),
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
         setElementsToRerenderCommand(selectedElements),

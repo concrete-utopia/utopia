@@ -1,7 +1,5 @@
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
-import { getProjectChanges } from '../../../editor/store/vscode-changes'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -9,7 +7,7 @@ import {
   paddingControlTestId,
 } from '../../controls/select-mode/padding-resize-control'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
-import { SimpleCSSPadding } from '../../padding-utils'
+import { offsetPaddingByEdge, paddingToPaddingString, SimpleCSSPadding } from '../../padding-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -20,12 +18,14 @@ import {
 describe('Padding resize strategy', () => {
   it('Padding resize is present', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithPaddingValues({
-        paddingTop: 22,
-        paddingBottom: 33,
-        paddingLeft: 44,
-        paddingRight: 55,
-      }),
+      makeTestProjectCodeWithStringPaddingValues(
+        paddingToPaddingString({
+          paddingTop: 22,
+          paddingBottom: 33,
+          paddingLeft: 44,
+          paddingRight: 55,
+        }),
+      ),
       'await-first-dom-report',
     )
 
@@ -59,14 +59,16 @@ describe('Padding resize strategy', () => {
       }
       const dragDelta = 12
       const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithPaddingValues(padding),
+        makeTestProjectCodeWithStringPaddingValues(paddingToPaddingString(padding)),
         'await-first-dom-report',
       )
 
       await testPaddingResizeForEdge(editor, dragDelta, edge)
       await editor.getDispatchFollowUpActionsFinished()
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithPaddingValues(offsetPaddingByEdge(edge, dragDelta, padding)),
+        makeTestProjectCodeWithStringPaddingValues(
+          paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding)),
+        ),
       )
     }
   })
@@ -121,26 +123,7 @@ function offsetPointByEdge(edge: EdgePiece, delta: number, point: Point): Point 
   }
 }
 
-function offsetPaddingByEdge(
-  edge: EdgePiece,
-  delta: number,
-  padding: SimpleCSSPadding,
-): SimpleCSSPadding {
-  switch (edge) {
-    case 'bottom':
-      return { ...padding, paddingBottom: padding.paddingBottom + delta }
-    case 'top':
-      return { ...padding, paddingTop: padding.paddingTop + delta }
-    case 'left':
-      return { ...padding, paddingLeft: padding.paddingLeft + delta }
-    case 'right':
-      return { ...padding, paddingRight: padding.paddingRight + delta }
-    default:
-      assertNever(edge)
-  }
-}
-
-function makeTestProjectCodeWithPaddingValues(padding: SimpleCSSPadding): string {
+function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
   return makeTestProjectCodeWithSnippet(`<div
       data-testid='mydiv'
       style={{
@@ -150,10 +133,7 @@ function makeTestProjectCodeWithPaddingValues(padding: SimpleCSSPadding): string
         top: 28,
         width: 612,
         height: 461,
-        paddingTop: ${padding.paddingTop},
-        paddingLeft: ${padding.paddingLeft},
-        paddingRight: ${padding.paddingRight},
-        paddingBottom: ${padding.paddingBottom},
+        padding: '${padding}',
       }}
       data-uid='24a'
     >
