@@ -255,6 +255,12 @@ export interface ProjectGithubState {
   commishing: boolean
 }
 
+export const makeDefaultProjectGithubState = (): ProjectGithubState => {
+  return {
+    commishing: false,
+  }
+}
+
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
@@ -1976,9 +1982,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       originCommit: null,
     },
     imageDragSessionState: notDragging(),
-    projectGithubState: {
-      commishing: false,
-    },
+    projectGithubState: makeDefaultProjectGithubState(),
   }
 }
 
@@ -2274,9 +2278,7 @@ export function editorModelFromPersistentModel(
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
-    projectGithubState: {
-      commishing: false,
-    },
+    projectGithubState: makeDefaultProjectGithubState(),
   }
   return editor
 }

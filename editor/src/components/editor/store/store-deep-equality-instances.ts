@@ -315,6 +315,8 @@ import {
   fileUploadInfo,
   FileUploadInfo,
   FileOverwriteModal,
+  ProjectGithubState,
+  makeDefaultProjectGithubState,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3149,6 +3151,13 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
+export const ProjectGithubStateKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubState> =
+  combine1EqualityCall(
+    (state) => state.commishing,
+    BooleanKeepDeepEquality,
+    makeDefaultProjectGithubState,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3382,6 +3391,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.imageDragSessionState,
   )
 
+  const projectGithubSettingsResults = ProjectGithubStateKeepDeepEquality(
+    oldValue.projectGithubState,
+    newValue.projectGithubState,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3449,7 +3463,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
-    imageDragSessionStateEqual.areEqual
+    imageDragSessionStateEqual.areEqual &&
+    projectGithubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3522,6 +3537,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
+      projectGithubSettingsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
