@@ -5,6 +5,7 @@ import { showToast, updateFrameDimensions } from '../../../editor/actions/action
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { notice } from '../../../common/notice'
+import { parseImageMultiplier } from '../../../images'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch
@@ -13,6 +14,7 @@ interface ImageDensityControl {
   naturalHeight: number | null
   clientWidth: number
   clientHeight: number
+  src: string
 }
 
 export const ImageDensityControl = React.memo(
@@ -23,17 +25,18 @@ export const ImageDensityControl = React.memo(
     clientHeight,
     dispatch,
     selectedViews,
+    src,
   }: ImageDensityControl) => {
-    const dimensionMultiplier: number | null = React.useMemo(() => {
-      if (naturalWidth != null && naturalHeight != null) {
-        const widthMultiplier = naturalWidth / clientWidth
-        const heightMultiplier = naturalHeight / clientHeight
-        if (widthMultiplier === heightMultiplier) {
-          return widthMultiplier
-        }
-      }
-      return null
-    }, [clientWidth, naturalWidth, clientHeight, naturalHeight])
+    const dimensionMultiplier: number = React.useMemo(
+      () =>
+        imageMultiplierFromSizeMeasurements({
+          clientHeight,
+          clientWidth,
+          naturalHeight,
+          naturalWidth,
+        }) ?? imageMultiplierFromSrc(src),
+      [clientHeight, clientWidth, naturalHeight, naturalWidth, src],
+    )
 
     const onSubmitValue = React.useCallback(
       (value: number) => {
@@ -87,3 +90,26 @@ export const ImageDensityControl = React.memo(
     )
   },
 )
+
+interface SizeMeasurements {
+  naturalWidth: number | null
+  naturalHeight: number | null
+  clientWidth: number
+  clientHeight: number
+}
+
+function imageMultiplierFromSizeMeasurements(measurements: SizeMeasurements): number | null {
+  const { naturalHeight, naturalWidth, clientHeight, clientWidth } = measurements
+  if (naturalWidth != null && naturalHeight != null) {
+    const widthMultiplier = naturalWidth / clientWidth
+    const heightMultiplier = naturalHeight / clientHeight
+    if (widthMultiplier === heightMultiplier) {
+      return widthMultiplier
+    }
+  }
+  return null
+}
+
+function imageMultiplierFromSrc(src: string): number {
+  return parseImageMultiplier(src)
+}
