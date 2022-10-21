@@ -942,21 +942,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElementProps: Partial<JSXImageOptions> = {
+          const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
             width: 1,
             height: 1,
           }
 
           const newElement = createJsxImage(newUID, newElementProps)
 
-          const defaultSize: Size = {
-            width: 40 / this.props.model.scale,
-            height: 40 / this.props.model.scale,
-          }
-
           const elementSize: Size = {
-            width: newElementProps.width ?? defaultSize.width,
-            height: newElementProps.height ?? defaultSize.height,
+            width: newElementProps.width,
+            height: newElementProps.height,
           }
 
           this.props.dispatch([
