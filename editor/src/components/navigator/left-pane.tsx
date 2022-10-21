@@ -767,7 +767,7 @@ const GithubPane = React.memo(() => {
 
   const githubWorking = React.useMemo(() => {
     return githubState.commishing || githubOngoingOperations > 0
-  }, [githubOngoingOperations, githubState])
+  }, [githubOngoingOperations, githubState.commishing])
 
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
