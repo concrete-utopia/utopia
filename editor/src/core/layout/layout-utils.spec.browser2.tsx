@@ -84,7 +84,7 @@ describe('pasteJSXElements', () => {
             style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
             data-uid='bbb'
           >
-            <View style={{ width: 100, height: 100, position: 'relative' }} data-uid='catdog' />
+            <View style={{ width: 100, height: 100, contain: 'layout' }} data-uid='catdog' />
           </View>
         </View>`,
       ),
@@ -107,6 +107,7 @@ async function createStarterEditor() {
   return renderResult
 }
 
+// TODO: copy from the document, and then we don't need a fake metadata
 function createPasteElementAction(
   positionProp: 'element-with-position-absolute' | 'element-with-no-position',
 ) {
@@ -160,11 +161,11 @@ function createPasteElementAction(
         true,
         EP.emptyElementPath,
         true,
-        'none',
+        positionProp === 'element-with-no-position' ? 'flex' : 'none',
         'none',
         false,
         'block',
-        'absolute',
+        positionProp === 'element-with-position-absolute' ? 'absolute' : 'static',
         sides(undefined, undefined, undefined, undefined),
         sides(undefined, undefined, undefined, undefined),
         null,

@@ -310,9 +310,9 @@ describe('Dragging from the insert menu into a flex layout', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -511,9 +511,9 @@ describe('Dragging from the insert menu into a flex layout', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
