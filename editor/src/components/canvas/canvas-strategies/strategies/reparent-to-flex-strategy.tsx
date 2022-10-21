@@ -10,7 +10,6 @@ import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
-  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'

@@ -506,10 +506,10 @@ describe('Forced Absolute Reparent Strategies', () => {
       />
       <div
         style={{
-          position: 'relative',
           width: 100,
           height: 100,
           backgroundColor: 'yellow',
+          contain: 'layout',
         }}
         data-uid='absolutechild'
         data-testid='absolutechild'

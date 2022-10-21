@@ -1049,9 +1049,9 @@ describe('Inserting into flex row', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 20,
               height: 300,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1128,9 +1128,9 @@ describe('Inserting into flex row', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1222,9 +1222,9 @@ describe('Inserting into flex row', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 20,
               height: 300,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1300,9 +1300,9 @@ describe('Inserting into flex row', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1385,9 +1385,9 @@ describe('Inserting into flex row', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 20,
               height: 300,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1609,9 +1609,9 @@ describe('Inserting into flex row', () => {
         <div
           style={{
             backgroundColor: '#0091FFAA',
-            position: 'relative',
             width: 20,
             height: 30,
+            contain: 'layout',
           }}
           data-uid='ddd'
         />
@@ -1689,9 +1689,9 @@ describe('Inserting into flex row', () => {
         <div
           style={{
             backgroundColor: '#0091FFAA',
-            position: 'relative',
             width: 100,
             height: 100,
+            contain: 'layout',
           }}
           data-uid='ddd'
         />
@@ -1810,9 +1810,9 @@ describe('Inserting into flex column', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 300,
               height: 20,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1891,9 +1891,9 @@ describe('Inserting into flex column', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -1987,9 +1987,9 @@ describe('Inserting into flex column', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 300,
               height: 20,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -2068,9 +2068,9 @@ describe('Inserting into flex column', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -2153,9 +2153,9 @@ describe('Inserting into flex column', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'relative',
               width: 300,
               height: 20,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
@@ -2300,7 +2300,7 @@ describe('Inserting an image', () => {
             style={{
               width: 300,
               height: 300,
-              position: 'relative'
+              contain: 'layout',
             }}
             src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
             data-uid='ddd'
