@@ -2,7 +2,6 @@ import { BASE_URL } from '../common/env-vars'
 import {
   ElementInstanceMetadata,
   emptyComments,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsxAttributeValue,
   JSXElement,
@@ -230,28 +229,6 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
     setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
     [],
   )
-}
-
-const ThumbnailDimensions: Size = { width: 40, height: 40 }
-
-export function createThumbnailImage(scale: number, src: string): JSXElement {
-  const propsForElement: JSXAttributes = jsxAttributesFromMap({
-    src: jsxAttributeValue(src, emptyComments),
-    style: jsxAttributeValue(
-      {
-        position: 'absolute',
-        width: ThumbnailDimensions.width / scale,
-        height: ThumbnailDimensions.height / scale,
-        backgroundColor: 'white',
-        borderRadius: 2,
-        padding: 6,
-        boxShadow: '0px 2px 4px 0px rgba(0,0,0,0.75)',
-      },
-      emptyComments,
-    ),
-  })
-
-  return jsxElement('img', 'placeholder', propsForElement, [])
 }
 
 export const MultipliersForImages: Array<number> = [1, 2]
