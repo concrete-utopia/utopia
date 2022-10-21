@@ -14,7 +14,10 @@ import { updateFunctionCommand } from '../../commands/update-function-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -60,7 +63,7 @@ export function baseFlexReparentToAbsoluteStrategy(
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: { targets: selectedElements },
+          props: dragTargetsElementPaths(selectedElements),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),

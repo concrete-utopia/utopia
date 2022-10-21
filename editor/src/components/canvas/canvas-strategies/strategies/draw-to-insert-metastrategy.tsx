@@ -16,7 +16,6 @@ import {
   CanvasRectangle,
   Size,
 } from '../../../../core/shared/math-utils'
-import { maybeToArray } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { InsertionSubject } from '../../../editor/editor-modes'
@@ -29,9 +28,12 @@ import {
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { ParentBoundsForInsertion } from '../../controls/parent-bounds'
-import { ImmediateParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import { ParentBounds } from '../../controls/parent-bounds'
+import { ParentOutlines } from '../../controls/parent-outlines'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
@@ -80,7 +82,6 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     true, // Draw to insert should always disregard the size of the potential target parent
     true,
-    'show-flex-target',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
@@ -136,20 +137,20 @@ function drawToInsertStrategyFactory(
     name: name,
     controlsToRender: [
       controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: [targetParent] },
+        control: ParentOutlines,
+        props: { targetParent: targetParent },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: ParentBoundsForInsertion,
-        props: { targetParents: [targetParent] },
+        control: ParentBounds,
+        props: { targetParent: targetParent },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: DragOutlineControl,
-        props: { targets: [predictedElementPath] },
+        props: dragTargetsElementPaths([predictedElementPath]),
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
@@ -443,7 +444,8 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   }
   const reparentCommands = strategy.apply(strategyLifecycle).commands
 
-  return foldAndApplyCommandsInner(editorState, [], reparentCommands, strategyLifecycle)
+  // We only want the commands that are applied at the end of the reparent, as we'll be resizing afterwards
+  return foldAndApplyCommandsInner(editorState, [], reparentCommands, 'end-interaction')
     .statePatches
 }
 

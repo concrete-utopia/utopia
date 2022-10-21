@@ -16,9 +16,8 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
-import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -36,7 +35,6 @@ export function getApplicableReparentFactories(
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
-  showFlexTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
 
@@ -72,32 +70,13 @@ export function getApplicableReparentFactories(
       }
       case 'REPARENT_TO_FLEX': {
         const fitness = 3
-        if (allDraggedElementsAbsolute) {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            fitness: fitness,
-            factory: baseAbsoluteReparentToFlexStrategy(
-              result.target,
-              fitness,
-              showFlexTargetOrReorderIndicator,
-            ),
-          }
-        } else {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            fitness: fitness,
-            factory: baseFlexReparentToFlexStrategy(
-              result.target,
-              fitness,
-              showFlexTargetOrReorderIndicator,
-            ),
-          }
+        return {
+          targetParent: result.target.newParent,
+          targetIndex: result.target.newIndex,
+          strategyType: result.strategy,
+          missingBoundsHandling: result.missingBoundsHandling,
+          fitness: fitness,
+          factory: baseReparentToFlexStrategy(result.target, fitness),
         }
       }
       default:
@@ -161,7 +140,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     cmdPressed,
     allDraggedElementsAbsolute,
-    'show-reorder-indicator',
   )
 
   const targetIsValid = (

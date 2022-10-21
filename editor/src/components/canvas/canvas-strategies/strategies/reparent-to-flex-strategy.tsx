@@ -1,7 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import { DragOutlineControl } from '../../controls/select-mode/drag-outline-control'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -13,34 +16,50 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function baseFlexReparentToFlexStrategy(
+export function baseReparentToFlexStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
-  showTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const filteredSelectedElements = getDragTargets(selectedElements)
     if (
-      selectedElements.length !== 1 ||
-      !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedElements[0],
-        canvasState.startingMetadata,
-      )
+      filteredSelectedElements.length !== 1 ||
+      interactionSession == null ||
+      interactionSession.interactionData.type !== 'DRAG'
     ) {
       return null
     }
 
+    const isOriginallyAbsolute =
+      MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        filteredSelectedElements[0],
+      )?.specialSizeMeasurements.position === 'absolute'
+
+    const isOriginallyFlex =
+      !isOriginallyAbsolute &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        filteredSelectedElements[0],
+        canvasState.startingMetadata,
+      )
+
+    if (!isOriginallyAbsolute && !isOriginallyFlex) {
+      return null
+    }
+
     return {
-      id: 'FLEX_REPARENT_TO_FLEX',
+      id: 'REPARENT_TO_FLEX',
       name: 'Reparent (Flex)',
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
-          props: { targets: selectedElements },
+          props: dragTargetsElementPaths(filteredSelectedElements),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         }),
@@ -65,15 +84,12 @@ export function baseFlexReparentToFlexStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return interactionSession == null
-          ? emptyStrategyApplicationResult
-          : applyFlexReparent(
-              'do-not-strip-props',
-              canvasState,
-              interactionSession,
-              reparentTarget,
-              showTargetOrReorderIndicator,
-            )
+        return applyFlexReparent(
+          isOriginallyAbsolute ? 'strip-absolute-props' : 'do-not-strip-props',
+          canvasState,
+          interactionSession,
+          reparentTarget,
+        )
       },
     }
   }
