@@ -255,7 +255,7 @@ export interface ProjectGithubState {
   commishing: boolean
 }
 
-export const makeDefaultProjectGithubState = (): ProjectGithubState => {
+export function makeDefaultProjectGithubState(): ProjectGithubState {
   return {
     commishing: false,
   }
