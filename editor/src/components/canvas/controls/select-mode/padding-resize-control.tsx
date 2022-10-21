@@ -20,6 +20,10 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
+export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
+export const paddingControlHandleTestId = (edge: EdgePiece): string =>
+  `padding-control-handle-${edge}`
+
 type Orientation = 'vertical' | 'horizontal'
 
 interface ResizeContolProps {
@@ -86,7 +90,7 @@ const PaddingResizeControlI = React.memo(
         onMouseLeave={hoverEnd}
         onMouseEnter={hoverStart}
         ref={ref}
-        data-testid={`absolute-resizepadding-${props.edge}`}
+        data-testid={paddingControlTestId(props.edge)}
         style={{
           position: 'absolute',
           display: 'flex',
@@ -100,6 +104,7 @@ const PaddingResizeControlI = React.memo(
       >
         {
           <div
+            data-testid={paddingControlHandleTestId(props.edge)}
             onMouseDown={onEdgeMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
