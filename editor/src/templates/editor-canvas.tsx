@@ -996,12 +996,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: (event) => {
-          if (!this.isInsideCanvas(event.nativeEvent)) {
-            this.props.dispatch([
-              CanvasActions.clearInteractionSession(false),
-              EditorActions.switchEditorMode(EditorModes.selectMode(null)),
-            ])
-          }
+          this.props.dispatch([
+            CanvasActions.clearInteractionSession(false),
+            EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+          ])
         },
 
         onDrop: (event: React.DragEvent) => {

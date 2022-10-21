@@ -366,7 +366,7 @@ describe('image drag and drop', () => {
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, endPoint, endPoint, [])
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, startPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -423,7 +423,7 @@ describe('image drag and drop', () => {
         y: targetFolderBounds.y + targetFolderBounds.height / 2,
       }
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, endPoint, endPoint, [])
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
