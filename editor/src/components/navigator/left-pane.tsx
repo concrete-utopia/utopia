@@ -764,7 +764,10 @@ const GithubPane = React.memo(() => {
   const githubState = useEditorState((store) => store.editor.projectGithubState, 'Github state')
 
   const [githubOngoingOperations, setGithubOngoingOperations] = React.useState<number>(0)
-  const [githubWorking, setGithubWorking] = React.useState<boolean>(false)
+
+  const githubWorking = React.useMemo(() => {
+    return githubState.commishing || githubOngoingOperations > 0
+  }, [githubOngoingOperations, githubState])
 
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
@@ -867,14 +870,6 @@ const GithubPane = React.memo(() => {
         .finally(() => decrementGithubOngoingOperations())
     }
   }, [parsedTargetRepository])
-
-  React.useEffect(() => {
-    setGithubWorking(githubOngoingOperations > 0)
-  }, [githubOngoingOperations])
-
-  React.useEffect(() => {
-    setGithubWorking(githubState.commishing)
-  }, [githubState])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
