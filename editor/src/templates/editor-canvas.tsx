@@ -986,7 +986,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               interactionSessionAction,
               EditorActions.setFilebrowserDropTarget(null),
             ])
-          } else {
+          } else if (this.props.editor.imageDragSessionState.type !== 'NOT_DRAGGING') {
             return this.props.dispatch([
               EditorActions.switchEditorMode(EditorModes.insertMode([])),
               interactionSessionAction,
