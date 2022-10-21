@@ -5,7 +5,7 @@ import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import { ProjectFileType } from '../../core/shared/project-file-types'
+import { ImageFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
@@ -38,9 +38,15 @@ import CanvasActions from '../canvas/canvas-actions'
 import { imagePathURL } from '../../common/server'
 import { useEditorState } from '../editor/store/store-hook'
 import { EditorModes } from '../editor/editor-modes'
-import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
+import {
+  DraggedImageProperties,
+  draggingFromSidebar,
+  notDragging,
+} from '../editor/store/editor-state'
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
+import { parseImageMultiplier } from '../images'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -555,11 +561,9 @@ class FileBrowserItemInner extends React.PureComponent<
     this.props.dispatch(
       [
         EditorActions.setImageDragSessionState(
-          draggingFromSidebar({
-            width: this.props.imageFile.width ?? 200,
-            height: this.props.imageFile.height ?? 200,
-            src: imagePathURL(this.props.path),
-          }),
+          draggingFromSidebar(
+            draggedImagePropertiesFromImageFile(this.props.path, this.props.imageFile),
+          ),
         ),
       ],
       'everyone',
@@ -871,4 +875,16 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       forwardedRef={forwardedRef}
     />
   )
+}
+
+function draggedImagePropertiesFromImageFile(
+  path: string,
+  imageFile: ImageFile,
+): DraggedImageProperties {
+  const imageMultiplier = parseImageMultiplier(path)
+  return {
+    src: imagePathURL(path),
+    width: optionalMap((w) => w / imageMultiplier, imageFile.width) ?? 200,
+    height: optionalMap((h) => h / imageMultiplier, imageFile.height) ?? 200,
+  }
 }
