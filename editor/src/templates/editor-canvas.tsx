@@ -942,19 +942,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElementProps: Partial<JSXImageOptions> =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
-            isFeatureEnabled('Show preview on drop')
-              ? {
-                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
-                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
-                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
-                  opacity: 0.5,
-                }
-              : {
-                  width: 1,
-                  height: 1,
-                }
+          const newElementProps: Partial<JSXImageOptions> = {
+            width: 1,
+            height: 1,
+          }
 
           const newElement = createJsxImage(newUID, newElementProps)
 
@@ -963,18 +954,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             height: 40 / this.props.model.scale,
           }
 
-          const originalSize: Size = {
+          const elementSize: Size = {
             width: newElementProps.width ?? defaultSize.width,
             height: newElementProps.height ?? defaultSize.height,
           }
-
-          const desiredSize: Size = isFeatureEnabled('Show preview on drop')
-            ? {
-                width: Math.min(originalSize.width, defaultSize.width),
-                height: Math.min(originalSize.height, defaultSize.height),
-              }
-            : originalSize
-          const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
 
           this.props.dispatch([
             ...setDragSessionStateActions,

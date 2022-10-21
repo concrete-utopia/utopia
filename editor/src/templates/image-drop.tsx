@@ -177,17 +177,11 @@ function actionsForDroppedImage(
     height: 200,
   }
 
-  const originalSize: Size = {
+  const elementSize: Size = {
     width: frame.width ?? defaultSize.width,
     height: frame.height ?? defaultSize.height,
   }
-  const desiredSize: Size = isFeatureEnabled('Resize image on drop')
-    ? {
-        width: Math.min(originalSize.width, defaultSize.width),
-        height: Math.min(originalSize.height, defaultSize.height),
-      }
-    : originalSize
-  const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
+
   const newElement = createJsxImage(newUID, {
     width: elementSize.width,
     height: elementSize.height,

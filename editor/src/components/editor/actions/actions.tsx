@@ -158,7 +158,7 @@ import {
   PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
-import { getFrameAndMultiplierWithResize } from '../../images'
+import { getFrameAndMultiplier } from '../../images'
 import {
   AddFolder,
   AddImports,
@@ -4163,12 +4163,7 @@ export const UPDATE_FNS = {
       width: projectContent.width ?? 100,
       height: projectContent.height ?? 100,
     }
-    const { frame } = getFrameAndMultiplierWithResize(
-      action.position,
-      action.path,
-      size,
-      editor.canvas.scale,
-    )
+    const { frame } = getFrameAndMultiplier(action.position, action.path, size, null)
     let parentShiftX: number = 0
     let parentShiftY: number = 0
     if (parent != null) {

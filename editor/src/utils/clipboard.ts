@@ -2,7 +2,7 @@ import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
-import { getFrameAndMultiplierWithResize } from '../components/images'
+import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
@@ -136,7 +136,7 @@ export function createDirectInsertImageActions(
     return [
       EditorActions.switchEditorMode(EditorModes.selectMode()),
       ...Utils.flatMapArray((image) => {
-        const { frame, multiplier } = getFrameAndMultiplierWithResize(
+        const { frame, multiplier } = getFrameAndMultiplier(
           centerPoint,
           image.filename,
           image.size,
