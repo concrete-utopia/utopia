@@ -927,9 +927,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.canvasWrapperRef = ref
         },
 
-        onDragEnter: (event) => {
-          event.preventDefault()
-        },
         onDragOver: (event) => {
           event.preventDefault()
 
@@ -993,7 +990,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+          if (
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+            this.props.editor.imageDragSessionState.draggedImageProperties != null
+          ) {
             const { width, height, src } =
               this.props.editor.imageDragSessionState.draggedImageProperties
 
