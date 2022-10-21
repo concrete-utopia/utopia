@@ -8,17 +8,18 @@ import {
 } from '../components/editor/action-types'
 import { EditorModes, InsertionSubject, insertionSubject } from '../components/editor/editor-modes'
 import { ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, resize, Size, size } from '../core/shared/math-utils'
+import { CanvasPoint, resize, Size } from '../core/shared/math-utils'
 import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
 import { ProjectContentTreeRoot } from '../components/assets'
-import { getFrameAndMultiplierWithResize, createJsxImage } from '../components/images'
+import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { EditorState, notDragging } from '../components/editor/store/editor-state'
+import { isFeatureEnabled } from '../utils/feature-switches'
 import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
 import { AssetToSave, saveAssets } from '../components/editor/server'
 import { notice } from '../components/common/notice'
@@ -152,12 +153,7 @@ function actionsForDroppedImage(
   image: ImageResult,
   context: ActionsForDroppedImageContext,
 ): ActionForDroppedImageResult {
-  const { frame } = getFrameAndMultiplierWithResize(
-    context.mousePosition,
-    image.filename,
-    image.size,
-    context.scale,
-  )
+  const { frame } = getFrameAndMultiplier(context.mousePosition, image.filename, image.size, null)
 
   const projectFile = imageFile(
     image.fileType,
@@ -175,11 +171,17 @@ function actionsForDroppedImage(
     : { saveImageActions: [], src: image.base64Bytes }
 
   const newUID = context.generateUid()
-  const elementSize: Size = resize(
-    size(frame.width ?? 100, frame.height ?? 100),
-    size(200, 200),
-    'keep-aspect-ratio',
-  )
+
+  const defaultSize: Size = {
+    width: 200,
+    height: 200,
+  }
+
+  const elementSize: Size = {
+    width: frame.width ?? defaultSize.width,
+    height: frame.height ?? defaultSize.height,
+  }
+
   const newElement = createJsxImage(newUID, {
     width: elementSize.width,
     height: elementSize.height,
