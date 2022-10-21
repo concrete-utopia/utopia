@@ -859,7 +859,7 @@ export function getFlexReparentPropertyChanges(
     return []
   }
 
-  if (targetOriginalStylePosition !== 'absolute') {
+  if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
     return [deleteProperties('always', newPath, propertiesToRemove)]
   }
 
