@@ -38,7 +38,6 @@ import {
   BaseSnappingThreshold,
   CanvasCursor,
   DerivedState,
-  DraggedImageProperties,
   draggingFromFS,
   EditorState,
   editorStateCanvasControls,
@@ -72,7 +71,6 @@ import {
   Point,
   RawPoint,
   resize,
-  size,
   Size,
   WindowPoint,
   WindowRectangle,
@@ -102,12 +100,13 @@ import { getDragTargets } from '../components/canvas/canvas-strategies/strategie
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage } from '../components/images'
+import { createJsxImage, JSXImageOptions } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -943,25 +942,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const newElementProps: Partial<DraggedImageProperties> =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
-              ? {
-                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
-                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
-                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
-                }
-              : {
-                  width: 1,
-                  height: 1,
-                }
+          const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
+            width: 1,
+            height: 1,
+          }
 
           const newElement = createJsxImage(newUID, newElementProps)
 
-          const elementSize: Size = resize(
-            size(newElementProps.width ?? 100, newElementProps.height ?? 100),
-            size(200, 200),
-            'keep-aspect-ratio',
-          )
+          const elementSize: Size = {
+            width: newElementProps.width,
+            height: newElementProps.height,
+          }
 
           this.props.dispatch([
             ...setDragSessionStateActions,
@@ -977,7 +968,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           ])
         },
 
-        onDragLeave: (event) => {
+        onDragLeave: () => {
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
             EditorActions.switchEditorMode(EditorModes.selectMode(null)),
@@ -986,7 +977,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
         onDrop: (event: React.DragEvent) => {
           if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+            const { width, height, src } =
+              this.props.editor.imageDragSessionState.draggedImageProperties
+
+            const imageParams: Partial<JSXImageOptions> = { width: width, height: height, src: src }
+            const elementSize: Size = { width: width, height: height }
+            const uid = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+            const newElement = createJsxImage(uid, imageParams)
+
             this.props.dispatch([
+              EditorActions.enableInsertModeForJSXElement(newElement, uid, {}, elementSize),
               EditorActions.setImageDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
