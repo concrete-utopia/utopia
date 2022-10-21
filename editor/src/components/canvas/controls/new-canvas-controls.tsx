@@ -45,7 +45,6 @@ import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-st
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
-import { HTML5Backend } from 'react-dnd-html5-backend'
 import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
