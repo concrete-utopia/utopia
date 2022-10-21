@@ -46,7 +46,7 @@ import {
   ErrorMessages,
   FloatingInsertMenuState,
   GithubRepo,
-  GithubState,
+  UserGithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -55,6 +55,7 @@ import {
   RightMenuTab,
   StoredEditorState,
   Theme,
+  ProjectGithubState,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -889,9 +890,14 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
-export interface SetGithubState {
-  action: 'SET_GITHUB_STATE'
-  githubState: GithubState
+export interface SetUserGithubState {
+  action: 'SET_USER_GITHUB_STATE'
+  githubState: UserGithubState
+}
+
+export interface UpdateProjectGithubState {
+  action: 'UPDATE_PROJECT_GITHUB_STATE'
+  githubState: ProjectGithubState
 }
 
 export interface ResetCanvas {
@@ -1143,7 +1149,7 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
-  | SetGithubState
+  | SetUserGithubState
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
@@ -1166,6 +1172,7 @@ export type EditorAction =
   | ToggleSelectionLock
   | SaveToGithub
   | SetImageDragSessionState
+  | UpdateProjectGithubState
 
 export type DispatchPriority =
   | 'everyone'

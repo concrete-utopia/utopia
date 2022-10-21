@@ -13,6 +13,7 @@ import {
   showToast,
   updateGithubSettings,
   updateProjectContents,
+  updateProjectGithubState,
 } from '../../components/editor/actions/action-creators'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
@@ -73,6 +74,8 @@ export async function saveProjectToGithub(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): Promise<void> {
+  dispatch([updateProjectGithubState({ commishing: true })], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
   const postBody = JSON.stringify(persistentModel)
@@ -92,6 +95,7 @@ export async function saveProjectToGithub(
             showToast(
               notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
             ),
+            updateProjectGithubState({ commishing: false }),
           ],
           'everyone',
         )
@@ -106,6 +110,7 @@ export async function saveProjectToGithub(
               ),
             ),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
+            updateProjectGithubState({ commishing: false }),
           ],
           'everyone',
         )
@@ -116,7 +121,10 @@ export async function saveProjectToGithub(
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        updateProjectGithubState({ commishing: false }),
+      ],
       'everyone',
     )
   }

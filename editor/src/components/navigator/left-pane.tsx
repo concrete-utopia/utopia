@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
+import { css, jsx, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 import React, { ChangeEvent } from 'react'
 import {
@@ -717,11 +717,55 @@ const SharingPane = React.memo(() => {
   )
 })
 
+const GithubSpinner = () => {
+  const anim = keyframes`
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  `
+
+  return (
+    <FlexColumn>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        width='16'
+        height='16'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='#999'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        css={css`
+          animation: ${anim} 1s linear infinite;
+        `}
+      >
+        <line x1='12' y1='2' x2='12' y2='6'></line>
+        <line x1='12' y1='18' x2='12' y2='22'></line>
+        <line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line>
+        <line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line>
+        <line x1='2' y1='12' x2='6' y2='12'></line>
+        <line x1='18' y1='12' x2='22' y2='12'></line>
+        <line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line>
+        <line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line>
+      </svg>
+    </FlexColumn>
+  )
+}
+
 const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
   const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
+  const githubState = useEditorState((store) => store.editor.projectGithubState, 'Github state')
+
+  const [githubOngoingOperations, setGithubOngoingOperations] = React.useState<number>(0)
+  const [githubWorking, setGithubWorking] = React.useState<boolean>(false)
+
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
     if (repo == null) {
@@ -810,13 +854,27 @@ const GithubPane = React.memo(() => {
   const [branchesForRepository, setBranchesForRepository] =
     React.useState<GetBranchesResponse | null>(null)
 
+  const incrementGithubOngoingOperations = () => setGithubOngoingOperations((v) => v + 1)
+  const decrementGithubOngoingOperations = () => setGithubOngoingOperations((v) => v - 1)
+
   React.useEffect(() => {
     if (parsedTargetRepository != null) {
-      void getBranchesForGithubRepository(parsedTargetRepository).then((result) => {
-        setBranchesForRepository(result)
-      })
+      incrementGithubOngoingOperations()
+      void getBranchesForGithubRepository(parsedTargetRepository)
+        .then((result) => {
+          setBranchesForRepository(result)
+        })
+        .finally(() => decrementGithubOngoingOperations())
     }
   }, [parsedTargetRepository])
+
+  React.useEffect(() => {
+    setGithubWorking(githubOngoingOperations > 0)
+  }, [githubOngoingOperations])
+
+  React.useEffect(() => {
+    setGithubWorking(githubState.commishing)
+  }, [githubState])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
@@ -842,18 +900,24 @@ const GithubPane = React.memo(() => {
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
                       if (parsedTargetRepository != null) {
+                        incrementGithubOngoingOperations()
                         void getBranchContent(
                           dispatch,
                           parsedTargetRepository,
                           forceNotNull('Should have a project ID.', projectID),
                           branch.name,
-                        )
+                        ).finally(() => decrementGithubOngoingOperations())
                       }
                     }
                     return (
                       <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
                         <span>{branch.name}</span>
-                        <Button spotlight highlight onMouseUp={loadContentForBranch}>
+                        <Button
+                          spotlight
+                          highlight
+                          onMouseUp={loadContentForBranch}
+                          disabled={githubWorking}
+                        >
                           Load
                         </Button>
                       </UIGridRow>
@@ -869,7 +933,7 @@ const GithubPane = React.memo(() => {
           throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
       }
     }
-  }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
+  }, [branchesForRepository, parsedTargetRepository, dispatch, projectID, githubWorking])
 
   return (
     <FlexColumn
@@ -883,8 +947,9 @@ const GithubPane = React.memo(() => {
       onFocus={onFocus}
     >
       <Section>
-        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+        <SectionTitleRow minimised={false}>
           <Title style={{ flexGrow: 1 }}>Github</Title>
+          {githubWorking && <GithubSpinner />}
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
           <div
@@ -973,7 +1038,7 @@ const GithubPane = React.memo(() => {
             <Button
               spotlight
               highlight
-              disabled={!githubAuthenticated || parsedTargetRepository == null}
+              disabled={!githubAuthenticated || parsedTargetRepository == null || githubWorking}
               onMouseUp={triggerSaveToGithub}
             >
               Save To Github

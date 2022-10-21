@@ -242,13 +242,17 @@ export function emptyUserConfiguration(): UserConfiguration {
   }
 }
 
-export interface GithubState {
+export interface UserGithubState {
   authenticated: boolean
 }
 
 export interface UserState extends UserConfiguration {
   loginState: LoginState
-  githubState: GithubState
+  githubState: UserGithubState
+}
+
+export interface ProjectGithubState {
+  commishing: boolean
 }
 
 export const defaultUserState: UserState = {
@@ -1019,6 +1023,7 @@ export interface EditorState {
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
+  projectGithubState: ProjectGithubState
 }
 
 export function editorState(
@@ -1089,6 +1094,7 @@ export function editorState(
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
+  projectGithubState: ProjectGithubState,
 ): EditorState {
   return {
     id: id,
@@ -1158,6 +1164,7 @@ export function editorState(
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
+    projectGithubState: projectGithubState,
   }
 }
 
@@ -1969,6 +1976,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       originCommit: null,
     },
     imageDragSessionState: notDragging(),
+    projectGithubState: {
+      commishing: false,
+    },
   }
 }
 
@@ -2264,6 +2274,9 @@ export function editorModelFromPersistentModel(
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
+    projectGithubState: {
+      commishing: false,
+    },
   }
   return editor
 }

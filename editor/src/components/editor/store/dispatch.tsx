@@ -117,10 +117,10 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
     }
-  } else if (action.action === 'SET_GITHUB_STATE') {
+  } else if (action.action === 'SET_USER_GITHUB_STATE') {
     return {
       ...working,
-      userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
+      userState: UPDATE_FNS.SET_USER_GITHUB_STATE(action, working.userState),
     }
   } else {
     // Process action on the JS side.

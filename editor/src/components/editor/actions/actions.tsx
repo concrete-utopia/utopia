@@ -237,8 +237,9 @@ import {
   SetFocusedElement,
   SetFollowSelectionEnabled,
   SetForkedFromProjectID,
-  SetGithubState,
+  SetUserGithubState,
   SetHighlightedView,
+  SetImageDragSessionState,
   SetIndexedDBFailed,
   SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
@@ -297,11 +298,11 @@ import {
   UpdatePackageJson,
   UpdatePreviewConnected,
   UpdateProjectContents,
-  SetImageDragSessionState,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
   WrapInElement,
   WrapInView,
+  UpdateProjectGithubState,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -408,7 +409,6 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import {
   getReparentPropertyChanges,
   reparentStrategyForParent,
-  reparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -976,6 +976,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
+    projectGithubState: currentEditor.projectGithubState,
   }
 }
 
@@ -1912,6 +1913,19 @@ export const UPDATE_FNS = {
     return {
       ...withOldToastRemoved,
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
+    }
+  },
+  UPDATE_PROJECT_GITHUB_STATE: (
+    action: UpdateProjectGithubState,
+    editor: EditorModel,
+    _dispatch: EditorDispatch,
+  ): EditorModel => {
+    return {
+      ...editor,
+      projectGithubState: {
+        ...editor.projectGithubState,
+        ...action.githubState,
+      },
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -4527,7 +4541,7 @@ export const UPDATE_FNS = {
       loginState: action.loginState,
     }
   },
-  SET_GITHUB_STATE: (action: SetGithubState, userState: UserState): UserState => {
+  SET_USER_GITHUB_STATE: (action: SetUserGithubState, userState: UserState): UserState => {
     return {
       ...userState,
       githubState: action.githubState,

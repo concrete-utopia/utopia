@@ -204,12 +204,13 @@ import type {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   ElementPaste,
-  SetGithubState,
+  SetUserGithubState,
   SetProperty,
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
+  UpdateProjectGithubState,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -218,13 +219,14 @@ import type {
   ErrorMessages,
   FloatingInsertMenuState,
   GithubRepo,
-  GithubState,
+  UserGithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
   ProjectGithubSettings,
   RightMenuTab,
   Theme,
+  ProjectGithubState,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1419,9 +1421,18 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   }
 }
 
-export function setGithubState(githubState: GithubState): SetGithubState {
+export function setUserGithubState(githubState: UserGithubState): SetUserGithubState {
   return {
-    action: 'SET_GITHUB_STATE',
+    action: 'SET_USER_GITHUB_STATE',
+    githubState: githubState,
+  }
+}
+
+export function updateProjectGithubState(
+  githubState: ProjectGithubState,
+): UpdateProjectGithubState {
+  return {
+    action: 'UPDATE_PROJECT_GITHUB_STATE',
     githubState: githubState,
   }
 }
