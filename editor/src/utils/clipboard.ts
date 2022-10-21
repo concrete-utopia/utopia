@@ -140,7 +140,7 @@ export function createDirectInsertImageActions(
           centerPoint,
           image.filename,
           image.size,
-          scale,
+          null,
         )
         const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
         const saveImageAction = EditorActions.saveAsset(
