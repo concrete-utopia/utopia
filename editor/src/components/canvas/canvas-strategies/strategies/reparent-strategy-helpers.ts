@@ -503,8 +503,6 @@ function drawTargetRectanglesForChildrenOfElement(
   return flexInsertionTargets
 }
 
-export type StripAbsoluteProperties = 'strip-absolute-props' | 'do-not-strip-props'
-
 export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
@@ -633,7 +631,6 @@ function createPseudoElements(
 }
 
 export function applyFlexReparent(
-  stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
@@ -689,7 +686,6 @@ export function applyFlexReparent(
 
             // Strip the `position`, positional and dimension properties.
             const propertyChangeCommands = getFlexReparentPropertyChanges(
-              stripAbsoluteProperties,
               newPath,
               targetMetadata?.specialSizeMeasurements.position ?? null,
             )
@@ -851,14 +847,9 @@ export function getAbsoluteReparentPropertyChanges(
 }
 
 export function getFlexReparentPropertyChanges(
-  stripAbsoluteProperties: StripAbsoluteProperties,
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
 ): Array<CanvasCommand> {
-  if (!stripAbsoluteProperties) {
-    return []
-  }
-
   if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
     return [deleteProperties('always', newPath, propertiesToRemove)]
   }
@@ -891,10 +882,6 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_TO_FLEX':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getFlexReparentPropertyChanges(
-        'strip-absolute-props',
-        newPath,
-        targetOriginalStylePosition,
-      )
+      return getFlexReparentPropertyChanges(newPath, targetOriginalStylePosition)
   }
 }

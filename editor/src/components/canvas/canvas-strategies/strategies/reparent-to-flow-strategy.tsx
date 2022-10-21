@@ -17,7 +17,7 @@ import { InteractionSession } from '../interaction-state'
 import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function baseReparentToFlexStrategy(
+export function baseReparentToFlowStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
 ): CanvasStrategyFactory {
@@ -53,8 +53,8 @@ export function baseReparentToFlexStrategy(
     }
 
     return {
-      id: 'REPARENT_TO_FLEX',
-      name: 'Reparent (Flex)',
+      id: 'REPARENT_TO_FLOW',
+      name: 'Reparent (Flow)',
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
