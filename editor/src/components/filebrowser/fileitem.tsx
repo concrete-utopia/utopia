@@ -824,6 +824,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       drop: (item, monitor) => {
         dispatch([
           CanvasActions.clearInteractionSession(false),
+          EditorActions.setImageDragSessionState(notDragging()),
           EditorActions.switchEditorMode(EditorModes.selectMode(null)),
           EditorActions.setFilebrowserDropTarget(null),
         ])
