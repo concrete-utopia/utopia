@@ -108,7 +108,6 @@ import {
   HandleInteractionSession,
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
-import { getCursorForOverlay } from '../components/canvas/controls/select-mode/cursor-overlay'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
