@@ -314,8 +314,8 @@ describe('image drag and drop', () => {
               position: 'absolute',
               width: 1830,
               height: 570,
-              left: -708,
               top: -159,
+              left: -708,
             }}
             data-uid='1'
           />
