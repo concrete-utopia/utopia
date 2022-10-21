@@ -247,10 +247,10 @@ function edgePieceDerivedProps(edgePiece: EdgePiece): {
   switch (edgePiece) {
     case 'right':
     case 'left':
-      return { cursor: CSSCursor.ResizeEW, orientation: 'vertical' }
+      return { cursor: CSSCursor.ColResize, orientation: 'vertical' }
     case 'bottom':
     case 'top':
-      return { cursor: CSSCursor.ResizeNS, orientation: 'horizontal' }
+      return { cursor: CSSCursor.RowResize, orientation: 'horizontal' }
     default:
       assertNever(edgePiece)
   }
