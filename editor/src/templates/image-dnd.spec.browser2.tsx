@@ -23,7 +23,6 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
-import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -366,7 +365,7 @@ describe('image drag and drop', () => {
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, startPoint, endPoint, [])
+      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -395,7 +394,6 @@ describe('image drag and drop', () => {
         true,
       )
       await editor.getDispatchFollowUpActionsFinished()
-      await wait(200)
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
