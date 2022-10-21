@@ -34,22 +34,18 @@ export function simplePaddingFromMetadata(
 
   const paddingTop = pxValueFromEither(
     getLayoutProperty('paddingTop', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
   )
 
   const paddingBottom = pxValueFromEither(
     getLayoutProperty('paddingBottom', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
   )
 
   const paddingLeft = pxValueFromEither(
     getLayoutProperty('paddingLeft', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
   )
 
   const paddingRight = pxValueFromEither(
     getLayoutProperty('paddingRight', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
   )
 
   return cssPaddingWithDefaults(
@@ -75,18 +71,11 @@ function cssPaddingWithDefaults(
 const pxValue = (number: CSSNumber): number | undefined =>
   number.unit === 'px' || number.unit == null ? number.value : undefined
 
-function cssValueWithDefault<T>(value: Either<string, T | undefined>, defaults: T): T {
+function pxValueFromEither(value: Either<string, CSSNumber | undefined>): number | undefined {
   if (isLeft(value) || value.value == null) {
-    return defaults
+    return undefined
   }
-  return value.value
-}
-
-function pxValueFromEither(
-  value: Either<string, CSSNumber | undefined>,
-  defaults: CSSNumber,
-): number | undefined {
-  return pxValue(cssValueWithDefault(value, defaults))
+  return pxValue(value.value)
 }
 
 function cssPaddingToSimple(
