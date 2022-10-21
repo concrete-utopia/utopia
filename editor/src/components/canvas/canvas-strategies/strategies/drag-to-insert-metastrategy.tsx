@@ -131,6 +131,9 @@ function dragToInsertStrategyFactory(
   fitness: number,
   targetParent: ElementPath,
 ): CanvasStrategy | null {
+  if (canvasState.interactionTarget.type !== 'INSERTION_SUBJECTS') {
+    return null
+  }
   const insertionSubjectsWithFrames = (() => {
     if (
       interactionSession.interactionData.type !== 'DRAG' ||
