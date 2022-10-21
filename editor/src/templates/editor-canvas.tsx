@@ -934,8 +934,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
         onDragOver: (event) => {
           event.preventDefault()
-          // during drag and drop events cursor is set to document body instead of the cursor overlay
-          document.body.style.cursor = getCursorForOverlay(this.props.editor) ?? 'initial'
 
           if (this.props.editor.canvas.interactionSession != null) {
             this.handleMouseMove(event.nativeEvent)
@@ -999,7 +997,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: (event) => {
-          document.body.style.cursor = 'initial'
           if (!this.isInsideCanvas(event.nativeEvent)) {
             this.props.dispatch([
               CanvasActions.clearInteractionSession(false),
@@ -1009,7 +1006,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          document.body.style.cursor = 'initial'
           if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
             this.props.dispatch([
               EditorActions.setImageDragSessionState(notDragging()),
