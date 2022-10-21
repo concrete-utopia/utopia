@@ -191,14 +191,13 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
   const propsForElement = jsxAttributesFromMap({
     src: jsxAttributeValue(options.src, emptyComments),
     style: jsxAttributeValue(
-      Utils.scrubUndefinedProps({
+      {
         position: 'absolute',
         width: options.width,
         height: options.height,
         top: options.top,
         left: options.left,
-        opacity: options.opacity,
-      }),
+      },
       emptyComments,
     ),
   })
