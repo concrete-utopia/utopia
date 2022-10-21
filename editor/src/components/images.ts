@@ -232,14 +232,16 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
   )
 }
 
-export function createThumbnailImage(uid: string, size: Size, src: string): JSXElement {
+const ThumbnailDimensions: Size = { width: 40, height: 40 }
+
+export function createThumbnailImage(scale: number, src: string): JSXElement {
   const propsForElement: JSXAttributes = jsxAttributesFromMap({
     src: jsxAttributeValue(src, emptyComments),
     style: jsxAttributeValue(
       {
         position: 'absolute',
-        width: size.width,
-        height: size.height,
+        width: ThumbnailDimensions.width / scale,
+        height: ThumbnailDimensions.height / scale,
         backgroundColor: 'white',
         borderRadius: 2,
         padding: 6,
@@ -249,12 +251,7 @@ export function createThumbnailImage(uid: string, size: Size, src: string): JSXE
     ),
   })
 
-  return jsxElement(
-    'img',
-    uid,
-    setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
-    [],
-  )
+  return jsxElement('img', 'placeholder', propsForElement, [])
 }
 
 export const MultipliersForImages: Array<number> = [1, 2]

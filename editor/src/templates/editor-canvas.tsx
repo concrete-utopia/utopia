@@ -100,7 +100,7 @@ import { getDragTargets } from '../components/canvas/canvas-strategies/strategie
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage, createThumbnailImage, JSXImageOptions } from '../components/images'
+import { createJsxImage, JSXImageOptions } from '../components/images'
 import {
   cancelInsertModeActions,
   HandleInteractionSession,
@@ -942,26 +942,39 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const thumbnailDimensions: Size = {
+          const newElementProps: Partial<JSXImageOptions> =
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+            isFeatureEnabled('Show preview on drop')
+              ? {
+                  width: this.props.editor.imageDragSessionState.draggedImageProperties.width,
+                  height: this.props.editor.imageDragSessionState.draggedImageProperties.height,
+                  src: this.props.editor.imageDragSessionState.draggedImageProperties.src,
+                  opacity: 0.5,
+                }
+              : {
+                  width: 1,
+                  height: 1,
+                }
+
+          const newElement = createJsxImage(newUID, newElementProps)
+
+          const defaultSize: Size = {
             width: 40 / this.props.model.scale,
             height: 40 / this.props.model.scale,
           }
 
-          const draggedFromFinderDimensions: Size = { width: 1, height: 1 }
+          const originalSize: Size = {
+            width: newElementProps.width ?? defaultSize.width,
+            height: newElementProps.height ?? defaultSize.height,
+          }
 
-          const newElement =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
-              ? createThumbnailImage(
-                  newUID,
-                  thumbnailDimensions,
-                  this.props.editor.imageDragSessionState.draggedImageProperties.src,
-                )
-              : createJsxImage(newUID, { width: 1, height: 1 })
-
-          const elementSize =
-            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR'
-              ? thumbnailDimensions
-              : draggedFromFinderDimensions
+          const desiredSize: Size = isFeatureEnabled('Show preview on drop')
+            ? {
+                width: Math.min(originalSize.width, defaultSize.width),
+                height: Math.min(originalSize.height, defaultSize.height),
+              }
+            : originalSize
+          const elementSize: Size = resize(originalSize, desiredSize, 'keep-aspect-ratio')
 
           this.props.dispatch([
             ...setDragSessionStateActions,
