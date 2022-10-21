@@ -1,42 +1,63 @@
 import React from 'react'
-import { CanvasVector } from '../../../../core/shared/math-utils'
-import { EditorStorePatched } from '../../../editor/store/editor-state'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
+import { assertNever } from '../../../../core/shared/utils'
+import { useColorTheme } from '../../../../uuiui'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePiece } from '../../canvas-types'
-import { useBoundingBox } from '../bounding-box-hooks'
+import { deltaFromEdge } from '../../padding-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isZeroSizedElement } from '../outline-utils'
 
-interface PaddingResizeStepIndicatorProps {
+export const PaddingResizeStepIndicatorTestId = 'PaddingResizeStepIndicatorTestId'
+
+export interface PaddingResizeStepIndicatorProps {
   currentPaddingValue: number
   activeEdge: EdgePiece
   dragDelta: CanvasVector
+  dragStart: CanvasPoint
 }
 
 export const PaddingResizeStepIndicator =
   controlForStrategyMemoized<PaddingResizeStepIndicatorProps>((props) => {
-    const { currentPaddingValue, activeEdge, dragDelta } = props
-    const selectedElements = useEditorState(
-      (store: EditorStorePatched) => store.editor.selectedViews,
-      'selectedElementsSelector selectedElements',
+    const { currentPaddingValue, activeEdge, dragStart, dragDelta } = props
+    const colorTheme = useColorTheme()
+
+    const actualPaddingValue = Math.max(
+      0,
+      currentPaddingValue + deltaFromEdge(dragDelta, activeEdge),
     )
-
-    const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-      if (isZeroSizedElement(boundingBox)) {
-        ref.current.style.display = 'none'
-      } else {
-        ref.current.style.display = 'block'
-        ref.current.style.left = boundingBox.x + 'px'
-        ref.current.style.top = boundingBox.y + 'px'
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = boundingBox.height + 'px'
-      }
-    })
-
+    const position = indicatorPosition(activeEdge, dragStart, dragDelta)
     return (
       <CanvasOffsetWrapper>
-        <div ref={controlRef}>hello</div>
+        <div
+          data-testid={PaddingResizeStepIndicatorTestId}
+          style={{
+            position: 'absolute',
+            left: position.x,
+            top: position.y,
+            backgroundColor: colorTheme.brandNeonPink.value,
+            color: 'white',
+          }}
+        >
+          {actualPaddingValue}
+        </div>
       </CanvasOffsetWrapper>
     )
   })
+
+function indicatorPosition(
+  edge: EdgePiece,
+  dragStart: CanvasPoint,
+  dragDelta: CanvasVector,
+): CanvasPoint {
+  const Offset = 5
+  switch (edge) {
+    case 'top':
+    case 'bottom':
+      return canvasPoint({ x: dragStart.x + Offset, y: dragStart.y + dragDelta.y + Offset })
+    case 'left':
+    case 'right':
+      return canvasPoint({ x: dragStart.x + dragDelta.x + Offset, y: dragStart.y + Offset })
+    default:
+      assertNever(edge)
+  }
+}

@@ -2,9 +2,10 @@ import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Either, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
+import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, cssNumber, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 
 type CSSPaddingKey = keyof CSSPadding
@@ -130,4 +131,19 @@ export function offsetPaddingByEdge(
 
 export function paddingToPaddingString(padding: SimpleCSSPadding): string {
   return `${padding.paddingTop}px ${padding.paddingRight}px ${padding.paddingBottom}px ${padding.paddingLeft}px`
+}
+
+export function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number {
+  switch (edgePiece) {
+    case 'top':
+      return delta.y
+    case 'bottom':
+      return -delta.y
+    case 'left':
+      return delta.x
+    case 'right':
+      return -delta.x
+    default:
+      assertNever(edgePiece)
+  }
 }
