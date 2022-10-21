@@ -15,6 +15,7 @@ export function createMouseInteractionForTests(
 ): InteractionSessionWithoutMetadata {
   return updateInteractionViaMouse(
     createInteractionViaMouse(mouseDownPoint, modifiers, activeControl),
+    'DRAG',
     drag,
     modifiers,
     null,

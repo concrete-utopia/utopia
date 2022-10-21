@@ -129,7 +129,7 @@ export function findReparentStrategies(
 
   const reparentSubjects =
     canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
-      ? newReparentSubjects()
+      ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
       : existingReparentSubjects(
           getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
         )
@@ -187,13 +187,16 @@ export function reparentTarget(
 
 type ReparentSubjects = NewReparentSubjects | ExistingReparentSubjects
 
+// FIXME Does it ever make sense for this to refer to more than one element?
 export interface NewReparentSubjects {
   type: 'NEW_ELEMENTS'
+  defaultSize: Size
 }
 
-export function newReparentSubjects(): NewReparentSubjects {
+export function newReparentSubjects(defaultSize: Size): NewReparentSubjects {
   return {
     type: 'NEW_ELEMENTS',
+    defaultSize: defaultSize,
   }
 }
 
@@ -225,7 +228,7 @@ export function getReparentTargetUnified(
   const multiselectBounds: Size =
     (reparentSubjects.type === 'EXISTING_ELEMENTS'
       ? MetadataUtils.getBoundingRectangleInCanvasCoords(reparentSubjects.elements, metadata)
-      : null) ?? size(0, 0)
+      : reparentSubjects.defaultSize) ?? size(0, 0)
 
   const allElementsUnderPoint = getAllTargetsAtPointAABB(
     metadata,
