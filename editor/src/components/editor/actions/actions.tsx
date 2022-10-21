@@ -2776,12 +2776,12 @@ export const UPDATE_FNS = {
               currentValue.originalElementPath,
               action.targetOriginalContextMetadata,
             )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(
-            MetadataUtils.findElementByElementPath(
-              action.targetOriginalContextMetadata,
-              currentValue.originalElementPath,
-            ),
+
+          const pastedElementMetadata = MetadataUtils.findElementByElementPath(
+            action.targetOriginalContextMetadata,
+            currentValue.originalElementPath,
           )
+          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
 
           if (!(pastedElementIsAbsolute || pastedElementIsFlex)) {
             return workingEditorState
@@ -2794,6 +2794,7 @@ export const UPDATE_FNS = {
               workingEditorState.jsxMetadata,
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename,
+              pastedElementMetadata?.specialSizeMeasurements.position ?? null,
             )
 
             const allCommands = [...reparentCommands, ...propertyChangeCommands]
