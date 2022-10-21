@@ -386,7 +386,6 @@ const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'top']),
   PP.create(['style', 'right']),
   PP.create(['style', 'bottom']),
-  PP.create(['style', 'position']),
 ]
 
 function drawTargetRectanglesForChildrenOfElement(
@@ -860,16 +859,14 @@ export function getFlexReparentPropertyChanges(
     return []
   }
 
-  const deletePropertiesCommand = deleteProperties('always', newPath, propertiesToRemove)
-
-  if (targetOriginalStylePosition === 'absolute') {
-    return [
-      deletePropertiesCommand,
-      setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
-    ]
+  if (targetOriginalStylePosition !== 'absolute') {
+    return [deleteProperties('always', newPath, propertiesToRemove)]
   }
 
-  return [deletePropertiesCommand]
+  return [
+    deleteProperties('always', newPath, [...propertiesToRemove, PP.create(['style', 'position'])]),
+    setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
+  ]
 }
 
 export function getReparentPropertyChanges(
