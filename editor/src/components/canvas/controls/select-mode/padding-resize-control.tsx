@@ -88,7 +88,6 @@ const PaddingResizeControlI = React.memo(
     return (
       <div
         onMouseLeave={hoverEnd}
-        onMouseEnter={hoverStart}
         ref={ref}
         data-testid={paddingControlTestId(props.edge)}
         style={{
@@ -107,6 +106,7 @@ const PaddingResizeControlI = React.memo(
             data-testid={paddingControlHandleTestId(props.edge)}
             onMouseDown={onEdgeMouseDown}
             onMouseMove={onMouseMove}
+            onMouseEnter={hoverStart}
             onMouseUp={onMouseUp}
             style={{
               position: 'absolute',
