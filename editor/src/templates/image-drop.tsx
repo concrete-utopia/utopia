@@ -137,7 +137,17 @@ async function onDrop(
       'autoincrement',
     )
 
-    void saveAssets(projectId, assetInfo)
+    context.dispatch(
+      [
+        ...actions,
+        EditorActions.switchEditorMode(EditorModes.insertMode(subjects)),
+        EditorActions.setImageDragSessionState(notDragging()),
+      ],
+      'everyone',
+    )
+    cont()
+
+    await saveAssets(projectId, assetInfo)
       .then(() => {
         const substitutionPaths = stripNulls(
           assetInfo.flatMap((i) =>
@@ -150,9 +160,14 @@ async function onDrop(
           substitutionPaths,
         )
 
+        const openFileName = context.editor().canvas.openFile?.filename
+        const openFileActions =
+          openFileName == null ? [] : [EditorActions.openCodeEditorFile(openFileName, false)]
+
         context.dispatch([
           EditorActions.transientActions(srcUpdateActions),
           EditorActions.showToast(notice('Succesfully uploaded assets')),
+          ...openFileActions,
         ])
       })
       .catch(() => {
@@ -164,16 +179,6 @@ async function onDrop(
           EditorActions.showToast(notice('Error uploading assets', 'ERROR')),
         ])
       })
-
-    context.dispatch(
-      [
-        ...actions,
-        EditorActions.switchEditorMode(EditorModes.insertMode(subjects)),
-        EditorActions.setImageDragSessionState(notDragging()),
-      ],
-      'everyone',
-    )
-    cont()
   }
 }
 
