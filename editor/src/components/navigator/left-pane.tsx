@@ -17,7 +17,7 @@ import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/proje
 import { NO_OP } from '../../core/shared/utils'
 import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
-import Utils from '../../utils/utils'
+import Utils, { isOptionType } from '../../utils/utils'
 import {
   useColorTheme,
   UtopiaTheme,
@@ -37,7 +37,7 @@ import {
   Icons,
   Avatar,
 } from '../../uuiui'
-import { SelectOption, User } from '../../uuiui-deps'
+import { getControlStyles, SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -69,11 +69,23 @@ import {
   getBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
+  getUsersPublicGithubRepositories,
   parseGithubProjectString,
+  RepositoryEntry,
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import {
+  components,
+  FormatOptionLabelMeta,
+  IndicatorProps,
+  InputProps,
+  OptionsType,
+  ValueType,
+} from 'react-select'
+import CreatableSelect from 'react-select/creatable'
+import { styleFn } from 'react-select/src/styles'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -717,6 +729,56 @@ const SharingPane = React.memo(() => {
   )
 })
 
+const Input = (props: InputProps) => {
+  const value = (props as any).value
+  const isHidden = value.length !== 0 ? false : props.isHidden
+  return <components.Input {...props} isHidden={isHidden} />
+}
+
+const valueContainer: styleFn = (base) => ({
+  ...base,
+  padding: '2px 4px',
+  height: '100%',
+  width: '100%',
+})
+
+const container: styleFn = (base) => ({
+  ...base,
+  minHeight: UtopiaTheme.layout.inputHeight.default,
+  paddingTop: 2,
+  paddingBottom: 2,
+})
+
+const control: styleFn = () => ({
+  label: 'control',
+  alignItems: 'center',
+  backgroundColor: 'rgb(245, 245, 245)',
+  boxSizing: 'border-box',
+  cursor: 'default',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  position: 'relative',
+  transition: 'all 100ms',
+  minHeight: UtopiaTheme.layout.inputHeight.default,
+})
+
+const placeholder: styleFn = (base) => ({
+  ...base,
+  paddingTop: 2,
+  paddingBottom: 2,
+  paddingLeft: 6,
+  paddingRight: 6,
+})
+
+const menu: styleFn = (base) => ({
+  ...base,
+  position: 'relative',
+  boxShadow: 'none',
+  borderRadius: 0,
+  background: 'transparent',
+})
+
 const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
@@ -794,9 +856,40 @@ const GithubPane = React.memo(() => {
     }
   }, [targetRepository])
 
+  const [usersRepositories, setUsersRepositories] = React.useState<Array<SelectOption> | null>(null)
+
+  const setUsersRepositoriesCallback = React.useCallback(
+    (repositories: Array<RepositoryEntry>) => {
+      setUsersRepositories(
+        repositories.map((repository) => {
+          return {
+            value: repository.fullName,
+            label: repository.fullName,
+          }
+        }),
+      )
+    },
+    [setUsersRepositories],
+  )
+
+  React.useEffect(() => {
+    if (githubAuthenticated) {
+      getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
+    }
+  }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
+
   const onChangeTargetRepository = React.useCallback(
-    (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
-      setTargetRepository(changeEvent.currentTarget.value)
+    (option: ValueType<SelectOption>) => {
+      if (isOptionType(option)) {
+        setTargetRepository(option.value)
+      }
+    },
+    [setTargetRepository],
+  )
+
+  const onInputChangeTargetRepository = React.useCallback(
+    (option: string) => {
+      setTargetRepository(option)
     },
     [setTargetRepository],
   )
@@ -870,6 +963,14 @@ const GithubPane = React.memo(() => {
       }
     }
   }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
+
+  const currentTargetRepositoryValue = React.useMemo(() => {
+    if (usersRepositories == null) {
+      return undefined
+    } else {
+      return usersRepositories.find((repo) => repo.value === targetRepository)
+    }
+  }, [usersRepositories, targetRepository])
 
   return (
     <FlexColumn
@@ -959,14 +1060,36 @@ const GithubPane = React.memo(() => {
               fontSize: '11px',
             }}
           >
-            Work with a Github repo if you have access to it.
+            Connect this project to a Github repository. You can then import and export to the repo
+            if you have the correct permissions. Please note we don’t support connecting to private
+            repositories at the moment.
           </div>
           <UIGridRow padded variant='<-------------1fr------------->'>
-            <StringInput
-              testId='saveToGithubInput'
-              value={targetRepository}
-              disabled={!githubAuthenticated}
+            <CreatableSelect
+              autoFocus={false}
+              placeholder={
+                usersRepositories == null ? 'Loading repositories...' : 'owner/repository'
+              }
+              value={currentTargetRepositoryValue}
+              inputValue={targetRepository}
+              isDisabled={false}
               onChange={onChangeTargetRepository}
+              onInputChange={onInputChangeTargetRepository}
+              components={{
+                IndicatorsContainer: () => null,
+                Input,
+              }}
+              className='className-inspector-control'
+              styles={{
+                container,
+                control,
+                valueContainer,
+                placeholder,
+                menu,
+              }}
+              options={usersRepositories ?? []}
+              escapeClearsValue={true}
+              maxMenuHeight={199}
             />
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>

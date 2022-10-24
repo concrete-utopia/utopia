@@ -138,6 +138,7 @@ data ServiceCallsF a = NotFound
                      | SaveToGithubRepo Text Text PersistentModel (SaveToGithubResponse -> a)
                      | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
                      | GetBranchContent Text Text Text Text Text (GetBranchContentResponse -> a)
+                     | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)
                      deriving Functor
 
 {-

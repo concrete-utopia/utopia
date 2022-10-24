@@ -68,6 +68,17 @@ export interface GetBranchContentSuccess {
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
+export interface RepositoryEntry {
+  fullName: string
+}
+
+export interface GetUsersPublicRepositoriesSuccess {
+  type: 'SUCCESS'
+  repositories: Array<RepositoryEntry>
+}
+
+export type GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesSuccess | GithubFailure
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
@@ -190,6 +201,49 @@ export async function getBranchContent(
           ],
           'everyone',
         )
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+}
+
+export async function getUsersPublicGithubRepositories(
+  dispatch: EditorDispatch,
+  callback: (repositories: Array<RepositoryEntry>) => void,
+): Promise<void> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(
+                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                'ERROR',
+              ),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        callback(responseBody.repositories)
         break
       default:
         const _exhaustiveCheck: never = responseBody
