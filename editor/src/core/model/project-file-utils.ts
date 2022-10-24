@@ -69,6 +69,11 @@ import { fastForEach } from '../shared/utils'
 import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
 import { splitAt } from '../shared/string-utils'
 import { memoize } from '../shared/memoize'
+import {
+  filenameFromParts,
+  getImageFilenameParts,
+  ImageFilenameParts,
+} from '../../components/images'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -644,44 +649,44 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
 }
 
 export function uniqueProjectContentID(
-  startingID: string,
+  filename: string,
   projectContents: ProjectContentTreeRoot,
 ): string {
-  const startingIDCorrected = correctProjectContentsPath(startingID)
-  if (getContentsTreeFileFromString(projectContents, startingIDCorrected) != null) {
-    const firstIndexOfFullStop = startingIDCorrected.indexOf('.')
-    if (firstIndexOfFullStop === -1) {
-      let counter = 2
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const possibleNewID = `${startingIDCorrected}_${counter}`
-        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
-          counter += 1
-        } else {
-          return correctProjectContentsPath(possibleNewID)
-        }
-      }
-    } else {
-      // Kinda assume it's a filename.
-      const [prefix, suffixWithFullStop] = splitAt(firstIndexOfFullStop, startingIDCorrected)
-      const suffix = suffixWithFullStop.slice(1)
-      let counter = 2
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const possibleNewID = `${prefix}_${counter}.${suffix}`
-        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
-          counter += 1
-        } else {
-          return correctProjectContentsPath(possibleNewID)
-        }
+  const startingIDCorrected = correctProjectContentsPath(filename)
+  const fileWithSameNameExistsAlready =
+    getContentsTreeFileFromString(projectContents, startingIDCorrected) != null
+
+  if (!fileWithSameNameExistsAlready) {
+    return startingIDCorrected
+  }
+
+  const parts = getImageFilenameParts(startingIDCorrected)
+  if (parts == null) {
+    let counter = 2
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const possibleNewID = `${startingIDCorrected}_${counter}`
+      if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
+        counter += 1
+      } else {
+        return correctProjectContentsPath(possibleNewID)
       }
     }
   } else {
-    return startingIDCorrected
+    let counter = 2
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const fileNameToTry: string = filenameFromParts({ ...parts, deduplicationSeqNumber: counter })
+      if (getContentsTreeFileFromString(projectContents, fileNameToTry) != null) {
+        counter += 1
+      } else {
+        return correctProjectContentsPath(fileNameToTry)
+      }
+    }
   }
 }
 
-export function fileExists(projectContents: ProjectContentTreeRoot, filename: string) {
+export function fileExists(projectContents: ProjectContentTreeRoot, filename: string): boolean {
   const filenameCorrected = correctProjectContentsPath(filename)
   return getContentsTreeFileFromString(projectContents, filenameCorrected) != null
 }
