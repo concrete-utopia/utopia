@@ -898,7 +898,7 @@ describe('Forced inserting into Static', () => {
     mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
-    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       midDragCallback: () => {
