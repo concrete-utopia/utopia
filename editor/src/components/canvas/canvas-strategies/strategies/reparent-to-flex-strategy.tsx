@@ -83,12 +83,7 @@ export function baseReparentToFlexStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyFlexReparent(
-          isOriginallyAbsolute ? 'strip-absolute-props' : 'do-not-strip-props',
-          canvasState,
-          interactionSession,
-          reparentTarget,
-        )
+        return applyFlexReparent(canvasState, interactionSession, reparentTarget)
       },
     }
   }
