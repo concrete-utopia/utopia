@@ -69,7 +69,7 @@ import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export type ReparentStrategy = 'REPARENT_TO_ABSOLUTE' | 'REPARENT_TO_FLEX'
+export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -88,8 +88,7 @@ export function reparentStrategyForParent(
   isFallback: boolean
 } {
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
-  const parentIsFlexLayout =
-    !convertToAbsolute && MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   const parentProvidesBoundsForAbsoluteChildren =
     newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
@@ -100,17 +99,80 @@ export function reparentStrategyForParent(
     ? 'use-strict-bounds'
     : 'allow-missing-bounds'
 
-  return parentIsFlexLayout
-    ? {
-        strategy: 'REPARENT_TO_FLEX',
-        missingBoundsHandling: missingBoundsHandling,
-        isFallback: false,
-      }
-    : {
-        strategy: 'REPARENT_TO_ABSOLUTE',
-        missingBoundsHandling: missingBoundsHandling,
-        isFallback: convertToAbsolute,
-      }
+  const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
+  const reparentAsStatic =
+    !convertToAbsolute && (parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC')
+
+  if (reparentAsStatic) {
+    return {
+      strategy: 'REPARENT_AS_STATIC',
+      missingBoundsHandling: missingBoundsHandling,
+      isFallback: false,
+    }
+  } else {
+    return {
+      strategy: 'REPARENT_AS_ABSOLUTE',
+      missingBoundsHandling: missingBoundsHandling,
+      isFallback: convertToAbsolute,
+    }
+  }
+}
+
+function flowParentAbsoluteOrStatic(
+  metadata: ElementInstanceMetadataMap,
+  parent: ElementPath,
+): 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC' {
+  const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const children = MetadataUtils.getChildren(metadata, parent)
+
+  if (parentMetadata == null) {
+    // should this throw an error?
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const parentIsContainingBlock =
+    parentMetadata.specialSizeMeasurements.providesBoundsForAbsoluteChildren
+  if (!parentIsContainingBlock) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const anyChildrenFlow = children.some(
+    (child) => child.specialSizeMeasurements.position === 'static',
+  )
+  if (anyChildrenFlow) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const allChildrenPositionedAbsolutely =
+    children.length > 0 &&
+    children.every((child) => child.specialSizeMeasurements.position === 'absolute')
+  if (allChildrenPositionedAbsolutely) {
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  const emptyParentWithDimensionsGreaterThanZero =
+    children.length === 0 &&
+    (parentMetadata.globalFrame?.width ?? 0) > 0 &&
+    (parentMetadata.globalFrame?.height ?? 0) > 0
+  if (emptyParentWithDimensionsGreaterThanZero) {
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  // TODO ABSOLUTE drag onto the padded area of display: flow target parent
+
+  // TODO is this needed?
+  const emptyParentWithAnyDimensionZero =
+    children.length === 0 &&
+    ((parentMetadata.globalFrame?.width ?? 0) === 0 ||
+      (parentMetadata.globalFrame?.height ?? 0) === 0)
+  if (emptyParentWithAnyDimensionZero) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  // the fallback is reparent as static
+  return 'REPARENT_AS_STATIC'
+
+  // should there be a DO_NOT_REPARENT return type here?
 }
 
 function reparentStrategyForReparentTarget(
@@ -158,7 +220,7 @@ export function findReparentStrategies(
     strictTarget != null &&
     forcedTarget != null &&
     EP.pathsEqual(forcedTarget.newParent, strictTarget.newParent)
-  const convertToAbsolute = sameTargets && strictStrategy?.strategy === 'REPARENT_TO_FLEX'
+  const convertToAbsolute = sameTargets && strictStrategy?.strategy === 'REPARENT_AS_STATIC'
   const skipForcedTarget = sameTargets && !convertToAbsolute
   const forcedStrategy =
     forcedTarget == null || skipForcedTarget
@@ -166,6 +228,44 @@ export function findReparentStrategies(
       : reparentStrategyForReparentTarget(metadata, forcedTarget, convertToAbsolute)
 
   return stripNulls([strictStrategy, forcedStrategy])
+}
+
+export function findReparentStrategies2(
+  canvasState: InteractionCanvasState,
+  cmdPressed: boolean,
+  pointOnCanvas: CanvasPoint,
+): Array<FindReparentStrategyResult> {
+  const metadata = canvasState.startingMetadata
+
+  const reparentSubjects =
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
+      ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
+      : existingReparentSubjects(
+          getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
+        )
+
+  const targetParent = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    cmdPressed,
+    canvasState,
+    metadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds', // TODO delete this property!
+  )
+
+  if (targetParent == null) {
+    return [] // TODO is canvas a null target parent?
+  }
+
+  const strategy = reparentStrategyForReparentTarget(metadata, targetParent, false)
+
+  const forcedAbsoluteStrategy =
+    strategy?.strategy === 'REPARENT_AS_ABSOLUTE'
+      ? null
+      : reparentStrategyForReparentTarget(metadata, targetParent, true)
+
+  return stripNulls([strategy, forcedAbsoluteStrategy])
 }
 
 export interface ReparentTarget {
@@ -880,7 +980,7 @@ export function getReparentPropertyChanges(
   targetOriginalStylePosition: CSSPosition | null,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
-    case 'REPARENT_TO_ABSOLUTE':
+    case 'REPARENT_AS_ABSOLUTE':
       return getAbsoluteReparentPropertyChanges(
         target,
         newParent,
@@ -889,7 +989,7 @@ export function getReparentPropertyChanges(
         projectContents,
         openFile,
       )
-    case 'REPARENT_TO_FLEX':
+    case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       return getFlexReparentPropertyChanges(
         'strip-absolute-props',

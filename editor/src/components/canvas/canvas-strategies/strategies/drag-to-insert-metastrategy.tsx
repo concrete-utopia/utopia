@@ -112,13 +112,13 @@ function getDragToInsertStrategyName(
   missingBoundsHandling: MissingBoundsHandling,
 ): string {
   switch (strategyType) {
-    case 'REPARENT_TO_ABSOLUTE':
+    case 'REPARENT_AS_ABSOLUTE':
       if (missingBoundsHandling === 'use-strict-bounds') {
         return 'Drag to Insert (Abs)'
       } else {
         return 'Drag to Insert (Abs, Forced)'
       }
-    case 'REPARENT_TO_FLEX':
+    case 'REPARENT_AS_STATIC':
       return 'Drag to Insert (Flex)'
   }
 }

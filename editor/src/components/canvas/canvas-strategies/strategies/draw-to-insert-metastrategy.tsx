@@ -105,13 +105,13 @@ function getDrawToInsertStrategyName(
   missingBoundsHandling: MissingBoundsHandling,
 ) {
   switch (strategyType) {
-    case 'REPARENT_TO_ABSOLUTE':
+    case 'REPARENT_AS_ABSOLUTE':
       if (missingBoundsHandling === 'use-strict-bounds') {
         return 'Draw to Insert (Abs)'
       } else {
         return 'Draw to Insert (Abs, Forced)'
       }
-    case 'REPARENT_TO_FLEX':
+    case 'REPARENT_AS_STATIC':
       return 'Draw to Insert (Flex)'
   }
 }

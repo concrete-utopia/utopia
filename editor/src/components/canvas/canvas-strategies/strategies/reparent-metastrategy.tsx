@@ -41,7 +41,7 @@ export function getApplicableReparentFactories(
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
-      case 'REPARENT_TO_ABSOLUTE': {
+      case 'REPARENT_AS_ABSOLUTE': {
         const fitness =
           missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
         if (allDraggedElementsAbsolute) {
@@ -68,7 +68,7 @@ export function getApplicableReparentFactories(
           }
         }
       }
-      case 'REPARENT_TO_FLEX': {
+      case 'REPARENT_AS_STATIC': {
         const fitness = 3
         return {
           targetParent: result.target.newParent,

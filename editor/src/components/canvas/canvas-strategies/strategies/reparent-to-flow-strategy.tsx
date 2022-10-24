@@ -1,10 +1,10 @@
 import { CanvasStrategyFactory } from '../canvas-strategies'
-import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { ReparentTarget } from './reparent-strategy-helpers'
+import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
 
 export function reparentToFlowPlaceholderStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
 ): CanvasStrategyFactory {
-  return baseFlexReparentToFlexStrategy(reparentTarget, fitness)
+  return baseReparentToFlexStrategy(reparentTarget, fitness)
 }
