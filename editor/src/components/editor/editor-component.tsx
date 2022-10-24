@@ -487,6 +487,11 @@ const ToastRenderer = React.memo(() => {
   )
 })
 
+function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
+  e.stopPropagation()
+  e.preventDefault()
+}
+
 const LockedOverlay = React.memo(() => {
   const leftMenuExpanded = useEditorState(
     (store) => store.editor.leftMenu.expanded,
@@ -513,11 +518,11 @@ const LockedOverlay = React.memo(() => {
 
   return (
     <div
-      onMouseDown={(e) => e.preventDefault()}
-      onMouseUp={(e) => e.preventDefault()}
-      onClick={(e) => e.preventDefault()}
-      onKeyDown={(e) => e.preventDefault()}
-      onKeyUp={(e) => e.preventDefault()}
+      onMouseDown={handleEventNoop}
+      onMouseUp={handleEventNoop}
+      onClick={handleEventNoop}
+      onKeyDown={handleEventNoop}
+      onKeyUp={handleEventNoop}
       style={{
         position: 'fixed',
         top: 0,
