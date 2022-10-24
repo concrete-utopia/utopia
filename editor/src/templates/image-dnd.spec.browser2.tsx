@@ -158,7 +158,7 @@ const contents = {
           width: 1830,
         },
         type: 'PROJECT_CONTENT_FILE',
-        fullPath: '/assets/stuff.png',
+        fullPath: '/assets/multiplied@2x.png',
       },
       'stuff.png': {
         content: {
