@@ -12,20 +12,12 @@ import {
 import { isImageFile } from '../core/model/project-file-utils'
 import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
-import {
-  Size,
-  CanvasRectangle,
-  CanvasPoint,
-  canvasRectangle,
-  resizeCanvasRectangle,
-} from '../core/shared/math-utils'
+import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
-import { isFeatureEnabled } from '../utils/feature-switches'
-import { last } from '../core/shared/array-utils'
 import { identity } from '../core/shared/utils'
 
 export function getImageSrc(
@@ -54,16 +46,6 @@ export function getImageSrc(
       throw new Error(`Invalid image for ${imageId}: ${JSON.stringify(image)}`)
     }
   }
-}
-
-function parseImageMultiplierrrr(imagePath: string): number {
-  const imageMultiplierRegex = /.*@(\d*)x\..*/
-  const imageMultiplierResult = imageMultiplierRegex.exec(imagePath)
-  let multiplier: number = 1
-  if (imageMultiplierResult != null && imageMultiplierResult.length === 2) {
-    multiplier = Number.parseInt(imageMultiplierResult[1])
-  }
-  return multiplier
 }
 
 export interface FilenameParts {
