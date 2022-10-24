@@ -1,7 +1,12 @@
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { isRight } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { stripNulls } from '../../../../core/shared/array-utils'
+import { defaultEither, isRight } from '../../../../core/shared/either'
+import {
+  ElementInstanceMetadataMap,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -99,14 +104,34 @@ export function getLockedAspectRatio(
   interactionData: InteractionSession,
   modifiers: Modifiers,
   originalBoundingBox: CanvasRectangle,
+  allElementsImages: boolean,
 ): number | null {
   if (interactionData.aspectRatioLock != null) {
     return interactionData.aspectRatioLock
   }
-  if (modifiers.shift) {
+
+  if (allElementsImages && modifiers.shift) {
+    return null
+  }
+
+  if (allElementsImages || modifiers.shift) {
     return originalBoundingBox.width / originalBoundingBox.height
   }
+
   return null
+}
+
+export function areSelectedElementsAllImages(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): boolean {
+  return stripNulls(
+    MetadataUtils.findElementsByElementPath(jsxMetadata, selectedElements).map((e) =>
+      defaultEither(null, e.element),
+    ),
+  ).every(
+    (e) => e.type === 'JSX_ELEMENT' && jsxElementNameEquals(e.name, jsxElementName('img', [])),
+  )
 }
 
 export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
