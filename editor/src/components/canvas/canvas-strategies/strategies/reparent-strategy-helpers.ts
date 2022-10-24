@@ -37,6 +37,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
@@ -635,6 +636,7 @@ export function applyFlexReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
+  targetLayout: 'flex' | 'flow',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -704,11 +706,10 @@ export function applyFlexReparent(
             ]
 
             function midInteractionCommandsForTarget(): Array<CanvasCommand> {
-              return [
+              const commonPatches = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                showReorderIndicator(newParent, newIndex),
                 newParentADescendantOfCurrentParent
                   ? wildcardPatch('mid-interaction', {
                       hiddenInstances: { $push: [target] },
@@ -716,8 +717,21 @@ export function applyFlexReparent(
                   : wildcardPatch('mid-interaction', {
                       displayNoneInstances: { $push: [target] },
                     }),
-                wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
               ]
+              switch (targetLayout) {
+                case 'flow':
+                  return commonPatches
+                case 'flex':
+                  return [
+                    ...commonPatches,
+                    showReorderIndicator(newParent, newIndex),
+                    wildcardPatch('mid-interaction', {
+                      displayNoneInstances: { $push: [newPath] },
+                    }),
+                  ]
+                default:
+                  assertNever(targetLayout)
+              }
             }
 
             let interactionFinishCommands: Array<CanvasCommand>
