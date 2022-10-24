@@ -89,7 +89,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FOLLOW_SELECTION_ENABLED':
     case 'UPDATE_CONFIG_FROM_VSCODE':
     case 'SET_LOGIN_STATE':
-    case 'SET_USER_GITHUB_STATE':
+    case 'SET_GITHUB_STATE':
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
@@ -116,7 +116,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_ELEMENTS_TO_RERENDER':
     case 'TOGGLE_SELECTION_LOCK':
     case 'SAVE_TO_GITHUB':
-    case 'UPDATE_PROJECT_GITHUB_STATE':
+    case 'UPDATE_GITHUB_OPERATIONS':
       return true
 
     case 'NEW':

@@ -237,7 +237,7 @@ import {
   SetFocusedElement,
   SetFollowSelectionEnabled,
   SetForkedFromProjectID,
-  SetUserGithubState,
+  SetGithubState,
   SetHighlightedView,
   SetImageDragSessionState,
   SetIndexedDBFailed,
@@ -302,7 +302,7 @@ import {
   UpdateThumbnailGenerated,
   WrapInElement,
   WrapInView,
-  UpdateProjectGithubState,
+  UpdateGithubOperations,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -976,7 +976,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
-    projectGithubState: currentEditor.projectGithubState,
+    githubOperations: currentEditor.githubOperations,
   }
 }
 
@@ -1915,17 +1915,23 @@ export const UPDATE_FNS = {
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
-  UPDATE_PROJECT_GITHUB_STATE: (
-    action: UpdateProjectGithubState,
+  UPDATE_GITHUB_OPERATIONS: (
+    action: UpdateGithubOperations,
     editor: EditorModel,
     _dispatch: EditorDispatch,
   ): EditorModel => {
+    const operations = [...editor.githubOperations]
+    if (action.type === 'add') {
+      operations.push(action.operation)
+    } else {
+      const idx = operations.indexOf(action.operation)
+      if (idx >= 0) {
+        operations.splice(idx, 1)
+      }
+    }
     return {
       ...editor,
-      projectGithubState: {
-        ...editor.projectGithubState,
-        ...action.githubState,
-      },
+      githubOperations: operations,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -4541,7 +4547,7 @@ export const UPDATE_FNS = {
       loginState: action.loginState,
     }
   },
-  SET_USER_GITHUB_STATE: (action: SetUserGithubState, userState: UserState): UserState => {
+  SET_GITHUB_STATE: (action: SetGithubState, userState: UserState): UserState => {
     return {
       ...userState,
       githubState: action.githubState,

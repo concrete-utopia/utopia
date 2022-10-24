@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
+import { css, jsx, keyframes } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -28,6 +28,7 @@ import {
   getOpenTextFileKey,
   LeftMenuTab,
   LeftPaneDefaultWidth,
+  MenuBarWidth,
   StoryboardFilePath,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
@@ -342,7 +343,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             <SimpleFlexColumn
               style={{
                 height: '100%',
-                width: 44,
+                width: MenuBarWidth,
                 backgroundColor: colorTheme.leftMenuBackground.value,
               }}
             >
@@ -418,6 +419,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         </SimpleFlexColumn>
         <ModalComponent />
         <ToastRenderer />
+        <LockedOverlay />
       </SimpleFlexRow>
     </>
   )
@@ -482,5 +484,54 @@ const ToastRenderer = React.memo(() => {
         />
       ))}
     </FlexColumn>
+  )
+})
+
+const LockedOverlay = React.memo(() => {
+  const leftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'EditorComponentInner leftMenuExpanded',
+  )
+
+  const editorLocked = useEditorState(
+    (store) => store.editor.githubOperations.length > 0,
+    'EditorComponentInner editorLocked',
+  )
+
+  const anim = keyframes`
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.2;
+    }
+  `
+
+  if (!editorLocked) {
+    return null
+  }
+
+  return (
+    <div
+      onMouseDown={(e) => e.preventDefault()}
+      onMouseUp={(e) => e.preventDefault()}
+      onClick={(e) => e.preventDefault()}
+      onKeyDown={(e) => e.preventDefault()}
+      onKeyUp={(e) => e.preventDefault()}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: MenuBarWidth + (leftMenuExpanded ? LeftPaneDefaultWidth : 0),
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#000',
+        zIndex: 30,
+        opacity: 0.2,
+        transition: 'all .1s ease-in-out',
+      }}
+      css={css`
+        animation: ${anim} 0.3s ease-in-out;
+      `}
+    />
   )
 })

@@ -182,6 +182,8 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
 
+export const MenuBarWidth = 44
+
 const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
@@ -242,23 +244,29 @@ export function emptyUserConfiguration(): UserConfiguration {
   }
 }
 
-export interface UserGithubState {
+export interface GithubState {
   authenticated: boolean
 }
 
 export interface UserState extends UserConfiguration {
   loginState: LoginState
-  githubState: UserGithubState
+  githubState: GithubState
 }
 
-export interface ProjectGithubState {
-  commishing: boolean
+export type GithubOperation =
+  | { name: 'commish' }
+  | { name: 'listBranches' }
+  | { name: 'loadBranch'; branchName: string }
+
+export function isGithubLoadingBranch(
+  operations: Array<GithubOperation>,
+  branchName: string,
+): boolean {
+  return operations.find((o) => o.name === 'loadBranch' && o.branchName === branchName) != undefined
 }
 
-export function makeDefaultProjectGithubState(): ProjectGithubState {
-  return {
-    commishing: false,
-  }
+export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
+  return operations.find((o) => o.name === 'commish') != undefined
 }
 
 export const defaultUserState: UserState = {
@@ -1029,7 +1037,7 @@ export interface EditorState {
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
-  projectGithubState: ProjectGithubState
+  githubOperations: Array<GithubOperation>
 }
 
 export function editorState(
@@ -1100,7 +1108,7 @@ export function editorState(
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
-  projectGithubState: ProjectGithubState,
+  githubOperations: Array<GithubOperation>,
 ): EditorState {
   return {
     id: id,
@@ -1170,7 +1178,7 @@ export function editorState(
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
-    projectGithubState: projectGithubState,
+    githubOperations: [],
   }
 }
 
@@ -1982,7 +1990,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       originCommit: null,
     },
     imageDragSessionState: notDragging(),
-    projectGithubState: makeDefaultProjectGithubState(),
+    githubOperations: [],
   }
 }
 
@@ -2278,7 +2286,7 @@ export function editorModelFromPersistentModel(
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
-    projectGithubState: makeDefaultProjectGithubState(),
+    githubOperations: [],
   }
   return editor
 }

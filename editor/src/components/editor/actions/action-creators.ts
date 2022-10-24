@@ -204,13 +204,13 @@ import type {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   ElementPaste,
-  SetUserGithubState,
+  SetGithubState,
   SetProperty,
   SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
-  UpdateProjectGithubState,
+  UpdateGithubOperations,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -219,14 +219,14 @@ import type {
   ErrorMessages,
   FloatingInsertMenuState,
   GithubRepo,
-  UserGithubState,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
   ProjectGithubSettings,
   RightMenuTab,
   Theme,
-  ProjectGithubState,
+  GithubOperation,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1421,19 +1421,23 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   }
 }
 
-export function setUserGithubState(githubState: UserGithubState): SetUserGithubState {
+export function setGithubState(githubState: GithubState): SetGithubState {
   return {
-    action: 'SET_USER_GITHUB_STATE',
+    action: 'SET_GITHUB_STATE',
     githubState: githubState,
   }
 }
 
-export function updateProjectGithubState(
-  githubState: ProjectGithubState,
-): UpdateProjectGithubState {
+export type GithubOperationType = 'add' | 'remove'
+
+export function updateGithubOperations(
+  operation: GithubOperation,
+  type: GithubOperationType,
+): UpdateGithubOperations {
   return {
-    action: 'UPDATE_PROJECT_GITHUB_STATE',
-    githubState: githubState,
+    action: 'UPDATE_GITHUB_OPERATIONS',
+    operation: operation,
+    type: type,
   }
 }
 

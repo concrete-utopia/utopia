@@ -49,9 +49,10 @@ import {
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import {
-  createNewProjectName,
   DerivedState,
   EditorState,
+  isGithubCommishing,
+  isGithubLoadingBranch,
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -761,13 +762,14 @@ const GithubPane = React.memo(() => {
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
   const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
-  const githubState = useEditorState((store) => store.editor.projectGithubState, 'Github state')
-
-  const [githubOngoingOperations, setGithubOngoingOperations] = React.useState<number>(0)
+  const githubOperations = useEditorState(
+    (store) => store.editor.githubOperations,
+    'Github operations',
+  )
 
   const githubWorking = React.useMemo(() => {
-    return githubState.commishing || githubOngoingOperations > 0
-  }, [githubOngoingOperations, githubState.commishing])
+    return githubOperations.length > 0
+  }, [githubOperations])
 
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
@@ -857,19 +859,13 @@ const GithubPane = React.memo(() => {
   const [branchesForRepository, setBranchesForRepository] =
     React.useState<GetBranchesResponse | null>(null)
 
-  const incrementGithubOngoingOperations = () => setGithubOngoingOperations((v) => v + 1)
-  const decrementGithubOngoingOperations = () => setGithubOngoingOperations((v) => v - 1)
-
   React.useEffect(() => {
     if (parsedTargetRepository != null) {
-      incrementGithubOngoingOperations()
-      void getBranchesForGithubRepository(parsedTargetRepository)
-        .then((result) => {
-          setBranchesForRepository(result)
-        })
-        .finally(() => decrementGithubOngoingOperations())
+      void getBranchesForGithubRepository(dispatch, parsedTargetRepository).then((result) => {
+        setBranchesForRepository(result)
+      })
     }
-  }, [parsedTargetRepository])
+  }, [parsedTargetRepository, dispatch])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
@@ -895,13 +891,12 @@ const GithubPane = React.memo(() => {
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
                       if (parsedTargetRepository != null) {
-                        incrementGithubOngoingOperations()
                         void getBranchContent(
                           dispatch,
                           parsedTargetRepository,
                           forceNotNull('Should have a project ID.', projectID),
                           branch.name,
-                        ).finally(() => decrementGithubOngoingOperations())
+                        )
                       }
                     }
                     return (
@@ -913,7 +908,11 @@ const GithubPane = React.memo(() => {
                           onMouseUp={loadContentForBranch}
                           disabled={githubWorking}
                         >
-                          Load
+                          {isGithubLoadingBranch(githubOperations, branch.name) ? (
+                            <GithubSpinner />
+                          ) : (
+                            'Load'
+                          )}
                         </Button>
                       </UIGridRow>
                     )
@@ -928,7 +927,14 @@ const GithubPane = React.memo(() => {
           throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
       }
     }
-  }, [branchesForRepository, parsedTargetRepository, dispatch, projectID, githubWorking])
+  }, [
+    branchesForRepository,
+    parsedTargetRepository,
+    dispatch,
+    projectID,
+    githubWorking,
+    githubOperations,
+  ])
 
   return (
     <FlexColumn
@@ -1036,7 +1042,7 @@ const GithubPane = React.memo(() => {
               disabled={!githubAuthenticated || parsedTargetRepository == null || githubWorking}
               onMouseUp={triggerSaveToGithub}
             >
-              Save To Github
+              {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
             </Button>
           </UIGridRow>
           {branchesUI}

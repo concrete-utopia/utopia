@@ -3,7 +3,7 @@ import { MODE } from '../common/server'
 import urljoin from 'url-join'
 import { LoginState } from '../common/user'
 import { EditorDispatch } from '../components/editor/action-types'
-import { setUserGithubState } from '../components/editor/actions/action-creators'
+import { setGithubState } from '../components/editor/actions/action-creators'
 
 async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
   const url = urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status')
@@ -37,7 +37,7 @@ export async function startGithubAuthentication(dispatch: EditorDispatch): Promi
   async function checkAuthenticatedPeriodically(timeLeftMS: number): Promise<void> {
     const currentStatus = await checkIfAuthenticatedWithGithub()
     if (currentStatus) {
-      dispatch([setUserGithubState({ authenticated: true })], 'everyone')
+      dispatch([setGithubState({ authenticated: true })], 'everyone')
     } else {
       if (timeLeftMS > 0) {
         // Wait for a bit and try again.
