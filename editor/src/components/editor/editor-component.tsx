@@ -34,7 +34,11 @@ import { useEditorState, useRefEditorState } from './store/store-hook'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { IS_BROWSER_TEST_DEBUG, PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
+import {
+  IS_BROWSER_TEST_DEBUG,
+  IS_TEST_ENVIRONMENT,
+  PROPERTY_CONTROLS_INFO_BASE_URL,
+} from '../../common/env-vars'
 import {
   SimpleFlexRow,
   SimpleFlexColumn,
@@ -353,7 +357,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               style={{
                 height: '100%',
                 flexShrink: 0,
-                transition: 'all .1s ease-in-out',
+                transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,

@@ -943,42 +943,53 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             ),
           )
 
-          if (
-            (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
-              this.props.editor.imageDragSessionState.draggedImageProperties != null) ||
-            event.dataTransfer.types.includes('Files')
-          ) {
-            const maybeSetDragSessionStateAction =
-              this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
-                ? [EditorActions.setImageDragSessionState(draggingFromFS())]
-                : []
+          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+          const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
+            width: 1,
+            height: 1,
+          }
+          const newElement = createJsxImage(newUID, newElementProps)
 
-            const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+          const elementSize: Size = {
+            width: newElementProps.width,
+            height: newElementProps.height,
+          }
+          const insertAction = EditorActions.enableInsertModeForJSXElement(
+            newElement,
+            newUID,
+            {},
+            elementSize,
+          )
 
-            const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
-              width: 1,
-              height: 1,
-            }
-
-            const newElement = createJsxImage(newUID, newElementProps)
-
-            const elementSize: Size = {
-              width: newElementProps.width,
-              height: newElementProps.height,
-            }
-
-            return this.props.dispatch([
-              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-              ...maybeSetDragSessionStateAction,
-              interactionSessionAction,
-              EditorActions.setFilebrowserDropTarget(null),
-            ])
-          } else if (this.props.editor.imageDragSessionState.type !== 'NOT_DRAGGING') {
-            return this.props.dispatch([
-              EditorActions.switchEditorMode(EditorModes.insertMode([])),
-              interactionSessionAction,
-              EditorActions.setFilebrowserDropTarget(null),
-            ])
+          switch (this.props.editor.imageDragSessionState.type) {
+            case 'DRAGGING_FROM_SIDEBAR':
+              if (this.props.editor.imageDragSessionState.draggedImageProperties != null) {
+                this.props.dispatch([
+                  insertAction,
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              } else {
+                this.props.dispatch([
+                  EditorActions.switchEditorMode(EditorModes.insertMode([])),
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              }
+              break
+            case 'NOT_DRAGGING':
+              if (event.dataTransfer.types.includes('Files')) {
+                this.props.dispatch([
+                  insertAction,
+                  EditorActions.setImageDragSessionState(draggingFromFS()),
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              }
+              break
+            case 'DRAGGING_FROM_FS':
+            default:
+              break
           }
         },
 
