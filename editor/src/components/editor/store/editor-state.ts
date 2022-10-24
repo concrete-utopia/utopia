@@ -267,6 +267,7 @@ export function githubOperationPrettyName(op: GithubOperation): string {
     case 'loadBranch':
       return 'Loading branch'
     default:
+      const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
   }
 }
