@@ -14,7 +14,7 @@ import {
   InteractionCanvasState,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { applyFlexReparent, ReparentTarget } from './reparent-strategy-helpers'
+import { applyStaticReparent, ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseReparentToFlowStrategy(
@@ -83,7 +83,7 @@ export function baseReparentToFlowStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyFlexReparent(canvasState, interactionSession, reparentTarget, 'flow')
+        return applyStaticReparent(canvasState, interactionSession, reparentTarget, 'flow')
       },
     }
   }

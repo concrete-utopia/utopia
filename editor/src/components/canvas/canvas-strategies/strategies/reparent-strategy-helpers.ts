@@ -15,11 +15,7 @@ import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse, stripNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  JSXElement,
-} from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -632,7 +628,7 @@ function createPseudoElements(
   }
 }
 
-export function applyFlexReparent(
+export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
@@ -688,7 +684,7 @@ export function applyFlexReparent(
             )
 
             // Strip the `position`, positional and dimension properties.
-            const propertyChangeCommands = getFlexReparentPropertyChanges(
+            const propertyChangeCommands = getStaticReparentPropertyChanges(
               newPath,
               targetMetadata?.specialSizeMeasurements.position ?? null,
             )
@@ -861,7 +857,7 @@ export function getAbsoluteReparentPropertyChanges(
   ]
 }
 
-export function getFlexReparentPropertyChanges(
+export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
 ): Array<CanvasCommand> {
@@ -897,6 +893,6 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_TO_FLEX':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getFlexReparentPropertyChanges(newPath, targetOriginalStylePosition)
+      return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
   }
 }
