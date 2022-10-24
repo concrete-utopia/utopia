@@ -51,7 +51,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
   customStrategyState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  if (selectedElements.length === 0) {
+  if (selectedElements.length !== 1) {
     return null
   }
 
@@ -192,7 +192,7 @@ function paddingResizeStepIndicatorProps(
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE' ||
     interactionSession.interactionData.drag == null ||
-    filteredSelectedElements.length === 0
+    filteredSelectedElements.length !== 1
   ) {
     return null
   }
