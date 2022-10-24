@@ -1,7 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { CanvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -16,8 +14,8 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
 import {
-  PaddingResizeStepIndicator,
-  PaddingResizeStepIndicatorProps,
+  PaddingValueIndicator,
+  PaddingValueIndicatorProps,
 } from '../../controls/select-mode/padding-resize-step-indicator'
 import {
   deltaFromEdge,
@@ -45,11 +43,7 @@ const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
   'paddingRight',
 ]
 
-export const setPaddingStrategy: CanvasStrategyFactory = (
-  canvasState,
-  interactionSession,
-  customStrategyState,
-) => {
+export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -59,7 +53,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const maybeStepControlProps = paddingResizeStepIndicatorProps(
+  const maybePaddingValueProps = paddingValueIndicatorProps(
     canvasState,
     interactionSession,
     selectedElements,
@@ -76,13 +70,13 @@ export const setPaddingStrategy: CanvasStrategyFactory = (
     (props) => [
       resizeControl,
       controlWithProps({
-        control: PaddingResizeStepIndicator,
+        control: PaddingValueIndicator,
         props: props,
-        key: 'padding-resize-step-control',
+        key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
     ],
-    maybeStepControlProps,
+    maybePaddingValueProps,
   ) ?? [resizeControl]
 
   return {
@@ -180,11 +174,11 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   return true
 }
 
-function paddingResizeStepIndicatorProps(
+function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElements: ElementPath[],
-): PaddingResizeStepIndicatorProps | null {
+): PaddingValueIndicatorProps | null {
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   if (

@@ -7,17 +7,17 @@ import { EdgePiece } from '../../canvas-types'
 import { deltaFromEdge } from '../../padding-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-export const PaddingResizeStepIndicatorTestId = 'PaddingResizeStepIndicatorTestId'
+export const PaddingValueIndicatorTestId = 'PaddingValueIndicatorTestId'
 
-export interface PaddingResizeStepIndicatorProps {
+export interface PaddingValueIndicatorProps {
   currentPaddingValue: number
   activeEdge: EdgePiece
   dragDelta: CanvasVector
   dragStart: CanvasPoint
 }
 
-export const PaddingResizeStepIndicator =
-  controlForStrategyMemoized<PaddingResizeStepIndicatorProps>((props) => {
+export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndicatorProps>(
+  (props) => {
     const { currentPaddingValue, activeEdge, dragStart, dragDelta } = props
     const colorTheme = useColorTheme()
 
@@ -29,7 +29,7 @@ export const PaddingResizeStepIndicator =
     return (
       <CanvasOffsetWrapper>
         <div
-          data-testid={PaddingResizeStepIndicatorTestId}
+          data-testid={PaddingValueIndicatorTestId}
           style={{
             position: 'absolute',
             left: position.x,
@@ -42,7 +42,8 @@ export const PaddingResizeStepIndicator =
         </div>
       </CanvasOffsetWrapper>
     )
-  })
+  },
+)
 
 function indicatorPosition(
   edge: EdgePiece,
