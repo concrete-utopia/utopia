@@ -122,6 +122,12 @@ function flowParentAbsoluteOrStatic(
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const children = MetadataUtils.getChildren(metadata, parent)
 
+  const storyboardRoot = EP.isStoryboardPath(parent)
+  if (storyboardRoot) {
+    // always reparent as absolute to the Storyboard
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
   if (parentMetadata == null) {
     // should this throw an error?
     return 'REPARENT_AS_STATIC'
