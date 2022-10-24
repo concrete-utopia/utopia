@@ -554,18 +554,13 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onMouseDown = (e: React.MouseEvent) => {
-    if (this.props.imageFile == null) {
-      return
-    }
+    const imageProperties: DraggedImageProperties | null =
+      this.props.imageFile == null
+        ? null
+        : draggedImagePropertiesFromImageFile(this.props.path, this.props.imageFile)
 
     this.props.dispatch(
-      [
-        EditorActions.setImageDragSessionState(
-          draggingFromSidebar(
-            draggedImagePropertiesFromImageFile(this.props.path, this.props.imageFile),
-          ),
-        ),
-      ],
+      [EditorActions.setImageDragSessionState(draggingFromSidebar(imageProperties))],
       'everyone',
     )
   }
