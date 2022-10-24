@@ -275,11 +275,11 @@ export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
 ): boolean {
-  return operations.find((o) => o.name === 'loadBranch' && o.branchName === branchName) != undefined
+  return operations.some((o) => o.name === 'loadBranch' && o.branchName === branchName)
 }
 
 export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
-  return operations.find((o) => o.name === 'commish') != undefined
+  return operations.some((o) => o.name === 'commish')
 }
 
 export const defaultUserState: UserState = {
