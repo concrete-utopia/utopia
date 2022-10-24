@@ -9,14 +9,11 @@ import {
   HighlightBoundsForUids,
   ImageFile,
   Imports,
-  isParseFailure,
   ParsedTextFile,
   ParseSuccess,
-  ProjectContents,
   ProjectFile,
   ProjectFileType,
   RevisionsState,
-  SceneMetadata,
   TextFile,
   AssetFile,
   foldParsedTextFile,
@@ -24,7 +21,6 @@ import {
   textFile,
   TextFileContents,
   textFileContents,
-  unparsed,
   HighlightBoundsWithFileForUids,
   forEachParseSuccess,
   isParseSuccess,
@@ -38,7 +34,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
-  jsxElementNameEquals,
   ImportInfo,
   createImportedFrom,
   createNotImported,
@@ -54,7 +49,7 @@ import {
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
 import { mapDropNulls, pluck } from '../shared/array-utils'
-import { forEachValue, mapValues } from '../shared/object-utils'
+import { forEachValue } from '../shared/object-utils'
 import {
   getContentsTreeFileFromString,
   projectContentFile,
@@ -66,14 +61,9 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
-import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
-import { splitAt } from '../shared/string-utils'
+import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
 import { memoize } from '../shared/memoize'
-import {
-  filenameFromParts,
-  getImageFilenameParts,
-  ImageFilenameParts,
-} from '../../components/images'
+import { filenameFromParts, getFilenameParts } from '../../components/images'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -660,7 +650,7 @@ export function uniqueProjectContentID(
     return startingIDCorrected
   }
 
-  const parts = getImageFilenameParts(startingIDCorrected)
+  const parts = getFilenameParts(startingIDCorrected)
   if (parts == null) {
     let counter = 2
     // eslint-disable-next-line no-constant-condition

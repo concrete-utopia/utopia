@@ -66,14 +66,14 @@ function parseImageMultiplierrrr(imagePath: string): number {
   return multiplier
 }
 
-export interface ImageFilenameParts {
+export interface FilenameParts {
   filename: string
   extension: string
   multiplier?: number
   deduplicationSeqNumber?: number
 }
 
-export function filenameFromParts(parts: ImageFilenameParts): string {
+export function filenameFromParts(parts: FilenameParts): string {
   const { filename, multiplier, extension, deduplicationSeqNumber } = parts
   const multiplierString = optionalMap((m) => `@${m}x`, multiplier) ?? ''
   const dedupeString = optionalMap((n) => `_${n}`, deduplicationSeqNumber) ?? ''
@@ -124,7 +124,7 @@ const parseNumber =
 export const parseMultiplier = parseNumber(/^(\d+)x$/)
 export const parseDedupeId = parseNumber(/^(\d+)$/)
 
-export function getImageFilenameParts(filename: string): ImageFilenameParts | null {
+export function getFilenameParts(filename: string): FilenameParts | null {
   const extensionResult = lastPartSeparatedBy<'.', string>('.', identity, filename)
   if (extensionResult == null) {
     return null
@@ -163,7 +163,7 @@ export function getFrameAndMultiplier(
 ): FrameAndMultiplier {
   const multiplier =
     overrideDefaultMultiplier == null
-      ? getImageFilenameParts(filename)?.multiplier ?? 1
+      ? getFilenameParts(filename)?.multiplier ?? 1
       : overrideDefaultMultiplier
   const scaledSize = scaleImageDimensions(size, multiplier)
   const frame: CanvasRectangle = canvasRectangle({
