@@ -15,13 +15,16 @@ import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse, stripNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
-  offsetPoint,
   pointDifference,
   rectContainsPoint,
   rectContainsPointInclusive,
@@ -37,6 +40,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
+import { CSSPosition } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor } from '../../canvas-types'
 import {
@@ -48,9 +52,9 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { setProperty } from '../../commands/set-property-command'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { updatePropIfExists } from '../../commands/update-prop-if-exists-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { getAllTargetsAtPointAABB } from '../../dom-lookup'
@@ -128,7 +132,8 @@ export function findReparentStrategies(
   const metadata = canvasState.startingMetadata
 
   const reparentSubjects =
-    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
+    canvasState.interactionTarget.subjects.length > 0
       ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
       : existingReparentSubjects(
           getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
@@ -499,8 +504,6 @@ function drawTargetRectanglesForChildrenOfElement(
   return flexInsertionTargets
 }
 
-export type StripAbsoluteProperties = 'strip-absolute-props' | 'do-not-strip-props'
-
 export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
@@ -629,11 +632,9 @@ function createPseudoElements(
 }
 
 export function applyFlexReparent(
-  stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
-  showTargetOrReorderIndicator: 'show-reorder-indicator' | 'show-flex-target',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -679,10 +680,15 @@ export function applyFlexReparent(
           if (outcomeResult != null) {
             const { commands: reparentCommands, newPath } = outcomeResult
 
+            const targetMetadata = MetadataUtils.findElementByElementPath(
+              canvasState.startingMetadata,
+              target,
+            )
+
             // Strip the `position`, positional and dimension properties.
             const propertyChangeCommands = getFlexReparentPropertyChanges(
-              stripAbsoluteProperties,
               newPath,
+              targetMetadata?.specialSizeMeasurements.position ?? null,
             )
 
             const commandsBeforeReorder = [
@@ -697,8 +703,11 @@ export function applyFlexReparent(
               setCursorCommand('mid-interaction', CSSCursor.Move),
             ]
 
-            function showReorderIndicatorCommands(): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
               return [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
                 showReorderIndicator(newParent, newIndex),
                 newParentADescendantOfCurrentParent
                   ? wildcardPatch('mid-interaction', {
@@ -709,18 +718,6 @@ export function applyFlexReparent(
                     }),
                 wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
               ]
-            }
-
-            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
-              const commandsForTarget: Array<CanvasCommand> = [
-                wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-                }),
-              ]
-
-              return showTargetOrReorderIndicator === 'show-reorder-indicator'
-                ? commandsForTarget.concat(showReorderIndicatorCommands())
-                : commandsForTarget
             }
 
             let interactionFinishCommands: Array<CanvasCommand>
@@ -851,15 +848,17 @@ export function getAbsoluteReparentPropertyChanges(
 }
 
 export function getFlexReparentPropertyChanges(
-  stripAbsoluteProperties: StripAbsoluteProperties,
   newPath: ElementPath,
-) {
-  return stripAbsoluteProperties
-    ? [
-        deleteProperties('always', newPath, propertiesToRemove),
-        updatePropIfExists('always', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
-      ]
-    : []
+  targetOriginalStylePosition: CSSPosition | null,
+): Array<CanvasCommand> {
+  if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
+    return [deleteProperties('always', newPath, propertiesToRemove)]
+  }
+
+  return [
+    deleteProperties('always', newPath, [...propertiesToRemove, PP.create(['style', 'position'])]),
+    setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
+  ]
 }
 
 export function getReparentPropertyChanges(
@@ -870,6 +869,7 @@ export function getReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
+  targetOriginalStylePosition: CSSPosition | null,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
     case 'REPARENT_TO_ABSOLUTE':
@@ -883,6 +883,6 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_TO_FLEX':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getFlexReparentPropertyChanges('strip-absolute-props', newPath)
+      return getFlexReparentPropertyChanges(newPath, targetOriginalStylePosition)
   }
 }
