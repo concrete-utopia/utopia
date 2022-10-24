@@ -90,7 +90,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
-    const name = getDragToInsertStrategyName(result.strategyType, result.missingBoundsHandling)
+    const name = getDragToInsertStrategyName(
+      result.strategyType,
+      result.missingBoundsHandling,
+      result.targetParentDisplayType,
+    )
 
     return dragToInsertStrategyFactory(
       canvasState,
@@ -108,6 +112,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
   missingBoundsHandling: MissingBoundsHandling,
+  parentDisplayType: 'flex' | 'flow',
 ): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -117,7 +122,11 @@ function getDragToInsertStrategyName(
         return 'Drag to Insert (Abs, Forced)'
       }
     case 'REPARENT_AS_STATIC':
-      return 'Drag to Insert (Flex)'
+      if (parentDisplayType === 'flex') {
+        return 'Drag to Insert (Flex)'
+      } else {
+        return 'Drag to Insert (Flow)'
+      }
   }
 }
 

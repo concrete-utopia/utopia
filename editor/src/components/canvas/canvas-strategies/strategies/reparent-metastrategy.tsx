@@ -27,6 +27,7 @@ interface ReparentFactoryAndDetails {
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
   missingBoundsHandling: MissingBoundsHandling
+  targetParentDisplayType: 'flex' | 'flow' // should this be here?
   fitness: number
   factory: CanvasStrategyFactory
 }
@@ -51,6 +52,7 @@ export function getApplicableReparentFactories(
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flow',
             fitness: fitness,
             factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
           }
@@ -60,6 +62,7 @@ export function getApplicableReparentFactories(
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flow',
             fitness: fitness,
             factory: baseFlexReparentToAbsoluteStrategy(
               result.target,
@@ -85,6 +88,7 @@ export function getApplicableReparentFactories(
             targetIndex: result.target.newIndex,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flex',
             fitness: fitness,
             factory: baseReparentToFlexStrategy(result.target, fitness),
           }
@@ -94,6 +98,7 @@ export function getApplicableReparentFactories(
             targetIndex: result.target.newIndex,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flow',
             fitness: fitness,
             factory: baseReparentToFlowStrategy(result.target, fitness),
           }
