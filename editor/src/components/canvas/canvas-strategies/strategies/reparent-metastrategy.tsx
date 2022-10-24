@@ -20,6 +20,7 @@ import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-
 import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
+import { baseReparentToFlowStrategy } from './reparent-to-flow-strategy'
 
 interface ReparentFactoryAndDetails {
   targetParent: ElementPath
@@ -70,13 +71,32 @@ export function getApplicableReparentFactories(
       }
       case 'REPARENT_AS_STATIC': {
         const fitness = 3
-        return {
-          targetParent: result.target.newParent,
-          targetIndex: result.target.newIndex,
-          strategyType: result.strategy,
-          missingBoundsHandling: result.missingBoundsHandling,
-          fitness: fitness,
-          factory: baseReparentToFlexStrategy(result.target, fitness),
+
+        // TODO this feels wrong here – maybe we should only have a single of these strategies?
+        const targetParentFlex =
+          MetadataUtils.findElementByElementPath(
+            canvasState.startingMetadata,
+            result.target.newParent,
+          )?.specialSizeMeasurements.display === 'flex'
+
+        if (targetParentFlex) {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseReparentToFlexStrategy(result.target, fitness),
+          }
+        } else {
+          return {
+            targetParent: result.target.newParent,
+            targetIndex: result.target.newIndex,
+            strategyType: result.strategy,
+            missingBoundsHandling: result.missingBoundsHandling,
+            fitness: fitness,
+            factory: baseReparentToFlowStrategy(result.target, fitness),
+          }
         }
       }
       default:
