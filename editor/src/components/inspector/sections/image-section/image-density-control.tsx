@@ -6,6 +6,7 @@ import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { notice } from '../../../common/notice'
 import { parseImageMultiplier } from '../../../images'
+import { size, Size } from '../../../../core/shared/math-utils'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch
@@ -99,15 +100,25 @@ interface SizeMeasurements {
 }
 
 function imageMultiplierFromSizeMeasurements(measurements: SizeMeasurements): number | null {
-  const { naturalHeight, naturalWidth, clientHeight, clientWidth } = measurements
-  if (naturalWidth != null && naturalHeight != null) {
-    const widthMultiplier = naturalWidth / clientWidth
-    const heightMultiplier = naturalHeight / clientHeight
-    if (widthMultiplier === heightMultiplier) {
-      return widthMultiplier
-    }
+  const naturalSize = size(measurements.naturalWidth ?? 0, measurements.naturalHeight ?? 0)
+  const clientSize = size(measurements.clientWidth, measurements.clientHeight)
+
+  if (isZeroSize(naturalSize) || isZeroSize(clientSize)) {
+    return null
   }
+
+  const widthMultiplier = naturalSize.width / clientSize.width
+  const heightMultiplier = naturalSize.height / clientSize.height
+
+  if (widthMultiplier === heightMultiplier) {
+    return widthMultiplier
+  }
+
   return null
+}
+
+function isZeroSize(s: Size): boolean {
+  return s.width === 0 && s.height === 0
 }
 
 function imageMultiplierFromSrc(src: string): number {
