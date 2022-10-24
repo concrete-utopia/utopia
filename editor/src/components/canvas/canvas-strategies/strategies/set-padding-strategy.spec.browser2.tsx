@@ -48,31 +48,40 @@ describe('Padding resize strategy', () => {
     })
   })
 
-  it('Adjusting individual padding values', async () => {
-    const edgePieces: Array<EdgePiece> = ['top'] // 'bottom', 'left', 'right']
-    for await (const edge of edgePieces) {
-      const padding: SimpleCSSPadding = {
-        paddingTop: 22,
-        paddingBottom: 33,
-        paddingLeft: 44,
-        paddingRight: 55,
-      }
-      const dragDelta = 12
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithStringPaddingValues(paddingToPaddingString(padding)),
-        'await-first-dom-report',
-      )
-
-      await testPaddingResizeForEdge(editor, dragDelta, edge)
-      await editor.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithStringPaddingValues(
-          paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding)),
-        ),
-      )
-    }
+  describe('Adjusting individual padding values', () => {
+    // the expect is in `testAdjustIndividualPaddingValue`
+    // eslint-disable-next-line jest/expect-expect
+    it('top', async () => testAdjustIndividualPaddingValue('top'))
+    // eslint-disable-next-line jest/expect-expect
+    it('bottom', async () => testAdjustIndividualPaddingValue('top'))
+    // eslint-disable-next-line jest/expect-expect
+    it('left', async () => testAdjustIndividualPaddingValue('top'))
+    // eslint-disable-next-line jest/expect-expect
+    it('right', async () => testAdjustIndividualPaddingValue('top'))
   })
 })
+
+async function testAdjustIndividualPaddingValue(edge: EdgePiece) {
+  const padding: SimpleCSSPadding = {
+    paddingTop: 22,
+    paddingBottom: 33,
+    paddingLeft: 44,
+    paddingRight: 55,
+  }
+  const dragDelta = 12
+  const editor = await renderTestEditorWithCode(
+    makeTestProjectCodeWithStringPaddingValues(paddingToPaddingString(padding)),
+    'await-first-dom-report',
+  )
+
+  await testPaddingResizeForEdge(editor, dragDelta, edge)
+  await editor.getDispatchFollowUpActionsFinished()
+  expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+    makeTestProjectCodeWithStringPaddingValues(
+      paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding)),
+    ),
+  )
+}
 
 async function testPaddingResizeForEdge(
   editor: EditorRenderResult,
