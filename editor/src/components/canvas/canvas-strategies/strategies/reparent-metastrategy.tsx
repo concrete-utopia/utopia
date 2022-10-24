@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { parentPath, pathsEqual } from '../../../../core/shared/element-path'
+import {
+  isRootElementOfInstance,
+  parentPath,
+  pathsEqual,
+} from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -12,9 +16,8 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
-import { baseAbsoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { baseFlexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -67,24 +70,13 @@ export function getApplicableReparentFactories(
       }
       case 'REPARENT_TO_FLEX': {
         const fitness = 3
-        if (allDraggedElementsAbsolute) {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            fitness: fitness,
-            factory: baseAbsoluteReparentToFlexStrategy(result.target, fitness),
-          }
-        } else {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            fitness: fitness,
-            factory: baseFlexReparentToFlexStrategy(result.target, fitness),
-          }
+        return {
+          targetParent: result.target.newParent,
+          targetIndex: result.target.newIndex,
+          strategyType: result.strategy,
+          missingBoundsHandling: result.missingBoundsHandling,
+          fitness: fitness,
+          factory: baseReparentToFlexStrategy(result.target, fitness),
         }
       }
       default:
@@ -128,7 +120,9 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex)) {
+  const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
+
+  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex) || anyDraggedElementsRootElements) {
     return []
   }
 

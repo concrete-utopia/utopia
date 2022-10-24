@@ -34,7 +34,6 @@ import { flexReorderStrategy } from './strategies/flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { flowReorderStrategy } from './strategies/flow-reorder-strategy'
-import { dragToInsertStrategy } from './strategies/drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './strategies/flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
@@ -44,6 +43,7 @@ import { lookForApplicableParentStrategy } from './strategies/look-for-applicabl
 import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
+import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -65,7 +65,6 @@ const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
   convertToAbsoluteAndMoveStrategy,
-  dragToInsertStrategy,
   flowReorderStrategy,
   flowReorderSliderStategy,
   flexResizeBasicStrategy,
@@ -88,6 +87,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   lookForApplicableParentStrategy,
   reparentMetaStrategy,
   drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(

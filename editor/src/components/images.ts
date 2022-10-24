@@ -179,26 +179,6 @@ export function getFrameAndMultiplier(
   }
 }
 
-export function getFrameAndMultiplierWithResize(
-  centerPoint: CanvasPoint,
-  filename: string,
-  size: Size,
-  scale: number,
-): FrameAndMultiplier {
-  const { frame, multiplier } = getFrameAndMultiplier(centerPoint, filename, size, null)
-  const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
-  const adjustedFrame = isFeatureEnabled('Resize image on drop')
-    ? resizeCanvasRectangle(frame, {
-        centerPoint: centerPoint,
-        keepAspectRatio: true,
-        desiredHeight: Math.min(frame.height, defaultWidth),
-        desiredWidth: Math.min(frame.width, defaultHeight),
-      })
-    : frame
-
-  return { frame: adjustedFrame, multiplier: multiplier }
-}
-
 export function createInsertImageAction(
   projectContents: ProjectContents,
   centerPoint: CanvasPoint,
@@ -287,6 +267,7 @@ export function getScaledImageDimensionsFromProps(props: any): Size {
 }
 
 export interface JSXImageOptions {
+  opacity: number
   width: number
   height: number
   top: number

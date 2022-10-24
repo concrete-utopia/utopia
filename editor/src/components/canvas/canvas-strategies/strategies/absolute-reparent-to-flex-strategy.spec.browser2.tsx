@@ -278,13 +278,13 @@ describe('Absolute Reparent To Flex Strategy', () => {
       />
       <div
         style={{
-          position: 'relative',
           width: 100,
           height: 100,
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
           backgroundColor: 'yellow',
+          contain: 'layout',
         }}
         data-uid='absolutechild'
         data-testid='absolutechild'
@@ -391,13 +391,13 @@ describe('Absolute Reparent To Flex Strategy', () => {
       />
       <div
         style={{
-          position: 'relative',
           width: 100,
           height: 100,
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
           backgroundColor: 'yellow',
+          contain: 'layout',
         }}
         data-uid='absolutechild'
         data-testid='absolutechild'
