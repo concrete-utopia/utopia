@@ -219,11 +219,9 @@ describe('Unified Reparent Fitness Function Tests', () => {
           <div
             style={{
               backgroundColor: '#0091FFAA',
-              position: 'absolute',
-              left: 120,
-              top: 0,
               width: 200,
               height: 200,
+              contain: 'layout',
             }}
             data-uid='ccc'
             data-testid='ccc'

@@ -747,7 +747,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       </div>`),
     )
   })
-  it('Absolute to absolute on a target parent element without size', async () => {
+  it('Absolute to static on a target parent element without size', async () => {
     const testCode = `
       <div
         style={{
@@ -825,12 +825,10 @@ describe('Forced Absolute Reparent Strategies', () => {
         >
           <div
             style={{
-              position: 'absolute',
               backgroundColor: 'hotpink',
-              left: -20,
-              top: -20,
               height: 40,
               width: 40,
+              contain: 'layout',
             }}
             data-uid='ccc'
             data-testid='ccc'
