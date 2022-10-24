@@ -1921,13 +1921,19 @@ export const UPDATE_FNS = {
     _dispatch: EditorDispatch,
   ): EditorModel => {
     const operations = [...editor.githubOperations]
-    if (action.type === 'add') {
-      operations.push(action.operation)
-    } else {
-      const idx = operations.indexOf(action.operation)
-      if (idx >= 0) {
-        operations.splice(idx, 1)
-      }
+    switch (action.type) {
+      case 'add':
+        operations.push(action.operation)
+        break
+      case 'remove':
+        const idx = operations.indexOf(action.operation)
+        if (idx >= 0) {
+          operations.splice(idx, 1)
+        }
+        break
+      default:
+        const _exhaustiveCheck: never = action.type
+        throw new Error('Unknown operation type.')
     }
     return {
       ...editor,
