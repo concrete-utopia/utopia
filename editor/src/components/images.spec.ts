@@ -89,6 +89,43 @@ describe('image related helper functions', () => {
     }
   })
 
+  it('parse image filenames, with full path', () => {
+    const filenames: Array<[ImageFilenameParts, string]> = [
+      [
+        {
+          filename: '/Users/user/images/stuff@3',
+          extension: 'png',
+          multiplier: 2,
+          deduplicationSeqNumber: 2,
+        },
+        '/Users/user/images/stuff@3_2@2x.png',
+      ],
+      [
+        {
+          filename: '/Users/user/images/res@3x/stuff_3@3',
+          extension: 'png',
+          multiplier: 2,
+          deduplicationSeqNumber: 2,
+        },
+        '/Users/user/images/res@3x/stuff_3@3_2@2x.png',
+      ],
+      [
+        {
+          filename: '/Users/user/images/res@3x_2/stuff_3@@@3x',
+          extension: 'png',
+          multiplier: 2,
+          deduplicationSeqNumber: 2,
+        },
+        '/Users/user/images/res@3x_2/stuff_3@@@3x_2@2x.png',
+      ],
+    ]
+
+    for (const [result, input] of filenames) {
+      const parsed = getImageFilenameParts(input)
+      expect(parsed).toEqual(result)
+    }
+  })
+
   it('print-parse image filenames', () => {
     const filenames: Array<ImageFilenameParts> = [
       { filename: 'stuff', extension: 'png' },
