@@ -1089,7 +1089,7 @@ export function useInspectorWarningStatus(): boolean {
   }, 'useInspectorWarningStatus')
 }
 
-export function useSelectedViews() {
+export function useSelectedViews(): ElementPath[] {
   const selectedViews = useContextSelector(
     InspectorPropsContext,
     (context) => context.selectedViews,
@@ -1097,7 +1097,7 @@ export function useSelectedViews() {
   return selectedViews
 }
 
-export function useRefSelectedViews() {
+export function useRefSelectedViews(): ReadonlyRef<ElementPath[]> {
   const { selectedViewsRef } = React.useContext(InspectorCallbackContext)
   return selectedViewsRef
 }

@@ -95,6 +95,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   outline: 'none',
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
+  cursor: 'pointer',
 
   // slightly subdued colors in default state
   backgroundColor: props.primary

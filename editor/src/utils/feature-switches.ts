@@ -18,7 +18,6 @@ export type FeatureName =
   | 'Canvas Selective Rerender'
   | 'Single child, contiguous parent: move parent'
   | 'Single child, zero sized parent: move parent'
-  | 'Resize image on drop'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -36,7 +35,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Selective Rerender',
   'Single child, contiguous parent: move parent',
   'Single child, zero sized parent: move parent',
-  'Resize image on drop',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -55,7 +53,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Selective Rerender': true,
   'Single child, contiguous parent: move parent': true,
   'Single child, zero sized parent: move parent': true,
-  'Resize image on drop': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

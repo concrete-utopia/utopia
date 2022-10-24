@@ -582,6 +582,7 @@ export function makeDragEvent(
           item: (itemIndex: number) => fileList[itemIndex],
           length: fileList.length,
         },
+        types: ['Files'],
       },
     })
   }

@@ -117,6 +117,7 @@ export const ImgSection = React.memo(() => {
           naturalHeight={naturalHeight}
           clientWidth={clientWidth}
           clientHeight={clientHeight}
+          src={srcValue}
         />
       </UIGridRow>
     </>

@@ -38,7 +38,11 @@ import CanvasActions from '../canvas/canvas-actions'
 import { imagePathURL } from '../../common/server'
 import { useEditorState } from '../editor/store/store-hook'
 import { EditorModes } from '../editor/editor-modes'
-import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
+import {
+  DraggedImageProperties,
+  draggingFromSidebar,
+  notDragging,
+} from '../editor/store/editor-state'
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 
@@ -548,20 +552,17 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onMouseDown = (e: React.MouseEvent) => {
-    if (this.props.imageFile == null) {
-      return
-    }
-
-    this.props.dispatch(
-      [
-        EditorActions.setImageDragSessionState(
-          draggingFromSidebar({
+    const imageProperties: DraggedImageProperties | null =
+      this.props.imageFile == null
+        ? null
+        : {
             width: this.props.imageFile.width ?? 200,
             height: this.props.imageFile.height ?? 200,
             src: imagePathURL(this.props.path),
-          }),
-        ),
-      ],
+          }
+
+    this.props.dispatch(
+      [EditorActions.setImageDragSessionState(draggingFromSidebar(imageProperties))],
       'everyone',
     )
   }

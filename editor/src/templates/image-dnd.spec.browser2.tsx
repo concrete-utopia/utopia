@@ -23,6 +23,7 @@ import {
 } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
+import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -238,8 +239,7 @@ describe('image drag and drop', () => {
 
   describe('filebrowser and canvas combined interactions', () => {
     it('dragging from the filebrowser to the canvas inserts the image', async () => {
-      const newUID = 'imgimgimg'
-      FOR_TESTS_setNextGeneratedUid(newUID)
+      FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
@@ -261,8 +261,8 @@ describe('image drag and drop', () => {
       const targetBounds = target.getBoundingClientRect()
 
       const endPoint = {
-        x: Math.floor(targetBounds.x + targetBounds.width / 2),
-        y: Math.floor(targetBounds.y + targetBounds.height / 2),
+        x: Math.floor(targetBounds.x - 5),
+        y: Math.floor(targetBounds.y - 5),
       }
 
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
@@ -277,6 +277,8 @@ describe('image drag and drop', () => {
         'DRAGGING_FROM_SIDEBAR',
       )
       expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
+      await editor.getDispatchFollowUpActionsFinished()
 
       dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
@@ -305,19 +307,18 @@ describe('image drag and drop', () => {
             data-testid='scene'
             data-label='Playground'
             data-uid='3fc'
-          >
-            <img
-              src='./assets/stuff.png'
-              style={{
-                position: 'absolute',
-                width: 200,
-                height: 62,
-                top: 348.5,
-                left: 250,
-              }}
-              data-uid='${newUID}'
-            />
-          </Scene>
+          />
+          <img
+            src='./assets/stuff.png'
+            style={{
+              position: 'absolute',
+              width: 1830,
+              height: 570,
+              top: -159,
+              left: -708,
+            }}
+            data-uid='1'
+          />
         </Storyboard>
       )
   `),
@@ -363,8 +364,6 @@ describe('image drag and drop', () => {
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
-
       switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
@@ -387,7 +386,7 @@ describe('image drag and drop', () => {
 
       expect(fileContent).toBeDefined()
     })
-    it('dragging from the "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
+    it('dragging from "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
         [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
@@ -397,7 +396,7 @@ describe('image drag and drop', () => {
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-      const file = await makeImageFile(imgBase64, 'hello.png')
+      const file = await makeImageFile(imgBase641x1, 'hello.png')
 
       const canvasScene = editor.renderedDOM.getByTestId('scene')
       const canvasSceneBounds = canvasScene.getBoundingClientRect()
@@ -444,13 +443,19 @@ describe('image drag and drop', () => {
     })
   })
 
-  it('dragging from the "finder" works', async () => {
+  it('dragging from "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const file = await makeImageFile(imgBase64, 'chucknorris.png')
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const file = await makeImageFile(imgBase641x1, 'chucknorris.png')
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
@@ -497,13 +502,13 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='${imgBase64}'
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -513,7 +518,82 @@ export var storyboard = (
 `)
   })
 
-  it('dragging existing filename from the "finder" autoincrements filename', async () => {
+  it('dragging from "finder" works, with image multiplier', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const file = await makeImageFile(imgBase642x2, 'chucknorris@2x.png')
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: Math.floor(targetBounds.x + targetBounds.width / 2),
+      y: Math.floor(targetBounds.y + targetBounds.height / 2),
+    }
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+    expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
+
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
+    expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        src='${imgBase642x2}'
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
+        }}
+        data-uid='1'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging existing filename from "finder" autoincrements filename', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(
@@ -524,7 +604,13 @@ export var storyboard = (
     )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const file = await makeImageFile(imgBase64, 'stuff.png')
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const file = await makeImageFile(imgBase641x1, 'stuff.png')
 
     const target = editor.renderedDOM.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
@@ -565,10 +651,10 @@ export var storyboard = (
         src='./assets/stuff_2.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -578,16 +664,22 @@ export var storyboard = (
 `)
   })
 
-  it('dragging multiple images from the "finder" works', async () => {
+  it('dragging multiple images from "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
     const files = [
-      await makeImageFile(imgBase64, 'chucknorris.png'),
-      await makeImageFile(imgBase64, 'budspencer.png'),
-      await makeImageFile(imgBase64, 'brucelee.png'),
+      await makeImageFile(imgBase641x1, 'chucknorris.png'),
+      await makeImageFile(imgBase641x1, 'budspencer.png'),
+      await makeImageFile(imgBase641x1, 'brucelee.png'),
     ]
 
     const target = editor.renderedDOM.getByTestId('scene')
@@ -625,35 +717,35 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='${imgBase64}'
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='1'
       />
       <img
-        src='${imgBase64}'
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='2'
       />
       <img
-        src='${imgBase64}'
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='3'
       />
@@ -663,7 +755,7 @@ export var storyboard = (
 `)
   })
 
-  it('dragging multiple images with the same name from the "finder" works', async () => {
+  it('dragging multiple images with the same name from "finder" works', async () => {
     FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
 
     const editor = await renderTestEditorWithProjectContent(
@@ -674,10 +766,16 @@ export var storyboard = (
     )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
     const files = [
-      await makeImageFile(imgBase64, 'chucknorris.png'),
-      await makeImageFile(imgBase64, 'chucknorris.png'),
-      await makeImageFile(imgBase64, 'brucelee.png'),
+      await makeImageFile(imgBase641x1, 'chucknorris.png'),
+      await makeImageFile(imgBase641x1, 'chucknorris.png'),
+      await makeImageFile(imgBase641x1, 'brucelee.png'),
     ]
 
     const target = editor.renderedDOM.getByTestId('scene')
@@ -719,10 +817,10 @@ export var storyboard = (
         src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='1'
       />
@@ -730,10 +828,10 @@ export var storyboard = (
         src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='2'
       />
@@ -741,10 +839,10 @@ export var storyboard = (
         src='./assets/brucelee.png'
         style={{
           position: 'absolute',
-          width: 200,
-          height: 200,
-          top: 279.5,
-          left: 250,
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
         }}
         data-uid='3'
       />
@@ -757,7 +855,10 @@ export var storyboard = (
 
 // minimal PNG image
 // https://stackoverflow.com/a/36610159
-const imgBase64 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=`
+const imgBase641x1 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=`
+
+// https://png-pixel.com/
+const imgBase642x2 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR42mP8z/D/PwMQMMIYAEDsBf08YSRIAAAAAElFTkSuQmCC`
 
 // https://stackoverflow.com/a/47497249
 const makeImageFile = (base64: string, name: string) =>
