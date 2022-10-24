@@ -258,6 +258,19 @@ export type GithubOperation =
   | { name: 'listBranches' }
   | { name: 'loadBranch'; branchName: string }
 
+export function githubOperationPrettyName(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commish':
+      return 'Saving'
+    case 'listBranches':
+      return 'Listing branches'
+    case 'loadBranch':
+      return 'Loading branch'
+    default:
+      return 'Unknown operation' // this should never happen
+  }
+}
+
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,

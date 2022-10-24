@@ -51,6 +51,7 @@ import { InsertMenu } from '../editor/insertmenu'
 import {
   DerivedState,
   EditorState,
+  githubOperationPrettyName,
   isGithubCommishing,
   isGithubLoadingBranch,
   LeftMenuTab,
@@ -950,7 +951,12 @@ const GithubPane = React.memo(() => {
       <Section>
         <SectionTitleRow minimised={false}>
           <Title style={{ flexGrow: 1 }}>Github</Title>
-          {githubWorking && <GithubSpinner />}
+          {githubWorking && (
+            <FlexRow style={{ gap: 4 }}>
+              <GithubSpinner />
+              <span>{githubOperationPrettyName(githubOperations[0])}…</span>
+            </FlexRow>
+          )}
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
           <div
