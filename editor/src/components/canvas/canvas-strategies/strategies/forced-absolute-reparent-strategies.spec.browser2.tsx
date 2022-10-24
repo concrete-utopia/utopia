@@ -503,17 +503,18 @@ describe('Forced Absolute Reparent Strategies', () => {
         }}
         data-uid='flexchild2'
         data-testid='flexchild2'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'yellow',
-          contain: 'layout',
-        }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
-      />
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'yellow',
+            contain: 'layout',
+          }}
+          data-uid='absolutechild'
+          data-testid='absolutechild'
+        />
+      </div>
     </div>
   </div>`),
     )
@@ -682,7 +683,17 @@ describe('Forced Absolute Reparent Strategies', () => {
           }}
           data-uid='staticparent'
           data-testid='staticparent'
-        />
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              backgroundColor: 'teal',
+            }}
+            data-uid='flexchild1'
+            data-testid='flexchild1'
+          />
+        </div>
         <div
           style={{
             position: 'absolute',
@@ -732,18 +743,6 @@ describe('Forced Absolute Reparent Strategies', () => {
             data-testid='flexchild2'
           />
         </div>
-        <div
-          style={{
-            width: 100,
-            height: 100,
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 75,
-            top: 200,
-          }}
-          data-uid='flexchild1'
-          data-testid='flexchild1'
-        />
       </div>`),
     )
   })
