@@ -1,11 +1,11 @@
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { Either, isLeft, right } from '../../core/shared/either'
+import { defaultEither, Either, flatMapEither, isLeft, left, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 
 type CSSPaddingKey = keyof CSSPadding
@@ -69,14 +69,13 @@ function cssPaddingWithDefaults(
   }
 }
 
-const pxValue = (number: CSSNumber): number | undefined =>
-  number.unit === 'px' || number.unit == null ? number.value : undefined
+const isUnitPxValue = (unit: CSSNumberUnit | null) => unit === 'px' || unit == null
+
+const pxValue = (number: CSSNumber | undefined): Either<undefined, number> =>
+  number == null || !isUnitPxValue(number.unit) ? left(undefined) : right(number.value)
 
 function pxValueFromEither(value: Either<string, CSSNumber | undefined>): number | undefined {
-  if (isLeft(value) || value.value == null) {
-    return undefined
-  }
-  return pxValue(value.value)
+  return defaultEither(undefined, flatMapEither(pxValue, value))
 }
 
 function cssPaddingToSimple(
@@ -88,10 +87,10 @@ function cssPaddingToSimple(
   }
 
   return {
-    paddingTop: pxValue(p.value.paddingTop),
-    paddingBottom: pxValue(p.value.paddingBottom),
-    paddingLeft: pxValue(p.value.paddingLeft),
-    paddingRight: pxValue(p.value.paddingRight),
+    paddingTop: defaultEither(undefined, pxValue(p.value.paddingTop)),
+    paddingBottom: defaultEither(undefined, pxValue(p.value.paddingBottom)),
+    paddingLeft: defaultEither(undefined, pxValue(p.value.paddingLeft)),
+    paddingRight: defaultEither(undefined, pxValue(p.value.paddingRight)),
   }
 }
 
