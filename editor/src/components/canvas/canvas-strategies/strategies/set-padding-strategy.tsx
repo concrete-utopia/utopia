@@ -16,7 +16,7 @@ import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-
 import {
   PaddingValueIndicator,
   PaddingValueIndicatorProps,
-} from '../../controls/select-mode/padding-resize-step-indicator'
+} from '../../controls/select-mode/padding-value-indicator'
 import {
   deltaFromEdge,
   offsetPaddingByEdge,
