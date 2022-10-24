@@ -18,7 +18,7 @@ import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
-import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
+import { findReparentStrategies2, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 import { baseReparentToFlowStrategy } from './reparent-to-flow-strategy'
 
@@ -37,7 +37,7 @@ export function getApplicableReparentFactories(
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
 ): Array<ReparentFactoryAndDetails> {
-  const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
+  const reparentStrategies = findReparentStrategies2(canvasState, cmdPressed, pointOnCanvas)
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
