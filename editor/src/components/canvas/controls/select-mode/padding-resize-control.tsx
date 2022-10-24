@@ -230,7 +230,7 @@ function useHoverWithDelay(
 ): [React.MouseEventHandler, React.MouseEventHandler] {
   const fadeInTimeout = React.useRef<Timeout | null>(null)
 
-  const onMouseLeave = () => {
+  const onHoverEnd = () => {
     if (fadeInTimeout.current) {
       clearTimeout(fadeInTimeout.current)
     }
@@ -238,11 +238,11 @@ function useHoverWithDelay(
     update(false)
   }
 
-  const onMouseEnter = () => {
+  const onHoverStart = () => {
     fadeInTimeout.current = setTimeout(() => update(true), delay)
   }
 
-  return [onMouseEnter, onMouseLeave]
+  return [onHoverStart, onHoverEnd]
 }
 
 function edgePieceDerivedProps(edgePiece: EdgePiece): {
