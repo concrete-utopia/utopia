@@ -928,44 +928,69 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragOver: (event) => {
+          event.preventDefault()
+
           if (this.props.editor.canvas.interactionSession != null) {
             this.handleMouseMove(event.nativeEvent)
             return
           }
-
           const position = this.getPosition(event.nativeEvent)
-
-          const setDragSessionStateActions =
-            this.props.editor.imageDragSessionState.type !== 'DRAGGING_FROM_SIDEBAR'
-              ? [EditorActions.setImageDragSessionState(draggingFromFS())]
-              : []
+          const interactionSessionAction = CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              position.canvasPositionRounded,
+              emptyModifiers,
+              boundingArea(),
+            ),
+          )
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-
           const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
             width: 1,
             height: 1,
           }
-
           const newElement = createJsxImage(newUID, newElementProps)
 
           const elementSize: Size = {
             width: newElementProps.width,
             height: newElementProps.height,
           }
+          const insertAction = EditorActions.enableInsertModeForJSXElement(
+            newElement,
+            newUID,
+            {},
+            elementSize,
+          )
 
-          this.props.dispatch([
-            ...setDragSessionStateActions,
-            EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
-            CanvasActions.createInteractionSession(
-              createInteractionViaMouse(
-                position.canvasPositionRounded,
-                emptyModifiers,
-                boundingArea(),
-              ),
-            ),
-            EditorActions.setFilebrowserDropTarget(null),
-          ])
+          switch (this.props.editor.imageDragSessionState.type) {
+            case 'DRAGGING_FROM_SIDEBAR':
+              if (this.props.editor.imageDragSessionState.draggedImageProperties != null) {
+                this.props.dispatch([
+                  insertAction,
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              } else {
+                this.props.dispatch([
+                  EditorActions.switchEditorMode(EditorModes.insertMode([])),
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              }
+              break
+            case 'NOT_DRAGGING':
+              if (event.dataTransfer.types.includes('Files')) {
+                this.props.dispatch([
+                  insertAction,
+                  EditorActions.setImageDragSessionState(draggingFromFS()),
+                  interactionSessionAction,
+                  EditorActions.setFilebrowserDropTarget(null),
+                ])
+              }
+              break
+            case 'DRAGGING_FROM_FS':
+            default:
+              break
+          }
         },
 
         onDragLeave: () => {
@@ -976,7 +1001,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDrop: (event: React.DragEvent) => {
-          if (this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR') {
+          if (
+            this.props.editor.imageDragSessionState.type === 'DRAGGING_FROM_SIDEBAR' &&
+            this.props.editor.imageDragSessionState.draggedImageProperties != null
+          ) {
             const { width, height, src } =
               this.props.editor.imageDragSessionState.draggedImageProperties
 

@@ -19,7 +19,7 @@ import {
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Utils } from '../../../../uuiui-deps'
+import { CSSCursor, Utils } from '../../../../uuiui-deps'
 import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
@@ -27,6 +27,7 @@ import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
 } from '../../commands/insert-element-insertion-subject'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
@@ -73,9 +74,6 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const { interactionData } = interactionSession
 
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  if (insertionSubjects.length === 0) {
-    return []
-  }
 
   const pointOnCanvas =
     interactionData.type === 'DRAG'
@@ -133,6 +131,9 @@ function dragToInsertStrategyFactory(
   fitness: number,
   targetParent: ElementPath,
 ): CanvasStrategy | null {
+  if (canvasState.interactionTarget.type !== 'INSERTION_SUBJECTS') {
+    return null
+  }
   const insertionSubjectsWithFrames = (() => {
     if (
       interactionSession.interactionData.type !== 'DRAG' ||
@@ -199,30 +200,38 @@ function dragToInsertStrategyFactory(
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
       ) {
-        const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
-          return getInsertionCommandsWithFrames(s.subject, s.frame)
-        })
+        if (insertionSubjects.length === 0) {
+          return strategyApplicationResult(
+            [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+            {},
+            'failure',
+          )
+        } else {
+          const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
+            return getInsertionCommandsWithFrames(s.subject, s.frame)
+          })
 
-        const reparentCommand = updateFunctionCommand(
-          'always',
-          (editorState, transient): Array<EditorStatePatch> => {
-            return runTargetStrategiesForFreshlyInsertedElement(
-              reparentStrategyToUse,
-              canvasState.builtInDependencies,
-              editorState,
-              customStrategyState,
-              interactionSession,
-              transient,
-              insertionCommandsWithFrames,
-              strategyLifecycle,
-            )
-          },
-        )
+          const reparentCommand = updateFunctionCommand(
+            'always',
+            (editorState, transient): Array<EditorStatePatch> => {
+              return runTargetStrategiesForFreshlyInsertedElement(
+                reparentStrategyToUse,
+                canvasState.builtInDependencies,
+                editorState,
+                customStrategyState,
+                interactionSession,
+                transient,
+                insertionCommandsWithFrames,
+                strategyLifecycle,
+              )
+            },
+          )
 
-        return strategyApplicationResult([
-          ...insertionCommandsWithFrames.map((c) => c.command),
-          reparentCommand,
-        ])
+          return strategyApplicationResult([
+            ...insertionCommandsWithFrames.map((c) => c.command),
+            reparentCommand,
+          ])
+        }
       }
 
       return emptyStrategyApplicationResult

@@ -768,7 +768,7 @@ interface DraggingFromFS {
 
 export interface DraggingFromSidebar {
   type: 'DRAGGING_FROM_SIDEBAR'
-  draggedImageProperties: DraggedImageProperties
+  draggedImageProperties: DraggedImageProperties | null
 }
 
 export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
@@ -781,7 +781,9 @@ export function draggingFromFS(): DraggingFromFS {
   return { type: 'DRAGGING_FROM_FS' }
 }
 
-export function draggingFromSidebar(draggedImage: DraggedImageProperties): DraggingFromSidebar {
+export function draggingFromSidebar(
+  draggedImage: DraggedImageProperties | null,
+): DraggingFromSidebar {
   return {
     type: 'DRAGGING_FROM_SIDEBAR',
     draggedImageProperties: draggedImage,

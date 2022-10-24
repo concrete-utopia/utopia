@@ -132,7 +132,8 @@ export function findReparentStrategies(
   const metadata = canvasState.startingMetadata
 
   const reparentSubjects =
-    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
+    canvasState.interactionTarget.subjects.length > 0
       ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
       : existingReparentSubjects(
           getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
