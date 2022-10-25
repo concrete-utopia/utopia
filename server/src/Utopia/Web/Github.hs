@@ -208,10 +208,13 @@ getGitBranchesErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBranchesErrorCases status | status == notFound404   = throwE "Could not find repository."
                                 | otherwise               = throwE "Unexpected error."
 
+branchesPerPage :: Int
+branchesPerPage = 100
+
 getGitBranches :: (MonadIO m) => AccessToken -> Text -> Text -> Int -> ExceptT Text m GetBranchesResult
 getGitBranches accessToken owner repository page = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches"
-  callGithub getFromGithub [("per_page", "100"), ("page", show page)] getGitBranchesErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [("per_page", show branchesPerPage), ("page", show page)] getGitBranchesErrorCases accessToken repoUrl ()
 
 getGitBranchErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBranchErrorCases status | status == notFound404           = throwE "Could not find branch."
@@ -244,6 +247,20 @@ getGitBlob accessToken owner repository fileSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/blobs/" <> fileSha
   callGithub getFromGithub [] getGitBlobErrorCases accessToken repoUrl ()
 
+userRepositoriesPerPage :: Int
+userRepositoriesPerPage = 100
+
+getUsersPublicRepositoriesErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+getUsersPublicRepositoriesErrorCases status | status == unauthorized401         = throwE "Authentication issue."
+                                            | status == forbidden403            = throwE "Forbidden from accessing users repositories."
+                                            | status == unprocessableEntity422  = liftIO $ fail "Validation failed or endpoint has been spammed."
+                                            | otherwise                         = throwE "Unexpected error."
+
+getUsersPublicRepositories :: (MonadIO m) => AccessToken -> Int -> ExceptT Text m GetUsersPublicRepositoriesResult
+getUsersPublicRepositories accessToken page = do
+  let repoUrl = "https://api.github.com/user/repos"
+  callGithub getFromGithub [("per_page", show userRepositoriesPerPage), ("page", show page), ("visibility", "public")] getUsersPublicRepositoriesErrorCases accessToken repoUrl ()
+  
 makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> ExceptT Text m (ProjectContentsTree, [Text])
 makeProjectTextFileFromEntry gitEntry blobResult = do
   let decodedContent = decodeBase64Lenient $ view (field @"content") blobResult
