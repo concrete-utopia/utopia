@@ -46,7 +46,9 @@ type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 2
 const PaddingResizeControlHeight = 12
-const PaddingResizeControlBorder = 1
+const PaddingResizeControlBorder = 0.5
+const PaddingResizeControlMargin = 10
+
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
@@ -83,8 +85,9 @@ const PaddingResizeControlI = React.memo(
 
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
-    const borderWidth = PaddingResizeControlBorder / scale
-    const color = colorTheme.brandNeonPink.value
+    const margin = PaddingResizeControlMargin / scale
+    const borderWidth = PaddingResizeControlBorder
+    const color = colorTheme.brandNeonPink.o(50).value
     return (
       <div
         onMouseLeave={hoverEnd}
@@ -99,29 +102,34 @@ const PaddingResizeControlI = React.memo(
             ? undefined
             : `linear-gradient(135deg, ${color} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
+          border: `${borderWidth}px solid ${color}`,
         }}
       >
-        {
+        <div
+          data-testid={paddingControlHandleTestId(props.edge)}
+          onMouseDown={onEdgeMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseEnter={hoverStart}
+          onMouseUp={onMouseUp}
+          style={{
+            visibility: shown ? 'visible' : 'hidden',
+            position: 'absolute',
+            padding: margin,
+            cursor: cursor,
+            transform: `rotate(${transformFromOrientation(orientation)})`,
+          }}
+        >
           <div
-            data-testid={paddingControlHandleTestId(props.edge)}
-            onMouseDown={onEdgeMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseEnter={hoverStart}
-            onMouseUp={onMouseUp}
             style={{
-              position: 'absolute',
+              boxSizing: 'border-box',
               width: width,
               height: height,
               backgroundColor: color,
-              visibility: shown ? 'visible' : 'hidden',
-              cursor: cursor,
-              pointerEvents: 'initial',
-              border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
-              borderRadius: 2,
-              transform: `rotate(${transformFromOrientation(orientation)})`,
+              border: `${borderWidth}px solid rgb(255, 255, 255, 0.5)`,
+              // borderRadius: '30%',
             }}
           />
-        }
+        </div>
       </div>
     )
   }),
