@@ -264,12 +264,7 @@ export function findReparentStrategies2(
 
   const strategy = reparentStrategyForReparentTarget(metadata, targetParent, false)
 
-  const forcedAbsoluteStrategy =
-    strategy?.strategy === 'REPARENT_AS_ABSOLUTE'
-      ? null
-      : reparentStrategyForReparentTarget(metadata, targetParent, true)
-
-  const optionalReparentAsFlowStrategy: FindReparentStrategyResult | null =
+  const fallbackStrategy: FindReparentStrategyResult =
     strategy.strategy === 'REPARENT_AS_ABSOLUTE'
       ? {
           isFallback: true, // TODO is this true?
@@ -277,9 +272,9 @@ export function findReparentStrategies2(
           target: strategy.target,
           strategy: 'REPARENT_AS_STATIC',
         }
-      : null
+      : reparentStrategyForReparentTarget(metadata, targetParent, true)
 
-  return stripNulls([strategy, forcedAbsoluteStrategy, optionalReparentAsFlowStrategy])
+  return [strategy, fallbackStrategy]
 }
 
 export interface ReparentTarget {
