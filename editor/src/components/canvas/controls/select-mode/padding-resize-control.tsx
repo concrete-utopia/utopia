@@ -44,10 +44,10 @@ const transformFromOrientation = (orientation: Orientation) => {
 
 type Timeout = ReturnType<typeof setTimeout>
 
-const PaddingResizeControlWidth = 2
+const PaddingResizeControlWidth = 1
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 0.5
-const PaddingResizeControlMargin = 10
+const PaddingResizeControlHitAreaWidth = 10
 
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
@@ -85,8 +85,8 @@ const PaddingResizeControlI = React.memo(
 
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
-    const margin = PaddingResizeControlMargin / scale
-    const borderWidth = PaddingResizeControlBorder
+    const hitAreaWidth = PaddingResizeControlHitAreaWidth / scale
+    const borderWidth = PaddingResizeControlBorder / scale
     const color = colorTheme.brandNeonPink.o(50).value
     return (
       <div
@@ -114,7 +114,7 @@ const PaddingResizeControlI = React.memo(
           style={{
             visibility: shown ? 'visible' : 'hidden',
             position: 'absolute',
-            padding: margin,
+            padding: hitAreaWidth,
             cursor: cursor,
             transform: `rotate(${transformFromOrientation(orientation)})`,
           }}
