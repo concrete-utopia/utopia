@@ -2,6 +2,7 @@ import React from 'react'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
+import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePiece } from '../../canvas-types'
 import { deltaFromEdge } from '../../padding-utils'
@@ -20,10 +21,15 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
   (props) => {
     const { currentPaddingValue, activeEdge, dragStart, dragDelta } = props
     const colorTheme = useColorTheme()
+    const scale = useEditorState(
+      (store) => store.editor.canvas.scale,
+      'PaddingValueIndicator scale',
+    )
 
-    const actualPaddingValue = Math.max(
-      0,
-      currentPaddingValue + deltaFromEdge(dragDelta, activeEdge),
+    const FontSize = 12 / scale
+
+    const actualPaddingValue = Math.floor(
+      Math.max(0, currentPaddingValue + deltaFromEdge(dragDelta, activeEdge)),
     )
     const position = indicatorPosition(activeEdge, dragStart, dragDelta)
     return (
@@ -32,6 +38,7 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
           data-testid={PaddingValueIndicatorTestId}
           style={{
             position: 'absolute',
+            fontSize: FontSize,
             left: position.x,
             top: position.y,
             backgroundColor: colorTheme.brandNeonPink.value,
