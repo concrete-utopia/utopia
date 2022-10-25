@@ -100,7 +100,7 @@ const PaddingResizeControlI = React.memo(
           justifyContent: 'center',
           backgroundImage: hidden
             ? undefined
-            : `linear-gradient(135deg, ${color} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
+            : `linear-gradient(135deg, ${color} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${color} 62.5%, ${color} 62.5%, rgba(255,255,255,0) 62.5%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
           border: `${borderWidth}px solid ${color}`,
         }}
