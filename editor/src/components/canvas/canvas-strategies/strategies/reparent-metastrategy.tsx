@@ -110,7 +110,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   if (
-    reparentSubjects.length === 0 ||
+    reparentSubjects.length !== 1 ||
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
@@ -120,22 +120,16 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
+  // TODO delete me as soon as Balint's PR is merged
   const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
     ),
   )
 
-  const allDraggedElementsFlex = reparentSubjects.every((element) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      element,
-      canvasState.startingMetadata,
-    ),
-  )
-
   const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
 
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex) || anyDraggedElementsRootElements) {
+  if (anyDraggedElementsRootElements) {
     return []
   }
 
