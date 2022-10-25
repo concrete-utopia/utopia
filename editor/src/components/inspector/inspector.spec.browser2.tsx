@@ -1,5 +1,6 @@
 import { r } from 'tar'
 import { elementPath } from '../../core/shared/element-path'
+import { assertNever } from '../../core/shared/utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
@@ -7,7 +8,7 @@ import { AspectRatioLockButtonTestId } from './sections/layout-section/self-layo
 
 describe('inspector', () => {
   it('toggle aspect ratio lock off', async () => {
-    const codeAfterToggle = await runToggleAspectRatioLockTest(true)
+    const codeAfterToggle = await runToggleAspectRatioLockTest('locked')
     expect(codeAfterToggle).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -30,7 +31,7 @@ export var storyboard = (
   })
 
   it('toggle aspect ratio lock on', async () => {
-    const codeAfterToggle = await runToggleAspectRatioLockTest(false)
+    const codeAfterToggle = await runToggleAspectRatioLockTest('not-locked')
     expect(codeAfterToggle).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -54,7 +55,9 @@ export var storyboard = (
   })
 })
 
-async function runToggleAspectRatioLockTest(aspectRatioLocked: boolean): Promise<string> {
+async function runToggleAspectRatioLockTest(
+  aspectRatioLocked: AspectRatioLockedState,
+): Promise<string> {
   const editor = await renderTestEditorWithCode(
     projectSource(aspectRatioLocked),
     'await-first-dom-report',
@@ -75,7 +78,20 @@ async function runToggleAspectRatioLockTest(aspectRatioLocked: boolean): Promise
   return getPrintedUiJsCode(editor.getEditorState())
 }
 
-function projectSource(aspectRatioLocked: boolean) {
+type AspectRatioLockedState = 'locked' | 'not-locked'
+
+const isAspectRatioLocked = (state: AspectRatioLockedState): boolean => {
+  switch (state) {
+    case 'locked':
+      return true
+    case 'not-locked':
+      return false
+    default:
+      assertNever(state)
+  }
+}
+
+function projectSource(aspectRatioLockedState: AspectRatioLockedState) {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -91,7 +107,7 @@ export var storyboard = (
         height: 426,
       }}
       data-uid='7a0'
-      data-aspect-ratio-locked${aspectRatioLocked ? `` : `={false}`}
+      data-aspect-ratio-locked${isAspectRatioLocked(aspectRatioLockedState) ? `` : `={false}`}
     />
   </Storyboard>
 )
