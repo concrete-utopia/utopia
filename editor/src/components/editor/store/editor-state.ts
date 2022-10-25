@@ -182,6 +182,8 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
 
+export const MenuBarWidth = 44
+
 const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
@@ -249,6 +251,36 @@ export interface GithubState {
 export interface UserState extends UserConfiguration {
   loginState: LoginState
   githubState: GithubState
+}
+
+export type GithubOperation =
+  | { name: 'commish' }
+  | { name: 'listBranches' }
+  | { name: 'loadBranch'; branchName: string }
+
+export function githubOperationPrettyName(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commish':
+      return 'Saving'
+    case 'listBranches':
+      return 'Listing branches'
+    case 'loadBranch':
+      return 'Loading branch'
+    default:
+      const _exhaustiveCheck: never = op
+      return 'Unknown operation' // this should never happen
+  }
+}
+
+export function isGithubLoadingBranch(
+  operations: Array<GithubOperation>,
+  branchName: string,
+): boolean {
+  return operations.some((o) => o.name === 'loadBranch' && o.branchName === branchName)
+}
+
+export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
+  return operations.some((o) => o.name === 'commish')
 }
 
 export const defaultUserState: UserState = {
@@ -768,7 +800,7 @@ interface DraggingFromFS {
 
 export interface DraggingFromSidebar {
   type: 'DRAGGING_FROM_SIDEBAR'
-  draggedImageProperties: DraggedImageProperties
+  draggedImageProperties: DraggedImageProperties | null
 }
 
 export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
@@ -781,7 +813,9 @@ export function draggingFromFS(): DraggingFromFS {
   return { type: 'DRAGGING_FROM_FS' }
 }
 
-export function draggingFromSidebar(draggedImage: DraggedImageProperties): DraggingFromSidebar {
+export function draggingFromSidebar(
+  draggedImage: DraggedImageProperties | null,
+): DraggingFromSidebar {
   return {
     type: 'DRAGGING_FROM_SIDEBAR',
     draggedImageProperties: draggedImage,
@@ -1019,6 +1053,7 @@ export interface EditorState {
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
+  githubOperations: Array<GithubOperation>
 }
 
 export function editorState(
@@ -1089,6 +1124,7 @@ export function editorState(
   _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
+  githubOperations: Array<GithubOperation>,
 ): EditorState {
   return {
     id: id,
@@ -1158,6 +1194,7 @@ export function editorState(
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
+    githubOperations: [],
   }
 }
 
@@ -1969,6 +2006,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       originCommit: null,
     },
     imageDragSessionState: notDragging(),
+    githubOperations: [],
   }
 }
 
@@ -2264,6 +2302,7 @@ export function editorModelFromPersistentModel(
     _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
+    githubOperations: [],
   }
   return editor
 }

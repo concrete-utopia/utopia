@@ -13,7 +13,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
-import { EdgePosition } from '../canvas-types'
+import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
 import { ApplicableStrategy } from './canvas-strategies'
@@ -539,6 +539,18 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface PaddingResizeHandle {
+  type: 'PADDING_RESIZE_HANDLE'
+  edgePiece: EdgePiece
+}
+
+export function paddingResizeHandle(edgePosition: EdgePiece): PaddingResizeHandle {
+  return {
+    type: 'PADDING_RESIZE_HANDLE',
+    edgePiece: edgePosition,
+  }
+}
+
 export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
 }
@@ -562,5 +574,6 @@ export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
   | FlexGapHandle
+  | PaddingResizeHandle
   | KeyboardCatcherControl
   | FlowSlider

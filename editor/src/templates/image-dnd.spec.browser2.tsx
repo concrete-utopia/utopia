@@ -456,6 +456,12 @@ describe('image drag and drop', () => {
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
     const file = await makeImageFile(imgBase641x1, 'chucknorris.png')
 
     const target = editor.renderedDOM.getByTestId('scene')
@@ -524,6 +530,12 @@ export var storyboard = (
 
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
 
     const file = await makeImageFile(imgBase642x2, 'chucknorris@2x.png')
 
@@ -598,6 +610,12 @@ export var storyboard = (
       loggedInUser({ userId: '42' }),
     )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
 
     const file = await makeImageFile(imgBase641x1, 'stuff.png')
 
@@ -724,6 +742,12 @@ export var storyboard = (
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
+
     const files = [
       await makeImageFile(imgBase641x1, 'chucknorris.png'),
       await makeImageFile(imgBase641x1, 'budspencer.png'),
@@ -813,6 +837,12 @@ export var storyboard = (
       loggedInUser({ userId: '42' }),
     )
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await editor.dispatch(
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      true,
+    )
+    await editor.getDispatchFollowUpActionsFinished()
 
     const files = [
       await makeImageFile(imgBase641x1, 'chucknorris.png'),
