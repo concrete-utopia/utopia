@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
+import { css, jsx, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 import React, { ChangeEvent } from 'react'
 import {
@@ -49,9 +49,11 @@ import {
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import {
-  createNewProjectName,
   DerivedState,
   EditorState,
+  githubOperationPrettyName,
+  isGithubCommishing,
+  isGithubLoadingBranch,
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -717,11 +719,59 @@ const SharingPane = React.memo(() => {
   )
 })
 
+const GithubSpinner = () => {
+  const anim = keyframes`
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  `
+
+  return (
+    <FlexColumn>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        width='16'
+        height='16'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='#999'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        css={css`
+          animation: ${anim} 1s linear infinite;
+        `}
+      >
+        <line x1='12' y1='2' x2='12' y2='6'></line>
+        <line x1='12' y1='18' x2='12' y2='22'></line>
+        <line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line>
+        <line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line>
+        <line x1='2' y1='12' x2='6' y2='12'></line>
+        <line x1='18' y1='12' x2='22' y2='12'></line>
+        <line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line>
+        <line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line>
+      </svg>
+    </FlexColumn>
+  )
+}
+
 const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
   const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
+  const githubOperations = useEditorState(
+    (store) => store.editor.githubOperations,
+    'Github operations',
+  )
+
+  const githubWorking = React.useMemo(() => {
+    return githubOperations.length > 0
+  }, [githubOperations])
+
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
     if (repo == null) {
@@ -812,11 +862,11 @@ const GithubPane = React.memo(() => {
 
   React.useEffect(() => {
     if (parsedTargetRepository != null) {
-      void getBranchesForGithubRepository(parsedTargetRepository).then((result) => {
+      void getBranchesForGithubRepository(dispatch, parsedTargetRepository).then((result) => {
         setBranchesForRepository(result)
       })
     }
-  }, [parsedTargetRepository])
+  }, [parsedTargetRepository, dispatch])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
@@ -853,8 +903,17 @@ const GithubPane = React.memo(() => {
                     return (
                       <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
                         <span>{branch.name}</span>
-                        <Button spotlight highlight onMouseUp={loadContentForBranch}>
-                          Load
+                        <Button
+                          spotlight
+                          highlight
+                          onMouseUp={loadContentForBranch}
+                          disabled={githubWorking}
+                        >
+                          {isGithubLoadingBranch(githubOperations, branch.name) ? (
+                            <GithubSpinner />
+                          ) : (
+                            'Load'
+                          )}
                         </Button>
                       </UIGridRow>
                     )
@@ -869,7 +928,14 @@ const GithubPane = React.memo(() => {
           throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
       }
     }
-  }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
+  }, [
+    branchesForRepository,
+    parsedTargetRepository,
+    dispatch,
+    projectID,
+    githubWorking,
+    githubOperations,
+  ])
 
   return (
     <FlexColumn
@@ -883,8 +949,14 @@ const GithubPane = React.memo(() => {
       onFocus={onFocus}
     >
       <Section>
-        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+        <SectionTitleRow minimised={false}>
           <Title style={{ flexGrow: 1 }}>Github</Title>
+          {githubWorking && (
+            <FlexRow style={{ gap: 4 }}>
+              <GithubSpinner />
+              <span>{githubOperationPrettyName(githubOperations[0])}…</span>
+            </FlexRow>
+          )}
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
           <div
@@ -973,10 +1045,10 @@ const GithubPane = React.memo(() => {
             <Button
               spotlight
               highlight
-              disabled={!githubAuthenticated || parsedTargetRepository == null}
+              disabled={!githubAuthenticated || parsedTargetRepository == null || githubWorking}
               onMouseUp={triggerSaveToGithub}
             >
-              Save To Github
+              {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
             </Button>
           </UIGridRow>
           {branchesUI}
