@@ -354,7 +354,6 @@ instance FromJSON GetBlobResult where
 instance ToJSON GetBlobResult where
   toJSON = genericToJSON defaultOptions
 
-
 data GetBranchContentSuccess = GetBranchContentSuccess
                          { content      :: ProjectContentTreeRoot
                          , originCommit :: Text
@@ -390,4 +389,60 @@ instance ToJSON GetBranchContentResponse where
   toJSON (GetBranchContentResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
   toJSON (GetBranchContentResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
+data UsersPublicRepository = UsersPublicRepository
+                           { full_name    :: Text
+                           }
+                           deriving (Eq, Show, Generic, Data, Typeable)
 
+instance FromJSON UsersPublicRepository where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UsersPublicRepository where
+  toJSON = genericToJSON defaultOptions
+
+type GetUsersPublicRepositoriesResult = [UsersPublicRepository]
+
+data RepositoryEntry = RepositoryEntry
+                     { fullName :: Text
+                     }
+                     deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON RepositoryEntry where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON RepositoryEntry where
+  toJSON = genericToJSON defaultOptions
+
+data GetUsersPublicRepositoriesSuccess = GetUsersPublicRepositoriesSuccess
+                                       { repositories :: [RepositoryEntry]
+                                       }
+                                       deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GetUsersPublicRepositoriesSuccess where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GetUsersPublicRepositoriesSuccess where
+  toJSON = genericToJSON defaultOptions
+
+data GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesResponseSuccess GetUsersPublicRepositoriesSuccess
+                                        | GetUsersPublicRepositoriesResponseFailure GithubFailure
+                                        deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GetUsersPublicRepositoriesResponse where
+  parseJSON value =
+    let fileType = firstOf (key "type" . _String) value
+     in case fileType of
+          (Just "SUCCESS")  -> fmap GetUsersPublicRepositoriesResponseSuccess $ parseJSON value
+          (Just "FAILURE")  -> fmap GetUsersPublicRepositoriesResponseFailure $ parseJSON value
+          (Just unknownType)  -> fail ("Unknown type: " <> T.unpack unknownType)
+          _                   -> fail "No type for GetUsersPublicRepositoriesResponse specified."
+
+instance ToJSON GetUsersPublicRepositoriesResponse where
+  toJSON (GetUsersPublicRepositoriesResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
+  toJSON (GetUsersPublicRepositoriesResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
+
+getUsersPublicRepositoriesFailureFromReason :: Text -> GetUsersPublicRepositoriesResponse
+getUsersPublicRepositoriesFailureFromReason failureReason = GetUsersPublicRepositoriesResponseFailure GithubFailure{..}
+
+getUsersPublicRepositoriesSuccessFromContent :: [RepositoryEntry] -> GetUsersPublicRepositoriesResponse
+getUsersPublicRepositoriesSuccessFromContent repositories = GetUsersPublicRepositoriesResponseSuccess GetUsersPublicRepositoriesSuccess{..}
