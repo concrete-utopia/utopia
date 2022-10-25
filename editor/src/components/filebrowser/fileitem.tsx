@@ -45,8 +45,8 @@ import {
 } from '../editor/store/editor-state'
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
-import { parseImageMultiplier } from '../images'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { getFilenameParts } from '../images'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -876,7 +876,7 @@ function draggedImagePropertiesFromImageFile(
   path: string,
   imageFile: ImageFile,
 ): DraggedImageProperties {
-  const imageMultiplier = parseImageMultiplier(path)
+  const imageMultiplier = getFilenameParts(path)?.multiplier ?? 1
   return {
     src: imagePathURL(path),
     width: optionalMap((w) => w / imageMultiplier, imageFile.width) ?? 200,
