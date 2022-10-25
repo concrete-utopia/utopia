@@ -17,10 +17,9 @@ import {
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
+import { baseReparentToStaticStrategy } from './reparent-to-flex-strategy'
 import { findReparentStrategies2, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
-import { baseReparentToFlowStrategy } from './reparent-to-flow-strategy'
 
 interface ReparentFactoryAndDetails {
   targetParent: ElementPath
@@ -75,33 +74,22 @@ export function getApplicableReparentFactories(
       case 'REPARENT_AS_STATIC': {
         const fitness = 3
 
-        // TODO this feels wrong here – maybe we should only have a single of these strategies?
-        const targetParentFlex =
+        const targetParentDisplayType =
           MetadataUtils.findElementByElementPath(
             canvasState.startingMetadata,
             result.target.newParent,
           )?.specialSizeMeasurements.display === 'flex'
+            ? 'flex'
+            : 'flow'
 
-        if (targetParentFlex) {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            targetParentDisplayType: 'flex',
-            fitness: fitness,
-            factory: baseReparentToFlexStrategy(result.target, fitness),
-          }
-        } else {
-          return {
-            targetParent: result.target.newParent,
-            targetIndex: result.target.newIndex,
-            strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
-            targetParentDisplayType: 'flow',
-            fitness: fitness,
-            factory: baseReparentToFlowStrategy(result.target, fitness),
-          }
+        return {
+          targetParent: result.target.newParent,
+          targetIndex: result.target.newIndex,
+          strategyType: result.strategy,
+          missingBoundsHandling: result.missingBoundsHandling,
+          targetParentDisplayType: targetParentDisplayType,
+          fitness: fitness,
+          factory: baseReparentToStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
       default:
