@@ -390,11 +390,11 @@ createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID
     pure (branchName, view (field @"url") branchResult, commitSha)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
 
-convertBranchesResultToUnfold :: Int -> GetBranchesResult -> Maybe (GetBranchesResult, Int)
+convertBranchesResultToUnfold :: Int -> GetBranchesResult -> Maybe (GetBranchesResult, Maybe Int)
 convertBranchesResultToUnfold page result =
-  case Protolude.null result of
-    True  -> Nothing
-    False -> Just (result, page + 1)
+  -- We expect some X elements per page, if we get less than that, assume we've hit the end and should not
+  -- continue paginating.
+  Just (result, if Protolude.length result < branchesPerPage then Nothing else Just (page + 1))
 
 getGithubBranches :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
 getGithubBranches githubResources logger metrics pool userID owner repository = do
@@ -403,9 +403,10 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       -- Gives us a function that just takes the page.
       let getPage = getGitBranches accessToken owner repository
       -- Now we have a function compatible with `unfoldM`.
-      let getUnfoldStep page = fmap (\result -> convertBranchesResultToUnfold page result) $ getPage page
+      let getUnfoldStep (Just page) = fmap (\result -> convertBranchesResultToUnfold page result) $ getPage page
+          getUnfoldStep Nothing     = pure Nothing
       -- Run the steps and then combines the branches returned from each step.
-      fmap join $ sourceToList $ C.unfoldM getUnfoldStep 1
+      fmap join $ sourceToList $ C.unfoldM getUnfoldStep (Just 1)
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Simple function that just takes the branch name.
       let getBranch = getGitBranch accessToken owner repository
@@ -430,6 +431,31 @@ getGithubBranch githubResources awsResource logger metrics pool userID owner rep
         getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID treeSha
       pure (projectContent, commitSha)
     pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+
+convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)
+convertUsersRepositoriesResultToUnfold page result =
+  -- We expect some X elements per page, if we get less than that, assume we've hit the end and should not
+  -- continue paginating.
+  Just (result, if Protolude.length result < userRepositoriesPerPage then Nothing else Just (page + 1))
+
+publicRepoToRepositoryEntry :: UsersPublicRepository -> RepositoryEntry
+publicRepoToRepositoryEntry UsersPublicRepository{..} = RepositoryEntry
+                                                      { fullName = full_name
+                                                      }
+
+getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
+getGithubUsersPublicRepositories githubResources logger metrics pool userID = do
+  result <- runExceptT $ do
+    repositories <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      -- Gives us a function that just takes the page.
+      let getPage = getUsersPublicRepositories accessToken 
+      -- Now we have a function compatible with `unfoldM`.
+      let getUnfoldStep (Just page) = fmap (\result -> convertUsersRepositoriesResultToUnfold page result) $ getPage page
+          getUnfoldStep Nothing = pure Nothing
+      -- Run the steps and then combines the repositories returned from each step.
+      fmap join $ sourceToList $ C.unfoldM getUnfoldStep (Just 1)
+    pure $ fmap publicRepoToRepositoryEntry repositories
+  pure $ either getUsersPublicRepositoriesFailureFromReason getUsersPublicRepositoriesSuccessFromContent result
 
 loadAsset :: Maybe AWSResources -> LoadAsset
 loadAsset awsResource path possibleETag = do
