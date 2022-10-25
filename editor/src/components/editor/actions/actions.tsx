@@ -442,6 +442,7 @@ import {
   updateThumbnailGenerated,
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
+import { AspectRatioLockedProp } from '../../aspect-ratio'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -3262,7 +3263,7 @@ export const UPDATE_FNS = {
               src: imageAttribute,
               style: jsxAttributeValue({ width: width, height: height }, emptyComments),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3307,7 +3308,7 @@ export const UPDATE_FNS = {
                 emptyComments,
               ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3361,7 +3362,7 @@ export const UPDATE_FNS = {
           ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
-          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+          [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
         }),
         [],
       )
@@ -4133,7 +4134,7 @@ export const UPDATE_FNS = {
       (element) => {
         const locked = jsxAttributeValue(action.locked, emptyComments)
         const updatedProps = eitherToMaybe(
-          setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
+          setJSXValueAtPath(element.props, PP.create([AspectRatioLockedProp]), locked),
         )
         return {
           ...element,
@@ -4191,7 +4192,7 @@ export const UPDATE_FNS = {
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
-        'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+        [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
       }),
       [],
     )

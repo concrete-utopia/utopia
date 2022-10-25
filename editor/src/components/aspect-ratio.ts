@@ -11,6 +11,8 @@ import { ElementProps } from './editor/store/editor-state'
 export const AspectRatioPath = 'aspectRatio'
 export const AspectRatioEnabledPath = `${AspectRatioPath}.enabled`
 
+export const AspectRatioLockedProp = 'data-aspect-ratio-locked'
+
 export function isAspectRatioLockedFromProps(props: any): boolean {
   return ObjectPath.get(props, AspectRatioEnabledPath) ?? false
 }
@@ -24,7 +26,7 @@ export function isAspectRatioLockedNew(
     const props = element.value.props
     const aspectRatioProp = getModifiableJSXAttributeAtPath(
       props,
-      PP.create(['data-aspect-ratio-locked']),
+      PP.create([AspectRatioLockedProp]),
     )
     if (isLeft(aspectRatioProp)) {
       return false
