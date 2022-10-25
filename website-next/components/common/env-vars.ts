@@ -8,7 +8,7 @@ export const BASE_URL: string = `${SCHEME}//${HOST}/`
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
-const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
+export const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG

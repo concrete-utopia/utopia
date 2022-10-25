@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PRODUCTION_OR_STAGING_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
@@ -43,8 +43,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
   'Advanced Resize Box': false,
-  'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
-  'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
+  'Re-parse Project Button': !(PRODUCTION_OR_STAGING_CONFIG as boolean),
+  'Performance Test Triggers': !(PRODUCTION_OR_STAGING_CONFIG as boolean),
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': true,
