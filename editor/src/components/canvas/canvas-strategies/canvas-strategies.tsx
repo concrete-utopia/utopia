@@ -45,6 +45,7 @@ import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
+import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -84,12 +85,16 @@ export const existingStrategies: MetaCanvasStrategy = (
     ),
   )
 
-export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+const RegisteredCanvasStrategiesWithoutAncestorStrategy: Array<MetaCanvasStrategy> = [
   existingStrategies,
-  lookForApplicableParentStrategy,
   reparentMetaStrategy,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
+]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  ...RegisteredCanvasStrategiesWithoutAncestorStrategy,
+  ancestorMetaStrategy(RegisteredCanvasStrategiesWithoutAncestorStrategy, 1),
 ]
 
 export function pickCanvasStateFromEditorState(
