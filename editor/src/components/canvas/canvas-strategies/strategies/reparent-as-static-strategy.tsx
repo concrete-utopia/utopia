@@ -17,7 +17,7 @@ import { InteractionSession } from '../interaction-state'
 import { applyStaticReparent, ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function baseReparentToStaticStrategy(
+export function baseReparentAsStaticStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
   targetLayout: 'flex' | 'flow',

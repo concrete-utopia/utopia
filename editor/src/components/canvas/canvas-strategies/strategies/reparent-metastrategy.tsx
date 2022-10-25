@@ -17,7 +17,7 @@ import {
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { baseReparentToStaticStrategy } from './reparent-to-flex-strategy'
+import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import { findReparentStrategies2, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -89,7 +89,7 @@ export function getApplicableReparentFactories(
           missingBoundsHandling: result.missingBoundsHandling,
           targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
-          factory: baseReparentToStaticStrategy(result.target, fitness, targetParentDisplayType),
+          factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
       default:
