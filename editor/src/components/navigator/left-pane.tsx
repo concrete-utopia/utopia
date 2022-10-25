@@ -76,16 +76,6 @@ import {
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import {
-  components,
-  FormatOptionLabelMeta,
-  IndicatorProps,
-  InputProps,
-  OptionsType,
-  ValueType,
-} from 'react-select'
-import CreatableSelect from 'react-select/creatable'
-import { styleFn } from 'react-select/src/styles'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -729,56 +719,6 @@ const SharingPane = React.memo(() => {
   )
 })
 
-const Input = (props: InputProps) => {
-  const value = (props as any).value
-  const isHidden = value.length !== 0 ? false : props.isHidden
-  return <components.Input {...props} isHidden={isHidden} />
-}
-
-const valueContainer: styleFn = (base) => ({
-  ...base,
-  padding: '2px 4px',
-  height: '100%',
-  width: '100%',
-})
-
-const container: styleFn = (base) => ({
-  ...base,
-  minHeight: UtopiaTheme.layout.inputHeight.default,
-  paddingTop: 2,
-  paddingBottom: 2,
-})
-
-const control: styleFn = () => ({
-  label: 'control',
-  alignItems: 'center',
-  backgroundColor: 'rgb(245, 245, 245)',
-  boxSizing: 'border-box',
-  cursor: 'default',
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'space-between',
-  position: 'relative',
-  transition: 'all 100ms',
-  minHeight: UtopiaTheme.layout.inputHeight.default,
-})
-
-const placeholder: styleFn = (base) => ({
-  ...base,
-  paddingTop: 2,
-  paddingBottom: 2,
-  paddingLeft: 6,
-  paddingRight: 6,
-})
-
-const menu: styleFn = (base) => ({
-  ...base,
-  position: 'relative',
-  boxShadow: 'none',
-  borderRadius: 0,
-  background: 'transparent',
-})
-
 const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
@@ -789,7 +729,7 @@ const GithubPane = React.memo(() => {
     if (repo == null) {
       return undefined
     } else {
-      return `https://github.com/${repo.owner}/${repo.repository}`
+      return `${repo.owner}/${repo.repository}`
     }
   }, 'GithubPane storedTargetGithubRepo')
 
@@ -856,16 +796,13 @@ const GithubPane = React.memo(() => {
     }
   }, [targetRepository])
 
-  const [usersRepositories, setUsersRepositories] = React.useState<Array<SelectOption> | null>(null)
+  const [usersRepositories, setUsersRepositories] = React.useState<Array<string> | null>(null)
 
   const setUsersRepositoriesCallback = React.useCallback(
     (repositories: Array<RepositoryEntry>) => {
       setUsersRepositories(
         repositories.map((repository) => {
-          return {
-            value: repository.fullName,
-            label: repository.fullName,
-          }
+          return repository.fullName
         }),
       )
     },
@@ -878,18 +815,9 @@ const GithubPane = React.memo(() => {
     }
   }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
 
-  const onChangeTargetRepository = React.useCallback(
-    (option: ValueType<SelectOption>) => {
-      if (isOptionType(option)) {
-        setTargetRepository(option.value)
-      }
-    },
-    [setTargetRepository],
-  )
-
   const onInputChangeTargetRepository = React.useCallback(
-    (option: string) => {
-      setTargetRepository(option)
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTargetRepository(event.currentTarget.value)
     },
     [setTargetRepository],
   )
@@ -963,14 +891,6 @@ const GithubPane = React.memo(() => {
       }
     }
   }, [branchesForRepository, parsedTargetRepository, dispatch, projectID])
-
-  const currentTargetRepositoryValue = React.useMemo(() => {
-    if (usersRepositories == null) {
-      return undefined
-    } else {
-      return usersRepositories.find((repo) => repo.value === targetRepository)
-    }
-  }, [usersRepositories, targetRepository])
 
   return (
     <FlexColumn
@@ -1065,32 +985,24 @@ const GithubPane = React.memo(() => {
             repositories at the moment.
           </div>
           <UIGridRow padded variant='<-------------1fr------------->'>
-            <CreatableSelect
-              autoFocus={false}
+            <StringInput
               placeholder={
                 usersRepositories == null ? 'Loading repositories...' : 'owner/repository'
               }
-              value={currentTargetRepositoryValue}
-              inputValue={targetRepository}
-              isDisabled={false}
-              onChange={onChangeTargetRepository}
-              onInputChange={onInputChangeTargetRepository}
-              components={{
-                IndicatorsContainer: () => null,
-                Input,
-              }}
-              className='className-inspector-control'
-              styles={{
-                container,
-                control,
-                valueContainer,
-                placeholder,
-                menu,
-              }}
-              options={usersRepositories ?? []}
-              escapeClearsValue={true}
-              maxMenuHeight={199}
+              onChange={onInputChangeTargetRepository}
+              list={'repositories-list'}
+              id={'repositories-input'}
+              testId={'repositories-input'}
+              name={'repositories-input'}
+              value={targetRepository}
             />
+            {usersRepositories == null ? null : (
+              <datalist id={'repositories-list'}>
+                {usersRepositories.map((repo, index) => {
+                  return <option key={`repo-${index}`} value={repo} />
+                })}
+              </datalist>
+            )}
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
