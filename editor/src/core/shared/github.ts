@@ -1,6 +1,7 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import urljoin from 'url-join'
 import {
+  GithubOperation,
   GithubRepo,
   PersistentModel,
   projectGithubSettings,
@@ -13,6 +14,7 @@ import {
   showToast,
   updateGithubSettings,
   updateProjectContents,
+  updateGithubOperations,
 } from '../../components/editor/actions/action-creators'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
@@ -84,6 +86,10 @@ export async function saveProjectToGithub(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'commish' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
   const postBody = JSON.stringify(persistentModel)
@@ -131,11 +137,17 @@ export async function saveProjectToGithub(
       'everyone',
     )
   }
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export async function getBranchesForGithubRepository(
+  dispatch: EditorDispatch,
   githubRepo: GithubRepo,
 ): Promise<GetBranchesResponse> {
+  const operation: GithubOperation = { name: 'listBranches' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'branches', githubRepo.owner, githubRepo.repository)
 
   const response = await fetch(url, {
@@ -144,6 +156,9 @@ export async function getBranchesForGithubRepository(
     headers: HEADERS,
     mode: MODE,
   })
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+
   if (response.ok) {
     const responseBody: GetBranchesResponse = await response.json()
     return responseBody
@@ -161,6 +176,10 @@ export async function getBranchContent(
   projectID: string,
   branchName: string,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'loadBranch', branchName: branchName }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(
     UTOPIA_BACKEND,
     'github',
@@ -179,8 +198,10 @@ export async function getBranchContent(
     headers: HEADERS,
     mode: MODE,
   })
+
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
+
     switch (responseBody.type) {
       case 'FAILURE':
         dispatch(
@@ -212,6 +233,8 @@ export async function getBranchContent(
       'everyone',
     )
   }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export async function getUsersPublicGithubRepositories(
