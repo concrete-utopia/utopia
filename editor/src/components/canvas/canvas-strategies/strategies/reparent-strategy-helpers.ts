@@ -269,7 +269,17 @@ export function findReparentStrategies2(
       ? null
       : reparentStrategyForReparentTarget(metadata, targetParent, true)
 
-  return stripNulls([strategy, forcedAbsoluteStrategy])
+  const optionalReparentAsFlowStrategy: FindReparentStrategyResult | null =
+    strategy.strategy === 'REPARENT_AS_ABSOLUTE'
+      ? {
+          isFallback: true, // TODO is this true?
+          missingBoundsHandling: 'use-strict-bounds', // TODO is this true?
+          target: strategy.target,
+          strategy: 'REPARENT_AS_STATIC',
+        }
+      : null
+
+  return stripNulls([strategy, forcedAbsoluteStrategy, optionalReparentAsFlowStrategy])
 }
 
 export interface ReparentTarget {
