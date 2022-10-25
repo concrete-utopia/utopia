@@ -216,7 +216,7 @@ const projectWithAspectRatioLockedElement = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -227,7 +227,7 @@ export var storyboard = (
         width: 363,
         height: 426,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -238,7 +238,7 @@ export var storyboard = (
         width: 170,
         height: 430,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -249,7 +249,7 @@ export var storyboard = (
         top: 863,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -413,7 +413,7 @@ describe('Absolute Resize Strategy', () => {
       'await-first-dom-report',
     )
 
-    const target = EP.elementPath([['0cd', '7a0']])
+    const target = EP.elementPath([['storyboard', 'div-aspect-ratio-locked']])
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
@@ -425,7 +425,7 @@ describe('Absolute Resize Strategy', () => {
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -436,7 +436,7 @@ export var storyboard = (
         width: 383,
         height: 449,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -447,7 +447,7 @@ export var storyboard = (
         width: 170,
         height: 430,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -458,7 +458,7 @@ export var storyboard = (
         top: 863,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -470,7 +470,7 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const target = EP.elementPath([['0cd', '7a0']])
+    const target = EP.elementPath([['storyboard', 'div-aspect-ratio-locked']])
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
@@ -482,7 +482,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -493,7 +493,7 @@ export var storyboard = (
         width: 334,
         height: 449,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -504,7 +504,7 @@ export var storyboard = (
         width: 170,
         height: 430,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -515,7 +515,7 @@ export var storyboard = (
         top: 863,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -527,7 +527,7 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const target = EP.elementPath([['0cd', '62f']])
+    const target = EP.elementPath([['storyboard', 'img-element']])
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
@@ -539,7 +539,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -550,7 +550,7 @@ export var storyboard = (
         width: 363,
         height: 426,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -561,7 +561,7 @@ export var storyboard = (
         width: 170,
         height: 430,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -572,7 +572,7 @@ export var storyboard = (
         top: 840,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -584,7 +584,7 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const target = EP.elementPath([['0cd', '62f']])
+    const target = EP.elementPath([['storyboard', 'img-element']])
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
@@ -596,7 +596,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -607,7 +607,7 @@ export var storyboard = (
         width: 363,
         height: 426,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -618,7 +618,7 @@ export var storyboard = (
         width: 170,
         height: 430,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -629,7 +629,7 @@ export var storyboard = (
         top: 840,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -641,7 +641,10 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const targets = [EP.elementPath([['0cd', '7a0']]), EP.elementPath([['0cd', '452']])]
+    const targets = [
+      EP.elementPath([['storyboard', 'div-aspect-ratio-locked']]),
+      EP.elementPath([['storyboard', 'div-simple']]),
+    ]
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
@@ -653,7 +656,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -664,7 +667,7 @@ export var storyboard = (
         width: 372,
         height: 436,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -675,7 +678,7 @@ export var storyboard = (
         width: 174,
         height: 440,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -686,7 +689,7 @@ export var storyboard = (
         top: 863,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -698,7 +701,10 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const targets = [EP.elementPath([['0cd', '7a0']]), EP.elementPath([['0cd', '452']])]
+    const targets = [
+      EP.elementPath([['storyboard', 'div-aspect-ratio-locked']]),
+      EP.elementPath([['storyboard', 'div-simple']]),
+    ]
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
@@ -710,7 +716,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -721,7 +727,7 @@ export var storyboard = (
         width: 334,
         height: 436,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -732,7 +738,7 @@ export var storyboard = (
         width: 156,
         height: 440,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -743,7 +749,7 @@ export var storyboard = (
         top: 863,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -755,7 +761,10 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const targets = [EP.elementPath([['0cd', '62f']]), EP.elementPath([['0cd', '452']])]
+    const targets = [
+      EP.elementPath([['storyboard', 'img-element']]),
+      EP.elementPath([['storyboard', 'div-simple']]),
+    ]
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
@@ -767,7 +776,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -778,7 +787,7 @@ export var storyboard = (
         width: 363,
         height: 426,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -789,7 +798,7 @@ export var storyboard = (
         width: 179,
         height: 453,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -800,7 +809,7 @@ export var storyboard = (
         top: 842,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -812,7 +821,10 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const targets = [EP.elementPath([['0cd', '62f']]), EP.elementPath([['0cd', '452']])]
+    const targets = [
+      EP.elementPath([['storyboard', 'img-element']]),
+      EP.elementPath([['storyboard', 'div-simple']]),
+    ]
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
@@ -824,7 +836,7 @@ export var storyboard = (
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='storyboard'>
     <div
       data-aspect-ratio-locked
       style={{
@@ -835,7 +847,7 @@ export var storyboard = (
         width: 363,
         height: 426,
       }}
-      data-uid='7a0'
+      data-uid='div-aspect-ratio-locked'
     />
     <div
       style={{
@@ -846,7 +858,7 @@ export var storyboard = (
         width: 158,
         height: 453,
       }}
-      data-uid='452'
+      data-uid='div-simple'
     />
     <img
       style={{
@@ -857,7 +869,7 @@ export var storyboard = (
         top: 842,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='62f'
+      data-uid='img-element'
     />
   </Storyboard>
 )
