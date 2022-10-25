@@ -197,51 +197,6 @@ export function findReparentStrategies(
   const metadata = canvasState.startingMetadata
 
   const reparentSubjects =
-    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
-    canvasState.interactionTarget.subjects.length > 0
-      ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
-      : existingReparentSubjects(
-          getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
-        )
-
-  const getReparentTargetInner = (missingBoundsHandling: MissingBoundsHandling) =>
-    getReparentTargetUnified(
-      reparentSubjects,
-      pointOnCanvas,
-      cmdPressed,
-      canvasState,
-      metadata,
-      canvasState.startingAllElementProps,
-      missingBoundsHandling,
-    )
-
-  const strictTarget = getReparentTargetInner('use-strict-bounds')
-  const strictStrategy =
-    strictTarget == null ? null : reparentStrategyForReparentTarget(metadata, strictTarget, false)
-
-  const forcedTarget = getReparentTargetInner('allow-missing-bounds')
-  const sameTargets =
-    strictTarget != null &&
-    forcedTarget != null &&
-    EP.pathsEqual(forcedTarget.newParent, strictTarget.newParent)
-  const convertToAbsolute = sameTargets && strictStrategy?.strategy === 'REPARENT_AS_STATIC'
-  const skipForcedTarget = sameTargets && !convertToAbsolute
-  const forcedStrategy =
-    forcedTarget == null || skipForcedTarget
-      ? null
-      : reparentStrategyForReparentTarget(metadata, forcedTarget, convertToAbsolute)
-
-  return stripNulls([strictStrategy, forcedStrategy])
-}
-
-export function findReparentStrategies2(
-  canvasState: InteractionCanvasState,
-  cmdPressed: boolean,
-  pointOnCanvas: CanvasPoint,
-): Array<FindReparentStrategyResult> {
-  const metadata = canvasState.startingMetadata
-
-  const reparentSubjects =
     canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
       ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
       : existingReparentSubjects(
