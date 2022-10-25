@@ -44,8 +44,8 @@ const transformFromOrientation = (orientation: Orientation) => {
 
 type Timeout = ReturnType<typeof setTimeout>
 
-const PaddingResizeControlWidth = 4
-const PaddingResizeControlHeight = 24
+const PaddingResizeControlWidth = 2
+const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 1
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
