@@ -32,7 +32,7 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
     const actualPaddingValue = Math.floor(
       Math.max(0, currentPaddingValue + deltaFromEdge(dragDelta, activeEdge)),
     )
-    const position = indicatorPosition(activeEdge, dragStart, dragDelta)
+    const position = indicatorPosition(activeEdge, scale, dragStart, dragDelta)
     return (
       <CanvasOffsetWrapper>
         <div
@@ -56,10 +56,11 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
 
 function indicatorPosition(
   edge: EdgePiece,
+  scale: number,
   dragStart: CanvasPoint,
   dragDelta: CanvasVector,
 ): CanvasPoint {
-  const Offset = 5
+  const Offset = 4 / scale
   switch (edge) {
     case 'top':
     case 'bottom':
