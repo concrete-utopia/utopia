@@ -110,7 +110,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   if (
-    reparentSubjects.length !== 1 ||
+    reparentSubjects.length === 0 ||
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
