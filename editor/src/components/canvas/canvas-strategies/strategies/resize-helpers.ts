@@ -145,11 +145,9 @@ export function isAnySelectedElementAspectRatioLocked(
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
 ): boolean {
-  return MetadataUtils.findElementsByElementPath(jsxMetadata, selectedElements).some((e) => {
-    const h = isElementImage(e)
-    const w = isElementAspectRatioLocked(e)
-    return h || w
-  })
+  return MetadataUtils.findElementsByElementPath(jsxMetadata, selectedElements).some(
+    (e) => isElementImage(e) || isElementAspectRatioLocked(e),
+  )
 }
 
 export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
