@@ -27,6 +27,7 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
     )
 
     const FontSize = 12 / scale
+    const Padding = 4 / scale
 
     const actualPaddingValue = Math.floor(
       Math.max(0, currentPaddingValue + deltaFromEdge(dragDelta, activeEdge)),
@@ -41,6 +42,7 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
             fontSize: FontSize,
             left: position.x,
             top: position.y,
+            padding: Padding,
             backgroundColor: colorTheme.brandNeonPink.value,
             color: 'white',
           }}
