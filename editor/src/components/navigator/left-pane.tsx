@@ -861,7 +861,7 @@ const GithubPane = React.memo(() => {
 
   React.useEffect(() => {
     if (githubAuthenticated) {
-      getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
+      void getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
     }
   }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
 
