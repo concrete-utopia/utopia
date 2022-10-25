@@ -399,7 +399,7 @@ export function getReparentTargetUnified(
         ) ||
         // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
         (!selectedElementsMetadata.some((maybeAncestorOrEqual) =>
-          !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
+          !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO if we work on Reorder for Relative Elements, this will probably need to change
             ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
               EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
             : // for non-flex elements, we filter out their descendants and themselves
