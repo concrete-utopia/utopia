@@ -161,7 +161,7 @@ function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  // TODO ABSOLUTE drag onto the padded area of display: flow target parent
+  // TODO ABSOLUTE drag onto the padded area of flow layout target parent
 
   // TODO is this needed?
   const emptyParentWithAnyDimensionZero =

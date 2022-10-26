@@ -852,9 +852,9 @@ describe('Unified Reparent Fitness Function Tests', () => {
   })
 })
 
-describe('Target parents with display: flow', () => {
+describe('Target parents with flow layout', () => {
   describe('Reparent To Absolute', () => {
-    it('target parent display: flow with all children positioned absolutely', async () => {
+    it('target parent with flow layout with all children positioned absolutely', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
@@ -1020,7 +1020,7 @@ describe('Target parents with display: flow', () => {
     })
 
     // TODO add padding check!
-    it.skip('drag onto the padded area of display: flow target parent', async () => {
+    it.skip('drag onto the padded area of flow layout target parent', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
@@ -1329,7 +1329,7 @@ describe('Target parents with display: flow', () => {
       )
     })
 
-    it('target parent display: flow with any children in flow', async () => {
+    it('target parent flow layout with any children in flow', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
@@ -1488,7 +1488,7 @@ describe('Target parents with display: flow', () => {
       )
     })
 
-    it('empty display: flow target parent with measured width or height 0', async () => {
+    it('empty flow layout target parent with measured width or height 0', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
