@@ -212,49 +212,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 }
 `
 
-const projectWithAspectRatioLockedElement = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='storyboard'>
-    <div
-      data-aspect-ratio-locked
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 174,
-        top: 827,
-        width: 170,
-        height: 430,
-      }}
-      data-uid='div-simple'
-    />
-    <img
-      style={{
-        width: 215,
-        height: 215,
-        position: 'absolute',
-        left: -69,
-        top: 863,
-      }}
-      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='img-element'
-    />
-  </Storyboard>
-)
-`
-
 function projectDoesHonourSizeProperties(width: number, height: number): string {
   return `import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
@@ -409,12 +366,31 @@ describe('Absolute Resize Strategy', () => {
   })
   it('resizes absolute element with aspect ratio locked, keeping aspect ratio', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-aspect-ratio-locked
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      data-uid='div-aspect-ratio-locked'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
     const target = EP.elementPath([['storyboard', 'div-aspect-ratio-locked']])
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
@@ -431,34 +407,12 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 13,
-        top: 284,
-        width: 383,
-        height: 449,
+        left: -42,
+        top: 207,
+        width: 375,
+        height: 500,
       }}
       data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 174,
-        top: 827,
-        width: 170,
-        height: 430,
-      }}
-      data-uid='div-simple'
-    />
-    <img
-      style={{
-        width: 215,
-        height: 215,
-        position: 'absolute',
-        left: -69,
-        top: 863,
-      }}
-      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -466,12 +420,31 @@ export var storyboard = (
   })
   it('resizes absolute element with aspect ratio locked, disregarding aspect ratio if shift is held', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-aspect-ratio-locked
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      data-uid='div-aspect-ratio-locked'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
     const target = EP.elementPath([['storyboard', 'div-aspect-ratio-locked']])
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
@@ -488,34 +461,12 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 62,
-        top: 284,
-        width: 334,
-        height: 449,
+        left: 133,
+        top: 207,
+        width: 200,
+        height: 500,
       }}
       data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 174,
-        top: 827,
-        width: 170,
-        height: 430,
-      }}
-      data-uid='div-simple'
-    />
-    <img
-      style={{
-        width: 215,
-        height: 215,
-        position: 'absolute',
-        left: -69,
-        top: 863,
-      }}
-      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -523,12 +474,30 @@ export var storyboard = (
   })
   it('images are automatically resized with aspect ratio locked, keeping aspect ratio', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <img
+      style={{
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
+      data-uid='img-element'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
     const target = EP.elementPath([['storyboard', 'img-element']])
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
@@ -540,36 +509,13 @@ import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='storyboard'>
-    <div
-      data-aspect-ratio-locked
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 174,
-        top: 827,
-        width: 170,
-        height: 430,
-      }}
-      data-uid='div-simple'
-    />
     <img
       style={{
-        width: 238,
-        height: 238,
         position: 'absolute',
-        left: -92,
-        top: 840,
+        left: -42,
+        top: 207,
+        width: 375,
+        height: 500,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
       data-uid='img-element'
@@ -580,12 +526,30 @@ export var storyboard = (
   })
   it('images are resized without regard to aspect ratio if shift is held', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <img
+      style={{
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
+      data-uid='img-element'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
     const target = EP.elementPath([['storyboard', 'img-element']])
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
@@ -597,36 +561,13 @@ import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='storyboard'>
-    <div
-      data-aspect-ratio-locked
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 174,
-        top: 827,
-        width: 170,
-        height: 430,
-      }}
-      data-uid='div-simple'
-    />
     <img
       style={{
-        width: 186,
-        height: 238,
         position: 'absolute',
-        left: -40,
-        top: 840,
+        left: 133,
+        top: 207,
+        width: 200,
+        height: 500,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
       data-uid='img-element'
@@ -637,7 +578,37 @@ export var storyboard = (
   })
   it('resizes multiselection with aspect ratio locked, if any elements in the selection are aspect ratio locked', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-aspect-ratio-locked
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      data-uid='div-aspect-ratio-locked'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 174,
+        top: 827,
+        width: 100,
+        height: 200,
+      }}
+      data-uid='div-simple'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
@@ -645,7 +616,7 @@ export var storyboard = (
       EP.elementPath([['storyboard', 'div-aspect-ratio-locked']]),
       EP.elementPath([['storyboard', 'div-simple']]),
     ]
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
@@ -662,10 +633,10 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 24,
-        top: 284,
-        width: 372,
-        height: 436,
+        left: -9,
+        top: 207,
+        width: 342,
+        height: 456,
       }}
       data-uid='div-aspect-ratio-locked'
     />
@@ -673,23 +644,12 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 169,
-        top: 817,
-        width: 174,
-        height: 440,
+        left: 152,
+        top: 799,
+        width: 114,
+        height: 228,
       }}
       data-uid='div-simple'
-    />
-    <img
-      style={{
-        width: 215,
-        height: 215,
-        position: 'absolute',
-        left: -69,
-        top: 863,
-      }}
-      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -697,7 +657,37 @@ export var storyboard = (
   })
   it('resizes multiselection without aspect ratio locked, if any elements in the selection are aspect ratio locked but shift is held', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-aspect-ratio-locked
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      data-uid='div-aspect-ratio-locked'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 174,
+        top: 827,
+        width: 100,
+        height: 200,
+      }}
+      data-uid='div-simple'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
@@ -705,7 +695,7 @@ export var storyboard = (
       EP.elementPath([['storyboard', 'div-aspect-ratio-locked']]),
       EP.elementPath([['storyboard', 'div-simple']]),
     ]
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
@@ -722,10 +712,10 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 62,
-        top: 284,
-        width: 334,
-        height: 436,
+        left: 133,
+        top: 207,
+        width: 200,
+        height: 456,
       }}
       data-uid='div-aspect-ratio-locked'
     />
@@ -733,23 +723,12 @@ export var storyboard = (
       style={{
         backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: 192,
-        top: 817,
-        width: 156,
-        height: 440,
+        left: 227,
+        top: 799,
+        width: 67,
+        height: 228,
       }}
       data-uid='div-simple'
-    />
-    <img
-      style={{
-        width: 215,
-        height: 215,
-        position: 'absolute',
-        left: -69,
-        top: 863,
-      }}
-      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
-      data-uid='img-element'
     />
   </Storyboard>
 )
@@ -757,7 +736,37 @@ export var storyboard = (
   })
   it('resizes multiselection with aspect ratio locked, if any elements in the selection are images', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <img
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
+      data-uid='img-element'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 174,
+        top: 827,
+        width: 100,
+        height: 200,
+      }}
+      data-uid='div-simple'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
@@ -765,7 +774,7 @@ export var storyboard = (
       EP.elementPath([['storyboard', 'img-element']]),
       EP.elementPath([['storyboard', 'div-simple']]),
     ]
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
@@ -777,39 +786,28 @@ import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='storyboard'>
-    <div
-      data-aspect-ratio-locked
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 165,
-        top: 804,
-        width: 179,
-        height: 453,
-      }}
-      data-uid='div-simple'
-    />
     <img
       style={{
-        width: 227,
-        height: 227,
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: -91,
-        top: 842,
+        left: -9,
+        top: 207,
+        width: 342,
+        height: 456,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
       data-uid='img-element'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 152,
+        top: 799,
+        width: 114,
+        height: 228,
+      }}
+      data-uid='div-simple'
     />
   </Storyboard>
 )
@@ -817,7 +815,37 @@ export var storyboard = (
   })
   it('resizes multiselection without aspect ratio locked, if any elements in the selection are images but shift is held', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithAspectRatioLockedElement,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <img
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 33,
+        top: 307,
+        width: 300,
+        height: 400,
+      }}
+      src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
+      data-uid='img-element'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 174,
+        top: 827,
+        width: 100,
+        height: 200,
+      }}
+      data-uid='div-simple'
+    />
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
@@ -825,7 +853,7 @@ export var storyboard = (
       EP.elementPath([['storyboard', 'img-element']]),
       EP.elementPath([['storyboard', 'div-simple']]),
     ]
-    const dragDelta = windowPoint({ x: 29, y: -23 })
+    const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
     resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
@@ -837,39 +865,28 @@ import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='storyboard'>
-    <div
-      data-aspect-ratio-locked
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='div-aspect-ratio-locked'
-    />
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 186,
-        top: 804,
-        width: 158,
-        height: 453,
-      }}
-      data-uid='div-simple'
-    />
     <img
       style={{
-        width: 200,
-        height: 227,
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
-        left: -40,
-        top: 842,
+        left: 133,
+        top: 207,
+        width: 200,
+        height: 456,
       }}
       src='/editor/icons/favicons/favicon-128.png?hash=578b112672eaa052e413e1698446e7bf2729c2ad'
       data-uid='img-element'
+    />
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 227,
+        top: 799,
+        width: 67,
+        height: 228,
+      }}
+      data-uid='div-simple'
     />
   </Storyboard>
 )
