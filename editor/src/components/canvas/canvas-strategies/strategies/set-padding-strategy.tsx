@@ -170,6 +170,12 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
+  const { top, bottom, left, right } = element.specialSizeMeasurements.padding
+  const isPaddingSetForElement = [top, bottom, left, right].some((s) => s != null)
+  if (!isPaddingSetForElement) {
+    return false
+  }
+
   if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
     return false
   }
