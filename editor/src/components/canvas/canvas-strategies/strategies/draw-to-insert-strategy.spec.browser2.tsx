@@ -676,9 +676,11 @@ describe('Inserting into absolute', () => {
             <div
               style={{
                 backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
                 width: 40,
                 height: 50,
-                contain: 'layout',
               }}
               data-uid='ddd'
             />
@@ -754,9 +756,11 @@ describe('Inserting into absolute', () => {
             <div
               style={{
                 backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: -50,
+                top: -50,
                 width: 100,
                 height: 100,
-                contain: 'layout',
               }}
               data-uid='ddd'
             />
@@ -800,7 +804,7 @@ describe('Forced inserting into Static', () => {
     </div>
   `)
 
-  it('By default, it inserts as static into a flow parent', async () => {
+  it('By default, it refuses to insert into a static element', async () => {
     const renderResult = await setupInsertTest(inputCode)
     await enterInsertModeFromInsertMenu(renderResult)
 
@@ -821,7 +825,7 @@ describe('Forced inserting into Static', () => {
     mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
-    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
 
     // Drag from inside bbb to inside ccc
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -849,17 +853,7 @@ describe('Forced inserting into Static', () => {
               height: 180,
               backgroundColor: '#d3d3d3',
             }}
-          >
-            <div
-              style={{
-                backgroundColor: '#0091FFAA',
-                width: 20,
-                height: 20,
-                contain: 'layout',
-              }}
-              data-uid='ddd'
-            />
-          </div>
+          />
           <div
             data-uid='ccc'
             style={{
@@ -869,7 +863,17 @@ describe('Forced inserting into Static', () => {
               backgroundColor: '#FF0000',
             }}
           />
-          
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 5,
+              top: 5,
+              width: 20,
+              height: 20,
+            }}
+            data-uid='ddd'
+          />
         </div>
       `),
     )
@@ -898,7 +902,7 @@ describe('Forced inserting into Static', () => {
     mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
-    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
 
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       midDragCallback: () => {
