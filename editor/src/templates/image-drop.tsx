@@ -165,7 +165,7 @@ async function onDrop(
           openFileName == null ? [] : [EditorActions.openCodeEditorFile(openFileName, false)]
 
         context.dispatch([
-          EditorActions.transientActions(srcUpdateActions),
+          ...srcUpdateActions,
           EditorActions.showToast(notice('Succesfully uploaded assets')),
           ...openFileActions,
         ])
