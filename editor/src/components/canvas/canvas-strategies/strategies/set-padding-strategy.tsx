@@ -176,23 +176,22 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  if (elementHasPaddingSetFromMetadata(metadata, path)) {
-    return true
-  }
-
   const children = MetadataUtils.getChildren(metadata, path)
   if (children.length === 0) {
-    // isZeroSizedElement check omitted, since it's already checked above and we know it's true if we got here
     return true
   }
 
-  const childrenNotPositionAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
   )
 
-  if (childrenNotPositionAbsoluteOrSticky.length < 1) {
+  if (childrenNotPositionedAbsoluteOrSticky.length < 1) {
+    return false
+  }
+
+  if (!elementHasPaddingSetFromMetadata(metadata, path)) {
     return false
   }
 

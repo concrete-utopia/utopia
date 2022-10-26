@@ -41,12 +41,47 @@ describe('Padding resize strategy', () => {
       <div
         style={{
           backgroundColor: '#0091FFAA',
-          width: '100%',
-          height: '100%',
+          width: 22,
+          height: 22,
         }}
         data-uid='002'
       />
     </div>`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = edgePieces.flatMap((edge) => [
+      // ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+      ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+    ])
+
+    expect(paddingControls).toEqual([])
+  })
+
+  it('Padding resize handle is present for elements that are dimensioned and have no children', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 28,
+        top: 28,
+        width: 612,
+        height: 461,
+      }}
+      data-uid='24a'
+    />`),
       'await-first-dom-report',
     )
 
@@ -60,11 +95,12 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = edgePieces.flatMap((edge) =>
-      editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
-    )
-
-    expect(paddingControls).toEqual([])
+    edgePieces.forEach((edge) => {
+      const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+      expect(paddingControlOuter).toBeTruthy()
+      const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
+      expect(paddingControlHandle).toBeTruthy()
+    })
   })
 
   it('Padding resize is present', async () => {
