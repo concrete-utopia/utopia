@@ -181,7 +181,7 @@ function flowParentAbsoluteOrStatic(
 function reparentStrategyForReparentTarget(
   targetMetadata: ElementInstanceMetadataMap,
   target: ReparentTarget,
-  convertToAbsolute: boolean,
+  convertToAbsolute: boolean, // TODO this can probably be cleaned up in a follow-up PR
 ): FindReparentStrategyResult {
   return {
     ...reparentStrategyForParent(targetMetadata, target.newParent, convertToAbsolute),
