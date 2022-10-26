@@ -80,12 +80,10 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
       ? offsetPoint(interactionData.originalDragStart, interactionData.drag ?? zeroCanvasPoint)
       : interactionData.point
 
-  const cmdPressed = interactionData.modifiers.cmd
-
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    cmdPressed,
+    true,
     true,
   )
 
