@@ -78,11 +78,9 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
   }
   if (computedStyle.display != null) {
     if (computedStyle.display === 'flex') {
-      // TODO inline-flex
       return 'flex'
     }
     if (computedStyle.display === 'grid') {
-      // TODO inline-grid
       return 'grid'
     }
   }

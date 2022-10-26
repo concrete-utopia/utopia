@@ -274,7 +274,7 @@ describe('Strategy Fitness', () => {
           data-uid='bbb'
         />
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50, contain: 'layout' }}
+          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
           data-uid='ccc'
         />
       </div>
