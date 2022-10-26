@@ -1035,7 +1035,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             },
             {
               scale: this.props.model.scale,
-              editor: this.props.editor,
+              editor: () => this.props.editor,
               mousePosition: mousePosition,
               dispatch: this.props.dispatch,
               loginState: this.props.userState.loginState,
