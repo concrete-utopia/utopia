@@ -79,7 +79,7 @@ export function getElementDirection(
   element: ElementInstanceMetadata | null,
 ): 'vertical' | 'horizontal' {
   const displayValue = element?.specialSizeMeasurements.display
-  return displayValue.includes('inline') ? 'horizontal' : 'vertical'
+  return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
 function getNewDisplayTypeForIndex(
