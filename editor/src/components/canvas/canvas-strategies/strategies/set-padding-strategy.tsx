@@ -1,10 +1,19 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import {
+  ElementInstanceMetadataMap,
+  getJSXAttribute,
+} from '../../../../core/shared/element-template'
+import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import * as PP from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
+import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { create } from '../../../template-property-path'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -170,9 +179,7 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  const { top, bottom, left, right } = element.specialSizeMeasurements.padding
-  const isPaddingSetForElement = [top, bottom, left, right].some((s) => s != null)
-  if (!isPaddingSetForElement) {
+  if (!elementHasPaddingSetFromMetadata(metadata, path)) {
     return false
   }
 
@@ -191,6 +198,29 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   }
 
   return true
+}
+
+function elementHasPaddingSetFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, path)
+  if (element == null) {
+    return false
+  }
+
+  const jsxAttributeExists = (propertyPath: PropertyPath): boolean =>
+    getJSXAttributeAtPath(element.props, propertyPath).attribute.type !== 'ATTRIBUTE_NOT_FOUND'
+
+  const paddingProps = (p: keyof CSSPadding) => PP.create(['style', p])
+
+  return (
+    jsxAttributeExists(PP.create(['style', 'padding'])) ||
+    jsxAttributeExists(paddingProps('paddingBottom')) ||
+    jsxAttributeExists(paddingProps('paddingTop')) ||
+    jsxAttributeExists(paddingProps('paddingLeft')) ||
+    jsxAttributeExists(paddingProps('paddingRight'))
+  )
 }
 
 function paddingValueIndicatorProps(
