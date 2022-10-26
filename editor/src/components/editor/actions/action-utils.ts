@@ -116,6 +116,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_ELEMENTS_TO_RERENDER':
     case 'TOGGLE_SELECTION_LOCK':
     case 'SAVE_TO_GITHUB':
+    case 'UPDATE_GITHUB_OPERATIONS':
       return true
 
     case 'NEW':

@@ -137,6 +137,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+    case 'UPDATE_GITHUB_OPERATIONS':
+      return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state, dispatch)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':

@@ -315,6 +315,7 @@ import {
   fileUploadInfo,
   FileUploadInfo,
   FileOverwriteModal,
+  GithubOperation,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -344,6 +345,7 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  PaddingResizeHandle,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
   resizeHandle,
@@ -1738,6 +1740,13 @@ export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingResizeHandle> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 // This will break should the definition of `FlowSlider` change.
 flowSlider()
 export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
@@ -1770,6 +1779,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'KEYBOARD_CATCHER_CONTROL':
       if (newValue.type === oldValue.type) {
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'PADDING_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return PaddingResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'FLOW_SLIDER':
@@ -3149,6 +3163,16 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
+export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> =
+  combine1EqualityCall(
+    (op) => op.name,
+    StringKeepDeepEquality,
+    (a) => ({ name: 'commish' }),
+  )
+
+export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
+  arrayDeepEquality(GithubOperationKeepDeepEquality)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3382,6 +3406,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.imageDragSessionState,
   )
 
+  const githubOperationsResults = GithubOperationsKeepDeepEquality(
+    oldValue.githubOperations,
+    newValue.githubOperations,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3449,7 +3478,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
-    imageDragSessionStateEqual.areEqual
+    imageDragSessionStateEqual.areEqual &&
+    githubOperationsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3522,6 +3552,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
+      githubOperationsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

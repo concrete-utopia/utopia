@@ -1,6 +1,7 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import urljoin from 'url-join'
 import {
+  GithubOperation,
   GithubRepo,
   PersistentModel,
   projectGithubSettings,
@@ -13,6 +14,7 @@ import {
   showToast,
   updateGithubSettings,
   updateProjectContents,
+  updateGithubOperations,
 } from '../../components/editor/actions/action-creators'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
@@ -68,11 +70,26 @@ export interface GetBranchContentSuccess {
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
+export interface RepositoryEntry {
+  fullName: string
+}
+
+export interface GetUsersPublicRepositoriesSuccess {
+  type: 'SUCCESS'
+  repositories: Array<RepositoryEntry>
+}
+
+export type GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesSuccess | GithubFailure
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'commish' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
   const postBody = JSON.stringify(persistentModel)
@@ -120,11 +137,17 @@ export async function saveProjectToGithub(
       'everyone',
     )
   }
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export async function getBranchesForGithubRepository(
+  dispatch: EditorDispatch,
   githubRepo: GithubRepo,
 ): Promise<GetBranchesResponse> {
+  const operation: GithubOperation = { name: 'listBranches' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'branches', githubRepo.owner, githubRepo.repository)
 
   const response = await fetch(url, {
@@ -133,6 +156,9 @@ export async function getBranchesForGithubRepository(
     headers: HEADERS,
     mode: MODE,
   })
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+
   if (response.ok) {
     const responseBody: GetBranchesResponse = await response.json()
     return responseBody
@@ -150,6 +176,10 @@ export async function getBranchContent(
   projectID: string,
   branchName: string,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'loadBranch', branchName: branchName }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(
     UTOPIA_BACKEND,
     'github',
@@ -168,8 +198,10 @@ export async function getBranchContent(
     headers: HEADERS,
     mode: MODE,
   })
+
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
+
     switch (responseBody.type) {
       case 'FAILURE':
         dispatch(
@@ -190,6 +222,51 @@ export async function getBranchContent(
           ],
           'everyone',
         )
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+}
+
+export async function getUsersPublicGithubRepositories(
+  dispatch: EditorDispatch,
+  callback: (repositories: Array<RepositoryEntry>) => void,
+): Promise<void> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(
+                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                'ERROR',
+              ),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        callback(responseBody.repositories)
         break
       default:
         const _exhaustiveCheck: never = responseBody

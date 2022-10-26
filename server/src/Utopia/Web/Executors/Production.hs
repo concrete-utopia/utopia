@@ -287,6 +287,13 @@ innerServerExecutor (GetBranchContent user owner repository branchName projectID
   awsResource <- fmap _awsResources ask
   result <- getGithubBranch githubResources (Just awsResource) logger metrics pool user owner repository branchName projectID
   pure $ action result
+innerServerExecutor (GetUsersRepositories user action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+  pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
