@@ -67,13 +67,18 @@ export interface LastPartSeparatedByResult<T> {
   rest: string
 }
 
-function lastPartSeparatedBy<Separator extends string, T>(
-  sepBy: Separator,
-  make: (_: string) => T | null,
-  s: string,
+interface LastPartSeparatedByParams<T> {
+  separator: string
+  raw: string
+  make: (_: string) => T | null
+}
+
+function lastPartSeparatedBy<T>(
+  params: LastPartSeparatedByParams<T>,
 ): LastPartSeparatedByResult<T> | null {
-  const parts = s.split(sepBy)
-  if (s.length < 2) {
+  const { separator, make, raw } = params
+  const parts = raw.split(separator)
+  if (raw.length < 2) {
     return null
   }
 
@@ -83,14 +88,9 @@ function lastPartSeparatedBy<Separator extends string, T>(
   }
 
   return {
-    rest: parts.slice(0, -1).join(sepBy),
+    rest: parts.slice(0, -1).join(separator),
     part: made,
   }
-}
-
-const safeParseInt = (raw: string): number | null => {
-  const result = Number.parseInt(raw)
-  return isNaN(result) ? null : result
 }
 
 const parseNumber =
@@ -100,29 +100,35 @@ const parseNumber =
     if (match == null || match.length < 2) {
       return null
     }
-    return safeParseInt(match[1])
+    return Utils.safeParseInt(match[1])
   }
 
 export const parseMultiplier = parseNumber(/^(\d+)x$/)
 export const parseDedupeId = parseNumber(/^(\d+)$/)
 
 export function getFilenameParts(filename: string): FilenameParts | null {
-  const extensionResult = lastPartSeparatedBy<'.', string>('.', identity, filename)
+  const extensionResult = lastPartSeparatedBy<string>({
+    separator: '.',
+    make: identity,
+    raw: filename,
+  })
   if (extensionResult == null) {
     return null
   }
 
   const { part: extension, rest: restFromExtension } = extensionResult
 
-  const { part: multiplier, rest: restFromMultiplier } = lastPartSeparatedBy<
-    '@',
-    number | undefined
-  >('@', parseMultiplier, restFromExtension) ?? { rest: restFromExtension }
+  const { part: multiplier, rest: restFromMultiplier } = lastPartSeparatedBy<number | undefined>({
+    separator: '@',
+    make: parseMultiplier,
+    raw: restFromExtension,
+  }) ?? { rest: restFromExtension }
 
-  const { part: dedupSeqNumber, rest: restFromDedupe } = lastPartSeparatedBy<
-    '_',
-    number | undefined
-  >('_', parseDedupeId, restFromMultiplier) ?? { rest: restFromMultiplier }
+  const { part: dedupSeqNumber, rest: restFromDedupe } = lastPartSeparatedBy<number | undefined>({
+    separator: '_',
+    make: parseDedupeId,
+    raw: restFromMultiplier,
+  }) ?? { rest: restFromMultiplier }
 
   return {
     extension: extension,
