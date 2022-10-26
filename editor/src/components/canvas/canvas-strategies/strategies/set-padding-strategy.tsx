@@ -1,11 +1,5 @@
-import {
-  getSimpleAttributeAtPath,
-  MetadataUtils,
-} from '../../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadataMap,
-  getJSXAttribute,
-} from '../../../../core/shared/element-template'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
 import * as PP from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -13,7 +7,6 @@ import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-
 import { assertNever } from '../../../../core/shared/utils'
 import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { create } from '../../../template-property-path'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -179,12 +172,18 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  if (!elementHasPaddingSetFromMetadata(metadata, path)) {
+  if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
     return false
   }
 
-  if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
-    return false
+  if (elementHasPaddingSetFromMetadata(metadata, path)) {
+    return true
+  }
+
+  const children = MetadataUtils.getChildren(metadata, path)
+  if (children.length === 0) {
+    // isZeroSizedElement check omitted, since it's already checked above and we know it's true if we got here
+    return true
   }
 
   const childrenNotPositionAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
