@@ -214,7 +214,7 @@ export function findReparentStrategies(
   )
 
   if (targetParent == null) {
-    return [] // TODO is canvas a null target parent?
+    return []
   }
 
   const strategy = reparentStrategyForReparentTarget(metadata, targetParent, false)
