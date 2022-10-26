@@ -651,27 +651,20 @@ export function uniqueProjectContentID(
   }
 
   const parts = getFilenameParts(startingIDCorrected)
-  if (parts == null) {
-    let counter = 2
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const possibleNewID = `${startingIDCorrected}_${counter}`
-      if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
-        counter += 1
-      } else {
-        return correctProjectContentsPath(possibleNewID)
-      }
-    }
-  } else {
-    let counter = 2
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const fileNameToTry: string = filenameFromParts({ ...parts, deduplicationSeqNumber: counter })
-      if (getContentsTreeFileFromString(projectContents, fileNameToTry) != null) {
-        counter += 1
-      } else {
-        return correctProjectContentsPath(fileNameToTry)
-      }
+
+  const makeNameWithCounter =
+    parts !== null
+      ? (counter: number) => filenameFromParts({ ...parts, deduplicationSeqNumber: counter })
+      : (counter: number) => `${startingIDCorrected}_${counter}`
+
+  let counter = 2
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const possibleNewID = makeNameWithCounter(counter)
+    if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
+      counter += 1
+    } else {
+      return correctProjectContentsPath(possibleNewID)
     }
   }
 }
