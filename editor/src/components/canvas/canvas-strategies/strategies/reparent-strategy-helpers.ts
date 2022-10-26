@@ -129,8 +129,7 @@ function flowParentAbsoluteOrStatic(
   }
 
   if (parentMetadata == null) {
-    // should this throw an error?
-    return 'REPARENT_AS_STATIC'
+    throw new Error('flowParentAbsoluteOrStatic: parentMetadata was null')
   }
 
   const parentIsContainingBlock =
