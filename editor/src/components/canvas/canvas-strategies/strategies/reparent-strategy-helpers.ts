@@ -221,13 +221,15 @@ export function findReparentStrategies(
 
   const fallbackStrategy: FindReparentStrategyResult =
     strategy.strategy === 'REPARENT_AS_ABSOLUTE'
-      ? {
-          isFallback: true, // TODO is this true?
-          missingBoundsHandling: 'use-strict-bounds', // TODO is this true?
+      ? // in case of an absolute reparent to a flow parent, we want to offer a secondary option to reparent as static
+        {
+          isFallback: true,
+          missingBoundsHandling: 'use-strict-bounds',
           target: strategy.target,
           strategy: 'REPARENT_AS_STATIC',
         }
-      : reparentStrategyForReparentTarget(metadata, targetParent, true)
+      : // in case of a static reparent, we want to offer a secondary option to force absolute.
+        reparentStrategyForReparentTarget(metadata, targetParent, true)
 
   return [strategy, fallbackStrategy]
 }
