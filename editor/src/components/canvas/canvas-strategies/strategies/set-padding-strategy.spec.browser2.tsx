@@ -21,7 +21,52 @@ import {
 } from '../../ui-jsx.test-utils'
 import { SetPaddingStrategyName } from './set-padding-strategy'
 
+const edgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
+
 describe('Padding resize strategy', () => {
+  it('Padding resize handle is not present for elements that have no padding set', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 28,
+        top: 28,
+        width: 612,
+        height: 461,
+      }}
+      data-uid='24a'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: '100%',
+          height: '100%',
+        }}
+        data-uid='002'
+      />
+    </div>`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 5,
+      y: divBounds.y + 4,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = edgePieces.flatMap((edge) =>
+      editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+    )
+
+    expect(paddingControls).toEqual([])
+  })
+
   it('Padding resize is present', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
@@ -45,7 +90,6 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const edgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
     edgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
       expect(paddingControlOuter).toBeTruthy()
