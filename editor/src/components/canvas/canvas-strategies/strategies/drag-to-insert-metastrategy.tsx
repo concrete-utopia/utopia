@@ -83,8 +83,9 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
+    interactionData.modifiers.cmd,
     true,
-    true,
+    'allow-smaller-parent',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {

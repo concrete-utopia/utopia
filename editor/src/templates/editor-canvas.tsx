@@ -482,6 +482,10 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
 
+          const allowSmallerParent = action.interactionSession.interactionData.modifiers.cmd
+            ? 'allow-smaller-parent'
+            : 'disallow-smaller-parent'
+
           const strictBoundsResult = getReparentTargetUnified(
             existingReparentSubjects(getDragTargets(model.selectedViews)),
             pointOnCanvas,
@@ -490,6 +494,7 @@ export function runLocalCanvasAction(
             metadata,
             allElementProps,
             'use-strict-bounds',
+            allowSmallerParent,
           )
 
           const missingBoundsResult = getReparentTargetUnified(
@@ -500,6 +505,7 @@ export function runLocalCanvasAction(
             metadata,
             allElementProps,
             'allow-missing-bounds',
+            allowSmallerParent,
           )
 
           return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
