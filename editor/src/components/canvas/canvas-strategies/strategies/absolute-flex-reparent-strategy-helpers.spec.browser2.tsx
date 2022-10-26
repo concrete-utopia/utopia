@@ -1329,7 +1329,7 @@ describe('Target parents with flow layout', () => {
       )
     })
 
-    it('target parent flow layout with any children in flow', async () => {
+    it('target parent flow layout with any static children', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
