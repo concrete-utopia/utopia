@@ -912,9 +912,9 @@ export function nanToZero(n: number): number {
   }
 }
 
-export function safeParseInt(s: string): number {
-  const n = Number.parseInt(s)
-  return forceNotNaN(n, `Unable to parse ${s}.`)
+export function safeParseInt(raw: string): number | null {
+  const result = Number.parseInt(raw)
+  return isNaN(result) ? null : result
 }
 
 export function clampValue(value: number, minimum: number, maximum: number): number {
