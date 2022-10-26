@@ -35,20 +35,20 @@ describe('image related helper functions', () => {
   })
 
   it('parse image filenames', () => {
-    const filenames: Array<[FilenameParts, string]> = [
-      [{ filename: 'stuff', extension: 'png' }, 'stuff.png'],
-      [{ filename: 'stuff', extension: 'png', multiplier: 2 }, 'stuff@2x.png'],
+    const filenames: Array<[string, FilenameParts]> = [
+      ['stuff.png', { filename: 'stuff', extension: 'png' }],
+      ['stuff@2x.png', { filename: 'stuff', extension: 'png', multiplier: 2 }],
       [
-        { filename: 'stuff', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
         'stuff_2@2x.png',
+        { filename: 'stuff', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
       ],
       [
-        { filename: 'stuff@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
         'stuff@3_2@2x.png',
+        { filename: 'stuff@3', extension: 'png', multiplier: 2, deduplicationSeqNumber: 2 },
       ],
     ]
 
-    for (const [result, input] of filenames) {
+    for (const [input, result] of filenames) {
       const parsed = getFilenameParts(input)
       expect(parsed).toEqual(result)
     }
