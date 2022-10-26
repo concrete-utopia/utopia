@@ -17,7 +17,7 @@ import {
 import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { baseReparentToFlexStrategy } from './reparent-to-flex-strategy'
+import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -26,6 +26,7 @@ interface ReparentFactoryAndDetails {
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
   missingBoundsHandling: MissingBoundsHandling
+  targetParentDisplayType: 'flex' | 'flow' // should this be here?
   fitness: number
   factory: CanvasStrategyFactory
 }
@@ -41,7 +42,7 @@ export function getApplicableReparentFactories(
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
-      case 'REPARENT_TO_ABSOLUTE': {
+      case 'REPARENT_AS_ABSOLUTE': {
         const fitness =
           missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
         if (allDraggedElementsAbsolute) {
@@ -50,6 +51,7 @@ export function getApplicableReparentFactories(
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flow',
             fitness: fitness,
             factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
           }
@@ -59,6 +61,7 @@ export function getApplicableReparentFactories(
             targetIndex: null,
             strategyType: result.strategy,
             missingBoundsHandling: result.missingBoundsHandling,
+            targetParentDisplayType: 'flow',
             fitness: fitness,
             factory: baseFlexReparentToAbsoluteStrategy(
               result.target,
@@ -68,15 +71,25 @@ export function getApplicableReparentFactories(
           }
         }
       }
-      case 'REPARENT_TO_FLEX': {
+      case 'REPARENT_AS_STATIC': {
         const fitness = 3
+
+        const targetParentDisplayType =
+          MetadataUtils.findElementByElementPath(
+            canvasState.startingMetadata,
+            result.target.newParent,
+          )?.specialSizeMeasurements.display === 'flex'
+            ? 'flex'
+            : 'flow'
+
         return {
           targetParent: result.target.newParent,
           targetIndex: result.target.newIndex,
           strategyType: result.strategy,
           missingBoundsHandling: result.missingBoundsHandling,
+          targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
-          factory: baseReparentToFlexStrategy(result.target, fitness),
+          factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
       default:
@@ -107,22 +120,16 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
+  // TODO delete me as soon as Balint's PR is merged
   const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
     ),
   )
 
-  const allDraggedElementsFlex = reparentSubjects.every((element) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      element,
-      canvasState.startingMetadata,
-    ),
-  )
-
   const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
 
-  if (!(allDraggedElementsAbsolute || allDraggedElementsFlex) || anyDraggedElementsRootElements) {
+  if (anyDraggedElementsRootElements) {
     return []
   }
 
