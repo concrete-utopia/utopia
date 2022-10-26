@@ -210,6 +210,7 @@ import type {
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
+  UpdateGithubOperations,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -225,6 +226,7 @@ import type {
   ProjectGithubSettings,
   RightMenuTab,
   Theme,
+  GithubOperation,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1423,6 +1425,19 @@ export function setGithubState(githubState: GithubState): SetGithubState {
   return {
     action: 'SET_GITHUB_STATE',
     githubState: githubState,
+  }
+}
+
+export type GithubOperationType = 'add' | 'remove'
+
+export function updateGithubOperations(
+  operation: GithubOperation,
+  type: GithubOperationType,
+): UpdateGithubOperations {
+  return {
+    action: 'UPDATE_GITHUB_OPERATIONS',
+    operation: operation,
+    type: type,
   }
 }
 

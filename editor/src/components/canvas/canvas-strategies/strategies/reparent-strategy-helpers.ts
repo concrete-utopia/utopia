@@ -15,11 +15,7 @@ import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse, stripNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  JSXElement,
-} from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -37,6 +33,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
@@ -631,10 +628,11 @@ function createPseudoElements(
   }
 }
 
-export function applyFlexReparent(
+export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
+  targetLayout: 'flex' | 'flow',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -686,7 +684,7 @@ export function applyFlexReparent(
             )
 
             // Strip the `position`, positional and dimension properties.
-            const propertyChangeCommands = getFlexReparentPropertyChanges(
+            const propertyChangeCommands = getStaticReparentPropertyChanges(
               newPath,
               targetMetadata?.specialSizeMeasurements.position ?? null,
             )
@@ -704,11 +702,10 @@ export function applyFlexReparent(
             ]
 
             function midInteractionCommandsForTarget(): Array<CanvasCommand> {
-              return [
+              const commonPatches = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                showReorderIndicator(newParent, newIndex),
                 newParentADescendantOfCurrentParent
                   ? wildcardPatch('mid-interaction', {
                       hiddenInstances: { $push: [target] },
@@ -716,8 +713,21 @@ export function applyFlexReparent(
                   : wildcardPatch('mid-interaction', {
                       displayNoneInstances: { $push: [target] },
                     }),
-                wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
               ]
+              switch (targetLayout) {
+                case 'flow':
+                  return commonPatches
+                case 'flex':
+                  return [
+                    ...commonPatches,
+                    showReorderIndicator(newParent, newIndex),
+                    wildcardPatch('mid-interaction', {
+                      displayNoneInstances: { $push: [newPath] },
+                    }),
+                  ]
+                default:
+                  assertNever(targetLayout)
+              }
             }
 
             let interactionFinishCommands: Array<CanvasCommand>
@@ -847,7 +857,7 @@ export function getAbsoluteReparentPropertyChanges(
   ]
 }
 
-export function getFlexReparentPropertyChanges(
+export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
 ): Array<CanvasCommand> {
@@ -883,6 +893,6 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_TO_FLEX':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getFlexReparentPropertyChanges(newPath, targetOriginalStylePosition)
+      return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
   }
 }
