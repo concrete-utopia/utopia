@@ -210,6 +210,7 @@ specifiers:
   react-spring: 9.0.0-rc.3
   react-syntax-highlighter: 12.2.1
   react-test-renderer: 16.9.0
+  react-timeago: 7.1.0
   react-use-gesture: 6.0.2
   react-virtualized-auto-sizer: 1.0.2
   react-vtree: 2.0.0
@@ -351,6 +352,7 @@ dependencies:
   react-select: 3.1.0_react-dom@18.1.0+react@18.1.0
   react-spring: 9.0.0-rc.3_ed739fef80a23a6a6d2cf5963a105dc3
   react-syntax-highlighter: 12.2.1_react@18.1.0
+  react-timeago: 7.1.0_react@18.1.0
   react-use-gesture: 6.0.2_react@18.1.0
   react-virtualized-auto-sizer: 1.0.2_react-dom@18.1.0+react@18.1.0
   react-vtree: 2.0.0_fc75b599a283ce88adf32a755f569cd4
@@ -5902,7 +5904,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
+    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
     dev: false
 
   /compressible/2.0.18:
@@ -13544,6 +13546,14 @@ packages:
       react-is: 16.13.1
       scheduler: 0.15.0
     dev: true
+
+  /react-timeago/7.1.0_react@18.1.0:
+    resolution: {integrity: sha512-rouF7MiEm55fH791Y8cg+VobIJgx8gtNJ+gjr86R4ZqO1WKPkXiXjdT/lRzrvEkUzsxT1exHqV2V+Zdi114H3A==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.1.0
+    dev: false
 
   /react-transition-group/4.4.2_react-dom@18.1.0+react@18.1.0:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}

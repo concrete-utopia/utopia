@@ -46,14 +46,17 @@ import {
   regenerateThumbnail,
   setProjectName,
   setProjectDescription,
+  showToast,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import {
   DerivedState,
   EditorState,
   githubOperationPrettyName,
+  GithubRepo,
   isGithubCommishing,
   isGithubLoadingBranch,
+  isGithubLoadingRepositories,
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -77,7 +80,9 @@ import {
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
-import { forceNotNull } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import TimeAgo from 'react-timeago'
+import { notice } from '../common/notice'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -760,6 +765,215 @@ const GithubSpinner = () => {
   )
 }
 
+interface RepositoryRowProps extends RepositoryEntry {
+  importPermitted: boolean
+}
+
+const RepositoryRow = (props: RepositoryRowProps) => {
+  const colorTheme = useColorTheme()
+
+  const dispatch = useEditorState((store) => store.dispatch, 'RepositoryRow dispatch')
+
+  const projectID = useEditorState((store) => store.editor.id, 'RepositoryRow projectID')
+
+  const importRepository = React.useCallback(() => {
+    const parsedTargetRepository = parseGithubProjectString(props.fullName)
+    if (parsedTargetRepository == null) {
+      dispatch(
+        [
+          showToast(
+            notice(
+              `Error when attempting to import a repository with repo: ${props.fullName}`,
+              'ERROR',
+            ),
+          ),
+        ],
+        'everyone',
+      )
+    } else {
+      void getBranchContent(
+        dispatch,
+        parsedTargetRepository,
+        forceNotNull('Should have a project ID.', projectID),
+        props.defaultBranch,
+      )
+    }
+  }, [dispatch, projectID, props.fullName, props.defaultBranch])
+
+  return (
+    <div
+      style={{
+        minHeight: 40,
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 8,
+        alignItems: 'center',
+        paddingLeft: 8,
+        paddingRight: 8,
+        paddingBottom: 8,
+        paddingTop: 8,
+        borderBottom: '1px solid #ccc',
+      }}
+    >
+      <div
+        style={{
+          borderRadius: '50%',
+          width: 20,
+          height: 20,
+          border: '1px solid #ccc',
+          backgroundImage: `url(${props.avatarUrl})`,
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      <div style={{ flexGrow: 1 }}>
+        <span style={{ fontWeight: 600, textOverflow: 'ellipsis' }}>
+          {props.name ?? props.fullName}
+        </span>{' '}
+        <br />
+        <span style={{ opacity: 0.5 }}>
+          {props.private ? 'private' : 'public'} · <TimeAgo date={props.updatedAt} />
+        </span>
+      </div>
+      <button
+        style={{
+          fontSize: 11,
+          background: colorTheme.buttonBackground.value,
+          boxShadow: 'none',
+          border: 'none',
+          height: 22,
+          color: colorTheme.inlineButtonColor.value,
+          borderRadius: 2,
+        }}
+        onMouseUp={importRepository}
+      >
+        Import
+      </button>
+    </div>
+  )
+}
+
+interface RepositoryListingProps {
+  githubAuthenticated: boolean
+  storedTargetGithubRepo: GithubRepo | null
+}
+
+const RepositoryListing = React.memo(
+  ({ githubAuthenticated, storedTargetGithubRepo }: RepositoryListingProps) => {
+    const githubOperations = useEditorState(
+      (store) => store.editor.githubOperations,
+      'RepositoryListing githubOperations',
+    )
+    const storedTargetGithubRepoAsText = React.useMemo(() => {
+      if (storedTargetGithubRepo == null) {
+        return undefined
+      } else {
+        return `${storedTargetGithubRepo.owner}/${storedTargetGithubRepo.repository}`
+      }
+    }, [storedTargetGithubRepo])
+    const [targetRepository, setTargetRepository] = React.useState<string | undefined>(
+      storedTargetGithubRepoAsText,
+    )
+
+    const dispatch = useEditorState((store) => store.dispatch, 'RepositoryListing dispatch')
+
+    const isLoadingRepositories = React.useMemo(() => {
+      return isGithubLoadingRepositories(githubOperations)
+    }, [githubOperations])
+
+    const [usersRepositories, setUsersRepositories] = React.useState<Array<RepositoryEntry> | null>(
+      null,
+    )
+
+    const setUsersRepositoriesCallback = React.useCallback(
+      (repositories: Array<RepositoryEntry>) => {
+        setUsersRepositories(repositories)
+      },
+      [setUsersRepositories],
+    )
+
+    React.useEffect(() => {
+      if (githubAuthenticated) {
+        void getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
+      }
+    }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
+
+    const onInputChangeTargetRepository = React.useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTargetRepository(event.currentTarget.value)
+      },
+      [setTargetRepository],
+    )
+
+    const filteredRepositories = React.useMemo(() => {
+      if (usersRepositories == null) {
+        return null
+      } else {
+        let filteredResult = usersRepositories.map((repository) => {
+          return {
+            ...repository,
+            importPermitted: true,
+          }
+        })
+        if (targetRepository != null) {
+          filteredResult = filteredResult.filter((repository) => {
+            return (
+              repository.fullName.includes(targetRepository) ||
+              repository.name?.includes(targetRepository)
+            )
+          })
+        }
+        return filteredResult
+      }
+    }, [usersRepositories, targetRepository])
+
+    return (
+      <>
+        <UIGridRow
+          padded
+          variant={
+            isLoadingRepositories
+              ? '<--------auto-------->||22px|'
+              : '<-------------1fr------------->'
+          }
+        >
+          <StringInput
+            placeholder={
+              filteredRepositories == null ? 'Loading repositories...' : 'owner/repository'
+            }
+            onChange={onInputChangeTargetRepository}
+            list={'repositories-list'}
+            id={'repositories-input'}
+            testId={'repositories-input'}
+            name={'repositories-input'}
+            value={targetRepository}
+          />
+          {when(isLoadingRepositories, <GithubSpinner />)}
+        </UIGridRow>
+
+        {filteredRepositories == null ? null : (
+          <>
+            <UIGridRow padded variant='<-------------1fr------------->'>
+              <div
+                style={{
+                  border: '1px solid #ccc',
+                  height: 220,
+                  overflowY: 'scroll',
+                }}
+              >
+                {filteredRepositories.map((repository, index) => {
+                  return <RepositoryRow key={`repo-${index}`} {...repository} />
+                })}
+              </div>
+            </UIGridRow>
+          </>
+        )}
+      </>
+    )
+  },
+)
+
 const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
@@ -775,12 +989,7 @@ const GithubPane = React.memo(() => {
   }, [githubOperations])
 
   const storedTargetGithubRepo = useEditorState((store) => {
-    const repo = store.editor.githubSettings.targetRepository
-    if (repo == null) {
-      return undefined
-    } else {
-      return `${repo.owner}/${repo.repository}`
-    }
+    return store.editor.githubSettings.targetRepository
   }, 'GithubPane storedTargetGithubRepo')
 
   const onStartImport = React.useCallback(() => {
@@ -835,59 +1044,22 @@ const GithubPane = React.memo(() => {
     [dispatch],
   )
 
-  const [targetRepository, setTargetRepository] = React.useState<string | undefined>(
-    storedTargetGithubRepo,
-  )
-  const parsedTargetRepository = React.useMemo(() => {
-    if (targetRepository == null) {
-      return null
-    } else {
-      return parseGithubProjectString(targetRepository)
-    }
-  }, [targetRepository])
-
-  const [usersRepositories, setUsersRepositories] = React.useState<Array<string> | null>(null)
-
-  const setUsersRepositoriesCallback = React.useCallback(
-    (repositories: Array<RepositoryEntry>) => {
-      setUsersRepositories(
-        repositories.map((repository) => {
-          return repository.fullName
-        }),
-      )
-    },
-    [setUsersRepositories],
-  )
-
-  React.useEffect(() => {
-    if (githubAuthenticated) {
-      void getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
-    }
-  }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
-
-  const onInputChangeTargetRepository = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setTargetRepository(event.currentTarget.value)
-    },
-    [setTargetRepository],
-  )
-
   const triggerSaveToGithub = React.useCallback(() => {
-    if (parsedTargetRepository != null) {
-      dispatch([EditorActions.saveToGithub(parsedTargetRepository)], 'everyone')
+    if (storedTargetGithubRepo != null) {
+      dispatch([EditorActions.saveToGithub(storedTargetGithubRepo)], 'everyone')
     }
-  }, [dispatch, parsedTargetRepository])
+  }, [dispatch, storedTargetGithubRepo])
 
   const [branchesForRepository, setBranchesForRepository] =
     React.useState<GetBranchesResponse | null>(null)
 
   React.useEffect(() => {
-    if (parsedTargetRepository != null) {
-      void getBranchesForGithubRepository(dispatch, parsedTargetRepository).then((result) => {
+    if (storedTargetGithubRepo != null) {
+      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo).then((result) => {
         setBranchesForRepository(result)
       })
     }
-  }, [parsedTargetRepository, dispatch])
+  }, [storedTargetGithubRepo, dispatch])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
@@ -912,10 +1084,10 @@ const GithubPane = React.memo(() => {
                 >
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
-                      if (parsedTargetRepository != null) {
+                      if (storedTargetGithubRepo != null) {
                         void getBranchContent(
                           dispatch,
-                          parsedTargetRepository,
+                          storedTargetGithubRepo,
                           forceNotNull('Should have a project ID.', projectID),
                           branch.name,
                         )
@@ -951,7 +1123,7 @@ const GithubPane = React.memo(() => {
     }
   }, [
     branchesForRepository,
-    parsedTargetRepository,
+    storedTargetGithubRepo,
     dispatch,
     projectID,
     githubWorking,
@@ -1057,30 +1229,16 @@ const GithubPane = React.memo(() => {
             repositories at the moment.
           </div>
           <UIGridRow padded variant='<-------------1fr------------->'>
-            <StringInput
-              placeholder={
-                usersRepositories == null ? 'Loading repositories...' : 'owner/repository'
-              }
-              onChange={onInputChangeTargetRepository}
-              list={'repositories-list'}
-              id={'repositories-input'}
-              testId={'repositories-input'}
-              name={'repositories-input'}
-              value={targetRepository}
+            <RepositoryListing
+              githubAuthenticated={githubAuthenticated}
+              storedTargetGithubRepo={storedTargetGithubRepo}
             />
-            {usersRepositories == null ? null : (
-              <datalist id={'repositories-list'}>
-                {usersRepositories.map((repo, index) => {
-                  return <option key={`repo-${index}`} value={repo} />
-                })}
-              </datalist>
-            )}
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               spotlight
               highlight
-              disabled={!githubAuthenticated || parsedTargetRepository == null || githubWorking}
+              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
               onMouseUp={triggerSaveToGithub}
             >
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}

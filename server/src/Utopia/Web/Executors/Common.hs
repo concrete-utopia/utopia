@@ -39,7 +39,7 @@ import           Network.Wai
 import qualified Network.Wreq                     as WR
 import           Protolude                        hiding (Handler, concatMap,
                                                    intersperse, map, yield,
-                                                   (<.>))
+                                                   (<.>), getField)
 import           Servant
 import           Servant.Client                   hiding (Response)
 import           System.Directory
@@ -438,10 +438,16 @@ convertUsersRepositoriesResultToUnfold page result =
   -- continue paginating.
   Just (result, if Protolude.length result < userRepositoriesPerPage then Nothing else Just (page + 1))
 
-publicRepoToRepositoryEntry :: UsersPublicRepository -> RepositoryEntry
-publicRepoToRepositoryEntry UsersPublicRepository{..} = RepositoryEntry
-                                                      { fullName = full_name
-                                                      }
+publicRepoToRepositoryEntry :: UsersRepository -> RepositoryEntry
+publicRepoToRepositoryEntry publicRepository = RepositoryEntry
+                                             { fullName = view (field @"full_name") publicRepository
+                                             , avatarUrl = view (field @"owner" . field @"avatar_url") publicRepository
+                                             , private = view (field @"private") publicRepository
+                                             , description = view (field @"description") publicRepository
+                                             , name = view (field @"name") publicRepository
+                                             , updatedAt = view (field @"updated_at") publicRepository
+                                             , defaultBranch = view (field @"default_branch") publicRepository
+                                             }
 
 getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
 getGithubUsersPublicRepositories githubResources logger metrics pool userID = do
@@ -454,7 +460,10 @@ getGithubUsersPublicRepositories githubResources logger metrics pool userID = do
           getUnfoldStep Nothing = pure Nothing
       -- Run the steps and then combines the repositories returned from each step.
       fmap join $ sourceToList $ C.unfoldM getUnfoldStep (Just 1)
-    pure $ fmap publicRepoToRepositoryEntry repositories
+    -- Transform the entries for the result.
+    let repositoryEntries = fmap publicRepoToRepositoryEntry repositories
+    -- Sort the entries from latest to earliest.
+    pure $ sortOn (\entry -> Down $ getField @"updatedAt" entry) repositoryEntries
   pure $ either getUsersPublicRepositoriesFailureFromReason getUsersPublicRepositoriesSuccessFromContent result
 
 loadAsset :: Maybe AWSResources -> LoadAsset

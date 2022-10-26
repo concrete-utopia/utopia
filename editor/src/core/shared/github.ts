@@ -72,6 +72,12 @@ export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export interface RepositoryEntry {
   fullName: string
+  avatarUrl: string
+  private: boolean
+  description: string | null
+  name: string | null
+  updatedAt: string
+  defaultBranch: string
 }
 
 export interface GetUsersPublicRepositoriesSuccess {
@@ -241,6 +247,10 @@ export async function getUsersPublicGithubRepositories(
   dispatch: EditorDispatch,
   callback: (repositories: Array<RepositoryEntry>) => void,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'loadRepositories' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
 
   const response = await fetch(url, {
@@ -278,4 +288,6 @@ export async function getUsersPublicGithubRepositories(
       'everyone',
     )
   }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }

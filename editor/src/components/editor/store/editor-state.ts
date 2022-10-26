@@ -257,6 +257,7 @@ export type GithubOperation =
   | { name: 'commish' }
   | { name: 'listBranches' }
   | { name: 'loadBranch'; branchName: string }
+  | { name: 'loadRepositories' }
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
@@ -266,6 +267,8 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Listing branches'
     case 'loadBranch':
       return 'Loading branch'
+    case 'loadRepositories':
+      return 'Loading Repositories'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
@@ -281,6 +284,10 @@ export function isGithubLoadingBranch(
 
 export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
   return operations.some((o) => o.name === 'commish')
+}
+
+export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'loadRepositories')
 }
 
 export const defaultUserState: UserState = {
