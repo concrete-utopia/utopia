@@ -21,7 +21,7 @@ import {
 } from '../../ui-jsx.test-utils'
 import { SetPaddingStrategyName } from './set-padding-strategy'
 
-const edgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
+const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
 describe('Padding resize strategy', () => {
   it('Padding resize handle is not present for elements that have no padding set', async () => {
@@ -60,7 +60,7 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = edgePieces.flatMap((edge) => [
+    const paddingControls = EdgePieces.flatMap((edge) => [
       // ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
       ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
     ])
@@ -95,7 +95,7 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    edgePieces.forEach((edge) => {
+    EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
       expect(paddingControlOuter).toBeTruthy()
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
@@ -126,7 +126,7 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    edgePieces.forEach((edge) => {
+    EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
       expect(paddingControlOuter).toBeTruthy()
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
