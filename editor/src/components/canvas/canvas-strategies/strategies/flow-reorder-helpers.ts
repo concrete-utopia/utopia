@@ -75,9 +75,11 @@ function areNonWrappingSiblings(
   })
 }
 
-function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
-  const displayValue = element.specialSizeMeasurements.display
-  return displayValue === 'inline' || displayValue === 'inline-block' ? 'horizontal' : 'vertical'
+export function getElementDirection(
+  element: ElementInstanceMetadata | null,
+): 'vertical' | 'horizontal' {
+  const displayValue = element?.specialSizeMeasurements.display
+  return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
 function getNewDisplayTypeForIndex(

@@ -10,7 +10,11 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { areAllSiblingsInOneDimension, isValidFlowReorderTarget } from './flow-reorder-helpers'
+import {
+  areAllSiblingsInOneDimension,
+  getElementDirection,
+  isValidFlowReorderTarget,
+} from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
 
@@ -74,6 +78,7 @@ export function flowReorderStrategy(
             canvasState,
             interactionSession,
             customStrategyState,
+            getElementDirection(elementMetadata),
             isValidFlowReorderTarget,
           )
     },
