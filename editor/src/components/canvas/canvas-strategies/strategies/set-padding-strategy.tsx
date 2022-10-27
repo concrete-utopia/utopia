@@ -191,34 +191,13 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  if (!elementHasPaddingSetFromMetadata(metadata, path)) {
+  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
+  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
+  if (!elementHasNonzeroPadding) {
     return false
   }
 
   return true
-}
-
-function elementHasPaddingSetFromMetadata(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): boolean {
-  const element = MetadataUtils.getJSXElementFromMetadata(metadata, path)
-  if (element == null) {
-    return false
-  }
-
-  const jsxAttributeExists = (propertyPath: PropertyPath): boolean =>
-    getJSXAttributeAtPath(element.props, propertyPath).attribute.type !== 'ATTRIBUTE_NOT_FOUND'
-
-  const paddingProps = (p: keyof CSSPadding) => PP.create(['style', p])
-
-  return (
-    jsxAttributeExists(PP.create(['style', 'padding'])) ||
-    jsxAttributeExists(paddingProps('paddingBottom')) ||
-    jsxAttributeExists(paddingProps('paddingTop')) ||
-    jsxAttributeExists(paddingProps('paddingLeft')) ||
-    jsxAttributeExists(paddingProps('paddingRight'))
-  )
 }
 
 function paddingValueIndicatorProps(
