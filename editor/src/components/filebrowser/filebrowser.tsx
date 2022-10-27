@@ -286,7 +286,7 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const githubChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
 
   const fileBrowserItems = React.useMemo(() => {
     return collectFileBrowserItems(
@@ -294,9 +294,9 @@ const FileBrowserItems = React.memo(() => {
       collapsedPaths,
       codeResultCache,
       errorMessages,
-      githubChanges,
+      githubFileChanges,
     )
-  }, [projectContents, collapsedPaths, codeResultCache, errorMessages, githubChanges])
+  }, [projectContents, collapsedPaths, codeResultCache, errorMessages, githubFileChanges])
 
   const generateNewUid = React.useCallback(
     () => generateUidWithExistingComponents(projectContents),

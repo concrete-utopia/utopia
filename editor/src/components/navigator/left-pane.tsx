@@ -961,7 +961,7 @@ const GithubPane = React.memo(() => {
     githubOperations,
   ])
 
-  const githubChanges = useEditorState(githubFileChangesSelector, 'Github changes')
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
 
   return (
     <FlexColumn
@@ -1081,12 +1081,12 @@ const GithubPane = React.memo(() => {
               </datalist>
             )}
           </UIGridRow>
-          {githubChanges != null ? (
+          {githubFileChanges != null ? (
             // Note: this is completely temporary until we finalize the design
             <UIGridRow padded variant='<-------------1fr------------->'>
-              <FileChanges type='untracked' files={githubChanges.untracked} />
-              <FileChanges type='modified' files={githubChanges.modified} />
-              <FileChanges type='deleted' files={githubChanges.deleted} />
+              <FileChanges type='untracked' files={githubFileChanges.untracked} />
+              <FileChanges type='modified' files={githubFileChanges.modified} />
+              <FileChanges type='deleted' files={githubFileChanges.deleted} />
             </UIGridRow>
           ) : null}
           <UIGridRow padded variant='<-------------1fr------------->'>
