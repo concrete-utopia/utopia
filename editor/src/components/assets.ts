@@ -62,14 +62,14 @@ export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): Githu
 }
 
 export function deriveGithubFileChanges(
-  checksums: GithubChecksums,
+  projectChecksums: GithubChecksums,
   githubChecksums: GithubChecksums | null,
 ): GithubFileChanges | null {
   if (githubChecksums == null) {
     return null
   }
 
-  const projectFiles = Object.keys(checksums)
+  const projectFiles = Object.keys(projectChecksums)
   const githubFiles = Object.keys(githubChecksums)
 
   return {
@@ -77,7 +77,7 @@ export function deriveGithubFileChanges(
       return !githubFiles.includes(f)
     }),
     modified: projectFiles.filter((f) => {
-      return githubFiles.includes(f) && githubChecksums[f] !== checksums[f]
+      return githubFiles.includes(f) && githubChecksums[f] !== projectChecksums[f]
     }),
     deleted: githubFiles.filter((f) => {
       return !projectFiles.includes(f)
