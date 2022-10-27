@@ -61,7 +61,7 @@ describe('Padding resize strategy', () => {
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = EdgePieces.flatMap((edge) => [
-      // ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+      ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
       ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
     ])
 
