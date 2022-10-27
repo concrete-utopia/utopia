@@ -24,6 +24,7 @@ import { StateHistory } from './history'
 import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
   ConsoleLog,
+  EditorStorePatched,
   getOpenFile,
   getOpenTextFileKey,
   LeftMenuTab,
@@ -66,6 +67,7 @@ import {
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { deriveGithubFileChanges, getProjectContentsChecksums } from '../assets'
+import { createSelector } from 'reselect'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -100,6 +102,23 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
   }, [inputValue, delayMs])
   return returnValue
 }
+
+export const githubFileChangesSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (store) => store.userState.githubState.authenticated,
+  (store) => store.editor.githubChecksums,
+  (
+    projectContents,
+    githubAuthenticated,
+    githubChecksums,
+  ): EditorActions.GithubFileChanges | null => {
+    if (!githubAuthenticated) {
+      return null
+    }
+    const checksums = getProjectContentsChecksums(projectContents)
+    return deriveGithubFileChanges(checksums, githubChecksums)
+  },
+)
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const editorStoreRef = useRefEditorState((store) => store)
@@ -278,24 +297,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
-  const { projectContents, githubAuthenticated, githubChecksums, githubFileChanges } =
-    useEditorState(
-      (store) => ({
-        projectContents: store.editor.projectContents,
-        githubAuthenticated: store.userState.githubState.authenticated,
-        githubChecksums: store.editor.githubChecksums,
-        githubFileChanges: store.editor.githubFileChanges,
-      }),
-      'EditorComponentInner projectContents',
-    )
-  useEffect(() => {
-    const checksums = getProjectContentsChecksums(projectContents)
-    const changes = deriveGithubFileChanges(checksums, githubChecksums)
-    const somethingChanged = !EditorActions.githubFileChangesEquals(changes, githubFileChanges)
-    if (somethingChanged) {
-      dispatch([EditorActions.updateGithubFileChanges(changes)], 'everyone')
-    }
-  }, [projectContents, githubAuthenticated, githubChecksums, githubFileChanges, dispatch])
 
   const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 

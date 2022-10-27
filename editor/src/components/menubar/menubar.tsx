@@ -38,6 +38,7 @@ import {
 } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { githubFileChangesSelector } from '../editor/editor-component'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -270,10 +271,7 @@ export const Menubar = React.memo(() => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
 
-  const githubFileChanges = useEditorState(
-    (store) => store.editor.githubFileChanges,
-    'Github file changes',
-  )
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
 
   const githubFileChangesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),

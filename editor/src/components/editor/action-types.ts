@@ -907,11 +907,6 @@ export interface UpdateGithubChecksums {
   checksums: GithubChecksums
 }
 
-export interface UpdateGithubFileChanges {
-  action: 'UPDATE_GITHUB_FILE_CHANGES'
-  changes: GithubFileChanges | null
-}
-
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1186,7 +1181,6 @@ export type EditorAction =
   | SetImageDragSessionState
   | UpdateGithubOperations
   | UpdateGithubChecksums
-  | UpdateGithubFileChanges
 
 export type DispatchPriority =
   | 'everyone'

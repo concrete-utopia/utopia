@@ -1056,7 +1056,6 @@ export interface EditorState {
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
   githubChecksums: GithubChecksums | null
-  githubFileChanges: GithubFileChanges | null
 }
 
 export function editorState(
@@ -1129,7 +1128,6 @@ export function editorState(
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
   githubChecksums: GithubChecksums | null,
-  githubFileChanges: GithubFileChanges | null,
 ): EditorState {
   return {
     id: id,
@@ -1201,7 +1199,6 @@ export function editorState(
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
     githubChecksums: githubChecksums,
-    githubFileChanges: githubFileChanges,
   }
 }
 
@@ -2017,7 +2014,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
-    githubFileChanges: null,
   }
 }
 
@@ -2315,7 +2311,6 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: persistentModel.githubChecksums,
-    githubFileChanges: null,
   }
   return editor
 }

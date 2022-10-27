@@ -304,7 +304,6 @@ import {
   WrapInView,
   UpdateGithubOperations,
   UpdateGithubChecksums,
-  UpdateGithubFileChanges,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -980,7 +979,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
     githubChecksums: currentEditor.githubChecksums,
-    githubFileChanges: currentEditor.githubFileChanges,
   }
 }
 
@@ -1944,15 +1942,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubChecksums: action.checksums,
-    }
-  },
-  UPDATE_GITHUB_FILE_CHANGES: (
-    action: UpdateGithubFileChanges,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      githubFileChanges: action.changes,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {

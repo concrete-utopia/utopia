@@ -80,6 +80,7 @@ import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { capitalize } from '../../core/shared/string-utils'
 import { getGithubFileStatusColor } from '../filebrowser/fileitem'
+import { githubFileChangesSelector } from '../editor/editor-component'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -960,7 +961,7 @@ const GithubPane = React.memo(() => {
     githubOperations,
   ])
 
-  const githubChanges = useEditorState((store) => store.editor.githubFileChanges, 'Github changes')
+  const githubChanges = useEditorState(githubFileChangesSelector, 'Github changes')
 
   return (
     <FlexColumn

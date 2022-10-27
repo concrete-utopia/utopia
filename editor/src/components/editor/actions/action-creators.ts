@@ -213,7 +213,6 @@ import type {
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
   UpdateGithubChecksums,
-  UpdateGithubFileChanges,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1481,15 +1480,6 @@ export function githubFileChangesEquals(
     arrayEquals(a.modified, b.modified) &&
     arrayEquals(a.deleted, b.deleted)
   )
-}
-
-export function updateGithubFileChanges(
-  changes: GithubFileChanges | null,
-): UpdateGithubFileChanges {
-  return {
-    action: 'UPDATE_GITHUB_FILE_CHANGES',
-    changes: changes,
-  }
 }
 
 export function resetCanvas(): ResetCanvas {

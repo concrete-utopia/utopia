@@ -26,6 +26,7 @@ import {
 import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { githubFileChangesSelector } from '../editor/editor-component'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -285,10 +286,7 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const githubChanges = useEditorState(
-    (store) => store.editor.githubFileChanges,
-    'Github file changes',
-  )
+  const githubChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
 
   const fileBrowserItems = React.useMemo(() => {
     return collectFileBrowserItems(
