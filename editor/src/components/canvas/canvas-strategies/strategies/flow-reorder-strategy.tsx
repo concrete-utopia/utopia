@@ -65,7 +65,7 @@ export function flowReorderStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 3
+        ? 1
         : 0,
     apply: () => {
       return interactionSession == null

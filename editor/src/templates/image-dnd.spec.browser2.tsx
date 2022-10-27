@@ -309,6 +309,7 @@ describe('image drag and drop', () => {
             data-uid='3fc'
           />
           <img
+            data-aspect-ratio-locked
             src='./assets/stuff.png'
             style={{
               position: 'absolute',
@@ -502,6 +503,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
+        data-aspect-ratio-locked
         src='${imgBase641x1}'
         style={{
           position: 'absolute',
@@ -577,6 +579,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
+        data-aspect-ratio-locked
         src='${imgBase642x2}'
         style={{
           position: 'absolute',
@@ -648,7 +651,8 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='./assets/stuff_2.png'
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
           width: 1,
@@ -717,6 +721,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
+        data-aspect-ratio-locked
         src='${imgBase641x1}'
         style={{
           position: 'absolute',
@@ -728,6 +733,7 @@ export var storyboard = (
         data-uid='1'
       />
       <img
+        data-aspect-ratio-locked
         src='${imgBase641x1}'
         style={{
           position: 'absolute',
@@ -739,6 +745,7 @@ export var storyboard = (
         data-uid='2'
       />
       <img
+        data-aspect-ratio-locked
         src='${imgBase641x1}'
         style={{
           position: 'absolute',
@@ -814,7 +821,8 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
-        src='./assets/chucknorris.png'
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
           width: 1,
@@ -825,7 +833,8 @@ export var storyboard = (
         data-uid='1'
       />
       <img
-        src='./assets/chucknorris.png'
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
           width: 1,
@@ -836,7 +845,8 @@ export var storyboard = (
         data-uid='2'
       />
       <img
-        src='./assets/brucelee.png'
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
         style={{
           position: 'absolute',
           width: 1,
