@@ -1,7 +1,13 @@
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { CanvasVector, offsetPoint, rectContainsPoint } from '../../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  CanvasVector,
+  offsetPoint,
+  rectContainsPoint,
+} from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -19,7 +25,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 
-export function isReorderAllowed(siblings: Array<ElementPath>) {
+export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
 }
 
@@ -33,6 +39,7 @@ export function applyReorderCommon(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
+  direction: 'horizontal' | 'vertical',
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
 ): StrategyApplicationResult {
   if (interactionSession.interactionData.type !== 'DRAG') {
@@ -67,6 +74,7 @@ export function applyReorderCommon(
       canvasState.startingMetadata,
       siblings,
       pointOnCanvas,
+      direction,
       isValidTarget,
     )
 
@@ -107,10 +115,35 @@ function findSiblingIndexUnderPoint(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,
+  direction: 'horizontal' | 'vertical',
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
 ): number {
   return siblings.findIndex((sibling) => {
+    const element = MetadataUtils.findElementByElementPath(metadata, sibling)
+    const parentFrame = element?.specialSizeMeasurements.immediateParentBounds
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return frame != null && rectContainsPoint(frame, point) && isValidTarget(sibling, metadata)
+    if (frame != null && parentFrame != null) {
+      const siblingArea = (() => {
+        if (direction === 'horizontal') {
+          return canvasRectangle({
+            x: frame.x,
+            y: parentFrame.y,
+            width: frame.width,
+            height: parentFrame.height,
+          })
+        } else {
+          return canvasRectangle({
+            x: parentFrame.x,
+            y: frame.y,
+            width: parentFrame.width,
+            height: frame.height,
+          })
+        }
+      })()
+
+      return rectContainsPoint(siblingArea, point) && isValidTarget(sibling, metadata)
+    } else {
+      return false
+    }
   })
 }
