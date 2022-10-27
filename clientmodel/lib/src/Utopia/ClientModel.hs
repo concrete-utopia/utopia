@@ -358,6 +358,8 @@ instance Arbitrary ProjectGithubSettings where
   arbitrary = genericArbitrary
   shrink = genericShrink
 
+type GithubChecksums = M.HashMap Text Text
+
 data PersistentModel = PersistentModel
                             { appID               :: Maybe Text
                             , forkedFromProjectId :: Maybe Text
@@ -373,6 +375,7 @@ data PersistentModel = PersistentModel
                             , projectSettings     :: Value
                             , navigator           :: Value
                             , githubSettings      :: ProjectGithubSettings
+                            , githubChecksums     :: Maybe GithubChecksums
                             }
                             deriving (Eq, Show, Generic, Data, Typeable)
 
