@@ -68,7 +68,7 @@ import {
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
-import { GithubOperationType } from './actions/action-creators'
+import { GithubFileChanges, GithubChecksums, GithubOperationType } from './actions/action-creators'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -902,6 +902,16 @@ export interface UpdateGithubOperations {
   type: GithubOperationType
 }
 
+export interface UpdateGithubChecksums {
+  action: 'UPDATE_GITHUB_CHECKSUMS'
+  checksums: GithubChecksums
+}
+
+export interface UpdateGithubFileChanges {
+  action: 'UPDATE_GITHUB_FILE_CHANGES'
+  changes: GithubFileChanges | null
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1175,6 +1185,8 @@ export type EditorAction =
   | SaveToGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
+  | UpdateGithubChecksums
+  | UpdateGithubFileChanges
 
 export type DispatchPriority =
   | 'everyone'

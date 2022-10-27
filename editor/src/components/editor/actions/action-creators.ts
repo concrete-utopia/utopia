@@ -211,6 +211,8 @@ import type {
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
+  UpdateGithubFileChanges,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1438,6 +1440,37 @@ export function updateGithubOperations(
     action: 'UPDATE_GITHUB_OPERATIONS',
     operation: operation,
     type: type,
+  }
+}
+
+export type GithubChecksums = { [key: string]: string }
+
+export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+  return {
+    action: 'UPDATE_GITHUB_CHECKSUMS',
+    checksums: checksums,
+  }
+}
+
+export interface GithubFileChanges {
+  untracked: string[]
+  modified: string[]
+  deleted: string[]
+}
+
+export function getGithubFileChangesCount(changes: GithubFileChanges | null): number {
+  if (changes == null) {
+    return 0
+  }
+  return changes.untracked.length + changes.modified.length + changes.deleted.length
+}
+
+export function updateGithubFileChanges(
+  changes: GithubFileChanges | null,
+): UpdateGithubFileChanges {
+  return {
+    action: 'UPDATE_GITHUB_FILE_CHANGES',
+    changes: changes,
   }
 }
 

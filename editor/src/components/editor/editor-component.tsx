@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
-import React from 'react'
+import React, { useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -65,6 +65,7 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
+import { deriveGithubFileChanges, getProjectContentsChecksums } from '../assets'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -277,6 +278,23 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
+  const { projectContents, githubAuthenticated, githubChecksums } = useEditorState(
+    (store) => ({
+      projectContents: store.editor.projectContents,
+      githubAuthenticated: store.userState.githubState.authenticated,
+      githubChecksums: store.editor.githubChecksums,
+    }),
+    'EditorComponentInner projectContents',
+  )
+  useEffect(() => {
+    if (!githubAuthenticated) {
+      dispatch([EditorActions.updateGithubFileChanges(null)], 'everyone')
+      return
+    }
+    const checksums = getProjectContentsChecksums(projectContents)
+    const changes = deriveGithubFileChanges(checksums, githubChecksums)
+    dispatch([EditorActions.updateGithubFileChanges(changes)], 'everyone')
+  }, [projectContents, githubAuthenticated, githubChecksums, dispatch])
 
   const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 

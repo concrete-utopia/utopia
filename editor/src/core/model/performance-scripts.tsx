@@ -119,6 +119,7 @@ async function loadProject(
       targetRepository: null,
       originCommit: null,
     },
+    githubChecksums: null,
   }
 
   // Load the project itself.

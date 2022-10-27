@@ -15,8 +15,9 @@ import {
   updateGithubSettings,
   updateProjectContents,
   updateGithubOperations,
+  updateGithubChecksums,
 } from '../../components/editor/actions/action-creators'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import { getProjectContentsChecksums, ProjectContentTreeRoot } from '../../components/assets'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -116,6 +117,7 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
+            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -216,6 +218,7 @@ export async function getBranchContent(
       case 'SUCCESS':
         dispatch(
           [
+            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
             updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),

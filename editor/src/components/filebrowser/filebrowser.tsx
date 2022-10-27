@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { fileExists, isModifiedFile } from '../../core/model/project-file-utils'
+import { isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -29,6 +29,15 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 
 export type FileBrowserItemType = 'file' | 'export'
 
+export type GithubFileStatus =
+  | 'modified'
+  | 'deleted'
+  | 'untracked'
+  | 'added' // unused, keeping for future reference
+  | 'conflict' // unused, keeping for future reference
+  | 'renamed' // unused, keeping for future reference
+  | 'submodule' // unused, keeping for future reference
+
 export interface FileBrowserItemInfo {
   path: string
   type: FileBrowserItemType
@@ -41,6 +50,7 @@ export interface FileBrowserItemInfo {
   isUploadedAssetFile: boolean
   imageFile: ImageFile | null
   projectContents: ProjectContentTreeRoot
+  githubStatus?: GithubFileStatus
 }
 
 export function filterErrorMessages(
@@ -59,6 +69,7 @@ function collectFileBrowserItems(
   collapsedPaths: string[],
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
+  githubChanges: EditorActions.GithubFileChanges | null,
 ): FileBrowserItemInfo[] {
   let fileBrowserItems: FileBrowserItemInfo[] = []
   walkContentsTree(projectContents, (fullPath, element) => {
@@ -108,7 +119,21 @@ function collectFileBrowserItems(
       }
     }
   })
-  return fileBrowserItems
+  return fileBrowserItems.map((f) => {
+    const getGithubStatus = () => {
+      if (githubChanges?.untracked.includes(f.path)) {
+        return 'untracked'
+      }
+      if (githubChanges?.modified.includes(f.path)) {
+        return 'modified'
+      }
+      return undefined
+    }
+    return {
+      ...f,
+      githubStatus: getGithubStatus(),
+    }
+  })
 }
 
 export const FileBrowser = React.memo(() => {
@@ -260,10 +285,20 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const fileBrowserItems = React.useMemo(
-    () => collectFileBrowserItems(projectContents, collapsedPaths, codeResultCache, errorMessages),
-    [projectContents, collapsedPaths, codeResultCache, errorMessages],
+  const githubChanges = useEditorState(
+    (store) => store.editor.githubFileChanges,
+    'Github file changes',
   )
+
+  const fileBrowserItems = React.useMemo(() => {
+    return collectFileBrowserItems(
+      projectContents,
+      collapsedPaths,
+      codeResultCache,
+      errorMessages,
+      githubChanges,
+    )
+  }, [projectContents, collapsedPaths, codeResultCache, errorMessages, githubChanges])
 
   const generateNewUid = React.useCallback(
     () => generateUidWithExistingComponents(projectContents),

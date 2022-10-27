@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
+import { pluralize } from '../../core/shared/string-utils'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import {
   useTriggerScrollPerformanceTest,
@@ -29,7 +30,12 @@ import {
 } from '../../uuiui'
 import { User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import {
+  getGithubFileChangesCount,
+  setLeftMenuTab,
+  setPanelVisibility,
+  togglePanel,
+} from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
@@ -50,6 +56,7 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, Til
   menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
   size: keyof typeof UtopiaTheme.layout.rowHeight
+  badge?: string
 }
 
 export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileProps>> = (
@@ -99,13 +106,42 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          position: 'relative',
         }}
       >
         {React.cloneElement(props.icon, {
           color: props.selected ? 'primary' : 'secondary',
         })}
+        {props.badge && <MenuTileBadge text={props.badge} />}
       </div>
     </Tile>
+  )
+}
+
+const MenuTileBadge = ({ text }: { text: string }) => {
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colorTheme.contextMenuHighlightBackground.value,
+        minWidth: 13,
+        height: 13,
+        paddingLeft: 2,
+        paddingRight: 2,
+        borderRadius: '100%',
+        fontSize: 7,
+        fontWeight: 800,
+        color: '#fff',
+      }}
+    >
+      {text}
+    </div>
   )
 }
 
@@ -232,6 +268,16 @@ export const Menubar = React.memo(() => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
 
+  const githubFileChanges = useEditorState(
+    (store) => store.editor.githubFileChanges,
+    'Github file changes',
+  )
+
+  const githubFileChangesCount = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges),
+    [githubFileChanges],
+  )
+
   return (
     <FlexColumn
       id='leftMenuBar'
@@ -313,7 +359,17 @@ export const Menubar = React.memo(() => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Github'} placement={'right'}>
+        <Tooltip
+          title={
+            githubFileChangesCount > 0
+              ? `Github (${githubFileChangesCount} ${pluralize(
+                  'file',
+                  githubFileChangesCount,
+                )} changed)`
+              : 'Github'
+          }
+          placement={'right'}
+        >
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Github}
@@ -321,6 +377,7 @@ export const Menubar = React.memo(() => {
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
               size='large'
+              badge={githubFileChangesCount > 0 ? `${githubFileChangesCount}` : undefined}
             />
           </span>
         </Tooltip>

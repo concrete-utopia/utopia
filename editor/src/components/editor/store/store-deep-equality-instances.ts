@@ -447,6 +447,7 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
+import { GithubFileChanges, GithubChecksums } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2416,6 +2417,51 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
+export const NullableGithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> =
+  createCallWithTripleEquals<GithubChecksums | null>()
+
+const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
+  oldAttribute,
+  newAttribute,
+) => {
+  if (oldAttribute == null) {
+    return keepDeepEqualityResult(newAttribute, false)
+  }
+  if (newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, false)
+  }
+  return combine1EqualityCall(
+    (c) => c,
+    objectDeepEquality(StringKeepDeepEquality),
+    (c: GithubChecksums) => c,
+  )(oldAttribute, newAttribute)
+}
+
+const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges | null> = (
+  oldAttribute,
+  newAttribute,
+) => {
+  if (oldAttribute == null) {
+    return keepDeepEqualityResult(newAttribute, false)
+  }
+  if (newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, false)
+  }
+  return combine3EqualityCalls(
+    (c) => c.untracked,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (c) => c.modified,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (c) => c.deleted,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (untracked: string[], modified: string[], deleted: string[]): GithubFileChanges => ({
+      untracked,
+      modified,
+      deleted,
+    }),
+  )(oldAttribute, newAttribute)
+}
+
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
     (info) => info.type,
@@ -3411,6 +3457,16 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
+  const githubChecksumsResults = GithubChecksumsKeepDeepEquality(
+    oldValue.githubChecksums,
+    newValue.githubChecksums,
+  )
+
+  const githubChangesResults = GithubFileChangesKeepDeepEquality(
+    oldValue.githubFileChanges,
+    newValue.githubFileChanges,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3479,7 +3535,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
-    githubOperationsResults.areEqual
+    githubOperationsResults.areEqual &&
+    githubChecksumsResults.areEqual &&
+    githubChangesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3553,6 +3611,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
+      githubChecksumsResults.value,
+      githubChangesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

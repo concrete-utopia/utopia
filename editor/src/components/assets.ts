@@ -6,7 +6,6 @@ import {
   TextFile,
   AssetFile,
   ParseSuccess,
-  isParsedTextFile,
   isTextFile,
   isParseSuccess,
   isAssetFile,
@@ -17,6 +16,8 @@ import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
+import { sha1 } from 'sha.js'
+import { GithubFileChanges, GithubChecksums } from './editor/actions/action-creators'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -38,6 +39,61 @@ export function getAllProjectAssetFiles(
   })
 
   return allProjectAssets
+}
+
+function getSHA1Checksum(contents: string): string {
+  return new sha1().update(contents).digest('hex')
+}
+
+export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
+  const contents = treeToContents(tree)
+  const checksums: GithubChecksums = {}
+  Object.keys(contents).forEach((filename) => {
+    const leaf = contents[filename]
+    if (leaf) {
+      if (isTextFile(leaf)) {
+        checksums[filename] = getSHA1Checksum(leaf.fileContents.code)
+      }
+      if (isAssetFile(leaf) && leaf.base64 != undefined) {
+        checksums[filename] = getSHA1Checksum(leaf.base64)
+      }
+    }
+  })
+  return checksums
+}
+
+export function deriveGithubFileChanges(
+  checksums: GithubChecksums,
+  githubChecksums: GithubChecksums | null,
+): GithubFileChanges | null {
+  if (githubChecksums == null) {
+    return null
+  }
+  const projectFiles = Object.keys(checksums)
+  const githubFiles = Object.keys(githubChecksums)
+
+  const untracked: string[] = []
+  const modified: string[] = []
+  const deleted: string[] = []
+
+  projectFiles.forEach((projectFilename) => {
+    const localChecksum = checksums[projectFilename]
+    const githubChecksum = githubChecksums[projectFilename]
+    if (!githubFiles.some((githubFilename) => githubFilename === projectFilename)) {
+      // the file is new
+      untracked.push(projectFilename)
+    } else if (githubChecksum !== localChecksum) {
+      // the file has changed
+      modified.push(projectFilename)
+    }
+  })
+  deleted.push(...githubFiles.filter((f) => !projectFiles.includes(f)))
+
+  return {
+    untracked: untracked,
+    modified: modified,
+    deleted: deleted,
+  }
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
