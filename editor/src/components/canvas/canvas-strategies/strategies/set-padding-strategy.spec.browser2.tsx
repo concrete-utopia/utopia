@@ -6,7 +6,12 @@ import {
   paddingControlHandleTestId,
   paddingControlTestId,
 } from '../../controls/select-mode/padding-resize-control'
-import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+} from '../../event-helpers.test-utils'
 import { offsetPaddingByEdge, paddingToPaddingString, SimpleCSSPadding } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -14,6 +19,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
+import { SetPaddingStrategyName } from './set-padding-strategy'
 
 describe('Padding resize strategy', () => {
   it('Padding resize is present', async () => {
@@ -46,6 +52,42 @@ describe('Padding resize strategy', () => {
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
       expect(paddingControlHandle).toBeTruthy()
     })
+  })
+
+  it('The set padding strategy is not in the picker when unrelated interactions are active', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues(
+        paddingToPaddingString({
+          paddingTop: 22,
+          paddingBottom: 33,
+          paddingLeft: 44,
+          paddingRight: 55,
+        }),
+      ),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const { x, y, width, height } = div.getBoundingClientRect()
+    const divCenter = {
+      x: x + width / 2,
+      y: y + height / 2,
+    }
+
+    // Start a drag that will move the element
+    mouseDownAtPoint(canvasControlsLayer, divCenter)
+    mouseMoveToPoint(
+      canvasControlsLayer,
+      { x: divCenter.x + 100, y: divCenter.y + 100 },
+      { eventOptions: { buttons: 1 } },
+    )
+
+    // Check that the strategy picker does not include the set padding strategy
+    const applicableStrategies = editor.getEditorState().strategyState.sortedApplicableStrategies
+    expect(applicableStrategies).not.toBeNull()
+    expect(applicableStrategies!.length).toBeGreaterThan(0)
+    expect(applicableStrategies!.find((s) => s.name === SetPaddingStrategyName)).toBeUndefined()
   })
 
   describe('Adjusting individual padding values', () => {

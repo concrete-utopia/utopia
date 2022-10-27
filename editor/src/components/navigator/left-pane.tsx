@@ -17,7 +17,7 @@ import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/proje
 import { NO_OP } from '../../core/shared/utils'
 import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
-import Utils from '../../utils/utils'
+import Utils, { isOptionType } from '../../utils/utils'
 import {
   useColorTheme,
   UtopiaTheme,
@@ -37,7 +37,7 @@ import {
   Icons,
   Avatar,
 } from '../../uuiui'
-import { SelectOption, User } from '../../uuiui-deps'
+import { getControlStyles, SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -71,7 +71,9 @@ import {
   getBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
+  getUsersPublicGithubRepositories,
   parseGithubProjectString,
+  RepositoryEntry,
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
@@ -777,7 +779,7 @@ const GithubPane = React.memo(() => {
     if (repo == null) {
       return undefined
     } else {
-      return `https://github.com/${repo.owner}/${repo.repository}`
+      return `${repo.owner}/${repo.repository}`
     }
   }, 'GithubPane storedTargetGithubRepo')
 
@@ -844,9 +846,28 @@ const GithubPane = React.memo(() => {
     }
   }, [targetRepository])
 
-  const onChangeTargetRepository = React.useCallback(
-    (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
-      setTargetRepository(changeEvent.currentTarget.value)
+  const [usersRepositories, setUsersRepositories] = React.useState<Array<string> | null>(null)
+
+  const setUsersRepositoriesCallback = React.useCallback(
+    (repositories: Array<RepositoryEntry>) => {
+      setUsersRepositories(
+        repositories.map((repository) => {
+          return repository.fullName
+        }),
+      )
+    },
+    [setUsersRepositories],
+  )
+
+  React.useEffect(() => {
+    if (githubAuthenticated) {
+      void getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
+    }
+  }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
+
+  const onInputChangeTargetRepository = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTargetRepository(event.currentTarget.value)
     },
     [setTargetRepository],
   )
@@ -1031,15 +1052,29 @@ const GithubPane = React.memo(() => {
               fontSize: '11px',
             }}
           >
-            Work with a Github repo if you have access to it.
+            Connect this project to a Github repository. You can then import and export to the repo
+            if you have the correct permissions. Please note we don’t support connecting to private
+            repositories at the moment.
           </div>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <StringInput
-              testId='saveToGithubInput'
+              placeholder={
+                usersRepositories == null ? 'Loading repositories...' : 'owner/repository'
+              }
+              onChange={onInputChangeTargetRepository}
+              list={'repositories-list'}
+              id={'repositories-input'}
+              testId={'repositories-input'}
+              name={'repositories-input'}
               value={targetRepository}
-              disabled={!githubAuthenticated}
-              onChange={onChangeTargetRepository}
             />
+            {usersRepositories == null ? null : (
+              <datalist id={'repositories-list'}>
+                {usersRepositories.map((repo, index) => {
+                  return <option key={`repo-${index}`} value={repo} />
+                })}
+              </datalist>
+            )}
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button

@@ -47,15 +47,6 @@ export function baseFlexReparentToAbsoluteStrategy(
     customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (
-      selectedElements.length !== 1 ||
-      !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedElements[0],
-        canvasState.startingMetadata,
-      )
-    ) {
-      return null
-    }
 
     return {
       id: `${forced ? 'FORCED_' : ''}FLEX_REPARENT_TO_ABSOLUTE`,

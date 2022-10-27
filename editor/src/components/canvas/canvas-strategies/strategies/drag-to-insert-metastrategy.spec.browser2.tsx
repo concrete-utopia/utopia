@@ -190,7 +190,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, cmdModifier, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
