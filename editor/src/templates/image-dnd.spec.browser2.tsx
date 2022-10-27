@@ -237,7 +237,10 @@ describe('image drag and drop', () => {
   beforeEach(() => {
     dropDone = defer()
     const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
-    onDropStub.callsFake((e, f, c) => originalOnDrop(e, f, c).then(() => dropDone.resolve()))
+    onDropStub.callsFake((e, f, context) => {
+      const mockContext: ImageDrop.DropContext = { ...context, saveAssets: () => Promise.resolve() }
+      return originalOnDrop(e, f, mockContext).then(() => dropDone.resolve())
+    })
   })
 
   afterEach(() => {
@@ -659,7 +662,7 @@ export var storyboard = (
     >
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/stuff_2.png'
         style={{
           position: 'absolute',
           width: 1,
@@ -724,6 +727,7 @@ export var storyboard = (
       data-uid='3fc'
     >
       <img
+        data-aspect-ratio-locked
         src='./assets/multiplied_2@2x.png'
         style={{
           position: 'absolute',
@@ -894,7 +898,7 @@ export var storyboard = (
     >
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
           width: 1,
@@ -906,7 +910,7 @@ export var storyboard = (
       />
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
           width: 1,
@@ -918,7 +922,7 @@ export var storyboard = (
       />
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/brucelee.png'
         style={{
           position: 'absolute',
           width: 1,
