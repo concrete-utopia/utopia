@@ -52,6 +52,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   emptyComments,
@@ -239,6 +240,7 @@ import {
   SetForkedFromProjectID,
   SetGithubState,
   SetHighlightedView,
+  SetImageDragSessionState,
   SetIndexedDBFailed,
   SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
@@ -297,11 +299,11 @@ import {
   UpdatePackageJson,
   UpdatePreviewConnected,
   UpdateProjectContents,
-  SetImageDragSessionState,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
   WrapInElement,
   WrapInView,
+  UpdateGithubOperations,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -408,7 +410,6 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import {
   getReparentPropertyChanges,
   reparentStrategyForParent,
-  reparentTarget,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -977,6 +978,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
+    githubOperations: currentEditor.githubOperations,
   }
 }
 
@@ -1913,6 +1915,31 @@ export const UPDATE_FNS = {
     return {
       ...withOldToastRemoved,
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
+    }
+  },
+  UPDATE_GITHUB_OPERATIONS: (
+    action: UpdateGithubOperations,
+    editor: EditorModel,
+    _dispatch: EditorDispatch,
+  ): EditorModel => {
+    const operations = [...editor.githubOperations]
+    switch (action.type) {
+      case 'add':
+        operations.push(action.operation)
+        break
+      case 'remove':
+        const idx = operations.indexOf(action.operation)
+        if (idx >= 0) {
+          operations.splice(idx, 1)
+        }
+        break
+      default:
+        const _exhaustiveCheck: never = action.type
+        throw new Error('Unknown operation type.')
+    }
+    return {
+      ...editor,
+      githubOperations: operations,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -4132,10 +4159,12 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked, emptyComments)
-        const updatedProps = eitherToMaybe(
-          setJSXValueAtPath(element.props, PP.create([AspectRatioLockedProp]), locked),
-        )
+        const path = PP.create([AspectRatioLockedProp])
+        const updatedProps = action.locked
+          ? eitherToMaybe(
+              setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
+            )
+          : deleteJSXAttribute(element.props, AspectRatioLockedProp)
         return {
           ...element,
           props: updatedProps ?? element.props,

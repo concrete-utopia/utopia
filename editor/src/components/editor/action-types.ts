@@ -55,6 +55,7 @@ import {
   RightMenuTab,
   StoredEditorState,
   Theme,
+  GithubOperation,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -67,6 +68,7 @@ import {
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
+import { GithubOperationType } from './actions/action-creators'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -894,6 +896,12 @@ export interface SetGithubState {
   githubState: GithubState
 }
 
+export interface UpdateGithubOperations {
+  action: 'UPDATE_GITHUB_OPERATIONS'
+  operation: GithubOperation
+  type: GithubOperationType
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1166,6 +1174,7 @@ export type EditorAction =
   | ToggleSelectionLock
   | SaveToGithub
   | SetImageDragSessionState
+  | UpdateGithubOperations
 
 export type DispatchPriority =
   | 'everyone'

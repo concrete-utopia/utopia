@@ -10,7 +10,11 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { areAllSiblingsInOneDimension, isValidFlowReorderTarget } from './flow-reorder-helpers'
+import {
+  areAllSiblingsInOneDimension,
+  getElementDirection,
+  isValidFlowReorderTarget,
+} from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
 
@@ -65,7 +69,7 @@ export function flowReorderStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 3
+        ? 1
         : 0,
     apply: () => {
       return interactionSession == null
@@ -74,6 +78,7 @@ export function flowReorderStrategy(
             canvasState,
             interactionSession,
             customStrategyState,
+            getElementDirection(elementMetadata),
             isValidFlowReorderTarget,
           )
     },
