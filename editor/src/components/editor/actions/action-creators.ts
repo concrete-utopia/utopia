@@ -1,3 +1,4 @@
+import { arrayEquals } from '../../../core/shared/utils'
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
@@ -1463,6 +1464,23 @@ export function getGithubFileChangesCount(changes: GithubFileChanges | null): nu
     return 0
   }
   return changes.untracked.length + changes.modified.length + changes.deleted.length
+}
+
+export function githubFileChangesEquals(
+  a: GithubFileChanges | null,
+  b: GithubFileChanges | null,
+): boolean {
+  if (a == null && b == null) {
+    return true
+  }
+  if (a == null || b == null) {
+    return false
+  }
+  return (
+    arrayEquals(a.untracked, b.untracked) &&
+    arrayEquals(a.modified, b.modified) &&
+    arrayEquals(a.deleted, b.deleted)
+  )
 }
 
 export function updateGithubFileChanges(

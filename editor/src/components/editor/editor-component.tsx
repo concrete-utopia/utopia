@@ -278,23 +278,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
-  const { projectContents, githubAuthenticated, githubChecksums } = useEditorState(
-    (store) => ({
-      projectContents: store.editor.projectContents,
-      githubAuthenticated: store.userState.githubState.authenticated,
-      githubChecksums: store.editor.githubChecksums,
-    }),
-    'EditorComponentInner projectContents',
-  )
+  const { projectContents, githubAuthenticated, githubChecksums, githubFileChanges } =
+    useEditorState(
+      (store) => ({
+        projectContents: store.editor.projectContents,
+        githubAuthenticated: store.userState.githubState.authenticated,
+        githubChecksums: store.editor.githubChecksums,
+        githubFileChanges: store.editor.githubFileChanges,
+      }),
+      'EditorComponentInner projectContents',
+    )
   useEffect(() => {
-    if (!githubAuthenticated) {
-      dispatch([EditorActions.updateGithubFileChanges(null)], 'everyone')
-      return
-    }
     const checksums = getProjectContentsChecksums(projectContents)
     const changes = deriveGithubFileChanges(checksums, githubChecksums)
-    dispatch([EditorActions.updateGithubFileChanges(changes)], 'everyone')
-  }, [projectContents, githubAuthenticated, githubChecksums, dispatch])
+    const somethingChanged = !EditorActions.githubFileChangesEquals(changes, githubFileChanges)
+    if (somethingChanged) {
+      dispatch([EditorActions.updateGithubFileChanges(changes)], 'everyone')
+    }
+  }, [projectContents, githubAuthenticated, githubChecksums, githubFileChanges, dispatch])
 
   const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 
