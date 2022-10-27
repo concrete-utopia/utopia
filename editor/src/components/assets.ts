@@ -47,18 +47,17 @@ function getSHA1Checksum(contents: string): string {
 
 export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
   const contents = treeToContents(tree)
+
   const checksums: GithubChecksums = {}
   Object.keys(contents).forEach((filename) => {
-    const leaf = contents[filename]
-    if (leaf) {
-      if (isTextFile(leaf)) {
-        checksums[filename] = getSHA1Checksum(leaf.fileContents.code)
-      }
-      if (isAssetFile(leaf) && leaf.base64 != undefined) {
-        checksums[filename] = getSHA1Checksum(leaf.base64)
-      }
+    const file = contents[filename]
+    if (isTextFile(file)) {
+      checksums[filename] = getSHA1Checksum(file.fileContents.code)
+    } else if (isAssetFile(file) && file.base64 != undefined) {
+      checksums[filename] = getSHA1Checksum(file.base64)
     }
   })
+
   return checksums
 }
 
