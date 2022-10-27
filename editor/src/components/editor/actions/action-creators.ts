@@ -1443,7 +1443,7 @@ export function updateGithubOperations(
   }
 }
 
-export type GithubChecksums = { [key: string]: string }
+export type GithubChecksums = { [filename: string]: string }
 
 export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
   return {
