@@ -61,7 +61,7 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -192,6 +192,7 @@ export function findReparentStrategies(
   canvasState: InteractionCanvasState,
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
+  allowSmallerParent: AllowSmallerParent,
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
 
@@ -210,6 +211,7 @@ export function findReparentStrategies(
     metadata,
     canvasState.startingAllElementProps,
     'allow-missing-bounds', // TODO delete this property!
+    allowSmallerParent,
   )
 
   if (targetParent == null) {
@@ -284,11 +286,12 @@ export function existingReparentSubjects(elements: Array<ElementPath>): Existing
 export function getReparentTargetUnified(
   reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
-  cmdPressed: boolean,
+  cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to missingBoundsHandling or allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   missingBoundsHandling: MissingBoundsHandling,
+  allowSmallerParent: AllowSmallerParent,
 ): ReparentTarget | null {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -338,8 +341,7 @@ export function getReparentTargetUnified(
     const canReparent =
       // simply skip elements that do not support children
       MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
-      // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
-      (cmdPressed ||
+      (allowSmallerParent === 'allow-smaller-parent' ||
         sizeFitsInTarget(
           multiselectBounds,
           MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),

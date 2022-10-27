@@ -80,8 +80,9 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    true, // Draw to insert should always disregard the size of the potential target parent
+    interactionSession.interactionData.modifiers.cmd,
     true,
+    'allow-smaller-parent',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {

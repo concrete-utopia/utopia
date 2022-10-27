@@ -78,6 +78,7 @@ export interface ReparentTargetsToFilter {
 }
 
 export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
+export type AllowSmallerParent = 'allow-smaller-parent' | 'disallow-smaller-parent'
 
 export function reparentTargetsToFilter(
   strictBoundsTarget: ReparentTarget | null,

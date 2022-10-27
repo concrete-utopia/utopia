@@ -14,7 +14,7 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
@@ -36,8 +36,14 @@ export function getApplicableReparentFactories(
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
+  allowSmallerParent: AllowSmallerParent,
 ): Array<ReparentFactoryAndDetails> {
-  const reparentStrategies = findReparentStrategies(canvasState, cmdPressed, pointOnCanvas)
+  const reparentStrategies = findReparentStrategies(
+    canvasState,
+    cmdPressed,
+    pointOnCanvas,
+    allowSmallerParent,
+  )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
@@ -147,6 +153,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     pointOnCanvas,
     cmdPressed,
     allDraggedElementsAbsolute,
+    cmdPressed ? 'allow-smaller-parent' : 'disallow-smaller-parent',
   )
 
   const targetIsValid = (
