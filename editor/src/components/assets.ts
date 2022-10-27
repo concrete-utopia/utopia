@@ -69,19 +69,34 @@ export function deriveGithubFileChanges(
     return null
   }
 
-  const projectFiles = Object.keys(projectChecksums)
-  const githubFiles = Object.keys(githubChecksums)
+  const projectFiles = new Set(Object.keys(projectChecksums))
+  const githubFiles = new Set(Object.keys(githubChecksums))
+
+  const untracked: string[] = []
+  projectFiles.forEach((f) => {
+    if (!githubFiles.has(f)) {
+      untracked.push(f)
+    }
+  })
+
+  const modified: string[] = []
+  projectFiles.forEach((f) => {
+    if (githubFiles.has(f) && githubChecksums[f] !== projectChecksums[f]) {
+      modified.push(f)
+    }
+  })
+
+  const deleted: string[] = []
+  githubFiles.forEach((f) => {
+    if (!projectFiles.has(f)) {
+      deleted.push(f)
+    }
+  })
 
   return {
-    untracked: projectFiles.filter((f) => {
-      return !githubFiles.includes(f)
-    }),
-    modified: projectFiles.filter((f) => {
-      return githubFiles.includes(f) && githubChecksums[f] !== projectChecksums[f]
-    }),
-    deleted: githubFiles.filter((f) => {
-      return !projectFiles.includes(f)
-    }),
+    untracked,
+    modified,
+    deleted,
   }
 }
 
