@@ -43,6 +43,8 @@ interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
+const GITHUB_FILE_CHANGES_BADGE_LIMIT = 99
+
 const Tile = styled.div<TileProps>((props) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -132,9 +134,9 @@ const MenuTileBadge = ({ text }: { text: string }) => {
         backgroundColor: colorTheme.contextMenuHighlightBackground.value,
         minWidth: 13,
         height: 13,
-        paddingLeft: 2,
-        paddingRight: 2,
-        borderRadius: '100%',
+        paddingLeft: 3,
+        paddingRight: 3,
+        borderRadius: '10px',
         fontSize: 7,
         fontWeight: 800,
         color: '#fff',
@@ -278,6 +280,16 @@ export const Menubar = React.memo(() => {
     [githubFileChanges],
   )
 
+  const githubFileChangesCountLabel = React.useMemo(() => {
+    if (githubFileChangesCount <= 0) {
+      return undefined
+    }
+    if (githubFileChangesCount < GITHUB_FILE_CHANGES_BADGE_LIMIT) {
+      return `${githubFileChangesCount}`
+    }
+    return `${GITHUB_FILE_CHANGES_BADGE_LIMIT}+`
+  }, [githubFileChangesCount])
+
   return (
     <FlexColumn
       id='leftMenuBar'
@@ -377,7 +389,7 @@ export const Menubar = React.memo(() => {
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
               size='large'
-              badge={githubFileChangesCount > 0 ? `${githubFileChangesCount}` : undefined}
+              badge={githubFileChangesCountLabel}
             />
           </span>
         </Tooltip>
