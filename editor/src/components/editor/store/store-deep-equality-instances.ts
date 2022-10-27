@@ -2424,23 +2424,25 @@ const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | nu
   oldAttribute,
   newAttribute,
 ) => {
+  if (oldAttribute == null && newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, true)
+  }
   if (oldAttribute == null) {
     return keepDeepEqualityResult(newAttribute, false)
   }
   if (newAttribute == null) {
     return keepDeepEqualityResult(oldAttribute, false)
   }
-  return combine1EqualityCall(
-    (c) => c,
-    objectDeepEquality(StringKeepDeepEquality),
-    (c: GithubChecksums) => c,
-  )(oldAttribute, newAttribute)
+  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
 }
 
 const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges | null> = (
   oldAttribute,
   newAttribute,
 ) => {
+  if (oldAttribute == null && newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, true)
+  }
   if (oldAttribute == null) {
     return keepDeepEqualityResult(newAttribute, false)
   }
@@ -3209,12 +3211,15 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
-export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> =
-  combine1EqualityCall(
-    (op) => op.name,
-    StringKeepDeepEquality,
-    (a) => ({ name: 'commish' }),
-  )
+export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.name !== newValue.name) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
