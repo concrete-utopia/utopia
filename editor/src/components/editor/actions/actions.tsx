@@ -52,6 +52,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   emptyComments,
@@ -4157,10 +4158,12 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked, emptyComments)
-        const updatedProps = eitherToMaybe(
-          setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
-        )
+        const path = PP.create(['data-aspect-ratio-locked'])
+        const updatedProps = action.locked
+          ? eitherToMaybe(
+              setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
+            )
+          : deleteJSXAttribute(element.props, 'data-aspect-ratio-locked')
         return {
           ...element,
           props: updatedProps ?? element.props,

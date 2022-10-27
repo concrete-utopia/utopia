@@ -313,16 +313,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const toggleAspectRatioLock = React.useCallback(() => {
-    const aspectRatioLockPropPath = PP.create(['data-aspect-ratio-locked'])
-    const actions: EditorAction[] = selectedViews.flatMap((path): EditorAction[] => {
-      if (aspectRatioLocked) {
-        return [unsetProperty(path, aspectRatioLockPropPath)]
-      }
-      return [
-        setProperty(path, aspectRatioLockPropPath, jsxAttributeValue(true, emptyComments)),
-        setAspectRatioLock(path, true),
-      ]
-    })
+    const actions: EditorAction[] = selectedViews.map((path) =>
+      setAspectRatioLock(path, !aspectRatioLocked),
+    )
     dispatch(actions, 'everyone')
   }, [dispatch, selectedViews, aspectRatioLocked])
 
