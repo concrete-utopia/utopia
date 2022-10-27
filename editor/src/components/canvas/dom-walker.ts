@@ -77,12 +77,10 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
     return 'none'
   }
   if (computedStyle.display != null) {
-    if (computedStyle.display === 'flex') {
-      // TODO inline-flex
+    if (computedStyle.display.includes('flex')) {
       return 'flex'
     }
-    if (computedStyle.display === 'grid') {
-      // TODO inline-grid
+    if (computedStyle.display.includes('grid')) {
       return 'grid'
     }
   }
