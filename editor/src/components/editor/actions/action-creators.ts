@@ -1443,7 +1443,7 @@ export function updateGithubOperations(
   }
 }
 
-export type GithubChecksums = { [filename: string]: string }
+export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
   return {
