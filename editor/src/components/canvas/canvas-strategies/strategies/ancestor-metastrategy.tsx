@@ -59,7 +59,11 @@ export function ancestorMetaStrategy(
 
     // Avoid children of the storyboard or root elements
     // TODO Maybe don't avoid root elements??
-    if (EP.isStoryboardChild(targets[0])) {
+    if (
+      EP.isEmptyPath(targets[0]) ||
+      EP.isStoryboardPath(targets[0]) ||
+      EP.isStoryboardChild(targets[0])
+    ) {
       //} || EP.isRootElementOfInstance(targets[0])) {
       return []
     }
