@@ -21,6 +21,7 @@ export function baseReparentAsStaticStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
   targetLayout: 'flex' | 'flow',
+  nrDimensions: 1 | 2,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -37,7 +38,7 @@ export function baseReparentAsStaticStrategy(
     }
 
     return {
-      ...getIdAndNameOfReparentToStaticStrategy(targetLayout),
+      ...getIdAndNameOfReparentToStaticStrategy(targetLayout, nrDimensions),
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
@@ -66,26 +67,35 @@ export function baseReparentAsStaticStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyStaticReparent(canvasState, interactionSession, reparentTarget, targetLayout)
+        return applyStaticReparent(
+          canvasState,
+          interactionSession,
+          reparentTarget,
+          targetLayout,
+          nrDimensions,
+        )
       },
     }
   }
 }
 
-function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): {
+function getIdAndNameOfReparentToStaticStrategy(
+  targetLayout: 'flex' | 'flow',
+  nrDimensions: 1 | 2,
+): {
   id: string
   name: string
 } {
   switch (targetLayout) {
     case 'flex':
       return {
-        id: 'REPARENT_TO_FLEX',
-        name: 'Reparent (Flex)',
+        id: `REPARENT_TO_FLEX_${nrDimensions}D`,
+        name: `Reparent (Flex, ${nrDimensions}D)`,
       }
     case 'flow':
       return {
-        id: 'REPARENT_TO_FLOW',
-        name: 'Reparent (Flow)',
+        id: `REPARENT_TO_FLOW_${nrDimensions}D`,
+        name: `Reparent (Flow, ${nrDimensions}D)`,
       }
     default:
       assertNever(targetLayout)

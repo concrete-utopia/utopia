@@ -12,7 +12,7 @@ import {
 } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { mapDropNulls, reverse, stripNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
@@ -62,6 +62,7 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { getElementDirection, is1DStaticContainer } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -325,17 +326,16 @@ export function getReparentTargetUnified(
   }
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
-    let validParentForFlexOrAbsolute = cmdPressed
+    let validParentForStaticOrAbsolute = cmdPressed
     if (missingBoundsHandling === 'allow-missing-bounds') {
-      validParentForFlexOrAbsolute = true
+      validParentForStaticOrAbsolute = true
     } else {
       const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-      const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
+      const is1DContainer = is1DStaticContainer(target, metadata)
       const providesBoundsForAbsoluteChildren =
         targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
 
-      // TODO extend here when we implement static layout support
-      validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
+      validParentForStaticOrAbsolute = is1DContainer || providesBoundsForAbsoluteChildren
     }
 
     const canReparent =
@@ -346,7 +346,7 @@ export function getReparentTargetUnified(
           multiselectBounds,
           MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
         )) &&
-      validParentForFlexOrAbsolute
+      validParentForStaticOrAbsolute
 
     if (reparentSubjects.type === 'EXISTING_ELEMENTS') {
       const selectedElementsMetadata = mapDropNulls(
@@ -377,21 +377,24 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const flexElementsUnderPoint = [...filteredElementsUnderPoint]
+  const staticElementsUnderPoint = [...filteredElementsUnderPoint]
     .reverse()
-    .filter((element) =>
-      MetadataUtils.isFlexLayoutedContainer(
-        MetadataUtils.findElementByElementPath(metadata, element),
-      ),
-    )
+    .filter((element) => is1DStaticContainer(element, metadata))
 
   // first try to find a flex element insertion area
-  for (const flexElementPath of flexElementsUnderPoint) {
+  for (const staticElementPath of staticElementsUnderPoint) {
+    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(
+      metadata,
+      staticElementPath,
+    )
+
     const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
       metadata,
-      flexElementPath,
+      staticElementPath,
       'padded-edge',
       canvasScale,
+      direction,
+      forwardsOrBackwards,
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
@@ -403,22 +406,21 @@ export function getReparentTargetUnified(
       return {
         shouldReparent: true,
         shouldReorder: true,
-        newParent: flexElementPath,
+        newParent: staticElementPath,
         newIndex: targetUnderMouseIndex,
       }
     }
   }
 
-  // fall back to trying to find an absolute element, or the "background" area of a flex element
+  // fall back to trying to find an absolute element, or the "background" area of a static element
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const element = MetadataUtils.findElementByElementPath(metadata, targetParentPath)
-  const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
+  const is1DStatic = is1DStaticContainer(targetParentPath, metadata)
 
-  if (!isFlex) {
+  if (!is1DStatic) {
     // TODO we now assume this is "absolute", but this is too vauge
     return {
       shouldReparent: true,
@@ -427,11 +429,15 @@ export function getReparentTargetUnified(
       newIndex: -1,
     }
   } else {
+    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(metadata, targetParentPath)
+
     const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
       metadata,
       targetParentPath,
       'full-size',
       canvasScale,
+      direction,
+      forwardsOrBackwards,
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
@@ -460,13 +466,11 @@ function drawTargetRectanglesForChildrenOfElement(
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
+  simpleFlexDirection: SimpleFlexDirection | null,
+  forwardsOrBackwards: FlexForwardsOrBackwards | null,
 ): Array<CanvasRectangle> {
   const ExtraPadding = 10 / canvasScale
 
-  const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
-  const flexDirection = MetadataUtils.getFlexDirection(flexElement)
-  const simpleFlexDirection = flexDirectionToSimpleFlexDirection(flexDirection)
-  const forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(flexDirection)
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
 
   if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
@@ -794,8 +798,6 @@ export function applyStaticReparent(
                       displayNoneInstances: { $push: [newPath] },
                     }),
                   ]
-                default:
-                  assertNever(targetLayout)
               }
             }
 
@@ -963,5 +965,40 @@ export function getReparentPropertyChanges(
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
+  }
+}
+
+function getDirectionForFlexOrFlow(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): {
+  direction: SimpleFlexDirection | null
+  forwardsOrBackwards: FlexForwardsOrBackwards | null
+} {
+  const instanceMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  const isFlex = MetadataUtils.isFlexLayoutedContainer(instanceMetadata)
+
+  if (isFlex) {
+    const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+    const direction = MetadataUtils.getFlexDirection(element)
+    return {
+      direction: flexDirectionToSimpleFlexDirection(direction),
+      forwardsOrBackwards: flexDirectionToFlexForwardsOrBackwards(direction),
+    }
+  }
+  return {
+    direction: flowToStaticDirection(getElementDirection(instanceMetadata)),
+    forwardsOrBackwards: 'forward',
+  }
+}
+
+function flowToStaticDirection(dir: 'vertical' | 'horizontal'): SimpleFlexDirection {
+  switch (dir) {
+    case 'vertical':
+      return 'column'
+    case 'horizontal':
+      return 'row'
+    default:
+      assertNever(dir)
   }
 }

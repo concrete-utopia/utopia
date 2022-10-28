@@ -27,6 +27,36 @@ export function isValidFlowReorderTarget(
   }
 }
 
+export function is1DStaticContainer(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (elementMetadata == null) {
+    return false
+  }
+  const isFlex = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
+  const isFlow = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flow'
+  if (!isFlex && !isFlow) {
+    return false
+  }
+
+  if (isFlex) {
+    return true // TODO: only return true if it is one dimensional
+  }
+
+  const children = MetadataUtils.getChildren(metadata, path)
+
+  if (children.length === 0) {
+    return false
+  }
+
+  if (children.length === 1) {
+    return true
+  }
+  return areAllSiblingsInOneDimension(children[0].elementPath, metadata)
+}
+
 export function areAllSiblingsInOneDimension(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
