@@ -2436,34 +2436,6 @@ const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | nu
   return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
 }
 
-const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges | null> = (
-  oldAttribute,
-  newAttribute,
-) => {
-  if (oldAttribute == null && newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, true)
-  }
-  if (oldAttribute == null) {
-    return keepDeepEqualityResult(newAttribute, false)
-  }
-  if (newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, false)
-  }
-  return combine3EqualityCalls(
-    (c) => c.untracked,
-    arrayDeepEquality(StringKeepDeepEquality),
-    (c) => c.modified,
-    arrayDeepEquality(StringKeepDeepEquality),
-    (c) => c.deleted,
-    arrayDeepEquality(StringKeepDeepEquality),
-    (untracked: string[], modified: string[], deleted: string[]): GithubFileChanges => ({
-      untracked,
-      modified,
-      deleted,
-    }),
-  )(oldAttribute, newAttribute)
-}
-
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
     (info) => info.type,
