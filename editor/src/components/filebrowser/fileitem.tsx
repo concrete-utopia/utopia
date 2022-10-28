@@ -294,7 +294,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
   renderGithubStatus = () => {
     if (this.props.githubStatus != undefined) {
-      const c = this.props.githubStatus.at(0)?.toUpperCase()
+      const statusLetter = this.props.githubStatus.at(0)?.toUpperCase()
       return (
         <div
           style={{
@@ -311,7 +311,7 @@ class FileBrowserItemInner extends React.PureComponent<
             fontSize: 8,
           }}
         >
-          {c}
+          {statusLetter}
         </div>
       )
     }
