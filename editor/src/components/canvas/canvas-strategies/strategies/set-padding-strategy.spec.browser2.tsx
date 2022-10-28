@@ -1,15 +1,19 @@
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier } from '../../../../utils/modifiers'
+import { wait } from '../../../../utils/utils.test-utils'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   paddingControlHandleTestId,
   paddingControlTestId,
+  PaddingResizeControlContainerTestId,
+  PaddingResizeControlHoverTimeout,
 } from '../../controls/select-mode/padding-resize-control'
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
+  mouseEnterAtPoint,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import { offsetPaddingByEdge, paddingToPaddingString, SimpleCSSPadding } from '../../padding-utils'
@@ -103,7 +107,52 @@ describe('Padding resize strategy', () => {
     })
   })
 
-  it('Padding resize is present', async () => {
+  it('Padding resize handles are present and visible after the timeout', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues(
+        paddingToPaddingString({
+          paddingTop: 22,
+          paddingBottom: 33,
+          paddingLeft: 44,
+          paddingRight: 55,
+        }),
+      ),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 5,
+      y: divBounds.y + 4,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingResizeControlContainer = editor.renderedDOM.getByTestId(
+      PaddingResizeControlContainerTestId,
+    )
+    const paddingResizeControlContainerBounds = div.getBoundingClientRect()
+    const paddingResizeControlContainerCorner = {
+      x: paddingResizeControlContainerBounds.x + 5,
+      y: paddingResizeControlContainerBounds.y + 4,
+    }
+
+    mouseEnterAtPoint(paddingResizeControlContainer, paddingResizeControlContainerCorner)
+
+    await wait(PaddingResizeControlHoverTimeout + 1)
+
+    EdgePieces.forEach((edge) => {
+      const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+      expect(paddingControlOuter).toBeTruthy()
+      const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
+      expect(paddingControlHandle).toBeTruthy()
+      expect(paddingControlHandle.style.visibility).toEqual('visible')
+    })
+  })
+
+  it('Padding resize handles are present', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
