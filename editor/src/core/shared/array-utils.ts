@@ -225,15 +225,6 @@ export function groupBy<T>(
   return result
 }
 
-export function groupBySingle<Element>(
-  elements: Array<Element>,
-  key: (_: Element) => string,
-): { [key: string]: Element } {
-  let result: { [key: string]: Element } = {}
-  fastForEach(elements, (element) => (result[key(element)] = element))
-  return result
-}
-
 export function addUniquely<T extends string | number | boolean | null | undefined>(
   array: Array<T>,
   value: T,
