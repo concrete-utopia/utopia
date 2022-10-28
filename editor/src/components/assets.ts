@@ -73,15 +73,11 @@ export function deriveGithubFileChanges(
   const githubFiles = new Set(Object.keys(githubChecksums))
 
   let untracked: string[] = []
+  let modified: string[] = []
   projectFiles.forEach((f) => {
     if (!githubFiles.has(f)) {
       untracked.push(f)
-    }
-  })
-
-  let modified: string[] = []
-  projectFiles.forEach((f) => {
-    if (githubFiles.has(f) && githubChecksums[f] !== projectChecksums[f]) {
+    } else if (githubChecksums[f] !== projectChecksums[f]) {
       modified.push(f)
     }
   })
