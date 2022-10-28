@@ -447,7 +447,7 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
-import { GithubFileChanges, GithubChecksums } from '../actions/action-creators'
+import { GithubChecksums } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
