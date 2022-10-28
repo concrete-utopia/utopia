@@ -32,7 +32,8 @@ import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { githubFileChangesCountSelector } from '../editor/editor-component'
+import { createSelector } from 'reselect'
+import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -157,6 +158,10 @@ function useRequestVSCodeStatus(): () => void {
     [vscodeState],
   )
 }
+
+const githubFileChangesCountSelector = createSelector(githubFileChangesSelector, (changes) => {
+  return getGithubFileChangesCount(changes)
+})
 
 export const Menubar = React.memo(() => {
   const {

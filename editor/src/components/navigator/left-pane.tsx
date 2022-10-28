@@ -80,7 +80,7 @@ import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { capitalize } from '../../core/shared/string-utils'
 import { getGithubFileStatusColor } from '../filebrowser/fileitem'
-import { githubFileChangesSelector } from '../editor/editor-component'
+import { githubFileChangesSelector } from '../../core/shared/github'
 
 export interface LeftPaneProps {
   editorState: EditorState

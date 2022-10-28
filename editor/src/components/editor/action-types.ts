@@ -68,7 +68,7 @@ import {
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
-import { GithubFileChanges, GithubChecksums, GithubOperationType } from './actions/action-creators'
+import { GithubChecksums, GithubOperationType } from './actions/action-creators'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

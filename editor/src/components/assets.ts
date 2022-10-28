@@ -17,7 +17,8 @@ import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
-import { GithubFileChanges, GithubChecksums } from './editor/actions/action-creators'
+import { GithubChecksums } from './editor/actions/action-creators'
+import { GithubFileChanges } from '../core/shared/github'
 
 export interface AssetFileWithFileName {
   fileName: string

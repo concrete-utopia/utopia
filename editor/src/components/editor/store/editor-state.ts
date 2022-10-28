@@ -165,7 +165,7 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
-import { GithubFileChanges, GithubChecksums } from '../actions/action-creators'
+import { GithubChecksums } from '../actions/action-creators'
 
 const ObjectPathImmutable: any = OPI
 

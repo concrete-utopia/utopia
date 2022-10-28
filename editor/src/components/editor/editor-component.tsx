@@ -66,8 +66,6 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
-import { deriveGithubFileChanges, getProjectContentsChecksums } from '../assets'
-import { createSelector } from 'reselect'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -102,30 +100,6 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
   }, [inputValue, delayMs])
   return returnValue
 }
-
-export const githubFileChangesSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
-  (store) => store.userState.githubState.authenticated,
-  (store) => store.editor.githubChecksums,
-  (
-    projectContents,
-    githubAuthenticated,
-    githubChecksums,
-  ): EditorActions.GithubFileChanges | null => {
-    if (!githubAuthenticated) {
-      return null
-    }
-    const checksums = getProjectContentsChecksums(projectContents)
-    return deriveGithubFileChanges(checksums, githubChecksums)
-  },
-)
-
-export const githubFileChangesCountSelector = createSelector(
-  githubFileChangesSelector,
-  (changes) => {
-    return EditorActions.getGithubFileChangesCount(changes)
-  },
-)
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const editorStoreRef = useRefEditorState((store) => store)

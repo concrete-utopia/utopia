@@ -26,7 +26,7 @@ import {
 import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { githubFileChangesSelector } from '../editor/editor-component'
+import { GithubFileChanges, githubFileChangesSelector } from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -70,7 +70,7 @@ function collectFileBrowserItems(
   collapsedPaths: string[],
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
-  githubChanges: EditorActions.GithubFileChanges | null,
+  githubChanges: GithubFileChanges | null,
 ): FileBrowserItemInfo[] {
   const getGithubStatus = (filename: string) => {
     if (githubChanges?.untracked.includes(filename)) {

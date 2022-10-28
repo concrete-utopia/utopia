@@ -1,4 +1,3 @@
-import { arrayEquals } from '../../../core/shared/utils'
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
@@ -1450,36 +1449,6 @@ export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubC
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,
   }
-}
-
-export interface GithubFileChanges {
-  untracked: Array<string>
-  modified: Array<string>
-  deleted: Array<string>
-}
-
-export function getGithubFileChangesCount(changes: GithubFileChanges | null): number {
-  if (changes == null) {
-    return 0
-  }
-  return changes.untracked.length + changes.modified.length + changes.deleted.length
-}
-
-export function githubFileChangesEquals(
-  a: GithubFileChanges | null,
-  b: GithubFileChanges | null,
-): boolean {
-  if (a == null && b == null) {
-    return true
-  }
-  if (a == null || b == null) {
-    return false
-  }
-  return (
-    arrayEquals(a.untracked, b.untracked) &&
-    arrayEquals(a.modified, b.modified) &&
-    arrayEquals(a.deleted, b.deleted)
-  )
 }
 
 export function resetCanvas(): ResetCanvas {
