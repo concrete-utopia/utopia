@@ -180,6 +180,7 @@ function createPasteElementAction(
         null,
         'none',
         false,
+        'initial',
       ),
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,

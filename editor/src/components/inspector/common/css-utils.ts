@@ -4775,7 +4775,6 @@ export const computedStyleKeys: Array<string> = Object.keys({
   ...elementPropertiesEmptyValuesExcludingEvents,
   ...cssEmptyValues,
   ...layoutEmptyValuesNew,
-  direction: {},
 })
 
 type Parser<T> = (simpleValue: unknown, rawValue: ModifiableAttribute | null) => Either<string, T>
