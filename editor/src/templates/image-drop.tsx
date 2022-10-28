@@ -23,7 +23,7 @@ import { AllElementProps, EditorState, notDragging } from '../components/editor/
 import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
 import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
-import { arrayToObject, stripNulls } from '../core/shared/array-utils'
+import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
 import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
@@ -311,20 +311,17 @@ function updateImageSrcsActions(
   srcs: Array<SrcSubstitutionData>,
 ): Array<EditorAction> {
   const srcsIndex = arrayToObject(srcs, (s) => s.uid)
-  const actions: Array<EditorAction> = []
-  fastForEach(Object.entries(allElementProps), ([path, props]) => {
+
+  return mapDropNulls(([path, props]) => {
     const maybeImageUpdateData = srcsIndex[props['data-uid']]
-    if (maybeImageUpdateData != null) {
-      actions.push(
-        EditorActions.setProperty(
+    return maybeImageUpdateData == null
+      ? null
+      : EditorActions.setProperty(
           fromString(path),
           PP.create(['src']),
           jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
-        ),
-      )
-    }
-  })
-  return actions
+        )
+  }, Object.entries(allElementProps))
 }
 
 export const DropHandlers = {
