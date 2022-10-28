@@ -35,7 +35,7 @@ export function flowReorderStrategy(
   if (
     !MetadataUtils.isPositionedByFlow(elementMetadata) ||
     !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
-    !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata, 'flow')
+    !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
   ) {
     return null
   }

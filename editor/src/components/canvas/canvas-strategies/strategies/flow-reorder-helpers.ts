@@ -31,7 +31,6 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  targetLayout: 'flex' | 'flow',
 ): boolean {
   const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
   const siblings = MetadataUtils.getSiblings(metadata, target) // including target
@@ -39,7 +38,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return false
   }
 
-  if (targetLayout === 'flex') {
+  if (MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(target, metadata)) {
     const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
     const targetDirection =
       flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
