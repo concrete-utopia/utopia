@@ -40,6 +40,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import {
   AbsolutePin,
+  isAnySelectedElementAspectRatioLocked,
   ensureAtLeastTwoPinsForEdgePosition,
   getLockedAspectRatio,
   pickCursorFromEdgePosition,
@@ -112,11 +113,16 @@ export function absoluteResizeBoundingBoxStrategy(
             canvasState.startingMetadata,
             filteredSelectedElements,
           )
+          const anySelectedElementAspectRatioLocked = isAnySelectedElementAspectRatioLocked(
+            canvasState.startingMetadata,
+            filteredSelectedElements,
+          )
           if (originalBoundingBox != null) {
             const lockedAspectRatio = getLockedAspectRatio(
               interactionSession,
               interactionSession.interactionData.modifiers,
               originalBoundingBox,
+              anySelectedElementAspectRatioLocked,
             )
             const centerBased = interactionSession.interactionData.modifiers.alt
               ? 'center-based'
