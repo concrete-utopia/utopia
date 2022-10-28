@@ -260,7 +260,7 @@
     "@types/react-window": "1.8.5",
     "@types/scheduler": "0.16.1",
     "@types/semver": "7.3.4",
-    "@types/sha.js": "^2.4.0",
+    "@types/sha.js": "2.4.0",
     "@types/shuffle-array": "0.0.28",
     "@types/sinon": "^10.0.11",
     "@types/tar": "4.0.4",
