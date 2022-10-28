@@ -67,13 +67,7 @@ export function baseReparentAsStaticStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyStaticReparent(
-          canvasState,
-          interactionSession,
-          reparentTarget,
-          targetLayout,
-          nrDimensions,
-        )
+        return applyStaticReparent(canvasState, interactionSession, reparentTarget, targetLayout)
       },
     }
   }
