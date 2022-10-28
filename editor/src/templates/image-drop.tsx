@@ -327,13 +327,13 @@ function updateImageSrcsActions(
   const srcsIndex = Utils.groupBy(srcs, (s) => s.uid)
   const actions: Array<EditorAction> = []
   for (const [path, props] of Object.entries(allElementProps)) {
-    const asd = srcsIndex[props['data-uid']]
-    if (asd != null) {
+    const maybeImageUpdateData = srcsIndex[props['data-uid']]
+    if (maybeImageUpdateData != null) {
       actions.push(
         EditorActions.setProperty(
           fromString(path),
           PP.create(['src']),
-          jsxAttributeValue(asd.path, emptyComments),
+          jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
         ),
       )
     }
