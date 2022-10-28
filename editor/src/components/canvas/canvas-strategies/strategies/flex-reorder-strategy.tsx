@@ -31,6 +31,13 @@ export function flexReorderStrategy(
   ) {
     return null
   }
+
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
+  const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {
     id: 'FLEX_REORDER',
     name: 'Reorder (Flex)',
@@ -67,6 +74,7 @@ export function flexReorderStrategy(
             canvasState,
             interactionSession,
             customStrategyState,
+            reorderDirection,
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
           )
     },

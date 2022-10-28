@@ -52,6 +52,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   emptyComments,
@@ -442,6 +443,7 @@ import {
   updateThumbnailGenerated,
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
+import { AspectRatioLockedProp } from '../../aspect-ratio'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -3288,7 +3290,7 @@ export const UPDATE_FNS = {
               src: imageAttribute,
               style: jsxAttributeValue({ width: width, height: height }, emptyComments),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3333,7 +3335,7 @@ export const UPDATE_FNS = {
                 emptyComments,
               ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3387,7 +3389,7 @@ export const UPDATE_FNS = {
           ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
-          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+          [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
         }),
         [],
       )
@@ -4157,10 +4159,12 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked, emptyComments)
-        const updatedProps = eitherToMaybe(
-          setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
-        )
+        const path = PP.create([AspectRatioLockedProp])
+        const updatedProps = action.locked
+          ? eitherToMaybe(
+              setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
+            )
+          : deleteJSXAttribute(element.props, AspectRatioLockedProp)
         return {
           ...element,
           props: updatedProps ?? element.props,
@@ -4217,7 +4221,7 @@ export const UPDATE_FNS = {
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
-        'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+        [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
       }),
       [],
     )
