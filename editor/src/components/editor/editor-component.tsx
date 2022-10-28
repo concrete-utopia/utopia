@@ -120,6 +120,13 @@ export const githubFileChangesSelector = createSelector(
   },
 )
 
+export const githubFileChangesCountSelector = createSelector(
+  githubFileChangesSelector,
+  (changes) => {
+    return EditorActions.getGithubFileChangesCount(changes)
+  },
+)
+
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()

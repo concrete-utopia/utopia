@@ -30,15 +30,10 @@ import {
 } from '../../uuiui'
 import { User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import {
-  getGithubFileChangesCount,
-  setLeftMenuTab,
-  setPanelVisibility,
-  togglePanel,
-} from '../editor/actions/action-creators'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { githubFileChangesSelector } from '../editor/editor-component'
+import { githubFileChangesCountSelector } from '../editor/editor-component'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -271,11 +266,9 @@ export const Menubar = React.memo(() => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
 
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
-
-  const githubFileChangesCount = React.useMemo(
-    () => getGithubFileChangesCount(githubFileChanges),
-    [githubFileChanges],
+  const githubFileChangesCount = useEditorState(
+    githubFileChangesCountSelector,
+    'Github file changes count',
   )
 
   const githubFileChangesCountLabel = React.useMemo(() => {
