@@ -14,32 +14,18 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
-import { ProjectContentTreeRoot, walkContentsTreeForParseSuccess } from '../components/assets'
+import { ProjectContentTreeRoot } from '../components/assets'
 import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
 import { AllElementProps, EditorState, notDragging } from '../components/editor/store/editor-state'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  imageFile,
-  uniqueProjectContentID,
-} from '../core/model/project-file-utils'
+import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
 import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
-import { stripNulls } from '../core/shared/array-utils'
+import { groupBySingle, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
-import {
-  emptyComments,
-  getJSXAttribute,
-  getJSXElementNameLastPart,
-  isJSXAttributeValue,
-  isJSXElement,
-  jsxAttributeValue,
-  JSXAttributeValue,
-  walkElements,
-} from '../core/shared/element-template'
-import { Utils } from '../uuiui-deps'
+import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
@@ -324,9 +310,9 @@ function updateImageSrcsActions(
   allElementProps: AllElementProps,
   srcs: Array<SrcSubstitutionData>,
 ): Array<EditorAction> {
-  const srcsIndex = Utils.groupBy(srcs, (s) => s.uid)
+  const srcsIndex = groupBySingle(srcs, (s) => s.uid)
   const actions: Array<EditorAction> = []
-  for (const [path, props] of Object.entries(allElementProps)) {
+  fastForEach(Object.entries(allElementProps), ([path, props]) => {
     const maybeImageUpdateData = srcsIndex[props['data-uid']]
     if (maybeImageUpdateData != null) {
       actions.push(
@@ -337,7 +323,7 @@ function updateImageSrcsActions(
         ),
       )
     }
-  }
+  })
   return actions
 }
 
