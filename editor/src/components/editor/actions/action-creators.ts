@@ -228,6 +228,7 @@ import type {
   RightMenuTab,
   Theme,
   GithubOperation,
+  GithubChecksums,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1441,8 +1442,6 @@ export function updateGithubOperations(
     type: type,
   }
 }
-
-export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
   return {

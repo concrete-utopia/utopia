@@ -165,7 +165,6 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
-import { GithubChecksums } from '../actions/action-creators'
 
 const ObjectPathImmutable: any = OPI
 
@@ -984,6 +983,8 @@ export function projectGithubSettings(
     originCommit: originCommit,
   }
 }
+
+export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
