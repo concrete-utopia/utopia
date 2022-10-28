@@ -57,7 +57,7 @@ import {
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { FileBrowser } from '../filebrowser/filebrowser'
+import { FileBrowser, GithubFileStatus } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
@@ -78,6 +78,9 @@ import {
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { capitalize } from '../../core/shared/string-utils'
+import { getGithubFileStatusColor } from '../filebrowser/fileitem'
+import { githubFileChangesSelector } from '../../core/shared/github'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -958,6 +961,8 @@ const GithubPane = React.memo(() => {
     githubOperations,
   ])
 
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -1076,6 +1081,14 @@ const GithubPane = React.memo(() => {
               </datalist>
             )}
           </UIGridRow>
+          {githubFileChanges != null ? (
+            // Note: this is completely temporary until we finalize the design
+            <UIGridRow padded variant='<-------------1fr------------->'>
+              <FileChanges type='untracked' files={githubFileChanges.untracked} />
+              <FileChanges type='modified' files={githubFileChanges.modified} />
+              <FileChanges type='deleted' files={githubFileChanges.deleted} />
+            </UIGridRow>
+          ) : null}
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               spotlight
@@ -1125,6 +1138,24 @@ const GithubPane = React.memo(() => {
     </FlexColumn>
   )
 })
+
+const FileChanges = ({ files, type }: { files: string[]; type: GithubFileStatus }) => {
+  if (files.length === 0) {
+    return null
+  }
+  return (
+    <div style={{ color: getGithubFileStatusColor(type), marginTop: 4, marginBottom: 4 }}>
+      <div>
+        {capitalize(type)} files ({files.length})
+      </div>
+      {files.map((f) => (
+        <div key={f} style={{ marginLeft: 8 }}>
+          &rarr; {f}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export const InsertMenuPane = React.memo(() => {
   const { dispatch, focusedPanel } = useEditorState((store) => {

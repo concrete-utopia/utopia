@@ -304,6 +304,7 @@ import {
   WrapInElement,
   WrapInView,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -979,6 +980,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    githubChecksums: currentEditor.githubChecksums,
   }
 }
 
@@ -1917,11 +1919,7 @@ export const UPDATE_FNS = {
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
-  UPDATE_GITHUB_OPERATIONS: (
-    action: UpdateGithubOperations,
-    editor: EditorModel,
-    _dispatch: EditorDispatch,
-  ): EditorModel => {
+  UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {
     const operations = [...editor.githubOperations]
     switch (action.type) {
       case 'add':
@@ -1940,6 +1938,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubChecksums: action.checksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {

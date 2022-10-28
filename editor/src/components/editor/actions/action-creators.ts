@@ -211,6 +211,7 @@ import type {
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -227,6 +228,7 @@ import type {
   RightMenuTab,
   Theme,
   GithubOperation,
+  GithubChecksums,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1438,6 +1440,13 @@ export function updateGithubOperations(
     action: 'UPDATE_GITHUB_OPERATIONS',
     operation: operation,
     type: type,
+  }
+}
+
+export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+  return {
+    action: 'UPDATE_GITHUB_CHECKSUMS',
+    checksums: checksums,
   }
 }
 
