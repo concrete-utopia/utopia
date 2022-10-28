@@ -72,8 +72,10 @@ export function deriveGithubFileChanges(
   const projectFiles = new Set(Object.keys(projectChecksums))
   const githubFiles = new Set(Object.keys(githubChecksums))
 
-  let untracked: string[] = []
-  let modified: string[] = []
+  let untracked: Array<string> = []
+  let modified: Array<string> = []
+  let deleted: Array<string> = []
+
   projectFiles.forEach((f) => {
     if (!githubFiles.has(f)) {
       untracked.push(f)
@@ -82,7 +84,6 @@ export function deriveGithubFileChanges(
     }
   })
 
-  let deleted: string[] = []
   githubFiles.forEach((f) => {
     if (!projectFiles.has(f)) {
       deleted.push(f)

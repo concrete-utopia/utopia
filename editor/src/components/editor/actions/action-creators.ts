@@ -1453,9 +1453,9 @@ export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubC
 }
 
 export interface GithubFileChanges {
-  untracked: string[]
-  modified: string[]
-  deleted: string[]
+  untracked: Array<string>
+  modified: Array<string>
+  deleted: Array<string>
 }
 
 export function getGithubFileChangesCount(changes: GithubFileChanges | null): number {
