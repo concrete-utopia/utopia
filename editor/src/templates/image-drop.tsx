@@ -23,7 +23,7 @@ import { AllElementProps, EditorState, notDragging } from '../components/editor/
 import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
 import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
-import { arrayToObject, groupBySingle, stripNulls } from '../core/shared/array-utils'
+import { arrayToObject, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
 import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
