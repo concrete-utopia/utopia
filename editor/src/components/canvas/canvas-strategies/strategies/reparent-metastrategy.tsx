@@ -17,7 +17,7 @@ import {
 import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { areAllSiblingsInOneDimension, is1DStaticContainer } from './flow-reorder-helpers'
+import { is1DStaticContainer } from './flow-reorder-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
