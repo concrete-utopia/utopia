@@ -1,7 +1,14 @@
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { isRight } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { stripNulls } from '../../../../core/shared/array-utils'
+import { defaultEither, isRight, mapEither } from '../../../../core/shared/either'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  getJSXAttribute,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -15,6 +22,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifiers } from '../../../../utils/modifiers'
+import { AspectRatioLockedProp } from '../../../aspect-ratio'
 import { CSSCursor, EdgePosition } from '../../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
@@ -86,7 +94,7 @@ export function supportsAbsoluteResize(
   metadata: ElementInstanceMetadataMap,
   element: ElementPath,
   canvasState: InteractionCanvasState,
-) {
+): boolean {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
   return (
     elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
@@ -99,14 +107,47 @@ export function getLockedAspectRatio(
   interactionData: InteractionSession,
   modifiers: Modifiers,
   originalBoundingBox: CanvasRectangle,
+  anySelectedElementAspectRatioLocked: boolean,
 ): number | null {
   if (interactionData.aspectRatioLock != null) {
     return interactionData.aspectRatioLock
   }
-  if (modifiers.shift) {
-    return originalBoundingBox.width / originalBoundingBox.height
+
+  if (anySelectedElementAspectRatioLocked && modifiers.shift) {
+    return null
   }
+
+  if (anySelectedElementAspectRatioLocked || modifiers.shift) {
+    return originalBoundingBox.width / (originalBoundingBox.height || 1)
+  }
+
   return null
+}
+
+function isElementImage(instance: ElementInstanceMetadata) {
+  return defaultEither(
+    false,
+    mapEither((e) => e.type === 'JSX_ELEMENT' && e.name.baseVariable === 'img', instance.element),
+  )
+}
+
+function isElementAspectRatioLocked(instance: ElementInstanceMetadata) {
+  return defaultEither(
+    false,
+    mapEither(
+      (e) => e.type === 'JSX_ELEMENT' && getJSXAttribute(e.props, AspectRatioLockedProp),
+      instance.element,
+    ),
+  )
+}
+
+export function isAnySelectedElementAspectRatioLocked(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): boolean {
+  return MetadataUtils.findElementsByElementPath(jsxMetadata, selectedElements).some(
+    (e) => isElementImage(e) || isElementAspectRatioLocked(e),
+  )
 }
 
 export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {

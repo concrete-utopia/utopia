@@ -14,31 +14,19 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
-import { ProjectContentTreeRoot, walkContentsTreeForParseSuccess } from '../components/assets'
+import { ProjectContentTreeRoot } from '../components/assets'
 import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
-import { EditorState, notDragging } from '../components/editor/store/editor-state'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  imageFile,
-  uniqueProjectContentID,
-} from '../core/model/project-file-utils'
-import { saveAssets } from '../components/editor/server'
+import { AllElementProps, EditorState, notDragging } from '../components/editor/store/editor-state'
+import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
+import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
-import { stripNulls } from '../core/shared/array-utils'
+import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
-import {
-  emptyComments,
-  getJSXAttribute,
-  getJSXElementNameLastPart,
-  isJSXAttributeValue,
-  isJSXElement,
-  jsxAttributeValue,
-  JSXAttributeValue,
-  walkElements,
-} from '../core/shared/element-template'
+import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
+import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -85,7 +73,8 @@ export async function insertImageFromClipboard(
   context.dispatch(actions, 'everyone')
 }
 
-interface DropContext {
+export interface DropContext {
+  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<void>
   mousePosition: CanvasPositions
   editor: () => EditorState
   dispatch: EditorDispatch
@@ -147,7 +136,8 @@ async function onDrop(
     )
     cont()
 
-    await saveAssets(projectId, assetInfo)
+    await context
+      .saveAssets(projectId, assetInfo)
       .then(() => {
         const substitutionPaths = stripNulls(
           assetInfo.flatMap((i) =>
@@ -156,7 +146,7 @@ async function onDrop(
         )
 
         const srcUpdateActions = updateImageSrcsActions(
-          context.editor().projectContents,
+          context.editor().allElementProps,
           substitutionPaths,
         )
 
@@ -317,34 +307,21 @@ interface SrcSubstitutionData {
 }
 
 function updateImageSrcsActions(
-  projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
   srcs: Array<SrcSubstitutionData>,
 ): Array<EditorAction> {
-  const actions: Array<EditorAction> = []
-  walkContentsTreeForParseSuccess(projectContents, (filePath, success) => {
-    walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
-      if (isJSXElement(element) && getJSXElementNameLastPart(element.name) === 'img') {
-        const srcAttribute = getJSXAttribute(element.props, 'data-uid')
-        if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
-          const srcValue: JSXAttributeValue<any> = srcAttribute
-          const subsititutionPath =
-            typeof srcValue.value === 'string'
-              ? srcs.find(({ uid }) => srcValue.value.startsWith(uid))?.path
-              : undefined
-          if (subsititutionPath != null) {
-            actions.push(
-              EditorActions.setPropWithElementPath_UNSAFE(
-                elementPath,
-                PP.create(['src']),
-                jsxAttributeValue(subsititutionPath, emptyComments),
-              ),
-            )
-          }
-        }
-      }
-    })
-  })
-  return actions
+  const srcsIndex = arrayToObject(srcs, (s) => s.uid)
+
+  return mapDropNulls(([path, props]) => {
+    const maybeImageUpdateData = srcsIndex[props['data-uid']]
+    return maybeImageUpdateData == null
+      ? null
+      : EditorActions.setProperty(
+          fromString(path),
+          PP.create(['src']),
+          jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
+        )
+  }, Object.entries(allElementProps))
 }
 
 export const DropHandlers = {

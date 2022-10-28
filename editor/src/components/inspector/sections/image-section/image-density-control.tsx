@@ -5,8 +5,8 @@ import { showToast, updateFrameDimensions } from '../../../editor/actions/action
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { notice } from '../../../common/notice'
-import { parseImageMultiplier } from '../../../images'
 import { size, Size } from '../../../../core/shared/math-utils'
+import { getFilenameParts } from '../../../images'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch
@@ -122,5 +122,5 @@ function isZeroSize(s: Size): boolean {
 }
 
 function imageMultiplierFromSrc(src: string): number {
-  return parseImageMultiplier(src)
+  return getFilenameParts(src)?.multiplier ?? 1
 }
