@@ -316,6 +316,7 @@ import {
   FileUploadInfo,
   FileOverwriteModal,
   GithubOperation,
+  GithubChecksums,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -447,7 +448,6 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
-import { GithubChecksums } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
