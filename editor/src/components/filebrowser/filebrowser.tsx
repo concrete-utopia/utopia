@@ -72,6 +72,16 @@ function collectFileBrowserItems(
   errorMessages: ErrorMessage[] | null,
   githubChanges: EditorActions.GithubFileChanges | null,
 ): FileBrowserItemInfo[] {
+  const getGithubStatus = (filename: string) => {
+    if (githubChanges?.untracked.includes(filename)) {
+      return 'untracked'
+    }
+    if (githubChanges?.modified.includes(filename)) {
+      return 'modified'
+    }
+    return undefined
+  }
+
   let fileBrowserItems: FileBrowserItemInfo[] = []
   walkContentsTree(projectContents, (fullPath, element) => {
     const originatingPath = fullPath
@@ -90,6 +100,7 @@ function collectFileBrowserItems(
           element.base64 == undefined,
         imageFile: element.type === 'IMAGE_FILE' ? element : null,
         projectContents: projectContents,
+        githubStatus: getGithubStatus(fullPath),
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -120,21 +131,7 @@ function collectFileBrowserItems(
       }
     }
   })
-  return fileBrowserItems.map((f) => {
-    const getGithubStatus = () => {
-      if (githubChanges?.untracked.includes(f.path)) {
-        return 'untracked'
-      }
-      if (githubChanges?.modified.includes(f.path)) {
-        return 'modified'
-      }
-      return undefined
-    }
-    return {
-      ...f,
-      githubStatus: getGithubStatus(),
-    }
-  })
+  return fileBrowserItems
 }
 
 export const FileBrowser = React.memo(() => {
