@@ -17,13 +17,9 @@ import {
 } from '../components/canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
 import { LeftMenuTab } from '../components/editor/store/editor-state'
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../core/model/element-template-utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
-import { wait } from '../utils/utils.test-utils'
 import * as ImageDrop from './image-drop'
 
 const MOCK_UIDS = Array(10)
@@ -153,6 +149,17 @@ const contents = {
   },
   assets: {
     children: {
+      'multiplied@2x.png': {
+        content: {
+          height: 570,
+          imageType: 'image/png',
+          type: 'IMAGE_FILE',
+          hash: 3674089797,
+          width: 1830,
+        },
+        type: 'PROJECT_CONTENT_FILE',
+        fullPath: '/assets/multiplied@2x.png',
+      },
       'stuff.png': {
         content: {
           height: 570,
@@ -230,7 +237,10 @@ describe('image drag and drop', () => {
   beforeEach(() => {
     dropDone = defer()
     const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
-    onDropStub.callsFake((e, f, c) => originalOnDrop(e, f, c).then(() => dropDone.resolve()))
+    onDropStub.callsFake((e, f, context) => {
+      const mockContext: ImageDrop.DropContext = { ...context, saveAssets: () => Promise.resolve() }
+      return originalOnDrop(e, f, mockContext).then(() => dropDone.resolve())
+    })
   })
 
   afterEach(() => {
@@ -652,13 +662,79 @@ export var storyboard = (
     >
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/stuff_2.png'
         style={{
           position: 'absolute',
           width: 1,
           height: 1,
           top: 379.5,
           left: 350,
+        }}
+        data-uid='1'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('dragging existing filename from "finder" autoincrements filename, respecting the image multiplier', async () => {
+    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
+
+    const editor = await renderTestEditorWithProjectContent(
+      contents,
+      'await-first-dom-report',
+      RegisteredCanvasStrategies,
+      loggedInUser({ userId: '42' }),
+    )
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const file = await makeImageFile(imgBase641x1, 'multiplied@2x.png')
+
+    const target = editor.renderedDOM.getByTestId('scene')
+    const targetBounds = target.getBoundingClientRect()
+
+    const endPoint = {
+      x: targetBounds.x + targetBounds.width / 2,
+      y: targetBounds.y + targetBounds.height / 2,
+    }
+
+    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await dropDone
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+      }}
+      data-testid='scene'
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <img
+        data-aspect-ratio-locked
+        src='./assets/multiplied_2@2x.png'
+        style={{
+          position: 'absolute',
+          width: 0.5,
+          height: 0.5,
+          top: 379.75,
+          left: 90.75,
         }}
         data-uid='1'
       />
@@ -822,7 +898,7 @@ export var storyboard = (
     >
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
           width: 1,
@@ -834,7 +910,7 @@ export var storyboard = (
       />
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/chucknorris.png'
         style={{
           position: 'absolute',
           width: 1,
@@ -846,7 +922,7 @@ export var storyboard = (
       />
       <img
         data-aspect-ratio-locked
-        src='${imgBase641x1}'
+        src='./assets/brucelee.png'
         style={{
           position: 'absolute',
           width: 1,

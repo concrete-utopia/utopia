@@ -25,7 +25,7 @@ import {
   imageFile,
   uniqueProjectContentID,
 } from '../core/model/project-file-utils'
-import { saveAssets } from '../components/editor/server'
+import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
 import { stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
@@ -85,7 +85,8 @@ export async function insertImageFromClipboard(
   context.dispatch(actions, 'everyone')
 }
 
-interface DropContext {
+export interface DropContext {
+  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<void>
   mousePosition: CanvasPositions
   editor: () => EditorState
   dispatch: EditorDispatch
@@ -147,7 +148,8 @@ async function onDrop(
     )
     cont()
 
-    await saveAssets(projectId, assetInfo)
+    await context
+      .saveAssets(projectId, assetInfo)
       .then(() => {
         const substitutionPaths = stripNulls(
           assetInfo.flatMap((i) =>

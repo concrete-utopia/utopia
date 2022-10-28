@@ -107,6 +107,7 @@ import {
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
 import { isFeatureEnabled } from '../utils/feature-switches'
+import { saveAssets } from '../components/editor/server'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1040,6 +1041,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               this.handleMouseUp(event.nativeEvent)
             },
             {
+              saveAssets: saveAssets,
               scale: this.props.model.scale,
               editor: () => this.props.editor,
               mousePosition: mousePosition,
