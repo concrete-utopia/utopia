@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { pluralize } from '../../core/shared/string-utils'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import {
   useTriggerScrollPerformanceTest,
@@ -365,10 +364,9 @@ export const Menubar = React.memo(() => {
         <Tooltip
           title={
             githubFileChangesCount > 0
-              ? `Github (${githubFileChangesCount} ${pluralize(
-                  'file',
-                  githubFileChangesCount,
-                )} changed)`
+              ? `Github (${githubFileChangesCount} file${
+                  githubFileChangesCount !== 1 ? 's' : ''
+                } changed)`
               : 'Github'
           }
           placement={'right'}
