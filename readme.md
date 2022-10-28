@@ -82,6 +82,20 @@ fi
 
 If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `pnpm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
 
+## Installation error on `utopia-vscode-extensions` step
+
+If you see an error to the effect of
+
+```
+Usage Error: The nearest package directory (/path/to/utopia/utopia-vscode-extension) doesn't seem to be part of the project declared in /path/to/utopia.
+
+- If /path/to/utopia isn't intended to be a project, remove any yarn.lock and/or package.json file there.
+- If /path/to/utopia is intended to be a project, it might be that you forgot to list utopia-vscode-extension in its workspace configuration.
+- Finally, if /path/to/utopia is fine and you intend utopia-vscode-extension to be treated as a completely separate project (not even a workspace), create an empty yarn.lock file in it.
+```
+
+It could be caused by a `.yarnrc` or `.yarnrc.yml` file located in a parent directory. `.yarnrc` files are [used to configure yarn setting](https://yarnpkg.com/configuration/yarnrc) and will effect projects in all child directories below them. This can change the yarn version of utopia to one that will produce the above error. Simply removing the `.yarnrc` or `.yarnrc.yml` file will fix this error.
+
 ## Running this without Nix
 
 We highly recommend using Nix to make life easier, but if you're having trouble with that or would prefer not to, then there is always the option to run each of the various scripts individually.
