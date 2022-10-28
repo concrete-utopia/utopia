@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
@@ -27,7 +28,7 @@ export function isValidFlowReorderTarget(
   }
 }
 
-export function areAllSiblingsInOneDimension(
+export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
@@ -37,33 +38,59 @@ export function areAllSiblingsInOneDimension(
     return false
   }
 
-  const targetDirection = getElementDirection(targetElement)
-
-  let allHorizontalOrVertical = true
-  let frames: Array<CanvasRectangle> = []
-  fastForEach(siblings, (sibling) => {
-    if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
-      if (getElementDirection(sibling) !== targetDirection) {
-        allHorizontalOrVertical = false
+  if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
+    const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
+    const targetDirection =
+      flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
+    const shouldReverse = flexDirection?.includes('reverse') ?? false
+    const frames = mapDropNulls((sibling) => {
+      if (
+        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          sibling.elementPath,
+          metadata,
+        )
+      ) {
+        return sibling.globalFrame
+      } else {
+        return null
       }
-      if (sibling.globalFrame != null) {
-        frames.push(sibling.globalFrame)
-      }
-    }
-  })
+    }, siblings)
 
-  return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection)
+    return areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+  } else {
+    const targetDirection = getElementDirection(targetElement)
+    const shouldReverse =
+      targetDirection === 'horizontal' &&
+      targetElement.specialSizeMeasurements?.textDirection === 'rtl'
+
+    let allHorizontalOrVertical = true
+    let frames: Array<CanvasRectangle> = []
+    fastForEach(siblings, (sibling) => {
+      if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
+        if (getElementDirection(sibling) !== targetDirection) {
+          allHorizontalOrVertical = false
+        }
+        if (sibling.globalFrame != null) {
+          frames.push(sibling.globalFrame)
+        }
+      }
+    })
+
+    return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+  }
 }
 
 function areNonWrappingSiblings(
   frames: Array<CanvasRectangle>,
   layoutDirection: 'horizontal' | 'vertical',
+  shouldReverse: boolean,
 ): boolean {
-  return frames.every((frame, i) => {
+  const orderedFrames = shouldReverse ? [...frames].reverse() : frames
+  return orderedFrames.every((frame, i) => {
     if (i === 0) {
       return true
     } else {
-      const prevFrame: CanvasRectangle = frames[i - 1]
+      const prevFrame: CanvasRectangle = orderedFrames[i - 1]
       if (layoutDirection === 'horizontal') {
         // all elements are on the right side of the previous sibling
         return frame.x > prevFrame.x

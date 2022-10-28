@@ -15,6 +15,7 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
+import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -29,6 +30,10 @@ export function flexReorderStrategy(
       canvasState.startingMetadata,
     )
   ) {
+    return null
+  }
+
+  if (!areAllSiblingsInOneDimensionFlexOrFlow(selectedElements[0], canvasState.startingMetadata)) {
     return null
   }
 
