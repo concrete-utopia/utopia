@@ -935,6 +935,18 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
   return results
 }
 
+function groupBy<Element>(
+  elements: Array<Element>,
+  key: (_: Element) => string,
+): { [key: string]: Element } {
+  let result: { [key: string]: Element } = {}
+  for (const element of elements) {
+    result[key(element)] = element
+  }
+
+  return result
+}
+
 export default {
   generateUUID: generateUUID,
   assert: assert,
@@ -1096,4 +1108,5 @@ export default {
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
   deduplicateBy: deduplicateBy,
+  groupBy: groupBy,
 }
