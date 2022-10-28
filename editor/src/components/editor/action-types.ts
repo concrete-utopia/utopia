@@ -56,6 +56,7 @@ import {
   StoredEditorState,
   Theme,
   GithubOperation,
+  GithubChecksums,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -68,7 +69,7 @@ import {
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
-import { GithubChecksums, GithubOperationType } from './actions/action-creators'
+import { GithubOperationType } from './actions/action-creators'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
