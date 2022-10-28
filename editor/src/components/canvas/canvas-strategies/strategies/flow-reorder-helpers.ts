@@ -38,7 +38,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return false
   }
 
-  if (MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(target, metadata)) {
+  if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
     const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
     const targetDirection =
       flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
