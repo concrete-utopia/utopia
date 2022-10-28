@@ -19,7 +19,7 @@ import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
-import { EditorState, notDragging } from '../components/editor/store/editor-state'
+import { AllElementProps, EditorState, notDragging } from '../components/editor/store/editor-state'
 import {
   getUtopiaJSXComponentsFromSuccess,
   imageFile,
@@ -39,6 +39,8 @@ import {
   JSXAttributeValue,
   walkElements,
 } from '../core/shared/element-template'
+import { Utils } from '../uuiui-deps'
+import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -158,7 +160,7 @@ async function onDrop(
         )
 
         const srcUpdateActions = updateImageSrcsActions(
-          context.editor().projectContents,
+          context.editor().allElementProps,
           substitutionPaths,
         )
 
@@ -319,33 +321,23 @@ interface SrcSubstitutionData {
 }
 
 function updateImageSrcsActions(
-  projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
   srcs: Array<SrcSubstitutionData>,
 ): Array<EditorAction> {
+  const srcsIndex = Utils.groupBy(srcs, (s) => s.uid)
   const actions: Array<EditorAction> = []
-  walkContentsTreeForParseSuccess(projectContents, (filePath, success) => {
-    walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
-      if (isJSXElement(element) && getJSXElementNameLastPart(element.name) === 'img') {
-        const srcAttribute = getJSXAttribute(element.props, 'data-uid')
-        if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
-          const srcValue: JSXAttributeValue<any> = srcAttribute
-          const subsititutionPath =
-            typeof srcValue.value === 'string'
-              ? srcs.find(({ uid }) => srcValue.value.startsWith(uid))?.path
-              : undefined
-          if (subsititutionPath != null) {
-            actions.push(
-              EditorActions.setPropWithElementPath_UNSAFE(
-                elementPath,
-                PP.create(['src']),
-                jsxAttributeValue(subsititutionPath, emptyComments),
-              ),
-            )
-          }
-        }
-      }
-    })
-  })
+  for (const [path, props] of Object.entries(allElementProps)) {
+    const asd = srcsIndex[props['data-uid']]
+    if (asd != null) {
+      actions.push(
+        EditorActions.setProperty(
+          fromString(path),
+          PP.create(['src']),
+          jsxAttributeValue(asd.path, emptyComments),
+        ),
+      )
+    }
+  }
   return actions
 }
 
