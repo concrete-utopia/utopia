@@ -11,7 +11,7 @@ import {
   InteractionCanvasState,
 } from '../canvas-strategy-types'
 import {
-  areAllSiblingsInOneDimension,
+  areAllSiblingsInOneDimensionFlexOrFlow,
   getElementDirection,
   isValidFlowReorderTarget,
 } from './flow-reorder-helpers'
@@ -35,7 +35,7 @@ export function flowReorderStrategy(
   if (
     !MetadataUtils.isPositionedByFlow(elementMetadata) ||
     !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
-    !areAllSiblingsInOneDimension(target, canvasState.startingMetadata)
+    !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata, 'flow')
   ) {
     return null
   }
