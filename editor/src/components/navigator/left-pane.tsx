@@ -888,7 +888,7 @@ const GithubPane = React.memo(() => {
         setBranchesForRepository(result)
       })
     }
-  }, [parsedTargetRepository, dispatch])
+  }, [dispatch, parsedTargetRepository, currentBranch])
 
   const loadBranchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {

@@ -136,6 +136,7 @@ export async function saveProjectToGithub(
                 responseBody.branchName,
               ),
             ),
+            updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
           'everyone',
