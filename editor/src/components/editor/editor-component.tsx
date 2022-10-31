@@ -68,6 +68,7 @@ import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/sele
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
+import TitleBar from '../titlebar/TitleBar'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -337,6 +338,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         >
           {(isChrome as boolean) ? null : <BrowserInfoBar />}
           <LoginStatusBar />
+          <TitleBar />
 
           <SimpleFlexRow
             className='editor-main-horizontal'

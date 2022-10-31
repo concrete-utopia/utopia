@@ -3,21 +3,12 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
-import React, { ChangeEvent } from 'react'
-import {
-  fetchProjectMetadata,
-  projectEditorURL,
-  projectURL,
-  thumbnailURL,
-} from '../../common/server'
+import React, { useState } from 'react'
+import { projectEditorURL, thumbnailURL } from '../../common/server'
 import { useGetProjectMetadata, useIsMyProject } from '../common/server-hooks'
-import { getAllUniqueUids } from '../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
-import Utils, { isOptionType } from '../../utils/utils'
 import {
   useColorTheme,
   UtopiaTheme,
@@ -31,13 +22,12 @@ import {
   MenuIcons,
   StringInput,
   Subdued,
-  UIRow,
   H2,
   PopupList,
   Icons,
   Avatar,
 } from '../../uuiui'
-import { getControlStyles, SelectOption, User } from '../../uuiui-deps'
+import { SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -498,9 +488,12 @@ const ContentsPane = React.memo(() => {
 })
 
 const SettingsPane = React.memo(() => {
-  const { dispatch } = useEditorState((store) => {
+  const { dispatch, userState, projectName, projectDescription } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
+      userState: store.userState,
+      projectName: store.editor.projectName,
+      projectDescription: store.editor.projectDescription,
     }
   }, 'ProjectPane')
   const [theme, setTheme] = React.useState<SelectOption>({
@@ -514,6 +507,55 @@ const SettingsPane = React.memo(() => {
     },
     [dispatch],
   )
+
+  const onChangeProjectName = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    changeProjectName(event.target.value)
+  }, [])
+
+  const onChangeProjectDescription = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      changeProjectDescription(event.target.value)
+    },
+    [],
+  )
+
+  const updateProjectName = React.useCallback(
+    (newProjectName: string) => {
+      dispatch([setProjectName(newProjectName)])
+    },
+    [dispatch],
+  )
+
+  const updateProjectDescription = React.useCallback(
+    (newProjectDescription: string) => {
+      dispatch([setProjectDescription(newProjectDescription)])
+    },
+    [dispatch],
+  )
+
+  const handleBlurProjectName = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateProjectName(e.target.value)
+    },
+    [updateProjectName],
+  )
+
+  const handleBlurProjecDescription = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateProjectDescription(e.target.value)
+    },
+    [updateProjectDescription],
+  )
+
+  const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      let target = e.target as HTMLInputElement
+      target.blur()
+    }
+  }, [])
+
+  const [name, changeProjectName] = useState(projectName),
+    [description, changeProjectDescription] = useState(projectDescription)
 
   return (
     <FlexColumn
@@ -529,6 +571,39 @@ const SettingsPane = React.memo(() => {
         <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
           <Title style={{ flexGrow: 1 }}>Settings</Title>
         </SectionTitleRow>
+        <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+          <H2> Theme </H2>
+        </UIGridRow>
+        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <span>Name</span>
+          {userState.loginState.type !== 'LOGGED_IN' ? (
+            <span>{name}</span>
+          ) : (
+            <StringInput
+              testId='projectName'
+              value={name}
+              onChange={onChangeProjectName}
+              onKeyDown={handleKeyPress}
+              style={{ width: 150 }}
+              onBlur={handleBlurProjectName}
+            />
+          )}
+        </UIGridRow>
+        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <span> Description </span>
+          {userState.loginState.type !== 'LOGGED_IN' ? (
+            <span>{description}</span>
+          ) : (
+            <StringInput
+              testId='projectDescription'
+              value={description}
+              onChange={onChangeProjectDescription}
+              onKeyDown={handleKeyPress}
+              onBlur={handleBlurProjecDescription}
+              style={{ width: 150 }}
+            />
+          )}
+        </UIGridRow>
         <SectionBodyArea minimised={false}>
           {/** Theme Toggle: */}
           <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>

@@ -296,40 +296,6 @@ export const Menubar = React.memo(() => {
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-          <a href='/projects'>
-            <Avatar
-              isLoggedIn={User.isLoggedIn(userState.loginState)}
-              userPicture={User.getUserPicture(userState.loginState)}
-              size={28}
-            />
-          </a>
-        </Tile>
-
-        <Tooltip title={'Project Info'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Project}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Smiangle />}
-              onClick={onClickProjectTab}
-              size='large'
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Storyboards'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Storyboards}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Pyramid />}
-              onClick={onClickStoryboardsTab}
-              size='large'
-            />
-          </span>
-        </Tooltip>
-
         <Tooltip title={'Files, Dependencies, Fonts'} placement={'right'}>
           <span>
             <MenuTile
@@ -400,40 +366,6 @@ export const Menubar = React.memo(() => {
             </span>
           </Tooltip>
         </a>
-
-        <Tooltip title={'Show or hide the code editor'} placement={'left'}>
-          <span>
-            <MenuTile
-              selected={isCodeEditorVisible}
-              menuExpanded={false}
-              icon={<LargerIcons.Code />}
-              onClick={toggleCodeEditorVisible}
-              size='large'
-            />
-          </span>
-        </Tooltip>
-        <Tooltip title={'Show or hide the canvas'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={isCanvasVisible}
-              menuExpanded={false}
-              icon={<LargerIcons.DesignTool />}
-              onClick={toggleCanvasVisible}
-              size='large'
-            />
-          </span>
-        </Tooltip>
-        <Tooltip title={'Embedded Preview'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<LargerIcons.PreviewPane />}
-              onClick={togglePreviewPaneVisible}
-              size='large'
-            />
-          </span>
-        </Tooltip>
       </FlexColumn>
       {isFeatureEnabled('Performance Test Triggers') ? (
         <React.Fragment>
