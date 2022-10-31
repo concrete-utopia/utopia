@@ -612,6 +612,11 @@ export interface UpdateProjectContents {
   contents: ProjectContentTreeRoot
 }
 
+export interface UpdateBranchContents {
+  action: 'UPDATE_BRANCH_CONTENTS'
+  contents: ProjectContentTreeRoot | null
+}
+
 export interface UpdateGithubSettings {
   action: 'UPDATE_GITHUB_SETTINGS'
   settings: ProjectGithubSettings
@@ -1182,6 +1187,7 @@ export type EditorAction =
   | SetImageDragSessionState
   | UpdateGithubOperations
   | UpdateGithubChecksums
+  | UpdateBranchContents
 
 export type DispatchPriority =
   | 'everyone'

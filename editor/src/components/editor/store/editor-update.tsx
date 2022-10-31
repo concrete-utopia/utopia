@@ -6,9 +6,6 @@ import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { assertNever } from '../../../core/shared/utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -201,6 +198,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PROJECT_CONTENTS':
       return UPDATE_FNS.UPDATE_PROJECT_CONTENTS(action, state)
+    case 'UPDATE_BRANCH_CONTENTS':
+      return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
     case 'UPDATE_GITHUB_SETTINGS':
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
     case 'UPDATE_FROM_WORKER':

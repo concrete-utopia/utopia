@@ -1,7 +1,6 @@
 import * as json5 from 'json5'
-import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
   isUtopiaJSXComponent,
@@ -22,12 +21,9 @@ import {
   findJSXElementAtStaticPath,
 } from '../../../core/model/element-template-utils'
 import {
-  correctProjectContentsPath,
-  getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
   saveTextFileContents,
   getHighlightBoundsFromParseResult,
-  updateFileContents,
   getHighlightBoundsForProject,
   applyUtopiaJSXComponentsChanges,
   applyToAllUIJSFiles,
@@ -52,28 +48,16 @@ import {
   isParsedTextFile,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
-  PropertyPath,
   HighlightBoundsWithFileForUids,
   parseSuccess,
 } from '../../../core/shared/project-file-types'
-import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
   ExportsInfo,
   MultiFileBuildResult,
   UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
-import {
-  bimapEither,
-  Either,
-  foldEither,
-  isLeft,
-  isRight,
-  left,
-  mapEither,
-  right,
-} from '../../../core/shared/either'
+import { Either, isRight, left, mapEither, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
@@ -84,12 +68,8 @@ import {
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
-  ensureDirectoriesExist,
-  getContentsTreeFileFromElements,
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
-  transformContentsTree,
-  walkContentsTree,
 } from '../../assets'
 import {
   CanvasFrameAndTarget,
@@ -103,7 +83,6 @@ import {
   getParseSuccessOrTransientForFilePath,
   produceCanvasTransientState,
 } from '../../canvas/canvas-utils'
-import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
@@ -115,7 +94,7 @@ import {
 } from '../../custom-code/code-file'
 import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
+import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
@@ -133,21 +112,17 @@ import {
 import { Notice } from '../../common/notice'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
-import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
-import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import { loginNotYetKnown } from '../../../common/user'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
@@ -165,6 +140,7 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
+import { GithubFileStatus } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
@@ -257,6 +233,7 @@ export type GithubOperation =
   | { name: 'commish' }
   | { name: 'listBranches' }
   | { name: 'loadBranch'; branchName: string }
+  | { name: 'loadRepositories' }
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
@@ -266,6 +243,8 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Listing branches'
     case 'loadBranch':
       return 'Loading branch'
+    case 'loadRepositories':
+      return 'Loading repositories'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
@@ -359,8 +338,6 @@ export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteM
     files: files,
   }
 }
-
-export type ModalDialog = FileDeleteModal | FileOverwriteModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -972,15 +949,18 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
+  branchName: string | null
 }
 
 export function projectGithubSettings(
   targetRepository: GithubRepo | null,
   originCommit: string | null,
+  branchName: string | null,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
+    branchName: branchName,
   }
 }
 
@@ -1000,6 +980,7 @@ export interface EditorState {
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
+  branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
@@ -1129,6 +1110,7 @@ export function editorState(
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
   githubChecksums: GithubChecksums | null,
+  branchContents: ProjectContentTreeRoot | null,
 ): EditorState {
   return {
     id: id,
@@ -1143,6 +1125,7 @@ export function editorState(
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
     projectContents: projectContents,
+    branchContents: branchContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1786,6 +1769,7 @@ export interface PersistentModel {
   }
   githubSettings: ProjectGithubSettings
   githubChecksums: GithubChecksums | null
+  branchContents: ProjectContentTreeRoot | null
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1827,6 +1811,7 @@ export function mergePersistentModel(
     },
     githubSettings: second.githubSettings,
     githubChecksums: second.githubChecksums,
+    branchContents: second.branchContents,
   }
 }
 
@@ -2011,10 +1996,12 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
+    branchContents: null,
   }
 }
 
@@ -2312,6 +2299,7 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: persistentModel.githubChecksums,
+    branchContents: persistentModel.branchContents,
   }
   return editor
 }
@@ -2349,6 +2337,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     },
     githubSettings: editor.githubSettings,
     githubChecksums: editor.githubChecksums,
+    branchContents: editor.branchContents,
   }
 }
 
@@ -2383,8 +2372,10 @@ export function persistentModelForProjectContents(
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     githubChecksums: null,
+    branchContents: null,
   }
 }
 
