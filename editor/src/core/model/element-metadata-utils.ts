@@ -500,6 +500,13 @@ export const MetadataUtils = {
     }
     return result
   },
+  getDescendantPaths(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const allPaths = Object.keys(elements).map(EP.fromString)
+    return allPaths.filter((path) => EP.isDescendantOf(path, target))
+  },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
