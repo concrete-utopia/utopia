@@ -15,6 +15,7 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
+import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -31,6 +32,17 @@ export function flexReorderStrategy(
   ) {
     return null
   }
+
+  if (!areAllSiblingsInOneDimensionFlexOrFlow(selectedElements[0], canvasState.startingMetadata)) {
+    return null
+  }
+
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
+  const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {
     id: 'FLEX_REORDER',
     name: 'Reorder (Flex)',
@@ -67,6 +79,7 @@ export function flexReorderStrategy(
             canvasState,
             interactionSession,
             customStrategyState,
+            reorderDirection,
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
           )
     },

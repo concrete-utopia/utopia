@@ -1,5 +1,6 @@
 import CanvasActions from '../components/canvas/canvas-actions'
 import * as EditorActions from '../components/editor/actions/action-creators'
+import * as PP from '../core/shared/property-path'
 import {
   EditorAction,
   EditorDispatch,
@@ -8,7 +9,7 @@ import {
 } from '../components/editor/action-types'
 import { EditorModes, InsertionSubject, insertionSubject } from '../components/editor/editor-modes'
 import { ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, resize, Size } from '../core/shared/math-utils'
+import { CanvasPoint, Size } from '../core/shared/math-utils'
 import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
@@ -18,11 +19,14 @@ import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import React from 'react'
 import { CanvasPositions } from '../components/canvas/canvas-types'
-import { EditorState, notDragging } from '../components/editor/store/editor-state'
-import { isFeatureEnabled } from '../utils/feature-switches'
+import { AllElementProps, EditorState, notDragging } from '../components/editor/store/editor-state'
 import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
-import { AssetToSave, saveAssets } from '../components/editor/server'
+import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
+import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
+import { optionalMap } from '../core/shared/optional-utils'
+import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
+import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await parseClipboardData(dataTransfer)
@@ -69,9 +73,10 @@ export async function insertImageFromClipboard(
   context.dispatch(actions, 'everyone')
 }
 
-interface DropContext {
+export interface DropContext {
+  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<void>
   mousePosition: CanvasPositions
-  editor: EditorState
+  editor: () => EditorState
   dispatch: EditorDispatch
   loginState: LoginState
   scale: number
@@ -82,15 +87,15 @@ async function onDrop(
   cont: () => void,
   context: DropContext,
 ): Promise<void> {
-  if (context.editor.mode.type === 'select' && event.dataTransfer != null) {
-    const insertionTarget = context.editor.highlightedViews[0]
+  if (context.editor().mode.type === 'select' && event.dataTransfer != null) {
+    const insertionTarget = context.editor().highlightedViews[0]
     void insertImageFromClipboard(event.dataTransfer, {
       scale: context.scale,
       dispatch: context.dispatch,
       mousePosition: context.mousePosition.canvasPositionRounded,
       elementPath: insertionTarget,
     })
-  } else if (context.editor.mode.type === 'insert' && event.dataTransfer != null) {
+  } else if (context.editor().mode.type === 'insert' && event.dataTransfer != null) {
     const images = await getPastedImages(event.dataTransfer)
     if (images.length === 0) {
       return context.dispatch([
@@ -105,24 +110,21 @@ async function onDrop(
       ])
     }
 
+    const projectId = context.editor().id
+    if (projectId == null) {
+      return
+    }
+
     const { actions, subjects, assetInfo } = actionsForDroppedImages(
       images,
       {
         scale: context.scale,
-        projectContents: context.editor.projectContents,
+        projectContents: context.editor().projectContents,
         loginState: context.loginState,
         mousePosition: context.mousePosition.canvasPositionRounded,
       },
       'autoincrement',
     )
-
-    void saveAssets(context.editor.id!, assetInfo)
-      .then(() =>
-        context.dispatch([EditorActions.showToast(notice('Succesfully uploaded assets'))]),
-      )
-      .catch(() =>
-        context.dispatch([EditorActions.showToast(notice('Error uploading assets', 'ERROR'))]),
-      )
 
     context.dispatch(
       [
@@ -133,8 +135,41 @@ async function onDrop(
       'everyone',
     )
     cont()
+
+    await context
+      .saveAssets(projectId, assetInfo)
+      .then(() => {
+        const substitutionPaths = stripNulls(
+          assetInfo.flatMap((i) =>
+            i.projectPath == null ? [] : [{ uid: i.uid, path: i.projectPath }],
+          ),
+        )
+
+        const srcUpdateActions = updateImageSrcsActions(
+          context.editor().allElementProps,
+          substitutionPaths,
+        )
+
+        const openFileName = context.editor().canvas.openFile?.filename
+        const openFileActions =
+          openFileName == null ? [] : [EditorActions.openCodeEditorFile(openFileName, false)]
+
+        context.dispatch([
+          ...srcUpdateActions,
+          EditorActions.showToast(notice('Succesfully uploaded assets')),
+          ...openFileActions,
+        ])
+      })
+      .catch(() => {
+        const deleteFileActions = stripNulls(
+          assetInfo.map((info) => optionalMap(EditorActions.deleteFile, info.projectPath)),
+        )
+        context.dispatch([
+          ...deleteFileActions,
+          EditorActions.showToast(notice('Error uploading assets', 'ERROR')),
+        ])
+      })
   }
-  return
 }
 
 interface ActionsForDroppedImageContext {
@@ -147,6 +182,15 @@ interface ActionsForDroppedImageContext {
 interface ActionForDroppedImageResult {
   actions: EditorAction[]
   singleSubject: InsertionSubject
+  imageAssetInfo: ImageAssetSaveInfo
+}
+
+interface ImageAssetSaveInfo {
+  uid: string
+  fileType: string
+  base64: string
+  fileName: string
+  projectPath: string | null
 }
 
 function actionsForDroppedImage(
@@ -166,9 +210,9 @@ function actionsForDroppedImage(
   const { saveImageActions, src } = context.isUserLoggedIn
     ? {
         saveImageActions: [EditorActions.updateFile(image.filename, projectFile, true)],
-        src: imagePathURL(image.filename),
+        src: image.filename,
       }
-    : { saveImageActions: [], src: image.base64Bytes }
+    : { saveImageActions: [], src: null }
 
   const newUID = context.generateUid()
 
@@ -187,18 +231,25 @@ function actionsForDroppedImage(
     height: elementSize.height,
     top: context.mousePosition.y,
     left: context.mousePosition.x,
-    src: src,
+    src: image.base64Bytes,
   })
   return {
     actions: saveImageActions,
     singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
+    imageAssetInfo: {
+      uid: newUID,
+      fileType: image.fileType,
+      base64: image.base64Bytes,
+      fileName: imagePathURL(image.filename),
+      projectPath: optionalMap(imagePathURL, src),
+    },
   }
 }
 
 interface ActionsForDroppedImagesResult {
   subjects: Array<InsertionSubject>
   actions: Array<EditorAction>
-  assetInfo: Array<AssetToSave>
+  assetInfo: Array<ImageAssetSaveInfo>
 }
 
 interface ActionsForDroppedImagesContext {
@@ -216,14 +267,18 @@ function actionsForDroppedImages(
   let actions: Array<EditorAction> = []
   let uidsSoFar: Array<string> = []
   let subjects: Array<InsertionSubject> = []
-  let assetInfo: Array<AssetToSave> = []
+  let assetInfo: Array<ImageAssetSaveInfo> = []
 
   for (const image of images) {
     const filename =
       overwriteExistingFile === 'autoincrement'
         ? uniqueProjectContentID(image.filename, context.projectContents)
         : image.filename
-    const { actions: actionsForImage, singleSubject } = actionsForDroppedImage(
+    const {
+      actions: actionsForImage,
+      singleSubject,
+      imageAssetInfo,
+    } = actionsForDroppedImage(
       {
         ...image,
         filename: filename,
@@ -240,13 +295,33 @@ function actionsForDroppedImages(
     actions = [...actions, ...actionsForImage]
     uidsSoFar = [...uidsSoFar, singleSubject.uid]
     subjects = [...subjects, singleSubject]
-    assetInfo = [
-      ...assetInfo,
-      { fileType: image.fileType, base64: image.base64Bytes, fileName: filename },
-    ]
+    assetInfo = [...assetInfo, imageAssetInfo]
   }
 
   return { actions, subjects, assetInfo }
+}
+
+interface SrcSubstitutionData {
+  path: string
+  uid: string
+}
+
+function updateImageSrcsActions(
+  allElementProps: AllElementProps,
+  srcs: Array<SrcSubstitutionData>,
+): Array<EditorAction> {
+  const srcsIndex = arrayToObject(srcs, (s) => s.uid)
+
+  return mapDropNulls(([path, props]) => {
+    const maybeImageUpdateData = srcsIndex[props['data-uid']]
+    return maybeImageUpdateData == null
+      ? null
+      : EditorActions.setProperty(
+          fromString(path),
+          PP.create(['src']),
+          jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
+        )
+  }, Object.entries(allElementProps))
 }
 
 export const DropHandlers = {

@@ -80,17 +80,20 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
       ? offsetPoint(interactionData.originalDragStart, interactionData.drag ?? zeroCanvasPoint)
       : interactionData.point
 
-  const cmdPressed = interactionData.modifiers.cmd
-
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    cmdPressed,
+    interactionData.modifiers.cmd,
     true,
+    'allow-smaller-parent',
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
-    const name = getDragToInsertStrategyName(result.strategyType, result.missingBoundsHandling)
+    const name = getDragToInsertStrategyName(
+      result.strategyType,
+      result.missingBoundsHandling,
+      result.targetParentDisplayType,
+    )
 
     return dragToInsertStrategyFactory(
       canvasState,
@@ -108,16 +111,21 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
   missingBoundsHandling: MissingBoundsHandling,
+  parentDisplayType: 'flex' | 'flow',
 ): string {
   switch (strategyType) {
-    case 'REPARENT_TO_ABSOLUTE':
+    case 'REPARENT_AS_ABSOLUTE':
       if (missingBoundsHandling === 'use-strict-bounds') {
         return 'Drag to Insert (Abs)'
       } else {
         return 'Drag to Insert (Abs, Forced)'
       }
-    case 'REPARENT_TO_FLEX':
-      return 'Drag to Insert (Flex)'
+    case 'REPARENT_AS_STATIC':
+      if (parentDisplayType === 'flex') {
+        return 'Drag to Insert (Flex)'
+      } else {
+        return 'Drag to Insert (Flow)'
+      }
   }
 }
 

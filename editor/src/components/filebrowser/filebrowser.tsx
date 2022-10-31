@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { fileExists, isModifiedFile } from '../../core/model/project-file-utils'
+import { isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -26,8 +26,18 @@ import {
 import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { GithubFileChanges, githubFileChangesSelector } from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
+
+export type GithubFileStatus =
+  | 'modified'
+  | 'deleted'
+  | 'untracked'
+  | 'added' // unused, keeping for future reference
+  | 'conflict' // unused, keeping for future reference
+  | 'renamed' // unused, keeping for future reference
+  | 'submodule' // unused, keeping for future reference
 
 export interface FileBrowserItemInfo {
   path: string
@@ -41,6 +51,7 @@ export interface FileBrowserItemInfo {
   isUploadedAssetFile: boolean
   imageFile: ImageFile | null
   projectContents: ProjectContentTreeRoot
+  githubStatus?: GithubFileStatus
 }
 
 export function filterErrorMessages(
@@ -59,7 +70,18 @@ function collectFileBrowserItems(
   collapsedPaths: string[],
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
+  githubChanges: GithubFileChanges | null,
 ): FileBrowserItemInfo[] {
+  const getGithubStatus = (filename: string) => {
+    if (githubChanges?.untracked.includes(filename)) {
+      return 'untracked'
+    }
+    if (githubChanges?.modified.includes(filename)) {
+      return 'modified'
+    }
+    return undefined
+  }
+
   let fileBrowserItems: FileBrowserItemInfo[] = []
   walkContentsTree(projectContents, (fullPath, element) => {
     const originatingPath = fullPath
@@ -78,6 +100,7 @@ function collectFileBrowserItems(
           element.base64 == undefined,
         imageFile: element.type === 'IMAGE_FILE' ? element : null,
         projectContents: projectContents,
+        githubStatus: getGithubStatus(fullPath),
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -260,10 +283,17 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const fileBrowserItems = React.useMemo(
-    () => collectFileBrowserItems(projectContents, collapsedPaths, codeResultCache, errorMessages),
-    [projectContents, collapsedPaths, codeResultCache, errorMessages],
-  )
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+
+  const fileBrowserItems = React.useMemo(() => {
+    return collectFileBrowserItems(
+      projectContents,
+      collapsedPaths,
+      codeResultCache,
+      errorMessages,
+      githubFileChanges,
+    )
+  }, [projectContents, collapsedPaths, codeResultCache, errorMessages, githubFileChanges])
 
   const generateNewUid = React.useCallback(
     () => generateUidWithExistingComponents(projectContents),

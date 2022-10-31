@@ -24,6 +24,7 @@ import { StateHistory } from './history'
 import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
   ConsoleLog,
+  EditorStorePatched,
   getOpenFile,
   getOpenTextFileKey,
   LeftMenuTab,

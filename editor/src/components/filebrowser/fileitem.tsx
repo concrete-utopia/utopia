@@ -13,7 +13,7 @@ import { ContextMenuWrapper } from '../context-menu-wrapper'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
-import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
+import { FileBrowserItemInfo, FileBrowserItemType, GithubFileStatus } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
@@ -45,8 +45,8 @@ import {
 } from '../editor/store/editor-state'
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
-import { parseImageMultiplier } from '../images'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { getFilenameParts } from '../images'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -205,6 +205,20 @@ const isFile = (fileBrowserItem: FileBrowserItemInfo) => {
   return fileBrowserItem.type === 'file'
 }
 
+export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
+  // NOTE: these are placeholder colors, we should update them once we finalize the design
+  switch (type) {
+    case 'untracked':
+      return '#09f' // blue
+    case 'modified':
+      return '#f90' // orange
+    case 'deleted':
+      return '#f22' // red
+    default:
+      return '#ccc' // gray
+  }
+}
+
 export function addingChildElement(
   indentation: number,
   addingChildName: string,
@@ -277,6 +291,32 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   toggleCollapse = () => this.props.toggleCollapse(this.props.path)
+
+  renderGithubStatus = () => {
+    if (this.props.githubStatus != undefined) {
+      const statusLetter = this.props.githubStatus.at(0)?.toUpperCase()
+      return (
+        <div
+          style={{
+            fontWeight: 800,
+            marginRight: 4,
+            color: 'white',
+            backgroundColor: getGithubFileStatusColor(this.props.githubStatus),
+            borderRadius: '100%',
+            width: 14,
+            height: 14,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 8,
+          }}
+        >
+          {statusLetter}
+        </div>
+      )
+    }
+    return null
+  }
 
   renderIcon() {
     return (
@@ -740,7 +780,6 @@ class FileBrowserItemInner extends React.PureComponent<
                   <Icons.Cross tooltipText='Delete' />
                 </Button>
               ) : null}
-
               {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
                   <WarningIcon
@@ -754,6 +793,7 @@ class FileBrowserItemInner extends React.PureComponent<
                   />
                 </span>
               ) : null}
+              {this.renderGithubStatus()}
             </SimpleFlexRow>
           ) : null}
         </div>
@@ -876,7 +916,7 @@ function draggedImagePropertiesFromImageFile(
   path: string,
   imageFile: ImageFile,
 ): DraggedImageProperties {
-  const imageMultiplier = parseImageMultiplier(path)
+  const imageMultiplier = getFilenameParts(path)?.multiplier ?? 1
   return {
     src: imagePathURL(path),
     width: optionalMap((w) => w / imageMultiplier, imageFile.width) ?? 200,

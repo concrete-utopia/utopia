@@ -77,10 +77,10 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
     return 'none'
   }
   if (computedStyle.display != null) {
-    if (computedStyle.display === 'flex') {
+    if (computedStyle.display.includes('flex')) {
       return 'flex'
     }
-    if (computedStyle.display === 'grid') {
+    if (computedStyle.display.includes('grid')) {
       return 'grid'
     }
   }
@@ -942,6 +942,7 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
+    elementStyle.direction,
   )
 }
 

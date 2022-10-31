@@ -52,6 +52,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   emptyComments,
@@ -303,6 +304,7 @@ import {
   WrapInElement,
   WrapInView,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -442,6 +444,7 @@ import {
   updateThumbnailGenerated,
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
+import { AspectRatioLockedProp } from '../../aspect-ratio'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -977,6 +980,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    githubChecksums: currentEditor.githubChecksums,
   }
 }
 
@@ -1915,11 +1919,7 @@ export const UPDATE_FNS = {
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
-  UPDATE_GITHUB_OPERATIONS: (
-    action: UpdateGithubOperations,
-    editor: EditorModel,
-    _dispatch: EditorDispatch,
-  ): EditorModel => {
+  UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {
     const operations = [...editor.githubOperations]
     switch (action.type) {
       case 'add':
@@ -1938,6 +1938,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubChecksums: action.checksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -3288,7 +3294,7 @@ export const UPDATE_FNS = {
               src: imageAttribute,
               style: jsxAttributeValue({ width: width, height: height }, emptyComments),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3333,7 +3339,7 @@ export const UPDATE_FNS = {
                 emptyComments,
               ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3387,7 +3393,7 @@ export const UPDATE_FNS = {
           ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
-          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+          [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
         }),
         [],
       )
@@ -4157,10 +4163,12 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked, emptyComments)
-        const updatedProps = eitherToMaybe(
-          setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
-        )
+        const path = PP.create([AspectRatioLockedProp])
+        const updatedProps = action.locked
+          ? eitherToMaybe(
+              setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
+            )
+          : deleteJSXAttribute(element.props, AspectRatioLockedProp)
         return {
           ...element,
           props: updatedProps ?? element.props,
@@ -4217,7 +4225,7 @@ export const UPDATE_FNS = {
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
-        'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+        [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
       }),
       [],
     )

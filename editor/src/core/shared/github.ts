@@ -1,22 +1,30 @@
-import { UTOPIA_BACKEND } from '../../common/env-vars'
+import { createSelector } from 'reselect'
 import urljoin from 'url-join'
+import { UTOPIA_BACKEND } from '../../common/env-vars'
+import { HEADERS, MODE } from '../../common/server'
 import {
+  deriveGithubFileChanges,
+  getProjectContentsChecksums,
+  ProjectContentTreeRoot,
+} from '../../components/assets'
+import { notice } from '../../components/common/notice'
+import { EditorDispatch } from '../../components/editor/action-types'
+import {
+  showToast,
+  updateGithubChecksums,
+  updateGithubOperations,
+  updateGithubSettings,
+  updateProjectContents,
+} from '../../components/editor/actions/action-creators'
+import {
+  EditorStorePatched,
   GithubOperation,
   GithubRepo,
   PersistentModel,
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
-import { HEADERS, MODE } from '../../common/server'
-import { EditorDispatch } from '../../components/editor/action-types'
-import { notice } from '../../components/common/notice'
-import {
-  showToast,
-  updateGithubSettings,
-  updateProjectContents,
-  updateGithubOperations,
-} from '../../components/editor/actions/action-creators'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import { arrayEquals } from './utils'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -122,6 +130,7 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
+            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -222,6 +231,7 @@ export async function getBranchContent(
       case 'SUCCESS':
         dispatch(
           [
+            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
             updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
@@ -290,4 +300,47 @@ export async function getUsersPublicGithubRepositories(
   }
 
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+}
+
+export const githubFileChangesSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (store) => store.userState.githubState.authenticated,
+  (store) => store.editor.githubChecksums,
+  (projectContents, githubAuthenticated, githubChecksums): GithubFileChanges | null => {
+    if (!githubAuthenticated) {
+      return null
+    }
+    const checksums = getProjectContentsChecksums(projectContents)
+    return deriveGithubFileChanges(checksums, githubChecksums)
+  },
+)
+
+export interface GithubFileChanges {
+  untracked: Array<string>
+  modified: Array<string>
+  deleted: Array<string>
+}
+
+export function getGithubFileChangesCount(changes: GithubFileChanges | null): number {
+  if (changes == null) {
+    return 0
+  }
+  return changes.untracked.length + changes.modified.length + changes.deleted.length
+}
+
+export function githubFileChangesEquals(
+  a: GithubFileChanges | null,
+  b: GithubFileChanges | null,
+): boolean {
+  if (a == null && b == null) {
+    return true
+  }
+  if (a == null || b == null) {
+    return false
+  }
+  return (
+    arrayEquals(a.untracked, b.untracked) &&
+    arrayEquals(a.modified, b.modified) &&
+    arrayEquals(a.deleted, b.deleted)
+  )
 }

@@ -60,7 +60,7 @@ import {
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { FileBrowser } from '../filebrowser/filebrowser'
+import { FileBrowser, GithubFileStatus } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
@@ -83,6 +83,9 @@ import { when } from '../../utils/react-conditionals'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import TimeAgo from 'react-timeago'
 import { notice } from '../common/notice'
+import { capitalize } from '../../core/shared/string-utils'
+import { getGithubFileStatusColor } from '../filebrowser/fileitem'
+import { githubFileChangesSelector } from '../../core/shared/github'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -928,19 +931,45 @@ const RepositoryListing = React.memo(
       }
     }, [usersRepositories, targetRepository])
 
+    const filteredRepositoriesWithSpecialCases = React.useMemo(() => {
+      if (filteredRepositories == null) {
+        return null
+      } else {
+        const parsedRepo =
+          targetRepository == null ? null : parseGithubProjectString(targetRepository)
+        if (parsedRepo == null) {
+          return filteredRepositories
+        } else {
+          const ownerRepo = `${parsedRepo.owner}/${parsedRepo.repository}`
+          const alreadyIncludesEntry =
+            filteredRepositories?.some((repo) => repo.fullName === ownerRepo) ?? false
+          if (alreadyIncludesEntry) {
+            return filteredRepositories
+          } else {
+            const additionalEntry: RepositoryRowProps = {
+              fullName: parsedRepo.repository,
+              avatarUrl: '',
+              private: true,
+              description: null,
+              name: null,
+              updatedAt: `${new Date()}`,
+              defaultBranch: 'main',
+              importPermitted: false,
+            }
+            return [...filteredRepositories, additionalEntry]
+          }
+        }
+      }
+    }, [filteredRepositories, targetRepository])
+
     return (
       <>
-        <UIGridRow
-          padded
-          variant={
-            isLoadingRepositories
-              ? '<--------auto-------->||22px|'
-              : '<-------------1fr------------->'
-          }
-        >
+        <UIGridRow padded variant={'<-------------1fr------------->'}>
           <StringInput
             placeholder={
-              filteredRepositories == null ? 'Loading repositories...' : 'owner/repository'
+              filteredRepositoriesWithSpecialCases == null
+                ? 'Loading repositories...'
+                : 'owner/repository'
             }
             onChange={onInputChangeTargetRepository}
             list={'repositories-list'}
@@ -949,26 +978,34 @@ const RepositoryListing = React.memo(
             name={'repositories-input'}
             value={targetRepository}
           />
-          {when(isLoadingRepositories, <GithubSpinner />)}
         </UIGridRow>
 
-        {filteredRepositories == null ? null : (
-          <>
-            <UIGridRow padded variant='<-------------1fr------------->'>
-              <div
-                style={{
-                  border: '1px solid #ccc',
-                  height: 220,
-                  overflowY: 'scroll',
-                }}
-              >
-                {filteredRepositories.map((repository, index) => {
-                  return <RepositoryRow key={`repo-${index}`} {...repository} />
-                })}
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <div
+            style={{
+              border: '1px solid #ccc',
+              height: 220,
+              overflowY: 'scroll',
+            }}
+          >
+            {filteredRepositoriesWithSpecialCases == null ? (
+              <div style={{ display: 'flex', height: '100%' }}>
+                <div style={{ margin: 'auto', position: 'relative' }}>
+                  <GithubSpinner />
+                </div>
               </div>
-            </UIGridRow>
-          </>
-        )}
+            ) : (
+              filteredRepositoriesWithSpecialCases.map((repository, index) => {
+                return <RepositoryRow key={`repo-${index}`} {...repository} />
+              })
+            )}
+          </div>
+        </UIGridRow>
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
+            Create new repository on Github.
+          </a>
+        </UIGridRow>
       </>
     )
   },
@@ -1130,6 +1167,8 @@ const GithubPane = React.memo(() => {
     githubOperations,
   ])
 
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -1228,12 +1267,18 @@ const GithubPane = React.memo(() => {
             if you have the correct permissions. Please note we don’t support connecting to private
             repositories at the moment.
           </div>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <RepositoryListing
-              githubAuthenticated={githubAuthenticated}
-              storedTargetGithubRepo={storedTargetGithubRepo}
-            />
-          </UIGridRow>
+          <RepositoryListing
+            githubAuthenticated={githubAuthenticated}
+            storedTargetGithubRepo={storedTargetGithubRepo}
+          />
+          {githubFileChanges != null ? (
+            // Note: this is completely temporary until we finalize the design
+            <UIGridRow padded variant='<-------------1fr------------->'>
+              <FileChanges type='untracked' files={githubFileChanges.untracked} />
+              <FileChanges type='modified' files={githubFileChanges.modified} />
+              <FileChanges type='deleted' files={githubFileChanges.deleted} />
+            </UIGridRow>
+          ) : null}
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               spotlight
@@ -1283,6 +1328,24 @@ const GithubPane = React.memo(() => {
     </FlexColumn>
   )
 })
+
+const FileChanges = ({ files, type }: { files: string[]; type: GithubFileStatus }) => {
+  if (files.length === 0) {
+    return null
+  }
+  return (
+    <div style={{ color: getGithubFileStatusColor(type), marginTop: 4, marginBottom: 4 }}>
+      <div>
+        {capitalize(type)} files ({files.length})
+      </div>
+      {files.map((f) => (
+        <div key={f} style={{ marginLeft: 8 }}>
+          &rarr; {f}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export const InsertMenuPane = React.memo(() => {
   const { dispatch, focusedPanel } = useEditorState((store) => {

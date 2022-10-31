@@ -107,6 +107,7 @@ import {
 } from '../components/editor/actions/meta-actions'
 import { DropHandlers } from './image-drop'
 import { isFeatureEnabled } from '../utils/feature-switches'
+import { saveAssets } from '../components/editor/server'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -482,6 +483,10 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
 
+          const allowSmallerParent = action.interactionSession.interactionData.modifiers.cmd
+            ? 'allow-smaller-parent'
+            : 'disallow-smaller-parent'
+
           const strictBoundsResult = getReparentTargetUnified(
             existingReparentSubjects(getDragTargets(model.selectedViews)),
             pointOnCanvas,
@@ -490,6 +495,7 @@ export function runLocalCanvasAction(
             metadata,
             allElementProps,
             'use-strict-bounds',
+            allowSmallerParent,
           )
 
           const missingBoundsResult = getReparentTargetUnified(
@@ -500,6 +506,7 @@ export function runLocalCanvasAction(
             metadata,
             allElementProps,
             'allow-missing-bounds',
+            allowSmallerParent,
           )
 
           return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
@@ -1034,8 +1041,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               this.handleMouseUp(event.nativeEvent)
             },
             {
+              saveAssets: saveAssets,
               scale: this.props.model.scale,
-              editor: this.props.editor,
+              editor: () => this.props.editor,
               mousePosition: mousePosition,
               dispatch: this.props.dispatch,
               loginState: this.props.userState.loginState,
