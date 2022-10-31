@@ -80,12 +80,12 @@ export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export interface RepositoryEntry {
   fullName: string
-  avatarUrl: string
+  avatarUrl: string | null
   private: boolean
   description: string | null
   name: string | null
-  updatedAt: string
-  defaultBranch: string
+  updatedAt: string | null
+  defaultBranch: string | null
 }
 
 export interface GetUsersPublicRepositoriesSuccess {

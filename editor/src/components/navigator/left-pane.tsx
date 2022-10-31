@@ -781,7 +781,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const importRepository = React.useCallback(() => {
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
-    if (parsedTargetRepository == null) {
+    if (parsedTargetRepository == null || props.defaultBranch == null) {
       dispatch(
         [
           showToast(
@@ -836,7 +836,13 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         </span>{' '}
         <br />
         <span style={{ opacity: 0.5 }}>
-          {props.private ? 'private' : 'public'} · <TimeAgo date={props.updatedAt} />
+          {props.private ? 'private' : 'public'}
+          {props.updatedAt == null ? null : (
+            <>
+              {' · '}
+              <TimeAgo date={props.updatedAt} />
+            </>
+          )}
         </span>
       </div>
       <button
@@ -846,9 +852,13 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           boxShadow: 'none',
           border: 'none',
           height: 22,
-          color: colorTheme.inlineButtonColor.value,
+          color: props.importPermitted
+            ? colorTheme.inlineButtonColor.value
+            : colorTheme.inlineButtonColor.shade(50).value,
           borderRadius: 2,
+          cursor: 'pointer',
         }}
+        disabled={!props.importPermitted}
         onMouseUp={importRepository}
       >
         Import
@@ -864,10 +874,6 @@ interface RepositoryListingProps {
 
 const RepositoryListing = React.memo(
   ({ githubAuthenticated, storedTargetGithubRepo }: RepositoryListingProps) => {
-    const githubOperations = useEditorState(
-      (store) => store.editor.githubOperations,
-      'RepositoryListing githubOperations',
-    )
     const storedTargetGithubRepoAsText = React.useMemo(() => {
       if (storedTargetGithubRepo == null) {
         return undefined
@@ -875,15 +881,19 @@ const RepositoryListing = React.memo(
         return `${storedTargetGithubRepo.owner}/${storedTargetGithubRepo.repository}`
       }
     }, [storedTargetGithubRepo])
+    const [previousStoredTarget, setPreviousStoredTarget] = React.useState<string | undefined>(
+      undefined,
+    )
     const [targetRepository, setTargetRepository] = React.useState<string | undefined>(
       storedTargetGithubRepoAsText,
     )
+    if (storedTargetGithubRepoAsText !== previousStoredTarget) {
+      // Since the storedTargetGithubRepoAsText value changed, update targetRepository.
+      setTargetRepository(storedTargetGithubRepoAsText)
+      setPreviousStoredTarget(storedTargetGithubRepoAsText)
+    }
 
     const dispatch = useEditorState((store) => store.dispatch, 'RepositoryListing dispatch')
-
-    const isLoadingRepositories = React.useMemo(() => {
-      return isGithubLoadingRepositories(githubOperations)
-    }, [githubOperations])
 
     const [usersRepositories, setUsersRepositories] = React.useState<Array<RepositoryEntry> | null>(
       null,
@@ -948,12 +958,12 @@ const RepositoryListing = React.memo(
           } else {
             const additionalEntry: RepositoryRowProps = {
               fullName: parsedRepo.repository,
-              avatarUrl: '',
+              avatarUrl: null,
               private: true,
               description: null,
               name: null,
-              updatedAt: `${new Date()}`,
-              defaultBranch: 'main',
+              updatedAt: null,
+              defaultBranch: null,
               importPermitted: false,
             }
             return [...filteredRepositories, additionalEntry]

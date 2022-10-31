@@ -421,12 +421,12 @@ type GetUsersPublicRepositoriesResult = [UsersRepository]
 
 data RepositoryEntry = RepositoryEntry
                      { fullName         :: Text
-                     , avatarUrl        :: Text
+                     , avatarUrl        :: Maybe Text
                      , private          :: Bool
                      , description      :: Maybe Text
                      , name             :: Maybe Text
-                     , updatedAt        :: UTCTime
-                     , defaultBranch    :: Text
+                     , updatedAt        :: Maybe UTCTime
+                     , defaultBranch    :: Maybe Text
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 

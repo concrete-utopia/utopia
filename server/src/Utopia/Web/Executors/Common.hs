@@ -441,12 +441,12 @@ convertUsersRepositoriesResultToUnfold page result =
 publicRepoToRepositoryEntry :: UsersRepository -> RepositoryEntry
 publicRepoToRepositoryEntry publicRepository = RepositoryEntry
                                              { fullName = view (field @"full_name") publicRepository
-                                             , avatarUrl = view (field @"owner" . field @"avatar_url") publicRepository
+                                             , avatarUrl = Just $ view (field @"owner" . field @"avatar_url") publicRepository
                                              , private = view (field @"private") publicRepository
                                              , description = view (field @"description") publicRepository
                                              , name = view (field @"name") publicRepository
-                                             , updatedAt = view (field @"updated_at") publicRepository
-                                             , defaultBranch = view (field @"default_branch") publicRepository
+                                             , updatedAt = Just $ view (field @"updated_at") publicRepository
+                                             , defaultBranch = Just $ view (field @"default_branch") publicRepository
                                              }
 
 getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
