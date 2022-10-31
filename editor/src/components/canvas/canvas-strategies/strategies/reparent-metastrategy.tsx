@@ -14,11 +14,25 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import {
+  AllowSmallerParent,
+  DragInteractionData,
+  InteractionSession,
+  MissingBoundsHandling,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
+} from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
-import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
+import {
+  existingReparentSubjects,
+  findReparentStrategies,
+  getReparentTargetUnified,
+  newReparentSubjects,
+  ReparentStrategy,
+  reparentSubjectsForInteractionTarget,
+} from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 interface ReparentFactoryAndDetails {
@@ -106,6 +120,50 @@ export function getApplicableReparentFactories(
   return factories
 }
 
+// FIXME Memoise this function against the interaction targets and starting metadata?
+function getStartingTargetParentsToFilterOut(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+): ReparentTargetsToFilter {
+  const interactionData = interactionSession.interactionData
+  if (interactionData.type !== 'DRAG') {
+    throw new Error(
+      `getStartingTargetParentsToFilterOut should only be called from a DRAG type interaction, not a ${interactionData.type} type interaction`,
+    )
+  }
+
+  const pointOnCanvas = interactionData.originalDragStart
+  const allowSmallerParent = interactionData.modifiers.cmd
+    ? 'allow-smaller-parent'
+    : 'disallow-smaller-parent'
+
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  const strictBoundsResult = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    interactionData.modifiers.cmd,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'use-strict-bounds',
+    allowSmallerParent,
+  )
+
+  const missingBoundsResult = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    interactionData.modifiers.cmd,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+    allowSmallerParent,
+  )
+
+  return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
+}
+
 export const reparentMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -140,7 +198,11 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   }
 
   const existingParents = reparentSubjects.map(parentPath)
-  const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
+
+  const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
+    canvasState,
+    interactionSession,
+  )
 
   const pointOnCanvas = offsetPoint(
     interactionSession.interactionData.originalDragStart,
