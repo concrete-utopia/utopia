@@ -10,7 +10,6 @@ import {
   textFileContents,
   unparsed,
   RevisionsState,
-  isParsedTextFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
 import {
@@ -30,7 +29,7 @@ import {
 } from '../../../assets'
 import { isUtopiaJSXComponent } from '../../../../core/shared/element-template'
 
-export const CURRENT_PROJECT_VERSION = 9
+export const CURRENT_PROJECT_VERSION = 10
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -44,7 +43,8 @@ export function applyMigrations(
   const version7 = migrateFromVersion6(version6)
   const version8 = migrateFromVersion7(version7)
   const version9 = migrateFromVersion8(version8)
-  return version9
+  const version10 = migrateFromVersion9(version9)
+  return version10
 }
 
 function migrateFromVersion0(
@@ -358,6 +358,26 @@ function migrateFromVersion8(
         ...persistentModel.githubSettings,
         originCommit: null,
       },
+    }
+  }
+}
+
+function migrateFromVersion9(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 10 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 8) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 10,
+      githubSettings: {
+        ...persistentModel.githubSettings,
+        originCommit: null,
+        branchName: null,
+      },
+      githubChecksums: null,
+      branchContents: null,
     }
   }
 }

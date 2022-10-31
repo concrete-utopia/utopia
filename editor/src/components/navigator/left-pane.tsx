@@ -3,21 +3,12 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
-import React, { ChangeEvent } from 'react'
-import {
-  fetchProjectMetadata,
-  projectEditorURL,
-  projectURL,
-  thumbnailURL,
-} from '../../common/server'
+import React from 'react'
+import { projectEditorURL, thumbnailURL } from '../../common/server'
 import { useGetProjectMetadata, useIsMyProject } from '../common/server-hooks'
-import { getAllUniqueUids } from '../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
-import Utils, { isOptionType } from '../../utils/utils'
 import {
   useColorTheme,
   UtopiaTheme,
@@ -31,13 +22,12 @@ import {
   MenuIcons,
   StringInput,
   Subdued,
-  UIRow,
   H2,
   PopupList,
   Icons,
   Avatar,
 } from '../../uuiui'
-import { getControlStyles, SelectOption, User } from '../../uuiui-deps'
+import { SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -57,7 +47,7 @@ import {
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { FileBrowser, GithubFileStatus } from '../filebrowser/filebrowser'
+import { FileBrowser } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
@@ -71,16 +61,19 @@ import {
   getBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
+  getGithubFileChangesCount,
   getUsersPublicGithubRepositories,
+  GithubFileChanges,
+  GithubFileChangesListItem,
+  githubFileChangesToList,
   parseGithubProjectString,
   RepositoryEntry,
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { capitalize } from '../../core/shared/string-utils'
-import { getGithubFileStatusColor } from '../filebrowser/fileitem'
 import { githubFileChangesSelector } from '../../core/shared/github'
+import { GithubFileStatusLetter } from '../filebrowser/fileitem'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -849,6 +842,11 @@ const GithubPane = React.memo(() => {
     }
   }, [targetRepository])
 
+  const currentBranch = useEditorState(
+    (state) => state.editor.githubSettings.branchName,
+    'branch name',
+  )
+
   const [usersRepositories, setUsersRepositories] = React.useState<Array<string> | null>(null)
 
   const setUsersRepositoriesCallback = React.useCallback(
@@ -892,7 +890,7 @@ const GithubPane = React.memo(() => {
     }
   }, [parsedTargetRepository, dispatch])
 
-  const branchesUI = React.useMemo(() => {
+  const loadBranchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
       return null
     } else {
@@ -926,7 +924,12 @@ const GithubPane = React.memo(() => {
                     }
                     return (
                       <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
-                        <span>{branch.name}</span>
+                        <Ellipsise
+                          style={{ fontWeight: branch.name === currentBranch ? 600 : 400 }}
+                        >
+                          {when(currentBranch === branch.name, <span>&rarr; </span>)}
+                          <span title={branch.name}>{branch.name}</span>
+                        </Ellipsise>
                         <Button
                           spotlight
                           highlight
@@ -959,6 +962,7 @@ const GithubPane = React.memo(() => {
     projectID,
     githubWorking,
     githubOperations,
+    currentBranch,
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
@@ -1081,14 +1085,20 @@ const GithubPane = React.memo(() => {
               </datalist>
             )}
           </UIGridRow>
-          {githubFileChanges != null ? (
-            // Note: this is completely temporary until we finalize the design
-            <UIGridRow padded variant='<-------------1fr------------->'>
-              <FileChanges type='untracked' files={githubFileChanges.untracked} />
-              <FileChanges type='modified' files={githubFileChanges.modified} />
-              <FileChanges type='deleted' files={githubFileChanges.deleted} />
-            </UIGridRow>
-          ) : null}
+          {when(
+            currentBranch != null,
+            <>
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <Ellipsise>
+                  Branch:{' '}
+                  <span style={{ fontWeight: 600 }} title={currentBranch || undefined}>
+                    {currentBranch}
+                  </span>
+                </Ellipsise>
+              </UIGridRow>
+              <GithubFileChangesList changes={githubFileChanges} githubWorking={githubWorking} />
+            </>,
+          )}
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               spotlight
@@ -1099,7 +1109,7 @@ const GithubPane = React.memo(() => {
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
             </Button>
           </UIGridRow>
-          {branchesUI}
+          {loadBranchesUI}
         </SectionBodyArea>
       </Section>
       <Section>
@@ -1139,21 +1149,114 @@ const GithubPane = React.memo(() => {
   )
 })
 
-const FileChanges = ({ files, type }: { files: string[]; type: GithubFileStatus }) => {
-  if (files.length === 0) {
+const Ellipsise = ({
+  children,
+  title,
+  style,
+}: {
+  children: any
+  title?: string
+  style?: React.CSSProperties
+}) => {
+  return (
+    <div
+      style={{
+        ...style,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}
+      title={title}
+    >
+      {children}
+    </div>
+  )
+}
+
+const handleClickRevertAllFiles = (dispatch: EditorDispatch) => (e: React.MouseEvent) => {
+  e.preventDefault()
+  dispatch([EditorActions.showModal({ type: 'file-revert-all' })], 'everyone')
+}
+
+const handleClickRevertFile =
+  (item: GithubFileChangesListItem, dispatch: EditorDispatch) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    dispatch(
+      [
+        EditorActions.showModal({
+          type: 'file-revert',
+          filePath: item.filename,
+          status: item.status,
+        }),
+      ],
+      'everyone',
+    )
+  }
+
+const RevertButton = ({
+  disabled,
+  text,
+  onMouseUp,
+}: {
+  disabled: boolean
+  text: string
+  onMouseUp: (e: React.MouseEvent) => void
+}) => {
+  return (
+    <Button
+      style={{ padding: '0 6px' }}
+      spotlight
+      highlight
+      disabled={disabled}
+      onMouseUp={onMouseUp}
+    >
+      {text}
+    </Button>
+  )
+}
+
+const GithubFileChangesList = ({
+  changes,
+  githubWorking,
+}: {
+  changes: GithubFileChanges | null
+  githubWorking: boolean
+}) => {
+  const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
+  const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
+  const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
+
+  if (count === 0) {
     return null
   }
+
   return (
-    <div style={{ color: getGithubFileStatusColor(type), marginTop: 4, marginBottom: 4 }}>
-      <div>
-        {capitalize(type)} files ({files.length})
-      </div>
-      {files.map((f) => (
-        <div key={f} style={{ marginLeft: 8 }}>
-          &rarr; {f}
+    // Note: this is completely temporary until we finalize the design
+    <UIGridRow padded variant='<-------------1fr------------->'>
+      <UIGridRow padded variant='<----------1fr---------><-auto->'>
+        <div>
+          {count} file{count !== 1 ? 's' : ''} changed
         </div>
+        <RevertButton
+          disabled={githubWorking}
+          text='Revert all'
+          onMouseUp={handleClickRevertAllFiles(dispatch)}
+        />
+      </UIGridRow>
+      {list.map((i) => (
+        <UIGridRow key={i.filename} padded variant='<----------1fr---------><-auto->'>
+          <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+            <GithubFileStatusLetter status={i.status} />
+            <Ellipsise title={i.filename}>{i.filename}</Ellipsise>
+          </UIGridRow>
+          <RevertButton
+            disabled={githubWorking}
+            text='Revert'
+            onMouseUp={handleClickRevertFile(i, dispatch)}
+          />
+        </UIGridRow>
       ))}
-    </div>
+    </UIGridRow>
   )
 }
 

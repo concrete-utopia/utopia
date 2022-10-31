@@ -315,6 +315,33 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
+export interface FileRevertModal {
+  type: 'file-revert'
+  filePath: string
+  status: GithubFileStatus | null
+}
+
+export function fileRevertModal(
+  filePath: string,
+  status: GithubFileStatus | null,
+): FileRevertModal {
+  return {
+    type: 'file-revert',
+    filePath: filePath,
+    status: status,
+  }
+}
+
+export interface FileRevertAllModal {
+  type: 'file-revert-all'
+}
+
+export function fileRevertAllModal(): FileRevertAllModal {
+  return {
+    type: 'file-revert-all',
+  }
+}
+
 export interface FileUploadInfo {
   fileResult: FileResult
   targetPath: string
@@ -338,6 +365,12 @@ export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteM
     files: files,
   }
 }
+
+export type ModalDialog =
+  | FileDeleteModal
+  | FileOverwriteModal
+  | FileRevertModal
+  | FileRevertAllModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {

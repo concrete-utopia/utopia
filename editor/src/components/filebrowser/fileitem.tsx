@@ -13,7 +13,7 @@ import { ContextMenuWrapper } from '../context-menu-wrapper'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
-import { FileBrowserItemInfo, FileBrowserItemType, GithubFileStatus } from './filebrowser'
+import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
@@ -46,6 +46,7 @@ import {
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
@@ -219,6 +220,22 @@ export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
   }
 }
 
+export const GithubFileStatusLetter: React.FunctionComponent<{ status: GithubFileStatus }> = (
+  props,
+) => {
+  return (
+    <div
+      style={{
+        fontWeight: 500,
+        width: 15,
+        color: getGithubFileStatusColor(props.status),
+      }}
+    >
+      {props.status.charAt(0).toUpperCase()}
+    </div>
+  )
+}
+
 export function addingChildElement(
   indentation: number,
   addingChildName: string,
@@ -294,26 +311,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
   renderGithubStatus = () => {
     if (this.props.githubStatus != undefined) {
-      const statusLetter = this.props.githubStatus.at(0)?.toUpperCase()
-      return (
-        <div
-          style={{
-            fontWeight: 800,
-            marginRight: 4,
-            color: 'white',
-            backgroundColor: getGithubFileStatusColor(this.props.githubStatus),
-            borderRadius: '100%',
-            width: 14,
-            height: 14,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 8,
-          }}
-        >
-          {statusLetter}
-        </div>
-      )
+      return <GithubFileStatusLetter status={this.props.githubStatus} />
     }
     return null
   }
@@ -461,8 +459,8 @@ class FileBrowserItemInner extends React.PureComponent<
       name: `Rename ${
         this.props.fileType != null
           ? this.props.fileType === 'DIRECTORY'
-            ? 'Folder'
-            : 'File'
+            ? 'folder'
+            : 'file'
           : 'this'
       }`,
       enabled: this.props.fileType != null && canRename(this.props),
@@ -475,6 +473,24 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
+  revertContextMenuItem(): ContextMenuItem<unknown> {
+    return {
+      name: `Revert changes`,
+      enabled: this.props.githubStatus != null,
+      action: (_data: unknown, dispatch?: EditorDispatch) => {
+        requireDispatch(dispatch)(
+          [
+            EditorActions.showModal({
+              type: 'file-revert',
+              filePath: this.props.path,
+              status: this.props.githubStatus || null,
+            }),
+          ],
+          'everyone',
+        )
+      },
+    }
+  }
   delete = () => {
     this.props.dispatch(
       [
@@ -812,6 +828,10 @@ class FileBrowserItemInner extends React.PureComponent<
     // The context menu wrapper causes focus issues with renaming.
     if (this.props.type === 'file' && !this.state.isRenaming) {
       const contextMenuID = `file-context-menu-${this.state.filename.replace(' ', '_space_')}`
+      const items = [this.deleteContextMenuItem(), this.renameContextMenuItem()]
+      if (this.props.githubStatus != undefined) {
+        items.push(this.revertContextMenuItem())
+      }
       fileBrowserItem = (
         <div
           ref={this.props.forwardedRef}
@@ -821,7 +841,7 @@ class FileBrowserItemInner extends React.PureComponent<
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
-            items={[this.deleteContextMenuItem(), this.renameContextMenuItem()]}
+            items={items}
             data={{}}
           >
             {fileBrowserItem}

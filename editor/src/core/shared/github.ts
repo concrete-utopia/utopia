@@ -3,14 +3,18 @@ import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import { HEADERS, MODE } from '../../common/server'
 import {
+  contentsToTree,
   deriveGithubFileChanges,
   getProjectContentsChecksums,
   ProjectContentTreeRoot,
+  treeToContents,
 } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
 import {
+  deleteFile,
   showToast,
+  updateBranchContents,
   updateGithubChecksums,
   updateGithubOperations,
   updateGithubSettings,
@@ -129,6 +133,7 @@ export async function saveProjectToGithub(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
                 responseBody.newCommit,
+                responseBody.branchName,
               ),
             ),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
@@ -227,7 +232,10 @@ export async function getBranchContent(
           [
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
-            updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
+            updateBranchContents(responseBody.content),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+            ),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',
@@ -251,6 +259,10 @@ export async function getUsersPublicGithubRepositories(
   dispatch: EditorDispatch,
   callback: (repositories: Array<RepositoryEntry>) => void,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'loadRepositories' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
 
   const response = await fetch(url, {
@@ -288,6 +300,8 @@ export async function getUsersPublicGithubRepositories(
       'everyone',
     )
   }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export const githubFileChangesSelector = createSelector(
@@ -302,6 +316,15 @@ export const githubFileChangesSelector = createSelector(
     return deriveGithubFileChanges(checksums, githubChecksums)
   },
 )
+
+export type GithubFileStatus =
+  | 'modified'
+  | 'deleted'
+  | 'untracked'
+  | 'added' // unused, keeping for future reference
+  | 'conflict' // unused, keeping for future reference
+  | 'renamed' // unused, keeping for future reference
+  | 'submodule' // unused, keeping for future reference
 
 export interface GithubFileChanges {
   untracked: Array<string>
@@ -331,4 +354,64 @@ export function githubFileChangesEquals(
     arrayEquals(a.modified, b.modified) &&
     arrayEquals(a.deleted, b.deleted)
   )
+}
+
+export type GithubFileChangesListItem = {
+  status: GithubFileStatus
+  filename: string
+}
+
+export function githubFileChangesToList(
+  changes: GithubFileChanges | null,
+): Array<GithubFileChangesListItem> {
+  if (changes == null) {
+    return []
+  }
+
+  const toItem = (status: GithubFileStatus, files: Array<string>) =>
+    files.map((d) => ({ status: status, filename: d }))
+
+  const sortByFilename = (a: GithubFileChangesListItem, b: GithubFileChangesListItem) =>
+    a.filename.localeCompare(b.filename)
+
+  return [
+    ...toItem('untracked', changes.untracked),
+    ...toItem('modified', changes.modified),
+    ...toItem('deleted', changes.deleted),
+  ].sort(sortByFilename)
+}
+
+export function revertAllGithubFiles(
+  dispatch: EditorDispatch,
+  branchContents: ProjectContentTreeRoot | null,
+): void {
+  if (branchContents != null) {
+    dispatch([updateProjectContents(branchContents)], 'everyone')
+  }
+}
+
+export function revertGithubFile(
+  dispatch: EditorDispatch,
+  status: GithubFileStatus,
+  filename: string,
+  projectContents: ProjectContentTreeRoot,
+  branchContents: ProjectContentTreeRoot | null,
+): void {
+  if (branchContents != null) {
+    switch (status) {
+      case 'untracked':
+        dispatch([deleteFile(filename)], 'everyone')
+        break
+      case 'deleted':
+      case 'modified':
+        const newContents = treeToContents(projectContents)
+        const branchContentsTree = treeToContents(branchContents)
+        newContents[filename] = branchContentsTree[filename]
+        const newTree = contentsToTree(newContents)
+        dispatch([updateProjectContents(newTree)], 'everyone')
+        break
+      default:
+        break
+    }
+  }
 }
