@@ -32,10 +32,14 @@ import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { createSelector } from 'reselect'
+import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
+
+const GITHUB_FILE_CHANGES_BADGE_LIMIT = 99
 
 const Tile = styled.div<TileProps>((props) => ({
   display: 'flex',
@@ -50,6 +54,7 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, Til
   menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
   size: keyof typeof UtopiaTheme.layout.rowHeight
+  badge?: string
 }
 
 export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileProps>> = (
@@ -99,13 +104,42 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          position: 'relative',
         }}
       >
         {React.cloneElement(props.icon, {
           color: props.selected ? 'primary' : 'secondary',
         })}
+        {props.badge && <MenuTileBadge text={props.badge} />}
       </div>
     </Tile>
+  )
+}
+
+const MenuTileBadge = ({ text }: { text: string }) => {
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colorTheme.contextMenuHighlightBackground.value,
+        minWidth: 13,
+        height: 13,
+        paddingLeft: 3,
+        paddingRight: 3,
+        borderRadius: '10px',
+        fontSize: 7,
+        fontWeight: 800,
+        color: '#fff',
+      }}
+    >
+      {text}
+    </div>
   )
 }
 
@@ -124,6 +158,10 @@ function useRequestVSCodeStatus(): () => void {
     [vscodeState],
   )
 }
+
+const githubFileChangesCountSelector = createSelector(githubFileChangesSelector, (changes) => {
+  return getGithubFileChangesCount(changes)
+})
 
 export const Menubar = React.memo(() => {
   const {
@@ -232,6 +270,21 @@ export const Menubar = React.memo(() => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
 
+  const githubFileChangesCount = useEditorState(
+    githubFileChangesCountSelector,
+    'Github file changes count',
+  )
+
+  const githubFileChangesCountLabel = React.useMemo(() => {
+    if (githubFileChangesCount <= 0) {
+      return undefined
+    }
+    if (githubFileChangesCount < GITHUB_FILE_CHANGES_BADGE_LIMIT) {
+      return `${githubFileChangesCount}`
+    }
+    return `${GITHUB_FILE_CHANGES_BADGE_LIMIT}+`
+  }, [githubFileChangesCount])
+
   return (
     <FlexColumn
       id='leftMenuBar'
@@ -313,7 +366,16 @@ export const Menubar = React.memo(() => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Github'} placement={'right'}>
+        <Tooltip
+          title={
+            githubFileChangesCount > 0
+              ? `Github (${githubFileChangesCount} file${
+                  githubFileChangesCount !== 1 ? 's' : ''
+                } changed)`
+              : 'Github'
+          }
+          placement={'right'}
+        >
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Github}
@@ -321,6 +383,7 @@ export const Menubar = React.memo(() => {
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
               size='large'
+              badge={githubFileChangesCountLabel}
             />
           </span>
         </Tooltip>

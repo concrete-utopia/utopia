@@ -316,6 +316,7 @@ import {
   FileUploadInfo,
   FileOverwriteModal,
   GithubOperation,
+  GithubChecksums,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1231,6 +1232,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     ).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
+    const textDirectionEquals = oldSize.textDirection === newSize.textDirection
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1256,7 +1258,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       renderedChildrenCount &&
       globalContentBoxEquals &&
       floatEquals &&
-      hasPositionOffsetEquals
+      hasPositionOffsetEquals &&
+      textDirectionEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1286,6 +1289,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.globalContentBox,
         newSize.float,
         newSize.hasPositionOffset,
+        newSize.textDirection,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -2416,6 +2420,25 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
+export const NullableGithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> =
+  createCallWithTripleEquals<GithubChecksums | null>()
+
+const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
+  oldAttribute,
+  newAttribute,
+) => {
+  if (oldAttribute == null && newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, true)
+  }
+  if (oldAttribute == null) {
+    return keepDeepEqualityResult(newAttribute, false)
+  }
+  if (newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, false)
+  }
+  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
+}
+
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
     (info) => info.type,
@@ -3163,12 +3186,15 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
-export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> =
-  combine1EqualityCall(
-    (op) => op.name,
-    StringKeepDeepEquality,
-    (a) => ({ name: 'commish' }),
-  )
+export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.name !== newValue.name) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
@@ -3411,6 +3437,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
+  const githubChecksumsResults = GithubChecksumsKeepDeepEquality(
+    oldValue.githubChecksums,
+    newValue.githubChecksums,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3479,7 +3510,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
-    githubOperationsResults.areEqual
+    githubOperationsResults.areEqual &&
+    githubChecksumsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3553,6 +3585,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
+      githubChecksumsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

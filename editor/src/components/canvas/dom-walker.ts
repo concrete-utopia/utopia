@@ -942,6 +942,7 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
+    elementStyle.direction,
   )
 }
 

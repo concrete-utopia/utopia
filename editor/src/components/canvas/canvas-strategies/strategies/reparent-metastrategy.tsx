@@ -78,7 +78,7 @@ export function getApplicableReparentFactories(
         }
       }
       case 'REPARENT_AS_STATIC': {
-        const fitness = 3
+        const fitness = result.isFallback ? 2 : 3
 
         const targetParentDisplayType =
           MetadataUtils.findElementByElementPath(

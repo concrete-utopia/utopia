@@ -150,7 +150,7 @@ import * as OPI from 'object-path-immutable'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
-import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
@@ -160,7 +160,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { Guideline, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
@@ -984,6 +984,8 @@ export function projectGithubSettings(
   }
 }
 
+export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1054,6 +1056,7 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  githubChecksums: GithubChecksums | null
 }
 
 export function editorState(
@@ -1125,6 +1128,7 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  githubChecksums: GithubChecksums | null,
 ): EditorState {
   return {
     id: id,
@@ -1194,7 +1198,8 @@ export function editorState(
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
-    githubOperations: [],
+    githubOperations: githubOperations,
+    githubChecksums: githubChecksums,
   }
 }
 
@@ -1780,6 +1785,7 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
+  githubChecksums: GithubChecksums | null
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1820,6 +1826,7 @@ export function mergePersistentModel(
       minimised: second.navigator.minimised,
     },
     githubSettings: second.githubSettings,
+    githubChecksums: second.githubChecksums,
   }
 }
 
@@ -2007,6 +2014,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    githubChecksums: null,
   }
 }
 
@@ -2303,6 +2311,7 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    githubChecksums: persistentModel.githubChecksums,
   }
   return editor
 }
@@ -2339,6 +2348,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
       minimised: editor.navigator.minimised,
     },
     githubSettings: editor.githubSettings,
+    githubChecksums: editor.githubChecksums,
   }
 }
 
@@ -2374,6 +2384,7 @@ export function persistentModelForProjectContents(
       targetRepository: null,
       originCommit: null,
     },
+    githubChecksums: null,
   }
 }
 
