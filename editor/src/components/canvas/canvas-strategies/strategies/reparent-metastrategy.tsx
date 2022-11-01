@@ -6,8 +6,9 @@ import {
   pathsEqual,
 } from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
+import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { assertNever } from '../../../../core/shared/utils'
+import { arrayEquals, assertNever } from '../../../../core/shared/utils'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
@@ -120,8 +121,7 @@ export function getApplicableReparentFactories(
   return factories
 }
 
-// FIXME Memoise this function against the interaction targets and starting metadata?
-function getStartingTargetParentsToFilterOut(
+function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
 ): ReparentTargetsToFilter {
@@ -163,6 +163,32 @@ function getStartingTargetParentsToFilterOut(
 
   return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
 }
+
+function isCanvasState(
+  v: InteractionCanvasState | InteractionSession,
+): v is InteractionCanvasState {
+  return (v as InteractionCanvasState).startingMetadata != null
+}
+
+const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFilterOutInner, {
+  maxSize: 5,
+  equals: (
+    l: InteractionCanvasState | InteractionSession,
+    r: InteractionCanvasState | InteractionSession,
+  ) => {
+    // We only need to re-calculate the targets to filter if the interaction targets or starting metadata have changed
+    if (isCanvasState(l) && isCanvasState(r)) {
+      // FIXME What about insertion?
+      const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
+      const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
+      return (
+        l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
+      )
+    } else {
+      return true
+    }
+  },
+})
 
 export const reparentMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
