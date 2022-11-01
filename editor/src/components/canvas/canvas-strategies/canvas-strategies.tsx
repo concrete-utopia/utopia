@@ -394,14 +394,9 @@ export function getApplicableControls(
 }
 
 export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
-  switch (canvasStrategy.id) {
-    case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
-    case 'KEYBOARD_ABSOLUTE_RESIZE':
-    case 'FLEX_RESIZE_BASIC':
-      return true
-    default:
-      return false
-  }
+  return ['ABSOLUTE_RESIZE_BOUNDING_BOX', 'KEYBOARD_ABSOLUTE_RESIZE', 'FLEX_RESIZE_BASIC'].some(
+    (id) => canvasStrategy.id.startsWith(id),
+  )
 }
 
 export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
