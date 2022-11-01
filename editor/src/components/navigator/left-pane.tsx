@@ -1440,26 +1440,6 @@ const Ellipsise = ({
   )
 }
 
-const handleClickRevertAllFiles = (dispatch: EditorDispatch) => (e: React.MouseEvent) => {
-  e.preventDefault()
-  dispatch([EditorActions.showModal({ type: 'file-revert-all' })], 'everyone')
-}
-
-const handleClickRevertFile =
-  (item: GithubFileChangesListItem, dispatch: EditorDispatch) => (e: React.MouseEvent) => {
-    e.preventDefault()
-    dispatch(
-      [
-        EditorActions.showModal({
-          type: 'file-revert',
-          filePath: item.filename,
-          status: item.status,
-        }),
-      ],
-      'everyone',
-    )
-  }
-
 const RevertButton = ({
   disabled,
   text,
@@ -1493,6 +1473,31 @@ const GithubFileChangesList = ({
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
 
+  const handleClickRevertAllFiles = React.useCallback(
+    () => (e: React.MouseEvent) => {
+      e.preventDefault()
+      dispatch([EditorActions.showModal({ type: 'file-revert-all' })], 'everyone')
+    },
+    [dispatch],
+  )
+
+  const handleClickRevertFile = React.useCallback(
+    (item: GithubFileChangesListItem) => (e: React.MouseEvent) => {
+      e.preventDefault()
+      dispatch(
+        [
+          EditorActions.showModal({
+            type: 'file-revert',
+            filePath: item.filename,
+            status: item.status,
+          }),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch],
+  )
+
   if (count === 0) {
     return null
   }
@@ -1506,7 +1511,7 @@ const GithubFileChangesList = ({
         <RevertButton
           disabled={githubWorking}
           text='Revert all'
-          onMouseUp={handleClickRevertAllFiles(dispatch)}
+          onMouseUp={handleClickRevertAllFiles}
         />
       </UIGridRow>
       {list.map((i) => (
@@ -1518,7 +1523,7 @@ const GithubFileChangesList = ({
           <RevertButton
             disabled={githubWorking}
             text='Revert'
-            onMouseUp={handleClickRevertFile(i, dispatch)}
+            onMouseUp={handleClickRevertFile(i)}
           />
         </UIGridRow>
       ))}
