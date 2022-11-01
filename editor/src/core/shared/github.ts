@@ -3,11 +3,11 @@ import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import { HEADERS, MODE } from '../../common/server'
 import {
-  contentsToTree,
+  addFileToProjectContents,
   deriveGithubFileChanges,
+  getContentsTreeFileFromString,
   getProjectContentsChecksums,
   ProjectContentTreeRoot,
-  treeToContents,
 } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
@@ -408,11 +408,11 @@ export function revertGithubFile(
         break
       case 'deleted':
       case 'modified':
-        const newContents = treeToContents(projectContents)
-        const branchContentsTree = treeToContents(branchContents)
-        newContents[filename] = branchContentsTree[filename]
-        const newTree = contentsToTree(newContents)
-        dispatch([updateProjectContents(newTree)], 'everyone')
+        const previousFile = getContentsTreeFileFromString(branchContents, filename)
+        if (previousFile != null) {
+          const newTree = addFileToProjectContents(projectContents, filename, previousFile)
+          dispatch([updateProjectContents(newTree)], 'everyone')
+        }
         break
       default:
         break
