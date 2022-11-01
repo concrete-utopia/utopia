@@ -784,6 +784,31 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     'RepositoryRow githubWorking',
   )
 
+  const [importing, setImporting] = React.useState(false)
+
+  const importingThisBranch = useEditorState((store) => {
+    if (props.defaultBranch == null) {
+      return false
+    } else {
+      return isGithubLoadingBranch(
+        store.editor.githubOperations,
+        props.defaultBranch,
+        store.editor.githubSettings.targetRepository,
+      )
+    }
+  }, 'RepositoryRow importingThisBranch')
+
+  const [previousImportingThisBranch, setPreviousImportingThisBranch] =
+    React.useState(importingThisBranch)
+
+  // Should reset the spinner which is tied to a specific branch and repository.
+  if (importingThisBranch !== previousImportingThisBranch) {
+    setPreviousImportingThisBranch(importingThisBranch)
+    if (!importingThisBranch) {
+      setImporting(false)
+    }
+  }
+
   const importRepository = React.useCallback(() => {
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
     if (parsedTargetRepository == null || props.defaultBranch == null) {
@@ -805,6 +830,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         forceNotNull('Should have a project ID.', projectID),
         props.defaultBranch,
       )
+      setImporting(true)
     }
   }, [dispatch, projectID, props.fullName, props.defaultBranch])
 
@@ -863,11 +889,12 @@ const RepositoryRow = (props: RepositoryRowProps) => {
               : colorTheme.inlineButtonColor.shade(50).value,
           borderRadius: 2,
           cursor: 'pointer',
+          minWidth: '44px',
         }}
         disabled={!props.importPermitted || githubWorking}
         onMouseUp={importRepository}
       >
-        {githubWorking ? <GithubSpinner /> : 'Import'}
+        {importing ? <GithubSpinner /> : 'Import'}
       </Button>
     </div>
   )
@@ -1155,7 +1182,11 @@ const GithubPane = React.memo(() => {
                           onMouseUp={loadContentForBranch}
                           disabled={githubWorking}
                         >
-                          {isGithubLoadingBranch(githubOperations, branch.name) ? (
+                          {isGithubLoadingBranch(
+                            githubOperations,
+                            branch.name,
+                            storedTargetGithubRepo,
+                          ) ? (
                             <GithubSpinner />
                           ) : (
                             'Load'

@@ -256,7 +256,7 @@ export interface UserState extends UserConfiguration {
 export type GithubOperation =
   | { name: 'commish' }
   | { name: 'listBranches' }
-  | { name: 'loadBranch'; branchName: string }
+  | { name: 'loadBranch'; branchName: string; githubRepo: GithubRepo }
   | { name: 'loadRepositories' }
 
 export function githubOperationPrettyName(op: GithubOperation): string {
@@ -278,8 +278,15 @@ export function githubOperationPrettyName(op: GithubOperation): string {
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
+  repo: GithubRepo | null,
 ): boolean {
-  return operations.some((o) => o.name === 'loadBranch' && o.branchName === branchName)
+  return operations.some(
+    (o) =>
+      o.name === 'loadBranch' &&
+      o.branchName === branchName &&
+      o.githubRepo.owner === repo?.owner &&
+      o.githubRepo.repository === repo?.repository,
+  )
 }
 
 export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
