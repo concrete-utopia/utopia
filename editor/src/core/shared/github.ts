@@ -328,14 +328,7 @@ export const githubFileChangesSelector = createSelector(
   },
 )
 
-export type GithubFileStatus =
-  | 'modified'
-  | 'deleted'
-  | 'untracked'
-  | 'added' // unused, keeping for future reference
-  | 'conflict' // unused, keeping for future reference
-  | 'renamed' // unused, keeping for future reference
-  | 'submodule' // unused, keeping for future reference
+export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflict'
 
 export interface GithubFileChanges {
   untracked: Array<string>
