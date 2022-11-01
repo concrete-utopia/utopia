@@ -400,6 +400,19 @@ instance FromJSON RepositoryOwner where
 instance ToJSON RepositoryOwner where
   toJSON = genericToJSON defaultOptions
 
+data UsersRepositoryPermissions = UsersRepositoryPermissions
+                                { admin       :: Bool
+                                , push        :: Bool
+                                , pull        :: Bool
+                                }
+                                deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UsersRepositoryPermissions where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UsersRepositoryPermissions where
+  toJSON = genericToJSON defaultOptions
+
 data UsersRepository = UsersRepository
                      { full_name        :: Text
                      , owner            :: RepositoryOwner
@@ -408,6 +421,7 @@ data UsersRepository = UsersRepository
                      , name             :: Maybe Text
                      , updated_at       :: UTCTime
                      , default_branch   :: Text
+                     , permissions      :: UsersRepositoryPermissions
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -427,6 +441,7 @@ data RepositoryEntry = RepositoryEntry
                      , name             :: Maybe Text
                      , updatedAt        :: Maybe UTCTime
                      , defaultBranch    :: Maybe Text
+                     , permissions      :: UsersRepositoryPermissions
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 

@@ -447,6 +447,7 @@ publicRepoToRepositoryEntry publicRepository = RepositoryEntry
                                              , name = view (field @"name") publicRepository
                                              , updatedAt = Just $ view (field @"updated_at") publicRepository
                                              , defaultBranch = Just $ view (field @"default_branch") publicRepository
+                                             , permissions = view (field @"permissions") publicRepository
                                              }
 
 getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
