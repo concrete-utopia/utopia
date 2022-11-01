@@ -88,6 +88,7 @@ export function ancestorMetaStrategy(
 }
 
 function applyLevelSuffix(name: string, level: number): string {
+  // FIXME What should we use for the label here?
   const newSuffix = `(Up ${level})`
   const oldSuffixIndex = name.indexOf(' (Up')
   const withoutOldSuffix = oldSuffixIndex > 0 ? name.slice(0, oldSuffixIndex) : name
