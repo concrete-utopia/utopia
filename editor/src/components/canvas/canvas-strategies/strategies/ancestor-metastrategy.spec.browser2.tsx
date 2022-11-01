@@ -335,32 +335,32 @@ async function runTest(
   check(editor)
 }
 
-describe('finds an applicable strategy for the nearest parent', () => {
+describe('finds an applicable strategy for the nearest ancestor', () => {
   it('element with no siblings', () =>
     runTest(codeElementWithNoSiblings, pathForShallowNestedElement, (editor) => {
       const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
 
-      expect(strategies?.length).toEqual(2)
+      expect(strategies?.length).toBeGreaterThan(1)
       if (strategies == null) {
         // here for type assertion
         throw new Error('`strategies` should not be null')
       }
-      expect(strategies[0].strategy.id).toEqual('LOOK_FOR_APPLICABLE_PARENT_ID')
+      expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
     }))
 
   it('deeply nested element with no siblings', () =>
     runTest(codeDeeplyNestedElement, pathForDeeplyNestedElement, (editor) => {
       const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
 
-      expect(strategies?.length).toEqual(2)
+      expect(strategies?.length).toBeGreaterThan(1)
       if (strategies == null) {
         // here for type assertion
         throw new Error('`strategies` should not be null')
       }
-      expect(strategies[0].strategy.id).toEqual('LOOK_FOR_APPLICABLE_PARENT_ID')
+      expect(strategies[0].strategy.id.endsWith('_ANCESTOR_2')).toBeTruthy()
     }))
 
-  it('eleement with siblings', () =>
+  it('element with siblings', () =>
     runTest(codeElementWithSibling, pathForShallowNestedElement, (editor) => {
       const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
 

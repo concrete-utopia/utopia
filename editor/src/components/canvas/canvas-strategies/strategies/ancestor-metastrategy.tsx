@@ -84,7 +84,7 @@ export function ancestorMetaStrategy(
       return allOtherStrategies.flatMap((metaStrategy) =>
         metaStrategy(adjustedCanvasState, interactionSession, customStrategyState).map((s) => ({
           ...s,
-          id: `${s.id}_${level}`,
+          id: `${s.id}_ANCESTOR_${level}`,
           name: applyLevelSuffix(s.name, level),
           fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
           apply: (strategyLifecycle) => {
