@@ -167,7 +167,7 @@ function reparentElement(
   return finalEditor
 }
 
-describe('Absolute Reparent Strategy', () => {
+xdescribe('Absolute Reparent Strategy', () => {
   it('reparents an element to the canvas', async () => {
     const targetElement = EP.elementPath([
       ['scene-aaa', 'app-entity'],
