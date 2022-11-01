@@ -61,6 +61,8 @@ export function ancestorMetaStrategy(
       return []
     }
 
+    // TODO Should we also check isParentZeroSized || isParentContiguous?
+
     // Time to offer up available strategies for the parent
     const parentPath = EP.parentPath(target)
     const ancestorTargetPaths = targetPaths([parentPath])
