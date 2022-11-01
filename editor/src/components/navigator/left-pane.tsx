@@ -779,6 +779,11 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const projectID = useEditorState((store) => store.editor.id, 'RepositoryRow projectID')
 
+  const githubWorking = useEditorState(
+    (store) => store.editor.githubOperations.length > 0,
+    'RepositoryRow githubWorking',
+  )
+
   const importRepository = React.useCallback(() => {
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
     if (parsedTargetRepository == null || props.defaultBranch == null) {
@@ -845,24 +850,25 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           )}
         </span>
       </div>
-      <button
+      <Button
         style={{
           fontSize: 11,
           background: colorTheme.buttonBackground.value,
           boxShadow: 'none',
           border: 'none',
           height: 22,
-          color: props.importPermitted
-            ? colorTheme.inlineButtonColor.value
-            : colorTheme.inlineButtonColor.shade(50).value,
+          color:
+            props.importPermitted && !githubWorking
+              ? colorTheme.inlineButtonColor.value
+              : colorTheme.inlineButtonColor.shade(50).value,
           borderRadius: 2,
           cursor: 'pointer',
         }}
-        disabled={!props.importPermitted}
+        disabled={!props.importPermitted || githubWorking}
         onMouseUp={importRepository}
       >
-        Import
-      </button>
+        {githubWorking ? <GithubSpinner /> : 'Import'}
+      </Button>
     </div>
   )
 }
