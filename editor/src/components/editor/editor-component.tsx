@@ -2,34 +2,59 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
+import { ResizeDirection } from 're-resizable'
 import React from 'react'
+import * as ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import Utils from '../../utils/utils'
+import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { DesignPanelRoot } from '../canvas/design-panel-root'
+import { resizeLeftPane } from '../common/actions'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
+import { ReleaseNotesContent } from '../documentation/release-notes'
+import { EditorDispatch, LoginState } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
+import { StateHistory } from './history'
 import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
-import { LeftMenuTab, LeftPaneDefaultWidth, MenuBarWidth } from './store/editor-state'
+import {
+  ConsoleLog,
+  EditorStorePatched,
+  getOpenFile,
+  getOpenTextFileKey,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
+  MenuBarWidth,
+  StoryboardFilePath,
+} from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import {
+  IS_BROWSER_TEST_DEBUG,
+  IS_TEST_ENVIRONMENT,
+  PROPERTY_CONTROLS_INFO_BASE_URL,
+} from '../../common/env-vars'
 import {
   SimpleFlexRow,
   SimpleFlexColumn,
   UtopiaTheme,
+  FlexRow,
   ResizableFlexColumn,
   useColorTheme,
   TabComponent,
   LargerIcons,
+  Subdued,
   FlexColumn,
 } from '../../uuiui'
-import { projectURLForProject } from '../../core/shared/utils'
+import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
+import { setBranchNameFromURL } from '../../utils/branches'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'

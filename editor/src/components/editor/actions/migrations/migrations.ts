@@ -10,6 +10,7 @@ import {
   textFileContents,
   unparsed,
   RevisionsState,
+  isParsedTextFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
 import {

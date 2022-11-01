@@ -3,12 +3,21 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
-import React from 'react'
-import { projectEditorURL, thumbnailURL } from '../../common/server'
+import React, { ChangeEvent } from 'react'
+import {
+  fetchProjectMetadata,
+  projectEditorURL,
+  projectURL,
+  thumbnailURL,
+} from '../../common/server'
 import { useGetProjectMetadata, useIsMyProject } from '../common/server-hooks'
+import { getAllUniqueUids } from '../../core/model/element-template-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
+import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
+import Utils, { isOptionType } from '../../utils/utils'
 import {
   useColorTheme,
   UtopiaTheme,
@@ -22,12 +31,13 @@ import {
   MenuIcons,
   StringInput,
   Subdued,
+  UIRow,
   H2,
   PopupList,
   Icons,
   Avatar,
 } from '../../uuiui'
-import { SelectOption, User } from '../../uuiui-deps'
+import { getControlStyles, SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -46,7 +56,6 @@ import {
   GithubRepo,
   isGithubCommishing,
   isGithubLoadingBranch,
-  isGithubLoadingRepositories,
   LeftMenuTab,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -74,7 +83,7 @@ import {
 } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { when } from '../../utils/react-conditionals'
-import { forceNotNull } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import TimeAgo from 'react-timeago'
 import { notice } from '../common/notice'
 import { githubFileChangesSelector } from '../../core/shared/github'
