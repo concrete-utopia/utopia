@@ -45,8 +45,8 @@ const AcceptButton: React.FunctionComponent<
 > = (props) => {
   const branchContents = useEditorState((store) => store.editor.branchContents, 'branch contents')
   const clickButton = React.useCallback(() => {
-    void revertAllGithubFiles(props.dispatch, branchContents)
-    props.dispatch([EditorActions.hideModal()], 'everyone')
+    const actions = revertAllGithubFiles(branchContents)
+    props.dispatch([...actions, EditorActions.hideModal()], 'everyone')
   }, [props, branchContents])
 
   return (

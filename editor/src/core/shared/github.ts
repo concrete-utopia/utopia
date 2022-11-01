@@ -10,7 +10,7 @@ import {
   ProjectContentTreeRoot,
 } from '../../components/assets'
 import { notice } from '../../components/common/notice'
-import { EditorDispatch } from '../../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../../components/editor/action-types'
 import {
   deleteFile,
   showToast,
@@ -386,36 +386,36 @@ export function githubFileChangesToList(
 }
 
 export function revertAllGithubFiles(
-  dispatch: EditorDispatch,
   branchContents: ProjectContentTreeRoot | null,
-): void {
+): Array<EditorAction> {
+  let actions: Array<EditorAction> = []
   if (branchContents != null) {
-    dispatch([updateProjectContents(branchContents)], 'everyone')
+    actions.push(updateProjectContents(branchContents))
   }
+  return actions
 }
 
 export function revertGithubFile(
-  dispatch: EditorDispatch,
   status: GithubFileStatus,
   filename: string,
   projectContents: ProjectContentTreeRoot,
   branchContents: ProjectContentTreeRoot | null,
-): void {
+): Array<EditorAction> {
+  let actions: Array<EditorAction> = []
   if (branchContents != null) {
     switch (status) {
       case 'untracked':
-        dispatch([deleteFile(filename)], 'everyone')
+        actions.push(deleteFile(filename))
         break
       case 'deleted':
       case 'modified':
         const previousFile = getContentsTreeFileFromString(branchContents, filename)
         if (previousFile != null) {
           const newTree = addFileToProjectContents(projectContents, filename, previousFile)
-          dispatch([updateProjectContents(newTree)], 'everyone')
+          actions.push(updateProjectContents(newTree))
         }
-        break
-      default:
         break
     }
   }
+  return actions
 }

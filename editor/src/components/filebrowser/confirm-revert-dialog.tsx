@@ -54,14 +54,8 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRever
     if (props.status == null) {
       return
     }
-    void revertGithubFile(
-      props.dispatch,
-      props.status,
-      props.filePath,
-      projectContents,
-      branchContents,
-    )
-    props.dispatch([EditorActions.hideModal()], 'everyone')
+    const actions = revertGithubFile(props.status, props.filePath, projectContents, branchContents)
+    props.dispatch([...actions, EditorActions.hideModal()], 'everyone')
   }, [props, projectContents, branchContents])
 
   return (
