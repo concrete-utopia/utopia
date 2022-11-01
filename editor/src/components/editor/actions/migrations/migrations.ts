@@ -366,7 +366,7 @@ function migrateFromVersion8(
 function migrateFromVersion9(
   persistentModel: PersistentModel,
 ): PersistentModel & { projectVersion: 10 } {
-  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 8) {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 9) {
     return persistentModel as any
   } else {
     return {
