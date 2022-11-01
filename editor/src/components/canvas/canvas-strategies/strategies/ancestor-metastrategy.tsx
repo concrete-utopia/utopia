@@ -1,43 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   targetPaths,
 } from '../canvas-strategy-types'
-import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  rectanglesEqual,
-} from '../../../../core/shared/math-utils'
-
-function getPaddingAdjustedFrame(
-  metadata: ElementInstanceMetadataMap,
-  targetPath: ElementPath,
-): CanvasRectangle | null {
-  const targetMetadata = MetadataUtils.findElementByElementPath(metadata, targetPath)
-  const targetBoundingFrame = targetMetadata?.globalFrame ?? null
-  const targetPadding = targetMetadata?.specialSizeMeasurements.padding
-
-  if (targetBoundingFrame == null || targetPadding == null) {
-    return targetBoundingFrame
-  } else {
-    const { left, right, top, bottom } = targetPadding
-    const l = left ?? 0
-    const r = right ?? 0
-    const t = top ?? 0
-    const b = bottom ?? 0
-    return canvasRectangle({
-      x: targetBoundingFrame.x + l,
-      y: targetBoundingFrame.y + t,
-      width: targetBoundingFrame.width - (l + r),
-      height: targetBoundingFrame.height - (t + b),
-    })
-  }
-}
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -57,14 +25,13 @@ export function ancestorMetaStrategy(
 
     const target = targets[0]
 
-    // Avoid children of the storyboard or root elements
-    // TODO Maybe don't avoid root elements??
+    // Avoid children of the storyboard
     if (
       EP.isEmptyPath(targets[0]) ||
       EP.isStoryboardPath(targets[0]) ||
       EP.isStoryboardChild(targets[0])
     ) {
-      //} || EP.isRootElementOfInstance(targets[0])) {
+      // TODO Maybe avoid root elements?
       return []
     }
 
@@ -91,23 +58,8 @@ export function ancestorMetaStrategy(
       return []
     }
 
-    // Does the bounding frame match the parent's (offsetting based on the padding)
-    // FIXME This doesn't work, as flow elements with no styling will fill either the width or height
-    // const boundingFrame = targetMetadata?.globalFrame
-    const parentPath = EP.parentPath(target)
-    // const paddingAdjustedParentFrame = getPaddingAdjustedFrame(
-    //   canvasState.startingMetadata,
-    //   parentPath,
-    // )
-    // if (
-    //   boundingFrame == null ||
-    //   paddingAdjustedParentFrame == null ||
-    //   !rectanglesEqual(boundingFrame, paddingAdjustedParentFrame)
-    // ) {
-    //   return []
-    // }
-
     // Time to offer up available strategies for the parent
+    const parentPath = EP.parentPath(target)
     const adjustedCanvasState: InteractionCanvasState = {
       ...canvasState,
       interactionTarget: targetPaths([parentPath]),
