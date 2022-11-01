@@ -1,5 +1,6 @@
 import React from 'react'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -127,12 +128,12 @@ const PaddingResizeControlI = React.memo(
   }),
 )
 
-export const PaddingResizeControl = controlForStrategyMemoized(() => {
-  const selectedElements = useEditorState(
-    (store: EditorStorePatched) => store.editor.selectedViews,
-    'selectedElementsSelector selectedElements',
-  )
+interface PaddingControlProps {
+  targets: Array<ElementPath>
+}
 
+export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
+  const selectedElements = props.targets
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const widthWithtDefaultPx = (w: number) => w + 'px'
