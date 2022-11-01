@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { auth0Url } from '../../common/env-vars'
-import { LargerIcons, SimpleFlexRow } from '../../uuiui'
+import { LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
@@ -18,7 +18,7 @@ const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
       cursor: 'pointer',
     }}
   >
-    <img src='/editor/utopia/logo.png' alt='Utopia logo' style={{ height: '32px' }} />
+    <MenuIcons.Smiangle />
   </div>
 )
 
