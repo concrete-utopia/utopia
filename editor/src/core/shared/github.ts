@@ -80,6 +80,12 @@ export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export interface RepositoryEntry {
   fullName: string
+  avatarUrl: string | null
+  private: boolean
+  description: string | null
+  name: string | null
+  updatedAt: string | null
+  defaultBranch: string | null
 }
 
 export interface GetUsersPublicRepositoriesSuccess {
@@ -185,7 +191,11 @@ export async function getBranchContent(
   projectID: string,
   branchName: string,
 ): Promise<void> {
-  const operation: GithubOperation = { name: 'loadBranch', branchName: branchName }
+  const operation: GithubOperation = {
+    name: 'loadBranch',
+    branchName: branchName,
+    githubRepo: githubRepo,
+  }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
@@ -251,6 +261,10 @@ export async function getUsersPublicGithubRepositories(
   dispatch: EditorDispatch,
   callback: (repositories: Array<RepositoryEntry>) => void,
 ): Promise<void> {
+  const operation: GithubOperation = { name: 'loadRepositories' }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
   const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
 
   const response = await fetch(url, {
@@ -288,6 +302,8 @@ export async function getUsersPublicGithubRepositories(
       'everyone',
     )
   }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export const githubFileChangesSelector = createSelector(
