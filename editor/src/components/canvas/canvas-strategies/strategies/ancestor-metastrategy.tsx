@@ -1,5 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { CSSCursor } from '../../canvas-types'
+import { highlightElementsCommand } from '../../commands/highlight-element-command'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   getTargetPathsFromInteractionTarget,
@@ -60,9 +63,10 @@ export function ancestorMetaStrategy(
 
     // Time to offer up available strategies for the parent
     const parentPath = EP.parentPath(target)
+    const ancestorTargetPaths = targetPaths([parentPath])
     const adjustedCanvasState: InteractionCanvasState = {
       ...canvasState,
-      interactionTarget: targetPaths([parentPath]),
+      interactionTarget: ancestorTargetPaths,
     }
 
     // Avoid a cyclic dependency by explicitly passing the other metastrategies when creating the next layer's meta strategy
@@ -73,14 +77,31 @@ export function ancestorMetaStrategy(
     )
 
     if (nextAncestorResult.length > 0) {
+      // A length of > 0 means that we should be bubbling up to the next ancestor
       return nextAncestorResult
     } else {
+      // Otherwise we should stop at this ancestor and return the strategies for this ancestor
       return allOtherStrategies.flatMap((metaStrategy) =>
         metaStrategy(adjustedCanvasState, interactionSession, customStrategyState).map((s) => ({
           ...s,
           id: `${s.id}_${level}`,
           name: applyLevelSuffix(s.name, level),
           fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
+          apply: (strategyLifecycle) => {
+            const result = s.apply(strategyLifecycle)
+            if (result.status === 'success' && result.commands.length > 0) {
+              return {
+                ...result,
+                commands: [
+                  ...result.commands,
+                  highlightElementsCommand([parentPath]),
+                  setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
+                ],
+              }
+            } else {
+              return result
+            }
+          },
         })),
       )
     }
