@@ -2426,40 +2426,6 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-const NullableGithubFileStatusKeepDeepEquality: KeepDeepEqualityCall<GithubFileStatus | null> = (
-  oldAttribute,
-  newAttribute,
-) => {
-  if (oldAttribute == null && newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, true)
-  }
-  if (oldAttribute == null) {
-    return keepDeepEqualityResult(newAttribute, false)
-  }
-  if (newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, false)
-  }
-  return GithubFileStatusKeepDeepEquality(oldAttribute, newAttribute)
-}
-
-const NullableProjectContentTreeRootKeepDeepEquality: KeepDeepEqualityCall<
-  ProjectContentTreeRoot | null
-> = (oldAttribute, newAttribute) => {
-  if (oldAttribute == null && newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, true)
-  }
-  if (oldAttribute == null) {
-    return keepDeepEqualityResult(newAttribute, false)
-  }
-  if (newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, false)
-  }
-  return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())(oldAttribute, newAttribute)
-}
-
-export const NullableGithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> =
-  createCallWithTripleEquals<GithubChecksums | null>()
-
 const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
   oldAttribute,
   newAttribute,
@@ -3144,7 +3110,7 @@ export const FileRevertModalKeepDeepEquality: KeepDeepEqualityCall<FileRevertMod
     (modal) => modal.filePath,
     StringKeepDeepEquality,
     (modal) => modal.status,
-    NullableGithubFileStatusKeepDeepEquality,
+    nullableDeepEquality(GithubFileStatusKeepDeepEquality),
     fileRevertModal,
   )
 
@@ -3501,7 +3467,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubChecksums,
   )
 
-  const branchContentsResults = NullableProjectContentTreeRootKeepDeepEquality(
+  const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchContents,
     newValue.branchContents,
   )
