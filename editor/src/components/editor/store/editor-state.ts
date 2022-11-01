@@ -143,11 +143,9 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
@@ -171,11 +169,8 @@ const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  Project = 'project',
-  Storyboards = 'storyboards',
   Contents = 'contents',
   Settings = 'settings',
-  Sharing = 'sharing',
   Github = 'github',
 }
 

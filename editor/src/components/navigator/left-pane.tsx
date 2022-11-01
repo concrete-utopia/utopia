@@ -47,6 +47,7 @@ import {
   isGithubCommishing,
   isGithubLoadingBranch,
   LeftMenuTab,
+  LeftPaneDefaultWidth,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -116,6 +117,7 @@ export const LeftPaneComponent = React.memo(() => {
         position: 'relative',
         backgroundColor: colorTheme.leftPaneBackground.value,
         paddingLeft: 4,
+        width: LeftPaneDefaultWidth,
       }}
     >
       <div
@@ -134,11 +136,8 @@ export const LeftPaneComponent = React.memo(() => {
         }}
       >
         {isMyProject === 'yes' ? null : <ForksGiven />}
-        {selectedTab === LeftMenuTab.Project && isMyProject === 'yes' ? <ProjectPane /> : null}
-        {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
         {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
-        {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
         {loggedIn ? null : <LoggedOutPane />}
       </div>
@@ -488,18 +487,28 @@ const ContentsPane = React.memo(() => {
 })
 
 const SettingsPane = React.memo(() => {
-  const { dispatch, userState, projectName, projectDescription } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      userState: store.userState,
-      projectName: store.editor.projectName,
-      projectDescription: store.editor.projectDescription,
-    }
-  }, 'ProjectPane')
+  const { dispatch, userState, projectName, projectDescription, projectId } = useEditorState(
+    (store) => {
+      return {
+        dispatch: store.dispatch,
+        userState: store.userState,
+        projectName: store.editor.projectName,
+        projectId: store.editor.id,
+        projectDescription: store.editor.projectDescription,
+      }
+    },
+    'SettingsPane',
+  )
+
+  const previewURL =
+    projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+
   const [theme, setTheme] = React.useState<SelectOption>({
-    label: 'Light',
-    value: 'light',
-  })
+      label: 'Light',
+      value: 'light',
+    }),
+    [temporaryCopySuccess, setTemporaryCopySuccess] = React.useState(false)
+
   const handleSubmitValueTheme = React.useCallback(
     (option: SelectOption) => {
       setTheme(option)
@@ -547,6 +556,14 @@ const SettingsPane = React.memo(() => {
     [updateProjectDescription],
   )
 
+  const handleCopyProjectURL = React.useCallback(() => {
+    void window.navigator.clipboard.writeText(previewURL)
+    setTemporaryCopySuccess(true)
+    setTimeout(() => {
+      setTemporaryCopySuccess(false)
+    }, 1500)
+  }, [previewURL])
+
   const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       let target = e.target as HTMLInputElement
@@ -572,7 +589,7 @@ const SettingsPane = React.memo(() => {
           <Title style={{ flexGrow: 1 }}>Settings</Title>
         </SectionTitleRow>
         <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
-          <H2> Theme </H2>
+          <H2> Project </H2>
         </UIGridRow>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span>Name</span>
@@ -649,6 +666,88 @@ const SettingsPane = React.memo(() => {
               </Subdued>
             </div>
           </FlexRow>
+        </SectionBodyArea>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Sharing</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            Share the URL to this project to let others view your code and fork it. Only you can
+            make changes.
+          </div>
+        </SectionBodyArea>
+        <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+          <H2> Run and Embed </H2>
+        </UIGridRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            You can share and embed a URL to the{' '}
+            <a
+              target='_blank'
+              rel='noopener noreferrer'
+              style={{ textDecoration: 'none', color: '#007AFF' }}
+              href={previewURL}
+            >
+              running application
+            </a>
+            &nbsp;without the editor or design tool.
+          </div>
+          <UIGridRow variant='<--------auto-------->|--45px--|' padded>
+            <StringInput testId='externalProjectURL' value={previewURL} readOnly />
+            <Button
+              spotlight
+              highlight
+              disabled={temporaryCopySuccess}
+              onClick={handleCopyProjectURL}
+            >
+              {temporaryCopySuccess ? '✓' : 'Copy'}
+            </Button>
+          </UIGridRow>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            <Subdued>Old URLs will continue to work if you rename your project.</Subdued>
+          </div>
         </SectionBodyArea>
       </Section>
     </FlexColumn>

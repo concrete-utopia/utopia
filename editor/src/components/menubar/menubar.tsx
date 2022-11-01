@@ -51,7 +51,6 @@ const Tile = styled.div<TileProps>((props) => ({
 
 export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, TileProps {
   selected: boolean
-  menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
   size: keyof typeof UtopiaTheme.layout.rowHeight
   badge?: string
@@ -60,11 +59,7 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, Til
 export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileProps>> = (
   props,
 ) => {
-  const [hovered, setHovered] = React.useState(false)
   const colorTheme = useColorTheme()
-  const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
-  const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
-  var foregroundColor: IcnProps['color'] = 'secondary'
 
   return (
     <Tile
@@ -72,10 +67,7 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
       css={{
         height: 44,
         transition: 'all .1s ease-in-out',
-        borderLeft:
-          props.menuExpanded && props.selected
-            ? `2px solid ${colorTheme.primary}`
-            : '2px solid transparent',
+        borderLeft: props.selected ? `2px solid ${colorTheme.primary}` : '2px solid transparent',
 
         cursor: 'pointer',
         '& > *': {
@@ -91,8 +83,6 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
           opacity: 1,
         },
       }}
-      onMouseOver={handleOnMouseOver}
-      onMouseOut={handleOnMouseOut}
       onClick={props.onClick}
     >
       <div
@@ -164,27 +154,12 @@ const githubFileChangesCountSelector = createSelector(githubFileChangesSelector,
 })
 
 export const Menubar = React.memo(() => {
-  const {
-    dispatch,
-    selectedTab,
-    userState,
-    leftMenuExpanded,
-    projectId,
-    projectName,
-    isPreviewPaneVisible,
-    isCanvasVisible,
-    isCodeEditorVisible,
-  } = useEditorState((store) => {
+  const { dispatch, selectedTab, projectId, projectName } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       selectedTab: store.editor.leftMenu.selectedTab,
-      userState: store.userState,
-      leftMenuExpanded: store.editor.leftMenu.expanded,
       projectId: store.editor.id,
       projectName: store.editor.projectName,
-      isPreviewPaneVisible: store.editor.preview.visible,
-      isCanvasVisible: store.editor.canvas.visible,
-      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
     }
   }, 'Menubar')
 
@@ -193,24 +168,11 @@ export const Menubar = React.memo(() => {
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
-      if (selectedTab === menuTab) {
-        actions.push(togglePanel('leftmenu'))
-      } else {
-        actions.push(setPanelVisibility('leftmenu', true))
-      }
       actions.push(setLeftMenuTab(menuTab))
       dispatch(actions)
     },
-    [dispatch, selectedTab],
+    [dispatch],
   )
-
-  const onClickProjectTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Project)
-  }, [onClickTab])
-
-  const onClickStoryboardsTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Storyboards)
-  }, [onClickTab])
 
   const onClickContentsTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Contents)
@@ -220,28 +182,9 @@ export const Menubar = React.memo(() => {
     onClickTab(LeftMenuTab.Settings)
   }, [onClickTab])
 
-  const onClickSharingTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Sharing)
-  }, [onClickTab])
-
   const onClickGithubTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
-
-  const togglePreviewPaneVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
-    [dispatch, isPreviewPaneVisible],
-  )
-
-  const toggleCanvasVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('canvas', !isCanvasVisible)]),
-    [dispatch, isCanvasVisible],
-  )
-
-  const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
-    [dispatch, isCodeEditorVisible],
-  )
 
   const onReparseClick = useReParseOpenProjectFile()
 
@@ -300,7 +243,6 @@ export const Menubar = React.memo(() => {
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Contents}
-              menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.FileSkewed />}
               onClick={onClickContentsTab}
               size='large'
@@ -312,21 +254,8 @@ export const Menubar = React.memo(() => {
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Settings}
-              menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Settings />}
               onClick={onClickSettingsTab}
-              size='large'
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Sharing'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Sharing}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.TwoGhosts />}
-              onClick={onClickSharingTab}
               size='large'
             />
           </span>
@@ -345,7 +274,6 @@ export const Menubar = React.memo(() => {
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Github}
-              menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
               size='large'
@@ -357,12 +285,7 @@ export const Menubar = React.memo(() => {
         <a style={{ marginTop: 32 }} target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
-              <MenuTile
-                selected={false}
-                menuExpanded={false}
-                icon={<MenuIcons.ExternalLink />}
-                size='large'
-              />
+              <MenuTile selected={false} icon={<MenuIcons.ExternalLink />} size='large' />
             </span>
           </Tooltip>
         </a>

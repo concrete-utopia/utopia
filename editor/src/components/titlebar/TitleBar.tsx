@@ -81,7 +81,6 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
             <span>
               <MenuTile
                 selected={isCodeEditorVisible}
-                menuExpanded={false}
                 icon={<LargerIcons.Code />}
                 onClick={toggleCodeEditorVisible}
                 size='large'
@@ -90,7 +89,6 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
             <span>
               <MenuTile
                 selected={isPreviewPaneVisible}
-                menuExpanded={false}
                 icon={<LargerIcons.PreviewPane />}
                 onClick={togglePreviewPaneVisible}
                 size='large'

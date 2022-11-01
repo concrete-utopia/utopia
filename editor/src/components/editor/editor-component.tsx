@@ -349,26 +349,27 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               alignItems: 'stretch',
             }}
           >
-            <SimpleFlexColumn
-              style={{
-                height: '100%',
-                width: MenuBarWidth,
-                backgroundColor: colorTheme.leftMenuBackground.value,
-              }}
-            >
-              <Menubar />
-            </SimpleFlexColumn>
             <div
               className='LeftPaneShell'
               style={{
                 height: '100%',
+                display: 'flex',
                 flexShrink: 0,
                 transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
+              <SimpleFlexColumn
+                style={{
+                  height: '100%',
+                  width: MenuBarWidth,
+                  backgroundColor: colorTheme.leftMenuBackground.value,
+                }}
+              >
+                <Menubar />
+              </SimpleFlexColumn>
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
             </div>
             <SimpleFlexRow
