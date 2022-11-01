@@ -3,37 +3,15 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
-import {
-  useTriggerScrollPerformanceTest,
-  useTriggerResizePerformanceTest,
-  useTriggerSelectionPerformanceTest,
-  useTriggerRegularHighlightPerformanceTest,
-  useTriggerAllElementsHighlightPerformanceTest,
-  useTriggerAbsoluteMoveLargePerformanceTest,
-  useTriggerAbsoluteMoveSmallPerformanceTest,
-  useTriggerSelectionChangePerformanceTest,
-} from '../../core/model/performance-scripts'
-import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
-import { shareURLForProject } from '../../core/shared/utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import {
-  IcnProps,
-  FlexColumn,
-  Tooltip,
-  MenuIcons,
-  LargerIcons,
-  Avatar,
-  UtopiaTheme,
-  useColorTheme,
-} from '../../uuiui'
-import { User } from '../../uuiui-deps'
-import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { createSelector } from 'reselect'
+import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
+import { shareURLForProject } from '../../core/shared/utils'
+import { FlexColumn, IcnProps, MenuIcons, Tooltip, useColorTheme, UtopiaTheme } from '../../uuiui'
+import { EditorAction } from '../editor/action-types'
+import { setLeftMenuTab } from '../editor/actions/action-creators'
+import { LeftMenuTab } from '../editor/store/editor-state'
+import { useEditorState } from '../editor/store/store-hook'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -133,22 +111,6 @@ const MenuTileBadge = ({ text }: { text: string }) => {
   )
 }
 
-function useRequestVSCodeStatus(): () => void {
-  const vscodeState = useEditorState(
-    (store) => ({
-      vscodeReady: store.editor.vscodeReady,
-      loadingScreenVisible: store.editor.vscodeLoadingScreenVisible,
-    }),
-    'useRequestVSCodeStatus',
-  )
-
-  return React.useCallback(
-    // eslint-disable-next-line no-console
-    () => console.log(`VSCode State: ${JSON.stringify(vscodeState)}`),
-    [vscodeState],
-  )
-}
-
 const githubFileChangesCountSelector = createSelector(githubFileChangesSelector, (changes) => {
   return getGithubFileChangesCount(changes)
 })
@@ -186,32 +148,8 @@ export const Menubar = React.memo(() => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const onReparseClick = useReParseOpenProjectFile()
-
-  const onTriggerScrollTest = useTriggerScrollPerformanceTest()
-  const onTriggerResizeTest = useTriggerResizePerformanceTest()
-  const onTriggerRegularHighlightTest = useTriggerRegularHighlightPerformanceTest()
-  const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
-  const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
-  const onTriggerAbsoluteMoveLargeTest = useTriggerAbsoluteMoveLargePerformanceTest()
-  const onTriggerAbsoluteMoveSmallTest = useTriggerAbsoluteMoveSmallPerformanceTest()
-  const onTriggerSelectionChangeTest = useTriggerSelectionChangePerformanceTest()
-
-  const onRequestVSCodeStatus = useRequestVSCodeStatus()
-
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
-
-  const entireStateRef = useRefEditorState((store) => store)
-
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
-
-  const printEditorState = React.useCallback(() => {
-    console.info('Current Editor State:', entireStateRef.current)
-    console.info('Latest metadata:', jsxMetadata.current)
-  }, [entireStateRef, jsxMetadata])
 
   const githubFileChangesCount = useEditorState(
     githubFileChangesCountSelector,
@@ -290,45 +228,6 @@ export const Menubar = React.memo(() => {
           </Tooltip>
         </a>
       </FlexColumn>
-      {isFeatureEnabled('Performance Test Triggers') ? (
-        <React.Fragment>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={printEditorState}>PPP</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerScrollTest}>P S</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerResizeTest}>P R</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerRegularHighlightTest}>PRH</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerAllElementsHighlightTest}>PAH</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerSelectionTest}>P E</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerAbsoluteMoveLargeTest}>PAML</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerAbsoluteMoveSmallTest}>PAMS</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerSelectionChangeTest}>PSC</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onRequestVSCodeStatus}>VSC</a>
-          </Tile>
-        </React.Fragment>
-      ) : null}
-      {isFeatureEnabled('Re-parse Project Button') ? (
-        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-          <a onClick={onReparseClick}>R</a>
-        </Tile>
-      ) : null}
     </FlexColumn>
   )
 })

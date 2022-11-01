@@ -13,7 +13,6 @@ import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
-import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
@@ -29,7 +28,6 @@ import {
   getOpenTextFileKey,
   LeftMenuTab,
   LeftPaneDefaultWidth,
-  MenuBarWidth,
   StoryboardFilePath,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
@@ -356,20 +354,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 display: 'flex',
                 flexShrink: 0,
                 transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
+                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
-              <SimpleFlexColumn
-                style={{
-                  height: '100%',
-                  width: MenuBarWidth,
-                  backgroundColor: colorTheme.leftMenuBackground.value,
-                }}
-              >
-                <Menubar />
-              </SimpleFlexColumn>
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
             </div>
             <SimpleFlexRow
@@ -546,7 +535,7 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: MenuBarWidth + (leftMenuExpanded ? LeftPaneDefaultWidth : 0),
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
         backgroundColor: '#000',

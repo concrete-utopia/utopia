@@ -178,9 +178,8 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
 
-export const MenuBarWidth = 44
-
 const DefaultNavigatorWidth = 280
+
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
   defaultValue: DefaultNavigatorWidth,

@@ -6,6 +6,7 @@ import { setPanelVisibility, togglePanel } from '../editor/actions/action-creato
 import { useEditorState } from '../editor/store/store-hook'
 import { MenuTile } from '../menubar/menubar'
 import { FullHeightButton, RoundedButton, TextButton } from './Buttons'
+import { TestMenu } from './TestMenu'
 
 interface TitleBarProps {}
 
@@ -104,6 +105,7 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
       </div>
 
       <div style={{ display: 'flex', height: '100%' }}>
+        <TestMenu />
         {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}
         {loggedIn ? null : (
           <FullHeightButton onClick={onClickLoginNewTab}>Sign in to Save</FullHeightButton>
