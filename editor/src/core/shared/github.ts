@@ -84,6 +84,12 @@ export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
 export interface RepositoryEntry {
   fullName: string
+  avatarUrl: string | null
+  private: boolean
+  description: string | null
+  name: string | null
+  updatedAt: string | null
+  defaultBranch: string | null
 }
 
 export interface GetUsersPublicRepositoriesSuccess {
@@ -191,7 +197,11 @@ export async function getBranchContent(
   projectID: string,
   branchName: string,
 ): Promise<void> {
-  const operation: GithubOperation = { name: 'loadBranch', branchName: branchName }
+  const operation: GithubOperation = {
+    name: 'loadBranch',
+    branchName: branchName,
+    githubRepo: githubRepo,
+  }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 

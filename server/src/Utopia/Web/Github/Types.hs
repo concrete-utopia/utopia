@@ -389,21 +389,44 @@ instance ToJSON GetBranchContentResponse where
   toJSON (GetBranchContentResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
   toJSON (GetBranchContentResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
-data UsersPublicRepository = UsersPublicRepository
-                           { full_name    :: Text
-                           }
-                           deriving (Eq, Show, Generic, Data, Typeable)
+data RepositoryOwner = RepositoryOwner
+                     { avatar_url   :: Text
+                     }
+                     deriving (Eq, Show, Generic, Data, Typeable)
 
-instance FromJSON UsersPublicRepository where
+instance FromJSON RepositoryOwner where
   parseJSON = genericParseJSON defaultOptions
 
-instance ToJSON UsersPublicRepository where
+instance ToJSON RepositoryOwner where
   toJSON = genericToJSON defaultOptions
 
-type GetUsersPublicRepositoriesResult = [UsersPublicRepository]
+data UsersRepository = UsersRepository
+                     { full_name        :: Text
+                     , owner            :: RepositoryOwner
+                     , private          :: Bool
+                     , description      :: Maybe Text
+                     , name             :: Maybe Text
+                     , updated_at       :: UTCTime
+                     , default_branch   :: Text
+                     }
+                     deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UsersRepository where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UsersRepository where
+  toJSON = genericToJSON defaultOptions
+
+type GetUsersPublicRepositoriesResult = [UsersRepository]
 
 data RepositoryEntry = RepositoryEntry
-                     { fullName :: Text
+                     { fullName         :: Text
+                     , avatarUrl        :: Maybe Text
+                     , private          :: Bool
+                     , description      :: Maybe Text
+                     , name             :: Maybe Text
+                     , updatedAt        :: Maybe UTCTime
+                     , defaultBranch    :: Maybe Text
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
