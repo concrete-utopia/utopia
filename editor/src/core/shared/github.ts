@@ -78,6 +78,12 @@ export interface GetBranchContentSuccess {
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
 
+export interface RepositoryEntryPermissions {
+  admin: boolean
+  push: boolean
+  pull: boolean
+}
+
 export interface RepositoryEntry {
   fullName: string
   avatarUrl: string | null
@@ -86,6 +92,7 @@ export interface RepositoryEntry {
   name: string | null
   updatedAt: string | null
   defaultBranch: string | null
+  permissions: RepositoryEntryPermissions
 }
 
 export interface GetUsersPublicRepositoriesSuccess {

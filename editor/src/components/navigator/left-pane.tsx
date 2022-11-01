@@ -956,12 +956,16 @@ const RepositoryListing = React.memo(
       if (usersRepositories == null) {
         return null
       } else {
-        let filteredResult = usersRepositories.map((repository) => {
-          return {
-            ...repository,
-            importPermitted: true,
+        let filteredResult: Array<RepositoryRowProps> = []
+        for (const repository of usersRepositories) {
+          // Only include a repository if the user can push to it.
+          if (repository.permissions.push) {
+            filteredResult.push({
+              ...repository,
+              importPermitted: true,
+            })
           }
-        })
+        }
         if (targetRepository != null) {
           filteredResult = filteredResult.filter((repository) => {
             return (
@@ -998,6 +1002,11 @@ const RepositoryListing = React.memo(
               updatedAt: null,
               defaultBranch: null,
               importPermitted: false,
+              permissions: {
+                admin: false,
+                push: false,
+                pull: false,
+              },
             }
             return [...filteredRepositories, additionalEntry]
           }
