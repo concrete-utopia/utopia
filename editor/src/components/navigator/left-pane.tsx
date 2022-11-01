@@ -1498,7 +1498,6 @@ const GithubFileChangesList = ({
   }
 
   return (
-    // Note: this is completely temporary until we finalize the design
     <>
       <UIGridRow padded variant='<----------1fr---------><-auto->'>
         <div>
