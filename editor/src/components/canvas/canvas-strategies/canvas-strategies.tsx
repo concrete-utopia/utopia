@@ -39,7 +39,6 @@ import { flowReorderSliderStategy } from './strategies/flow-reorder-slider-strat
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
