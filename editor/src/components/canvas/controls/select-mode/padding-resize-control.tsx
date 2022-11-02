@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -35,12 +35,12 @@ interface ResizeContolProps {
   paddingValue: number
 }
 
-const transformFromOrientation = (orientation: Orientation) => {
+function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {
   switch (orientation) {
     case 'horizontal':
-      return '90deg'
+      return size(desiredSize.height, desiredSize.width)
     case 'vertical':
-      return '0deg'
+      return desiredSize
     default:
       assertNever(orientation)
   }
@@ -121,12 +121,15 @@ const PaddingResizeControlI = React.memo(
 
     const shown = !(props.hiddenByParent && hidden)
 
-    const width = PaddingResizeControlWidth / scale
-    const height = PaddingResizeControlHeight / scale
+    const { width, height } = sizeFromOrientation(
+      orientation,
+      size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
+    )
     const hitAreaWidth = PaddingResizeControlHitAreaWidth / scale
     const borderWidth = PaddingResizeControlBorder / scale
     const dragBorderWidth = PaddingResizeDragBorder / scale
     const color = colorTheme.brandNeonPink.o(50).value
+
     return (
       <div
         onMouseLeave={hoverEndDelayed}
@@ -156,7 +159,6 @@ const PaddingResizeControlI = React.memo(
             position: 'absolute',
             padding: hitAreaWidth,
             cursor: cursor,
-            transform: `rotate(${transformFromOrientation(orientation)})`,
           }}
         >
           {!isDragging && indicatorShown && (
@@ -165,7 +167,6 @@ const PaddingResizeControlI = React.memo(
                 value={props.paddingValue}
                 scale={scale}
                 color={colorTheme.brandNeonPink.value}
-                rotate={labelRotation(props.edge)}
               />
             </div>
           )}

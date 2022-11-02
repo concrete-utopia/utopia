@@ -24,11 +24,10 @@ interface PaddingValueLabelProps {
   scale: number
   color: string
   value: number
-  rotate?: number
 }
 
 export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
-  const { scale, color, value, rotate } = props
+  const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
   return (
@@ -37,7 +36,6 @@ export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
         fontSize: fontSize,
         padding: padding,
         backgroundColor: color,
-        transform: `rotate(${rotate ?? 0}deg)`,
         color: 'white',
       }}
     >
