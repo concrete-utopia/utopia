@@ -58,42 +58,54 @@ export type MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ) => Array<CanvasStrategy>
 
-const existingStrategyFactories: Array<CanvasStrategyFactory> = [
-  absoluteMoveStrategy,
-  absoluteDuplicateStrategy,
-  keyboardAbsoluteMoveStrategy,
-  keyboardAbsoluteResizeStrategy,
-  absoluteResizeBoundingBoxStrategy,
-  flexReorderStrategy,
-  convertToAbsoluteAndMoveStrategy,
-  flowReorderStrategy,
-  flowReorderSliderStategy,
-  flexResizeBasicStrategy,
-  setPaddingStrategy,
-  relativeMoveStrategy,
-]
-
-export const existingStrategies: MetaCanvasStrategy = (
+const moveOrReorderStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): Array<CanvasStrategy> =>
-  stripNulls(
-    existingStrategyFactories.map((factory) =>
-      factory(canvasState, interactionSession, customStrategyState),
-    ),
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      absoluteMoveStrategy,
+      absoluteDuplicateStrategy,
+      keyboardAbsoluteMoveStrategy,
+      keyboardAbsoluteResizeStrategy,
+      flexReorderStrategy,
+      convertToAbsoluteAndMoveStrategy,
+      flowReorderStrategy,
+      flowReorderSliderStategy,
+      relativeMoveStrategy,
+    ],
   )
+}
 
-const RegisteredCanvasStrategiesWithoutAncestorStrategy: Array<MetaCanvasStrategy> = [
-  existingStrategies,
+const resizeStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      keyboardAbsoluteResizeStrategy,
+      absoluteResizeBoundingBoxStrategy,
+      flexResizeBasicStrategy,
+      setPaddingStrategy,
+    ],
+  )
+}
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+  moveOrReorderStrategies,
   reparentMetaStrategy,
-  drawToInsertMetaStrategy,
-  dragToInsertMetaStrategy,
 ]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  ...RegisteredCanvasStrategiesWithoutAncestorStrategy,
-  ancestorMetaStrategy(RegisteredCanvasStrategiesWithoutAncestorStrategy, 1),
+  ...AncestorCompatibleStrategies,
+  resizeStrategies,
+  drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
+  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
 export function pickCanvasStateFromEditorState(
