@@ -25,6 +25,8 @@ export const paddingControlTestId = (edge: EdgePiece): string => `padding-contro
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
   `padding-control-handle-${edge}`
 
+export const PaddingResizeControlContainerTestId = 'PaddingResizeControlContainerTestId'
+
 type Orientation = 'vertical' | 'horizontal'
 
 interface ResizeContolProps {
@@ -43,6 +45,8 @@ const transformFromOrientation = (orientation: Orientation) => {
   }
 }
 
+export const PaddingResizeControlHoverTimeout: number = 200
+
 type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 4
@@ -58,7 +62,9 @@ const PaddingResizeControlI = React.memo(
     const colorTheme = useColorTheme()
 
     const [hidden, setHidden] = React.useState<boolean>(true)
-    const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHidden(!h))
+    const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
+      setHidden(!h),
+    )
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -98,7 +104,7 @@ const PaddingResizeControlI = React.memo(
           justifyContent: 'center',
           backgroundImage: hidden
             ? undefined
-            : `linear-gradient(135deg, ${color} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
+            : `linear-gradient(135deg, ${color} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
         }}
       >
@@ -178,11 +184,14 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHoverHidden(!h))
+  const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
+    setHoverHidden(!h),
+  )
 
   return (
     <CanvasOffsetWrapper>
       <div
+        data-testid={PaddingResizeControlContainerTestId}
         onMouseEnter={hoverStart}
         onMouseLeave={hoverEnd}
         ref={controlRef}
