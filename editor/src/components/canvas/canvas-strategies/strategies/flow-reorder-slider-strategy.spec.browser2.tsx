@@ -169,6 +169,29 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
+const TestProjectFlex = `
+<div style={{ width: '100%', height: '100%', position: 'absolute', display: 'flex' }} data-uid='container'>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#CA1E4C80',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#297374',
+    }}
+    data-uid='bbb'
+    data-testid='bbb'
+  />
+</div>
+`
+
 function dragControl(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
@@ -297,5 +320,45 @@ describe('Flow Reorder Slider Strategy', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
+  })
+  it('the reorder control is visible on flex layouts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlex),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bbb')],
+          false,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
+    expect(targetControl).toBeDefined()
+  })
+  it('the reorder control is visible on flow layouts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc')],
+          false,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
+    expect(targetControl).toBeDefined()
   })
 })
