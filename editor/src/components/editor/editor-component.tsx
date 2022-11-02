@@ -36,7 +36,7 @@ import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-d
 import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
-import TitleBar from '../titlebar/TitleBar'
+import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
