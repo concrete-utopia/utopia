@@ -565,7 +565,7 @@ export interface ReorderSlider {
   type: 'REORDER_SLIDER'
 }
 
-export function reoderSlider(): ReorderSlider {
+export function reorderSlider(): ReorderSlider {
   return {
     type: 'REORDER_SLIDER',
   }

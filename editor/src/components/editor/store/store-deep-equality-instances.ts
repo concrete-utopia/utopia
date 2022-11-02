@@ -337,7 +337,7 @@ import {
   flexGapHandle,
   FlexGapHandle,
   ReorderSlider,
-  reoderSlider,
+  reorderSlider,
   HoverInteractionData,
   InputData,
   interactionSession,
@@ -1752,7 +1752,7 @@ export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingRe
 }
 
 // This will break should the definition of `ReorderSlider` change.
-reoderSlider()
+reorderSlider()
 export const ReorderSliderKeepDeepEquality: KeepDeepEqualityCall<ReorderSlider> = (
   oldValue,
   newValue,

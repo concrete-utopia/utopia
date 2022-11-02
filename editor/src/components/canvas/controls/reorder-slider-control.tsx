@@ -18,7 +18,7 @@ import { CSSCursor } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
-import { createInteractionViaMouse, reoderSlider } from '../canvas-strategies/interaction-state'
+import { createInteractionViaMouse, reorderSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -238,7 +238,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
               createInteractionViaMouse(
                 startPoint,
                 Modifier.modifiersForEvent(event),
-                reoderSlider(),
+                reorderSlider(),
               ),
             ),
           ],

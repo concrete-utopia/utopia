@@ -45,7 +45,7 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
-  reoderSlider,
+  reorderSlider,
   KeyboardInteractionTimeout,
   updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
