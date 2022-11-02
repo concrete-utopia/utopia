@@ -49,7 +49,6 @@ export const ForksGiven = React.memo(() => {
 
   const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       id: store.editor.id,
       projectName: store.editor.projectName,
       description: store.editor.projectDescription,

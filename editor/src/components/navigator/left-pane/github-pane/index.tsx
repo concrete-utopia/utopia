@@ -13,7 +13,6 @@ import {
   parseGithubProjectString,
 } from '../../../../core/shared/github'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
-import { capitalize } from '../../../../core/shared/string-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { when } from '../../../../utils/react-conditionals'
@@ -36,27 +35,29 @@ import {
   isGithubLoadingBranch,
 } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { GithubFileStatus } from '../../../filebrowser/filebrowser'
-import { getGithubFileStatusColor } from '../../../filebrowser/fileitem'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RepositoryListing } from './repository-listing'
 
-const FileChanges = ({ files, type }: { files: string[]; type: GithubFileStatus }) => {
-  if (files.length === 0) {
-    return null
-  }
+const GitBranchIcon = () => {
   return (
-    <div style={{ color: getGithubFileStatusColor(type), marginTop: 4, marginBottom: 4 }}>
-      <div>
-        {capitalize(type)} files ({files.length})
-      </div>
-      {files.map((f) => (
-        <div key={f} style={{ marginLeft: 8 }}>
-          &rarr; {f}
-        </div>
-      ))}
-    </div>
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='11'
+      height='11'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <line x1='6' y1='3' x2='6' y2='15'></line>
+      <circle cx='18' cy='6' r='3'></circle>
+      <circle cx='6' cy='18' r='3'></circle>
+      <path d='M18 9a9 9 0 0 1-9 9'></path>
+    </svg>
   )
 }
 
@@ -77,6 +78,11 @@ export const GithubPane = React.memo(() => {
   const storedTargetGithubRepo = useEditorState((store) => {
     return store.editor.githubSettings.targetRepository
   }, 'GithubPane storedTargetGithubRepo')
+
+  const currentBranch = useEditorState(
+    (store) => store.editor.githubSettings.branchName,
+    'Github current branch',
+  )
 
   const onStartImport = React.useCallback(() => {
     if (parsedImportRepo != null) {
@@ -147,7 +153,7 @@ export const GithubPane = React.memo(() => {
     }
   }, [storedTargetGithubRepo, dispatch])
 
-  const branchesUI = React.useMemo(() => {
+  const loadBranchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
       return null
     } else {
@@ -181,7 +187,10 @@ export const GithubPane = React.memo(() => {
                     }
                     return (
                       <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
-                        <span>{branch.name}</span>
+                        <Ellipsis style={{ fontWeight: branch.name === currentBranch ? 600 : 400 }}>
+                          {when(currentBranch === branch.name, <span>&rarr; </span>)}
+                          <span title={branch.name}>{branch.name}</span>
+                        </Ellipsis>
                         <Button
                           spotlight
                           highlight
@@ -218,6 +227,7 @@ export const GithubPane = React.memo(() => {
     projectID,
     githubWorking,
     githubOperations,
+    currentBranch,
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
@@ -324,14 +334,20 @@ export const GithubPane = React.memo(() => {
             githubAuthenticated={githubAuthenticated}
             storedTargetGithubRepo={storedTargetGithubRepo}
           />
-          {githubFileChanges != null ? (
-            // Note: this is completely temporary until we finalize the design
-            <UIGridRow padded variant='<-------------1fr------------->'>
-              <FileChanges type='untracked' files={githubFileChanges.untracked} />
-              <FileChanges type='modified' files={githubFileChanges.modified} />
-              <FileChanges type='deleted' files={githubFileChanges.deleted} />
-            </UIGridRow>
-          ) : null}
+          {when(
+            currentBranch != null,
+            <>
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <Ellipsis style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <GitBranchIcon />
+                  <span style={{ fontWeight: 600 }} title={currentBranch || undefined}>
+                    {currentBranch}
+                  </span>
+                </Ellipsis>
+              </UIGridRow>
+              <GithubFileChangesList changes={githubFileChanges} githubWorking={githubWorking} />
+            </>,
+          )}
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               spotlight
@@ -342,7 +358,7 @@ export const GithubPane = React.memo(() => {
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
             </Button>
           </UIGridRow>
-          {branchesUI}
+          {loadBranchesUI}
         </SectionBodyArea>
       </Section>
       <Section>
