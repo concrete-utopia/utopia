@@ -40,7 +40,7 @@ export const LoginStatusBar = React.memo(() => {
     case 'LOGGED_IN':
       return null
     case 'OFFLINE_STATE':
-      return null
+      return <EditorOfflineBar />
     case 'NOT_LOGGED_IN':
       return null
     case 'LOGIN_LOST':
