@@ -8,7 +8,7 @@ import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/m
 import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import * as EP from '../../../../core/shared/element-path'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { IconSize } from '../../controls/flow-slider-control'
+import { IconSize } from '../../controls/reorder-slider-control'
 import { ReorderChangeThreshold } from './flow-reorder-helpers'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 
@@ -170,10 +170,10 @@ const TestProjectCCCInlineBlock = `
 `
 
 const TestProjectFlex = `
-<div style={{ width: '100%', height: '100%', position: 'absolute', display: 'flex' }} data-uid='container'>
+<div style={{ width: 100, height: '100%', position: 'absolute', display: 'flex', flexWrap: 'wrap' }} data-uid='container'>
   <div
     style={{
-      width: 50,
+      width: 70,
       height: 50,
       backgroundColor: '#CA1E4C80',
     }}
@@ -182,7 +182,7 @@ const TestProjectFlex = `
   />
   <div
     style={{
-      width: 50,
+      width: 60,
       height: 50,
       backgroundColor: '#297374',
     }}
@@ -198,7 +198,7 @@ function dragControl(
   modifiers: Modifiers,
   expectedNavigatorTargetsDuringMove: Array<string>,
 ) {
-  const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
+  const targetControl = renderResult.renderedDOM.getByTestId('reorder-slider-control')
   const targetControlBounds = targetControl.getBoundingClientRect()
 
   const startPoint = {
@@ -216,7 +216,7 @@ function dragControl(
   })
 }
 
-describe('Flow Reorder Slider Strategy', () => {
+describe('Reorder Slider Strategy', () => {
   it('dragging the control in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject),
@@ -321,7 +321,7 @@ describe('Flow Reorder Slider Strategy', () => {
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
   })
-  it('the reorder control is visible on flex layouts', async () => {
+  it('the reorder control is visible on wrapping flex layouts', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProjectFlex),
       'await-first-dom-report',
@@ -338,7 +338,7 @@ describe('Flow Reorder Slider Strategy', () => {
     )
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
+    const targetControl = renderResult.renderedDOM.getByTestId('reorder-slider-control')
     expect(targetControl).toBeDefined()
   })
   it('the reorder control is visible on flow layouts', async () => {
@@ -358,7 +358,7 @@ describe('Flow Reorder Slider Strategy', () => {
     )
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
+    const targetControl = renderResult.renderedDOM.getByTestId('reorder-slider-control')
     expect(targetControl).toBeDefined()
   })
 })

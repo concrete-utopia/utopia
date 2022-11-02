@@ -18,7 +18,7 @@ import { CSSCursor } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
-import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/interaction-state'
+import { createInteractionViaMouse, reoderSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -32,19 +32,19 @@ const MenuHeight = (scale: number) => 22 / scale
 const IndicatorOffset = (scale: number) => 2 / scale
 const ControlSize = (scale: number) => 6 / scale
 
-interface FlowSliderControlProps {
+interface ReorderSliderControlProps {
   target: ElementPath | null
 }
 
-export const FlowSliderControl = controlForStrategyMemoized(
-  ({ target }: FlowSliderControlProps) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
+export const ReorderSliderControl = controlForStrategyMemoized(
+  ({ target }: ReorderSliderControlProps) => {
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderSliderControl scale')
     const colorTheme = useColorTheme()
     const isDragging = useEditorState(
       (store) =>
         store.editor.canvas.interactionSession != null &&
-        store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
-      'FlowSliderControl isDragging',
+        store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
+      'ReorderSliderControl isDragging',
     )
 
     const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
@@ -87,7 +87,7 @@ export const FlowSliderControl = controlForStrategyMemoized(
           return { siblings: [], latestIndex: -1, startingIndex: -1, startingFrame: zeroCanvasRect }
         }
       },
-      'FlowSliderControl',
+      'ReorderSliderControl',
       (oldValue, newValue) =>
         arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
         oldValue.latestIndex === newValue.latestIndex &&
@@ -145,7 +145,7 @@ export const FlowSliderControl = controlForStrategyMemoized(
               })}
             </div>,
           )}
-          <FlowReorderControl controlPosition={controlTopLeft} />
+          <ReorderControl controlPosition={controlTopLeft} />
         </CanvasOffsetWrapper>
       )
     } else {
@@ -165,7 +165,7 @@ const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
   const indicatorOffset = useEditorState((store) => {
     if (
       store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER' &&
+      store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER' &&
       store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession.interactionData.drag != null
     ) {
@@ -174,7 +174,7 @@ const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
     } else {
       return startingIndex
     }
-  }, 'FlowSliderControl indicatorOffset')
+  }, 'ReorderIndicators indicatorOffset')
 
   // when reaching the end of the slider it will restart from the beginning, a second indicator is shown
   if (indicatorOffset > siblings.length - 1) {
@@ -209,9 +209,9 @@ const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) 
   )
 })
 
-const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
+const ReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowReorderControl scale')
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderControl scale')
   const ref = React.useRef<HTMLDivElement>(null)
   const ClickAreaSize = ControlSize(scale) + 6 / scale
 
@@ -238,7 +238,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
               createInteractionViaMouse(
                 startPoint,
                 Modifier.modifiersForEvent(event),
-                flowSlider(),
+                reoderSlider(),
               ),
             ),
           ],
@@ -267,7 +267,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
       ></div>
       <div
         ref={ref}
-        data-testid='flow-reorder-slider-control'
+        data-testid='reorder-slider-control'
         style={{
           position: 'absolute',
           top: controlPosition.y - (ClickAreaSize - ControlSize(scale)) / 2,

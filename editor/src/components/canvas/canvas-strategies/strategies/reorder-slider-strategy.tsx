@@ -6,7 +6,7 @@ import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { FlowSliderControl } from '../../controls/flow-slider-control'
+import { ReorderSliderControl } from '../../controls/reorder-slider-control'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -19,7 +19,7 @@ import { findNewIndex, getOptionalDisplayPropCommandsForFlow } from './flow-reor
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 
-export function flowReorderSliderStategy(
+export function reorderSliderStategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
@@ -48,27 +48,27 @@ export function flowReorderSliderStategy(
   }
 
   return {
-    id: 'FLOW_REORDER_SLIDER',
+    id: 'REORDER_SLIDER',
     name: 'Reorder (Slider)',
     controlsToRender: [
       controlWithProps({
-        control: FlowSliderControl,
+        control: ReorderSliderControl,
         props: { target },
-        key: 'flow-slider-control',
+        key: 'reorder-slider-control',
         show: 'always-visible',
       }),
     ],
     fitness:
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'FLOW_SLIDER'
+      interactionSession.activeControl.type === 'REORDER_SLIDER'
         ? 100
         : 0,
     apply: () => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'FLOW_SLIDER'
+        interactionSession.activeControl.type === 'REORDER_SLIDER'
       ) {
         const siblingsOfTarget = siblings.map((element) => element.elementPath)
 

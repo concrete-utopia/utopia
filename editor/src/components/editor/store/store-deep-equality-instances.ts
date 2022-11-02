@@ -336,8 +336,8 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
-  FlowSlider,
-  flowSlider,
+  ReorderSlider,
+  reoderSlider,
   HoverInteractionData,
   InputData,
   interactionSession,
@@ -1751,9 +1751,9 @@ export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingRe
   return keepDeepEqualityResult(oldValue, true)
 }
 
-// This will break should the definition of `FlowSlider` change.
-flowSlider()
-export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+// This will break should the definition of `ReorderSlider` change.
+reoderSlider()
+export const ReorderSliderKeepDeepEquality: KeepDeepEqualityCall<ReorderSlider> = (
   oldValue,
   newValue,
 ) => {
@@ -1790,9 +1790,9 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return PaddingResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'FLOW_SLIDER':
+    case 'REORDER_SLIDER':
       if (newValue.type === oldValue.type) {
-        return FlowSliderKeepDeepEquality(oldValue, newValue)
+        return ReorderSliderKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
