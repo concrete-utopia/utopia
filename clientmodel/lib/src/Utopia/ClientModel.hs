@@ -256,7 +256,7 @@ type ProjectContentTreeRoot = M.HashMap Text ProjectContentsTree
 
 data ProjectContentDirectory = ProjectContentDirectory
                              { fullPath  :: Text
-                             , directory :: Directory
+                             , directory :: ProjectFile
                              , children  :: ProjectContentTreeRoot
                              }
                              deriving (Eq, Show, Generic, Data, Typeable)
@@ -278,7 +278,7 @@ generateProjectContentDirectory :: Int -> Gen ProjectContentDirectory
 generateProjectContentDirectory depth = do
   fullPath <- arbitrary
   children <- liftArbitrary $ generateProjectContentsTree (depth - 1)
-  let directory = Directory
+  let directory = ProjectDirectory Directory
   pure ProjectContentDirectory{..}
 
 instance Arbitrary ProjectContentDirectory where

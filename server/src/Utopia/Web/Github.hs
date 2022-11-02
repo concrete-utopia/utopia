@@ -344,7 +344,7 @@ addProjectContentFromGitEntry treeRoot treeContent (filenamePart : filenameRemai
         Nothing -> do
           subTree <- addProjectContentFromGitEntry M.empty treeContent filenameRemainder newPathSoFar
           let fullPath = "/" <> T.intercalate "/" newPathSoFar
-          let newEntry = ProjectContentsTreeDirectory $ ProjectContentDirectory fullPath Directory subTree
+          let newEntry = ProjectContentsTreeDirectory $ ProjectContentDirectory fullPath (ProjectDirectory Directory) subTree
           Right $ M.insert filenamePart newEntry treeRoot
 
 getRecursiveGitTreeAsContent :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> SaveAsset -> Text -> Text -> Text -> Text -> ExceptT Text m ProjectContentTreeRoot
