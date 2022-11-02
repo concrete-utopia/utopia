@@ -32,6 +32,7 @@ type Orientation = 'vertical' | 'horizontal'
 interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
+  paddingValue: number
 }
 
 const transformFromOrientation = (orientation: Orientation) => {
@@ -158,13 +159,15 @@ const PaddingResizeControlI = React.memo(
             transform: `rotate(${transformFromOrientation(orientation)})`,
           }}
         >
-          {/*
-            TODO
-            - [ ] add prop for rotation
-            - [ ] position siblings above each other
-           */}
           {!isDragging && indicatorShown && (
-            <PaddingValueLabel value={42} scale={scale} color={colorTheme.brandNeonPink.value} />
+            <div style={{ position: 'absolute', paddingTop: 10, paddingLeft: 10 }}>
+              <PaddingValueLabel
+                value={props.paddingValue}
+                scale={scale}
+                color={colorTheme.brandNeonPink.value}
+                rotate={labelRotation(props.edge)}
+              />
+            </div>
           )}
           <div
             style={{
@@ -203,6 +206,8 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
       ref.current.style.height = boundingBox.height + 'px'
     }
   })
+
+  const currentPadding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
@@ -246,10 +251,30 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
           position: 'absolute',
         }}
       >
-        <PaddingResizeControlI ref={rightRef} edge={'right'} hiddenByParent={hoverHidden} />
-        <PaddingResizeControlI ref={bottomRef} edge={'bottom'} hiddenByParent={hoverHidden} />
-        <PaddingResizeControlI ref={leftRef} edge={'left'} hiddenByParent={hoverHidden} />
-        <PaddingResizeControlI ref={topRef} edge={'top'} hiddenByParent={hoverHidden} />
+        <PaddingResizeControlI
+          ref={rightRef}
+          edge={'right'}
+          hiddenByParent={hoverHidden}
+          paddingValue={currentPadding.paddingRight}
+        />
+        <PaddingResizeControlI
+          ref={bottomRef}
+          edge={'bottom'}
+          hiddenByParent={hoverHidden}
+          paddingValue={currentPadding.paddingBottom}
+        />
+        <PaddingResizeControlI
+          ref={leftRef}
+          edge={'left'}
+          hiddenByParent={hoverHidden}
+          paddingValue={currentPadding.paddingLeft}
+        />
+        <PaddingResizeControlI
+          ref={topRef}
+          edge={'top'}
+          hiddenByParent={hoverHidden}
+          paddingValue={currentPadding.paddingTop}
+        />
       </div>
     </CanvasOffsetWrapper>
   )
@@ -315,5 +340,18 @@ function edgePieceDerivedProps(edgePiece: EdgePiece): {
       return { cursor: CSSCursor.RowResize, orientation: 'horizontal' }
     default:
       assertNever(edgePiece)
+  }
+}
+
+function labelRotation(edge: EdgePiece): number {
+  switch (edge) {
+    case 'top':
+    case 'bottom':
+      return -90
+    case 'right':
+    case 'left':
+      return 0
+    default:
+      assertNever(edge)
   }
 }
