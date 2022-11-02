@@ -150,13 +150,18 @@ function getNewDisplayTypeCommands(
   }
 }
 
-export function getOptionalDisplayPropCommands(
+export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,
   interactionTarget: InteractionTarget,
   startingMetadata: ElementInstanceMetadataMap,
 ): Array<SetProperty | DeleteProperties> {
   const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
   const target = selectedElements[0]
+  const elementMetadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
+  if (!MetadataUtils.isPositionedByFlow(elementMetadata)) {
+    return []
+  }
+
   const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
     startingMetadata,
     target,

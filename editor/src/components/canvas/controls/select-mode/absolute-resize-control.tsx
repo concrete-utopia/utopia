@@ -69,6 +69,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
           ref={controlRef}
           style={{
             position: 'absolute',
+            pointerEvents: 'none',
           }}
         >
           <ResizeEdge

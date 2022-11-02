@@ -66,7 +66,7 @@ export const GithubFileChangesList: React.FC<{
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
 
   const handleClickRevertAllFiles = React.useCallback(
-    () => (e: React.MouseEvent) => {
+    (e: React.MouseEvent) => {
       e.preventDefault()
       dispatch([EditorActions.showModal({ type: 'file-revert-all' })], 'everyone')
     },
