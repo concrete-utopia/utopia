@@ -76,7 +76,7 @@ const PaddingResizeControlI = React.memo(
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const [pointPoint, setPointPoint] = React.useState<CanvasPoint | null>(null)
+    const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
 
     const colorTheme = useColorTheme()
 
@@ -88,14 +88,14 @@ const PaddingResizeControlI = React.memo(
 
     const hoverStart = React.useCallback(
       (e: React.MouseEvent) => {
-        setPointPoint(canvasPoint({ x: e.clientX, y: e.clientY }))
+        setIndicatorShown(true)
         hoverStartDelayed(e)
       },
       [hoverStartDelayed],
     )
 
     const hoverEnd = React.useCallback((e: React.MouseEvent) => {
-      setPointPoint(null)
+      setIndicatorShown(false)
     }, [])
 
     const onEdgeMouseDown = React.useCallback(
@@ -163,7 +163,7 @@ const PaddingResizeControlI = React.memo(
             - [ ] add prop for rotation
             - [ ] position siblings above each other
            */}
-          {!isDragging && pointPoint != null && (
+          {!isDragging && indicatorShown && (
             <PaddingValueLabel value={42} scale={scale} color={colorTheme.brandNeonPink.value} />
           )}
           <div
