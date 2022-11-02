@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  CanvasPoint,
-  canvasPoint,
-  canvasVector,
-  CanvasVector,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
+import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -24,7 +18,7 @@ import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PaddingValueIndicator, PaddingValueLabel } from './padding-value-indicator'
+import { PaddingValueLabel } from './padding-value-indicator'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -53,8 +47,6 @@ const transformFromOrientation = (orientation: Orientation) => {
 
 export const PaddingResizeControlHoverTimeout: number = 200
 
-const ZeroOffset = canvasVector({ x: 0, y: 0 })
-
 type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 1
@@ -63,15 +55,23 @@ const PaddingResizeControlBorder = 0.5
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
 
+type StoreSelector<T> = (s: EditorStorePatched) => T
+
+const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
+const dispatchSelector: StoreSelector<EditorDispatch> = (store) => store.dispatch
+const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
+  store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
+  store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
+
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'PaddingResizeControl dispatch')
-    const isDragging = useEditorState(
-      (store) =>
-        store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
-        store.editor.canvas.interactionSession?.activeControl.edgePiece === props.edge,
-      'PaddingResizeControl isDragging',
+    const { scale, dispatch, isDragging } = useEditorState(
+      (store) => ({
+        scale: scaleSelector(store),
+        dispatch: dispatchSelector(store),
+        isDragging: isDraggingSelector(store, props.edge),
+      }),
+      'PaddingResizeControl scale, dispatch, isDragging',
     )
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
