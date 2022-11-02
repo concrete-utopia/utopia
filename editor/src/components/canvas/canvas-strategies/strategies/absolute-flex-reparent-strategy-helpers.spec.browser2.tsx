@@ -2156,7 +2156,7 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 432, 637, 2, 123)
+    await checkReparentIndicator(renderResult, 388, 645, 2, 123)
   })
 
   it(`shows the reparent indicator before all the elements in a 'row-reverse' container`, async () => {
@@ -2192,7 +2192,7 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 832, 637, 2, 123)
+    await checkReparentIndicator(renderResult, 788, 645, 2, 123)
   })
 
   it(`shows the reparent indicator between two elements in a 'row' container`, async () => {
@@ -2228,7 +2228,7 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 566, 637, 2, 123)
+    await checkReparentIndicator(renderResult, 522, 645, 2, 123)
   })
 
   it(`shows the reparent indicator between two elements in a 'row-reverse' container`, async () => {
@@ -2264,6 +2264,6 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 698, 637, 2, 123)
+    await checkReparentIndicator(renderResult, 654, 645, 2, 123)
   })
 })

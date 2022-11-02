@@ -143,11 +143,9 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
@@ -156,13 +154,13 @@ import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { memoize } from '../../../core/shared/memoize'
+import { emptySet } from '../../../core/shared/set-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
-import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
 import { GithubFileStatus } from '../../../core/shared/github'
@@ -171,11 +169,8 @@ const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  Project = 'project',
-  Storyboards = 'storyboards',
   Contents = 'contents',
   Settings = 'settings',
-  Sharing = 'sharing',
   Github = 'github',
 }
 
