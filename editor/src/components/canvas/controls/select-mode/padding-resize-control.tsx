@@ -6,6 +6,7 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { CSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -141,8 +142,8 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
 
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const widthWithtDefaultPx = (w: number) => w + 'px'
-  const heightWithtDefaultPx = (h: number) => h + 'px'
+  const numberToPxValue = (n: number) => n + 'px'
+  const cssNumberToString = (n: CSSNumber) => n.value + (n.unit ?? 'px')
 
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
@@ -158,28 +159,32 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
-    ref.current.style.width = widthWithtDefaultPx(padding.paddingLeft)
+    ref.current.style.height = numberToPxValue(boundingBox.height)
+    ref.current.style.width = cssNumberToString(padding.paddingLeft.value)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.width = boundingBox.width + 'px'
-    ref.current.style.height = padding.paddingTop + 'px'
+    ref.current.style.width = numberToPxValue(boundingBox.width)
+    ref.current.style.height = cssNumberToString(padding.paddingTop.value)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.left = boundingBox.width - padding.paddingRight + 'px'
-    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
-    ref.current.style.width = widthWithtDefaultPx(padding.paddingRight)
+    ref.current.style.left = numberToPxValue(
+      boundingBox.width - padding.paddingLeft.renderedDimension,
+    )
+    ref.current.style.height = numberToPxValue(boundingBox.height)
+    ref.current.style.width = cssNumberToString(padding.paddingRight.value)
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.top = boundingBox.height - padding.paddingBottom + 'px'
-    ref.current.style.width = boundingBox.width + 'px'
-    ref.current.style.height = padding.paddingBottom + 'px'
+    ref.current.style.top = numberToPxValue(
+      boundingBox.height - padding.paddingBottom.renderedDimension,
+    )
+    ref.current.style.width = numberToPxValue(boundingBox.width)
+    ref.current.style.height = cssNumberToString(padding.paddingBottom.value)
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)

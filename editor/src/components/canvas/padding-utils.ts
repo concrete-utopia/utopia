@@ -5,48 +5,63 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 
 type CSSPaddingKey = keyof CSSPadding
-export type SimpleCSSPadding = { [key in CSSPaddingKey]: number }
+export type SimpleCSSPadding = { [key in CSSPaddingKey]: PaddingMeasurement }
+
+interface PaddingMeasurement {
+  value: CSSNumber
+  renderedDimension: number
+}
+
+export const defaultPaddingMeasurement = (sizePx: number): PaddingMeasurement => ({
+  value: { value: sizePx, unit: null },
+  renderedDimension: sizePx,
+})
 
 export function simplePaddingFromMetadata(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): SimpleCSSPadding {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  const paddingFromMeasurements = element?.specialSizeMeasurements.padding
 
   const defaultPadding: SimpleCSSPadding = {
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingLeft: 0,
-    paddingRight: 0,
+    paddingTop: defaultPaddingMeasurement(paddingFromMeasurements?.top ?? 0),
+    paddingBottom: defaultPaddingMeasurement(paddingFromMeasurements?.bottom ?? 0),
+    paddingLeft: defaultPaddingMeasurement(paddingFromMeasurements?.left ?? 0),
+    paddingRight: defaultPaddingMeasurement(paddingFromMeasurements?.right ?? 0),
   }
 
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return defaultPadding
   }
 
-  const padding = cssPaddingToSimple(
+  const padding = cssPaddingToMeasurement(
     getLayoutProperty('padding', right(element.element.value.props), ['style']),
     defaultPadding,
   )
 
-  const paddingTop = pxValueFromEither(
+  const paddingTop = paddingMeasurementFromEither(
     getLayoutProperty('paddingTop', right(element.element.value.props), ['style']),
+    defaultPadding.paddingTop,
   )
 
-  const paddingBottom = pxValueFromEither(
+  const paddingBottom = paddingMeasurementFromEither(
     getLayoutProperty('paddingBottom', right(element.element.value.props), ['style']),
+    defaultPadding.paddingBottom,
   )
 
-  const paddingLeft = pxValueFromEither(
+  const paddingLeft = paddingMeasurementFromEither(
     getLayoutProperty('paddingLeft', right(element.element.value.props), ['style']),
+    defaultPadding.paddingLeft,
   )
 
-  const paddingRight = pxValueFromEither(
+  const paddingRight = paddingMeasurementFromEither(
     getLayoutProperty('paddingRight', right(element.element.value.props), ['style']),
+    defaultPadding.paddingRight,
   )
 
   return cssPaddingWithDefaults(
@@ -69,16 +84,21 @@ function cssPaddingWithDefaults(
   }
 }
 
-const isUnitPxValue = (unit: CSSNumberUnit | null) => unit === 'px' || unit == null
+function paddingMeasurementFromEither(
+  value: Either<string, CSSNumber | undefined>,
+  defaultMeasurement: PaddingMeasurement,
+): PaddingMeasurement {
+  const paddingMeasurementFromCSSNumber = (
+    number: CSSNumber | undefined,
+  ): Either<undefined, PaddingMeasurement> =>
+    number == null
+      ? left(undefined)
+      : right({ renderedDimension: defaultMeasurement.renderedDimension, value: number })
 
-const pxValue = (number: CSSNumber | undefined): Either<undefined, number> =>
-  number == null || !isUnitPxValue(number.unit) ? left(undefined) : right(number.value)
-
-function pxValueFromEither(value: Either<string, CSSNumber | undefined>): number | undefined {
-  return defaultEither(undefined, flatMapEither(pxValue, value))
+  return defaultEither(defaultMeasurement, flatMapEither(paddingMeasurementFromCSSNumber, value))
 }
 
-function cssPaddingToSimple(
+function cssPaddingToMeasurement(
   p: Either<string, CSSPadding | undefined>,
   padding: SimpleCSSPadding,
 ): Partial<SimpleCSSPadding> {
@@ -87,25 +107,52 @@ function cssPaddingToSimple(
   }
 
   return {
-    paddingTop: defaultEither(undefined, pxValue(p.value.paddingTop)),
-    paddingBottom: defaultEither(undefined, pxValue(p.value.paddingBottom)),
-    paddingLeft: defaultEither(undefined, pxValue(p.value.paddingLeft)),
-    paddingRight: defaultEither(undefined, pxValue(p.value.paddingRight)),
+    paddingTop: {
+      value: p.value.paddingTop,
+      renderedDimension: padding.paddingTop.renderedDimension,
+    },
+    paddingBottom: {
+      value: p.value.paddingBottom,
+      renderedDimension: padding.paddingBottom.renderedDimension,
+    },
+    paddingLeft: {
+      value: p.value.paddingLeft,
+      renderedDimension: padding.paddingLeft.renderedDimension,
+    },
+    paddingRight: {
+      value: p.value.paddingRight,
+      renderedDimension: padding.paddingRight.renderedDimension,
+    },
   }
 }
 
 export function paddingForEdge(edgePiece: EdgePiece, padding: SimpleCSSPadding): number {
   switch (edgePiece) {
     case 'top':
-      return padding.paddingTop
+      return padding.paddingTop.renderedDimension
     case 'bottom':
-      return padding.paddingBottom
+      return padding.paddingBottom.renderedDimension
     case 'right':
-      return padding.paddingRight
+      return padding.paddingRight.renderedDimension
     case 'left':
-      return padding.paddingLeft
+      return padding.paddingLeft.renderedDimension
     default:
       assertNever(edgePiece)
+  }
+}
+
+const offsetMeasurementByDelta = (
+  measurement: PaddingMeasurement,
+  delta: number,
+): PaddingMeasurement => {
+  const pixelsPerUnit = measurement.value.value / measurement.renderedDimension
+  const deltaInUnits = delta * pixelsPerUnit
+  return {
+    renderedDimension: measurement.renderedDimension + delta,
+    value: {
+      unit: measurement.value.unit,
+      value: measurement.value.value + deltaInUnits,
+    },
   }
 }
 
@@ -116,20 +163,29 @@ export function offsetPaddingByEdge(
 ): SimpleCSSPadding {
   switch (edge) {
     case 'bottom':
-      return { ...padding, paddingBottom: padding.paddingBottom + delta }
+      return { ...padding, paddingBottom: offsetMeasurementByDelta(padding.paddingBottom, delta) }
     case 'top':
-      return { ...padding, paddingTop: padding.paddingTop + delta }
+      return { ...padding, paddingTop: offsetMeasurementByDelta(padding.paddingTop, delta) }
     case 'left':
-      return { ...padding, paddingLeft: padding.paddingLeft + delta }
+      return { ...padding, paddingLeft: offsetMeasurementByDelta(padding.paddingLeft, delta) }
     case 'right':
-      return { ...padding, paddingRight: padding.paddingRight + delta }
+      return { ...padding, paddingRight: offsetMeasurementByDelta(padding.paddingRight, delta) }
     default:
       assertNever(edge)
   }
 }
 
+function paddingMeasurementToString(measurement: PaddingMeasurement): string {
+  return `${measurement.value.value}${measurement.value.unit ?? 'px'}`
+}
+
 export function paddingToPaddingString(padding: SimpleCSSPadding): string {
-  return `${padding.paddingTop}px ${padding.paddingRight}px ${padding.paddingBottom}px ${padding.paddingLeft}px`
+  return [
+    paddingMeasurementToString(padding.paddingTop),
+    paddingMeasurementToString(padding.paddingRight),
+    paddingMeasurementToString(padding.paddingBottom),
+    paddingMeasurementToString(padding.paddingLeft),
+  ].join(' ')
 }
 
 export function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number {
