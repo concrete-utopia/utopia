@@ -201,6 +201,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PROJECT_CONTENTS':
       return UPDATE_FNS.UPDATE_PROJECT_CONTENTS(action, state)
+    case 'UPDATE_BRANCH_CONTENTS':
+      return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
     case 'UPDATE_GITHUB_SETTINGS':
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
     case 'UPDATE_FROM_WORKER':

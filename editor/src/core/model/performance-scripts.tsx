@@ -118,8 +118,10 @@ async function loadProject(
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     githubChecksums: null,
+    branchContents: null,
   }
 
   // Load the project itself.

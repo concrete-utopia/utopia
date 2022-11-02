@@ -66,6 +66,8 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
+import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
+import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -443,6 +445,16 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
         return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
       case 'file-overwrite':
         return <ConfirmOverwriteDialog dispatch={dispatch} files={modal.files} />
+      case 'file-revert':
+        return (
+          <ConfirmRevertDialogProps
+            dispatch={dispatch}
+            status={modal.status}
+            filePath={modal.filePath}
+          />
+        )
+      case 'file-revert-all':
+        return <ConfirmRevertAllDialogProps dispatch={dispatch} />
     }
   }
   return null

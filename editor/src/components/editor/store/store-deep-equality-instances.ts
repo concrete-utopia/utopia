@@ -317,6 +317,8 @@ import {
   FileOverwriteModal,
   GithubOperation,
   GithubChecksums,
+  FileRevertModal,
+  fileRevertModal,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -448,6 +450,7 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
+import { GithubFileStatus } from '../../../core/shared/github'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1427,6 +1430,9 @@ export const MultiFileBuildResultKeepDeepEquality: KeepDeepEqualityCall<MultiFil
   objectDeepEquality(SingleFileBuildResultKeepDeepEquality)
 
 export const PackageStatusKeepDeepEquality: KeepDeepEqualityCall<PackageStatus> =
+  createCallWithTripleEquals()
+
+export const GithubFileStatusKeepDeepEquality: KeepDeepEqualityCall<GithubFileStatus> =
   createCallWithTripleEquals()
 
 export const PackageDetailsKeepDeepEquality: KeepDeepEqualityCall<PackageDetails> =
@@ -2420,9 +2426,6 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-export const NullableGithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> =
-  createCallWithTripleEquals<GithubChecksums | null>()
-
 const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
   oldAttribute,
   newAttribute,
@@ -3102,6 +3105,15 @@ export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwr
     fileOverwriteModal,
   )
 
+export const FileRevertModalKeepDeepEquality: KeepDeepEqualityCall<FileRevertModal> =
+  combine2EqualityCalls(
+    (modal) => modal.filePath,
+    StringKeepDeepEquality,
+    (modal) => modal.status,
+    nullableDeepEquality(GithubFileStatusKeepDeepEquality),
+    fileRevertModal,
+  )
+
 export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
   oldValue,
   newValue,
@@ -3117,6 +3129,17 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
         return FileOverwriteModalKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'file-revert':
+      if (newValue.type === oldValue.type) {
+        return FileRevertModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-revert-all':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(newValue, true)
+      } else {
+        return keepDeepEqualityResult(oldValue, false)
+      }
     default:
       assertNever(oldValue)
   }
@@ -3178,10 +3201,12 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
 )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchName,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )
@@ -3442,6 +3467,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubChecksums,
   )
 
+  const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
+    oldValue.branchContents,
+    newValue.branchContents,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3511,7 +3541,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
-    githubChecksumsResults.areEqual
+    githubChecksumsResults.areEqual &&
+    branchContentsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3586,6 +3617,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
       githubChecksumsResults.value,
+      branchContentsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -165,6 +165,7 @@ import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
+import { GithubFileStatus } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
@@ -350,6 +351,33 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
+export interface FileRevertModal {
+  type: 'file-revert'
+  filePath: string
+  status: GithubFileStatus | null
+}
+
+export function fileRevertModal(
+  filePath: string,
+  status: GithubFileStatus | null,
+): FileRevertModal {
+  return {
+    type: 'file-revert',
+    filePath: filePath,
+    status: status,
+  }
+}
+
+export interface FileRevertAllModal {
+  type: 'file-revert-all'
+}
+
+export function fileRevertAllModal(): FileRevertAllModal {
+  return {
+    type: 'file-revert-all',
+  }
+}
+
 export interface FileUploadInfo {
   fileResult: FileResult
   targetPath: string
@@ -374,7 +402,11 @@ export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteM
   }
 }
 
-export type ModalDialog = FileDeleteModal | FileOverwriteModal
+export type ModalDialog =
+  | FileDeleteModal
+  | FileOverwriteModal
+  | FileRevertModal
+  | FileRevertAllModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -986,15 +1018,18 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
+  branchName: string | null
 }
 
 export function projectGithubSettings(
   targetRepository: GithubRepo | null,
   originCommit: string | null,
+  branchName: string | null,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
+    branchName: branchName,
   }
 }
 
@@ -1014,6 +1049,7 @@ export interface EditorState {
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
+  branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
@@ -1143,6 +1179,7 @@ export function editorState(
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
   githubChecksums: GithubChecksums | null,
+  branchContents: ProjectContentTreeRoot | null,
 ): EditorState {
   return {
     id: id,
@@ -1157,6 +1194,7 @@ export function editorState(
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
     projectContents: projectContents,
+    branchContents: branchContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1800,6 +1838,7 @@ export interface PersistentModel {
   }
   githubSettings: ProjectGithubSettings
   githubChecksums: GithubChecksums | null
+  branchContents: ProjectContentTreeRoot | null
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1841,6 +1880,7 @@ export function mergePersistentModel(
     },
     githubSettings: second.githubSettings,
     githubChecksums: second.githubChecksums,
+    branchContents: second.branchContents,
   }
 }
 
@@ -2025,10 +2065,12 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
+    branchContents: null,
   }
 }
 
@@ -2326,6 +2368,7 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: persistentModel.githubChecksums,
+    branchContents: persistentModel.branchContents,
   }
   return editor
 }
@@ -2363,6 +2406,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     },
     githubSettings: editor.githubSettings,
     githubChecksums: editor.githubChecksums,
+    branchContents: editor.branchContents,
   }
 }
 
@@ -2397,8 +2441,10 @@ export function persistentModelForProjectContents(
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     githubChecksums: null,
+    branchContents: null,
   }
 }
 

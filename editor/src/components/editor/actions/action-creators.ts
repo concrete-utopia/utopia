@@ -212,6 +212,7 @@ import type {
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
   UpdateGithubChecksums,
+  UpdateBranchContents,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -974,6 +975,15 @@ export function updateFile(
 export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateProjectContents {
   return {
     action: 'UPDATE_PROJECT_CONTENTS',
+    contents: contents,
+  }
+}
+
+export function updateBranchContents(
+  contents: ProjectContentTreeRoot | null,
+): UpdateBranchContents {
+  return {
+    action: 'UPDATE_BRANCH_CONTENTS',
     contents: contents,
   }
 }
