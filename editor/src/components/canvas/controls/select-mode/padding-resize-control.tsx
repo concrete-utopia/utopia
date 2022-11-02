@@ -1,5 +1,11 @@
 import React from 'react'
-import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  canvasPoint,
+  canvasVector,
+  CanvasVector,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -18,6 +24,7 @@ import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
+import { PaddingValueIndicator } from './padding-value-indicator'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -46,25 +53,53 @@ const transformFromOrientation = (orientation: Orientation) => {
 
 export const PaddingResizeControlHoverTimeout: number = 200
 
+const ZeroOffset = canvasVector({ x: 0, y: 0 })
+
 type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 1
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 0.5
+const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
 
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
     const dispatch = useEditorState((store) => store.dispatch, 'PaddingResizeControl dispatch')
+    const isDragging = useEditorState(
+      (store) =>
+        store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
+        store.editor.canvas.interactionSession?.activeControl.edgePiece === props.edge,
+      'PaddingResizeControl isDragging',
+    )
+
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+    const [pointPoint, setPointPoint] = React.useState<CanvasPoint | null>(null)
 
     const colorTheme = useColorTheme()
 
     const [hidden, setHidden] = React.useState<boolean>(true)
-    const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
-      setHidden(!h),
+    const [hoverStartDelayed, hoverEndDelayed] = useHoverWithDelay(
+      PaddingResizeControlHoverTimeout,
+      (h) => setHidden(!h),
+    )
+
+    const hoverStart = React.useCallback(
+      (e: React.MouseEvent) => {
+        setPointPoint(canvasPoint({ x: e.clientX, y: e.clientY }))
+        hoverStartDelayed(e)
+      },
+      [hoverStartDelayed],
+    )
+
+    const hoverEnd = React.useCallback(
+      (e: React.MouseEvent) => {
+        hoverEndDelayed(e)
+        setPointPoint(null)
+      },
+      [hoverEndDelayed],
     )
 
     const onEdgeMouseDown = React.useCallback(
@@ -93,6 +128,7 @@ const PaddingResizeControlI = React.memo(
     const height = PaddingResizeControlHeight / scale
     const hitAreaWidth = PaddingResizeControlHitAreaWidth / scale
     const borderWidth = PaddingResizeControlBorder / scale
+    const dragBorderWidth = PaddingResizeDragBorder / scale
     const color = colorTheme.brandNeonPink.o(50).value
     return (
       <div
@@ -108,7 +144,7 @@ const PaddingResizeControlI = React.memo(
             ? undefined
             : `linear-gradient(135deg, ${color} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
-          border: `${borderWidth}px solid ${color}`,
+          border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
         }}
       >
         <div
@@ -132,7 +168,6 @@ const PaddingResizeControlI = React.memo(
               height: height,
               backgroundColor: color,
               border: `${borderWidth}px solid rgb(255, 255, 255, 0.5)`,
-              // borderRadius: '30%',
             }}
           />
         </div>
