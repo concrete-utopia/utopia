@@ -17,6 +17,33 @@ export interface PaddingValueIndicatorProps {
   dragStart: CanvasPoint
 }
 
+const FontSize = 12
+const Padding = 4
+
+interface PaddingValueLabelProps {
+  scale: number
+  color: string
+  value: number
+}
+
+export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
+  const { scale, color, value } = props
+  const fontSize = FontSize / scale
+  const padding = Padding / scale
+  return (
+    <div
+      style={{
+        fontSize: fontSize,
+        padding: padding,
+        backgroundColor: color,
+        color: 'white',
+      }}
+    >
+      {value}
+    </div>
+  )
+}
+
 export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndicatorProps>(
   (props) => {
     const { currentPaddingValue, activeEdge, dragStart, dragDelta } = props
@@ -25,9 +52,6 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
       (store) => store.editor.canvas.scale,
       'PaddingValueIndicator scale',
     )
-
-    const FontSize = 12 / scale
-    const Padding = 4 / scale
 
     const actualPaddingValue = Math.floor(
       Math.max(0, currentPaddingValue + deltaFromEdge(dragDelta, activeEdge)),
@@ -39,15 +63,15 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
           data-testid={PaddingValueIndicatorTestId}
           style={{
             position: 'absolute',
-            fontSize: FontSize,
             left: position.x,
             top: position.y,
-            padding: Padding,
-            backgroundColor: colorTheme.brandNeonPink.value,
-            color: 'white',
           }}
         >
-          {actualPaddingValue}
+          <PaddingValueLabel
+            value={actualPaddingValue}
+            scale={scale}
+            color={colorTheme.brandNeonPink.value}
+          />
         </div>
       </CanvasOffsetWrapper>
     )

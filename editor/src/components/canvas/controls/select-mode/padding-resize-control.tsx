@@ -24,7 +24,7 @@ import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PaddingValueIndicator } from './padding-value-indicator'
+import { PaddingValueIndicator, PaddingValueLabel } from './padding-value-indicator'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -94,13 +94,9 @@ const PaddingResizeControlI = React.memo(
       [hoverStartDelayed],
     )
 
-    const hoverEnd = React.useCallback(
-      (e: React.MouseEvent) => {
-        hoverEndDelayed(e)
-        setPointPoint(null)
-      },
-      [hoverEndDelayed],
-    )
+    const hoverEnd = React.useCallback((e: React.MouseEvent) => {
+      setPointPoint(null)
+    }, [])
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -132,7 +128,7 @@ const PaddingResizeControlI = React.memo(
     const color = colorTheme.brandNeonPink.o(50).value
     return (
       <div
-        onMouseLeave={hoverEnd}
+        onMouseLeave={hoverEndDelayed}
         ref={ref}
         data-testid={paddingControlTestId(props.edge)}
         style={{
@@ -152,6 +148,7 @@ const PaddingResizeControlI = React.memo(
           onMouseDown={onEdgeMouseDown}
           onMouseMove={onMouseMove}
           onMouseEnter={hoverStart}
+          onMouseLeave={hoverEnd}
           onMouseUp={onMouseUp}
           style={{
             visibility: shown ? 'visible' : 'hidden',
@@ -161,6 +158,14 @@ const PaddingResizeControlI = React.memo(
             transform: `rotate(${transformFromOrientation(orientation)})`,
           }}
         >
+          {/*
+            TODO
+            - [ ] add prop for rotation
+            - [ ] position siblings above each other
+           */}
+          {!isDragging && pointPoint != null && (
+            <PaddingValueLabel value={42} scale={scale} color={colorTheme.brandNeonPink.value} />
+          )}
           <div
             style={{
               boxSizing: 'border-box',
