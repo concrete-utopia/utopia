@@ -20,7 +20,7 @@ import {
   defaultPaddingMeasurement,
   offsetPaddingByEdge,
   paddingToPaddingString,
-  SimpleCSSPadding,
+  CSSPaddingMeasurements,
 } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -238,7 +238,7 @@ describe('Padding resize strategy', () => {
 })
 
 async function testAdjustIndividualPaddingValue(edge: EdgePiece) {
-  const padding: SimpleCSSPadding = {
+  const padding: CSSPaddingMeasurements = {
     paddingTop: defaultPaddingMeasurement(22),
     paddingBottom: defaultPaddingMeasurement(33),
     paddingLeft: defaultPaddingMeasurement(44),

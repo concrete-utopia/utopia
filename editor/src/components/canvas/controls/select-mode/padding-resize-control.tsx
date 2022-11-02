@@ -160,22 +160,22 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = cssNumberToString(padding.paddingLeft.value)
+    ref.current.style.width = numberToPxValue(padding.paddingLeft.renderedDimension)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = cssNumberToString(padding.paddingTop.value)
+    ref.current.style.height = numberToPxValue(padding.paddingTop.renderedDimension)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.left = numberToPxValue(
-      boundingBox.width - padding.paddingLeft.renderedDimension,
+      boundingBox.width - padding.paddingRight.renderedDimension,
     )
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = cssNumberToString(padding.paddingRight.value)
+    ref.current.style.width = numberToPxValue(padding.paddingRight.renderedDimension)
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
@@ -184,7 +184,7 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
       boundingBox.height - padding.paddingBottom.renderedDimension,
     )
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = cssNumberToString(padding.paddingBottom.value)
+    ref.current.style.height = numberToPxValue(padding.paddingBottom.renderedDimension)
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
