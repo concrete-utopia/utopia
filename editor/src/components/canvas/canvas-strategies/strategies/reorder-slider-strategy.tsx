@@ -15,7 +15,11 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { findNewIndex, getOptionalDisplayPropCommandsForFlow } from './flow-reorder-helpers'
+import {
+  areAllSiblingsInOneDimensionFlexOrFlow,
+  findNewIndex,
+  getOptionalDisplayPropCommandsForFlow,
+} from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 
@@ -33,16 +37,15 @@ export function reorderSliderStategy(
     target,
   )
   const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target)
+  const isFlexMultilineLayout =
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      target,
+      canvasState.startingMetadata,
+    ) && !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
 
   if (
     siblings.length <= 1 ||
-    !(
-      MetadataUtils.isPositionedByFlow(elementMetadata) ||
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        target,
-        canvasState.startingMetadata,
-      )
-    )
+    (!MetadataUtils.isPositionedByFlow(elementMetadata) && !isFlexMultilineLayout)
   ) {
     return null
   }
