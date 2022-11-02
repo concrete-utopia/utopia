@@ -69,7 +69,6 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       absoluteMoveStrategy,
       absoluteDuplicateStrategy,
       keyboardAbsoluteMoveStrategy,
-      keyboardAbsoluteResizeStrategy,
       flexReorderStrategy,
       convertToAbsoluteAndMoveStrategy,
       flowReorderStrategy,
