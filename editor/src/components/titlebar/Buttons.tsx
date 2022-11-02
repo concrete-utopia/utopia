@@ -49,11 +49,12 @@ export const RoundedButton: React.FC<React.PropsWithChildren<TitleButtonProps>> 
   color,
   children,
 }) => {
+  const bgColor = color == null ? {} : { backgroundColor: color }
   const ButtonEl = styled(TitleButton)((props) => ({
     padding: '3px 12px 3px 8px',
     height: 36,
     borderRadius: 18,
-    ...(color && { backgroundColor: color }),
+    ...bgColor,
   }))
 
   return (
