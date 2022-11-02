@@ -26,18 +26,13 @@ import {
 import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { GithubFileChanges, githubFileChangesSelector } from '../../core/shared/github'
+import {
+  GithubFileChanges,
+  githubFileChangesSelector,
+  GithubFileStatus,
+} from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
-
-export type GithubFileStatus =
-  | 'modified'
-  | 'deleted'
-  | 'untracked'
-  | 'added' // unused, keeping for future reference
-  | 'conflict' // unused, keeping for future reference
-  | 'renamed' // unused, keeping for future reference
-  | 'submodule' // unused, keeping for future reference
 
 export interface FileBrowserItemInfo {
   path: string

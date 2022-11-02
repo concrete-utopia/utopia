@@ -3,14 +3,18 @@ import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import { HEADERS, MODE } from '../../common/server'
 import {
+  addFileToProjectContents,
   deriveGithubFileChanges,
+  getContentsTreeFileFromString,
   getProjectContentsChecksums,
   ProjectContentTreeRoot,
 } from '../../components/assets'
 import { notice } from '../../components/common/notice'
-import { EditorDispatch } from '../../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../../components/editor/action-types'
 import {
+  deleteFile,
   showToast,
+  updateBranchContents,
   updateGithubChecksums,
   updateGithubOperations,
   updateGithubSettings,
@@ -142,8 +146,10 @@ export async function saveProjectToGithub(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
                 responseBody.newCommit,
+                responseBody.branchName,
               ),
             ),
+            updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
           'everyone',
@@ -244,7 +250,10 @@ export async function getBranchContent(
           [
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
-            updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
+            updateBranchContents(responseBody.content),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+            ),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',
@@ -326,6 +335,8 @@ export const githubFileChangesSelector = createSelector(
   },
 )
 
+export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflict'
+
 export interface GithubFileChanges {
   untracked: Array<string>
   modified: Array<string>
@@ -354,4 +365,64 @@ export function githubFileChangesEquals(
     arrayEquals(a.modified, b.modified) &&
     arrayEquals(a.deleted, b.deleted)
   )
+}
+
+export type GithubFileChangesListItem = {
+  status: GithubFileStatus
+  filename: string
+}
+
+export function githubFileChangesToList(
+  changes: GithubFileChanges | null,
+): Array<GithubFileChangesListItem> {
+  if (changes == null) {
+    return []
+  }
+
+  const toItem = (status: GithubFileStatus, files: Array<string>) =>
+    files.map((d) => ({ status: status, filename: d }))
+
+  const sortByFilename = (a: GithubFileChangesListItem, b: GithubFileChangesListItem) =>
+    a.filename.localeCompare(b.filename)
+
+  return [
+    ...toItem('untracked', changes.untracked),
+    ...toItem('modified', changes.modified),
+    ...toItem('deleted', changes.deleted),
+  ].sort(sortByFilename)
+}
+
+export function revertAllGithubFiles(
+  branchContents: ProjectContentTreeRoot | null,
+): Array<EditorAction> {
+  let actions: Array<EditorAction> = []
+  if (branchContents != null) {
+    actions.push(updateProjectContents(branchContents))
+  }
+  return actions
+}
+
+export function revertGithubFile(
+  status: GithubFileStatus,
+  filename: string,
+  projectContents: ProjectContentTreeRoot,
+  branchContents: ProjectContentTreeRoot | null,
+): Array<EditorAction> {
+  let actions: Array<EditorAction> = []
+  if (branchContents != null) {
+    switch (status) {
+      case 'untracked':
+        actions.push(deleteFile(filename))
+        break
+      case 'deleted':
+      case 'modified':
+        const previousFile = getContentsTreeFileFromString(branchContents, filename)
+        if (previousFile != null) {
+          const newTree = addFileToProjectContents(projectContents, filename, previousFile)
+          actions.push(updateProjectContents(newTree))
+        }
+        break
+    }
+  }
+  return actions
 }

@@ -936,8 +936,10 @@ describe('LOAD', () => {
       githubSettings: {
         targetRepository: null,
         originCommit: null,
+        branchName: null,
       },
       githubChecksums: null,
+      branchContents: null,
     }
 
     const action = {

@@ -305,6 +305,7 @@ import {
   WrapInView,
   UpdateGithubOperations,
   UpdateGithubChecksums,
+  UpdateBranchContents,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -981,6 +982,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
     githubChecksums: currentEditor.githubChecksums,
+    branchContents: currentEditor.branchContents,
   }
 }
 
@@ -3724,6 +3726,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
+    }
+  },
+  UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      branchContents: action.contents,
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
