@@ -1,24 +1,22 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { css, jsx, keyframes } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
 import urljoin from 'url-join'
-import { BASE_URL } from '../../../common/env-vars'
+import { BASE_URL } from '../../../../common/env-vars'
 import {
   getBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
-  getUsersPublicGithubRepositories,
   githubFileChangesSelector,
   parseGithubProjectString,
-  RepositoryEntry,
-} from '../../../core/shared/github'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { capitalize } from '../../../core/shared/string-utils'
-import { NO_OP } from '../../../core/shared/utils'
-import { startGithubAuthentication } from '../../../utils/github-auth'
-import { when } from '../../../utils/react-conditionals'
+} from '../../../../core/shared/github'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { capitalize } from '../../../../core/shared/string-utils'
+import { NO_OP } from '../../../../core/shared/utils'
+import { startGithubAuthentication } from '../../../../utils/github-auth'
+import { when } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexColumn,
@@ -29,57 +27,20 @@ import {
   StringInput,
   Title,
   UtopiaTheme,
-} from '../../../uuiui'
-import { setFocus } from '../../common/actions'
-import * as EditorActions from '../../editor/actions/action-creators'
+} from '../../../../uuiui'
+import { setFocus } from '../../../common/actions'
+import * as EditorActions from '../../../editor/actions/action-creators'
 import {
   githubOperationPrettyName,
   isGithubCommishing,
   isGithubLoadingBranch,
-} from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
-import { GithubFileStatus } from '../../filebrowser/filebrowser'
-import { getGithubFileStatusColor } from '../../filebrowser/fileitem'
-import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
-
-const GithubSpinner = () => {
-  const anim = keyframes`
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    `
-
-  return (
-    <FlexColumn>
-      <svg
-        xmlns='http://www.w3.org/2000/svg'
-        width='16'
-        height='16'
-        viewBox='0 0 24 24'
-        fill='none'
-        stroke='#999'
-        strokeWidth='2'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-        css={css`
-          animation: ${anim} 1s linear infinite;
-        `}
-      >
-        <line x1='12' y1='2' x2='12' y2='6'></line>
-        <line x1='12' y1='18' x2='12' y2='22'></line>
-        <line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line>
-        <line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line>
-        <line x1='2' y1='12' x2='6' y2='12'></line>
-        <line x1='18' y1='12' x2='22' y2='12'></line>
-        <line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line>
-        <line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line>
-      </svg>
-    </FlexColumn>
-  )
-}
+} from '../../../editor/store/editor-state'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { GithubFileStatus } from '../../../filebrowser/filebrowser'
+import { getGithubFileStatusColor } from '../../../filebrowser/fileitem'
+import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { GithubSpinner } from './github-spinner'
+import { RepositoryListing } from './repository-listing'
 
 const FileChanges = ({ files, type }: { files: string[]; type: GithubFileStatus }) => {
   if (files.length === 0) {
@@ -114,12 +75,7 @@ export const GithubPane = React.memo(() => {
   }, [githubOperations])
 
   const storedTargetGithubRepo = useEditorState((store) => {
-    const repo = store.editor.githubSettings.targetRepository
-    if (repo == null) {
-      return undefined
-    } else {
-      return `${repo.owner}/${repo.repository}`
-    }
+    return store.editor.githubSettings.targetRepository
   }, 'GithubPane storedTargetGithubRepo')
 
   const onStartImport = React.useCallback(() => {
@@ -174,59 +130,22 @@ export const GithubPane = React.memo(() => {
     [dispatch],
   )
 
-  const [targetRepository, setTargetRepository] = React.useState<string | undefined>(
-    storedTargetGithubRepo,
-  )
-  const parsedTargetRepository = React.useMemo(() => {
-    if (targetRepository == null) {
-      return null
-    } else {
-      return parseGithubProjectString(targetRepository)
-    }
-  }, [targetRepository])
-
-  const [usersRepositories, setUsersRepositories] = React.useState<Array<string> | null>(null)
-
-  const setUsersRepositoriesCallback = React.useCallback(
-    (repositories: Array<RepositoryEntry>) => {
-      setUsersRepositories(
-        repositories.map((repository) => {
-          return repository.fullName
-        }),
-      )
-    },
-    [setUsersRepositories],
-  )
-
-  React.useEffect(() => {
-    if (githubAuthenticated) {
-      void getUsersPublicGithubRepositories(dispatch, setUsersRepositoriesCallback)
-    }
-  }, [githubAuthenticated, dispatch, setUsersRepositoriesCallback])
-
-  const onInputChangeTargetRepository = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setTargetRepository(event.currentTarget.value)
-    },
-    [setTargetRepository],
-  )
-
   const triggerSaveToGithub = React.useCallback(() => {
-    if (parsedTargetRepository != null) {
-      dispatch([EditorActions.saveToGithub(parsedTargetRepository)], 'everyone')
+    if (storedTargetGithubRepo != null) {
+      dispatch([EditorActions.saveToGithub(storedTargetGithubRepo)], 'everyone')
     }
-  }, [dispatch, parsedTargetRepository])
+  }, [dispatch, storedTargetGithubRepo])
 
   const [branchesForRepository, setBranchesForRepository] =
     React.useState<GetBranchesResponse | null>(null)
 
   React.useEffect(() => {
-    if (parsedTargetRepository != null) {
-      void getBranchesForGithubRepository(dispatch, parsedTargetRepository).then((result) => {
+    if (storedTargetGithubRepo != null) {
+      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo).then((result) => {
         setBranchesForRepository(result)
       })
     }
-  }, [parsedTargetRepository, dispatch])
+  }, [storedTargetGithubRepo, dispatch])
 
   const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
@@ -251,10 +170,10 @@ export const GithubPane = React.memo(() => {
                 >
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
-                      if (parsedTargetRepository != null) {
+                      if (storedTargetGithubRepo != null) {
                         void getBranchContent(
                           dispatch,
-                          parsedTargetRepository,
+                          storedTargetGithubRepo,
                           forceNotNull('Should have a project ID.', projectID),
                           branch.name,
                         )
@@ -269,7 +188,11 @@ export const GithubPane = React.memo(() => {
                           onMouseUp={loadContentForBranch}
                           disabled={githubWorking}
                         >
-                          {isGithubLoadingBranch(githubOperations, branch.name) ? (
+                          {isGithubLoadingBranch(
+                            githubOperations,
+                            branch.name,
+                            storedTargetGithubRepo,
+                          ) ? (
                             <GithubSpinner />
                           ) : (
                             'Load'
@@ -290,7 +213,7 @@ export const GithubPane = React.memo(() => {
     }
   }, [
     branchesForRepository,
-    parsedTargetRepository,
+    storedTargetGithubRepo,
     dispatch,
     projectID,
     githubWorking,
@@ -397,26 +320,10 @@ export const GithubPane = React.memo(() => {
             if you have the correct permissions. Please note we don’t support connecting to private
             repositories at the moment.
           </div>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <StringInput
-              placeholder={
-                usersRepositories == null ? 'Loading repositories...' : 'owner/repository'
-              }
-              onChange={onInputChangeTargetRepository}
-              list={'repositories-list'}
-              id={'repositories-input'}
-              testId={'repositories-input'}
-              name={'repositories-input'}
-              value={targetRepository}
-            />
-            {usersRepositories == null ? null : (
-              <datalist id={'repositories-list'}>
-                {usersRepositories.map((repo, index) => {
-                  return <option key={`repo-${index}`} value={repo} />
-                })}
-              </datalist>
-            )}
-          </UIGridRow>
+          <RepositoryListing
+            githubAuthenticated={githubAuthenticated}
+            storedTargetGithubRepo={storedTargetGithubRepo}
+          />
           {githubFileChanges != null ? (
             // Note: this is completely temporary until we finalize the design
             <UIGridRow padded variant='<-------------1fr------------->'>
@@ -429,7 +336,7 @@ export const GithubPane = React.memo(() => {
             <Button
               spotlight
               highlight
-              disabled={!githubAuthenticated || parsedTargetRepository == null || githubWorking}
+              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
               onMouseUp={triggerSaveToGithub}
             >
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
