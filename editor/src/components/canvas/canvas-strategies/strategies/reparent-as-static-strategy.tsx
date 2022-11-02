@@ -1,4 +1,4 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -17,9 +17,10 @@ import { InteractionSession } from '../interaction-state'
 import { applyStaticReparent, ReparentTarget } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function baseReparentToFlowStrategy(
+export function baseReparentAsStaticStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
+  targetLayout: 'flex' | 'flow',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -35,26 +36,8 @@ export function baseReparentToFlowStrategy(
       return null
     }
 
-    const isOriginallyAbsolute =
-      MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        filteredSelectedElements[0],
-      )?.specialSizeMeasurements.position === 'absolute'
-
-    const isOriginallyFlex =
-      !isOriginallyAbsolute &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        filteredSelectedElements[0],
-        canvasState.startingMetadata,
-      )
-
-    if (!isOriginallyAbsolute && !isOriginallyFlex) {
-      return null
-    }
-
     return {
-      id: 'REPARENT_TO_FLOW',
-      name: 'Reparent (Flow)',
+      ...getIdAndNameOfReparentToStaticStrategy(targetLayout),
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
@@ -83,8 +66,28 @@ export function baseReparentToFlowStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyStaticReparent(canvasState, interactionSession, reparentTarget, 'flow')
+        return applyStaticReparent(canvasState, interactionSession, reparentTarget, targetLayout)
       },
     }
+  }
+}
+
+function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): {
+  id: string
+  name: string
+} {
+  switch (targetLayout) {
+    case 'flex':
+      return {
+        id: 'REPARENT_TO_FLEX',
+        name: 'Reparent (Flex)',
+      }
+    case 'flow':
+      return {
+        id: 'REPARENT_TO_FLOW',
+        name: 'Reparent (Flow)',
+      }
+    default:
+      assertNever(targetLayout)
   }
 }

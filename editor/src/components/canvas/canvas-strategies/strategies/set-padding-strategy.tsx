@@ -1,9 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import * as PP from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
+import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -43,7 +45,20 @@ const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
   'paddingRight',
 ]
 
+export const SetPaddingStrategyName = 'Set Padding'
+
 export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
+  if (
+    interactionSession != null &&
+    !(
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'PADDING_RESIZE_HANDLE'
+    )
+  ) {
+    // We don't want to include this in the strategy picker if any other interaction is active
+    return null
+  }
+
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -81,7 +96,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   return {
     id: 'SET_PADDING_STRATEGY',
-    name: 'Set Padding',
+    name: SetPaddingStrategyName,
     controlsToRender: controlsToRender,
     fitness: 1,
     apply: () => {
@@ -161,13 +176,24 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  const childrenNotPositionAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const children = MetadataUtils.getChildren(metadata, path)
+  if (children.length === 0) {
+    return true
+  }
+
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
   )
 
-  if (childrenNotPositionAbsoluteOrSticky.length < 1) {
+  if (childrenNotPositionedAbsoluteOrSticky.length < 1) {
+    return false
+  }
+
+  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
+  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
+  if (!elementHasNonzeroPadding) {
     return false
   }
 

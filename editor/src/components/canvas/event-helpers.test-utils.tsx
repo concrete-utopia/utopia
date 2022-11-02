@@ -82,6 +82,51 @@ export function mouseMoveToPoint(
   resetMouseStatus()
 }
 
+export function mouseEnterAtPoint(
+  eventSourceElement: HTMLElement,
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+): void {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+
+  act(() => {
+    fireEvent(
+      eventSourceElement,
+      new MouseEvent('mouseover', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        ...eventOptions,
+      }),
+    )
+  })
+
+  act(() => {
+    fireEvent(
+      eventSourceElement,
+      new MouseEvent('mouseenter', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        ...eventOptions,
+      }),
+    )
+  })
+}
+
 export function mouseUpAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,

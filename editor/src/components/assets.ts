@@ -6,7 +6,6 @@ import {
   TextFile,
   AssetFile,
   ParseSuccess,
-  isParsedTextFile,
   isTextFile,
   isParseSuccess,
   isAssetFile,
@@ -17,6 +16,9 @@ import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
+import { sha1 } from 'sha.js'
+import { GithubFileChanges } from '../core/shared/github'
+import { GithubChecksums } from './editor/store/editor-state'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -38,6 +40,62 @@ export function getAllProjectAssetFiles(
   })
 
   return allProjectAssets
+}
+
+function getSHA1Checksum(contents: string): string {
+  return new sha1().update(contents).digest('hex')
+}
+
+export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
+  const contents = treeToContents(tree)
+
+  const checksums: GithubChecksums = {}
+  Object.keys(contents).forEach((filename) => {
+    const file = contents[filename]
+    if (isTextFile(file)) {
+      checksums[filename] = getSHA1Checksum(file.fileContents.code)
+    } else if (isAssetFile(file) && file.base64 != undefined) {
+      checksums[filename] = getSHA1Checksum(file.base64)
+    }
+  })
+
+  return checksums
+}
+
+export function deriveGithubFileChanges(
+  projectChecksums: GithubChecksums,
+  githubChecksums: GithubChecksums | null,
+): GithubFileChanges | null {
+  if (githubChecksums == null) {
+    return null
+  }
+
+  const projectFiles = new Set(Object.keys(projectChecksums))
+  const githubFiles = new Set(Object.keys(githubChecksums))
+
+  let untracked: Array<string> = []
+  let modified: Array<string> = []
+  let deleted: Array<string> = []
+
+  projectFiles.forEach((f) => {
+    if (!githubFiles.has(f)) {
+      untracked.push(f)
+    } else if (githubChecksums[f] !== projectChecksums[f]) {
+      modified.push(f)
+    }
+  })
+
+  githubFiles.forEach((f) => {
+    if (!projectFiles.has(f)) {
+      deleted.push(f)
+    }
+  })
+
+  return {
+    untracked,
+    modified,
+    deleted,
+  }
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.

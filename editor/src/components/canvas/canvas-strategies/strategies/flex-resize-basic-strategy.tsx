@@ -39,6 +39,7 @@ import { InteractionSession } from '../interaction-state'
 import { honoursPropsSize } from './absolute-utils'
 import {
   getLockedAspectRatio,
+  isAnySelectedElementAspectRatioLocked,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
@@ -133,6 +134,11 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
+          const anySelectedElementAspectRatioLocked = isAnySelectedElementAspectRatioLocked(
+            canvasState.startingMetadata,
+            [selectedElement],
+          )
+
           const resizedBounds = resizeBoundingBox(
             originalBounds,
             drag,
@@ -141,6 +147,7 @@ export function flexResizeBasicStrategy(
               interactionSession,
               interactionSession.interactionData.modifiers,
               originalBounds,
+              anySelectedElementAspectRatioLocked,
             ),
             'non-center-based',
           )

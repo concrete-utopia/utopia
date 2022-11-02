@@ -56,6 +56,7 @@ import {
   StoredEditorState,
   Theme,
   GithubOperation,
+  GithubChecksums,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -902,6 +903,11 @@ export interface UpdateGithubOperations {
   type: GithubOperationType
 }
 
+export interface UpdateGithubChecksums {
+  action: 'UPDATE_GITHUB_CHECKSUMS'
+  checksums: GithubChecksums
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1175,6 +1181,7 @@ export type EditorAction =
   | SaveToGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
+  | UpdateGithubChecksums
 
 export type DispatchPriority =
   | 'everyone'
