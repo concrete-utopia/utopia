@@ -35,7 +35,7 @@ import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strat
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { flowReorderStrategy } from './strategies/flow-reorder-strategy'
 import { StateSelector } from 'zustand'
-import { flowReorderSliderStategy } from './strategies/flow-reorder-slider-strategy'
+import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -67,7 +67,7 @@ const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   flexReorderStrategy,
   convertToAbsoluteAndMoveStrategy,
   flowReorderStrategy,
-  flowReorderSliderStategy,
+  reorderSliderStategy,
   flexResizeBasicStrategy,
   setPaddingStrategy,
   relativeMoveStrategy,
