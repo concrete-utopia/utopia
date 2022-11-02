@@ -15,7 +15,7 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { findNewIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
+import { findNewIndex, getOptionalDisplayPropCommandsForFlow } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 
@@ -33,7 +33,17 @@ export function flowReorderSliderStategy(
     target,
   )
   const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target)
-  if (siblings.length <= 1 || !MetadataUtils.isPositionedByFlow(elementMetadata)) {
+
+  if (
+    siblings.length <= 1 ||
+    !(
+      MetadataUtils.isPositionedByFlow(elementMetadata) ||
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        target,
+        canvasState.startingMetadata,
+      )
+    )
+  ) {
     return null
   }
 
@@ -87,7 +97,7 @@ export function flowReorderSliderStategy(
               reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblingsOfTarget),
               updateHighlightedViews('mid-interaction', []),
-              ...getOptionalDisplayPropCommands(
+              ...getOptionalDisplayPropCommandsForFlow(
                 newIndex,
                 canvasState.interactionTarget,
                 canvasState.startingMetadata,
