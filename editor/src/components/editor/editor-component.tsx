@@ -516,7 +516,7 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: MenuBarWidth + (leftMenuExpanded ? LeftPaneDefaultWidth : 0),
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
         backgroundColor: '#000',

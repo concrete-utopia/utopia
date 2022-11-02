@@ -89,7 +89,7 @@ export const SettingsPane = React.memo(() => {
     [updateProjectName],
   )
 
-  const handleBlurProjecDescription = React.useCallback(
+  const handleBlurProjectDescription = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       updateProjectDescription(e.target.value)
     },
@@ -148,7 +148,7 @@ export const SettingsPane = React.memo(() => {
               value={description}
               onChange={onChangeProjectDescription}
               onKeyDown={handleKeyPress}
-              onBlur={handleBlurProjecDescription}
+              onBlur={handleBlurProjectDescription}
               style={{ width: 150 }}
             />
           )}
