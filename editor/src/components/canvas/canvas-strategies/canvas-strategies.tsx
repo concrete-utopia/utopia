@@ -45,6 +45,7 @@ import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
+import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -71,6 +72,7 @@ const existingStrategyFactories: Array<CanvasStrategyFactory> = [
   flexResizeBasicStrategy,
   setPaddingStrategy,
   relativeMoveStrategy,
+  setFlexGapStrategy,
 ]
 
 export const existingStrategies: MetaCanvasStrategy = (

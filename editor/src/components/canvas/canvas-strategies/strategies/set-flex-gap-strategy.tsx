@@ -1,8 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
+  controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -10,9 +12,9 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 
-export const SetFlexGapControlStrategyId = 'SET_FLEX_GAP_STRATEGY'
+export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
-export const setFlexGapControlStrategy: CanvasStrategyFactory = (
+export const setFlexGapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customtrategyState: CustomStrategyState,
@@ -38,9 +40,16 @@ export const setFlexGapControlStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: SetFlexGapControlStrategyId,
+    id: SetFlexGapStrategyId,
     name: 'Set flex gap',
-    controlsToRender: [],
+    controlsToRender: [
+      controlWithProps({
+        control: FlexGapControl,
+        props: { selectedElement: selectedElements[0] },
+        key: 'flex-gap-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
     fitness: 1,
     apply: () => emptyStrategyApplicationResult,
   }
@@ -57,5 +66,5 @@ function supportsFlexGapControls(
 
   const children = MetadataUtils.getChildren(metadata, elementPath)
 
-  return children.some((c) => c.specialSizeMeasurements.parentFlexGap > 0)
+  return children.length > 1 && children.some((c) => c.specialSizeMeasurements.parentFlexGap > 0)
 }
