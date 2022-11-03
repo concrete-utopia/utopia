@@ -14,6 +14,8 @@ import {
   CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  isInsertionSubjects,
+  isTargetPaths,
 } from '../canvas-strategy-types'
 import {
   AllowSmallerParent,
@@ -124,7 +126,11 @@ export function getApplicableReparentFactories(
 function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-): ReparentTargetsToFilter {
+): ReparentTargetsToFilter | null {
+  if (isInsertionSubjects(canvasState.interactionTarget)) {
+    return null
+  }
+
   const interactionData = interactionSession.interactionData
   if (interactionData.type !== 'DRAG') {
     throw new Error(
@@ -178,15 +184,16 @@ const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFi
   ) => {
     // We only need to re-calculate the targets to filter if the interaction targets or starting metadata have changed
     if (isCanvasState(l) && isCanvasState(r)) {
-      // FIXME What about insertion?
-      const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
-      const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
-      return (
-        l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
-      )
-    } else {
-      return true
+      if (isTargetPaths(l.interactionTarget) && isTargetPaths(r.interactionTarget)) {
+        const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
+        const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
+        return (
+          l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
+        )
+      }
     }
+
+    return true
   },
 })
 
