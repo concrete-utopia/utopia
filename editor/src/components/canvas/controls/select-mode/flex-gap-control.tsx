@@ -19,29 +19,23 @@ import { useEditorState, useRefEditorState } from '../../../editor/store/store-h
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
-import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { cursorFromFlexDirection, SimpleFlexDirection } from '../../gap-utils'
+import { cursorFromFlexDirection, PathWithBounds, SimpleFlexDirection } from '../../gap-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
-  gap: number
   flexDirection: SimpleFlexDirection
-}
-
-interface PathWithBounds {
-  bounds: CanvasRectangle
-  path: ElementPath
+  controlBounds: Array<PathWithBounds>
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
-  const { selectedElement, gap, flexDirection } = props
+  const { selectedElement, flexDirection, controlBounds } = props
 
   const { dispatch, scale } = useEditorState(
     (store) => ({
@@ -52,31 +46,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
-    selectedElement,
-    elementMetadata.current,
-  )
-  if (parentBounds == null) {
-    return null
-  }
-
-  const children = MetadataUtils.getChildrenPaths(elementMetadata.current, selectedElement)
-  const childCanvasBounds = stripNulls(
-    children.map((childPath) =>
-      optionalMap(
-        (frame) => ({ path: childPath, bounds: frame }),
-        MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata.current),
-      ),
-    ),
-  ).slice(0, -1)
-
-  const controlBounds = paddingControlContainerBoundsFromChildBounds(
-    parentBounds,
-    childCanvasBounds,
-    gap,
-    flexDirection,
-  )
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
@@ -170,83 +139,4 @@ function startInteraction(
       ),
     ])
   }
-}
-
-function paddingControlContainerBoundsFromChildBounds(
-  parentBounds: CanvasRectangle,
-  children: Array<PathWithBounds>,
-  gap: number,
-  flexDirection: SimpleFlexDirection,
-): Array<PathWithBounds> {
-  let runningLength: number = initialRunningLength(flexDirection, children)
-  let gapBounds: Array<PathWithBounds> = []
-  for (const { path, bounds } of children) {
-    runningLength = updateRunningLength(bounds, flexDirection, runningLength)
-    gapBounds.push({
-      path: path,
-      bounds: gapControlBounds(parentBounds, bounds, flexDirection, runningLength, gap),
-    })
-    runningLength += gap
-  }
-  return gapBounds
-}
-
-function initialRunningLength(
-  flexDirection: SimpleFlexDirection,
-  children: Array<PathWithBounds>,
-): number {
-  switch (flexDirection) {
-    case 'row':
-    case 'row-reverse':
-      return children[0].bounds.x
-    case 'column':
-    case 'column-reverse':
-      return children[0].bounds.y
-    default:
-      assertNever(flexDirection)
-  }
-}
-
-function updateRunningLength(
-  bounds: CanvasRectangle,
-  flexDirection: SimpleFlexDirection,
-  runningLength: number,
-): number {
-  switch (flexDirection) {
-    case 'row':
-    case 'row-reverse':
-      return runningLength + bounds.width
-    case 'column':
-    case 'column-reverse':
-      return runningLength + bounds.height
-    default:
-      assertNever(flexDirection)
-  }
-}
-
-function gapControlBounds(
-  parentBounds: CanvasRectangle,
-  bounds: CanvasRectangle,
-  flexDirection: SimpleFlexDirection,
-  runningLength: number,
-  gap: number,
-): CanvasRectangle {
-  if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-    return canvasRectangle({
-      x: runningLength,
-      y: bounds.y,
-      width: gap,
-      height: parentBounds.height,
-    })
-  }
-  if (flexDirection === 'column' || flexDirection === 'column-reverse') {
-    return canvasRectangle({
-      x: bounds.x,
-      y: runningLength,
-      width: parentBounds.width,
-      height: gap,
-    })
-  }
-
-  assertNever(flexDirection)
 }

@@ -11,6 +11,7 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
   cursorFromFlexDirection,
+  gapControlBoundsFromMetadata,
   SimpleFlexDirection,
   simpleFlexDirectionFromString,
   updateGapValue,
@@ -62,6 +63,13 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const updatedDragValue = Math.max(0, updateGapValue(flexGap.direction, flexGap.value, drag))
 
+  const controlBounds = gapControlBoundsFromMetadata(
+    interactionSession?.latestMetadata ?? canvasState.startingMetadata,
+    selectedElement,
+    flexGap.value,
+    flexGap.direction,
+  )
+
   return {
     id: SetFlexGapStrategyId,
     name: 'Set flex gap',
@@ -70,7 +78,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         control: FlexGapControl,
         props: {
           selectedElement: selectedElement,
-          gap: updatedDragValue,
+          controlBounds: controlBounds,
           flexDirection: flexGap.direction,
         },
         key: 'flex-gap-resize-control',

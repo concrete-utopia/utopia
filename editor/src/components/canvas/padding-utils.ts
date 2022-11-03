@@ -2,11 +2,12 @@ import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, Either, flatMapEither, isLeft, left, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import { CanvasVector } from '../../core/shared/math-utils'
+import { canvasRectangle, CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
+import { SimpleFlexDirection } from './gap-utils'
 
 type CSSPaddingKey = keyof CSSPadding
 export type SimpleCSSPadding = { [key in CSSPaddingKey]: number }
