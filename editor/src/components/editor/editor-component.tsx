@@ -42,8 +42,14 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { LeftMenuTab, LeftPaneDefaultWidth, MenuBarWidth } from './store/editor-state'
+import {
+  githubOperationLocksEditor,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
+  MenuBarWidth,
+} from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
+import { refreshGithubSettings } from '../../core/shared/github'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -288,6 +294,18 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
+  const githubAuthenticated = useEditorState(
+    (store) => store.userState.githubState.authenticated,
+    'Github authentication',
+  )
+  const githubRepo = useEditorState(
+    (store) => store.editor.githubSettings.targetRepository,
+    'Github repository',
+  )
+  React.useEffect(() => {
+    void refreshGithubSettings(dispatch, { githubAuthenticated, githubRepo })
+  }, [githubAuthenticated, githubRepo, dispatch])
+
   return (
     <>
       <SimpleFlexRow
@@ -489,7 +507,7 @@ const LockedOverlay = React.memo(() => {
   )
 
   const editorLocked = useEditorState(
-    (store) => store.editor.githubOperations.length > 0,
+    (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
     'EditorComponentInner editorLocked',
   )
 

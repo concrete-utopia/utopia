@@ -163,7 +163,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
-import { GithubFileStatus } from '../../../core/shared/github'
+import { GithubBranch, GithubFileStatus, RepositoryEntry } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
@@ -271,6 +271,15 @@ export function githubOperationPrettyName(op: GithubOperation): string {
   }
 }
 
+export function githubOperationLocksEditor(op: GithubOperation): boolean {
+  switch (op.name) {
+    case 'listBranches':
+    case 'loadRepositories':
+      return false
+    default:
+      return true
+  }
+}
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
@@ -1010,21 +1019,35 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
   }
 }
 
+function githubRepoName(repo: GithubRepo): string {
+  return `${repo.owner}/${repo.repository}`
+}
+
+export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): boolean {
+  if (a == null && b == null) {
+    return true
+  }
+  if (a == null || b == null) {
+    return false
+  }
+  return githubRepoName(a) === githubRepoName(b)
+}
+
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
   branchName: string | null
+  branches: Array<GithubBranch>
+  publicRepositories: Array<RepositoryEntry>
 }
 
-export function projectGithubSettings(
-  targetRepository: GithubRepo | null,
-  originCommit: string | null,
-  branchName: string | null,
-): ProjectGithubSettings {
+export function emptyProjectGithubSettings(): ProjectGithubSettings {
   return {
-    targetRepository: targetRepository,
-    originCommit: originCommit,
-    branchName: branchName,
+    targetRepository: null,
+    originCommit: null,
+    branchName: null,
+    publicRepositories: [],
+    branches: [],
   }
 }
 
@@ -2057,11 +2080,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
-    githubSettings: {
-      targetRepository: null,
-      originCommit: null,
-      branchName: null,
-    },
+    githubSettings: emptyProjectGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
@@ -2433,11 +2452,7 @@ export function persistentModelForProjectContents(
     navigator: {
       minimised: false,
     },
-    githubSettings: {
-      targetRepository: null,
-      originCommit: null,
-      branchName: null,
-    },
+    githubSettings: emptyProjectGithubSettings(),
     githubChecksums: null,
     branchContents: null,
   }

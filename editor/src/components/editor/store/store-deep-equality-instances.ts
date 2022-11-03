@@ -306,7 +306,6 @@ import {
   ProjectGithubSettings,
   GithubRepo,
   githubRepo,
-  projectGithubSettings,
   DraggedImageProperties,
   draggedImageProperties,
   ImageDragSessionState,
@@ -319,6 +318,7 @@ import {
   GithubChecksums,
   FileRevertModal,
   fileRevertModal,
+  emptyProjectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -450,7 +450,12 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
-import { GithubFileStatus } from '../../../core/shared/github'
+import {
+  GithubBranch,
+  GithubFileStatus,
+  RepositoryEntry,
+  RepositoryEntryPermissions,
+} from '../../../core/shared/github'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3200,15 +3205,80 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
   githubRepo,
 )
 
-export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+export const GithubBranchKeepDeepEquality: KeepDeepEqualityCall<GithubBranch> =
+  combine1EqualityCall(
+    (branch) => branch.name,
+    StringKeepDeepEquality,
+    (name: string): GithubBranch => ({ name }),
+  )
+
+export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntryPermissions> =
   combine3EqualityCalls(
+    (p) => p.admin,
+    BooleanKeepDeepEquality,
+    (p) => p.pull,
+    BooleanKeepDeepEquality,
+    (p) => p.push,
+    BooleanKeepDeepEquality,
+    (admin: boolean, push: boolean, pull: boolean): RepositoryEntryPermissions => ({
+      admin,
+      push,
+      pull,
+    }),
+  )
+
+export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
+  combine8EqualityCalls(
+    (r) => r.avatarUrl,
+    NullableStringKeepDeepEquality,
+    (r) => r.private,
+    BooleanKeepDeepEquality,
+    (r) => r.fullName,
+    StringKeepDeepEquality,
+    (r) => r.description,
+    NullableStringKeepDeepEquality,
+    (r) => r.name,
+    NullableStringKeepDeepEquality,
+    (r) => r.updatedAt,
+    NullableStringKeepDeepEquality,
+    (r) => r.defaultBranch,
+    NullableStringKeepDeepEquality,
+    (r) => r.permissions,
+    RepositoryEntryPermissionsKeepDeepEquality,
+    (
+      avatarUrl: string | null,
+      priv: boolean,
+      fullName: string,
+      description: string | null,
+      name: string | null,
+      updatedAt: string | null,
+      defaultBranch: string | null,
+      permissions: RepositoryEntryPermissions,
+    ): RepositoryEntry => ({
+      avatarUrl,
+      private: priv,
+      fullName,
+      description,
+      name,
+      updatedAt,
+      defaultBranch,
+      permissions,
+    }),
+  )
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine5EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.branchName,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
-    projectGithubSettings,
+    (settings) => settings.branches,
+    arrayDeepEquality(GithubBranchKeepDeepEquality),
+    (settings) => settings.publicRepositories,
+    arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+    emptyProjectGithubSettings,
   )
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (

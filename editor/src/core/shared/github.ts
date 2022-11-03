@@ -22,10 +22,11 @@ import {
 } from '../../components/editor/actions/action-creators'
 import {
   EditorStorePatched,
+  emptyProjectGithubSettings,
   GithubOperation,
   GithubRepo,
   PersistentModel,
-  projectGithubSettings,
+  ProjectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
@@ -61,11 +62,11 @@ export interface GithubFailure {
 
 export type SaveToGithubResponse = SaveToGithubSuccess | GithubFailure
 
-export interface GetBranchesBranch {
+export interface GithubBranch {
   name: string
 }
 
-export type GetBranchesResult = Array<GetBranchesBranch>
+export type GetBranchesResult = Array<GithubBranch>
 
 export interface GetBranchesSuccess {
   type: 'SUCCESS'
@@ -142,18 +143,24 @@ export async function saveProjectToGithub(
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
-            updateGithubSettings(
-              projectGithubSettings(
-                persistentModel.githubSettings.targetRepository,
-                responseBody.newCommit,
-                responseBody.branchName,
-              ),
-            ),
+            updateGithubSettings({
+              targetRepository: persistentModel.githubSettings.targetRepository,
+              originCommit: responseBody.newCommit,
+              branchName: responseBody.branchName,
+            }),
             updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
           'everyone',
         )
+
+        // refresh the branches after the content was saved
+        if (persistentModel.githubSettings.targetRepository) {
+          void getBranchesForGithubRepository(
+            dispatch,
+            persistentModel.githubSettings.targetRepository,
+          )
+        }
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -171,7 +178,7 @@ export async function saveProjectToGithub(
 export async function getBranchesForGithubRepository(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
-): Promise<GetBranchesResponse> {
+): Promise<void> {
   const operation: GithubOperation = { name: 'listBranches' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
@@ -185,17 +192,35 @@ export async function getBranchesForGithubRepository(
     mode: MODE,
   })
 
-  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
-
   if (response.ok) {
     const responseBody: GetBranchesResponse = await response.json()
-    return responseBody
-  } else {
-    return {
-      type: 'FAILURE',
-      failureReason: 'Server error.',
+
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(`Error when listing branches: ${responseBody.failureReason}`, 'ERROR'),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        dispatch([updateGithubSettings({ branches: responseBody.branches })], 'everyone')
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
   }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export async function getBranchContent(
@@ -203,6 +228,7 @@ export async function getBranchContent(
   githubRepo: GithubRepo,
   projectID: string,
   branchName: string,
+  resetBranches: boolean,
 ): Promise<void> {
   const operation: GithubOperation = {
     name: 'loadBranch',
@@ -246,14 +272,20 @@ export async function getBranchContent(
         )
         break
       case 'SUCCESS':
+        let newSettings: Partial<ProjectGithubSettings> = {
+          targetRepository: githubRepo,
+          originCommit: responseBody.originCommit,
+          branchName: branchName,
+        }
+        if (resetBranches) {
+          newSettings.branches = []
+        }
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
             updateBranchContents(responseBody.content),
-            updateGithubSettings(
-              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
-            ),
+            updateGithubSettings(newSettings),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',
@@ -273,10 +305,7 @@ export async function getBranchContent(
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
-export async function getUsersPublicGithubRepositories(
-  dispatch: EditorDispatch,
-  callback: (repositories: Array<RepositoryEntry>) => void,
-): Promise<void> {
+export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch): Promise<void> {
   const operation: GithubOperation = { name: 'loadRepositories' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
@@ -306,7 +335,14 @@ export async function getUsersPublicGithubRepositories(
         )
         break
       case 'SUCCESS':
-        callback(responseBody.repositories)
+        dispatch(
+          [
+            updateGithubSettings({
+              publicRepositories: responseBody.repositories.filter((repo) => !repo.private),
+            }),
+          ],
+          'everyone',
+        )
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -425,4 +461,26 @@ export function revertGithubFile(
     }
   }
   return actions
+}
+
+export function refreshGithubSettings(
+  dispatch: EditorDispatch,
+  {
+    githubAuthenticated,
+    githubRepo,
+  }: {
+    githubAuthenticated: boolean
+    githubRepo: GithubRepo | null
+  },
+): void {
+  if (githubAuthenticated) {
+    void getUsersPublicGithubRepositories(dispatch)
+    if (githubRepo != null) {
+      void getBranchesForGithubRepository(dispatch, githubRepo)
+    } else {
+      dispatch([updateGithubSettings({ branches: [] })], 'everyone')
+    }
+  } else {
+    dispatch([updateGithubSettings(emptyProjectGithubSettings())], 'everyone')
+  }
 }
