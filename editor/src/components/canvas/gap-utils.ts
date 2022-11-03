@@ -26,13 +26,13 @@ export function updateGapValue(
 ): number {
   switch (orientation) {
     case 'row':
-      return originalValue + delta.x
+      return originalValue + delta.x * 2
     case 'row-reverse':
-      return originalValue - delta.x
+      return originalValue - delta.x * 2
     case 'column':
-      return originalValue + delta.y
+      return originalValue + delta.y * 2
     case 'column-reverse':
-      return originalValue - delta.y
+      return originalValue - delta.y * 2
     default:
       assertNever(orientation)
   }

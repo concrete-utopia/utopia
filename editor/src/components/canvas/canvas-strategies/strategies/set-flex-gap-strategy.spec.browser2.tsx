@@ -196,7 +196,7 @@ export var storyboard = (
     }
 
     const endPoint = {
-      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + 22,
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + 11,
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
@@ -233,7 +233,7 @@ export var storyboard = (
 
     const endPoint = {
       x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
-      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + 22,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + 11,
     }
 
     mouseDragFromPointToPoint(gapControlHandle, center, endPoint)

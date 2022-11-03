@@ -111,7 +111,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               top: bounds.y,
               width: bounds.width,
               height: bounds.height,
-              backgroundColor: `rgba(0, 0, 255, 0.5)`,
+              backgroundColor: `rgba(0, 0, 255, 0.1)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
