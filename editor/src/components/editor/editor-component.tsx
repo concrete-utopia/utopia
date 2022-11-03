@@ -42,12 +42,16 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
+<<<<<<< HEAD
 import {
   githubOperationLocksEditor,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   MenuBarWidth,
 } from './store/editor-state'
+=======
+import { LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
+>>>>>>> 266ebcfd3 (added tabbed menu)
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 
@@ -286,7 +290,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isDraggedFile) {
         const actions = [
           EditorActions.setPanelVisibility('leftmenu', true),
-          EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
+          EditorActions.setLeftMenuTab(LeftMenuTab.Project),
         ]
         dispatch(actions, 'everyone')
       }
@@ -343,20 +347,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 height: '100%',
                 display: 'flex',
                 flexShrink: 0,
-                width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
+                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
-              <SimpleFlexColumn
-                style={{
-                  height: '100%',
-                  width: MenuBarWidth,
-                  backgroundColor: colorTheme.leftMenuBackground.value,
-                }}
-              >
-                <Menubar />
-              </SimpleFlexColumn>
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
             </div>
             <SimpleFlexRow
@@ -533,7 +528,7 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: leftMenuExpanded ? MenuBarWidth + LeftPaneDefaultWidth : 0,
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
         backgroundColor: '#000',

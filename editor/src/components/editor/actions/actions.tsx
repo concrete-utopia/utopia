@@ -471,7 +471,7 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
     case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Project)
     case 'inspector':
     case 'canvas':
     case 'codeEditor':

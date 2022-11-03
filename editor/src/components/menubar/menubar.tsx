@@ -137,7 +137,7 @@ export const Menubar = React.memo(() => {
   )
 
   const onClickContentsTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Contents)
+    onClickTab(LeftMenuTab.Project)
   }, [onClickTab])
 
   const onClickSettingsTab = React.useCallback(() => {
@@ -180,7 +180,7 @@ export const Menubar = React.memo(() => {
         <Tooltip title={'Files, Dependencies, Fonts'} placement={'right'}>
           <span>
             <MenuTile
-              selected={selectedTab === LeftMenuTab.Contents}
+              selected={selectedTab === LeftMenuTab.Project}
               icon={<MenuIcons.FileSkewed />}
               onClick={onClickContentsTab}
               size='large'
