@@ -620,7 +620,7 @@ export interface UpdateBranchContents {
 
 export interface UpdateGithubSettings {
   action: 'UPDATE_GITHUB_SETTINGS'
-  settings: Partial<ProjectGithubSettings>
+  settings: ProjectGithubSettings
 }
 
 export interface UpdateGithubData {

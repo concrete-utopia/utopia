@@ -1039,11 +1039,15 @@ export interface ProjectGithubSettings {
   branchName: string | null
 }
 
-export function emptyProjectGithubSettings(): ProjectGithubSettings {
+export function projectGithubSettings(
+  targetRepository: GithubRepo | null,
+  originCommit: string | null,
+  branchName: string | null,
+): ProjectGithubSettings {
   return {
-    targetRepository: null,
-    originCommit: null,
-    branchName: null,
+    targetRepository: targetRepository,
+    originCommit: originCommit,
+    branchName: branchName,
   }
 }
 
@@ -2091,7 +2095,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
-    githubSettings: emptyProjectGithubSettings(),
+    githubSettings: {
+      targetRepository: null,
+      originCommit: null,
+      branchName: null,
+    },
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
@@ -2465,7 +2473,11 @@ export function persistentModelForProjectContents(
     navigator: {
       minimised: false,
     },
-    githubSettings: emptyProjectGithubSettings(),
+    githubSettings: {
+      targetRepository: null,
+      originCommit: null,
+      branchName: null,
+    },
     githubChecksums: null,
     branchContents: null,
   }

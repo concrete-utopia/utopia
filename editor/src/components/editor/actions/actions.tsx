@@ -3739,10 +3739,7 @@ export const UPDATE_FNS = {
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        ...action.settings,
-      },
+      githubSettings: action.settings,
     }
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {

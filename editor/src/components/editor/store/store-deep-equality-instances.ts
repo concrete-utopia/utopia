@@ -318,9 +318,9 @@ import {
   GithubChecksums,
   FileRevertModal,
   fileRevertModal,
-  emptyProjectGithubSettings,
   GithubData,
   emptyGithubData,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3276,7 +3276,7 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.branchName,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
-    emptyProjectGithubSettings,
+    projectGithubSettings,
   )
 
 export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine2EqualityCalls(
