@@ -35,7 +35,8 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (!supportsFlexGapControls(canvasState.startingMetadata, selectedElements[0])) {
+  const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
+  if (flexGap == null) {
     return null
   }
 
@@ -45,7 +46,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       controlWithProps({
         control: FlexGapControl,
-        props: { selectedElement: selectedElements[0] },
+        props: { selectedElement: selectedElements[0], gap: flexGap },
         key: 'flex-gap-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
@@ -55,16 +56,24 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 }
 
-function supportsFlexGapControls(
+function maybeFlexGapFromElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): boolean {
+): number | null {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (elementMetadata == null || elementMetadata.specialSizeMeasurements.display !== 'flex') {
-    return false
+    return null
   }
 
   const children = MetadataUtils.getChildren(metadata, elementPath)
+  if (children.length < 2) {
+    return null
+  }
 
-  return children.length > 1 && children.some((c) => c.specialSizeMeasurements.parentFlexGap > 0)
+  const flexGap = children[0].specialSizeMeasurements.parentFlexGap
+  if (flexGap === 0) {
+    return null
+  }
+
+  return flexGap
 }

@@ -1,5 +1,8 @@
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { FlexGapControlTestId } from '../../controls/select-mode/flex-gap-control'
+import {
+  FlexGapControlHandleTestId,
+  FlexGapControlTestId,
+} from '../../controls/select-mode/flex-gap-control'
 import { mouseClickAtPoint } from '../../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
@@ -41,7 +44,10 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControls = editor.renderedDOM.queryAllByTestId(FlexGapControlTestId)
+    const gapControls = [
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+    ]
 
     expect(gapControls).toEqual([])
   })
@@ -98,7 +104,10 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControls = editor.renderedDOM.queryAllByTestId(FlexGapControlTestId)
+    const gapControls = [
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+    ]
 
     expect(gapControls).toEqual([])
   })
@@ -156,8 +165,10 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControls = editor.renderedDOM.getByTestId(FlexGapControlTestId)
+    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId)
+    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)
 
-    expect(gapControls).toBeTruthy()
+    expect(gapControlContainer).toBeTruthy()
+    expect(gapControlHandles.length).toEqual(1)
   })
 })
