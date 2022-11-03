@@ -89,6 +89,18 @@ export interface RepositoryEntryPermissions {
   pull: boolean
 }
 
+export function repositoryEntryPermissions(
+  admin: boolean,
+  push: boolean,
+  pull: boolean,
+): RepositoryEntryPermissions {
+  return {
+    admin: admin,
+    push: push,
+    pull: pull,
+  }
+}
+
 export interface RepositoryEntry {
   fullName: string
   avatarUrl: string | null
@@ -98,6 +110,28 @@ export interface RepositoryEntry {
   updatedAt: string | null
   defaultBranch: string | null
   permissions: RepositoryEntryPermissions
+}
+
+export function repositoryEntry(
+  avatarUrl: string | null,
+  priv: boolean,
+  fullName: string,
+  description: string | null,
+  name: string | null,
+  updatedAt: string | null,
+  defaultBranch: string | null,
+  permissions: RepositoryEntryPermissions,
+): RepositoryEntry {
+  return {
+    avatarUrl,
+    private: priv,
+    fullName,
+    description,
+    name,
+    updatedAt,
+    defaultBranch,
+    permissions,
+  }
 }
 
 export interface GetUsersPublicRepositoriesSuccess {

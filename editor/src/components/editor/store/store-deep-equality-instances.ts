@@ -455,7 +455,9 @@ import {
 import {
   GithubBranch,
   GithubFileStatus,
+  repositoryEntry,
   RepositoryEntry,
+  repositoryEntryPermissions,
   RepositoryEntryPermissions,
 } from '../../../core/shared/github'
 
@@ -3222,11 +3224,7 @@ export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<Re
     BooleanKeepDeepEquality,
     (p) => p.push,
     BooleanKeepDeepEquality,
-    (admin: boolean, push: boolean, pull: boolean): RepositoryEntryPermissions => ({
-      admin,
-      push,
-      pull,
-    }),
+    repositoryEntryPermissions,
   )
 
 export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
@@ -3247,25 +3245,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
     NullableStringKeepDeepEquality,
     (r) => r.permissions,
     RepositoryEntryPermissionsKeepDeepEquality,
-    (
-      avatarUrl: string | null,
-      priv: boolean,
-      fullName: string,
-      description: string | null,
-      name: string | null,
-      updatedAt: string | null,
-      defaultBranch: string | null,
-      permissions: RepositoryEntryPermissions,
-    ): RepositoryEntry => ({
-      avatarUrl,
-      private: priv,
-      fullName,
-      description,
-      name,
-      updatedAt,
-      defaultBranch,
-      permissions,
-    }),
+    repositoryEntry,
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
