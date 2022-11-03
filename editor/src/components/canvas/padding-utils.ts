@@ -5,7 +5,7 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 
 type CSSPaddingKey = keyof CSSPadding
@@ -167,6 +167,13 @@ export function paddingMeasurementForEdge(
   }
 }
 
+function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
+  if (unit === 'em') {
+    return Math.floor(value * 10) / 10
+  }
+  return Math.floor(value)
+}
+
 export const offsetMeasurementByDelta = (
   measurement: PaddingMeasurement,
   delta: number,
@@ -175,7 +182,10 @@ export const offsetMeasurementByDelta = (
     return measurement
   }
   const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
-  const deltaInUnits = Math.floor(delta * pixelsPerUnit)
+  const deltaInUnits = valueWithUnitAppropriatePrecision(
+    measurement.value.unit,
+    delta * pixelsPerUnit,
+  )
   return {
     renderedValuePx: measurement.renderedValuePx + delta,
     value: {

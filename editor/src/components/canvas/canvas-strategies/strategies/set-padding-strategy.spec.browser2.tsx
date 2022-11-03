@@ -234,7 +234,7 @@ describe('Padding resize strategy', () => {
     await testPaddingResizeForEdge(editor, dragDelta, 'top')
     await editor.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithStringPaddingValues('8em 1em 3em 2em'),
+      makeTestProjectCodeWithStringPaddingValues('8.2em 1em 3em 2em'),
     )
   })
 
