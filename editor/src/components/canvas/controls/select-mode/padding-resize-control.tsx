@@ -134,7 +134,8 @@ const PaddingResizeControlI = React.memo(
       PaddingIndicatorOffset,
     ].map((v) => v / scale)
 
-    const color = colorTheme.brandNeonPink.o(50).value
+    const stripeColor = colorTheme.brandNeonPink.o(50).value
+    const color = colorTheme.brandNeonPink.value
 
     return (
       <div
@@ -148,7 +149,7 @@ const PaddingResizeControlI = React.memo(
           justifyContent: 'center',
           backgroundImage: hidden
             ? undefined
-            : `linear-gradient(135deg, ${color} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
+            : `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
         }}
@@ -175,11 +176,7 @@ const PaddingResizeControlI = React.memo(
                 paddingLeft: paddingIndicatorOffset,
               }}
             >
-              <PaddingValueLabel
-                value={props.paddingValue}
-                scale={scale}
-                color={colorTheme.brandNeonPink.value}
-              />
+              <PaddingValueLabel value={props.paddingValue} scale={scale} color={color} />
             </div>
           )}
           <div
@@ -188,7 +185,7 @@ const PaddingResizeControlI = React.memo(
               width: width,
               height: height,
               backgroundColor: color,
-              border: `${borderWidth}px solid rgb(255, 255, 255, 0.5)`,
+              // border: `${borderWidth}px solid rgba(255, 255, 255, 0.5)`,
             }}
           />
         </div>
