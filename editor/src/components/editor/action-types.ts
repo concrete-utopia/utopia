@@ -57,6 +57,7 @@ import {
   Theme,
   GithubOperation,
   GithubChecksums,
+  GithubData,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -622,6 +623,11 @@ export interface UpdateGithubSettings {
   settings: Partial<ProjectGithubSettings>
 }
 
+export interface UpdateGithubData {
+  action: 'UPDATE_GITHUB_DATA'
+  data: Partial<GithubData>
+}
+
 export interface WorkerCodeUpdate {
   type: 'WORKER_CODE_UPDATE'
   filePath: string
@@ -1113,6 +1119,7 @@ export type EditorAction =
   | UpdateFile
   | UpdateProjectContents
   | UpdateGithubSettings
+  | UpdateGithubData
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight

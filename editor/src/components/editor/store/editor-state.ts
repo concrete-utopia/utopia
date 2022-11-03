@@ -1037,8 +1037,6 @@ export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
   branchName: string | null
-  branches: Array<GithubBranch>
-  publicRepositories: Array<RepositoryEntry>
 }
 
 export function emptyProjectGithubSettings(): ProjectGithubSettings {
@@ -1046,8 +1044,18 @@ export function emptyProjectGithubSettings(): ProjectGithubSettings {
     targetRepository: null,
     originCommit: null,
     branchName: null,
-    publicRepositories: [],
+  }
+}
+
+export interface GithubData {
+  branches: Array<GithubBranch>
+  publicRepositories: Array<RepositoryEntry>
+}
+
+export function emptyGithubData(): GithubData {
+  return {
     branches: [],
+    publicRepositories: [],
   }
 }
 
@@ -1125,6 +1133,7 @@ export interface EditorState {
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
   githubChecksums: GithubChecksums | null
+  githubData: GithubData
 }
 
 export function editorState(
@@ -1198,6 +1207,7 @@ export function editorState(
   githubOperations: Array<GithubOperation>,
   githubChecksums: GithubChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
+  githubData: GithubData,
 ): EditorState {
   return {
     id: id,
@@ -1270,6 +1280,7 @@ export function editorState(
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
     githubChecksums: githubChecksums,
+    githubData: githubData,
   }
 }
 
@@ -2085,6 +2096,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubOperations: [],
     githubChecksums: null,
     branchContents: null,
+    githubData: emptyGithubData(),
   }
 }
 
@@ -2383,6 +2395,7 @@ export function editorModelFromPersistentModel(
     githubOperations: [],
     githubChecksums: persistentModel.githubChecksums,
     branchContents: persistentModel.branchContents,
+    githubData: emptyGithubData(),
   }
   return editor
 }

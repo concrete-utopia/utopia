@@ -193,7 +193,7 @@ export const RepositoryListing = React.memo(
     )
 
     const usersRepositories = useEditorState(
-      (store) => store.editor.githubSettings.publicRepositories,
+      (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
 

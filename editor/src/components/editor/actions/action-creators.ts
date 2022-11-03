@@ -213,6 +213,7 @@ import type {
   UpdateGithubOperations,
   UpdateGithubChecksums,
   UpdateBranchContents,
+  UpdateGithubData,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -230,6 +231,7 @@ import type {
   Theme,
   GithubOperation,
   GithubChecksums,
+  GithubData,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -994,6 +996,13 @@ export function updateGithubSettings(
   return {
     action: 'UPDATE_GITHUB_SETTINGS',
     settings: settings,
+  }
+}
+
+export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
+  return {
+    action: 'UPDATE_GITHUB_DATA',
+    data: data,
   }
 }
 

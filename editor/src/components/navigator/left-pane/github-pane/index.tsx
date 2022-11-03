@@ -144,7 +144,7 @@ export const GithubPane = React.memo(() => {
   }, [dispatch, storedTargetGithubRepo])
 
   const branchesForRepository = useEditorState(
-    (store) => store.editor.githubSettings.branches,
+    (store) => store.editor.githubData.branches,
     'Github repo branches',
   )
 

@@ -49,7 +49,7 @@ import {
   MenuBarWidth,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
-import { refreshGithubSettings } from '../../core/shared/github'
+import { refreshGithubData } from '../../core/shared/github'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -303,7 +303,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     'Github repository',
   )
   React.useEffect(() => {
-    void refreshGithubSettings(dispatch, { githubAuthenticated, githubRepo })
+    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
   }, [githubAuthenticated, githubRepo, dispatch])
 
   return (

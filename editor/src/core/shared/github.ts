@@ -16,17 +16,17 @@ import {
   showToast,
   updateBranchContents,
   updateGithubChecksums,
+  updateGithubData,
   updateGithubOperations,
   updateGithubSettings,
   updateProjectContents,
 } from '../../components/editor/actions/action-creators'
 import {
   EditorStorePatched,
-  emptyProjectGithubSettings,
+  emptyGithubData,
   GithubOperation,
   GithubRepo,
   PersistentModel,
-  ProjectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
@@ -207,7 +207,7 @@ export async function getBranchesForGithubRepository(
         )
         break
       case 'SUCCESS':
-        dispatch([updateGithubSettings({ branches: responseBody.branches })], 'everyone')
+        dispatch([updateGithubData({ branches: responseBody.branches })], 'everyone')
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -272,24 +272,21 @@ export async function getBranchContent(
         )
         break
       case 'SUCCESS':
-        let newSettings: Partial<ProjectGithubSettings> = {
-          targetRepository: githubRepo,
-          originCommit: responseBody.originCommit,
-          branchName: branchName,
-        }
+        const actions: Array<EditorAction> = [
+          updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
+          updateProjectContents(responseBody.content),
+          updateBranchContents(responseBody.content),
+          updateGithubSettings({
+            targetRepository: githubRepo,
+            originCommit: responseBody.originCommit,
+            branchName: branchName,
+          }),
+          showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
+        ]
         if (resetBranches) {
-          newSettings.branches = []
+          actions.push(updateGithubData({ branches: [] }))
         }
-        dispatch(
-          [
-            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
-            updateProjectContents(responseBody.content),
-            updateBranchContents(responseBody.content),
-            updateGithubSettings(newSettings),
-            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
-          ],
-          'everyone',
-        )
+        dispatch(actions, 'everyone')
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -337,7 +334,7 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
       case 'SUCCESS':
         dispatch(
           [
-            updateGithubSettings({
+            updateGithubData({
               publicRepositories: responseBody.repositories.filter((repo) => !repo.private),
             }),
           ],
@@ -463,7 +460,7 @@ export function revertGithubFile(
   return actions
 }
 
-export function refreshGithubSettings(
+export function refreshGithubData(
   dispatch: EditorDispatch,
   {
     githubAuthenticated,
@@ -478,9 +475,9 @@ export function refreshGithubSettings(
     if (githubRepo != null) {
       void getBranchesForGithubRepository(dispatch, githubRepo)
     } else {
-      dispatch([updateGithubSettings({ branches: [] })], 'everyone')
+      dispatch([updateGithubData({ branches: [] })], 'everyone')
     }
   } else {
-    dispatch([updateGithubSettings(emptyProjectGithubSettings())], 'everyone')
+    dispatch([updateGithubData(emptyGithubData())], 'everyone')
   }
 }

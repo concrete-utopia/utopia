@@ -319,6 +319,8 @@ import {
   FileRevertModal,
   fileRevertModal,
   emptyProjectGithubSettings,
+  GithubData,
+  emptyGithubData,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3267,19 +3269,23 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine5EqualityCalls(
+  combine3EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.branchName,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
-    (settings) => settings.branches,
-    arrayDeepEquality(GithubBranchKeepDeepEquality),
-    (settings) => settings.publicRepositories,
-    arrayDeepEquality(RepositoryEntryKeepDeepEquality),
     emptyProjectGithubSettings,
   )
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine2EqualityCalls(
+  (data) => data.branches,
+  arrayDeepEquality(GithubBranchKeepDeepEquality),
+  (data) => data.publicRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  emptyGithubData,
+)
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
@@ -3542,6 +3548,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.branchContents,
   )
 
+  const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3612,7 +3620,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
     githubChecksumsResults.areEqual &&
-    branchContentsResults.areEqual
+    branchContentsResults.areEqual &&
+    githubDataResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3688,6 +3697,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubOperationsResults.value,
       githubChecksumsResults.value,
       branchContentsResults.value,
+      githubDataResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
