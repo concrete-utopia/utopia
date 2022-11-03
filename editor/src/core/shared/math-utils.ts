@@ -46,6 +46,10 @@ export type CanvasVector = CanvasModifier & PointInner
 export type LocalVector = LocalModifier & PointInner
 export type UnsafePoint = PointInner
 
+export function canvasVector(vector: PointInner): CanvasVector {
+  return vector as CanvasVector
+}
+
 export type Circle = {
   cx: number
   cy: number

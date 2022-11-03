@@ -1,10 +1,12 @@
+import { cmdModifier } from '../../../../utils/modifiers'
+import { wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   FlexGapControlHandleTestId,
   FlexGapControlTestId,
 } from '../../controls/select-mode/flex-gap-control'
-import { mouseClickAtPoint } from '../../event-helpers.test-utils'
-import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 const DivTestId = 'mydiv'
 
@@ -171,4 +173,116 @@ export var storyboard = (
     expect(gapControlContainer).toBeTruthy()
     expect(gapControlHandles.length).toEqual(1)
   })
+
+  it('adjusts gap by dragging the handle', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap(`gap: '42px',`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + 22,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testCodeWithGap(`gap: '64px',`))
+  })
+
+  it('cannot adjust gap value to be lower than 0', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap(`gap: '12px',`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) - 22,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testCodeWithGap(`gap: '0px',`))
+  })
 })
+
+function testCodeWithGap(gap: string): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='${DivTestId}'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 167,
+        top: 180,
+        width: 557,
+        height: 359,
+        display: 'flex',
+        ${gap}
+      }}
+      data-uid='fac'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 102,
+          height: 80,
+          contain: 'layout',
+        }}
+        data-uid='fed'
+      />
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 187,
+          height: 150,
+          contain: 'layout',
+        }}
+        data-uid='a39'
+      />
+    </div>
+  </Storyboard>
+)
+`
+}

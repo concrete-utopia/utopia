@@ -26,6 +26,7 @@ import { isZeroSizedElement } from '../outline-utils'
 interface FlexGapControlProps {
   selectedElement: ElementPath
   gap: number
+  dragDelta: CanvasVector
 }
 
 interface GapControlBounds {
@@ -37,7 +38,7 @@ export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
-  const { selectedElement, gap } = props
+  const { selectedElement, gap, dragDelta } = props
 
   const { dispatch, scale } = useEditorState(
     (store) => ({
@@ -55,7 +56,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const childCanvasBounds = stripNulls(
     children.map((childPath) =>
       optionalMap(
-        (frame) => paddingControlContainerBounds(frame, toString(childPath), gap),
+        (frame) => paddingControlContainerBounds(frame, toString(childPath), gap + dragDelta.x),
         MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata.current),
       ),
     ),
@@ -88,7 +89,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         {childCanvasBounds.map(({ bounds, path }) => (
           <div
             key={path} // so as not to make balint mad
-            data-testid={FlexGapControlHandleTestId}
             style={{
               position: 'absolute',
               left: bounds.x,
@@ -101,7 +101,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               justifyContent: 'center',
             }}
           >
-            <div style={{ padding: 5, cursor: CSSCursor.ColResize }} onMouseDown={onMouseDown}>
+            <div
+              data-testid={FlexGapControlHandleTestId}
+              style={{ padding: 5, cursor: CSSCursor.ColResize }}
+              onMouseDown={onMouseDown}
+            >
               <div
                 style={{
                   width: 2,
