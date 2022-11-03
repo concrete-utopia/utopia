@@ -1,5 +1,3 @@
-import { cmdModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   FlexGapControlHandleTestId,
@@ -176,7 +174,7 @@ export var storyboard = (
 
   it('adjusts gap by dragging the handle', async () => {
     const editor = await renderTestEditorWithCode(
-      testCodeWithGap(`gap: '42px',`),
+      testCodeWithGap({ gap: `gap: '42px',`, flexDirection: 'row' }),
       'await-first-dom-report',
     )
 
@@ -205,12 +203,50 @@ export var storyboard = (
     mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testCodeWithGap(`gap: '64px',`))
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithGap({ gap: `gap: '64px',`, flexDirection: 'row' }),
+    )
+  })
+
+  it('adjusts gap in column by dragging the handle', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '42px',`, flexDirection: 'column' }),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + 22,
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithGap({ gap: `gap: '64px',`, flexDirection: 'column' }),
+    )
   })
 
   it('cannot adjust gap value to be lower than 0', async () => {
     const editor = await renderTestEditorWithCode(
-      testCodeWithGap(`gap: '12px',`),
+      testCodeWithGap({ gap: `gap: '12px',`, flexDirection: 'row' }),
       'await-first-dom-report',
     )
 
@@ -239,11 +275,18 @@ export var storyboard = (
     mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testCodeWithGap(`gap: '0px',`))
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithGap({ gap: `gap: '0px',`, flexDirection: 'row' }),
+    )
   })
 })
 
-function testCodeWithGap(gap: string): string {
+interface GapTestCodeParams {
+  flexDirection: string
+  gap: string
+}
+
+function testCodeWithGap(params: GapTestCodeParams): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -259,7 +302,8 @@ export var storyboard = (
         width: 557,
         height: 359,
         display: 'flex',
-        ${gap}
+        flexDirection: '${params.flexDirection}',
+        ${params.gap}
       }}
       data-uid='fac'
     >
