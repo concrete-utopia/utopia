@@ -169,6 +169,7 @@ Object {
       "float": "none",
       "globalContentBox": null,
       "hasPositionOffset": false,
+      "hasTransform": false,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -268,6 +269,7 @@ Object {
       "float": "none",
       "globalContentBox": null,
       "hasPositionOffset": false,
+      "hasTransform": false,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,

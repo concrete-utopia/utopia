@@ -1236,6 +1236,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const textDirectionEquals = oldSize.textDirection === newSize.textDirection
+    const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1262,7 +1263,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       globalContentBoxEquals &&
       floatEquals &&
       hasPositionOffsetEquals &&
-      textDirectionEquals
+      textDirectionEquals &&
+      hasTransformEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1293,6 +1295,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.float,
         newSize.hasPositionOffset,
         newSize.textDirection,
+        newSize.hasTransform,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
