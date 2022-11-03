@@ -55,6 +55,7 @@ const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 0.5
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
+const PaddingIndicatorOffset = 10
 
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
@@ -125,9 +126,14 @@ const PaddingResizeControlI = React.memo(
       orientation,
       size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
     )
-    const hitAreaWidth = PaddingResizeControlHitAreaWidth / scale
-    const borderWidth = PaddingResizeControlBorder / scale
-    const dragBorderWidth = PaddingResizeDragBorder / scale
+
+    const [hitAreaWidth, borderWidth, dragBorderWidth, paddingIndicatorOffset] = [
+      PaddingResizeControlHitAreaWidth,
+      PaddingResizeControlBorder,
+      PaddingResizeDragBorder,
+      PaddingIndicatorOffset,
+    ].map((v) => v / scale)
+
     const color = colorTheme.brandNeonPink.o(50).value
 
     return (
@@ -162,7 +168,13 @@ const PaddingResizeControlI = React.memo(
           }}
         >
           {!isDragging && indicatorShown && (
-            <div style={{ position: 'absolute', paddingTop: 10, paddingLeft: 10 }}>
+            <div
+              style={{
+                position: 'absolute',
+                paddingTop: paddingIndicatorOffset,
+                paddingLeft: paddingIndicatorOffset,
+              }}
+            >
               <PaddingValueLabel
                 value={props.paddingValue}
                 scale={scale}
