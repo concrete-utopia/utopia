@@ -50,7 +50,7 @@ export const PaddingResizeControlHoverTimeout: number = 200
 
 type Timeout = ReturnType<typeof setTimeout>
 
-const PaddingResizeControlWidth = 1
+const PaddingResizeControlWidth = 2
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 0.5
 const PaddingResizeDragBorder = 1
@@ -185,7 +185,7 @@ const PaddingResizeControlI = React.memo(
               width: width,
               height: height,
               backgroundColor: color,
-              // border: `${borderWidth}px solid rgba(255, 255, 255, 0.5)`,
+              border: `${borderWidth}px solid rgba(255, 255, 255)`,
             }}
           />
         </div>
