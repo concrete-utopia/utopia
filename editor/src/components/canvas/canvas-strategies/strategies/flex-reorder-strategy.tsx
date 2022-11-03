@@ -29,11 +29,12 @@ export function flexReorderStrategy(
   )
   if (
     selectedElements.length !== 1 ||
-    (!MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      selectedElements[0],
-      canvasState.startingMetadata,
-    ) &&
-      !element?.specialSizeMeasurements.hasTransform)
+    !(
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        selectedElements[0],
+        canvasState.startingMetadata,
+      ) && !element?.specialSizeMeasurements.hasTransform
+    )
   ) {
     return null
   }
