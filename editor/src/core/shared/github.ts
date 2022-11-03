@@ -27,6 +27,7 @@ import {
   GithubOperation,
   GithubRepo,
   PersistentModel,
+  projectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
@@ -177,11 +178,13 @@ export async function saveProjectToGithub(
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
-            updateGithubSettings({
-              targetRepository: persistentModel.githubSettings.targetRepository,
-              originCommit: responseBody.newCommit,
-              branchName: responseBody.branchName,
-            }),
+            updateGithubSettings(
+              projectGithubSettings(
+                persistentModel.githubSettings.targetRepository,
+                responseBody.newCommit,
+                responseBody.branchName,
+              ),
+            ),
             updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
@@ -310,11 +313,9 @@ export async function getBranchContent(
           updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
           updateProjectContents(responseBody.content),
           updateBranchContents(responseBody.content),
-          updateGithubSettings({
-            targetRepository: githubRepo,
-            originCommit: responseBody.originCommit,
-            branchName: branchName,
-          }),
+          updateGithubSettings(
+            projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+          ),
           showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
         ]
         if (resetBranches) {
