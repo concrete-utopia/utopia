@@ -46,6 +46,7 @@ function dragElement(
   cmdPressed: boolean,
   altPressed: boolean,
   shiftPressed: boolean,
+  midDragCallback?: () => void,
 ) {
   mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
@@ -55,41 +56,8 @@ function dragElement(
       alt: altPressed,
       shift: shiftPressed,
     },
+    midDragCallback: midDragCallback,
   })
-}
-
-// no mouseup here! it starts the interaction and moves it with drag delta
-async function startDragUsingActions(
-  renderResult: any,
-  target: ElementPath,
-  dragDelta: CanvasVector,
-) {
-  await renderResult.dispatch([selectComponents([target], false)], true)
-  const startInteractionSession = createInteractionViaMouse(
-    zeroCanvasPoint,
-    emptyModifiers,
-    boundingArea(),
-  )
-  await renderResult.dispatch(
-    [CanvasActions.createInteractionSession(startInteractionSession)],
-    false,
-  )
-  await renderResult.getDispatchFollowUpActionsFinished()
-  await renderResult.dispatch(
-    [
-      CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(
-          startInteractionSession,
-          'DRAG',
-          dragDelta,
-          emptyModifiers,
-          boundingArea(),
-        ),
-      ),
-    ],
-    false,
-  )
-  await renderResult.getDispatchFollowUpActionsFinished()
 }
 
 const projectDoesNotHonourPositionProperties = `
@@ -852,14 +820,25 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       renderResult.renderedDOM.queryByTestId('parent-bounds-control')
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await startDragUsingActions(renderResult, target, zeroCanvasPoint)
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await wait(ControlDelay + 10)
-    const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
-    expect(parentOutlineControl).toBeDefined()
-    const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
-    expect(parentBoundsControl).toBeDefined()
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    dragElement(
+      canvasControlsLayer,
+      startPoint,
+      windowPoint({ x: 0, y: 0 }),
+      false,
+      false,
+      false,
+      () => {
+        const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
+        expect(parentOutlineControl).toBeDefined()
+        const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
+        expect(parentBoundsControl).toBeDefined()
+      },
+    )
   })
   it('when an absolute positioned element is selected the pin lines are visible', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -908,13 +887,16 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+    const dragDelta = windowPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
 
-    await startDragUsingActions(renderResult, target, dragDelta)
-
-    expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
-    expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false, () => {
+      expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
+      expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
+    })
   })
 
   it('the xmarks are visible when the an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
@@ -935,30 +917,33 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await startDragUsingActions(renderResult, target, dragDelta)
-
-    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-0').style)).toEqual({
-      left: '67.5px',
-      top: '-2.5px',
-    })
-    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-1').style)).toEqual({
-      left: '67.5px',
-      top: '27.5px',
-    })
-    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-2').style)).toEqual({
-      left: '-2.5px',
-      top: '27.5px',
-    })
-    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-3').style)).toEqual({
-      left: '67.5px',
-      top: '147.5px',
-    })
-    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-4').style)).toEqual({
-      left: '267.5px',
-      top: '27.5px',
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+    dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false, () => {
+      expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-0').style)).toEqual({
+        left: '67.5px',
+        top: '-2.5px',
+      })
+      expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-1').style)).toEqual({
+        left: '67.5px',
+        top: '27.5px',
+      })
+      expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-2').style)).toEqual({
+        left: '-2.5px',
+        top: '27.5px',
+      })
+      expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-3').style)).toEqual({
+        left: '67.5px',
+        top: '147.5px',
+      })
+      expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-4').style)).toEqual({
+        left: '267.5px',
+        top: '27.5px',
+      })
     })
   })
 })

@@ -52,6 +52,22 @@ function reparentElement(
   dragVector: CanvasPoint = canvasPoint({ x: 15, y: 15 }),
 ): EditorState {
   const startingMetadata = {
+    BakedInStoryboardUID: {
+      elementPath: newParent,
+      globalFrame: canvasRectangle({
+        x: -Infinity,
+        y: -Infinity,
+        width: Infinity,
+        height: Infinity,
+      }),
+      specialSizeMeasurements: {
+        position: 'absolute',
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
     'scene-aaa/app-entity:aaa': {
       elementPath: EP.elementPath([['scene-aaa', 'app-entity'], ['aaa']]),
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
