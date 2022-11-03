@@ -6,11 +6,12 @@ import React from 'react'
 import urljoin from 'url-join'
 import { BASE_URL } from '../../../../common/env-vars'
 import {
-  getBranchContent,
+  updateProjectWithBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
   githubFileChangesSelector,
   parseGithubProjectString,
+  updateProjectAgainstGithub,
 } from '../../../../core/shared/github'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -33,6 +34,7 @@ import {
   githubOperationPrettyName,
   isGithubCommishing,
   isGithubLoadingBranch,
+  isGithubUpdating,
 } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -83,6 +85,10 @@ export const GithubPane = React.memo(() => {
     (store) => store.editor.githubSettings.branchName,
     'Github current branch',
   )
+
+  const originCommit = useEditorState((store) => {
+    return store.editor.githubSettings.originCommit
+  }, 'GithubPane currentBranch')
 
   const onStartImport = React.useCallback(() => {
     if (parsedImportRepo != null) {
@@ -142,6 +148,12 @@ export const GithubPane = React.memo(() => {
     }
   }, [dispatch, storedTargetGithubRepo])
 
+  const triggerUpdateAgainstGithub = React.useCallback(() => {
+    if (storedTargetGithubRepo != null && currentBranch != null && originCommit != null) {
+      updateProjectAgainstGithub(dispatch, storedTargetGithubRepo, currentBranch, originCommit)
+    }
+  }, [dispatch, storedTargetGithubRepo, currentBranch, originCommit])
+
   const [branchesForRepository, setBranchesForRepository] =
     React.useState<GetBranchesResponse | null>(null)
 
@@ -177,11 +189,11 @@ export const GithubPane = React.memo(() => {
                   {branchesForRepository.branches.map((branch, index) => {
                     function loadContentForBranch() {
                       if (storedTargetGithubRepo != null) {
-                        void getBranchContent(
+                        void updateProjectWithBranchContent(
                           dispatch,
                           storedTargetGithubRepo,
-                          forceNotNull('Should have a project ID.', projectID),
                           branch.name,
+                          null,
                         )
                       }
                     }
@@ -224,7 +236,6 @@ export const GithubPane = React.memo(() => {
     branchesForRepository,
     storedTargetGithubRepo,
     dispatch,
-    projectID,
     githubWorking,
     githubOperations,
     currentBranch,
@@ -356,6 +367,16 @@ export const GithubPane = React.memo(() => {
               onMouseUp={triggerSaveToGithub}
             >
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
+            </Button>
+          </UIGridRow>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <Button
+              spotlight
+              highlight
+              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+              onMouseUp={triggerUpdateAgainstGithub}
+            >
+              {isGithubUpdating(githubOperations) ? <GithubSpinner /> : 'Update Against Github'}
             </Button>
           </UIGridRow>
           {loadBranchesUI}

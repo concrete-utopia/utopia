@@ -7,6 +7,11 @@ import {
   deriveGithubFileChanges,
   getContentsTreeFileFromString,
   getProjectContentsChecksums,
+  isProjectContentDirectory,
+  isProjectContentFile,
+  projectContentDirectory,
+  projectContentFile,
+  ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../components/assets'
 import { notice } from '../../components/common/notice'
@@ -14,6 +19,7 @@ import { EditorAction, EditorDispatch } from '../../components/editor/action-typ
 import {
   deleteFile,
   showToast,
+  updateAgainstGithub,
   updateBranchContents,
   updateGithubChecksums,
   updateGithubOperations,
@@ -27,8 +33,13 @@ import {
   PersistentModel,
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
+import { propOrNull } from './object-utils'
+import { forceNotNull } from './optional-utils'
+import { emptySet } from './set-utils'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
+import { merge, mergeDiff3 } from 'node-diff3'
+import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -198,11 +209,71 @@ export async function getBranchesForGithubRepository(
   }
 }
 
-export async function getBranchContent(
+export async function updateProjectAgainstGithub(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
-  projectID: string,
   branchName: string,
+  commitSha: string,
+): Promise<void> {
+  const operation: GithubOperation = {
+    name: 'updateAgainstBranch',
+  }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
+  const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null)
+  const specificCommitRequest = getBranchContentFromServer(githubRepo, branchName, commitSha)
+
+  const branchLatestResponse = await branchLatestRequest
+  const specificCommitResponse = await specificCommitRequest
+
+  if (branchLatestResponse.ok && specificCommitResponse.ok) {
+    const branchLatestContent: GetBranchContentResponse = await branchLatestResponse.json()
+    const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
+
+    function failWithReason(failureReason: string): void {
+      dispatch(
+        [showToast(notice(`Error when updating against Github: ${failureReason}`, 'ERROR'))],
+        'everyone',
+      )
+    }
+
+    if (branchLatestContent.type === 'SUCCESS') {
+      if (specificCommitContent.type === 'SUCCESS') {
+        dispatch(
+          [
+            updateAgainstGithub(
+              branchLatestContent.content,
+              specificCommitContent.content,
+              branchLatestContent.originCommit,
+            ),
+          ],
+          'everyone',
+        )
+      } else {
+        failWithReason(specificCommitContent.failureReason)
+      }
+    } else {
+      failWithReason(branchLatestContent.failureReason)
+    }
+  } else {
+    const failureStatus = branchLatestResponse.ok
+      ? specificCommitResponse.status
+      : branchLatestResponse.status
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+}
+
+export async function updateProjectWithBranchContent(
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  branchName: string,
+  commitSha: string | null,
 ): Promise<void> {
   const operation: GithubOperation = {
     name: 'loadBranch',
@@ -212,24 +283,7 @@ export async function getBranchContent(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const url = urljoin(
-    UTOPIA_BACKEND,
-    'github',
-    'branches',
-    githubRepo.owner,
-    githubRepo.repository,
-    branchName,
-  )
-  const searchParams = new URLSearchParams({
-    project_id: projectID,
-  })
-
-  const response = await fetch(`${url}?${searchParams}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+  const response = await getBranchContentFromServer(githubRepo, branchName, commitSha)
 
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
@@ -271,6 +325,36 @@ export async function getBranchContent(
   }
 
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+}
+
+async function getBranchContentFromServer(
+  githubRepo: GithubRepo,
+  branchName: string,
+  commitSha: string | null,
+): Promise<Response> {
+  const url = urljoin(
+    UTOPIA_BACKEND,
+    'github',
+    'branches',
+    githubRepo.owner,
+    githubRepo.repository,
+    branchName,
+  )
+  let includeQueryParams: boolean = false
+  let paramsRecord: Record<string, string> = {}
+  if (commitSha != null) {
+    includeQueryParams = true
+    paramsRecord.commit_sha = commitSha
+  }
+  const searchParams = new URLSearchParams(paramsRecord)
+  const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+
+  return fetch(urlToUse, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
 }
 
 export async function getUsersPublicGithubRepositories(
@@ -425,4 +509,108 @@ export function revertGithubFile(
     }
   }
   return actions
+}
+
+export function mergeProjectContents(
+  currentTree: ProjectContentTreeRoot,
+  originTree: ProjectContentTreeRoot,
+  branchTree: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  let keys: Set<string> = emptySet()
+  Object.keys(currentTree).forEach(keys.add, keys)
+  Object.keys(originTree).forEach(keys.add, keys)
+  Object.keys(branchTree).forEach(keys.add, keys)
+
+  let result: ProjectContentTreeRoot = {}
+  for (const key of keys) {
+    const currentContents = propOrNull(key, currentTree)
+    const originContents = propOrNull(key, originTree)
+    const branchContents = propOrNull(key, branchTree)
+    const fullPath =
+      currentContents?.fullPath ?? originContents?.fullPath ?? branchContents?.fullPath
+    if (fullPath == null) {
+      throw new Error(`Invalid state of the elements being null reached.`)
+    } else {
+      const combinedElement = mergeProjectContentsTree(
+        fullPath,
+        currentContents,
+        originContents,
+        branchContents,
+      )
+      if (combinedElement != null) {
+        result[key] = combinedElement
+      }
+    }
+  }
+
+  return result
+}
+
+/*
+ * Indication of the change flow that is expected:
+ *       /-->current
+ *      /
+ * origin
+ *      \
+ *       \-->branch
+ */
+export function mergeProjectContentsTree(
+  fullPath: string,
+  currentContents: ProjectContentsTree | null,
+  originContents: ProjectContentsTree | null,
+  branchContents: ProjectContentsTree | null,
+): ProjectContentsTree | null {
+  if (originContents == null && branchContents == null) {
+    // Origin and branch lack an entry, so go with whatever the Utopia project contains.
+    return currentContents
+  } else if (originContents == null && currentContents == null) {
+    // Origin and Utopia project lack an entry, so go with whatever the branch contains.
+    return branchContents
+  } else if (
+    isProjectContentFile(currentContents) &&
+    isTextFile(currentContents.content) &&
+    isProjectContentFile(originContents) &&
+    isTextFile(originContents.content) &&
+    isProjectContentFile(branchContents) &&
+    isTextFile(branchContents.content)
+  ) {
+    // All 3 branches are a file.
+    const mergedResult = mergeDiff3(
+      currentContents.content.fileContents.code,
+      originContents.content.fileContents.code,
+      branchContents.content.fileContents.code,
+      {
+        label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
+        stringSeparator: /[\r\n]+/,
+      },
+    ).result.join('\n')
+    const updatedTextFile = textFile(
+      textFileContents(
+        mergedResult,
+        originContents.content.fileContents.parsed,
+        RevisionsState.CodeAhead,
+      ),
+      originContents.content.lastSavedContents,
+      originContents.content.lastParseSuccess,
+      Date.now(),
+    )
+
+    return projectContentFile(fullPath, updatedTextFile)
+  } else if (
+    isProjectContentDirectory(currentContents) &&
+    isProjectContentDirectory(originContents) &&
+    isProjectContentDirectory(branchContents)
+  ) {
+    // All 3 branches are directories.
+    const mergedResult = mergeProjectContents(
+      currentContents.children,
+      originContents.children,
+      branchContents.children,
+    )
+    return projectContentDirectory(fullPath, currentContents.directory, mergedResult)
+  } else {
+    // More cases in the future needed for tree conflicts at the least.
+    // For now go with whatever the editor has.
+    return currentContents
+  }
 }

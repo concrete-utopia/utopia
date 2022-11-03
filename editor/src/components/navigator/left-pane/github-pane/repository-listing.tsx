@@ -4,7 +4,7 @@ import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import { GithubRepo, isGithubLoadingBranch } from '../../../../components/editor/store/editor-state'
 import {
-  getBranchContent,
+  updateProjectWithBranchContent,
   getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
@@ -71,15 +71,15 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         'everyone',
       )
     } else {
-      void getBranchContent(
+      void updateProjectWithBranchContent(
         dispatch,
         parsedTargetRepository,
-        forceNotNull('Should have a project ID.', projectID),
         props.defaultBranch,
+        null,
       )
       setImporting(true)
     }
-  }, [dispatch, projectID, props.fullName, props.defaultBranch])
+  }, [dispatch, props.fullName, props.defaultBranch])
 
   return (
     <div

@@ -1018,6 +1018,13 @@ export interface SaveToGithub {
   targetRepository: GithubRepo
 }
 
+export interface UpdateAgainstGithub {
+  action: 'UPDATE_AGAINST_GITHUB'
+  branchLatestContent: ProjectContentTreeRoot
+  specificCommitContent: ProjectContentTreeRoot
+  latestCommit: string
+}
+
 export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   imageDragSessionState: ImageDragSessionState
@@ -1184,6 +1191,7 @@ export type EditorAction =
   | SetElementsToRerender
   | ToggleSelectionLock
   | SaveToGithub
+  | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
   | UpdateGithubChecksums

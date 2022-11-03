@@ -354,6 +354,17 @@ instance FromJSON GetBlobResult where
 instance ToJSON GetBlobResult where
   toJSON = genericToJSON defaultOptions
 
+data GetGitCommitResult = GetGitCommitResult
+                        { tree   :: GitCommitTree
+                        }
+                        deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GetGitCommitResult where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GetGitCommitResult where
+  toJSON = genericToJSON defaultOptions
+
 data GetBranchContentSuccess = GetBranchContentSuccess
                          { content      :: ProjectContentTreeRoot
                          , originCommit :: Text
