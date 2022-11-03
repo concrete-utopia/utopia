@@ -143,7 +143,6 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const numberToPxValue = (n: number) => n + 'px'
-  const cssNumberToString = (n: CSSNumber) => n.value + (n.unit ?? 'px')
 
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
