@@ -1,6 +1,6 @@
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { defaultEither, Either, flatMapEither, isLeft, left, right } from '../../core/shared/either'
+import { Either, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -14,12 +14,12 @@ export type CSSPaddingMeasurements = CSSPaddingMappedValues<PaddingMeasurement>
 
 export interface PaddingMeasurement {
   value: CSSNumber
-  renderedDimension: number
+  renderedValuePx: number
 }
 
 export const defaultPaddingMeasurement = (sizePx: number): PaddingMeasurement => ({
   value: { value: sizePx, unit: null },
-  renderedDimension: sizePx,
+  renderedValuePx: sizePx,
 })
 
 export function simplePaddingFromMetadata(
@@ -101,7 +101,7 @@ function paddingMeasurementFromEither(
   }
 
   return {
-    renderedDimension: renderedDimension,
+    renderedValuePx: renderedDimension,
     value: value.value,
   }
 }
@@ -117,19 +117,19 @@ function cssPaddingToMeasurement(
   return {
     paddingTop: {
       value: p.value.paddingTop,
-      renderedDimension: padding.paddingTop,
+      renderedValuePx: padding.paddingTop,
     },
     paddingBottom: {
       value: p.value.paddingBottom,
-      renderedDimension: padding.paddingBottom,
+      renderedValuePx: padding.paddingBottom,
     },
     paddingLeft: {
       value: p.value.paddingLeft,
-      renderedDimension: padding.paddingLeft,
+      renderedValuePx: padding.paddingLeft,
     },
     paddingRight: {
       value: p.value.paddingRight,
-      renderedDimension: padding.paddingRight,
+      renderedValuePx: padding.paddingRight,
     },
   }
 }
@@ -137,13 +137,13 @@ function cssPaddingToMeasurement(
 export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
   switch (edgePiece) {
     case 'top':
-      return padding.paddingTop.renderedDimension
+      return padding.paddingTop.renderedValuePx
     case 'bottom':
-      return padding.paddingBottom.renderedDimension
+      return padding.paddingBottom.renderedValuePx
     case 'right':
-      return padding.paddingRight.renderedDimension
+      return padding.paddingRight.renderedValuePx
     case 'left':
-      return padding.paddingLeft.renderedDimension
+      return padding.paddingLeft.renderedValuePx
     default:
       assertNever(edgePiece)
   }
@@ -171,13 +171,13 @@ export const offsetMeasurementByDelta = (
   measurement: PaddingMeasurement,
   delta: number,
 ): PaddingMeasurement => {
-  if (measurement.renderedDimension === 0) {
+  if (measurement.renderedValuePx === 0) {
     return measurement
   }
-  const pixelsPerUnit = measurement.value.value / measurement.renderedDimension
+  const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
   const deltaInUnits = Math.floor(delta * pixelsPerUnit)
   return {
-    renderedDimension: measurement.renderedDimension + delta,
+    renderedValuePx: measurement.renderedValuePx + delta,
     value: {
       unit: measurement.value.unit,
       value: measurement.value.value + deltaInUnits,
