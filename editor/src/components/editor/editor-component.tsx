@@ -343,7 +343,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 height: '100%',
                 display: 'flex',
                 flexShrink: 0,
-                transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
                 width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
