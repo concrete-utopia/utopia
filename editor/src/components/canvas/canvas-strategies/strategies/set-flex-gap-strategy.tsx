@@ -3,19 +3,18 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
+  cursorFromFlexDirection,
   SimpleFlexDirection,
   simpleFlexDirectionFromString,
   updateGapValue,
-} from '../../drag-utils'
+} from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
@@ -138,17 +137,4 @@ function dragFromInteractionSession(
     return interactionSession.interactionData.drag
   }
   return null
-}
-
-function cursorFromFlexDirection(direction: SimpleFlexDirection): CSSCursor {
-  switch (direction) {
-    case 'column':
-    case 'column-reverse':
-      return CSSCursor.RowResize
-    case 'row':
-    case 'row-reverse':
-      return CSSCursor.ColResize
-    default:
-      assertNever(direction)
-  }
 }

@@ -6,6 +6,8 @@ import {
   canvasRectangle,
   CanvasRectangle,
   CanvasVector,
+  size,
+  Size,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -19,7 +21,7 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { SimpleFlexDirection } from '../../drag-utils'
+import { cursorFromFlexDirection, SimpleFlexDirection } from '../../gap-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -51,6 +53,13 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+    selectedElement,
+    elementMetadata.current,
+  )
+  if (parentBounds == null) {
+    return null
+  }
 
   const children = MetadataUtils.getChildrenPaths(elementMetadata.current, selectedElement)
   const childCanvasBounds = stripNulls(
@@ -63,6 +72,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   ).slice(0, -1)
 
   const controlBounds = paddingControlContainerBoundsFromChildBounds(
+    parentBounds,
     childCanvasBounds,
     gap,
     flexDirection,
@@ -87,6 +97,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
+  const { width, height } = handleDimensions(flexDirection, scale)
+
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} ref={controlRef}>
@@ -107,13 +119,13 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
           >
             <div
               data-testid={FlexGapControlHandleTestId}
-              style={{ padding: 5, cursor: CSSCursor.ColResize }}
+              style={{ padding: 5, cursor: cursorFromFlexDirection(flexDirection) }}
               onMouseDown={onMouseDown}
             >
               <div
                 style={{
-                  width: 2,
-                  height: 12,
+                  width: width,
+                  height: height,
                   backgroundColor: 'red',
                 }}
               />
@@ -124,6 +136,16 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     </CanvasOffsetWrapper>
   )
 })
+
+function handleDimensions(flexDirection: SimpleFlexDirection, scale: number): Size {
+  if (flexDirection === 'row' || flexDirection === 'row-reverse') {
+    return size(2 / scale, 12 / scale)
+  }
+  if (flexDirection === 'column' || flexDirection === 'column-reverse') {
+    return size(12 / scale, 2 / scale)
+  }
+  assertNever(flexDirection)
+}
 
 function startInteraction(
   event: React.MouseEvent<HTMLDivElement>,
@@ -151,6 +173,7 @@ function startInteraction(
 }
 
 function paddingControlContainerBoundsFromChildBounds(
+  parentBounds: CanvasRectangle,
   children: Array<PathWithBounds>,
   gap: number,
   flexDirection: SimpleFlexDirection,
@@ -161,7 +184,7 @@ function paddingControlContainerBoundsFromChildBounds(
     runningLength = updateRunningLength(bounds, flexDirection, runningLength)
     gapBounds.push({
       path: path,
-      bounds: gapControlBounds(bounds, flexDirection, runningLength, gap),
+      bounds: gapControlBounds(parentBounds, bounds, flexDirection, runningLength, gap),
     })
     runningLength += gap
   }
@@ -202,6 +225,7 @@ function updateRunningLength(
 }
 
 function gapControlBounds(
+  parentBounds: CanvasRectangle,
   bounds: CanvasRectangle,
   flexDirection: SimpleFlexDirection,
   runningLength: number,
@@ -212,14 +236,14 @@ function gapControlBounds(
       x: runningLength,
       y: bounds.y,
       width: gap,
-      height: bounds.height,
+      height: parentBounds.height,
     })
   }
   if (flexDirection === 'column' || flexDirection === 'column-reverse') {
     return canvasRectangle({
       x: bounds.x,
       y: runningLength,
-      width: bounds.width,
+      width: parentBounds.width,
       height: gap,
     })
   }

@@ -1,5 +1,6 @@
 import { CanvasVector } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
+import { CSSCursor } from './canvas-types'
 
 export type SimpleFlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
 
@@ -34,5 +35,18 @@ export function updateGapValue(
       return originalValue - delta.y
     default:
       assertNever(orientation)
+  }
+}
+
+export function cursorFromFlexDirection(direction: SimpleFlexDirection): CSSCursor {
+  switch (direction) {
+    case 'column':
+    case 'column-reverse':
+      return CSSCursor.RowResize
+    case 'row':
+    case 'row-reverse':
+      return CSSCursor.ColResize
+    default:
+      assertNever(direction)
   }
 }
