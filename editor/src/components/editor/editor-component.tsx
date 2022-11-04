@@ -415,7 +415,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 })
 
-const useGithubData = () => {
+const useGithubData = (): void => {
   const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
   const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
     (store) => ({
@@ -445,8 +445,6 @@ const useGithubData = () => {
       clearInterval(interval)
     }
   }, [refresh, githubOperations])
-
-  return null
 }
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
