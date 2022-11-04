@@ -1,5 +1,4 @@
 import React from 'react'
-import { CSSProperties } from 'twind'
 import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 
 const FontSize = 12
@@ -11,7 +10,7 @@ interface PaddingValueLabelProps {
   value: CSSNumber
 }
 
-export const CSSNumberLabel = (props: PaddingValueLabelProps): JSX.Element => {
+export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.Element => {
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
@@ -27,7 +26,7 @@ export const CSSNumberLabel = (props: PaddingValueLabelProps): JSX.Element => {
       {printCSSNumber(value, null)}
     </div>
   )
-}
+})
 
 interface PillHandleProps {
   width: number
@@ -36,7 +35,7 @@ interface PillHandleProps {
   borderWidth: number
 }
 
-export const PillHandle = (props: PillHandleProps): JSX.Element => {
+export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
   const { width, height, color, borderWidth } = props
   return (
     <div
@@ -49,7 +48,7 @@ export const PillHandle = (props: PillHandleProps): JSX.Element => {
       }}
     />
   )
-}
+})
 
 export const StripedBackgroundCSS = (
   stripeColor: string,
