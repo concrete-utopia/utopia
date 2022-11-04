@@ -1,11 +1,8 @@
 import React from 'react'
-import { LoginState, isLoggedIn } from './action-types'
 import { auth0Url } from '../../common/env-vars'
-import { setRedirectUrl } from '../../common/persistence'
 import { useEditorState } from './store/store-hook'
 
 import { NotificationBar } from '../common/notices'
-import { NoticeLevel } from '../common/notice'
 
 export const BrowserInfoBar = React.memo(() => {
   return (
@@ -45,14 +42,7 @@ export const LoginStatusBar = React.memo(() => {
     case 'OFFLINE_STATE':
       return <EditorOfflineBar />
     case 'NOT_LOGGED_IN':
-      return (
-        <NotificationBar
-          level='PRIMARY'
-          message={'Welcome to Utopia. Click here to sign in and save your projects.'}
-          onClick={onClickLoginNewTab}
-          style={{ cursor: 'pointer' }}
-        />
-      )
+      return null
     case 'LOGIN_LOST':
       return (
         <NotificationBar

@@ -3,6 +3,7 @@ import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
+import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePiece } from '../../canvas-types'
 import { deltaFromEdge, offsetMeasurementByDelta, PaddingMeasurement } from '../../padding-utils'
@@ -15,6 +16,33 @@ export interface PaddingValueIndicatorProps {
   activeEdge: EdgePiece
   dragDelta: CanvasVector
   dragStart: CanvasPoint
+}
+
+const FontSize = 12
+const Padding = 4
+
+interface PaddingValueLabelProps {
+  scale: number
+  color: string
+  value: CSSNumber
+}
+
+export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
+  const { scale, color, value } = props
+  const fontSize = FontSize / scale
+  const padding = Padding / scale
+  return (
+    <div
+      style={{
+        fontSize: fontSize,
+        padding: padding,
+        backgroundColor: color,
+        color: 'white',
+      }}
+    >
+      {printCSSNumber(value, null)}
+    </div>
+  )
 }
 
 export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndicatorProps>(
@@ -32,7 +60,12 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
       value: Math.max(0, updatedPaddingMeasurement.value.value),
     }
 
-    const position = indicatorPosition(activeEdge, dragStart, dragDelta)
+    const scale = useEditorState(
+      (store) => store.editor.canvas.scale,
+      'PaddingValueIndicator scale',
+    )
+
+    const position = indicatorPosition(activeEdge, scale, dragStart, dragDelta)
 
     return (
       <CanvasOffsetWrapper>
@@ -42,11 +75,13 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
             position: 'absolute',
             left: position.x,
             top: position.y,
-            backgroundColor: colorTheme.brandNeonPink.value,
-            color: 'white',
           }}
         >
-          {printCSSNumber(actualPaddingValue, null)}
+          <PaddingValueLabel
+            value={actualPaddingValue}
+            scale={scale}
+            color={colorTheme.brandNeonPink.value}
+          />
         </div>
       </CanvasOffsetWrapper>
     )
@@ -55,10 +90,11 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
 
 function indicatorPosition(
   edge: EdgePiece,
+  scale: number,
   dragStart: CanvasPoint,
   dragDelta: CanvasVector,
 ): CanvasPoint {
-  const Offset = 5
+  const Offset = 4 / scale
   switch (edge) {
     case 'top':
     case 'bottom':
