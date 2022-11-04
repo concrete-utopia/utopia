@@ -89,10 +89,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -105,10 +105,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -765,10 +765,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -781,10 +781,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -1424,10 +1424,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -1440,10 +1440,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2071,10 +2071,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2087,10 +2087,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2507,10 +2507,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2523,10 +2523,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
