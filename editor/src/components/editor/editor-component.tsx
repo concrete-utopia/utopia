@@ -425,25 +425,25 @@ const GithubDataManager = () => {
     'Github data',
   )
 
-  // 1. perform a straight refresh then the repo or the auth change
-  React.useEffect(() => {
+  const refresh = React.useCallback(() => {
     void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
   }, [dispatch, githubAuthenticated, githubRepo])
 
-  // 2. schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
+  // perform a straight refresh then the repo or the auth change
+  React.useEffect(() => refresh(), [refresh])
+
+  // schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
   React.useEffect(() => {
-    // ignore scheduling if there are already github operations going on
     if (githubOperations.length > 0) {
+      // ignore scheduling if there are already operations going on
       return
     }
-    let refreshInterval = setInterval(
-      () => refreshGithubData(dispatch, { githubAuthenticated, githubRepo }),
-      GITHUB_REFRESH_INTERVAL_MILLISECONDS,
-    )
+
+    let interval = setInterval(refresh, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
     return function () {
-      clearInterval(refreshInterval)
+      clearInterval(interval)
     }
-  }, [dispatch, githubAuthenticated, githubRepo, githubOperations])
+  }, [refresh, githubOperations])
 
   return null
 }
