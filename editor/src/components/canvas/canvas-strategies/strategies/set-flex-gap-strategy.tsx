@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -42,6 +43,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const children = MetadataUtils.getChildrenPaths(canvasState.startingMetadata, selectedElement)
 
   const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
   if (flexGap == null) {
@@ -80,7 +82,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult([
         setProperty('always', selectedElement, StyleGapProp, updatedFlexGapValue + 'px'),
         setCursorCommand('always', cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand(selectedElements),
+        setElementsToRerenderCommand([...selectedElements, ...children]),
       ])
     },
   }
