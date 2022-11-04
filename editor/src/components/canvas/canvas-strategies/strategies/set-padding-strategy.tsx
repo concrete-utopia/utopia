@@ -23,6 +23,7 @@ import {
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
+  paddingMeasurementForEdge,
   paddingToPaddingString,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
@@ -224,7 +225,8 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-  const currentPadding = paddingForEdge(edgePiece, padding)
+
+  const currentPadding = paddingMeasurementForEdge(edgePiece, padding)
 
   return {
     dragStart: interactionSession.interactionData.dragStart,

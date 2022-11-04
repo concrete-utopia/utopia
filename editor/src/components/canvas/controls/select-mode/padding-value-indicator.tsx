@@ -2,16 +2,17 @@ import React from 'react'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
+import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePiece } from '../../canvas-types'
-import { deltaFromEdge } from '../../padding-utils'
+import { deltaFromEdge, offsetMeasurementByDelta, PaddingMeasurement } from '../../padding-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 export const PaddingValueIndicatorTestId = 'PaddingValueIndicatorTestId'
 
 export interface PaddingValueIndicatorProps {
-  currentPaddingValue: number
+  currentPaddingValue: PaddingMeasurement
   activeEdge: EdgePiece
   dragDelta: CanvasVector
   dragStart: CanvasPoint
@@ -23,7 +24,7 @@ const Padding = 4
 interface PaddingValueLabelProps {
   scale: number
   color: string
-  value: number
+  value: CSSNumber
 }
 
 export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
@@ -39,7 +40,7 @@ export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
         color: 'white',
       }}
     >
-      {value}
+      {printCSSNumber(value, null)}
     </div>
   )
 }
@@ -48,15 +49,24 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
   (props) => {
     const { currentPaddingValue, activeEdge, dragStart, dragDelta } = props
     const colorTheme = useColorTheme()
+
+    const updatedPaddingMeasurement = offsetMeasurementByDelta(
+      currentPaddingValue,
+      deltaFromEdge(dragDelta, activeEdge),
+    )
+
+    const actualPaddingValue: CSSNumber = {
+      unit: updatedPaddingMeasurement.value.unit,
+      value: Math.max(0, updatedPaddingMeasurement.value.value),
+    }
+
     const scale = useEditorState(
       (store) => store.editor.canvas.scale,
       'PaddingValueIndicator scale',
     )
 
-    const actualPaddingValue = Math.floor(
-      Math.max(0, currentPaddingValue + deltaFromEdge(dragDelta, activeEdge)),
-    )
     const position = indicatorPosition(activeEdge, scale, dragStart, dragDelta)
+
     return (
       <CanvasOffsetWrapper>
         <div

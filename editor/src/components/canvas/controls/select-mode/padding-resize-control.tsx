@@ -14,7 +14,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { simplePaddingFromMetadata } from '../../padding-utils'
+import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -32,7 +32,7 @@ type Orientation = 'vertical' | 'horizontal'
 interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
-  paddingValue: number
+  paddingValue: PaddingMeasurement
 }
 
 function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {
@@ -176,7 +176,7 @@ const PaddingResizeControlI = React.memo(
                 paddingLeft: paddingIndicatorOffset,
               }}
             >
-              <PaddingValueLabel value={props.paddingValue} scale={scale} color={color} />
+              <PaddingValueLabel value={props.paddingValue.value} scale={scale} color={color} />
             </div>
           )}
           <div
@@ -202,8 +202,7 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
 
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const widthWithtDefaultPx = (w: number) => w + 'px'
-  const heightWithtDefaultPx = (h: number) => h + 'px'
+  const numberToPxValue = (n: number) => n + 'px'
 
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
@@ -221,28 +220,32 @@ export const PaddingResizeControl = controlForStrategyMemoized(() => {
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
-    ref.current.style.width = widthWithtDefaultPx(padding.paddingLeft)
+    ref.current.style.height = numberToPxValue(boundingBox.height)
+    ref.current.style.width = numberToPxValue(padding.paddingLeft.renderedValuePx)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.width = boundingBox.width + 'px'
-    ref.current.style.height = padding.paddingTop + 'px'
+    ref.current.style.width = numberToPxValue(boundingBox.width)
+    ref.current.style.height = numberToPxValue(padding.paddingTop.renderedValuePx)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.left = boundingBox.width - padding.paddingRight + 'px'
-    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
-    ref.current.style.width = widthWithtDefaultPx(padding.paddingRight)
+    ref.current.style.left = numberToPxValue(
+      boundingBox.width - padding.paddingRight.renderedValuePx,
+    )
+    ref.current.style.height = numberToPxValue(boundingBox.height)
+    ref.current.style.width = numberToPxValue(padding.paddingRight.renderedValuePx)
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
-    ref.current.style.top = boundingBox.height - padding.paddingBottom + 'px'
-    ref.current.style.width = boundingBox.width + 'px'
-    ref.current.style.height = padding.paddingBottom + 'px'
+    ref.current.style.top = numberToPxValue(
+      boundingBox.height - padding.paddingBottom.renderedValuePx,
+    )
+    ref.current.style.width = numberToPxValue(boundingBox.width)
+    ref.current.style.height = numberToPxValue(padding.paddingBottom.renderedValuePx)
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
@@ -350,18 +353,5 @@ function edgePieceDerivedProps(edgePiece: EdgePiece): {
       return { cursor: CSSCursor.RowResize, orientation: 'horizontal' }
     default:
       assertNever(edgePiece)
-  }
-}
-
-function labelRotation(edge: EdgePiece): number {
-  switch (edge) {
-    case 'top':
-    case 'bottom':
-      return -90
-    case 'right':
-    case 'left':
-      return 0
-    default:
-      assertNever(edge)
   }
 }
