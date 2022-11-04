@@ -23,11 +23,17 @@ export function flexReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
   if (
     selectedElements.length !== 1 ||
-    !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      selectedElements[0],
-      canvasState.startingMetadata,
+    !(
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        selectedElements[0],
+        canvasState.startingMetadata,
+      ) && !element?.specialSizeMeasurements.hasTransform
     )
   ) {
     return null
@@ -37,10 +43,6 @@ export function flexReorderStrategy(
     return null
   }
 
-  const element = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
   const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
   const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {
