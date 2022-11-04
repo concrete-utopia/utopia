@@ -29,7 +29,6 @@ const baseMoveStrategyFactories: Array<CanvasStrategyFactory> = [
   flexReorderStrategy,
   flowReorderStrategy,
   relativeMoveStrategy,
-  doNothingStrategy,
 ]
 
 export const moveReorderMetaStrategy: MetaCanvasStrategy = (
@@ -54,18 +53,20 @@ export const moveReorderMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  const reparentStrategy = reparentMetaStrategy(
+  const reparentStrategies = reparentMetaStrategy(
     canvasState,
     interactionSession,
     customStrategyState,
   )
-  if (reparentStrategy.length === 0) {
-    return mapDropNulls(
-      (factory) => factory(canvasState, interactionSession, customStrategyState),
-      baseMoveStrategyFactories,
-    )
+  const dragStrategies = mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    baseMoveStrategyFactories,
+  )
+  const foundStrategies = [...reparentStrategies, ...dragStrategies]
+  if (foundStrategies.length > 0) {
+    return foundStrategies
   } else {
-    return reparentStrategy
+    return [doNothingStrategy(canvasState, interactionSession, customStrategyState)]
   }
 }
 
