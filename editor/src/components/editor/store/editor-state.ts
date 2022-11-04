@@ -1019,18 +1019,8 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
   }
 }
 
-function githubRepoName(repo: GithubRepo): string {
-  return `${repo.owner}/${repo.repository}`
-}
-
 export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): boolean {
-  if (a == null && b == null) {
-    return true
-  }
-  if (a == null || b == null) {
-    return false
-  }
-  return githubRepoName(a) === githubRepoName(b)
+  return a?.owner === b?.owner && a?.repository === b?.repository
 }
 
 export interface ProjectGithubSettings {
