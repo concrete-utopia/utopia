@@ -428,7 +428,7 @@ const GithubDataManager = () => {
   // 1. perform a straight refresh then the repo or the auth change
   React.useEffect(() => {
     void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
-  }, [githubAuthenticated, githubRepo, dispatch])
+  }, [dispatch, githubAuthenticated, githubRepo])
 
   // 2. schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
   React.useEffect(() => {
@@ -443,7 +443,7 @@ const GithubDataManager = () => {
     return function () {
       clearInterval(refreshInterval)
     }
-  }, [githubAuthenticated, githubRepo, dispatch, githubOperations])
+  }, [dispatch, githubAuthenticated, githubRepo, githubOperations])
 
   return null
 }
