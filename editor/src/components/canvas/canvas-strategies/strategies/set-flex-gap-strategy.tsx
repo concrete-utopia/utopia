@@ -1,11 +1,22 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import { cssNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
-import { cursorFromFlexDirection, maybeFlexGapFromElement, updateGapValue } from '../../gap-utils'
+import {
+  FloatingCSSNumberIndicator,
+  FloatingCSSNumberIndicatorProps,
+} from '../../controls/select-mode/floating-number-indicator'
+import {
+  cursorFromFlexDirection,
+  FlexGapData,
+  maybeFlexGapFromElement,
+  updateGapValue,
+} from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
@@ -54,21 +65,36 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const updatedFlexGapValue = Math.max(0, updateGapValue(flexGap.direction, flexGap.value, drag))
 
-  return {
-    id: SetFlexGapStrategyId,
-    name: 'Set flex gap',
-    controlsToRender: [
+  const resizeControl = controlWithProps({
+    control: FlexGapControl,
+    props: {
+      selectedElement: selectedElement,
+      flexDirection: flexGap.direction,
+      updatedGapValue: updatedFlexGapValue,
+    },
+    key: 'flex-gap-resize-control',
+    show: 'visible-except-when-other-strategy-is-active',
+  })
+
+  const maybeIndicatorProps = flexGapValueIndicatorProps(interactionSession, flexGap)
+
+  const controlsToRender = optionalMap(
+    (props) => [
+      resizeControl,
       controlWithProps({
-        control: FlexGapControl,
-        props: {
-          selectedElement: selectedElement,
-          flexDirection: flexGap.direction,
-          updatedGapValue: updatedFlexGapValue,
-        },
-        key: 'flex-gap-resize-control',
+        control: FloatingCSSNumberIndicator,
+        props: props,
+        key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
     ],
+    maybeIndicatorProps,
+  ) ?? [resizeControl]
+
+  return {
+    id: SetFlexGapStrategyId,
+    name: 'Set flex gap',
+    controlsToRender: controlsToRender,
     fitness: 1,
     apply: () => {
       if (
@@ -95,4 +121,30 @@ function dragFromInteractionSession(
     return interactionSession.interactionData.drag
   }
   return null
+}
+
+function flexGapValueIndicatorProps(
+  interactionSession: InteractionSession | null,
+  flexGap: FlexGapData,
+): FloatingCSSNumberIndicatorProps | null {
+  if (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.activeControl.type !== 'FLEX_GAP_HANDLE' ||
+    interactionSession.interactionData.drag == null
+  ) {
+    return null
+  }
+
+  const { drag, dragStart } = interactionSession.interactionData
+  const updatedGapValue = updateGapValue(flexGap.direction, flexGap.value, drag)
+
+  const position = flexGap.direction.startsWith('row')
+    ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
+    : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.x })
+
+  return {
+    value: cssNumber(updatedGapValue, null),
+    position: position,
+  }
 }

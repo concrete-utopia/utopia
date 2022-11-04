@@ -142,18 +142,20 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
                     }}
                   >
                     <CSSNumberLabel
-                      value={cssNumber(33, null)}
+                      value={cssNumber(updatedGapValue, null)}
                       scale={scale}
                       color={indicatorColor}
                     />
                   </div>
                 )}
-                <PillHandle
-                  width={width}
-                  height={height}
-                  color={colorTheme.brandNeonPink.value}
-                  borderWidth={borderWidth}
-                />
+                {backgroundShown && (
+                  <PillHandle
+                    width={width}
+                    height={height}
+                    color={colorTheme.brandNeonPink.value}
+                    borderWidth={borderWidth}
+                  />
+                )}
               </div>
             </div>
           )
