@@ -17,25 +17,6 @@ export function setElementsToRerenderCommand(
   }
 }
 
-function mergeElementsToRerender(l: ElementsToRerender, r: ElementsToRerender): ElementsToRerender {
-  if (l === 'rerender-all-elements' || r === 'rerender-all-elements') {
-    return 'rerender-all-elements'
-  } else {
-    return [...l, ...r]
-  }
-}
-
-export function mergeSetElementsToRerenderCommands(
-  l: SetElementsToRerenderCommand,
-  r: SetElementsToRerenderCommand,
-): SetElementsToRerenderCommand {
-  if (l.value === 'rerender-all-elements' || r.value === 'rerender-all-elements') {
-    return setElementsToRerenderCommand('rerender-all-elements')
-  } else {
-    return setElementsToRerenderCommand(l.value.concat(r.value))
-  }
-}
-
 export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderCommand> = (
   e: EditorState,
   command: SetElementsToRerenderCommand,
@@ -70,6 +51,15 @@ export function appendElementsToRerenderCommand(
     value: value,
   }
 }
+
+function mergeElementsToRerender(l: ElementsToRerender, r: ElementsToRerender): ElementsToRerender {
+  if (l === 'rerender-all-elements' || r === 'rerender-all-elements') {
+    return 'rerender-all-elements'
+  } else {
+    return [...l, ...r]
+  }
+}
+
 export const runAppendElementsToRerender: CommandFunction<AppendElementsToRerenderCommand> = (
   e: EditorState,
   command: AppendElementsToRerenderCommand,
