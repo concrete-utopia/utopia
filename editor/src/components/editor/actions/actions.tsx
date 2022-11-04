@@ -307,6 +307,7 @@ import {
   UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
+  UpdateGithubData,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -984,6 +985,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubOperations: currentEditor.githubOperations,
     githubChecksums: currentEditor.githubChecksums,
     branchContents: currentEditor.branchContents,
+    githubData: currentEditor.githubData,
   }
 }
 
@@ -3739,6 +3741,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubSettings: action.settings,
+    }
+  },
+  UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubData: {
+        ...editor.githubData,
+        ...action.data,
+      },
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

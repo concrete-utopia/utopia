@@ -40,6 +40,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
+import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 
 const GitBranchIcon = () => {
@@ -150,88 +151,91 @@ export const GithubPane = React.memo(() => {
 
   const triggerUpdateAgainstGithub = React.useCallback(() => {
     if (storedTargetGithubRepo != null && currentBranch != null && originCommit != null) {
-      updateProjectAgainstGithub(dispatch, storedTargetGithubRepo, currentBranch, originCommit)
+      void updateProjectAgainstGithub(dispatch, storedTargetGithubRepo, currentBranch, originCommit)
     }
   }, [dispatch, storedTargetGithubRepo, currentBranch, originCommit])
 
-  const [branchesForRepository, setBranchesForRepository] =
-    React.useState<GetBranchesResponse | null>(null)
+  const branchesForRepository = useEditorState(
+    (store) => store.editor.githubData.branches,
+    'Github repo branches',
+  )
 
-  React.useEffect(() => {
+  const isLoadingBranches = React.useMemo(
+    () => githubOperations.some((op) => op.name === 'listBranches'),
+    [githubOperations],
+  )
+
+  const refreshBranches = React.useCallback(() => {
     if (storedTargetGithubRepo != null) {
-      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo).then((result) => {
-        setBranchesForRepository(result)
-      })
+      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo)
     }
-  }, [storedTargetGithubRepo, dispatch])
+  }, [dispatch, storedTargetGithubRepo])
 
   const loadBranchesUI = React.useMemo(() => {
-    if (branchesForRepository == null) {
-      return null
-    } else {
-      switch (branchesForRepository.type) {
-        case 'FAILURE':
-          return <span>{branchesForRepository.failureReason}</span>
-        case 'SUCCESS':
-          return (
-            <>
-              {when(
-                branchesForRepository.branches.length > 0,
-                <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-                  <span>NOTE: These will replace the current project contents.</span>
-                </UIGridRow>,
-              )}
-              {when(
-                branchesForRepository.branches.length > 0,
-                <div
-                  style={{ overflowY: 'auto', height: UtopiaTheme.layout.rowHeight.normal * 11.5 }}
-                >
-                  {branchesForRepository.branches.map((branch, index) => {
-                    function loadContentForBranch() {
-                      if (storedTargetGithubRepo != null) {
-                        void updateProjectWithBranchContent(
-                          dispatch,
-                          storedTargetGithubRepo,
-                          branch.name,
-                          null,
-                        )
-                      }
-                    }
-                    return (
-                      <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
-                        <Ellipsis style={{ fontWeight: branch.name === currentBranch ? 600 : 400 }}>
-                          {when(currentBranch === branch.name, <span>&rarr; </span>)}
-                          <span title={branch.name}>{branch.name}</span>
-                        </Ellipsis>
-                        <Button
-                          spotlight
-                          highlight
-                          onMouseUp={loadContentForBranch}
-                          disabled={githubWorking}
-                        >
-                          {isGithubLoadingBranch(
-                            githubOperations,
-                            branch.name,
-                            storedTargetGithubRepo,
-                          ) ? (
-                            <GithubSpinner />
-                          ) : (
-                            'Load'
-                          )}
-                        </Button>
-                      </UIGridRow>
-                    )
-                  })}
-                </div>,
-              )}
-            </>
-          )
-
-        default:
-          const _exhaustiveCheck: never = branchesForRepository
-          throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
-      }
-    }
+    return (
+      <>
+        <UIGridRow padded variant='<----------1fr---------><-auto->'>
+          <span style={{ fontWeight: 500 }}>Branches</span>
+          <Button
+            spotlight
+            highlight
+            style={{ padding: '0 6px' }}
+            onMouseUp={refreshBranches}
+            disabled={githubWorking}
+          >
+            {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+          </Button>
+        </UIGridRow>
+        {when(
+          branchesForRepository.length > 0,
+          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+            <span>NOTE: These will replace the current project contents.</span>
+          </UIGridRow>,
+        )}
+        {when(
+          branchesForRepository.length > 0,
+          <div style={{ overflowY: 'auto', height: UtopiaTheme.layout.rowHeight.normal * 11.5 }}>
+            {branchesForRepository.map((branch, index) => {
+              function loadContentForBranch() {
+                if (storedTargetGithubRepo != null) {
+                  void updateProjectWithBranchContent(
+                    dispatch,
+                    storedTargetGithubRepo,
+                    branch.name,
+                    originCommit,
+                    false,
+                  )
+                }
+              }
+              return (
+                <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
+                  <Ellipsis style={{ fontWeight: branch.name === currentBranch ? 600 : 400 }}>
+                    {when(currentBranch === branch.name, <span>&rarr; </span>)}
+                    <span title={branch.name}>{branch.name}</span>
+                  </Ellipsis>
+                  <Button
+                    spotlight
+                    highlight
+                    onMouseUp={loadContentForBranch}
+                    disabled={githubWorking}
+                  >
+                    {isGithubLoadingBranch(
+                      githubOperations,
+                      branch.name,
+                      storedTargetGithubRepo,
+                    ) ? (
+                      <GithubSpinner />
+                    ) : (
+                      'Load'
+                    )}
+                  </Button>
+                </UIGridRow>
+              )
+            })}
+          </div>,
+        )}
+      </>
+    )
   }, [
     branchesForRepository,
     storedTargetGithubRepo,
@@ -239,6 +243,9 @@ export const GithubPane = React.memo(() => {
     githubWorking,
     githubOperations,
     currentBranch,
+    isLoadingBranches,
+    refreshBranches,
+    originCommit,
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')

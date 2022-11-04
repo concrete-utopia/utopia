@@ -163,7 +163,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
-import { GithubFileStatus } from '../../../core/shared/github'
+import { GithubBranch, GithubFileStatus, RepositoryEntry } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
@@ -274,6 +274,15 @@ export function githubOperationPrettyName(op: GithubOperation): string {
   }
 }
 
+export function githubOperationLocksEditor(op: GithubOperation): boolean {
+  switch (op.name) {
+    case 'listBranches':
+    case 'loadRepositories':
+      return false
+    default:
+      return true
+  }
+}
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
@@ -1017,6 +1026,10 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
   }
 }
 
+export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): boolean {
+  return a?.owner === b?.owner && a?.repository === b?.repository
+}
+
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
@@ -1032,6 +1045,18 @@ export function projectGithubSettings(
     targetRepository: targetRepository,
     originCommit: originCommit,
     branchName: branchName,
+  }
+}
+
+export interface GithubData {
+  branches: Array<GithubBranch>
+  publicRepositories: Array<RepositoryEntry>
+}
+
+export function emptyGithubData(): GithubData {
+  return {
+    branches: [],
+    publicRepositories: [],
   }
 }
 
@@ -1109,6 +1134,7 @@ export interface EditorState {
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
   githubChecksums: GithubChecksums | null
+  githubData: GithubData
 }
 
 export function editorState(
@@ -1182,6 +1208,7 @@ export function editorState(
   githubOperations: Array<GithubOperation>,
   githubChecksums: GithubChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
+  githubData: GithubData,
 ): EditorState {
   return {
     id: id,
@@ -1254,6 +1281,7 @@ export function editorState(
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
     githubChecksums: githubChecksums,
+    githubData: githubData,
   }
 }
 
@@ -2073,6 +2101,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubOperations: [],
     githubChecksums: null,
     branchContents: null,
+    githubData: emptyGithubData(),
   }
 }
 
@@ -2371,6 +2400,7 @@ export function editorModelFromPersistentModel(
     githubOperations: [],
     githubChecksums: persistentModel.githubChecksums,
     branchContents: persistentModel.branchContents,
+    githubData: emptyGithubData(),
   }
   return editor
 }
