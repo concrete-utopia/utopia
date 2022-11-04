@@ -1018,8 +1018,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
-      { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,
