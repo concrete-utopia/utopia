@@ -162,18 +162,21 @@ export const GithubPane = React.memo(() => {
   const loadBranchesUI = React.useMemo(() => {
     return (
       <>
-        <UIGridRow padded variant='<----------1fr---------><-auto->'>
-          <span style={{ fontWeight: 500 }}>Branches</span>
-          <Button
-            spotlight
-            highlight
-            style={{ padding: '0 6px' }}
-            onMouseUp={refreshBranches}
-            disabled={githubWorking}
-          >
-            {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-          </Button>
-        </UIGridRow>
+        {when(
+          storedTargetGithubRepo != null,
+          <UIGridRow padded variant='<----------1fr---------><-auto->'>
+            <span style={{ fontWeight: 500 }}>Branches</span>
+            <Button
+              spotlight
+              highlight
+              style={{ padding: '0 6px' }}
+              onMouseUp={refreshBranches}
+              disabled={githubWorking}
+            >
+              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+            </Button>
+          </UIGridRow>,
+        )}
         {when(
           branchesForRepository.length > 0,
           <UIGridRow padded variant='<--------auto-------->|--45px--|'>
