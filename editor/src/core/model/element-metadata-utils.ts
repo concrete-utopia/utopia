@@ -4,7 +4,14 @@ import { getReorderDirection } from '../../components/canvas/controls/select-mod
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
+import {
+  mapDropNulls,
+  pluck,
+  stripNulls,
+  flatMapArray,
+  uniqBy,
+  mapAndFilter,
+} from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -504,8 +511,11 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
-    const allPaths = Object.keys(elements).map(EP.fromString)
-    return allPaths.filter((path) => EP.isDescendantOf(path, target))
+    return mapAndFilter(
+      (element) => element.elementPath,
+      (path) => EP.isDescendantOf(path, target),
+      Object.values(elements),
+    )
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
