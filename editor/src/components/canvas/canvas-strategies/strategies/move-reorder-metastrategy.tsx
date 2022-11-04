@@ -1,5 +1,4 @@
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isRootElementOfInstance } from '../../../../core/shared/element-path'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -39,11 +38,9 @@ export const moveReorderMetaStrategy: MetaCanvasStrategy = (
   const selectedElements = getDragTargets(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const anyDraggedElementsRootElements = selectedElements.some(isRootElementOfInstance)
 
   if (
     selectedElements.length === 0 ||
-    anyDraggedElementsRootElements ||
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
