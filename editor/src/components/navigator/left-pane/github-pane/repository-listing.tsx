@@ -86,7 +86,6 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         dispatch,
         parsedTargetRepository,
         props.defaultBranch,
-        null,
         isAnotherRepo,
       )
       setImporting(true)

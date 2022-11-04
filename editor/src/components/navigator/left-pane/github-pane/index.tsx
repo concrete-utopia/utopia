@@ -202,7 +202,6 @@ export const GithubPane = React.memo(() => {
                     dispatch,
                     storedTargetGithubRepo,
                     branch.name,
-                    originCommit,
                     false,
                   )
                 }
@@ -245,7 +244,6 @@ export const GithubPane = React.memo(() => {
     currentBranch,
     isLoadingBranches,
     refreshBranches,
-    originCommit,
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')

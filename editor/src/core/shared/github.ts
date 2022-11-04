@@ -304,11 +304,14 @@ export async function updateProjectAgainstGithub(
       if (specificCommitContent.type === 'SUCCESS') {
         dispatch(
           [
+            updateGithubChecksums(getProjectContentsChecksums(branchLatestContent.content)),
+            updateBranchContents(branchLatestContent.content),
             updateAgainstGithub(
               branchLatestContent.content,
               specificCommitContent.content,
               branchLatestContent.originCommit,
             ),
+            showToast(notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS')),
           ],
           'everyone',
         )
@@ -335,7 +338,6 @@ export async function updateProjectWithBranchContent(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
   branchName: string,
-  commitSha: string | null,
   resetBranches: boolean,
 ): Promise<void> {
   const operation: GithubOperation = {
@@ -346,7 +348,7 @@ export async function updateProjectWithBranchContent(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const response = await getBranchContentFromServer(githubRepo, branchName, commitSha)
+  const response = await getBranchContentFromServer(githubRepo, branchName, null)
 
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
