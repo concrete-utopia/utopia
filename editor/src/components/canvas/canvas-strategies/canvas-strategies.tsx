@@ -83,7 +83,6 @@ export const existingStrategies: MetaCanvasStrategy = (
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
-  lookForApplicableParentStrategy,
   dragToMoveMetaStrategy,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
