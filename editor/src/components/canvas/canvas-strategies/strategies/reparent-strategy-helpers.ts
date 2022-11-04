@@ -349,6 +349,20 @@ export function getReparentTargetUnified(
         (path) => MetadataUtils.findElementByElementPath(metadata, path),
         reparentSubjects.elements,
       )
+      const containingComponents = selectedElementsMetadata.map((e) =>
+        EP.getContainingComponent(e.elementPath),
+      )
+
+      const containingComponentsUnderMouse = containingComponents.filter((c) =>
+        allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
+      )
+
+      const isTargetOutsideOfContainingComponentUnderMouse = containingComponentsUnderMouse.some(
+        (c) => EP.isDescendantOf(c, target),
+      )
+      if (isTargetOutsideOfContainingComponentUnderMouse) {
+        return false
+      }
 
       // TODO BEFORE MERGE consider multiselect!!!!!
       // the current parent should be included in the array of valid targets
