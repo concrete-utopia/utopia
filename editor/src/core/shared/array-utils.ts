@@ -48,6 +48,21 @@ export function mapDropNulls<T, U>(
   return result
 }
 
+export function mapAndFilter<T, U>(
+  mapFn: (t: T, i: number) => U,
+  filter: (u: U) => boolean,
+  a: ReadonlyArray<T>,
+): Array<U> {
+  return mapDropNulls((t: T, i: number) => {
+    const mapResult = mapFn(t, i)
+    if (filter(mapResult)) {
+      return mapResult
+    } else {
+      return null
+    }
+  }, a)
+}
+
 // Dumb version of:
 // traverse :: (Traversable t, Applicative f) => (a -> f b) -> t a -> f (t b)
 export function traverseArray<T, U>(

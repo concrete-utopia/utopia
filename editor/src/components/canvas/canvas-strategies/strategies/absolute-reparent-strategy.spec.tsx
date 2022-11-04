@@ -235,7 +235,7 @@ function reparentElement(
   }
 }
 
-describe('Absolute Reparent Strategy', () => {
+xdescribe('Absolute Reparent Strategy', () => {
   it('does not activate when drag threshold is not reached', async () => {
     const targetElement = EP.elementPath([
       ['sb', 'scene-aaa', 'app-entity'],

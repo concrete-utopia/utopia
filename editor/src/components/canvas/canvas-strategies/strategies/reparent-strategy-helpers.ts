@@ -59,6 +59,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionTarget,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
@@ -195,14 +196,7 @@ export function findReparentStrategies(
   allowSmallerParent: AllowSmallerParent,
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
-
-  const reparentSubjects =
-    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS'
-      ? newReparentSubjects(canvasState.interactionTarget.subjects[0].defaultSize)
-      : existingReparentSubjects(
-          getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget)), // uhh
-        )
-
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
   const targetParent = getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
@@ -280,6 +274,22 @@ export function existingReparentSubjects(elements: Array<ElementPath>): Existing
   return {
     type: 'EXISTING_ELEMENTS',
     elements: elements,
+  }
+}
+
+export function reparentSubjectsForInteractionTarget(
+  interactionTarget: InteractionTarget,
+): ReparentSubjects {
+  switch (interactionTarget.type) {
+    case 'INSERTION_SUBJECTS':
+      return newReparentSubjects(interactionTarget.subjects[0].defaultSize)
+    case 'TARGET_PATHS':
+      return existingReparentSubjects(
+        getDragTargets(getTargetPathsFromInteractionTarget(interactionTarget)),
+      )
+    default:
+      const _exhaustiveCheck: never = interactionTarget
+      throw new Error(`Unhandled interaction target type ${JSON.stringify(interactionTarget)}`)
   }
 }
 

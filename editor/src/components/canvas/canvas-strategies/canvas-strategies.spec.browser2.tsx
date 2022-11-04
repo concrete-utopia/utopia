@@ -290,10 +290,10 @@ describe('Strategy Fitness', () => {
 
     const interactionSession: InteractionSession = {
       ...createMouseInteractionForTests(
-        canvasPoint({ x: 0, y: 0 }),
+        canvasPoint({ x: 10, y: 10 }),
         cmdModifier,
         boundingArea(),
-        canvasPoint({ x: -15, y: -15 }),
+        canvasPoint({ x: -25, y: -25 }),
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
@@ -750,6 +750,11 @@ export var storyboard = (
             data-uid='button'
             data-testid='button'
             data-label='button'
+          />
+          <Button
+            data-uid='other-button'
+            data-testid='other-button'
+            data-label='other-button'
           />
         </div>
       </div>

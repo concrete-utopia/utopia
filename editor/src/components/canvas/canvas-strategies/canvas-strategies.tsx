@@ -39,12 +39,12 @@ import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
+import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -58,38 +58,53 @@ export type MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ) => Array<CanvasStrategy>
 
-const existingStrategyFactories: Array<CanvasStrategyFactory> = [
-  absoluteMoveStrategy,
-  absoluteDuplicateStrategy,
-  keyboardAbsoluteMoveStrategy,
-  keyboardAbsoluteResizeStrategy,
-  absoluteResizeBoundingBoxStrategy,
-  flexReorderStrategy,
-  convertToAbsoluteAndMoveStrategy,
-  flowReorderStrategy,
-  reorderSliderStategy,
-  flexResizeBasicStrategy,
-  setPaddingStrategy,
-  relativeMoveStrategy,
-]
-
-export const existingStrategies: MetaCanvasStrategy = (
+const moveOrReorderStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): Array<CanvasStrategy> =>
-  stripNulls(
-    existingStrategyFactories.map((factory) =>
-      factory(canvasState, interactionSession, customStrategyState),
-    ),
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      absoluteMoveStrategy,
+      absoluteDuplicateStrategy,
+      keyboardAbsoluteMoveStrategy,
+      flexReorderStrategy,
+      convertToAbsoluteAndMoveStrategy,
+      flowReorderStrategy,
+      reorderSliderStategy,
+      relativeMoveStrategy,
+    ],
   )
+}
+
+const resizeStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      keyboardAbsoluteResizeStrategy,
+      absoluteResizeBoundingBoxStrategy,
+      flexResizeBasicStrategy,
+      setPaddingStrategy,
+    ],
+  )
+}
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+  moveOrReorderStrategies,
+  reparentMetaStrategy,
+]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  existingStrategies,
-  lookForApplicableParentStrategy,
-  reparentMetaStrategy,
+  ...AncestorCompatibleStrategies,
+  resizeStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
+  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
 export function pickCanvasStateFromEditorState(
