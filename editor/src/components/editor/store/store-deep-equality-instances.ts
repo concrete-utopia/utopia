@@ -2344,7 +2344,7 @@ export const TextFileKeepDeepEquality: KeepDeepEqualityCall<TextFile> = combine4
   textFile,
 )
 
-export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combine5EqualityCalls(
+export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combine6EqualityCalls(
   (file) => file.imageType,
   undefinableDeepEquality(StringKeepDeepEquality),
   (file) => file.base64,
@@ -2355,6 +2355,8 @@ export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combin
   undefinableDeepEquality(NumberKeepDeepEquality),
   (file) => file.hash,
   NumberKeepDeepEquality,
+  (file) => file.gitBlobSha,
+  undefinableDeepEquality(StringKeepDeepEquality),
   imageFile,
 )
 

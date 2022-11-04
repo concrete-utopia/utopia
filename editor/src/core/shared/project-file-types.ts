@@ -653,6 +653,7 @@ export interface ImageFile {
   width?: number
   height?: number
   hash: number
+  gitBlobSha?: string
 }
 
 export function imageFile(
@@ -661,6 +662,7 @@ export function imageFile(
   width: number | undefined,
   height: number | undefined,
   hash: number,
+  gitBlobSha: string | undefined,
 ): ImageFile {
   return {
     type: 'IMAGE_FILE',
@@ -669,6 +671,7 @@ export function imageFile(
     width: width,
     height: height,
     hash: hash,
+    gitBlobSha: gitBlobSha,
   }
 }
 
