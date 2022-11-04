@@ -676,12 +676,14 @@ export function imageFile(
 export interface AssetFile {
   type: 'ASSET_FILE'
   base64?: string
+  gitBlobSha?: string
 }
 
-export function assetFile(base64: string | undefined): AssetFile {
+export function assetFile(base64: string | undefined, gitBlobSha: string | undefined): AssetFile {
   return {
     type: 'ASSET_FILE',
     base64: base64,
+    gitBlobSha: gitBlobSha,
   }
 }
 

@@ -201,7 +201,8 @@ instance Arbitrary ImageFile where
   shrink = genericShrink
 
 data AssetFile = AssetFile
-               { gitBlobSha :: Maybe Text
+               { base64     :: Maybe Text
+               , gitBlobSha :: Maybe Text
                }
                deriving (Eq, Show, Generic, Data, Typeable)
 

@@ -307,7 +307,7 @@ makeProjectAssetFileFromEntry gitEntry blobResult = do
   let pathParts = T.splitOn "/" path
   let pathWithForwardSlash = "/" <> path
   let assetSha = view (field @"sha") blobResult
-  let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectAssetFile $ AssetFile (Just assetSha)
+  let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectAssetFile $ AssetFile Nothing (Just assetSha)
   pure (fileResult, pathParts)
 
 foldExceptContentTreeRoot :: (MonadBaseControl IO m, MonadIO m, Traversable t) => (a -> ExceptT Text m ProjectContentTreeRoot) -> t a -> ExceptT Text m ProjectContentTreeRoot

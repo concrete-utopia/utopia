@@ -2358,8 +2358,10 @@ export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combin
   imageFile,
 )
 
-export const AssetFileKeepDeepEquality: KeepDeepEqualityCall<AssetFile> = combine1EqualityCall(
+export const AssetFileKeepDeepEquality: KeepDeepEqualityCall<AssetFile> = combine2EqualityCalls(
   (file) => file.base64,
+  undefinableDeepEquality(StringKeepDeepEquality),
+  (file) => file.gitBlobSha,
   undefinableDeepEquality(StringKeepDeepEquality),
   assetFile,
 )
