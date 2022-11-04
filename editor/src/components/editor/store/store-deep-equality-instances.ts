@@ -306,7 +306,6 @@ import {
   ProjectGithubSettings,
   GithubRepo,
   githubRepo,
-  projectGithubSettings,
   DraggedImageProperties,
   draggedImageProperties,
   ImageDragSessionState,
@@ -319,6 +318,9 @@ import {
   GithubChecksums,
   FileRevertModal,
   fileRevertModal,
+  GithubData,
+  emptyGithubData,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -450,7 +452,14 @@ import {
   TextResult,
   textResult,
 } from '../../../core/shared/file-utils'
-import { GithubFileStatus } from '../../../core/shared/github'
+import {
+  GithubBranch,
+  GithubFileStatus,
+  repositoryEntry,
+  RepositoryEntry,
+  repositoryEntryPermissions,
+  RepositoryEntryPermissions,
+} from '../../../core/shared/github'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1236,6 +1245,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const textDirectionEquals = oldSize.textDirection === newSize.textDirection
+    const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1262,7 +1272,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       globalContentBoxEquals &&
       floatEquals &&
       hasPositionOffsetEquals &&
-      textDirectionEquals
+      textDirectionEquals &&
+      hasTransformEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1293,6 +1304,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.float,
         newSize.hasPositionOffset,
         newSize.textDirection,
+        newSize.hasTransform,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -3200,6 +3212,45 @@ export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = comb
   githubRepo,
 )
 
+export const GithubBranchKeepDeepEquality: KeepDeepEqualityCall<GithubBranch> =
+  combine1EqualityCall(
+    (branch) => branch.name,
+    StringKeepDeepEquality,
+    (name: string): GithubBranch => ({ name }),
+  )
+
+export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntryPermissions> =
+  combine3EqualityCalls(
+    (p) => p.admin,
+    BooleanKeepDeepEquality,
+    (p) => p.pull,
+    BooleanKeepDeepEquality,
+    (p) => p.push,
+    BooleanKeepDeepEquality,
+    repositoryEntryPermissions,
+  )
+
+export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
+  combine8EqualityCalls(
+    (r) => r.avatarUrl,
+    NullableStringKeepDeepEquality,
+    (r) => r.private,
+    BooleanKeepDeepEquality,
+    (r) => r.fullName,
+    StringKeepDeepEquality,
+    (r) => r.description,
+    NullableStringKeepDeepEquality,
+    (r) => r.name,
+    NullableStringKeepDeepEquality,
+    (r) => r.updatedAt,
+    NullableStringKeepDeepEquality,
+    (r) => r.defaultBranch,
+    NullableStringKeepDeepEquality,
+    (r) => r.permissions,
+    RepositoryEntryPermissionsKeepDeepEquality,
+    repositoryEntry,
+  )
+
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
   combine3EqualityCalls(
     (settings) => settings.targetRepository,
@@ -3210,6 +3261,14 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine2EqualityCalls(
+  (data) => data.branches,
+  arrayDeepEquality(GithubBranchKeepDeepEquality),
+  (data) => data.publicRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  emptyGithubData,
+)
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
@@ -3472,6 +3531,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.branchContents,
   )
 
+  const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3542,7 +3603,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
     githubChecksumsResults.areEqual &&
-    branchContentsResults.areEqual
+    branchContentsResults.areEqual &&
+    githubDataResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3618,6 +3680,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubOperationsResults.value,
       githubChecksumsResults.value,
       branchContentsResults.value,
+      githubDataResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

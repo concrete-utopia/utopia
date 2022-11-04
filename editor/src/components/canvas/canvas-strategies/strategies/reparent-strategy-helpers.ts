@@ -304,32 +304,28 @@ export function getReparentTargetUnified(
   const openFile = canvasState.openFile ?? null
   const canvasScale = canvasState.scale
 
+  const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
+  if (storyboardComponent == null) {
+    return null
+  }
+
   const multiselectBounds: Size =
     (reparentSubjects.type === 'EXISTING_ELEMENTS'
       ? MetadataUtils.getBoundingRectangleInCanvasCoords(reparentSubjects.elements, metadata)
       : reparentSubjects.defaultSize) ?? size(0, 0)
 
-  const allElementsUnderPoint = getAllTargetsAtPointAABB(
-    metadata,
-    [],
-    [],
-    'no-filter',
-    pointOnCanvas,
-    allElementProps,
-    false,
-  )
-
-  if (allElementsUnderPoint.length === 0) {
-    const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
-    return storyboardComponent == null
-      ? null
-      : {
-          shouldReparent: true,
-          newParent: storyboardComponent,
-          shouldReorder: false,
-          newIndex: -1,
-        }
-  }
+  const allElementsUnderPoint = [
+    ...getAllTargetsAtPointAABB(
+      metadata,
+      [],
+      [],
+      'no-filter',
+      pointOnCanvas,
+      allElementProps,
+      false,
+    ),
+    storyboardComponent,
+  ]
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
     let validParentForFlexOrAbsolute = cmdPressed
@@ -360,6 +356,20 @@ export function getReparentTargetUnified(
         (path) => MetadataUtils.findElementByElementPath(metadata, path),
         reparentSubjects.elements,
       )
+      const containingComponents = selectedElementsMetadata.map((e) =>
+        EP.getContainingComponent(e.elementPath),
+      )
+
+      const containingComponentsUnderMouse = containingComponents.filter((c) =>
+        allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
+      )
+
+      const isTargetOutsideOfContainingComponentUnderMouse = containingComponentsUnderMouse.some(
+        (c) => EP.isDescendantOf(c, target),
+      )
+      if (isTargetOutsideOfContainingComponentUnderMouse) {
+        return false
+      }
 
       // TODO BEFORE MERGE consider multiselect!!!!!
       // the current parent should be included in the array of valid targets

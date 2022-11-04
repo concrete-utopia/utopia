@@ -21,6 +21,8 @@ export function isValidFlowReorderTarget(
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
     return false
+  } else if (elementMetadata?.specialSizeMeasurements.hasTransform) {
+    return false
   } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
     return false
   } else {

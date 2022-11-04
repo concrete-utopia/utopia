@@ -1,25 +1,18 @@
 import * as EP from '../../../../core/shared/element-path'
-import {
-  canvasPoint,
-  CanvasVector,
-  windowPoint,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
+import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import CanvasActions from '../../canvas-actions'
-import { mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import {
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+} from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import {
-  boundingArea,
-  createInteractionViaMouse,
-  updateInteractionViaMouse,
-} from '../interaction-state'
 
 const middle = (rect: DOMRect): { x: number; y: number } => ({
   x: rect.x + rect.width / 2,
@@ -275,37 +268,16 @@ export var storyboard = (
 )
 `)
 
-async function startDragUsingActions(
-  renderResult: EditorRenderResult,
-  target: ElementPath,
-  dragDelta: CanvasVector,
+function dragElement(
+  canvasControlsLayer: HTMLElement,
+  startPoint: WindowPoint,
+  dragDelta: WindowPoint,
+  midDragCallback?: () => void,
 ) {
-  await renderResult.dispatch(selectComponents([target], false), true)
-  const startInteractionSession = createInteractionViaMouse(
-    zeroCanvasPoint,
-    emptyModifiers,
-    boundingArea(),
-  )
-  await renderResult.dispatch(
-    [CanvasActions.createInteractionSession(startInteractionSession)],
-    false,
-  )
-  await renderResult.getDispatchFollowUpActionsFinished()
-  await renderResult.dispatch(
-    [
-      CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(
-          startInteractionSession,
-          'DRAG',
-          dragDelta,
-          emptyModifiers,
-          boundingArea(),
-        ),
-      ),
-    ],
-    false,
-  )
-  await renderResult.getDispatchFollowUpActionsFinished()
+  mouseDownAtPoint(canvasControlsLayer, startPoint)
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    midDragCallback: midDragCallback,
+  })
 }
 
 const pathForShallowNestedElement = EP.elementPath([['0cd', '3fc', '932', 'a50', 'a75']])
@@ -325,14 +297,16 @@ async function runTest(
     throw new Error(`div with id ${DraggedDivId} should be there`)
   }
 
-  const { x, y } = windowPoint(middle(divToBeDragged.getBoundingClientRect()))
+  const startPoint = windowPoint(middle(divToBeDragged.getBoundingClientRect()))
+  const { x, y } = startPoint
 
-  await startDragUsingActions(editor, targetPath, canvasPoint({ x: 20, y: 0 }))
-  mouseDownAtPoint(divToBeDragged, { x: x, y: y })
-  mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  await dragElement(canvasControlsLayer, startPoint, windowPoint({ x: 20, y: 0 }), () => {
+    mouseDownAtPoint(divToBeDragged, { x: x, y: y })
+    mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
 
-  await editor.getDispatchFollowUpActionsFinished()
-  check(editor)
+    check(editor)
+  })
 }
 
 describe('finds an applicable strategy for the nearest parent', () => {
