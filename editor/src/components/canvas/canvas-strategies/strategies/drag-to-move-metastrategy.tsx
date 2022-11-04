@@ -44,7 +44,6 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
-    interactionSession.interactionData.drag == null ||
     interactionSession.interactionData.modifiers.alt
   ) {
     return []
@@ -96,12 +95,7 @@ export function doNothingStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 1.5
-        : 0,
+    fitness: 1.5,
     apply: () => {
       return emptyStrategyApplicationResult
     },
