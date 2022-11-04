@@ -912,6 +912,7 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.right) ||
     !positionValueIsDefault(elementStyle.bottom) ||
     !positionValueIsDefault(elementStyle.left)
+  const hasTransform = elementStyle.transform !== 'none'
 
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
@@ -943,6 +944,7 @@ function getSpecialMeasurements(
     elementStyle.float,
     hasPositionOffset,
     elementStyle.direction,
+    hasTransform,
   )
 }
 
