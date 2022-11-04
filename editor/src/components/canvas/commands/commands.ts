@@ -30,6 +30,8 @@ import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equal
 import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
 import { runSetCursor, SetCursorCommand } from './set-cursor-command'
 import {
+  AppendElementsToRerenderCommand,
+  runAppendElementsToRerender,
   runSetElementsToRerender,
   SetElementsToRerenderCommand,
 } from './set-elements-to-rerender-command'
@@ -84,6 +86,7 @@ export type CanvasCommand =
   | ShowReorderIndicator
   | SetCursorCommand
   | SetElementsToRerenderCommand
+  | AppendElementsToRerenderCommand
   | PushIntendedBounds
   | DeleteProperties
   | SetProperty
@@ -134,6 +137,8 @@ export const runCanvasCommand = (
       return runSetCursor(editorState, command)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
       return runSetElementsToRerender(editorState, command)
+    case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
+      return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS':
       return runPushIntendedBounds(editorState, command)
     case 'DELETE_PROPERTIES':

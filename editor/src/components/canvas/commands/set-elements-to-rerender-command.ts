@@ -1,6 +1,4 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { EditorState, EditorStatePatch, ElementsToRerender } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -19,34 +17,73 @@ export function setElementsToRerenderCommand(
   }
 }
 
-function includeDescendants(
-  elementsToRerender: ElementsToRerender,
-  metadata: ElementInstanceMetadataMap,
-): ElementsToRerender {
-  if (elementsToRerender === 'rerender-all-elements') {
-    return elementsToRerender
+function mergeElementsToRerender(l: ElementsToRerender, r: ElementsToRerender): ElementsToRerender {
+  if (l === 'rerender-all-elements' || r === 'rerender-all-elements') {
+    return 'rerender-all-elements'
   } else {
-    const descendants = elementsToRerender.flatMap((path) =>
-      // FIXME maybe move the dom walker calling code
-      MetadataUtils.getDescendantPaths(metadata, path),
-    )
+    return [...l, ...r]
+  }
+}
 
-    return elementsToRerender.concat(descendants)
+export function mergeSetElementsToRerenderCommands(
+  l: SetElementsToRerenderCommand,
+  r: SetElementsToRerenderCommand,
+): SetElementsToRerenderCommand {
+  if (l.value === 'rerender-all-elements' || r.value === 'rerender-all-elements') {
+    return setElementsToRerenderCommand('rerender-all-elements')
+  } else {
+    return setElementsToRerenderCommand(l.value.concat(r.value))
   }
 }
 
 export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderCommand> = (
-  editorState: EditorState,
+  e: EditorState,
   command: SetElementsToRerenderCommand,
 ) => {
-  const includingDescendents = includeDescendants(command.value, editorState.jsxMetadata)
-
   const editorStatePatch: EditorStatePatch = {
-    canvas: { elementsToRerender: { $set: includingDescendents } },
+    canvas: {
+      elementsToRerender: { $set: command.value },
+    },
   }
   return {
     editorStatePatches: [editorStatePatch],
     commandDescription: `Set Elements To Rerender: [${
+      typeof command.value === 'string' ? command.value : command.value.map(EP.toString).join(', ')
+    }]`,
+  }
+}
+
+// NOTE: You probably want to use the command above! Since we don't explicitly clear the current
+// value of canvas.elementsToRerender, and the default value is 'render-all-elements', if you use
+// this command in the wrong place you can very easily end up re-rendering everything
+export interface AppendElementsToRerenderCommand extends BaseCommand {
+  type: 'APPEND_ELEMENTS_TO_RERENDER_COMMAND'
+  value: ElementsToRerender
+}
+
+export function appendElementsToRerenderCommand(
+  value: ElementsToRerender,
+): AppendElementsToRerenderCommand {
+  return {
+    type: 'APPEND_ELEMENTS_TO_RERENDER_COMMAND',
+    whenToRun: 'mid-interaction',
+    value: value,
+  }
+}
+export const runAppendElementsToRerender: CommandFunction<AppendElementsToRerenderCommand> = (
+  e: EditorState,
+  command: AppendElementsToRerenderCommand,
+) => {
+  const editorStatePatch: EditorStatePatch = {
+    canvas: {
+      elementsToRerender: {
+        $apply: (current: ElementsToRerender) => mergeElementsToRerender(current, command.value),
+      },
+    },
+  }
+  return {
+    editorStatePatches: [editorStatePatch],
+    commandDescription: `Append Elements To Rerender: [${
       typeof command.value === 'string' ? command.value : command.value.map(EP.toString).join(', ')
     }]`,
   }

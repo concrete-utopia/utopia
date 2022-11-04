@@ -1,12 +1,16 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CSSCursor } from '../../canvas-types'
+import { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
+import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
+  CanvasStrategy,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionLifecycle,
   targetPaths,
 } from '../canvas-strategy-types'
 
@@ -76,7 +80,10 @@ export function ancestorMetaStrategy(
 
     if (nextAncestorResult.length > 0) {
       // A length of > 0 means that we should be bubbling up to the next ancestor
-      return nextAncestorResult
+      return nextAncestorResult.map((s) => ({
+        ...s,
+        apply: appendCommandsToApplyResult(s.apply, [appendElementsToRerenderCommand([target])]),
+      }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor
       return allOtherStrategies.flatMap((metaStrategy) =>
@@ -85,23 +92,31 @@ export function ancestorMetaStrategy(
           id: `${s.id}_ANCESTOR_${level}`,
           name: applyLevelSuffix(s.name, level),
           fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
-          apply: (strategyLifecycle) => {
-            const result = s.apply(strategyLifecycle)
-            if (result.status === 'success' && result.commands.length > 0) {
-              return {
-                ...result,
-                commands: [
-                  ...result.commands,
-                  highlightElementsCommand([parentPath]),
-                  setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
-                ],
-              }
-            } else {
-              return result
-            }
-          },
+          apply: appendCommandsToApplyResult(s.apply, [
+            appendElementsToRerenderCommand([target]),
+            highlightElementsCommand([parentPath]),
+            setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
+          ]),
         })),
       )
+    }
+  }
+}
+
+type ApplyFn = CanvasStrategy['apply']
+function appendCommandsToApplyResult(
+  applyFn: ApplyFn,
+  commandsToAppend: Array<CanvasCommand>,
+): ApplyFn {
+  return (strategyLifecycle: InteractionLifecycle) => {
+    const result = applyFn(strategyLifecycle)
+    if (result.status === 'success' && result.commands.length > 0) {
+      return {
+        ...result,
+        commands: [...result.commands, ...commandsToAppend],
+      }
+    } else {
+      return result
     }
   }
 }
