@@ -39,10 +39,8 @@ export const LeftPaneComponent = React.memo(() => {
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
-  const projectId = useEditorState((store) => store.editor.id, 'LeftPaneComponent projectId')
-  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
-  const isMyProject = useIsMyProject(projectId)
+  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   const loggedIn = useEditorState(
     (store) => User.isLoggedIn(store.userState.loginState),
@@ -99,8 +97,6 @@ export const LeftPaneComponent = React.memo(() => {
           }
         }}
       >
-        {isMyProject === 'yes' ? null : <ForksGiven />}
-
         <UIGridRow variant='<--1fr--><--1fr--><--1fr-->' padded={false} css={{ gridColumnGap: 0 }}>
           <MenuTab
             label={'Project'}

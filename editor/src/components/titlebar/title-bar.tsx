@@ -4,7 +4,7 @@ import { LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
-import { MenuTile } from '../menubar/menubar'
+import { MenuTile } from './menu-tile'
 import { FullHeightButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
 
