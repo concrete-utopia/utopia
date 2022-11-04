@@ -193,6 +193,7 @@ export function findReparentStrategies(
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
   allowSmallerParent: AllowSmallerParent,
+  log: boolean = false,
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
 
@@ -212,7 +213,12 @@ export function findReparentStrategies(
     canvasState.startingAllElementProps,
     'allow-missing-bounds', // TODO delete this property!
     allowSmallerParent,
+    log,
   )
+
+  if (log) {
+    console.info('targetParent', targetParent)
+  }
 
   if (targetParent == null) {
     return []
@@ -292,6 +298,7 @@ export function getReparentTargetUnified(
   allElementProps: AllElementProps,
   missingBoundsHandling: MissingBoundsHandling,
   allowSmallerParent: AllowSmallerParent,
+  log: boolean = false,
 ): ReparentTarget | null {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -387,19 +394,28 @@ export function getReparentTargetUnified(
 
   // first try to find a flex element insertion area
   for (const flexElementPath of flexElementsUnderPoint) {
-    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
-      metadata,
-      flexElementPath,
-      'padded-edge',
-      canvasScale,
-    )
+    const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        flexElementPath,
+        'padded-edge',
+        canvasScale,
+      )
 
-    const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPoint(target, pointOnCanvas)
-    })
+    const targetUnderMouseIndex = targets.find((target) => {
+      return rectContainsPoint(target.rect, pointOnCanvas)
+    })?.insertionIndex
 
-    if (targetUnderMouseIndex > -1) {
+    if (targetUnderMouseIndex != null) {
       // we found a target!
+      if (log) console.info('padded-edge trigger!!!!', targets[targetUnderMouseIndex], targets)
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        flexElementPath,
+        'padded-edge',
+        canvasScale,
+        true,
+      )
       return {
         shouldReparent: true,
         shouldReorder: true,
@@ -427,23 +443,19 @@ export function getReparentTargetUnified(
       newIndex: -1,
     }
   } else {
-    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
-      metadata,
-      targetParentPath,
-      'full-size',
-      canvasScale,
-    )
+    const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
+      drawTargetRectanglesForChildrenOfElement(metadata, targetParentPath, 'full-size', canvasScale)
 
-    const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPointInclusive(target, pointOnCanvas)
-    })
+    const targetUnderMouseIndex = targets.find((target) => {
+      return rectContainsPointInclusive(target.rect, pointOnCanvas)
+    })?.insertionIndex
 
     // found flex element, todo index
     return {
       shouldReparent: true,
       newParent: targetParentPath,
-      shouldReorder: targetUnderMouseIndex > -1,
-      newIndex: targetUnderMouseIndex,
+      shouldReorder: targetUnderMouseIndex != null,
+      newIndex: targetUnderMouseIndex ?? -1,
     }
   }
 }
@@ -460,7 +472,8 @@ function drawTargetRectanglesForChildrenOfElement(
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-): Array<CanvasRectangle> {
+  log: boolean = false,
+): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
   const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
@@ -479,32 +492,35 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
+  const children = MetadataUtils.getChildrenPaths(metadata, flexElementPath)
+
   interface ElemBounds {
     start: number
     size: number
     end: number
+    index: number
   }
 
   const pseudoElementBefore: ElemBounds = {
     start: parentBounds[leftOrTop],
     size: 0,
     end: parentBounds[leftOrTop],
+    index: -1,
   }
   const pseudoElementAfter: ElemBounds = {
     start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
     size: 0,
     end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+    index: children.length,
   }
 
-  const childrenBounds: Array<ElemBounds> = MetadataUtils.getChildrenPaths(
-    metadata,
-    flexElementPath,
-  ).map((childPath) => {
+  const childrenBounds: Array<ElemBounds> = children.map((childPath, index) => {
     const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
     return {
       start: bounds[leftOrTop],
       size: bounds[widthOrHeight],
       end: bounds[leftOrTop] + bounds[widthOrHeight],
+      index: index,
     }
   })
 
@@ -514,31 +530,44 @@ function drawTargetRectanglesForChildrenOfElement(
     pseudoElementAfter,
   ]
 
-  let flexInsertionTargets: Array<CanvasRectangle> = []
+  let flexInsertionTargets: Array<{ rect: CanvasRectangle; insertionIndex: number }> = []
 
   if (targetRectangleSize === 'padded-edge') {
     for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
-      const start = childrenBoundsAlongAxis[index].end
-      const end = childrenBoundsAlongAxis[index + 1].start
+      const bounds = childrenBoundsAlongAxis[index]
 
-      const normalizedStart = Math.min(start, end)
-      const normalizedEnd = Math.max(start, end)
-
-      const paddedStart = normalizedStart - ExtraPadding
-      const paddedEnd = normalizedEnd + ExtraPadding
+      const normalizedStart = Math.min(bounds.start, bounds.end)
+      const normalizedEnd = Math.max(bounds.start, bounds.end)
 
       flexInsertionTargets.push(
-        rectFromTwoPoints(
-          {
-            [leftOrTop]: paddedStart,
-            [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-          } as any as CanvasPoint, // TODO improve my type
-          {
-            [leftOrTop]: paddedEnd,
-            [leftOrTopComplement]:
-              parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-          } as any as CanvasPoint, // TODO improve my type
-        ),
+        {
+          insertionIndex: bounds.index + 1,
+          rect: rectFromTwoPoints(
+            {
+              [leftOrTop]: normalizedEnd - ExtraPadding,
+              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+            } as any as CanvasPoint, // TODO improve my type
+            {
+              [leftOrTop]: normalizedEnd + ExtraPadding,
+              [leftOrTopComplement]:
+                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+            } as any as CanvasPoint, // TODO improve my type
+          ),
+        },
+        {
+          insertionIndex: bounds.index,
+          rect: rectFromTwoPoints(
+            {
+              [leftOrTop]: normalizedStart - ExtraPadding,
+              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+            } as any as CanvasPoint, // TODO improve my type
+            {
+              [leftOrTop]: normalizedStart + ExtraPadding,
+              [leftOrTopComplement]:
+                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+            } as any as CanvasPoint, // TODO improve my type
+          ),
+        },
       )
     }
   } else {
@@ -551,8 +580,9 @@ function drawTargetRectanglesForChildrenOfElement(
       const normalizedStart = Math.min(start, end)
       const normalizedEnd = Math.max(start, end)
 
-      flexInsertionTargets.push(
-        rectFromTwoPoints(
+      flexInsertionTargets.push({
+        insertionIndex: index,
+        rect: rectFromTwoPoints(
           {
             [leftOrTop]: normalizedStart,
             [leftOrTopComplement]: parentBounds[leftOrTopComplement],
@@ -563,7 +593,7 @@ function drawTargetRectanglesForChildrenOfElement(
               parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
           } as any as CanvasPoint, // TODO improve my type
         ),
-      )
+      })
     }
   }
 
