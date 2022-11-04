@@ -4,6 +4,7 @@ import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/m
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
+import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -18,6 +19,7 @@ import {
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
+import { PillHandle } from './control-common'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -30,6 +32,8 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
+
+  const colorTheme = useColorTheme()
 
   const { dispatch, scale, metadata } = useEditorState(
     (store) => ({
@@ -69,6 +73,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const { width, height } = handleDimensions(flexDirection, scale)
+  const borderWidth = 1 / scale
 
   return (
     <CanvasOffsetWrapper>
@@ -93,12 +98,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               style={{ padding: 5, cursor: cursorFromFlexDirection(flexDirection) }}
               onMouseDown={onMouseDown}
             >
-              <div
-                style={{
-                  width: width,
-                  height: height,
-                  backgroundColor: 'red',
-                }}
+              <PillHandle
+                width={width}
+                height={height}
+                color={colorTheme.brandNeonPink.value}
+                borderWidth={borderWidth}
               />
             </div>
           </div>
