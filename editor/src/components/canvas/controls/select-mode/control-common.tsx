@@ -10,7 +10,7 @@ interface PaddingValueLabelProps {
   value: CSSNumber
 }
 
-export const CSSNumberLabel: React.FC<PaddingValueLabelProps> = (props) => {
+export const CSSNumberLabel = (props: PaddingValueLabelProps): JSX.Element => {
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
@@ -25,5 +25,27 @@ export const CSSNumberLabel: React.FC<PaddingValueLabelProps> = (props) => {
     >
       {printCSSNumber(value, null)}
     </div>
+  )
+}
+
+interface PillHandleProps {
+  width: number
+  height: number
+  color: string
+  borderWidth: number
+}
+
+export const PillHandle = (props: PillHandleProps): JSX.Element => {
+  const { width, height, color, borderWidth } = props
+  return (
+    <div
+      style={{
+        boxSizing: 'border-box',
+        width: width,
+        height: height,
+        backgroundColor: color,
+        border: `${borderWidth}px solid rgba(255, 255, 255)`,
+      }}
+    />
   )
 }

@@ -18,7 +18,7 @@ import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-uti
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CSSNumberLabel } from './control-common'
+import { CSSNumberLabel, PillHandle } from './control-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -179,15 +179,7 @@ const PaddingResizeControlI = React.memo(
               <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
             </div>
           )}
-          <div
-            style={{
-              boxSizing: 'border-box',
-              width: width,
-              height: height,
-              backgroundColor: color,
-              border: `${borderWidth}px solid rgba(255, 255, 255)`,
-            }}
-          />
+          <PillHandle width={width} height={height} color={color} borderWidth={borderWidth} />
         </div>
       </div>
     )
