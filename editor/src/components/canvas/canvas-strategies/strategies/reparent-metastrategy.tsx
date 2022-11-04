@@ -171,9 +171,9 @@ function getStartingTargetParentsToFilterOutInner(
 }
 
 function isCanvasState(
-  v: InteractionCanvasState | InteractionSession,
-): v is InteractionCanvasState {
-  return (v as InteractionCanvasState).startingMetadata != null
+  value: InteractionCanvasState | InteractionSession,
+): value is InteractionCanvasState {
+  return (value as InteractionCanvasState).startingMetadata != null
 }
 
 const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFilterOutInner, {
