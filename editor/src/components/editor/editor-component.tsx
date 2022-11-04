@@ -83,6 +83,8 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  useGithubData()
+
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
@@ -408,13 +410,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <ModalComponent />
         <ToastRenderer />
         <LockedOverlay />
-        <GithubDataManager />
       </SimpleFlexRow>
     </>
   )
 })
 
-const GithubDataManager = () => {
+const useGithubData = () => {
   const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
   const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
     (store) => ({
