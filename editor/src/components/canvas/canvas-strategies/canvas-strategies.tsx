@@ -45,7 +45,7 @@ import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { moveReorderMetaStrategy } from './strategies/move-reorder-metastrategy'
+import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -84,7 +84,7 @@ export const existingStrategies: MetaCanvasStrategy = (
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
   lookForApplicableParentStrategy,
-  moveReorderMetaStrategy,
+  dragToMoveMetaStrategy,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
 ]

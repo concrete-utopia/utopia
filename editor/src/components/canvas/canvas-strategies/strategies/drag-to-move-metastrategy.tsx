@@ -30,7 +30,7 @@ const baseMoveStrategyFactories: Array<CanvasStrategyFactory> = [
   relativeMoveStrategy,
 ]
 
-export const moveReorderMetaStrategy: MetaCanvasStrategy = (
+export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
