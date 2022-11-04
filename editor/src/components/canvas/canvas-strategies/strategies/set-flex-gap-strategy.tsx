@@ -1,21 +1,10 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
-import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
-import {
-  cursorFromFlexDirection,
-  gapControlBoundsFromMetadata,
-  SimpleFlexDirection,
-  simpleFlexDirectionFromString,
-  updateGapValue,
-} from '../../gap-utils'
+import { cursorFromFlexDirection, maybeFlexGapFromElement, updateGapValue } from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
@@ -61,14 +50,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
 
-  const updatedDragValue = Math.max(0, updateGapValue(flexGap.direction, flexGap.value, drag))
-
-  const controlBounds = gapControlBoundsFromMetadata(
-    interactionSession?.latestMetadata ?? canvasState.startingMetadata,
-    selectedElement,
-    flexGap.value,
-    flexGap.direction,
-  )
+  const updatedFlexGapValue = Math.max(0, updateGapValue(flexGap.direction, flexGap.value, drag))
 
   return {
     id: SetFlexGapStrategyId,
@@ -78,8 +60,8 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         control: FlexGapControl,
         props: {
           selectedElement: selectedElement,
-          controlBounds: controlBounds,
           flexDirection: flexGap.direction,
+          updatedGapValue: updatedFlexGapValue,
         },
         key: 'flex-gap-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -96,46 +78,12 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       }
 
       return strategyApplicationResult([
-        setProperty('always', selectedElement, StyleGapProp, updatedDragValue + 'px'),
+        setProperty('always', selectedElement, StyleGapProp, updatedFlexGapValue + 'px'),
         setCursorCommand('always', cursorFromFlexDirection(flexGap.direction)),
-        updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(selectedElements),
       ])
     },
   }
-}
-
-interface FlexGapData {
-  value: number
-  direction: SimpleFlexDirection
-}
-
-function maybeFlexGapFromElement(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexGapData | null {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (elementMetadata == null || elementMetadata.specialSizeMeasurements.display !== 'flex') {
-    return null
-  }
-
-  const children = MetadataUtils.getChildren(metadata, elementPath)
-  if (children.length < 2) {
-    return null
-  }
-
-  const flexGap = children[0].specialSizeMeasurements.parentFlexGap
-  if (flexGap === 0) {
-    return null
-  }
-
-  const flexDirection =
-    optionalMap(
-      simpleFlexDirectionFromString,
-      children[0].specialSizeMeasurements.parentFlexDirection,
-    ) ?? 'row'
-
-  return { value: flexGap, direction: flexDirection }
 }
 
 function dragFromInteractionSession(

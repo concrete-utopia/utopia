@@ -1,16 +1,6 @@
 import React from 'react'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
 import { toString } from '../../../../core/shared/element-path'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  CanvasVector,
-  size,
-  Size,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
+import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -20,7 +10,11 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { cursorFromFlexDirection, PathWithBounds, SimpleFlexDirection } from '../../gap-utils'
+import {
+  cursorFromFlexDirection,
+  gapControlBoundsFromMetadata,
+  SimpleFlexDirection,
+} from '../../gap-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -28,19 +22,20 @@ import { isZeroSizedElement } from '../outline-utils'
 interface FlexGapControlProps {
   selectedElement: ElementPath
   flexDirection: SimpleFlexDirection
-  controlBounds: Array<PathWithBounds>
+  updatedGapValue: number
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
-  const { selectedElement, flexDirection, controlBounds } = props
+  const { selectedElement, flexDirection, updatedGapValue } = props
 
-  const { dispatch, scale } = useEditorState(
+  const { dispatch, scale, metadata } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
+      metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
     }),
     'FlexGapControl dispatch scale',
   )
@@ -58,6 +53,13 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       ref.current.style.height = boundingBox.height + 'px'
     }
   })
+
+  const controlBounds = gapControlBoundsFromMetadata(
+    metadata,
+    selectedElement,
+    updatedGapValue,
+    flexDirection,
+  )
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {

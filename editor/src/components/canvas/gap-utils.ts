@@ -6,7 +6,6 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
-import { gapControlBounds } from './padding-utils'
 
 export type SimpleFlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
 
@@ -129,4 +128,37 @@ export function gapControlBoundsFromMetadata(
     gap,
     flexDirection,
   )
+}
+
+export interface FlexGapData {
+  value: number
+  direction: SimpleFlexDirection
+}
+
+export function maybeFlexGapFromElement(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexGapData | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (elementMetadata == null || elementMetadata.specialSizeMeasurements.display !== 'flex') {
+    return null
+  }
+
+  const children = MetadataUtils.getChildren(metadata, elementPath)
+  if (children.length < 2) {
+    return null
+  }
+
+  const flexGap = children[0].specialSizeMeasurements.parentFlexGap
+  if (flexGap === 0) {
+    return null
+  }
+
+  const flexDirection =
+    optionalMap(
+      simpleFlexDirectionFromString,
+      children[0].specialSizeMeasurements.parentFlexDirection,
+    ) ?? 'row'
+
+  return { value: flexGap, direction: flexDirection }
 }
