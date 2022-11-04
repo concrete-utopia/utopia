@@ -177,7 +177,7 @@ function isCanvasState(
 }
 
 const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFilterOutInner, {
-  maxSize: 5,
+  maxSize: 10,
   equals: (
     l: InteractionCanvasState | InteractionSession,
     r: InteractionCanvasState | InteractionSession,
