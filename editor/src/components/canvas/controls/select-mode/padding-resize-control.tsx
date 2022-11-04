@@ -18,7 +18,12 @@ import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-uti
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CSSNumberLabel, PillHandle } from './control-common'
+import {
+  CSSNumberLabel,
+  PillHandle,
+  StripedBackgroundCSS,
+  useHoverWithDelay,
+} from './control-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -47,8 +52,6 @@ function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size 
 }
 
 export const PaddingResizeControlHoverTimeout: number = 200
-
-type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 2
 const PaddingResizeControlHeight = 12
@@ -147,11 +150,8 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundImage: hidden
-            ? undefined
-            : `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
-          backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
+          ...(hidden ? {} : StripedBackgroundCSS(stripeColor, scale)),
         }}
       >
         <div
@@ -309,27 +309,6 @@ function startResizeInteraction(
       ),
     ])
   }
-}
-
-function useHoverWithDelay(
-  delay: number,
-  update: (hovered: boolean) => void,
-): [React.MouseEventHandler, React.MouseEventHandler] {
-  const fadeInTimeout = React.useRef<Timeout | null>(null)
-
-  const onHoverEnd = () => {
-    if (fadeInTimeout.current) {
-      clearTimeout(fadeInTimeout.current)
-    }
-    fadeInTimeout.current = null
-    update(false)
-  }
-
-  const onHoverStart = () => {
-    fadeInTimeout.current = setTimeout(() => update(true), delay)
-  }
-
-  return [onHoverStart, onHoverEnd]
 }
 
 function edgePieceDerivedProps(edgePiece: EdgePiece): {

@@ -1,4 +1,5 @@
 import React from 'react'
+import { CSSProperties } from 'twind'
 import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 
 const FontSize = 12
@@ -48,4 +49,35 @@ export const PillHandle = (props: PillHandleProps): JSX.Element => {
       }}
     />
   )
+}
+
+export const StripedBackgroundCSS = (
+  stripeColor: string,
+  scale: number,
+): { backgroundImage: string; backgroundSize: string } => ({
+  backgroundImage: `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
+  backgroundSize: `${20 / scale}px ${20 / scale}px`,
+})
+
+export type Timeout = ReturnType<typeof setTimeout>
+
+export function useHoverWithDelay(
+  delay: number,
+  update: (hovered: boolean) => void,
+): [React.MouseEventHandler, React.MouseEventHandler] {
+  const fadeInTimeout = React.useRef<Timeout | null>(null)
+
+  const onHoverEnd = () => {
+    if (fadeInTimeout.current) {
+      clearTimeout(fadeInTimeout.current)
+    }
+    fadeInTimeout.current = null
+    update(false)
+  }
+
+  const onHoverStart = () => {
+    fadeInTimeout.current = setTimeout(() => update(true), delay)
+  }
+
+  return [onHoverStart, onHoverEnd]
 }

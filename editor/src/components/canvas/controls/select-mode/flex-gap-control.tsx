@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { toString } from '../../../../core/shared/element-path'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -7,6 +7,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { cssNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
@@ -19,7 +20,12 @@ import {
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PillHandle } from './control-common'
+import {
+  CSSNumberLabel,
+  PillHandle,
+  StripedBackgroundCSS,
+  useHoverWithDelay,
+} from './control-common'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -30,16 +36,28 @@ interface FlexGapControlProps {
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
+const PaddingIndicatorOffset = 10
+const HitAreaPadding = 5
+
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
-
   const colorTheme = useColorTheme()
+  const indicatorColor = colorTheme.brandNeonPink.value
 
-  const { dispatch, scale, metadata } = useEditorState(
+  const [indicatorShown, setIndicatorShown] = useState<string | null>(null)
+  const [backgroundShown, setBackgroundShown] = useState<boolean>(false)
+
+  const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
+
+  const handleHoverStart = React.useCallback((id: string) => setIndicatorShown(id), [])
+  const handleHoverEnd = React.useCallback(() => setIndicatorShown(null), [])
+
+  const { dispatch, scale, metadata, isDragging } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
       metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+      isDragging: store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
     }),
     'FlexGapControl dispatch scale',
   )
@@ -75,38 +93,71 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const { width, height } = handleDimensions(flexDirection, scale)
   const borderWidth = 1 / scale
 
+  const [paddingIndicatorOffset, hitAreaPadding, dragBorderWidth] = [
+    PaddingIndicatorOffset,
+    HitAreaPadding,
+    1,
+  ].map((v) => v / scale)
+
+  const shouldShowBackground = !isDragging && backgroundShown
+  const shouldShowIndicator = (path: string) => !isDragging && indicatorShown === path
+
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} ref={controlRef}>
-        {controlBounds.map(({ bounds, path }) => (
-          <div
-            key={toString(path)} // so as not to make balint mad
-            style={{
-              position: 'absolute',
-              left: bounds.x,
-              top: bounds.y,
-              width: bounds.width,
-              height: bounds.height,
-              backgroundColor: `rgba(0, 0, 255, 0.1)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        {controlBounds.map(({ bounds, path: p }) => {
+          const path = toString(p)
+          return (
             <div
-              data-testid={FlexGapControlHandleTestId}
-              style={{ padding: 5, cursor: cursorFromFlexDirection(flexDirection) }}
-              onMouseDown={onMouseDown}
+              key={path}
+              onMouseEnter={controlHoverStart}
+              onMouseLeave={controlHoverEnd}
+              style={{
+                position: 'absolute',
+                left: bounds.x,
+                top: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
+                ...(shouldShowBackground ? StripedBackgroundCSS(indicatorColor, scale) : {}),
+              }}
             >
-              <PillHandle
-                width={width}
-                height={height}
-                color={colorTheme.brandNeonPink.value}
-                borderWidth={borderWidth}
-              />
+              <div
+                data-testid={FlexGapControlHandleTestId}
+                style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
+                onMouseDown={onMouseDown}
+                onMouseEnter={() => handleHoverStart(path)}
+                onMouseLeave={handleHoverEnd}
+              >
+                {shouldShowIndicator(path) && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      paddingTop: paddingIndicatorOffset,
+                      paddingLeft: paddingIndicatorOffset,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <CSSNumberLabel
+                      value={cssNumber(33, null)}
+                      scale={scale}
+                      color={indicatorColor}
+                    />
+                  </div>
+                )}
+                <PillHandle
+                  width={width}
+                  height={height}
+                  color={colorTheme.brandNeonPink.value}
+                  borderWidth={borderWidth}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </CanvasOffsetWrapper>
   )
