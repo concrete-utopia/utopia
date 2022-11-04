@@ -584,6 +584,7 @@ function drawTargetRectanglesForChildrenOfElement(
       )
     }
   } else {
+    // TODO BEFORE MERGE row-reverse is broken!!
     // full size target rectangles, covering the entire flex element
     for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
       const start = childrenBoundsAlongAxis[index].start + childrenBoundsAlongAxis[index].size / 2
@@ -617,24 +618,25 @@ export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
   direction: SimpleFlexDirection,
+  forwardsOrBackwards: FlexForwardsOrBackwards,
 ): number {
-  let getSiblingPosition: (rect: CanvasRectangle) => number
-  let getSiblingSize: (rect: CanvasRectangle) => number
+  let getStartPosition: (rect: CanvasRectangle) => number
+  let getEndPosition: (rect: CanvasRectangle) => number
   switch (direction) {
     case 'row':
-      getSiblingPosition = (rect: CanvasRectangle) => {
+      getStartPosition = (rect: CanvasRectangle) => {
         return rect.x
       }
-      getSiblingSize = (rect: CanvasRectangle) => {
-        return rect.width
+      getEndPosition = (rect: CanvasRectangle) => {
+        return rect.x + rect.width
       }
       break
     case 'column':
-      getSiblingPosition = (rect: CanvasRectangle) => {
+      getStartPosition = (rect: CanvasRectangle) => {
         return rect.y
       }
-      getSiblingSize = (rect: CanvasRectangle) => {
-        return rect.height
+      getEndPosition = (rect: CanvasRectangle) => {
+        return rect.y + rect.height
       }
       break
     default:
@@ -643,10 +645,10 @@ export function getSiblingMidPointPosition(
   }
 
   const value =
-    (getSiblingPosition(precedingSiblingPosition) +
-      getSiblingSize(precedingSiblingPosition) +
-      getSiblingPosition(succeedingSiblingPosition)) /
-    2
+    forwardsOrBackwards === 'forward'
+      ? (getEndPosition(precedingSiblingPosition) + getStartPosition(succeedingSiblingPosition)) / 2
+      : (getEndPosition(succeedingSiblingPosition) + getStartPosition(precedingSiblingPosition)) / 2
+
   return value
 }
 
@@ -674,7 +676,7 @@ export function siblingAndPseudoPositions(
     }),
     pseudoElements.after,
   ]
-  return siblingPositions
+  return forwardsOrBackwards === 'forward' ? siblingPositions : reverse(siblingPositions)
 }
 
 function createPseudoElements(
