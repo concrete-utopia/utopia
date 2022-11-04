@@ -2,12 +2,13 @@ import React from 'react'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
-import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
+import { CSSNumber } from '../../../inspector/common/css-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePiece } from '../../canvas-types'
 import { deltaFromEdge, offsetMeasurementByDelta, PaddingMeasurement } from '../../padding-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { CSSNumberLabel } from './control-common'
 
 export const PaddingValueIndicatorTestId = 'PaddingValueIndicatorTestId'
 
@@ -16,33 +17,6 @@ export interface PaddingValueIndicatorProps {
   activeEdge: EdgePiece
   dragDelta: CanvasVector
   dragStart: CanvasPoint
-}
-
-const FontSize = 12
-const Padding = 4
-
-interface PaddingValueLabelProps {
-  scale: number
-  color: string
-  value: CSSNumber
-}
-
-export const PaddingValueLabel: React.FC<PaddingValueLabelProps> = (props) => {
-  const { scale, color, value } = props
-  const fontSize = FontSize / scale
-  const padding = Padding / scale
-  return (
-    <div
-      style={{
-        fontSize: fontSize,
-        padding: padding,
-        backgroundColor: color,
-        color: 'white',
-      }}
-    >
-      {printCSSNumber(value, null)}
-    </div>
-  )
 }
 
 export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndicatorProps>(
@@ -77,7 +51,7 @@ export const PaddingValueIndicator = controlForStrategyMemoized<PaddingValueIndi
             top: position.y,
           }}
         >
-          <PaddingValueLabel
+          <CSSNumberLabel
             value={actualPaddingValue}
             scale={scale}
             color={colorTheme.brandNeonPink.value}

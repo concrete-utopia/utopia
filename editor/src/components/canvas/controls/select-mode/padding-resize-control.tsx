@@ -18,7 +18,7 @@ import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-uti
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PaddingValueLabel } from './padding-value-indicator'
+import { CSSNumberLabel } from './control-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -176,7 +176,7 @@ const PaddingResizeControlI = React.memo(
                 paddingLeft: paddingIndicatorOffset,
               }}
             >
-              <PaddingValueLabel value={props.paddingValue.value} scale={scale} color={color} />
+              <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
             </div>
           )}
           <div
