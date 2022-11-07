@@ -4,7 +4,7 @@ import { LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
-import { MenuTile } from '../menubar/menubar'
+import { MenuTile } from './menu-tile'
 import { FullHeightButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
 
@@ -14,8 +14,7 @@ const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
     onClick={onClick}
     style={{
-      padding: '4px 0',
-      margin: '0 20px 0 10px',
+      margin: '0 20px 0 0',
       cursor: 'pointer',
     }}
   >
@@ -67,15 +66,16 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
   return (
     <SimpleFlexRow
       style={{
+        padding: '0 10px 0 10px',
         flexGrow: 0,
-        minHeight: 40,
+        height: 40,
         fontWeight: 600,
         letterSpacing: 0.2,
         alignItems: 'center',
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ display: 'flex', height: '100%' }}>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
         <AppLogo onClick={toggleLeftPanel} />
         {loggedIn ? (
           <>
@@ -105,7 +105,9 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
       </div>
 
       <div style={{ display: 'flex', height: '100%' }}>
-        <TestMenu />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <TestMenu />
+        </div>
         {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}
         {loggedIn ? null : (
           <FullHeightButton onClick={onClickLoginNewTab}>Sign in to Save</FullHeightButton>

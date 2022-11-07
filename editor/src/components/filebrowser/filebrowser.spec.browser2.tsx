@@ -207,7 +207,7 @@ describe('File browser tests', () => {
   it('when clicking on a file item, the correct action is dispatched', async () => {
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
 

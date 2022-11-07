@@ -33,7 +33,6 @@ import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
-import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
@@ -42,12 +41,7 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import {
-  githubOperationLocksEditor,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  MenuBarWidth,
-} from './store/editor-state'
+import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 
@@ -290,7 +284,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isDraggedFile) {
         const actions = [
           EditorActions.setPanelVisibility('leftmenu', true),
-          EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
+          EditorActions.setLeftMenuTab(LeftMenuTab.Project),
         ]
         dispatch(actions, 'everyone')
       }
@@ -335,21 +329,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 height: '100%',
                 display: 'flex',
                 flexShrink: 0,
-                transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
+                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
-              <SimpleFlexColumn
-                style={{
-                  height: '100%',
-                  width: MenuBarWidth,
-                  backgroundColor: colorTheme.leftMenuBackground.value,
-                }}
-              >
-                <Menubar />
-              </SimpleFlexColumn>
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
             </div>
             <SimpleFlexRow
@@ -558,7 +542,7 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: leftMenuExpanded ? MenuBarWidth + LeftPaneDefaultWidth : 0,
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
         backgroundColor: '#000',
