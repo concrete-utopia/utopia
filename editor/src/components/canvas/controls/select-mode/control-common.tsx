@@ -1,4 +1,5 @@
 import React from 'react'
+import { roundTo } from '../../../../core/shared/math-utils'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export interface CSSNumberWithRenderedValue {
@@ -7,10 +8,10 @@ export interface CSSNumberWithRenderedValue {
 }
 
 function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
-  if (unit === 'em') {
-    return Math.floor(value * 10) / 10
+  if (unit === 'em' || unit === 'cm') {
+    return roundTo(value, 1)
   }
-  return Math.floor(value)
+  return roundTo(value, 0)
 }
 
 export const offsetMeasurementByDelta = (
