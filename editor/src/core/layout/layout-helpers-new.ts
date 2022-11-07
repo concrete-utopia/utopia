@@ -133,7 +133,7 @@ export interface LayoutPropertyTypes {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
 
-  gap: number
+  gap: CSSNumber
   flexBasis: CSSNumber | undefined
 
   left: CSSNumber | undefined

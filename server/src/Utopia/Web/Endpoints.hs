@@ -679,9 +679,8 @@ getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessio
   getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
 
 getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> ServerMonad GetBranchContentResponse
-getGithubBranchContentEndpoint _ _ _ _ Nothing = badRequest
-getGithubBranchContentEndpoint cookie owner repository branchName (Just projectID) = requireUser cookie $ \sessionUser -> do
-  getBranchContent (view (field @"_id") sessionUser) owner repository branchName projectID
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha = requireUser cookie $ \sessionUser -> do
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha
 
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do

@@ -10,14 +10,14 @@ export interface SetProperty extends BaseCommand {
   type: 'SET_PROPERTY'
   element: ElementPath
   property: PropertyPath
-  value: string
+  value: string | number
 }
 
 export function setProperty(
   whenToRun: WhenToRun,
   element: ElementPath,
   property: PropertyPath,
-  value: string,
+  value: string | number,
 ): SetProperty {
   return {
     type: 'SET_PROPERTY',

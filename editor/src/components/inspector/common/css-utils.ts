@@ -4086,7 +4086,7 @@ export interface ParsedCSSProperties {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
   flexBasis: CSSNumber | undefined
-  gap: number
+  gap: CSSNumber
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4260,7 +4260,10 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexGrow: 0,
   flexShrink: 1,
   display: 'block',
-  gap: 0,
+  gap: {
+    value: 0,
+    unit: null,
+  },
   width: {
     value: 0,
     unit: null,
@@ -4336,7 +4339,7 @@ export const cssParsers: CSSParsers = {
   flexGrow: parseCSSUnitlessAsNumber,
   flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
-  gap: parseCSSUnitlessAsNumber,
+  gap: parseCSSLengthPercent,
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
@@ -4656,7 +4659,7 @@ interface ParsedLayoutProperties {
   pinBottom: CSSNumber | undefined
   centerY: CSSNumber | undefined
   height: CSSNumber | undefined
-  gapMain: number
+  gapMain: CSSNumber
   flexBasis: CSSNumber | undefined
 }
 
@@ -4669,7 +4672,7 @@ export const layoutEmptyValues: ParsedLayoutProperties = {
   pinBottom: undefined,
   centerY: undefined,
   height: undefined,
-  gapMain: 0,
+  gapMain: { value: 0, unit: null },
   flexBasis: undefined,
 }
 
@@ -4686,7 +4689,7 @@ const layoutParsers: LayoutParsers = {
   pinBottom: parseFramePin,
   centerY: parseFramePin,
   height: parseFramePin,
-  gapMain: isNumberParser,
+  gapMain: parseCSSLengthPercent,
   flexBasis: parseFramePin,
 }
 
@@ -4711,7 +4714,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   width: undefined,
   height: undefined,
 
-  gap: 0,
+  gap: { value: 0, unit: null },
   flexBasis: undefined,
 
   left: undefined,
@@ -4728,7 +4731,7 @@ const layoutParsersNew: LayoutParsersNew = {
   width: parseFramePin,
   height: parseFramePin,
 
-  gap: isNumberParser,
+  gap: parseCSSLengthPercent,
   flexBasis: parseFramePin,
 
   left: parseFramePin,
@@ -4745,7 +4748,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  gap: jsxAttributeValueWithNoComments,
+  gap: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
   left: printCSSNumberOrUndefinedAsAttributeValue('px'),
@@ -5086,10 +5089,10 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   pinBottom: undefined,
   centerY: undefined,
   height: undefined,
-  gapMain: 0,
+  gapMain: { value: 0, unit: null },
   flexBasis: undefined,
 
-  gap: 0,
+  gap: { value: 0, unit: null },
 }
 
 export function isTrivialDefaultValue(

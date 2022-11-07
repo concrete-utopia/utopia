@@ -418,19 +418,27 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       pure $ fmap (\branch -> GetBranchesBranch (view (field @"name") branch)) sortedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
-getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> m GetBranchContentResponse
-getGithubBranch githubResources awsResource logger metrics pool userID owner repository branchName projectID = do
-  whenProjectOwner metrics pool userID projectID $ do
-    result <- runExceptT $ do
-      branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-        getGitBranch accessToken owner repository branchName
-      let commitSha = view (field @"commit" . field @"sha") branch
-      let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
-      let uploadAsset = saveAsset awsResource 
-      projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-        getRecursiveGitTreeAsContent accessToken uploadAsset owner repository projectID treeSha
-      pure (projectContent, commitSha)
-    pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Maybe Text -> m GetBranchContentResponse
+getGithubBranch githubResources logger metrics pool userID owner repository branchName possibleCommitSha = do
+  result <- runExceptT $ do
+    -- Fallback to get the latest tree for this branch.
+    let getLatestTreeSha = do
+              branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+                getGitBranch accessToken owner repository branchName
+              let commitSha = view (field @"commit" . field @"sha") branch
+              let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+              pure (commitSha, treeSha)
+    -- Get a specific commit from this repository.
+    let getTreeShaFromCommit commitSha = do
+              commitDetails <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+                getGitCommit accessToken owner repository commitSha
+              let treeSha = view (field @"tree" . field @"sha") commitDetails
+              pure (commitSha, treeSha)
+    (commitSha, treeSha) <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
+    projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      getRecursiveGitTreeAsContent accessToken owner repository treeSha
+    pure (projectContent, commitSha)
+  pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
 
 convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)
 convertUsersRepositoriesResultToUnfold page result =

@@ -71,44 +71,67 @@ export const TestMenu = React.memo(() => {
 
   const onRequestVSCodeStatus = useRequestVSCodeStatus()
 
+  const perfTestTriggersEnabled = isFeatureEnabled('Performance Test Triggers'),
+    reParseProjectButtonEnabled = isFeatureEnabled('Re-parse Project Button')
+
+  if (!perfTestTriggersEnabled && !reParseProjectButtonEnabled) return null
+
   return (
-    <div style={{ display: 'flex' }}>
-      {isFeatureEnabled('Performance Test Triggers') ? (
+    <div
+      style={{
+        borderRadius: '15px',
+        border: '1px solid #95D4FF',
+        paddingLeft: 8,
+        paddingRight: 8,
+        height: 25,
+        width: 80,
+        display: 'flex',
+        alignItems: 'center',
+        background: '#95D4FF22',
+        overflow: 'scroll',
+        color: '#95D4FF',
+        fontSize: 8,
+        fontWeight: 600,
+        gap: 8,
+      }}
+    >
+      <span style={{ fontWeight: 800 }}>Tests</span>
+      {perfTestTriggersEnabled ? (
         <React.Fragment>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={printEditorState}>PPP</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerResizeTest}>P R</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerRegularHighlightTest}>PRH</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerAllElementsHighlightTest}>PAH</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerAbsoluteMoveLargeTest}>PAML</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerAbsoluteMoveSmallTest}>PAMS</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerSelectionChangeTest}>PSC</a>
           </Tile>
-          <Tile style={{ marginRight: 10 }} size='large'>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onRequestVSCodeStatus}>VSC</a>
           </Tile>
         </React.Fragment>
       ) : null}
-      {isFeatureEnabled('Re-parse Project Button') ? (
-        <Tile style={{ marginRight: 10 }} size='large'>
+      {reParseProjectButtonEnabled ? (
+        <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
           <a onClick={onReparseClick}>R</a>
         </Tile>
       ) : null}

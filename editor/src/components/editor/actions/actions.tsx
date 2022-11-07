@@ -306,6 +306,7 @@ import {
   UpdateGithubOperations,
   UpdateGithubChecksums,
   UpdateBranchContents,
+  UpdateAgainstGithub,
   UpdateGithubData,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
@@ -385,7 +386,7 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { saveProjectToGithub } from '../../../core/shared/github'
+import { mergeProjectContents, saveProjectToGithub } from '../../../core/shared/github'
 import { objectFilter } from '../../../core/shared/object-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
@@ -471,7 +472,7 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
     case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Project)
     case 'inspector':
     case 'canvas':
     case 'codeEditor':
@@ -5010,6 +5011,30 @@ export const UPDATE_FNS = {
     )
 
     return editor
+  },
+  UPDATE_AGAINST_GITHUB: (action: UpdateAgainstGithub, editor: EditorModel): EditorModel => {
+    const githubSettings = editor.githubSettings
+    if (
+      githubSettings.targetRepository != null &&
+      githubSettings.branchName != null &&
+      githubSettings.originCommit != null
+    ) {
+      const updatedProjectContents = mergeProjectContents(
+        editor.projectContents,
+        action.specificCommitContent,
+        action.branchLatestContent,
+      )
+      return {
+        ...editor,
+        projectContents: updatedProjectContents,
+        githubSettings: {
+          ...githubSettings,
+          originCommit: action.latestCommit,
+        },
+      }
+    } else {
+      return editor
+    }
   },
   SET_FILE_BROWSER_DRAG_STATE: (
     action: SetImageDragSessionState,

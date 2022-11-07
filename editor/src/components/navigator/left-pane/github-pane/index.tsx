@@ -6,11 +6,12 @@ import React from 'react'
 import urljoin from 'url-join'
 import { BASE_URL } from '../../../../common/env-vars'
 import {
-  getBranchContent,
+  updateProjectWithBranchContent,
   getBranchesForGithubRepository,
   GetBranchesResponse,
   githubFileChangesSelector,
   parseGithubProjectString,
+  updateProjectAgainstGithub,
 } from '../../../../core/shared/github'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -33,6 +34,7 @@ import {
   githubOperationPrettyName,
   isGithubCommishing,
   isGithubLoadingBranch,
+  isGithubUpdating,
 } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -84,6 +86,10 @@ export const GithubPane = React.memo(() => {
     (store) => store.editor.githubSettings.branchName,
     'Github current branch',
   )
+
+  const originCommit = useEditorState((store) => {
+    return store.editor.githubSettings.originCommit
+  }, 'GithubPane currentBranch')
 
   const onStartImport = React.useCallback(() => {
     if (parsedImportRepo != null) {
@@ -143,6 +149,12 @@ export const GithubPane = React.memo(() => {
     }
   }, [dispatch, storedTargetGithubRepo])
 
+  const triggerUpdateAgainstGithub = React.useCallback(() => {
+    if (storedTargetGithubRepo != null && currentBranch != null && originCommit != null) {
+      void updateProjectAgainstGithub(dispatch, storedTargetGithubRepo, currentBranch, originCommit)
+    }
+  }, [dispatch, storedTargetGithubRepo, currentBranch, originCommit])
+
   const branchesForRepository = useEditorState(
     (store) => store.editor.githubData.branches,
     'Github repo branches',
@@ -162,18 +174,21 @@ export const GithubPane = React.memo(() => {
   const loadBranchesUI = React.useMemo(() => {
     return (
       <>
-        <UIGridRow padded variant='<----------1fr---------><-auto->'>
-          <span style={{ fontWeight: 500 }}>Branches</span>
-          <Button
-            spotlight
-            highlight
-            style={{ padding: '0 6px' }}
-            onMouseUp={refreshBranches}
-            disabled={githubWorking}
-          >
-            {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-          </Button>
-        </UIGridRow>
+        {when(
+          storedTargetGithubRepo != null,
+          <UIGridRow padded variant='<----------1fr---------><-auto->'>
+            <span style={{ fontWeight: 500 }}>Branches</span>
+            <Button
+              spotlight
+              highlight
+              style={{ padding: '0 6px' }}
+              onMouseUp={refreshBranches}
+              disabled={githubWorking}
+            >
+              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+            </Button>
+          </UIGridRow>,
+        )}
         {when(
           branchesForRepository.length > 0,
           <UIGridRow padded variant='<--------auto-------->|--45px--|'>
@@ -186,10 +201,9 @@ export const GithubPane = React.memo(() => {
             {branchesForRepository.map((branch, index) => {
               function loadContentForBranch() {
                 if (storedTargetGithubRepo != null) {
-                  void getBranchContent(
+                  void updateProjectWithBranchContent(
                     dispatch,
                     storedTargetGithubRepo,
-                    forceNotNull('Should have a project ID.', projectID),
                     branch.name,
                     false,
                   )
@@ -228,7 +242,6 @@ export const GithubPane = React.memo(() => {
     branchesForRepository,
     storedTargetGithubRepo,
     dispatch,
-    projectID,
     githubWorking,
     githubOperations,
     currentBranch,
@@ -362,6 +375,16 @@ export const GithubPane = React.memo(() => {
               onMouseUp={triggerSaveToGithub}
             >
               {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
+            </Button>
+          </UIGridRow>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <Button
+              spotlight
+              highlight
+              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+              onMouseUp={triggerUpdateAgainstGithub}
+            >
+              {isGithubUpdating(githubOperations) ? <GithubSpinner /> : 'Update Against Github'}
             </Button>
           </UIGridRow>
           {loadBranchesUI}
