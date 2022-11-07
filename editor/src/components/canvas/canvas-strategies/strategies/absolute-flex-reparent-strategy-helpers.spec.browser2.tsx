@@ -2195,8 +2195,6 @@ describe('Reparent indicators', () => {
     await checkReparentIndicator(renderResult, 788, 645, 2, 123)
   })
 
-  // TODO BEFORE MERGE shows the reparent indicator before all the elements in a 'column-reverse' container !!!!
-
   it(`shows the reparent indicator between two elements in a 'row' container`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getVariedProjectCodeWithAFlexContainer('row'),
