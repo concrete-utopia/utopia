@@ -1,11 +1,15 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
+import { defaultEither, isLeft, right } from '../../core/shared/either'
+import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { canvasRectangle, CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
+import { CSSNumberWithRenderedValue } from './controls/select-mode/control-common'
+import { cssNumber, CSSNumber, CSSPadding } from '../inspector/common/css-utils'
 
 export type SimpleFlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
 
@@ -29,20 +33,19 @@ export function simpleFlexDirectionFromString(raw: string): SimpleFlexDirection 
   }
 }
 
-export function updateGapValue(
+export function dragDeltaForOrientation(
   orientation: SimpleFlexDirection,
-  originalValue: number,
   delta: CanvasVector,
 ): number {
   switch (orientation) {
     case 'row':
-      return originalValue + delta.x
+      return delta.x
     case 'row-reverse':
-      return originalValue - delta.x
+      return -delta.x
     case 'column':
-      return originalValue + delta.y
+      return delta.y
     case 'column-reverse':
-      return originalValue - delta.y
+      return -delta.y
     default:
       assertNever(orientation)
   }
@@ -131,7 +134,7 @@ export function gapControlBoundsFromMetadata(
 }
 
 export interface FlexGapData {
-  value: number
+  value: CSSNumberWithRenderedValue
   direction: SimpleFlexDirection
 }
 
@@ -139,8 +142,13 @@ export function maybeFlexGapFromElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): FlexGapData | null {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (elementMetadata == null || elementMetadata.specialSizeMeasurements.display !== 'flex') {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'flex' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value)
+  ) {
     return null
   }
 
@@ -154,11 +162,17 @@ export function maybeFlexGapFromElement(
     return null
   }
 
+  const gapFromProps: CSSNumber | undefined =
+    defaultEither(
+      undefined,
+      getLayoutProperty('gap', right(element.element.value.props), ['style']),
+    ) ?? cssNumber(flexGap, null)
+
   const flexDirection =
     optionalMap(
       simpleFlexDirectionFromString,
       children[0].specialSizeMeasurements.parentFlexDirection,
     ) ?? 'row'
 
-  return { value: flexGap, direction: flexDirection }
+  return { value: { renderedValuePx: flexGap, value: gapFromProps }, direction: flexDirection }
 }

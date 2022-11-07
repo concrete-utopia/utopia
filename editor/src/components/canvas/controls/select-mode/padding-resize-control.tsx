@@ -14,12 +14,13 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-utils'
+import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import {
   CSSNumberLabel,
+  CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
   useHoverWithDelay,
@@ -37,7 +38,7 @@ type Orientation = 'vertical' | 'horizontal'
 interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
-  paddingValue: PaddingMeasurement
+  paddingValue: CSSNumberWithRenderedValue
 }
 
 function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {

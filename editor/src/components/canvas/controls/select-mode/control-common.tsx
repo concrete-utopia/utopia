@@ -1,5 +1,38 @@
 import React from 'react'
-import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
+import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+
+export interface CSSNumberWithRenderedValue {
+  value: CSSNumber
+  renderedValuePx: number
+}
+
+function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
+  if (unit === 'em') {
+    return Math.floor(value * 10) / 10
+  }
+  return Math.floor(value)
+}
+
+export const offsetMeasurementByDelta = (
+  measurement: CSSNumberWithRenderedValue,
+  delta: number,
+): CSSNumberWithRenderedValue => {
+  if (measurement.renderedValuePx === 0) {
+    return measurement
+  }
+  const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
+  const deltaInUnits = valueWithUnitAppropriatePrecision(
+    measurement.value.unit,
+    delta * pixelsPerUnit,
+  )
+  return {
+    renderedValuePx: measurement.renderedValuePx + delta,
+    value: {
+      unit: measurement.value.unit,
+      value: measurement.value.value + deltaInUnits,
+    },
+  }
+}
 
 const FontSize = 12
 const Padding = 4

@@ -4086,7 +4086,7 @@ export interface ParsedCSSProperties {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
   flexBasis: CSSNumber | undefined
-  gap: number
+  gap: CSSNumber
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4336,7 +4336,7 @@ export const cssParsers: CSSParsers = {
   flexGrow: parseCSSUnitlessAsNumber,
   flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
-  gap: parseCSSUnitlessAsNumber,
+  gap: parseCSSLengthPercent,
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,

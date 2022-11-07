@@ -1,11 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { cssNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
+import { offsetMeasurementByDelta } from '../../controls/select-mode/control-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
   FloatingCSSNumberIndicator,
@@ -13,9 +14,9 @@ import {
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   cursorFromFlexDirection,
+  dragDeltaForOrientation,
   FlexGapData,
   maybeFlexGapFromElement,
-  updateGapValue,
 } from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -63,14 +64,19 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
 
-  const updatedFlexGapValue = Math.max(0, updateGapValue(flexGap.direction, flexGap.value, drag))
+  const dragDelta = Math.max(
+    -flexGap.value.renderedValuePx,
+    dragDeltaForOrientation(flexGap.direction, drag),
+  )
+
+  const updatedFlexGapMeasurement = offsetMeasurementByDelta(flexGap.value, dragDelta)
 
   const resizeControl = controlWithProps({
     control: FlexGapControl,
     props: {
       selectedElement: selectedElement,
       flexDirection: flexGap.direction,
-      updatedGapValue: updatedFlexGapValue,
+      updatedGapValue: updatedFlexGapMeasurement,
     },
     key: 'flex-gap-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
@@ -106,7 +112,12 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       }
 
       return strategyApplicationResult([
-        setProperty('always', selectedElement, StyleGapProp, updatedFlexGapValue + 'px'),
+        setProperty(
+          'always',
+          selectedElement,
+          StyleGapProp,
+          printCSSNumber(updatedFlexGapMeasurement.value, null),
+        ),
         setCursorCommand('always', cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children]),
       ])
@@ -137,14 +148,20 @@ function flexGapValueIndicatorProps(
   }
 
   const { drag, dragStart } = interactionSession.interactionData
-  const updatedGapValue = updateGapValue(flexGap.direction, flexGap.value, drag)
+
+  const dragDelta = Math.max(
+    -flexGap.value.renderedValuePx,
+    dragDeltaForOrientation(flexGap.direction, drag),
+  )
+
+  const updatedFlexGapMeasurement = offsetMeasurementByDelta(flexGap.value, dragDelta)
 
   const position = flexGap.direction.startsWith('row')
     ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
     : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.x })
 
   return {
-    value: cssNumber(updatedGapValue, null),
+    value: updatedFlexGapMeasurement.value,
     position: position,
   }
 }

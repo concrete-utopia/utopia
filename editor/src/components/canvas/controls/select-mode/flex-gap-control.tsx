@@ -7,7 +7,6 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { cssNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
@@ -22,6 +21,7 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import {
   CSSNumberLabel,
+  CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
   useHoverWithDelay,
@@ -30,7 +30,7 @@ import {
 interface FlexGapControlProps {
   selectedElement: ElementPath
   flexDirection: SimpleFlexDirection
-  updatedGapValue: number
+  updatedGapValue: CSSNumberWithRenderedValue
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
@@ -79,7 +79,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
     selectedElement,
-    updatedGapValue,
+    updatedGapValue.renderedValuePx,
     flexDirection,
   )
 
@@ -142,7 +142,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
                     }}
                   >
                     <CSSNumberLabel
-                      value={cssNumber(updatedGapValue, null)}
+                      value={updatedGapValue.value}
                       scale={scale}
                       color={indicatorColor}
                     />
