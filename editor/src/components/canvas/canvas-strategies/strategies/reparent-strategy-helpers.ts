@@ -193,7 +193,6 @@ export function findReparentStrategies(
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
   allowSmallerParent: AllowSmallerParent,
-  log: boolean = false,
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
 
@@ -213,12 +212,7 @@ export function findReparentStrategies(
     canvasState.startingAllElementProps,
     'allow-missing-bounds', // TODO delete this property!
     allowSmallerParent,
-    log,
   )
-
-  if (log) {
-    console.info('targetParent', targetParent)
-  }
 
   if (targetParent == null) {
     return []
@@ -298,7 +292,6 @@ export function getReparentTargetUnified(
   allElementProps: AllElementProps,
   missingBoundsHandling: MissingBoundsHandling,
   allowSmallerParent: AllowSmallerParent,
-  log: boolean = false,
 ): ReparentTarget | null {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -424,7 +417,6 @@ export function getReparentTargetUnified(
         flexElementPath,
         'padded-edge',
         canvasScale,
-        true,
       )
       return {
         shouldReparent: true,
@@ -482,7 +474,6 @@ function drawTargetRectanglesForChildrenOfElement(
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-  log: boolean = false,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 

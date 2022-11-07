@@ -37,14 +37,12 @@ export function getApplicableReparentFactories(
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
   allowSmallerParent: AllowSmallerParent,
-  log: boolean = false,
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(
     canvasState,
     cmdPressed,
     pointOnCanvas,
     allowSmallerParent,
-    log,
   )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
