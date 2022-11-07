@@ -46,6 +46,7 @@ import {
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
@@ -205,6 +206,36 @@ const isFile = (fileBrowserItem: FileBrowserItemInfo) => {
   return fileBrowserItem.type === 'file'
 }
 
+export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
+  // NOTE: these are placeholder colors, we should update them once we finalize the design
+  switch (type) {
+    case 'untracked':
+      return '#09f' // blue
+    case 'modified':
+      return '#f90' // orange
+    case 'deleted':
+      return '#f22' // red
+    default:
+      return '#ccc' // gray
+  }
+}
+
+export const GithubFileStatusLetter: React.FunctionComponent<{ status: GithubFileStatus }> = (
+  props,
+) => {
+  return (
+    <div
+      style={{
+        fontWeight: 500,
+        width: 15,
+        color: getGithubFileStatusColor(props.status),
+      }}
+    >
+      {props.status.charAt(0).toUpperCase()}
+    </div>
+  )
+}
+
 export function addingChildElement(
   indentation: number,
   addingChildName: string,
@@ -277,6 +308,13 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   toggleCollapse = () => this.props.toggleCollapse(this.props.path)
+
+  renderGithubStatus = () => {
+    if (this.props.githubStatus != undefined) {
+      return <GithubFileStatusLetter status={this.props.githubStatus} />
+    }
+    return null
+  }
 
   renderIcon() {
     return (
@@ -421,8 +459,8 @@ class FileBrowserItemInner extends React.PureComponent<
       name: `Rename ${
         this.props.fileType != null
           ? this.props.fileType === 'DIRECTORY'
-            ? 'Folder'
-            : 'File'
+            ? 'folder'
+            : 'file'
           : 'this'
       }`,
       enabled: this.props.fileType != null && canRename(this.props),
@@ -435,6 +473,24 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
+  revertContextMenuItem(): ContextMenuItem<unknown> {
+    return {
+      name: `Revert changes`,
+      enabled: this.props.githubStatus != null,
+      action: (_data: unknown, dispatch?: EditorDispatch) => {
+        requireDispatch(dispatch)(
+          [
+            EditorActions.showModal({
+              type: 'file-revert',
+              filePath: this.props.path,
+              status: this.props.githubStatus || null,
+            }),
+          ],
+          'everyone',
+        )
+      },
+    }
+  }
   delete = () => {
     this.props.dispatch(
       [
@@ -740,7 +796,6 @@ class FileBrowserItemInner extends React.PureComponent<
                   <Icons.Cross tooltipText='Delete' />
                 </Button>
               ) : null}
-
               {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
                   <WarningIcon
@@ -754,6 +809,7 @@ class FileBrowserItemInner extends React.PureComponent<
                   />
                 </span>
               ) : null}
+              {this.renderGithubStatus()}
             </SimpleFlexRow>
           ) : null}
         </div>
@@ -772,6 +828,10 @@ class FileBrowserItemInner extends React.PureComponent<
     // The context menu wrapper causes focus issues with renaming.
     if (this.props.type === 'file' && !this.state.isRenaming) {
       const contextMenuID = `file-context-menu-${this.state.filename.replace(' ', '_space_')}`
+      const items = [this.deleteContextMenuItem(), this.renameContextMenuItem()]
+      if (this.props.githubStatus != undefined) {
+        items.push(this.revertContextMenuItem())
+      }
       fileBrowserItem = (
         <div
           ref={this.props.forwardedRef}
@@ -781,7 +841,7 @@ class FileBrowserItemInner extends React.PureComponent<
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
-            items={[this.deleteContextMenuItem(), this.renameContextMenuItem()]}
+            items={items}
             data={{}}
           >
             {fileBrowserItem}

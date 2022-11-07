@@ -211,6 +211,9 @@ import type {
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
+  UpdateBranchContents,
+  UpdateGithubData,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -227,6 +230,8 @@ import type {
   RightMenuTab,
   Theme,
   GithubOperation,
+  GithubChecksums,
+  GithubData,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -976,10 +981,26 @@ export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateP
   }
 }
 
+export function updateBranchContents(
+  contents: ProjectContentTreeRoot | null,
+): UpdateBranchContents {
+  return {
+    action: 'UPDATE_BRANCH_CONTENTS',
+    contents: contents,
+  }
+}
+
 export function updateGithubSettings(settings: ProjectGithubSettings): UpdateGithubSettings {
   return {
     action: 'UPDATE_GITHUB_SETTINGS',
     settings: settings,
+  }
+}
+
+export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
+  return {
+    action: 'UPDATE_GITHUB_DATA',
+    data: data,
   }
 }
 
@@ -1438,6 +1459,13 @@ export function updateGithubOperations(
     action: 'UPDATE_GITHUB_OPERATIONS',
     operation: operation,
     type: type,
+  }
+}
+
+export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+  return {
+    action: 'UPDATE_GITHUB_CHECKSUMS',
+    checksums: checksums,
   }
 }
 

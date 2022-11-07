@@ -256,7 +256,7 @@ type ProjectContentTreeRoot = M.HashMap Text ProjectContentsTree
 
 data ProjectContentDirectory = ProjectContentDirectory
                              { fullPath  :: Text
-                             , directory :: Directory
+                             , directory :: ProjectFile
                              , children  :: ProjectContentTreeRoot
                              }
                              deriving (Eq, Show, Generic, Data, Typeable)
@@ -278,7 +278,7 @@ generateProjectContentDirectory :: Int -> Gen ProjectContentDirectory
 generateProjectContentDirectory depth = do
   fullPath <- arbitrary
   children <- liftArbitrary $ generateProjectContentsTree (depth - 1)
-  let directory = Directory
+  let directory = ProjectDirectory Directory
   pure ProjectContentDirectory{..}
 
 instance Arbitrary ProjectContentDirectory where
@@ -358,6 +358,8 @@ instance Arbitrary ProjectGithubSettings where
   arbitrary = genericArbitrary
   shrink = genericShrink
 
+type GithubChecksums = M.HashMap Text Text
+
 data PersistentModel = PersistentModel
                             { appID               :: Maybe Text
                             , forkedFromProjectId :: Maybe Text
@@ -373,6 +375,7 @@ data PersistentModel = PersistentModel
                             , projectSettings     :: Value
                             , navigator           :: Value
                             , githubSettings      :: ProjectGithubSettings
+                            , githubChecksums     :: Maybe GithubChecksums
                             }
                             deriving (Eq, Show, Generic, Data, Typeable)
 

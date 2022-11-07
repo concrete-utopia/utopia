@@ -117,6 +117,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_SELECTION_LOCK':
     case 'SAVE_TO_GITHUB':
     case 'UPDATE_GITHUB_OPERATIONS':
+    case 'UPDATE_GITHUB_CHECKSUMS':
+    case 'UPDATE_GITHUB_DATA':
       return true
 
     case 'NEW':
@@ -158,6 +160,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
+    case 'UPDATE_BRANCH_CONTENTS':
     case 'UPDATE_GITHUB_SETTINGS':
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':

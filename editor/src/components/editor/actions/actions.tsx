@@ -304,6 +304,9 @@ import {
   WrapInElement,
   WrapInView,
   UpdateGithubOperations,
+  UpdateGithubChecksums,
+  UpdateBranchContents,
+  UpdateGithubData,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -979,6 +982,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    githubChecksums: currentEditor.githubChecksums,
+    branchContents: currentEditor.branchContents,
+    githubData: currentEditor.githubData,
   }
 }
 
@@ -1917,11 +1923,7 @@ export const UPDATE_FNS = {
       toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
-  UPDATE_GITHUB_OPERATIONS: (
-    action: UpdateGithubOperations,
-    editor: EditorModel,
-    _dispatch: EditorDispatch,
-  ): EditorModel => {
+  UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {
     const operations = [...editor.githubOperations]
     switch (action.type) {
       case 'add':
@@ -1940,6 +1942,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubChecksums: action.checksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -3722,10 +3730,25 @@ export const UPDATE_FNS = {
       projectContents: action.contents,
     }
   },
+  UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      branchContents: action.contents,
+    }
+  },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       githubSettings: action.settings,
+    }
+  },
+  UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubData: {
+        ...editor.githubData,
+        ...action.data,
+      },
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

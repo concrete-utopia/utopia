@@ -13,7 +13,6 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
-import { InsertMenuPane } from '../navigator/left-pane'
 
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
@@ -39,6 +38,7 @@ import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
+import { InsertMenuPane } from '../navigator/insert-menu-pane'
 
 interface NumberSize {
   width: number

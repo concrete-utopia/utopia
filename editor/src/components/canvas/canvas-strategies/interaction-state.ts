@@ -103,7 +103,7 @@ export interface InteractionSession {
 
   startedAt: number
 
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null // FIXME Delete in a follow up PR
   updatedTargetPaths: UpdatedPathMap
   aspectRatioLock: number | null
 }
@@ -561,13 +561,13 @@ export function keyboardCatcherControl(): KeyboardCatcherControl {
     type: 'KEYBOARD_CATCHER_CONTROL',
   }
 }
-export interface FlowSlider {
-  type: 'FLOW_SLIDER'
+export interface ReorderSlider {
+  type: 'REORDER_SLIDER'
 }
 
-export function flowSlider(): FlowSlider {
+export function reorderSlider(): ReorderSlider {
   return {
-    type: 'FLOW_SLIDER',
+    type: 'REORDER_SLIDER',
   }
 }
 
@@ -577,4 +577,4 @@ export type CanvasControlType =
   | FlexGapHandle
   | PaddingResizeHandle
   | KeyboardCatcherControl
-  | FlowSlider
+  | ReorderSlider

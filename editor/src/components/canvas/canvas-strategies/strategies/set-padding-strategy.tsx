@@ -1,9 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import * as PP from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
+import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -21,6 +23,7 @@ import {
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
+  paddingMeasurementForEdge,
   paddingToPaddingString,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
@@ -74,7 +77,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const resizeControl = controlWithProps({
     control: PaddingResizeControl,
-    props: {},
+    props: { targets: selectedElements },
     key: 'padding-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
   })
@@ -174,13 +177,24 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  const childrenNotPositionAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const children = MetadataUtils.getChildren(metadata, path)
+  if (children.length === 0) {
+    return true
+  }
+
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
   )
 
-  if (childrenNotPositionAbsoluteOrSticky.length < 1) {
+  if (childrenNotPositionedAbsoluteOrSticky.length < 1) {
+    return false
+  }
+
+  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
+  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
+  if (!elementHasNonzeroPadding) {
     return false
   }
 
@@ -211,7 +225,8 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-  const currentPadding = paddingForEdge(edgePiece, padding)
+
+  const currentPadding = paddingMeasurementForEdge(edgePiece, padding)
 
   return {
     dragStart: interactionSession.interactionData.dragStart,

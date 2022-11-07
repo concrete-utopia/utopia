@@ -6,20 +6,37 @@ import {
   pathsEqual,
 } from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
+import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { assertNever } from '../../../../core/shared/utils'
+import { arrayEquals, assertNever } from '../../../../core/shared/utils'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  isInsertionSubjects,
+  isTargetPaths,
 } from '../canvas-strategy-types'
-import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import {
+  AllowSmallerParent,
+  DragInteractionData,
+  InteractionSession,
+  MissingBoundsHandling,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
+} from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { is1DStaticContainer } from './flow-reorder-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
-import { findReparentStrategies, ReparentStrategy } from './reparent-strategy-helpers'
+import {
+  existingReparentSubjects,
+  findReparentStrategies,
+  getReparentTargetUnified,
+  newReparentSubjects,
+  ReparentStrategy,
+  reparentSubjectsForInteractionTarget,
+} from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 interface ReparentFactoryAndDetails {
@@ -79,7 +96,7 @@ export function getApplicableReparentFactories(
         }
       }
       case 'REPARENT_AS_STATIC': {
-        const fitness = 3
+        const fitness = result.isFallback ? 2 : 3
 
         const targetParentDisplayType =
           MetadataUtils.findElementByElementPath(
@@ -119,6 +136,80 @@ export function getApplicableReparentFactories(
   return factories
 }
 
+function getStartingTargetParentsToFilterOutInner(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+): ReparentTargetsToFilter | null {
+  if (isInsertionSubjects(canvasState.interactionTarget)) {
+    return null
+  }
+
+  const interactionData = interactionSession.interactionData
+  if (interactionData.type !== 'DRAG') {
+    throw new Error(
+      `getStartingTargetParentsToFilterOut should only be called from a DRAG type interaction, not a ${interactionData.type} type interaction`,
+    )
+  }
+
+  const pointOnCanvas = interactionData.originalDragStart
+  const allowSmallerParent = interactionData.modifiers.cmd
+    ? 'allow-smaller-parent'
+    : 'disallow-smaller-parent'
+
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  const strictBoundsResult = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    interactionData.modifiers.cmd,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'use-strict-bounds',
+    allowSmallerParent,
+  )
+
+  const missingBoundsResult = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    interactionData.modifiers.cmd,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+    allowSmallerParent,
+  )
+
+  return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
+}
+
+function isCanvasState(
+  value: InteractionCanvasState | InteractionSession,
+): value is InteractionCanvasState {
+  return (value as InteractionCanvasState).startingMetadata != null
+}
+
+const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFilterOutInner, {
+  maxSize: 10,
+  equals: (
+    l: InteractionCanvasState | InteractionSession,
+    r: InteractionCanvasState | InteractionSession,
+  ) => {
+    // We only need to re-calculate the targets to filter if the interaction targets or starting metadata have changed
+    if (isCanvasState(l) && isCanvasState(r)) {
+      if (isTargetPaths(l.interactionTarget) && isTargetPaths(r.interactionTarget)) {
+        const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
+        const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
+        return (
+          l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
+        )
+      }
+    }
+
+    return true
+  },
+})
+
 export const reparentMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -153,7 +244,11 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   }
 
   const existingParents = reparentSubjects.map(parentPath)
-  const startingTargetsToFilter = interactionSession.startingTargetParentsToFilterOut
+
+  const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
+    canvasState,
+    interactionSession,
+  )
 
   const pointOnCanvas = offsetPoint(
     interactionSession.interactionData.originalDragStart,

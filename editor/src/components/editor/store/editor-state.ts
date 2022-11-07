@@ -143,38 +143,34 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
-import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { memoize } from '../../../core/shared/memoize'
+import { emptySet } from '../../../core/shared/set-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
-import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { Guideline, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
+import { GithubBranch, GithubFileStatus, RepositoryEntry } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  Project = 'project',
-  Storyboards = 'storyboards',
   Contents = 'contents',
   Settings = 'settings',
-  Sharing = 'sharing',
   Github = 'github',
 }
 
@@ -256,7 +252,8 @@ export interface UserState extends UserConfiguration {
 export type GithubOperation =
   | { name: 'commish' }
   | { name: 'listBranches' }
-  | { name: 'loadBranch'; branchName: string }
+  | { name: 'loadBranch'; branchName: string; githubRepo: GithubRepo }
+  | { name: 'loadRepositories' }
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
@@ -266,21 +263,43 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Listing branches'
     case 'loadBranch':
       return 'Loading branch'
+    case 'loadRepositories':
+      return 'Loading Repositories'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
   }
 }
 
+export function githubOperationLocksEditor(op: GithubOperation): boolean {
+  switch (op.name) {
+    case 'listBranches':
+    case 'loadRepositories':
+      return false
+    default:
+      return true
+  }
+}
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
+  repo: GithubRepo | null,
 ): boolean {
-  return operations.some((o) => o.name === 'loadBranch' && o.branchName === branchName)
+  return operations.some(
+    (o) =>
+      o.name === 'loadBranch' &&
+      o.branchName === branchName &&
+      o.githubRepo.owner === repo?.owner &&
+      o.githubRepo.repository === repo?.repository,
+  )
 }
 
 export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
   return operations.some((o) => o.name === 'commish')
+}
+
+export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'loadRepositories')
 }
 
 export const defaultUserState: UserState = {
@@ -336,6 +355,33 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
+export interface FileRevertModal {
+  type: 'file-revert'
+  filePath: string
+  status: GithubFileStatus | null
+}
+
+export function fileRevertModal(
+  filePath: string,
+  status: GithubFileStatus | null,
+): FileRevertModal {
+  return {
+    type: 'file-revert',
+    filePath: filePath,
+    status: status,
+  }
+}
+
+export interface FileRevertAllModal {
+  type: 'file-revert-all'
+}
+
+export function fileRevertAllModal(): FileRevertAllModal {
+  return {
+    type: 'file-revert-all',
+  }
+}
+
 export interface FileUploadInfo {
   fileResult: FileResult
   targetPath: string
@@ -360,7 +406,11 @@ export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteM
   }
 }
 
-export type ModalDialog = FileDeleteModal | FileOverwriteModal
+export type ModalDialog =
+  | FileDeleteModal
+  | FileOverwriteModal
+  | FileRevertModal
+  | FileRevertAllModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -969,20 +1019,41 @@ export function githubRepo(owner: string, repository: string): GithubRepo {
   }
 }
 
+export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): boolean {
+  return a?.owner === b?.owner && a?.repository === b?.repository
+}
+
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
+  branchName: string | null
 }
 
 export function projectGithubSettings(
   targetRepository: GithubRepo | null,
   originCommit: string | null,
+  branchName: string | null,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
+    branchName: branchName,
   }
 }
+
+export interface GithubData {
+  branches: Array<GithubBranch>
+  publicRepositories: Array<RepositoryEntry>
+}
+
+export function emptyGithubData(): GithubData {
+  return {
+    branches: [],
+    publicRepositories: [],
+  }
+}
+
+export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -998,6 +1069,7 @@ export interface EditorState {
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
+  branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
@@ -1054,6 +1126,8 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  githubChecksums: GithubChecksums | null
+  githubData: GithubData
 }
 
 export function editorState(
@@ -1125,6 +1199,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  githubChecksums: GithubChecksums | null,
+  branchContents: ProjectContentTreeRoot | null,
+  githubData: GithubData,
 ): EditorState {
   return {
     id: id,
@@ -1139,6 +1216,7 @@ export function editorState(
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
     projectContents: projectContents,
+    branchContents: branchContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1194,7 +1272,9 @@ export function editorState(
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
-    githubOperations: [],
+    githubOperations: githubOperations,
+    githubChecksums: githubChecksums,
+    githubData: githubData,
   }
 }
 
@@ -1780,6 +1860,8 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
+  githubChecksums: GithubChecksums | null
+  branchContents: ProjectContentTreeRoot | null
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1820,6 +1902,8 @@ export function mergePersistentModel(
       minimised: second.navigator.minimised,
     },
     githubSettings: second.githubSettings,
+    githubChecksums: second.githubChecksums,
+    branchContents: second.branchContents,
   }
 }
 
@@ -2004,9 +2088,13 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    githubChecksums: null,
+    branchContents: null,
+    githubData: emptyGithubData(),
   }
 }
 
@@ -2303,6 +2391,9 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    githubChecksums: persistentModel.githubChecksums,
+    branchContents: persistentModel.branchContents,
+    githubData: emptyGithubData(),
   }
   return editor
 }
@@ -2339,6 +2430,8 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
       minimised: editor.navigator.minimised,
     },
     githubSettings: editor.githubSettings,
+    githubChecksums: editor.githubChecksums,
+    branchContents: editor.branchContents,
   }
 }
 
@@ -2373,7 +2466,10 @@ export function persistentModelForProjectContents(
     githubSettings: {
       targetRepository: null,
       originCommit: null,
+      branchName: null,
     },
+    githubChecksums: null,
+    branchContents: null,
   }
 }
 

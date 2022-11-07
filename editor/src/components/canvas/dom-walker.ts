@@ -912,6 +912,7 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.right) ||
     !positionValueIsDefault(elementStyle.bottom) ||
     !positionValueIsDefault(elementStyle.left)
+  const hasTransform = elementStyle.transform !== 'none'
 
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
@@ -942,6 +943,8 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
+    elementStyle.direction,
+    hasTransform,
   )
 }
 
@@ -1017,8 +1020,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
-      { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,

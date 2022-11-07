@@ -1606,6 +1606,8 @@ export interface SpecialSizeMeasurements {
   globalContentBox: CanvasRectangle | null
   float: string
   hasPositionOffset: boolean
+  textDirection: string
+  hasTransform: boolean
 }
 
 export function specialSizeMeasurements(
@@ -1634,6 +1636,8 @@ export function specialSizeMeasurements(
   globalContentBox: CanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
+  textDirection: string,
+  hasTransform: boolean,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1661,6 +1665,8 @@ export function specialSizeMeasurements(
     globalContentBox,
     float,
     hasPositionOffset,
+    textDirection,
+    hasTransform,
   }
 }
 
@@ -1692,6 +1698,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   null,
   'none',
+  false,
+  'initial',
   false,
 )
 

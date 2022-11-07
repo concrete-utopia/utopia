@@ -331,4 +331,91 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     expect(flowReorderNotInStrategies).toEqual(-1)
   })
+  it('simple dragging the element in an inline-block with right to left direction reorders it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+<div style={{ width: '100%', height: '100%', position: 'absolute', direction: 'rtl'}} data-uid='container'>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#CA1E4C80',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#297374',
+    }}
+    data-uid='bbb'
+    data-testid='bbb'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#292E74',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+</div>`),
+      'await-first-dom-report',
+    )
+
+    // drag element 'CCC' right will replace with sibling 'BBB'
+    const dragDelta = windowPoint({ x: 45, y: 0 })
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+    ])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+<div style={{ width: '100%', height: '100%', position: 'absolute', direction: 'rtl'}} data-uid='container'>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#CA1E4C80',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#292E74',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+      backgroundColor: '#297374',
+    }}
+    data-uid='bbb'
+    data-testid='bbb'
+  />
+</div>
+`),
+    )
+  })
 })

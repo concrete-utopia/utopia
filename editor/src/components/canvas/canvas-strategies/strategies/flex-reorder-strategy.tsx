@@ -15,6 +15,7 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
+import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -22,20 +23,26 @@ export function flexReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
   if (
     selectedElements.length !== 1 ||
-    !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      selectedElements[0],
-      canvasState.startingMetadata,
+    !(
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        selectedElements[0],
+        canvasState.startingMetadata,
+      ) && !element?.specialSizeMeasurements.hasTransform
     )
   ) {
     return null
   }
 
-  const element = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
+  if (!areAllSiblingsInOneDimensionFlexOrFlow(selectedElements[0], canvasState.startingMetadata)) {
+    return null
+  }
+
   const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
   const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {

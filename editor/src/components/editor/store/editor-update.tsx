@@ -138,7 +138,9 @@ export function runSimpleLocalEditorAction(
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
     case 'UPDATE_GITHUB_OPERATIONS':
-      return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
+    case 'UPDATE_GITHUB_CHECKSUMS':
+      return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':
@@ -199,8 +201,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PROJECT_CONTENTS':
       return UPDATE_FNS.UPDATE_PROJECT_CONTENTS(action, state)
+    case 'UPDATE_BRANCH_CONTENTS':
+      return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
     case 'UPDATE_GITHUB_SETTINGS':
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
+    case 'UPDATE_GITHUB_DATA':
+      return UPDATE_FNS.UPDATE_GITHUB_DATA(action, state)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
