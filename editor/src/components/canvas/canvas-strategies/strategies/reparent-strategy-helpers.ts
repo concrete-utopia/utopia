@@ -585,7 +585,6 @@ function drawTargetRectanglesForChildrenOfElement(
       )
     }
   } else {
-    // TODO BEFORE MERGE write a breaking test!!!!
     // full size target rectangles, covering the entire flex element
     for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
       const start = childrenBoundsAlongAxis[index].start + childrenBoundsAlongAxis[index].size / 2
