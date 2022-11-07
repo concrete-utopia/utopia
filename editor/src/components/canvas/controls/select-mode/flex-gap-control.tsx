@@ -91,12 +91,12 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const { width, height } = handleDimensions(flexDirection, scale)
-  const borderWidth = 1 / scale
 
-  const [paddingIndicatorOffset, hitAreaPadding, dragBorderWidth] = [
+  const [paddingIndicatorOffset, hitAreaPadding, dragBorderWidth, borderWidth] = [
     PaddingIndicatorOffset,
     HitAreaPadding,
     1,
+    0.5,
   ].map((v) => v / scale)
 
   const shouldShowBackground = !isDragging && backgroundShown
@@ -152,7 +152,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
                   <PillHandle
                     width={width}
                     height={height}
-                    color={colorTheme.brandNeonPink.value}
+                    pillColor={colorTheme.brandNeonPink.value}
                     borderWidth={borderWidth}
                   />
                 )}

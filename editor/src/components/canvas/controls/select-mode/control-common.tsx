@@ -64,19 +64,19 @@ export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.El
 interface PillHandleProps {
   width: number
   height: number
-  color: string
+  pillColor: string
   borderWidth: number
 }
 
 export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
-  const { width, height, color, borderWidth } = props
+  const { width, height, pillColor, borderWidth } = props
   return (
     <div
       style={{
         boxSizing: 'border-box',
         width: width,
         height: height,
-        backgroundColor: color,
+        backgroundColor: pillColor,
         border: `${borderWidth}px solid rgba(255, 255, 255)`,
       }}
     />

@@ -180,7 +180,7 @@ const PaddingResizeControlI = React.memo(
               <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
             </div>
           )}
-          <PillHandle width={width} height={height} color={color} borderWidth={borderWidth} />
+          <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
         </div>
       </div>
     )
