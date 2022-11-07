@@ -79,7 +79,7 @@ export function doNothingStrategy(
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   return {
     id: 'DO_NOTHING',
-    name: 'Placeholder',
+    name: '(Move)',
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
