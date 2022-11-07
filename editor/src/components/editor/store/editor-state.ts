@@ -169,7 +169,7 @@ const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  Contents = 'contents',
+  Project = 'project',
   Settings = 'settings',
   Github = 'github',
 }
@@ -177,8 +177,6 @@ export enum LeftMenuTab {
 export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
-
-export const MenuBarWidth = 44
 
 const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
@@ -1964,7 +1962,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Contents,
+      selectedTab: LeftMenuTab.Project,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
@@ -2274,7 +2272,7 @@ export function editorModelFromPersistentModel(
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Contents,
+      selectedTab: LeftMenuTab.Project,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
