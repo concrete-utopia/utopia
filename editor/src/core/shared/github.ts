@@ -651,7 +651,7 @@ export function mergeProjectContentsTree(
       branchContents.content.fileContents.code,
       {
         label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
-        stringSeparator: /[\r\n]+/,
+        stringSeparator: /\r?\n/,
       },
     ).result.join('\n')
     const updatedTextFile = textFile(
