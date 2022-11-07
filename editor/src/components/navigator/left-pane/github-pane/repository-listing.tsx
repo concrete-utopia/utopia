@@ -8,7 +8,7 @@ import {
   isGithubLoadingBranch,
 } from '../../../../components/editor/store/editor-state'
 import {
-  getBranchContent,
+  updateProjectWithBranchContent,
   getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
@@ -82,16 +82,15 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       )
     } else {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
-      void getBranchContent(
+      void updateProjectWithBranchContent(
         dispatch,
         parsedTargetRepository,
-        forceNotNull('Should have a project ID.', projectID),
         props.defaultBranch,
         isAnotherRepo,
       )
       setImporting(true)
     }
-  }, [dispatch, projectID, props.fullName, props.defaultBranch, currentRepo])
+  }, [dispatch, props.fullName, props.defaultBranch, currentRepo])
 
   return (
     <div

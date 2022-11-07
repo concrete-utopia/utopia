@@ -133,7 +133,7 @@ type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> 
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
 
-type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> QueryParam "project_id" Text :> Post '[JSON] GetBranchContentResponse
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> Get '[JSON] GetBranchContentResponse
 
 type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
 

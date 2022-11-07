@@ -186,6 +186,7 @@ data ImageFile = ImageFile
                , width     :: Maybe Double
                , height    :: Maybe Double
                , hash      :: Int
+               , gitBlobSha :: Maybe Text
                }
                deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -200,13 +201,16 @@ instance Arbitrary ImageFile where
   shrink = genericShrink
 
 data AssetFile = AssetFile
-                 deriving (Eq, Show, Generic, Data, Typeable)
+               { base64     :: Maybe Text
+               , gitBlobSha :: Maybe Text
+               }
+               deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON AssetFile where
-  parseJSON = const $ pure AssetFile
+  parseJSON = genericParseJSON defaultOptions
 
 instance ToJSON AssetFile where
-  toJSON _ = object []
+  toJSON = genericToJSON defaultOptions
 
 instance Arbitrary AssetFile where
   arbitrary = genericArbitrary
