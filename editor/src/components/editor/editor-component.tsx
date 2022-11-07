@@ -59,6 +59,8 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
   window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
 
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
 export interface EditorProps {}
 
 function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
@@ -81,6 +83,8 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  useGithubData()
+
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
@@ -294,18 +298,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
-  const githubAuthenticated = useEditorState(
-    (store) => store.userState.githubState.authenticated,
-    'Github authentication',
-  )
-  const githubRepo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Github repository',
-  )
-  React.useEffect(() => {
-    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
-  }, [githubAuthenticated, githubRepo, dispatch])
-
   return (
     <>
       <SimpleFlexRow
@@ -422,6 +414,38 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     </>
   )
 })
+
+const useGithubData = (): void => {
+  const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
+  const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
+    (store) => ({
+      githubAuthenticated: store.userState.githubState.authenticated,
+      githubRepo: store.editor.githubSettings.targetRepository,
+      githubOperations: store.editor.githubOperations,
+    }),
+    'Github data',
+  )
+
+  const refresh = React.useCallback(() => {
+    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
+  }, [dispatch, githubAuthenticated, githubRepo])
+
+  // perform a straight refresh then the repo or the auth change
+  React.useEffect(() => refresh(), [refresh])
+
+  // schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
+  React.useEffect(() => {
+    if (githubOperations.length > 0) {
+      // ignore scheduling if there are already operations going on
+      return
+    }
+
+    let interval = setInterval(refresh, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    return function () {
+      clearInterval(interval)
+    }
+  }, [refresh, githubOperations])
+}
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const { modal, dispatch } = useEditorState((store) => {
