@@ -57,7 +57,6 @@ export function pressKeys(
     ),
     latestMetadata: metadata,
     latestAllElementProps: null as any,
-    startingTargetParentsToFilterOut: null,
   }
 
   const strategy = strategyFactoryFunction(

@@ -124,7 +124,6 @@ function reparentElement(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingTargetParentsToFilterOut: null,
   }
 
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(

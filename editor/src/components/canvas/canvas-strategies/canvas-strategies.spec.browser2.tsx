@@ -99,7 +99,6 @@ async function getGuidelineRenderResult(scale: number) {
     ),
     latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
     latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-    startingTargetParentsToFilterOut: null,
   }
 
   await act(async () => {
@@ -163,7 +162,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -212,7 +210,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -297,7 +294,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -346,7 +342,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -395,7 +390,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
