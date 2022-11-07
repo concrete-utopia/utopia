@@ -408,21 +408,31 @@ export function getReparentTargetUnified(
       staticElementPath,
     )
 
-    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
-      metadata,
-      staticElementPath,
-      'padded-edge',
-      canvasScale,
-      direction,
-      forwardsOrBackwards,
-    )
+    const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        staticElementPath,
+        'padded-edge',
+        canvasScale,
+        direction,
+        forwardsOrBackwards,
+      )
 
-    const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPoint(target, pointOnCanvas)
+    const foundTarget = targets.find((target) => {
+      return rectContainsPoint(target.rect, pointOnCanvas)
     })
+    const targetUnderMouseIndex = foundTarget?.insertionIndex
 
-    if (targetUnderMouseIndex > -1) {
+    if (targetUnderMouseIndex != null) {
       // we found a target!
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        staticElementPath,
+        'padded-edge',
+        canvasScale,
+        direction,
+        forwardsOrBackwards,
+      )
       return {
         shouldReparent: true,
         shouldReorder: true,
@@ -451,25 +461,26 @@ export function getReparentTargetUnified(
   } else {
     const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(metadata, targetParentPath)
 
-    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
-      metadata,
-      targetParentPath,
-      'full-size',
-      canvasScale,
-      direction,
-      forwardsOrBackwards,
-    )
+    const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        targetParentPath,
+        'full-size',
+        canvasScale,
+        direction,
+        forwardsOrBackwards,
+      )
 
-    const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPointInclusive(target, pointOnCanvas)
-    })
+    const targetUnderMouseIndex = targets.find((target) => {
+      return rectContainsPointInclusive(target.rect, pointOnCanvas)
+    })?.insertionIndex
 
     // found flex element, todo index
     return {
       shouldReparent: true,
       newParent: targetParentPath,
-      shouldReorder: targetUnderMouseIndex > -1,
-      newIndex: targetUnderMouseIndex,
+      shouldReorder: targetUnderMouseIndex != null,
+      newIndex: targetUnderMouseIndex ?? -1,
     }
   }
 }
@@ -488,7 +499,7 @@ function drawTargetRectanglesForChildrenOfElement(
   canvasScale: number,
   simpleFlexDirection: SimpleFlexDirection | null,
   forwardsOrBackwards: FlexForwardsOrBackwards | null,
-): Array<CanvasRectangle> {
+): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
@@ -503,66 +514,85 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
+  const children = MetadataUtils.getChildrenPaths(metadata, flexElementPath)
+
   interface ElemBounds {
     start: number
     size: number
     end: number
+    index: number
   }
 
-  const pseudoElementBefore: ElemBounds = {
+  const pseudoElementLeftOrTop: ElemBounds = {
     start: parentBounds[leftOrTop],
     size: 0,
     end: parentBounds[leftOrTop],
+    index: forwardsOrBackwards === 'forward' ? -1 : children.length,
   }
-  const pseudoElementAfter: ElemBounds = {
+  const pseudoElementRightOrBottom: ElemBounds = {
     start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
     size: 0,
     end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+    index: forwardsOrBackwards === 'forward' ? children.length : -1,
   }
 
-  const childrenBounds: Array<ElemBounds> = MetadataUtils.getChildrenPaths(
-    metadata,
-    flexElementPath,
-  ).map((childPath) => {
+  const childrenBounds: Array<ElemBounds> = children.map((childPath, index) => {
     const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
     return {
       start: bounds[leftOrTop],
       size: bounds[widthOrHeight],
       end: bounds[leftOrTop] + bounds[widthOrHeight],
+      index: index,
     }
   })
 
   const childrenBoundsAlongAxis: Array<ElemBounds> = [
-    pseudoElementBefore,
+    pseudoElementLeftOrTop,
     ...(forwardsOrBackwards === 'forward' ? childrenBounds : reverse(childrenBounds)),
-    pseudoElementAfter,
+    pseudoElementRightOrBottom,
   ]
 
-  let flexInsertionTargets: Array<CanvasRectangle> = []
+  let flexInsertionTargets: Array<{ rect: CanvasRectangle; insertionIndex: number }> = []
 
   if (targetRectangleSize === 'padded-edge') {
-    for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
-      const start = childrenBoundsAlongAxis[index].end
-      const end = childrenBoundsAlongAxis[index + 1].start
+    for (let index = 0; index < childrenBoundsAlongAxis.length; index++) {
+      const bounds = childrenBoundsAlongAxis[index]
 
-      const normalizedStart = Math.min(start, end)
-      const normalizedEnd = Math.max(start, end)
-
-      const paddedStart = normalizedStart - ExtraPadding
-      const paddedEnd = normalizedEnd + ExtraPadding
+      const normalizedStart = Math.min(bounds.start, bounds.end)
+      const normalizedEnd = Math.max(bounds.start, bounds.end)
 
       flexInsertionTargets.push(
-        rectFromTwoPoints(
-          {
-            [leftOrTop]: paddedStart,
-            [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-          } as any as CanvasPoint, // TODO improve my type
-          {
-            [leftOrTop]: paddedEnd,
-            [leftOrTopComplement]:
-              parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-          } as any as CanvasPoint, // TODO improve my type
-        ),
+        {
+          insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index : bounds.index + 1,
+          rect: rectFromTwoPoints(
+            {
+              [leftOrTop]: normalizedStart - ExtraPadding,
+              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+            } as any as CanvasPoint, // TODO improve my type
+            {
+              [leftOrTop]: Math.min(
+                normalizedStart + ExtraPadding,
+                normalizedStart + bounds.size / 2,
+              ),
+              [leftOrTopComplement]:
+                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+            } as any as CanvasPoint, // TODO improve my type
+          ),
+        },
+        {
+          insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index + 1 : bounds.index,
+          rect: rectFromTwoPoints(
+            {
+              [leftOrTop]: Math.max(normalizedEnd - ExtraPadding, normalizedEnd - bounds.size / 2),
+              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+            } as any as CanvasPoint, // TODO improve my type
+            {
+              [leftOrTop]: normalizedEnd + ExtraPadding,
+              [leftOrTopComplement]:
+                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+            } as any as CanvasPoint, // TODO improve my type
+          ),
+        },
       )
     }
   } else {
@@ -575,8 +605,12 @@ function drawTargetRectanglesForChildrenOfElement(
       const normalizedStart = Math.min(start, end)
       const normalizedEnd = Math.max(start, end)
 
-      flexInsertionTargets.push(
-        rectFromTwoPoints(
+      flexInsertionTargets.push({
+        insertionIndex:
+          forwardsOrBackwards === 'forward'
+            ? childrenBoundsAlongAxis[index].index + 1
+            : childrenBoundsAlongAxis[index].index,
+        rect: rectFromTwoPoints(
           {
             [leftOrTop]: normalizedStart,
             [leftOrTopComplement]: parentBounds[leftOrTopComplement],
@@ -587,7 +621,7 @@ function drawTargetRectanglesForChildrenOfElement(
               parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
           } as any as CanvasPoint, // TODO improve my type
         ),
-      )
+      })
     }
   }
 
@@ -598,24 +632,25 @@ export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
   direction: SimpleFlexDirection,
+  forwardsOrBackwards: FlexForwardsOrBackwards,
 ): number {
-  let getSiblingPosition: (rect: CanvasRectangle) => number
-  let getSiblingSize: (rect: CanvasRectangle) => number
+  let getStartPosition: (rect: CanvasRectangle) => number
+  let getEndPosition: (rect: CanvasRectangle) => number
   switch (direction) {
     case 'row':
-      getSiblingPosition = (rect: CanvasRectangle) => {
+      getStartPosition = (rect: CanvasRectangle) => {
         return rect.x
       }
-      getSiblingSize = (rect: CanvasRectangle) => {
-        return rect.width
+      getEndPosition = (rect: CanvasRectangle) => {
+        return rect.x + rect.width
       }
       break
     case 'column':
-      getSiblingPosition = (rect: CanvasRectangle) => {
+      getStartPosition = (rect: CanvasRectangle) => {
         return rect.y
       }
-      getSiblingSize = (rect: CanvasRectangle) => {
-        return rect.height
+      getEndPosition = (rect: CanvasRectangle) => {
+        return rect.y + rect.height
       }
       break
     default:
@@ -624,10 +659,10 @@ export function getSiblingMidPointPosition(
   }
 
   const value =
-    (getSiblingPosition(precedingSiblingPosition) +
-      getSiblingSize(precedingSiblingPosition) +
-      getSiblingPosition(succeedingSiblingPosition)) /
-    2
+    forwardsOrBackwards === 'forward'
+      ? (getEndPosition(precedingSiblingPosition) + getStartPosition(succeedingSiblingPosition)) / 2
+      : (getEndPosition(succeedingSiblingPosition) + getStartPosition(precedingSiblingPosition)) / 2
+
   return value
 }
 
@@ -655,7 +690,7 @@ export function siblingAndPseudoPositions(
     }),
     pseudoElements.after,
   ]
-  return siblingPositions
+  return forwardsOrBackwards === 'forward' ? siblingPositions : reverse(siblingPositions)
 }
 
 function createPseudoElements(

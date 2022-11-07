@@ -62,7 +62,6 @@ function multiselectResizeElements(
       ...interactionSessionWithoutMetadata,
       latestMetadata: {},
       latestAllElementProps: {},
-      startingTargetParentsToFilterOut: null,
     },
   )!.apply('end-interaction')
 

@@ -78,7 +78,6 @@ function createEditorStore(
       ...interactionSession,
       latestMetadata: {},
       latestAllElementProps: {},
-      startingTargetParentsToFilterOut: null,
     }
   }
 
