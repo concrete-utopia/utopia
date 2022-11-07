@@ -1,12 +1,15 @@
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Either, isLeft, right } from '../../core/shared/either'
+import { cssParsers } from '../../components/inspector/common/css-utils'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
+import { AllElementProps } from '../editor/store/editor-state'
 import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
+import { toString } from '../../core/shared/element-path'
 
 type CSSPaddingKey = keyof CSSPadding
 type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
@@ -24,6 +27,7 @@ export const defaultPaddingMeasurement = (sizePx: number): PaddingMeasurement =>
 
 export function simplePaddingFromMetadata(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): CSSPaddingMeasurements {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -48,7 +52,7 @@ export function simplePaddingFromMetadata(
   }
 
   const padding = cssPaddingToMeasurement(
-    getLayoutProperty('padding', right(element.element.value.props), ['style']),
+    getLayoutProperty('padding', right(allElementProps[toString(elementPath)]), ['style']),
     paddingMappedMeasurements,
   )
 

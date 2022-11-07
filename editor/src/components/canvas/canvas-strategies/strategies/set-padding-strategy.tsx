@@ -135,7 +135,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const selectedElement = filteredSelectedElements[0]
 
-      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+      const padding = simplePaddingFromMetadata(
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
+        selectedElement,
+      )
       const currentPadding = paddingForEdge(edgePiece, padding)
       const delta = Math.max(-currentPadding, deltaFromEdge(drag, edgePiece))
       const newPadding = offsetPaddingByEdge(edgePiece, delta, padding)
@@ -223,6 +227,7 @@ function paddingValueIndicatorProps(
 
   const padding = simplePaddingFromMetadata(
     canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
     filteredSelectedElements[0],
   )
 
