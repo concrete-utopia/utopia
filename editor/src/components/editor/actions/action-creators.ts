@@ -213,6 +213,7 @@ import type {
   UpdateGithubOperations,
   UpdateGithubChecksums,
   UpdateBranchContents,
+  UpdateAgainstGithub,
   UpdateGithubData,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
@@ -1604,6 +1605,19 @@ export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+  }
+}
+
+export function updateAgainstGithub(
+  branchLatestContent: ProjectContentTreeRoot,
+  specificCommitContent: ProjectContentTreeRoot,
+  latestCommit: string,
+): UpdateAgainstGithub {
+  return {
+    action: 'UPDATE_AGAINST_GITHUB',
+    branchLatestContent: branchLatestContent,
+    specificCommitContent: specificCommitContent,
+    latestCommit: latestCommit,
   }
 }
 
