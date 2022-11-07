@@ -4260,7 +4260,10 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexGrow: 0,
   flexShrink: 1,
   display: 'block',
-  gap: { value: 0, unit: null },
+  gap: {
+    value: 0,
+    unit: null,
+  },
   width: {
     value: 0,
     unit: null,
@@ -4656,7 +4659,7 @@ interface ParsedLayoutProperties {
   pinBottom: CSSNumber | undefined
   centerY: CSSNumber | undefined
   height: CSSNumber | undefined
-  gapMain: number
+  gapMain: CSSNumber
   flexBasis: CSSNumber | undefined
 }
 
@@ -4669,7 +4672,7 @@ export const layoutEmptyValues: ParsedLayoutProperties = {
   pinBottom: undefined,
   centerY: undefined,
   height: undefined,
-  gapMain: 0,
+  gapMain: { value: 0, unit: null },
   flexBasis: undefined,
 }
 
@@ -4686,7 +4689,7 @@ const layoutParsers: LayoutParsers = {
   pinBottom: parseFramePin,
   centerY: parseFramePin,
   height: parseFramePin,
-  gapMain: isNumberParser,
+  gapMain: parseCSSLengthPercent,
   flexBasis: parseFramePin,
 }
 
@@ -4745,7 +4748,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  gap: printCSSNumberAsAttributeValue('px'),
+  gap: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
   left: printCSSNumberOrUndefinedAsAttributeValue('px'),
@@ -5086,9 +5089,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   pinBottom: undefined,
   centerY: undefined,
   height: undefined,
-  gapMain: 0,
+  gapMain: { value: 0, unit: null },
   flexBasis: undefined,
-
   gap: {
     value: 0,
     unit: 'px',

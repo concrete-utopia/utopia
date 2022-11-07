@@ -3,7 +3,6 @@ import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import {
   useInspectorLayoutInfo,
-  useInspectorStyleInfo,
   useMapInspectorInfoFromCSSNumberToNumber,
 } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -16,7 +15,6 @@ import {
   FlexDirectionControl,
   getDirectionAwareLabels,
 } from './flex-container-controls'
-import { PropertyLabel } from '../../../widgets/property-label'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {

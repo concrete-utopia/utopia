@@ -1,16 +1,10 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import {
-  addAllUniquelyBy,
-  mapDropNulls,
-  sortBy,
-  stripNulls,
-} from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { absoluteMoveStrategy } from './strategies/absolute-move-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -30,21 +24,18 @@ import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-mov
 import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
 import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
-import { flexReorderStrategy } from './strategies/flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { flowReorderStrategy } from './strategies/flow-reorder-strategy'
 import { StateSelector } from 'zustand'
 import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { lookForApplicableParentStrategy } from './strategies/look-for-applicable-parent-strategy'
-import { relativeMoveStrategy } from './strategies/relative-move-strategy'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
-import { reparentMetaStrategy } from './strategies/reparent-metastrategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
+import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 
 export type CanvasStrategyFactory = (
@@ -59,39 +50,50 @@ export type MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ) => Array<CanvasStrategy>
 
-const existingStrategyFactories: Array<CanvasStrategyFactory> = [
-  absoluteMoveStrategy,
-  absoluteDuplicateStrategy,
-  keyboardAbsoluteMoveStrategy,
-  keyboardAbsoluteResizeStrategy,
-  absoluteResizeBoundingBoxStrategy,
-  flexReorderStrategy,
-  convertToAbsoluteAndMoveStrategy,
-  flowReorderStrategy,
-  reorderSliderStategy,
-  flexResizeBasicStrategy,
-  setPaddingStrategy,
-  relativeMoveStrategy,
-  setFlexGapStrategy,
-]
-
-export const existingStrategies: MetaCanvasStrategy = (
+const moveOrReorderStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): Array<CanvasStrategy> =>
-  stripNulls(
-    existingStrategyFactories.map((factory) =>
-      factory(canvasState, interactionSession, customStrategyState),
-    ),
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      absoluteDuplicateStrategy,
+      keyboardAbsoluteMoveStrategy,
+      convertToAbsoluteAndMoveStrategy,
+      reorderSliderStategy,
+    ],
   )
+}
+
+const resizeStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      keyboardAbsoluteResizeStrategy,
+      absoluteResizeBoundingBoxStrategy,
+      flexResizeBasicStrategy,
+      setPaddingStrategy,
+      setFlexGapStrategy,
+    ],
+  )
+}
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+  moveOrReorderStrategies,
+  dragToMoveMetaStrategy,
+]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  existingStrategies,
-  lookForApplicableParentStrategy,
-  reparentMetaStrategy,
+  ...AncestorCompatibleStrategies,
+  resizeStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
+  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
 export function pickCanvasStateFromEditorState(

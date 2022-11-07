@@ -253,7 +253,7 @@ describe('image drag and drop', () => {
 
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
-        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
         true,
       )
       await editor.getDispatchFollowUpActionsFinished()
@@ -338,7 +338,7 @@ describe('image drag and drop', () => {
     it('dragging from the filebrowser to the canvas and back to the filebrowsers clears interaction session', async () => {
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
-        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
         true,
       )
       await editor.getDispatchFollowUpActionsFinished()
@@ -400,7 +400,7 @@ describe('image drag and drop', () => {
     it('dragging from "finder" through the canvas to the filebrowser adds it to the target folder and clears canvas insertion', async () => {
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
-        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+        [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
         true,
       )
       await editor.getDispatchFollowUpActionsFinished()
@@ -461,7 +461,7 @@ describe('image drag and drop', () => {
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
     await editor.getDispatchFollowUpActionsFinished()
@@ -537,7 +537,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
     await editor.getDispatchFollowUpActionsFinished()
@@ -618,7 +618,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
     await editor.getDispatchFollowUpActionsFinished()
@@ -734,7 +734,7 @@ export var storyboard = (
           width: 0.5,
           height: 0.5,
           top: 379.75,
-          left: 46.75,
+          left: 90.75,
         }}
         data-uid='1'
       />
@@ -751,7 +751,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
     await editor.getDispatchFollowUpActionsFinished()
@@ -850,7 +850,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await editor.dispatch(
-      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Contents)],
+      [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
       true,
     )
     await editor.getDispatchFollowUpActionsFinished()

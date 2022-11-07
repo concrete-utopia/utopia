@@ -18,10 +18,12 @@ import {
   UtopiaTheme,
 } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
+import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
+import { ForksGiven } from './forks-given'
 
 const themeOptions = [
   {
@@ -35,14 +37,20 @@ const themeOptions = [
 ]
 
 export const SettingsPane = React.memo(() => {
-  const { dispatch, userState, projectName, projectDescription } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      userState: store.userState,
-      projectName: store.editor.projectName,
-      projectDescription: store.editor.projectDescription,
-    }
-  }, 'SettingsPane')
+  const { dispatch, userState, projectId, projectName, projectDescription } = useEditorState(
+    (store) => {
+      return {
+        dispatch: store.dispatch,
+        userState: store.userState,
+        projectId: store.editor.id,
+        projectName: store.editor.projectName,
+        projectDescription: store.editor.projectDescription,
+      }
+    },
+    'SettingsPane',
+  )
+
+  const isMyProject = useIsMyProject(projectId)
 
   const [theme, setTheme] = React.useState<SelectOption>({
     label: 'Light',
@@ -123,6 +131,9 @@ export const SettingsPane = React.memo(() => {
         <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
           <H2> Project </H2>
         </UIGridRow>
+
+        {isMyProject === 'yes' ? null : <ForksGiven />}
+
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span>Name</span>
           {userState.loginState.type !== 'LOGGED_IN' ? (

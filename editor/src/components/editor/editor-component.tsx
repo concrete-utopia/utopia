@@ -33,7 +33,6 @@ import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
-import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
@@ -42,12 +41,7 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import {
-  githubOperationLocksEditor,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  MenuBarWidth,
-} from './store/editor-state'
+import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 
@@ -58,6 +52,8 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
   const title = `Utopia ${projectName}`
   window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
+
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 export interface EditorProps {}
 
@@ -81,6 +77,8 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  useGithubData()
+
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
@@ -286,25 +284,13 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isDraggedFile) {
         const actions = [
           EditorActions.setPanelVisibility('leftmenu', true),
-          EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
+          EditorActions.setLeftMenuTab(LeftMenuTab.Project),
         ]
         dispatch(actions, 'everyone')
       }
     },
     [dispatch],
   )
-
-  const githubAuthenticated = useEditorState(
-    (store) => store.userState.githubState.authenticated,
-    'Github authentication',
-  )
-  const githubRepo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Github repository',
-  )
-  React.useEffect(() => {
-    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
-  }, [githubAuthenticated, githubRepo, dispatch])
 
   return (
     <>
@@ -343,21 +329,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 height: '100%',
                 display: 'flex',
                 flexShrink: 0,
-                transition: IS_TEST_ENVIRONMENT ? 'none' : 'all .1s ease-in-out',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth + MenuBarWidth : 0,
+                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
-              <SimpleFlexColumn
-                style={{
-                  height: '100%',
-                  width: MenuBarWidth,
-                  backgroundColor: colorTheme.leftMenuBackground.value,
-                }}
-              >
-                <Menubar />
-              </SimpleFlexColumn>
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
             </div>
             <SimpleFlexRow
@@ -422,6 +398,38 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     </>
   )
 })
+
+const useGithubData = (): void => {
+  const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
+  const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
+    (store) => ({
+      githubAuthenticated: store.userState.githubState.authenticated,
+      githubRepo: store.editor.githubSettings.targetRepository,
+      githubOperations: store.editor.githubOperations,
+    }),
+    'Github data',
+  )
+
+  const refresh = React.useCallback(() => {
+    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
+  }, [dispatch, githubAuthenticated, githubRepo])
+
+  // perform a straight refresh then the repo or the auth change
+  React.useEffect(() => refresh(), [refresh])
+
+  // schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
+  React.useEffect(() => {
+    if (githubOperations.length > 0) {
+      // ignore scheduling if there are already operations going on
+      return
+    }
+
+    let interval = setInterval(refresh, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    return function () {
+      clearInterval(interval)
+    }
+  }, [refresh, githubOperations])
+}
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const { modal, dispatch } = useEditorState((store) => {
@@ -534,7 +542,7 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: leftMenuExpanded ? MenuBarWidth + LeftPaneDefaultWidth : 0,
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
         backgroundColor: '#000',

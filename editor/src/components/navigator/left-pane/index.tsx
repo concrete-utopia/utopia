@@ -5,9 +5,10 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { useColorTheme } from '../../../uuiui'
 import { User } from '../../../uuiui-deps'
+import { MenuTab } from '../../../uuiui/menu-tab'
 import { useIsMyProject } from '../../common/server-hooks'
-import { EditorDispatch, LoginState } from '../../editor/action-types'
-import { clearSelection } from '../../editor/actions/action-creators'
+import { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
+import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
 import {
   DerivedState,
   EditorState,
@@ -15,6 +16,7 @@ import {
   LeftPaneDefaultWidth,
 } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
+import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ContentsPane } from './contents-pane'
 import { ForksGiven } from './forks-given'
 import { GithubPane } from './github-pane'
@@ -37,10 +39,8 @@ export const LeftPaneComponent = React.memo(() => {
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
-  const projectId = useEditorState((store) => store.editor.id, 'LeftPaneComponent projectId')
-  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
-  const isMyProject = useIsMyProject(projectId)
+  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   const loggedIn = useEditorState(
     (store) => User.isLoggedIn(store.userState.loginState),
@@ -48,6 +48,27 @@ export const LeftPaneComponent = React.memo(() => {
   )
 
   const colorTheme = useColorTheme()
+
+  const onClickTab = React.useCallback(
+    (menuTab: LeftMenuTab) => {
+      let actions: Array<EditorAction> = []
+      actions.push(setLeftMenuTab(menuTab))
+      dispatch(actions)
+    },
+    [dispatch],
+  )
+
+  const onClickProjectTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Project)
+  }, [onClickTab])
+
+  const onClickSettingsTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Settings)
+  }, [onClickTab])
+
+  const onClickGithubTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Github)
+  }, [onClickTab])
 
   return (
     <div
@@ -76,8 +97,25 @@ export const LeftPaneComponent = React.memo(() => {
           }
         }}
       >
-        {isMyProject === 'yes' ? null : <ForksGiven />}
-        {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
+        <UIGridRow variant='<--1fr--><--1fr--><--1fr-->' padded={false} css={{ gridColumnGap: 0 }}>
+          <MenuTab
+            label={'Project'}
+            selected={selectedTab === LeftMenuTab.Project}
+            onClick={onClickProjectTab}
+          />
+          <MenuTab
+            label={'Settings'}
+            selected={selectedTab === LeftMenuTab.Settings}
+            onClick={onClickSettingsTab}
+          />
+          <MenuTab
+            label={'Github'}
+            selected={selectedTab === LeftMenuTab.Github}
+            onClick={onClickGithubTab}
+          />
+        </UIGridRow>
+
+        {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
         {loggedIn ? null : <LoggedOutPane />}
