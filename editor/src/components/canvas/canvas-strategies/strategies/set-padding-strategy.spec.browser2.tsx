@@ -16,7 +16,12 @@ import {
   mouseEnterAtPoint,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
-import { offsetPaddingByEdge, paddingToPaddingString, SimpleCSSPadding } from '../../padding-utils'
+import {
+  defaultPaddingMeasurement,
+  offsetPaddingByEdge,
+  paddingToPaddingString,
+  CSSPaddingMeasurements,
+} from '../../padding-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -111,10 +116,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: 22,
-          paddingBottom: 33,
-          paddingLeft: 44,
-          paddingRight: 55,
+          paddingTop: defaultPaddingMeasurement(22),
+          paddingBottom: defaultPaddingMeasurement(33),
+          paddingLeft: defaultPaddingMeasurement(44),
+          paddingRight: defaultPaddingMeasurement(55),
         }),
       ),
       'await-first-dom-report',
@@ -156,10 +161,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: 22,
-          paddingBottom: 33,
-          paddingLeft: 44,
-          paddingRight: 55,
+          paddingTop: defaultPaddingMeasurement(22),
+          paddingBottom: defaultPaddingMeasurement(33),
+          paddingLeft: defaultPaddingMeasurement(44),
+          paddingRight: defaultPaddingMeasurement(55),
         }),
       ),
       'await-first-dom-report',
@@ -187,10 +192,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: 22,
-          paddingBottom: 33,
-          paddingLeft: 44,
-          paddingRight: 55,
+          paddingTop: defaultPaddingMeasurement(22),
+          paddingBottom: defaultPaddingMeasurement(33),
+          paddingLeft: defaultPaddingMeasurement(44),
+          paddingRight: defaultPaddingMeasurement(55),
         }),
       ),
       'await-first-dom-report',
@@ -219,6 +224,20 @@ describe('Padding resize strategy', () => {
     expect(applicableStrategies!.find((s) => s.name === SetPaddingStrategyName)).toBeUndefined()
   })
 
+  it('Adjust padding values when padding is specified in `em` units', async () => {
+    const dragDelta = 100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('2em 1em 3em 2em'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDelta, 'top')
+    await editor.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues('8.2em 1em 3em 2em'),
+    )
+  })
+
   describe('Adjusting individual padding values', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -233,11 +252,11 @@ describe('Padding resize strategy', () => {
 })
 
 async function testAdjustIndividualPaddingValue(edge: EdgePiece) {
-  const padding: SimpleCSSPadding = {
-    paddingTop: 22,
-    paddingBottom: 33,
-    paddingLeft: 44,
-    paddingRight: 55,
+  const padding: CSSPaddingMeasurements = {
+    paddingTop: defaultPaddingMeasurement(22),
+    paddingBottom: defaultPaddingMeasurement(33),
+    paddingLeft: defaultPaddingMeasurement(44),
+    paddingRight: defaultPaddingMeasurement(55),
   }
   const dragDelta = 12
   const editor = await renderTestEditorWithCode(

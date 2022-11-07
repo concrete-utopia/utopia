@@ -1003,3 +1003,7 @@ export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<
 export function emptyStaticElementPathPart(): StaticElementPathPart {
   return [] as unknown as StaticElementPathPart
 }
+
+export function getContainingComponent(path: ElementPath): ElementPath {
+  return dropLastPathPart(path)
+}

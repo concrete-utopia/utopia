@@ -18,7 +18,6 @@ import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flowReorderStrategy } from './flow-reorder-strategy'
-import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -49,11 +48,6 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  const ancestorStrategies = lookForApplicableParentStrategy(
-    canvasState,
-    interactionSession,
-    customStrategyState,
-  )
   const reparentStrategies = reparentMetaStrategy(
     canvasState,
     interactionSession,
@@ -63,7 +57,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     (factory) => factory(canvasState, interactionSession, customStrategyState),
     baseMoveStrategyFactories,
   )
-  const foundStrategies = [...ancestorStrategies, ...reparentStrategies, ...dragStrategies]
+  const foundStrategies = [...reparentStrategies, ...dragStrategies]
   if (foundStrategies.length > 0) {
     return foundStrategies
   } else {

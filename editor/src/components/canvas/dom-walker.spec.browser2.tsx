@@ -89,10 +89,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -105,10 +105,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -128,6 +128,7 @@ describe('DOM Walker tests', () => {
           "float": "none",
           "globalContentBox": null,
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -222,6 +223,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -323,6 +325,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -431,6 +434,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -544,6 +548,7 @@ describe('DOM Walker tests', () => {
             "y": 98,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -659,6 +664,7 @@ describe('DOM Walker tests', () => {
             "y": 125,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 124,
@@ -765,10 +771,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -781,10 +787,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -804,6 +810,7 @@ describe('DOM Walker tests', () => {
           "float": "none",
           "globalContentBox": null,
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -898,6 +905,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -999,6 +1007,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1103,6 +1112,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1207,6 +1217,7 @@ describe('DOM Walker tests', () => {
             "y": 98,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1318,6 +1329,7 @@ describe('DOM Walker tests', () => {
             "y": 125,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1424,10 +1436,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -1440,10 +1452,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -1463,6 +1475,7 @@ describe('DOM Walker tests', () => {
           "float": "none",
           "globalContentBox": null,
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -1557,6 +1570,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1658,6 +1672,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1762,6 +1777,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1866,6 +1882,7 @@ describe('DOM Walker tests', () => {
             "y": 98,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1977,6 +1994,7 @@ describe('DOM Walker tests', () => {
             "y": 125,
           },
           "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -2071,10 +2089,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2087,10 +2105,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2110,6 +2128,7 @@ describe('DOM Walker tests', () => {
           "float": "none",
           "globalContentBox": null,
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2204,6 +2223,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2305,6 +2325,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2409,6 +2430,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2507,10 +2529,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2523,10 +2545,10 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2546,6 +2568,7 @@ describe('DOM Walker tests', () => {
           "float": "none",
           "globalContentBox": null,
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2640,6 +2663,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2741,6 +2765,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2845,6 +2870,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2954,6 +2980,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3063,6 +3090,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3172,6 +3200,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,

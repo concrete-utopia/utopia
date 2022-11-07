@@ -101,6 +101,10 @@ export function targetPaths(elements: Array<ElementPath>): TargetPaths {
   }
 }
 
+export function isTargetPaths(target: InteractionTarget): target is TargetPaths {
+  return target.type === 'TARGET_PATHS'
+}
+
 export interface InsertionSubjects {
   type: 'INSERTION_SUBJECTS'
   subjects: Array<InsertionSubject>
@@ -111,6 +115,10 @@ export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionS
     type: 'INSERTION_SUBJECTS',
     subjects: subjects,
   }
+}
+
+export function isInsertionSubjects(target: InteractionTarget): target is InsertionSubjects {
+  return target.type === 'INSERTION_SUBJECTS'
 }
 
 export function getTargetPathsFromInteractionTarget(target: InteractionTarget): Array<ElementPath> {

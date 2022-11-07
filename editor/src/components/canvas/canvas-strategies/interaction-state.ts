@@ -103,7 +103,7 @@ export interface InteractionSession {
 
   startedAt: number
 
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null // FIXME Delete in a follow up PR
   updatedTargetPaths: UpdatedPathMap
   aspectRatioLock: number | null
 }
