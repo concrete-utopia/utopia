@@ -1,7 +1,11 @@
 import React from 'react'
 import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import {
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+  useMapInspectorInfoFromCSSNumberToNumber,
+} from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
@@ -22,7 +26,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const gap = useInspectorLayoutInfo('gap')
+  const gap = useMapInspectorInfoFromCSSNumberToNumber(useInspectorLayoutInfo('gap'))
 
   const {
     justifyFlexStart,

@@ -25,6 +25,7 @@ import {
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useContextSelector } from 'use-context-selector'
+import { CSSNumber } from '../../../common/css-utils'
 
 type uglyLabel =
   | 'left'

@@ -4260,7 +4260,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexGrow: 0,
   flexShrink: 1,
   display: 'block',
-  gap: 0,
+  gap: { value: 0, unit: null },
   width: {
     value: 0,
     unit: null,
@@ -4408,7 +4408,7 @@ const cssPrinters: CSSPrinters = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  gap: jsxAttributeValueWithNoComments,
+  gap: printCSSNumberAsAttributeValue('px'),
 }
 
 export interface UtopianElementProperties {
@@ -4711,7 +4711,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   width: undefined,
   height: undefined,
 
-  gap: 0,
+  gap: { value: 0, unit: null },
   flexBasis: undefined,
 
   left: undefined,
@@ -4728,7 +4728,7 @@ const layoutParsersNew: LayoutParsersNew = {
   width: parseFramePin,
   height: parseFramePin,
 
-  gap: isNumberParser,
+  gap: parseCSSLengthPercent,
   flexBasis: parseFramePin,
 
   left: parseFramePin,
@@ -4745,7 +4745,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  gap: jsxAttributeValueWithNoComments,
+  gap: printCSSNumberAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
   left: printCSSNumberOrUndefinedAsAttributeValue('px'),
@@ -4792,7 +4792,7 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
     try {
       return parserMap[prop](maybeValue, maybeRawValue)
     } catch (e) {
-      return left(`Failed to parse value for property ${prop}: ${e}`)
+      return left(`Failed to parse value for property ${String(prop)}: ${e}`)
     }
   }
 }
@@ -5089,7 +5089,10 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   gapMain: 0,
   flexBasis: undefined,
 
-  gap: 0,
+  gap: {
+    value: 0,
+    unit: 'px',
+  },
 }
 
 export function isTrivialDefaultValue(

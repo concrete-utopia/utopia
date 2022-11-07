@@ -204,13 +204,13 @@ export var storyboard = (
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      testCodeWithGap({ gap: `gap: '64px',`, flexDirection: 'row' }),
+      testCodeWithGap({ gap: `gap: '53px',`, flexDirection: 'row' }),
     )
   })
 
   it('adjusts gap in column by dragging the handle', async () => {
     const editor = await renderTestEditorWithCode(
-      testCodeWithGap({ gap: `gap: '42px',`, flexDirection: 'column' }),
+      testCodeWithGap({ gap: `gap: '53px',`, flexDirection: 'column' }),
       'await-first-dom-report',
     )
 
