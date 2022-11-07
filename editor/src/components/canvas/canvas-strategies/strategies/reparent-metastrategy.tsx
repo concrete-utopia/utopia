@@ -154,7 +154,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     cmdPressed,
     allDraggedElementsAbsolute,
     cmdPressed ? 'allow-smaller-parent' : 'disallow-smaller-parent',
-    // true,
   )
 
   const targetIsValid = (
