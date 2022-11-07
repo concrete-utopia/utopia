@@ -158,7 +158,7 @@ function flexGapValueIndicatorProps(
 
   const position = flexGap.direction.startsWith('row')
     ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
-    : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.x })
+    : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
     value: updatedFlexGapMeasurement.value,
