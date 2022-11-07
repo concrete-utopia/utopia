@@ -103,7 +103,6 @@ export interface InteractionSession {
 
   startedAt: number
 
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null // FIXME Delete in a follow up PR
   updatedTargetPaths: UpdatedPathMap
   aspectRatioLock: number | null
 }
@@ -116,7 +115,6 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
 ): InteractionSession {
@@ -128,7 +126,6 @@ export function interactionSession(
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
     latestAllElementProps: allElementProps,
-    startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
   }
@@ -136,7 +133,7 @@ export function interactionSession(
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentsToFilterOut'
+  'latestMetadata' | 'latestAllElementProps'
 >
 
 export interface CommandDescription {

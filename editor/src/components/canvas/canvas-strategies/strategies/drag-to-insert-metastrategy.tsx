@@ -345,14 +345,9 @@ function runTargetStrategiesForFreshlyInsertedElement(
     ),
   }
 
-  const patchedInteractionSession: InteractionSession = {
-    ...interactionSession,
-    startingTargetParentsToFilterOut: null,
-  }
-
   const strategy = reparentStrategyToUse(
     patchedCanvasState,
-    patchedInteractionSession,
+    interactionSession,
     customStrategyState,
   )
 

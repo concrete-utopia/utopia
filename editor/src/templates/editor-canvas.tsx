@@ -472,46 +472,6 @@ export function runLocalCanvasAction(
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
-      const startingTargetParentsToFilterOut: ReparentTargetsToFilter | null =
-        model.canvas.interactionSession?.startingTargetParentsToFilterOut ??
-        (() => {
-          if (action.interactionSession.interactionData.type !== 'DRAG') {
-            return null
-          }
-          const pointOnCanvas = offsetPoint(
-            action.interactionSession.interactionData.originalDragStart,
-            action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
-          )
-
-          const allowSmallerParent = action.interactionSession.interactionData.modifiers.cmd
-            ? 'allow-smaller-parent'
-            : 'disallow-smaller-parent'
-
-          const strictBoundsResult = getReparentTargetUnified(
-            existingReparentSubjects(getDragTargets(model.selectedViews)),
-            pointOnCanvas,
-            action.interactionSession.interactionData.modifiers.cmd,
-            pickCanvasStateFromEditorState(model, builtinDependencies),
-            metadata,
-            allElementProps,
-            'use-strict-bounds',
-            allowSmallerParent,
-          )
-
-          const missingBoundsResult = getReparentTargetUnified(
-            existingReparentSubjects(getDragTargets(model.selectedViews)),
-            pointOnCanvas,
-            action.interactionSession.interactionData.modifiers.cmd,
-            pickCanvasStateFromEditorState(model, builtinDependencies),
-            metadata,
-            allElementProps,
-            'allow-missing-bounds',
-            allowSmallerParent,
-          )
-
-          return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
-        })()
-
       return {
         ...model,
         canvas: {
@@ -520,7 +480,6 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
-            startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },
       }

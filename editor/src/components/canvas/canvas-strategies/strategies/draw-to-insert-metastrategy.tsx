@@ -434,7 +434,6 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     ...interactionSession,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
-    startingTargetParentsToFilterOut: null,
   }
 
   const patchedCanvasState: InteractionCanvasState = {
@@ -480,7 +479,6 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
 
   const patchedInteractionSession: InteractionSession = {
     ...interactionSession,
-    startingTargetParentsToFilterOut: null,
     aspectRatioLock: isImg(insertionSubject.element.name)
       ? insertionSubject.defaultSize.width / insertionSubject.defaultSize.height
       : null,

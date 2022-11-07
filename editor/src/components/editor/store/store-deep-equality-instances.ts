@@ -206,6 +206,7 @@ import {
   NullableStringKeepDeepEquality,
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
+  combine9EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -1820,30 +1821,8 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget> =
-  combine4EqualityCalls(
-    (target) => target.shouldReparent,
-    BooleanKeepDeepEquality,
-    (target) => target.newParent,
-    ElementPathKeepDeepEquality,
-    (target) => target.shouldReorder,
-    BooleanKeepDeepEquality,
-    (target) => target.newIndex,
-    NumberKeepDeepEquality,
-    reparentTarget,
-  )
-
-const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
-  combine2EqualityCalls(
-    (target) => target['use-strict-bounds'],
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
-    (target) => target['allow-missing-bounds'],
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
-    reparentTargetsToFilter,
-  )
-
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine10EqualityCalls(
+  combine9EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1858,8 +1837,6 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
-    (session) => session.startingTargetParentsToFilterOut,
-    nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
