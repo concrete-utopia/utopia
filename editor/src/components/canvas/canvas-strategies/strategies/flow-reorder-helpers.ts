@@ -50,13 +50,10 @@ export function is1DStaticContainer(
 
   const children = MetadataUtils.getChildren(metadata, path)
 
-  if (children.length === 0) {
+  if (children.length <= 1) {
     return false
   }
 
-  if (children.length === 1) {
-    return true
-  }
   return areAllSiblingsInOneDimensionFlexOrFlow(children[0].elementPath, metadata)
 }
 
