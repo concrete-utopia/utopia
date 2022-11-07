@@ -6,7 +6,7 @@ import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
+import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
@@ -31,8 +31,8 @@ import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { Toast } from '../common/notices'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
-import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
 import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
+import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
@@ -41,16 +41,7 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-<<<<<<< HEAD
-import {
-  githubOperationLocksEditor,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  MenuBarWidth,
-} from './store/editor-state'
-=======
-import { LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
->>>>>>> 266ebcfd3 (added tabbed menu)
+import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 

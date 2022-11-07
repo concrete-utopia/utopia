@@ -402,6 +402,9 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       onResizeStart={onResize}
       onResize={onResize}
       onResizeStop={onResize}
+      enable={{
+        left: true,
+      }}
     >
       <SimpleFlexRow
         className='Inspector-entrypoint'

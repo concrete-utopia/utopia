@@ -3,15 +3,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { createSelector } from 'reselect'
-import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
-import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
-import { shareURLForProject } from '../../core/shared/utils'
-import { FlexColumn, IcnProps, MenuIcons, Tooltip, useColorTheme, UtopiaTheme } from '../../uuiui'
-import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab } from '../editor/actions/action-creators'
-import { LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { IcnProps, useColorTheme, UtopiaTheme } from '../../uuiui'
 
 const MenuTileBadge = ({ text }: { text: string }) => {
   const colorTheme = useColorTheme()
@@ -44,8 +36,6 @@ interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
-const GITHUB_FILE_CHANGES_BADGE_LIMIT = 99
-
 const Tile = styled.div<TileProps>((props) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -72,19 +62,21 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
       css={{
         height: 44,
         transition: 'all .1s ease-in-out',
-        borderLeft: props.selected ? `2px solid ${colorTheme.primary}` : '2px solid transparent',
+        // borderTop: props.selected
+        //   ? `2px solid ${colorTheme.primary.value}`
+        //   : '2px solid transparent',
 
         cursor: 'pointer',
         '& > *': {
           opacity: props.selected ? 1 : 0.5,
-          transform: props.selected ? 'translateX(1px)' : 'inherit',
+          // transform: props.selected ? 'translateY(1px)' : 'inherit',
         },
         '&:hover > *': {
           opacity: 1,
-          transform: props.selected ? 'translateX(1px)' : 'inherit',
+          transform: props.selected ? 'translateY(1px)' : 'inherit',
         },
         '&:active > *': {
-          transform: 'translateX(1px)',
+          transform: 'translateY(1px)',
           opacity: 1,
         },
       }}
