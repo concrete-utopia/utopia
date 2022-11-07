@@ -93,7 +93,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     )
 
     const nonNullDirection: SimpleFlexDirection = direction
-    const nonNullforwardsOrBackwards: FlexForwardsOrBackwards = forwardsOrBackwards
+    const nonNullForwardsOrBackwards: FlexForwardsOrBackwards = forwardsOrBackwards
 
     function getBetweenChildrenPosition(index: number): number {
       const precedingSiblingPosition: CanvasRectangle = siblingPositions[index]
@@ -102,7 +102,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         precedingSiblingPosition,
         succeedingSiblingPosition,
         nonNullDirection,
-        nonNullforwardsOrBackwards,
+        nonNullForwardsOrBackwards,
       )
     }
 
