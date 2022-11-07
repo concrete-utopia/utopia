@@ -33,6 +33,7 @@ import {
   printCSSValue,
   cssNumber,
   isTrivialDefaultValue,
+  CSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -152,6 +153,25 @@ export interface InspectorInfo<T> {
   onSubmitValue: (newTransformedValues: T, transient?: boolean) => void
   onTransientSubmitValue: (newTransformedValues: T) => void
   useSubmitValueFactory: UseSubmitValueFactory<T>
+}
+
+export function useMapInspectorInfoFromCSSNumberToNumber(
+  info: InspectorInfo<CSSNumber>,
+): InspectorInfo<number> {
+  const onSubmitValue = (rawNumber: number, transient?: boolean) =>
+    info.onSubmitValue({ value: rawNumber, unit: info.value.unit }, transient)
+
+  return {
+    value: info.value.value,
+    controlStatus: info.controlStatus,
+    propertyStatus: info.propertyStatus,
+    controlStyles: info.controlStyles,
+    onUnsetValues: info.onUnsetValues,
+    onSubmitValue: onSubmitValue,
+    onTransientSubmitValue: (rawNumber) =>
+      info.onTransientSubmitValue({ value: rawNumber, unit: info.value.unit }),
+    useSubmitValueFactory: useCallbackFactory(info.value.value, onSubmitValue),
+  }
 }
 
 function getSpiedValues<P extends string | number>(

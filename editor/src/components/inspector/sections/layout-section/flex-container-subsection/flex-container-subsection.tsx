@@ -1,7 +1,10 @@
 import React from 'react'
 import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import {
+  useInspectorLayoutInfo,
+  useMapInspectorInfoFromCSSNumberToNumber,
+} from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
@@ -12,7 +15,6 @@ import {
   FlexDirectionControl,
   getDirectionAwareLabels,
 } from './flex-container-controls'
-import { PropertyLabel } from '../../../widgets/property-label'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
@@ -22,7 +24,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const gap = useInspectorLayoutInfo('gap')
+  const gap = useMapInspectorInfoFromCSSNumberToNumber(useInspectorLayoutInfo('gap'))
 
   const {
     justifyFlexStart,
