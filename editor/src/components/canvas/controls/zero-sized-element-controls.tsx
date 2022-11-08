@@ -66,19 +66,12 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
         })
       } else {
         return selectedElements.flatMap((view) => {
-          const siblings = MetadataUtils.getSiblings(store.editor.jsxMetadata, view)
-          return siblings.filter((sibling) => {
-            if (sibling.globalFrame == null) {
+          const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+          return children.filter((child) => {
+            if (child.globalFrame == null) {
               return false
             } else {
-              return (
-                isZeroSizedElement(sibling.globalFrame) &&
-                MetadataUtils.targetElementSupportsChildren(
-                  store.editor.projectContents,
-                  store.editor.canvas.openFile?.filename,
-                  sibling,
-                )
-              )
+              return isZeroSizedElement(child.globalFrame)
             }
           })
         })
