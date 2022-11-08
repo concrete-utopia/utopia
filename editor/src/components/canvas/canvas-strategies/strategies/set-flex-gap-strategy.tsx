@@ -118,7 +118,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           StyleGapProp,
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
-        setCursorCommand('always', cursorFromFlexDirection(flexGap.direction)),
+        setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children]),
       ])
     },

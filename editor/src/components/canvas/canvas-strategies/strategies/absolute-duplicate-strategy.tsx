@@ -112,7 +112,7 @@ export function absoluteDuplicateStrategy(
                 withDuplicatedMetadata,
               ),
             ),
-            setCursorCommand('mid-interaction', CSSCursor.Duplicate),
+            setCursorCommand(CSSCursor.Duplicate),
           ],
           {
             duplicatedElementNewUids: duplicatedElementNewUids,
@@ -120,7 +120,7 @@ export function absoluteDuplicateStrategy(
         )
       } else {
         // Fallback for when the checks above are not satisfied.
-        return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Duplicate)])
+        return strategyApplicationResult([setCursorCommand(CSSCursor.Duplicate)])
       }
     },
   }

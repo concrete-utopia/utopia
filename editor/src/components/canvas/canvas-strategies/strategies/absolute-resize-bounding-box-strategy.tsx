@@ -189,13 +189,13 @@ export function absoluteResizeBoundingBoxStrategy(
             return strategyApplicationResult([
               ...commandsForSelectedElements,
               updateHighlightedViews('mid-interaction', []),
-              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(selectedElements),
             ])
           }
         } else {
           return strategyApplicationResult([
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             updateHighlightedViews('mid-interaction', []),
           ])
         }

@@ -158,7 +158,7 @@ export function baseAbsoluteReparentStrategy(
                 ...commands.flatMap((c) => c.commands),
                 updateSelectedViews('always', newPaths),
                 setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-                setCursorCommand('mid-interaction', CSSCursor.Move),
+                setCursorCommand(CSSCursor.Move),
               ])
             } else {
               const moveCommands =

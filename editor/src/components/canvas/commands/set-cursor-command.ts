@@ -7,10 +7,10 @@ export interface SetCursorCommand extends BaseCommand {
   value: CSSCursor | null
 }
 
-export function setCursorCommand(whenToRun: WhenToRun, value: CSSCursor | null): SetCursorCommand {
+export function setCursorCommand(value: CSSCursor | null): SetCursorCommand {
   return {
     type: 'SET_CURSOR_COMMAND',
-    whenToRun: whenToRun,
+    whenToRun: 'mid-interaction',
     value: value,
   }
 }

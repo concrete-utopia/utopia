@@ -210,7 +210,7 @@ function dragToInsertStrategyFactory(
       ) {
         if (insertionSubjects.length === 0) {
           return strategyApplicationResult(
-            [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+            [setCursorCommand(CSSCursor.NotPermitted)],
             {},
             'failure',
           )

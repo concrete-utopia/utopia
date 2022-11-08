@@ -77,7 +77,7 @@ export function reorderSliderStategy(
 
         if (!isReorderAllowed(siblingsOfTarget)) {
           return strategyApplicationResult(
-            [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+            [setCursorCommand(CSSCursor.NotPermitted)],
             {},
             'failure',
           )
@@ -105,7 +105,7 @@ export function reorderSliderStategy(
                 canvasState.interactionTarget,
                 canvasState.startingMetadata,
               ),
-              setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+              setCursorCommand(CSSCursor.ResizeEW),
             ],
             {
               lastReorderIdx: newIndex,
@@ -113,9 +113,7 @@ export function reorderSliderStategy(
           )
         } else {
           // Fallback for when the checks above are not satisfied.
-          return strategyApplicationResult([
-            setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
-          ])
+          return strategyApplicationResult([setCursorCommand(CSSCursor.ResizeEW)])
         }
       } else {
         return emptyStrategyApplicationResult
