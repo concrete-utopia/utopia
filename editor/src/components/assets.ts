@@ -17,7 +17,7 @@ import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
-import { GithubFileChanges } from '../core/shared/github'
+import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
 import { GithubChecksums } from './editor/store/editor-state'
 
 export interface AssetFileWithFileName {
@@ -65,6 +65,7 @@ export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): Githu
 export function deriveGithubFileChanges(
   projectChecksums: GithubChecksums,
   githubChecksums: GithubChecksums | null,
+  treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
   if (githubChecksums == null) {
     return null
@@ -76,18 +77,26 @@ export function deriveGithubFileChanges(
   let untracked: Array<string> = []
   let modified: Array<string> = []
   let deleted: Array<string> = []
+  let conflicted: Array<string> = []
+
+  conflicted = Object.keys(treeConflicts)
+  const conflictedSet = new Set(conflicted)
 
   projectFiles.forEach((f) => {
-    if (!githubFiles.has(f)) {
-      untracked.push(f)
-    } else if (githubChecksums[f] !== projectChecksums[f]) {
-      modified.push(f)
+    if (!conflictedSet.has(f)) {
+      if (!githubFiles.has(f)) {
+        untracked.push(f)
+      } else if (githubChecksums[f] !== projectChecksums[f]) {
+        modified.push(f)
+      }
     }
   })
 
   githubFiles.forEach((f) => {
-    if (!projectFiles.has(f)) {
-      deleted.push(f)
+    if (!conflictedSet.has(f)) {
+      if (!projectFiles.has(f)) {
+        deleted.push(f)
+      }
     }
   })
 
@@ -95,6 +104,7 @@ export function deriveGithubFileChanges(
     untracked,
     modified,
     deleted,
+    conflicted,
   }
 }
 

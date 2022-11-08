@@ -163,7 +163,12 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
-import { GithubBranch, GithubFileStatus, RepositoryEntry } from '../../../core/shared/github'
+import {
+  GithubBranch,
+  GithubFileStatus,
+  RepositoryEntry,
+  TreeConflicts,
+} from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1049,12 +1054,14 @@ export function projectGithubSettings(
 export interface GithubData {
   branches: Array<GithubBranch>
   publicRepositories: Array<RepositoryEntry>
+  treeConflicts: TreeConflicts
 }
 
 export function emptyGithubData(): GithubData {
   return {
     branches: [],
     publicRepositories: [],
+    treeConflicts: {},
   }
 }
 
