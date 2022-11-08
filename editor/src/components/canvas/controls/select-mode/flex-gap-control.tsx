@@ -187,7 +187,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
   const { width, height } = handleDimensions(flexDirection, scale)
 
-  const handleHoverStartI = React.useCallback(
+  const handleHoverStartInner = React.useCallback(
     () => handleHoverStart(path),
     [handleHoverStart, path],
   )
@@ -221,7 +221,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         data-testid={FlexGapControlHandleTestId}
         style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
         onMouseDown={onMouseDown}
-        onMouseEnter={handleHoverStartI}
+        onMouseEnter={handleHoverStartInner}
         onMouseLeave={handleHoverEnd}
       >
         {shouldShowIndicator(path) && (
