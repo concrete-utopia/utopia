@@ -974,7 +974,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeReady: currentEditor.vscodeReady,
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
-    theme: currentEditor.theme,
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
@@ -4368,6 +4367,7 @@ export const UPDATE_FNS = {
     updatedShortcutConfig[action.shortcutName] = [action.newKey]
     const updatedUserConfiguration: UserConfiguration = {
       shortcutConfig: updatedShortcutConfig,
+      themeConfig: userState.themeConfig,
     }
     // Side effect.
     void saveUserConfiguration(updatedUserConfiguration)
@@ -4614,11 +4614,14 @@ export const UPDATE_FNS = {
       forkedFromProjectId: action.id,
     }
   },
-  SET_CURRENT_THEME: (action: SetCurrentTheme, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      theme: action.theme,
+  SET_CURRENT_THEME: (action: SetCurrentTheme, userState: UserState): UserState => {
+    const updatedUserConfiguration: UserConfiguration = {
+      shortcutConfig: userState.shortcutConfig,
+      themeConfig: action.theme,
     }
+    // Side effect.
+    void saveUserConfiguration(updatedUserConfiguration)
+    return { ...userState, themeConfig: action.theme }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
     return {

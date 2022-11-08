@@ -635,10 +635,10 @@ packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
   pure $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 emptyUserConfigurationResponse :: UserConfigurationResponse
-emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
+emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing, _theme = Nothing }
 
 decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
-decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf }
+decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf, _theme = view (field @"theme") userConf }
 
 getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse
 getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
@@ -647,7 +647,7 @@ getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
 
 saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
 saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
-  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig
+  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig _theme
   return NoContent
 
 githubStartAuthenticationEndpoint :: Maybe Text -> ServerMonad H.Html

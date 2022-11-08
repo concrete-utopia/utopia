@@ -102,6 +102,7 @@ function createEditorStore(
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      themeConfig: null,
       githubState: {
         authenticated: false,
       },

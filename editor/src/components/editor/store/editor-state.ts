@@ -235,11 +235,13 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
+  themeConfig: Theme | null
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
   return {
     shortcutConfig: null,
+    themeConfig: null,
   }
 }
 
@@ -315,6 +317,7 @@ export function isGithubUpdating(operations: Array<GithubOperation>): boolean {
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
+  themeConfig: 'light',
   githubState: {
     authenticated: false,
   },
@@ -1131,7 +1134,6 @@ export interface EditorState {
   vscodeReady: boolean
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
-  theme: Theme
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
@@ -1278,7 +1280,6 @@ export function editorState(
     vscodeReady: vscodeReady,
     focusedElementPath: focusedElementPath,
     config: config,
-    theme: theme,
     vscodeLoadingScreenVisible: vscodeLoadingScreenVisible,
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
@@ -2093,7 +2094,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
@@ -2396,7 +2396,6 @@ export function editorModelFromPersistentModel(
     vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
@@ -3051,8 +3050,8 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(editor: EditorState): Theme {
-  return editor.theme
+export function getCurrentTheme(userState: UserState): Theme {
+  return userState.themeConfig === null ? 'light' : userState.themeConfig
 }
 
 export function getNewSceneName(editor: EditorState): string {

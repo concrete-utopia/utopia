@@ -129,7 +129,7 @@ data ServiceCallsF a = NotFound
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      | GetVSCodeAssetRoot (FilePath -> a)
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
-                     | SaveUserConfiguration Text (Maybe Value) a
+                     | SaveUserConfiguration Text (Maybe Value) (Maybe Value) a
                      | ClearBranchCache Text a
                      | GetDownloadBranchFolders ([FilePath] -> a)
                      | GetGithubAuthorizationURI (URI -> a)
@@ -221,13 +221,15 @@ instance ToJSON UserResponse where
   toJSON (LoggedInUser user) = object ["type" .= loggedIn, "user" .= user]
 
 data UserConfigurationResponse = UserConfigurationResponse
-                               { _shortcutConfig :: Maybe Value
+                               { _shortcutConfig :: Maybe Value,
+                                _theme :: Maybe Value
                                } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationResponse)
 
 data UserConfigurationRequest = UserConfigurationRequest
-                              { _shortcutConfig :: Maybe Value
+                              { _shortcutConfig :: Maybe Value,
+                                _theme :: Maybe Value
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)
