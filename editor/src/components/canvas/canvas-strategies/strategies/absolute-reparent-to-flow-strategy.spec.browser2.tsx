@@ -306,7 +306,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
     const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
     const firstFlowChildEnd = {
       x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
-      y: firstFlowChildRect.y + firstFlowChildRect.height - 15,
+      y: firstFlowChildRect.y + firstFlowChildRect.height - 5,
     }
 
     await renderResult.getDispatchFollowUpActionsFinished()
