@@ -58,6 +58,9 @@ export function is1DStaticContainer(
     return false
   }
 
+  // TODO we should probably (re) use the rules from flowParentAbsoluteOrStatic here
+  // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
+
   return areAllSiblingsInOneDimensionFlexOrFlow(children[0].elementPath, metadata)
 }
 
