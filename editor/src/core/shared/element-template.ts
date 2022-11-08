@@ -1608,6 +1608,7 @@ export interface SpecialSizeMeasurements {
   hasPositionOffset: boolean
   textDirection: string
   hasTransform: boolean
+  borderRadius: number | null
 }
 
 export function specialSizeMeasurements(
@@ -1638,6 +1639,7 @@ export function specialSizeMeasurements(
   hasPositionOffset: boolean,
   textDirection: string,
   hasTransform: boolean,
+  borderRadius: number | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1667,6 +1669,7 @@ export function specialSizeMeasurements(
     hasPositionOffset,
     textDirection,
     hasTransform,
+    borderRadius,
   }
 }
 
@@ -1701,6 +1704,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   false,
   'initial',
   false,
+  null,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

@@ -19,7 +19,13 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, isRight, left } from '../../core/shared/either'
+import {
+  applicative4Either,
+  defaultEither,
+  isRight,
+  left,
+  mapEither,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -134,6 +140,8 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   }
   return false
 }
+
+const pxTransform = (t: CSSNumber): number | undefined => (t.unit === 'px' ? t.value : undefined)
 
 const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
   sides(
@@ -917,6 +925,9 @@ function getSpecialMeasurements(
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
+  const borderRadius =
+    defaultEither(null, mapEither(pxTransform, parseCSSLength(elementStyle.borderRadius))) ?? null
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -945,6 +956,7 @@ function getSpecialMeasurements(
     hasPositionOffset,
     elementStyle.direction,
     hasTransform,
+    borderRadius,
   )
 }
 

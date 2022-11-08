@@ -549,6 +549,18 @@ export function paddingResizeHandle(edgePosition: EdgePiece): PaddingResizeHandl
   }
 }
 
+export interface BorderRadiusResizeHandle {
+  type: 'BORDER_RADIUS_RESIZE_HANDLE'
+  edgePosition: EdgePosition
+}
+
+export function borderRadiusResizeHandle(edgePosition: EdgePosition): BorderRadiusResizeHandle {
+  return {
+    type: 'BORDER_RADIUS_RESIZE_HANDLE',
+    edgePosition: edgePosition,
+  }
+}
+
 export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
 }
@@ -575,3 +587,4 @@ export type CanvasControlType =
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider
+  | BorderRadiusResizeHandle
