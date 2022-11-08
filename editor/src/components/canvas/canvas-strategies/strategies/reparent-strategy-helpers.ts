@@ -5,9 +5,10 @@ import {
   LayoutPinnedProp,
 } from '../../../../core/layout/layout-helpers-new'
 import {
-  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToForwardOrReverse,
   flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
+  ForwardOrReverse,
+  SimpleDirection,
   SimpleFlexDirection,
 } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -403,10 +404,7 @@ export function getReparentTargetUnified(
 
   // first try to find a flex element insertion area
   for (const staticElementPath of staticElementsUnderPoint) {
-    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(
-      metadata,
-      staticElementPath,
-    )
+    const { direction, forwardOrReverse } = getDirectionForFlexOrFlow(metadata, staticElementPath)
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -415,7 +413,7 @@ export function getReparentTargetUnified(
         'padded-edge',
         canvasScale,
         direction,
-        forwardsOrBackwards,
+        forwardOrReverse,
       )
 
     const foundTarget = targets.find((target) => {
@@ -431,7 +429,7 @@ export function getReparentTargetUnified(
         'padded-edge',
         canvasScale,
         direction,
-        forwardsOrBackwards,
+        forwardOrReverse,
       )
       return {
         shouldReparent: true,
@@ -459,7 +457,7 @@ export function getReparentTargetUnified(
       newIndex: -1,
     }
   } else {
-    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(metadata, targetParentPath)
+    const { direction, forwardOrReverse } = getDirectionForFlexOrFlow(metadata, targetParentPath)
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -468,7 +466,7 @@ export function getReparentTargetUnified(
         'full-size',
         canvasScale,
         direction,
-        forwardsOrBackwards,
+        forwardOrReverse,
       )
 
     const targetUnderMouseIndex = targets.find((target) => {
@@ -497,22 +495,22 @@ function drawTargetRectanglesForChildrenOfElement(
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-  simpleFlexDirection: SimpleFlexDirection | null,
-  forwardsOrBackwards: FlexForwardsOrBackwards | null,
+  simpleFlexDirection: SimpleDirection | null,
+  forwardOrReverse: ForwardOrReverse | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
 
-  if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
+  if (parentBounds == null || simpleFlexDirection == null || forwardOrReverse == null) {
     // TODO should we throw an error?
     return []
   }
 
-  const leftOrTop = simpleFlexDirection === 'row' ? 'x' : 'y'
-  const leftOrTopComplement = simpleFlexDirection === 'row' ? 'y' : 'x'
-  const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
-  const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
+  const leftOrTop = simpleFlexDirection === 'horizontal' ? 'x' : 'y'
+  const leftOrTopComplement = simpleFlexDirection === 'horizontal' ? 'y' : 'x'
+  const widthOrHeight = simpleFlexDirection === 'horizontal' ? 'width' : 'height'
+  const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
   const children = MetadataUtils.getChildrenPaths(metadata, flexElementPath)
 
@@ -527,13 +525,13 @@ function drawTargetRectanglesForChildrenOfElement(
     start: parentBounds[leftOrTop],
     size: 0,
     end: parentBounds[leftOrTop],
-    index: forwardsOrBackwards === 'forward' ? -1 : children.length,
+    index: forwardOrReverse === 'forward' ? -1 : children.length,
   }
   const pseudoElementRightOrBottom: ElemBounds = {
     start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
     size: 0,
     end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
-    index: forwardsOrBackwards === 'forward' ? children.length : -1,
+    index: forwardOrReverse === 'forward' ? children.length : -1,
   }
 
   const childrenBounds: Array<ElemBounds> = mapDropNulls((childPath, index) => {
@@ -555,7 +553,7 @@ function drawTargetRectanglesForChildrenOfElement(
 
   const childrenBoundsAlongAxis: Array<ElemBounds> = [
     pseudoElementLeftOrTop,
-    ...(forwardsOrBackwards === 'forward' ? childrenBounds : reverse(childrenBounds)),
+    ...(forwardOrReverse === 'forward' ? childrenBounds : reverse(childrenBounds)),
     pseudoElementRightOrBottom,
   ]
 
@@ -570,7 +568,7 @@ function drawTargetRectanglesForChildrenOfElement(
 
       flexInsertionTargets.push(
         {
-          insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index : bounds.index + 1,
+          insertionIndex: forwardOrReverse === 'forward' ? bounds.index : bounds.index + 1,
           rect: rectFromTwoPoints(
             {
               [leftOrTop]: normalizedStart - ExtraPadding,
@@ -587,7 +585,7 @@ function drawTargetRectanglesForChildrenOfElement(
           ),
         },
         {
-          insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index + 1 : bounds.index,
+          insertionIndex: forwardOrReverse === 'forward' ? bounds.index + 1 : bounds.index,
           rect: rectFromTwoPoints(
             {
               [leftOrTop]: Math.max(normalizedEnd - ExtraPadding, normalizedEnd - bounds.size / 2),
@@ -614,7 +612,7 @@ function drawTargetRectanglesForChildrenOfElement(
 
       flexInsertionTargets.push({
         insertionIndex:
-          forwardsOrBackwards === 'forward'
+          forwardOrReverse === 'forward'
             ? childrenBoundsAlongAxis[index].index + 1
             : childrenBoundsAlongAxis[index].index,
         rect: rectFromTwoPoints(
@@ -639,7 +637,7 @@ export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
   direction: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  forwardOrReverse: ForwardOrReverse,
 ): number {
   let getStartPosition: (rect: CanvasRectangle) => number
   let getEndPosition: (rect: CanvasRectangle) => number
@@ -666,7 +664,7 @@ export function getSiblingMidPointPosition(
   }
 
   const value =
-    forwardsOrBackwards === 'forward'
+    forwardOrReverse === 'forward'
       ? (getEndPosition(precedingSiblingPosition) + getStartPosition(succeedingSiblingPosition)) / 2
       : (getEndPosition(succeedingSiblingPosition) + getStartPosition(precedingSiblingPosition)) / 2
 
@@ -675,13 +673,13 @@ export function getSiblingMidPointPosition(
 
 export function siblingAndPseudoPositions(
   parentFlexDirection: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  forwardOrReverse: ForwardOrReverse,
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
 ): Array<CanvasRectangle> {
   const siblingsPossiblyReversed =
-    forwardsOrBackwards === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
+    forwardOrReverse === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
 
   const pseudoElements = createPseudoElements(
     siblingsPossiblyReversed,
@@ -697,7 +695,7 @@ export function siblingAndPseudoPositions(
     }),
     pseudoElements.after,
   ]
-  return forwardsOrBackwards === 'forward' ? siblingPositions : reverse(siblingPositions)
+  return forwardOrReverse === 'forward' ? siblingPositions : reverse(siblingPositions)
 }
 
 function createPseudoElements(
@@ -1034,8 +1032,8 @@ function getDirectionForFlexOrFlow(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): {
-  direction: SimpleFlexDirection | null
-  forwardsOrBackwards: FlexForwardsOrBackwards | null
+  direction: SimpleDirection | null
+  forwardOrReverse: ForwardOrReverse | null
 } {
   const instanceMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
   const isFlex = MetadataUtils.isFlexLayoutedContainer(instanceMetadata)
@@ -1044,22 +1042,26 @@ function getDirectionForFlexOrFlow(
     const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
     const direction = MetadataUtils.getFlexDirection(element)
     return {
-      direction: flexDirectionToSimpleFlexDirection(direction),
-      forwardsOrBackwards: flexDirectionToFlexForwardsOrBackwards(direction),
+      direction: simpleFlexDirectionToSimpleDirection(
+        flexDirectionToSimpleFlexDirection(direction),
+      ),
+      forwardOrReverse: flexDirectionToForwardOrReverse(direction),
     }
   }
-  return {
-    direction: flowToStaticDirection(getElementDirection(instanceMetadata)),
-    forwardsOrBackwards: 'forward',
-  }
+  return getElementDirection(instanceMetadata)
 }
 
-function flowToStaticDirection(dir: 'vertical' | 'horizontal'): SimpleFlexDirection {
+function simpleFlexDirectionToSimpleDirection(
+  dir: SimpleFlexDirection | null,
+): SimpleDirection | null {
+  if (dir == null) {
+    return null
+  }
   switch (dir) {
-    case 'vertical':
-      return 'column'
-    case 'horizontal':
-      return 'row'
+    case 'column':
+      return 'vertical'
+    case 'row':
+      return 'horizontal'
     default:
       assertNever(dir)
   }

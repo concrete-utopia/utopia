@@ -1,3 +1,4 @@
+import { ForwardOrReverse, SimpleDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
@@ -95,10 +96,6 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return areNonWrappingSiblings(frames, targetDirection, shouldReverse)
   } else {
     const targetDirection = getElementDirection(targetElement)
-    const shouldReverse =
-      targetDirection === 'horizontal' &&
-      targetElement.specialSizeMeasurements?.textDirection === 'rtl'
-
     let allHorizontalOrVertical = true
     let frames: Array<CanvasRectangle> = []
     fastForEach(siblings, (sibling) => {
@@ -112,13 +109,20 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
       }
     })
 
-    return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    return (
+      allHorizontalOrVertical &&
+      areNonWrappingSiblings(
+        frames,
+        targetDirection.direction,
+        targetDirection.forwardOrReverse === 'reverse',
+      )
+    )
   }
 }
 
 function areNonWrappingSiblings(
   frames: Array<CanvasRectangle>,
-  layoutDirection: 'horizontal' | 'vertical',
+  layoutDirection: SimpleDirection,
   shouldReverse: boolean,
 ): boolean {
   const orderedFrames = shouldReverse ? [...frames].reverse() : frames
@@ -138,11 +142,19 @@ function areNonWrappingSiblings(
   })
 }
 
-export function getElementDirection(
-  element: ElementInstanceMetadata | null,
-): 'vertical' | 'horizontal' {
+export function getElementDirection(element: ElementInstanceMetadata | null): {
+  direction: SimpleDirection
+  forwardOrReverse: ForwardOrReverse
+} {
   const displayValue = element?.specialSizeMeasurements.display
-  return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
+
+  const direction = displayValue?.includes('inline') ? 'horizontal' : 'vertical'
+  const forwardOrReverse =
+    element?.specialSizeMeasurements?.textDirection === 'rtl' ? 'reverse' : 'forward'
+  return {
+    direction,
+    forwardOrReverse,
+  }
 }
 
 function getNewDisplayTypeForIndex(
