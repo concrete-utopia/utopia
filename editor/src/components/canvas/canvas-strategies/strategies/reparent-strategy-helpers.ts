@@ -536,7 +536,14 @@ function drawTargetRectanglesForChildrenOfElement(
     index: forwardsOrBackwards === 'forward' ? children.length : -1,
   }
 
-  const childrenBounds: Array<ElemBounds> = children.map((childPath, index) => {
+  const childrenBounds: Array<ElemBounds> = mapDropNulls((childPath, index) => {
+    if (
+      // TODO make a MetadataUtils.elementParticipatesInLayout helper function and use it in Flow Reorder, Flex Reorder too
+      MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, childPath))
+    ) {
+      return null
+    }
+
     const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
     return {
       start: bounds[leftOrTop],
@@ -544,7 +551,7 @@ function drawTargetRectanglesForChildrenOfElement(
       end: bounds[leftOrTop] + bounds[widthOrHeight],
       index: index,
     }
-  })
+  }, children)
 
   const childrenBoundsAlongAxis: Array<ElemBounds> = [
     pseudoElementLeftOrTop,
