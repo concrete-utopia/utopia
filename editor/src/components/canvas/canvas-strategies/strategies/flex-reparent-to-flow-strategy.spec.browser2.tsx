@@ -284,6 +284,7 @@ describe('Flex Reparent To Flow Strategy', () => {
       x: targetFlexChildCenter.x - flexChildToReparentCenter.x,
       y: targetFlexChildCenter.y - flexChildToReparentCenter.y - 5,
     })
+
     dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
