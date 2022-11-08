@@ -6,6 +6,7 @@ import {
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -61,6 +62,12 @@ export function baseReparentAsStaticStrategy(
           control: FlexReparentTargetIndicator,
           props: {},
           key: 'flex-reparent-target-indicator',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
       ],

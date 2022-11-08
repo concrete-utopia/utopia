@@ -16,6 +16,7 @@ import {
   getAdjustMoveCommands,
   getDragTargets,
 } from './shared-move-strategies-helpers'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -52,6 +53,12 @@ export function absoluteMoveStrategy(
         control: ImmediateParentBounds,
         props: { targets: selectedElements },
         key: 'parent-bounds-control',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: ZeroSizedElementControls,
+        props: { showAllPossibleElements: true },
+        key: 'zero-size-control',
         show: 'visible-only-while-active',
       }),
     ], // Uses existing hooks in select-mode-hooks.tsx
