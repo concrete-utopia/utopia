@@ -50,7 +50,11 @@ export function is1DStaticContainer(
 
   const children = MetadataUtils.getChildren(metadata, path)
 
-  if (children.length <= 1) {
+  const flowChildren = children.filter(
+    (child) => child.specialSizeMeasurements.position !== 'absolute',
+  )
+
+  if (flowChildren.length < 2) {
     return false
   }
 
