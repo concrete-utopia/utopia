@@ -62,7 +62,7 @@ import {
   InteractionTarget,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
-import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -71,7 +71,6 @@ export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
-  missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
   target: ReparentTarget
 }
@@ -82,20 +81,10 @@ export function reparentStrategyForParent(
   convertToAbsolute: boolean,
 ): {
   strategy: ReparentStrategy
-  missingBoundsHandling: MissingBoundsHandling
   isFallback: boolean
 } {
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-
-  const parentProvidesBoundsForAbsoluteChildren =
-    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
-  const parentIsStoryboard = EP.isStoryboardPath(parent)
-  const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
-  const missingBoundsHandling: MissingBoundsHandling = isAbsoluteFriendlyParent
-    ? 'use-strict-bounds'
-    : 'allow-missing-bounds'
 
   const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
   const reparentAsStatic =
@@ -104,13 +93,11 @@ export function reparentStrategyForParent(
   if (reparentAsStatic) {
     return {
       strategy: 'REPARENT_AS_STATIC',
-      missingBoundsHandling: missingBoundsHandling,
       isFallback: false,
     }
   } else {
     return {
       strategy: 'REPARENT_AS_ABSOLUTE',
-      missingBoundsHandling: missingBoundsHandling,
       isFallback: convertToAbsolute,
     }
   }
@@ -204,7 +191,6 @@ export function findReparentStrategies(
     canvasState,
     metadata,
     canvasState.startingAllElementProps,
-    'allow-missing-bounds', // TODO delete this property!
     allowSmallerParent,
   )
 
@@ -219,7 +205,6 @@ export function findReparentStrategies(
       ? // in case of an absolute reparent to a flow parent, we want to offer a secondary option to reparent as static
         {
           isFallback: true,
-          missingBoundsHandling: 'use-strict-bounds',
           target: strategy.target,
           strategy: 'REPARENT_AS_STATIC',
         }
@@ -296,11 +281,10 @@ export function reparentSubjectsForInteractionTarget(
 export function getReparentTargetUnified(
   reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
-  cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to missingBoundsHandling or allowSmallerParent)
+  cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  missingBoundsHandling: MissingBoundsHandling,
   allowSmallerParent: AllowSmallerParent,
 ): ReparentTarget | null {
   const projectContents = canvasState.projectContents
@@ -331,19 +315,6 @@ export function getReparentTargetUnified(
   ]
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
-    let validParentForFlexOrAbsolute = cmdPressed
-    if (missingBoundsHandling === 'allow-missing-bounds') {
-      validParentForFlexOrAbsolute = true
-    } else {
-      const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-      const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
-      const providesBoundsForAbsoluteChildren =
-        targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
-      // TODO extend here when we implement static layout support
-      validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
-    }
-
     const canReparent =
       // simply skip elements that do not support children
       MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
@@ -351,8 +322,7 @@ export function getReparentTargetUnified(
         sizeFitsInTarget(
           multiselectBounds,
           MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-        )) &&
-      validParentForFlexOrAbsolute
+        ))
 
     if (reparentSubjects.type === 'EXISTING_ELEMENTS') {
       const selectedElementsMetadata = mapDropNulls(

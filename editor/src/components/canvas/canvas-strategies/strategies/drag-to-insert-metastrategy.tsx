@@ -52,7 +52,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-strategy-helpers'
 
@@ -89,11 +89,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
-    const name = getDragToInsertStrategyName(
-      result.strategyType,
-      result.missingBoundsHandling,
-      result.targetParentDisplayType,
-    )
+    const name = getDragToInsertStrategyName(result.strategyType, result.targetParentDisplayType)
 
     return dragToInsertStrategyFactory(
       canvasState,
@@ -110,16 +106,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
-  missingBoundsHandling: MissingBoundsHandling,
   parentDisplayType: 'flex' | 'flow',
 ): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
-      if (missingBoundsHandling === 'use-strict-bounds') {
-        return 'Drag to Insert (Abs)'
-      } else {
-        return 'Drag to Insert (Abs, Forced)'
-      }
+      return 'Drag to Insert (Abs)'
     case 'REPARENT_AS_STATIC':
       if (parentDisplayType === 'flex') {
         return 'Drag to Insert (Flex)'

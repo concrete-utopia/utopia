@@ -18,7 +18,7 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from '../interaction-state'
+import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
@@ -28,10 +28,8 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
-  missingBoundsHandling: MissingBoundsHandling,
   fitness: number,
 ): CanvasStrategyFactory {
-  const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -62,8 +60,8 @@ export function baseAbsoluteReparentStrategy(
       return null
     }
     return {
-      id: `${forced ? 'FORCED_' : ''}ABSOLUTE_REPARENT`,
-      name: `Reparent (Abs${forced ? ', Force' : ''})`,
+      id: `ABSOLUTE_REPARENT`,
+      name: `Reparent (Abs)`,
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
