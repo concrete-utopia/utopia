@@ -1,12 +1,19 @@
 import React, { useState } from 'react'
 import { toString } from '../../../../core/shared/element-path'
-import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  CanvasRectangle,
+  CanvasVector,
+  size,
+  Size,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { CSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
@@ -35,9 +42,6 @@ interface FlexGapControlProps {
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
-
-const PaddingIndicatorOffset = 10
-const HitAreaPadding = 5
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
@@ -90,78 +94,158 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const { width, height } = handleDimensions(flexDirection, scale)
-
-  const [paddingIndicatorOffset, hitAreaPadding, dragBorderWidth, borderWidth] = [
-    PaddingIndicatorOffset,
-    HitAreaPadding,
-    1,
-    0.5,
-  ].map((v) => v / scale)
-
-  const shouldShowBackground = !isDragging && backgroundShown
-  const shouldShowIndicator = (path: string) => !isDragging && indicatorShown === path
-
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} ref={controlRef}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = toString(p)
           return (
-            <div
+            <GapControlSegment
               key={path}
-              onMouseEnter={controlHoverStart}
-              onMouseLeave={controlHoverEnd}
-              style={{
-                position: 'absolute',
-                left: bounds.x,
-                top: bounds.y,
-                width: bounds.width,
-                height: bounds.height,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
-                ...(shouldShowBackground ? StripedBackgroundCSS(indicatorColor, scale) : {}),
-              }}
-            >
-              <div
-                data-testid={FlexGapControlHandleTestId}
-                style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
-                onMouseDown={onMouseDown}
-                onMouseEnter={() => handleHoverStart(path)}
-                onMouseLeave={handleHoverEnd}
-              >
-                {shouldShowIndicator(path) && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      paddingTop: paddingIndicatorOffset,
-                      paddingLeft: paddingIndicatorOffset,
-                      pointerEvents: 'none',
-                    }}
-                  >
-                    <CSSNumberLabel
-                      value={updatedGapValue.value}
-                      scale={scale}
-                      color={indicatorColor}
-                    />
-                  </div>
-                )}
-                {backgroundShown && (
-                  <PillHandle
-                    width={width}
-                    height={height}
-                    pillColor={colorTheme.brandNeonPink.value}
-                    borderWidth={borderWidth}
-                  />
-                )}
-              </div>
-            </div>
+              hoverStart={controlHoverStart}
+              hoverEnd={controlHoverEnd}
+              handleHoverStart={handleHoverStart}
+              handleHoverEnd={handleHoverEnd}
+              onMouseDown={onMouseDown}
+              indicatorShown={indicatorShown}
+              path={path}
+              bounds={bounds}
+              flexDirection={flexDirection}
+              indicatorColor={indicatorColor}
+              scale={scale}
+              backgroundShown={backgroundShown}
+              isDragging={isDragging}
+              gapValue={updatedGapValue.value}
+            />
           )
         })}
       </div>
     </CanvasOffsetWrapper>
+  )
+})
+
+interface GapControlSizeConstants {
+  dragBorderWidth: number
+  paddingIndicatorOffset: number
+  hitAreaPadding: number
+  borderWidth: number
+}
+
+const DefaultGapControlSizeConstants: GapControlSizeConstants = {
+  dragBorderWidth: 1,
+  borderWidth: 0.5,
+  paddingIndicatorOffset: 10,
+  hitAreaPadding: 5,
+}
+
+const gapControlSizeConstants = (
+  constants: GapControlSizeConstants,
+  scale: number,
+): GapControlSizeConstants => ({
+  dragBorderWidth: constants.dragBorderWidth / scale,
+  borderWidth: constants.borderWidth / scale,
+  paddingIndicatorOffset: constants.paddingIndicatorOffset / scale,
+  hitAreaPadding: constants.hitAreaPadding / scale,
+})
+
+interface GapControlSegmentProps {
+  hoverStart: React.MouseEventHandler
+  hoverEnd: React.MouseEventHandler
+  handleHoverStart: (_: string) => void
+  handleHoverEnd: () => void
+  onMouseDown: React.MouseEventHandler
+  bounds: CanvasRectangle
+  flexDirection: SimpleFlexDirection
+  gapValue: CSSNumber
+  indicatorShown: string | null
+  path: string
+  indicatorColor: string
+  scale: number
+  isDragging: boolean
+  backgroundShown: boolean
+}
+
+const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
+  const {
+    hoverStart,
+    hoverEnd,
+    handleHoverEnd,
+    handleHoverStart,
+    onMouseDown,
+    indicatorShown,
+    bounds,
+    isDragging,
+    gapValue,
+    flexDirection,
+    indicatorColor,
+    scale,
+    path,
+    backgroundShown,
+  } = props
+
+  const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
+    gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
+  const { width, height } = handleDimensions(flexDirection, scale)
+
+  const handleHoverStartI = React.useCallback(
+    () => handleHoverStart(path),
+    [handleHoverStart, path],
+  )
+
+  const shouldShowIndicator = React.useCallback(
+    (p: string) => !isDragging && indicatorShown === p,
+    [indicatorShown, isDragging],
+  )
+
+  const shouldShowBackground = !isDragging && backgroundShown
+
+  return (
+    <div
+      key={path}
+      onMouseEnter={hoverStart}
+      onMouseLeave={hoverEnd}
+      style={{
+        position: 'absolute',
+        left: bounds.x,
+        top: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
+        ...(shouldShowBackground ? StripedBackgroundCSS(indicatorColor, scale) : {}),
+      }}
+    >
+      <div
+        data-testid={FlexGapControlHandleTestId}
+        style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
+        onMouseDown={onMouseDown}
+        onMouseEnter={handleHoverStartI}
+        onMouseLeave={handleHoverEnd}
+      >
+        {shouldShowIndicator(path) && (
+          <div
+            style={{
+              position: 'absolute',
+              paddingTop: paddingIndicatorOffset,
+              paddingLeft: paddingIndicatorOffset,
+              pointerEvents: 'none',
+            }}
+          >
+            <CSSNumberLabel value={gapValue} scale={scale} color={indicatorColor} />
+          </div>
+        )}
+        {backgroundShown && (
+          <PillHandle
+            width={width}
+            height={height}
+            pillColor={indicatorColor}
+            borderWidth={borderWidth}
+          />
+        )}
+      </div>
+    </div>
   )
 })
 

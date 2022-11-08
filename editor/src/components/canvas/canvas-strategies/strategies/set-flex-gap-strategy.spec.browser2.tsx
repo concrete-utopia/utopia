@@ -208,6 +208,42 @@ export var storyboard = (
     )
   })
 
+  it('adjusts gap by dragging the handle, in em units', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '2.7em',`, flexDirection: 'row' }),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + 11,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithGap({ gap: `gap: '3.4em',`, flexDirection: 'row' }),
+    )
+  })
+
   it('adjusts gap in column by dragging the handle', async () => {
     const editor = await renderTestEditorWithCode(
       testCodeWithGap({ gap: `gap: '53px',`, flexDirection: 'column' }),
