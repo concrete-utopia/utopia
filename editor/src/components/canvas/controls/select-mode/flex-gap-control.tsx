@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { toString } from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   CanvasRectangle,
   CanvasVector,
@@ -98,7 +98,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} ref={controlRef}>
         {controlBounds.map(({ bounds, path: p }) => {
-          const path = toString(p)
+          const path = EP.toString(p)
           return (
             <GapControlSegment
               key={path}
