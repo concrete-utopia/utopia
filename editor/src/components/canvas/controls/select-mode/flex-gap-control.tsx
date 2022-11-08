@@ -22,7 +22,7 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
   gapControlBoundsFromMetadata,
-  SimpleFlexDirection,
+  SimpleFlexDirectionForGap,
 } from '../../gap-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -37,7 +37,7 @@ import {
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
-  flexDirection: SimpleFlexDirection
+  flexDirection: SimpleFlexDirectionForGap
   updatedGapValue: CSSNumberWithRenderedValue
 }
 
@@ -156,7 +156,7 @@ interface GapControlSegmentProps {
   handleHoverEnd: () => void
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
-  flexDirection: SimpleFlexDirection
+  flexDirection: SimpleFlexDirectionForGap
   gapValue: CSSNumber
   indicatorShown: string | null
   path: string
@@ -252,7 +252,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   )
 })
 
-function handleDimensions(flexDirection: SimpleFlexDirection, scale: number): Size {
+function handleDimensions(flexDirection: SimpleFlexDirectionForGap, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
     return size(2 / scale, 12 / scale)
   }
