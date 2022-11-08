@@ -18,6 +18,7 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -66,6 +67,12 @@ export function baseFlexReparentToAbsoluteStrategy(
           control: ParentBounds,
           props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
       ],

@@ -4411,7 +4411,7 @@ const cssPrinters: CSSPrinters = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  gap: jsxAttributeValueWithNoComments,
+  gap: printCSSNumberAsAttributeValue('px'),
 }
 
 export interface UtopianElementProperties {
@@ -4795,7 +4795,7 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
     try {
       return parserMap[prop](maybeValue, maybeRawValue)
     } catch (e) {
-      return left(`Failed to parse value for property ${prop}: ${e}`)
+      return left(`Failed to parse value for property ${JSON.stringify(prop)}: ${e}`)
     }
   }
 }
@@ -5091,8 +5091,10 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   height: undefined,
   gapMain: { value: 0, unit: null },
   flexBasis: undefined,
-
-  gap: { value: 0, unit: null },
+  gap: {
+    value: 0,
+    unit: 'px',
+  },
 }
 
 export function isTrivialDefaultValue(
