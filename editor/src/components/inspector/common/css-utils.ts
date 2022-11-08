@@ -4795,7 +4795,7 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
     try {
       return parserMap[prop](maybeValue, maybeRawValue)
     } catch (e) {
-      return left(`Failed to parse value for property ${String(prop)}: ${e}`)
+      return left(`Failed to parse value for property ${JSON.stringify(prop)}: ${e}`)
     }
   }
 }
