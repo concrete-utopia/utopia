@@ -173,8 +173,11 @@ export var storyboard = (
   })
 
   it('adjusts gap by dragging the handle', async () => {
+    const initialGap = 42
+    const dragDelta = 11
+
     const editor = await renderTestEditorWithCode(
-      testCodeWithGap({ gap: `gap: '42px',`, flexDirection: 'row' }),
+      testCodeWithGap({ gap: `gap: '${initialGap}px',`, flexDirection: 'row' }),
       'await-first-dom-report',
     )
 
@@ -196,7 +199,7 @@ export var storyboard = (
     }
 
     const endPoint = {
-      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + 11,
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + dragDelta,
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
@@ -204,7 +207,7 @@ export var storyboard = (
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      testCodeWithGap({ gap: `gap: '53px',`, flexDirection: 'row' }),
+      testCodeWithGap({ gap: `gap: '${initialGap + dragDelta}px',`, flexDirection: 'row' }),
     )
   })
 
@@ -245,8 +248,11 @@ export var storyboard = (
   })
 
   it('adjusts gap in column by dragging the handle', async () => {
+    const initialGap = 42
+    const dragDelta = 11
+
     const editor = await renderTestEditorWithCode(
-      testCodeWithGap({ gap: `gap: '53px',`, flexDirection: 'column' }),
+      testCodeWithGap({ gap: `gap: '${initialGap}px',`, flexDirection: 'column' }),
       'await-first-dom-report',
     )
 
@@ -269,14 +275,14 @@ export var storyboard = (
 
     const endPoint = {
       x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
-      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + 11,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + dragDelta,
     }
 
     mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      testCodeWithGap({ gap: `gap: '64px',`, flexDirection: 'column' }),
+      testCodeWithGap({ gap: `gap: '${initialGap + dragDelta}px',`, flexDirection: 'column' }),
     )
   })
 
