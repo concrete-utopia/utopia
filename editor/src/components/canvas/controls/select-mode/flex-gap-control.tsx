@@ -32,7 +32,7 @@ import {
   PillHandle,
   StripedBackgroundCSS,
   useHoverWithDelay,
-} from './control-common'
+} from './controls-common'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath

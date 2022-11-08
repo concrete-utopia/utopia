@@ -10,7 +10,7 @@ import { EdgePiece } from './canvas-types'
 import {
   CSSNumberWithRenderedValue,
   offsetMeasurementByDelta,
-} from './controls/select-mode/control-common'
+} from './controls/select-mode/controls-common'
 
 type CSSPaddingKey = keyof CSSPadding
 type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }

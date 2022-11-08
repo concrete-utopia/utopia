@@ -36,7 +36,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
-import { offsetMeasurementByDelta } from '../../controls/select-mode/control-common'
+import { offsetMeasurementByDelta } from '../../controls/select-mode/controls-common'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [

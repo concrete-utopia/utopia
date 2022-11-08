@@ -5,7 +5,7 @@ import { CSSNumber } from '../../../inspector/common/css-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { CSSNumberLabel } from './control-common'
+import { CSSNumberLabel } from './controls-common'
 
 export const FloatingCSSNumberIndicatorTestId = 'PaddingValueIndicatorTestId'
 

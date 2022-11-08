@@ -8,8 +8,8 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
-import { CSSNumberWithRenderedValue } from './controls/select-mode/control-common'
-import { cssNumber, CSSNumber, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
+import { cssNumber, CSSNumber } from '../inspector/common/css-utils'
 
 export type SimpleFlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
 

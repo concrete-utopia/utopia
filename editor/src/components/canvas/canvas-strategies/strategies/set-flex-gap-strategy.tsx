@@ -6,7 +6,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
-import { offsetMeasurementByDelta } from '../../controls/select-mode/control-common'
+import { offsetMeasurementByDelta } from '../../controls/select-mode/controls-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
   FloatingCSSNumberIndicator,

@@ -25,7 +25,7 @@ import {
   PillHandle,
   StripedBackgroundCSS,
   useHoverWithDelay,
-} from './control-common'
+} from './controls-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
