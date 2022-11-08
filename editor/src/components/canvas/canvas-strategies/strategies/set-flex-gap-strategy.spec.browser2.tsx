@@ -3,8 +3,10 @@ import {
   FlexGapControlHandleTestId,
   FlexGapControlTestId,
 } from '../../controls/select-mode/flex-gap-control'
+import { valueWithUnitAppropriatePrecision } from '../../controls/select-mode/controls-common'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { shiftModifier } from '../../../../utils/modifiers'
 
 const DivTestId = 'mydiv'
 
@@ -208,6 +210,47 @@ export var storyboard = (
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '${initialGap + dragDelta}px',`, flexDirection: 'row' }),
+    )
+  })
+
+  it('adjusts gap by dragging the handle, with shift held', async () => {
+    const initialGap = 42
+    const dragDelta = 11
+
+    const coarseValue = valueWithUnitAppropriatePrecision(null, initialGap + dragDelta, 'coarse')
+
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '${initialGap}px',`, flexDirection: 'row' }),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + dragDelta,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint, { modifiers: shiftModifier })
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithGap({ gap: `gap: '${coarseValue}px',`, flexDirection: 'row' }),
     )
   })
 
