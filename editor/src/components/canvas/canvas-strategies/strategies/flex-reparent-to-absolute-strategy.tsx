@@ -28,7 +28,7 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { ifAllowedToReparent } from './reparent-helpers'
@@ -37,10 +37,8 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
   reparentTarget: ReparentTarget,
-  missingBoundsHandling: MissingBoundsHandling,
   fitness: number,
 ): CanvasStrategyFactory {
-  const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -49,8 +47,8 @@ export function baseFlexReparentToAbsoluteStrategy(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
     return {
-      id: `${forced ? 'FORCED_' : ''}FLEX_REPARENT_TO_ABSOLUTE`,
-      name: `Reparent (Abs${forced ? ', Force' : ''})`,
+      id: `FLEX_REPARENT_TO_ABSOLUTE`,
+      name: `Reparent (Abs)`,
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
@@ -139,7 +137,6 @@ export function baseFlexReparentToAbsoluteStrategy(
                   )
                   const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
                     reparentTarget,
-                    missingBoundsHandling,
                     0,
                   )
                   const reparentCommands =

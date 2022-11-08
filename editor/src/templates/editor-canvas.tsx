@@ -5,6 +5,12 @@ import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { CanvasComponentEntry } from '../components/canvas/canvas-component-entry'
 import {
+  boundingArea,
+  createInteractionViaMouse,
+  updateInteractionViaDragDelta,
+  updateInteractionViaMouse,
+} from '../components/canvas/canvas-strategies/interaction-state'
+import {
   CanvasAction,
   CanvasModel,
   CanvasMouseEvent,
@@ -33,7 +39,12 @@ import { NewCanvasControls } from '../components/canvas/controls/new-canvas-cont
 import { setFocus } from '../components/common/actions/index'
 import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
+import {
+  cancelInsertModeActions,
+  HandleInteractionSession,
+} from '../components/editor/actions/meta-actions'
+import { EditorModes, isLiveMode, Mode } from '../components/editor/editor-modes'
+import { saveAssets } from '../components/editor/server'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
@@ -45,6 +56,7 @@ import {
   notDragging,
   UserState,
 } from '../components/editor/store/editor-state'
+import { createJsxImage, JSXImageOptions } from '../components/images'
 import {
   didWeHandleMouseMoveForThisFrame,
   didWeHandleWheelForThisFrame,
@@ -52,62 +64,39 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import * as EP from '../core/shared/element-path'
+import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { last, reverse } from '../core/shared/array-utils'
+import * as EP from '../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { ElementPath } from '../core/shared/project-file-types'
-import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
-import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
-import { emptyModifiers, Modifier } from '../utils/modifiers'
-import RU from '../utils/react-utils'
-import Utils from '../utils/utils'
 import {
   canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   CoordinateMarker,
-  offsetPoint,
   Point,
   RawPoint,
-  resize,
   Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { UtopiaStyles } from '../uuiui'
+import { ElementPath } from '../core/shared/project-file-types'
+import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
   updateGlobalPositions,
 } from '../utils/global-positions'
-import { last, reverse } from '../core/shared/array-utils'
-import {
-  boundingArea,
-  createInteractionViaMouse,
-  reparentTargetsToFilter,
-  ReparentTargetsToFilter,
-  updateInteractionViaDragDelta,
-  updateInteractionViaMouse,
-} from '../components/canvas/canvas-strategies/interaction-state'
+import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
+import { emptyModifiers, Modifier } from '../utils/modifiers'
 import { MouseButtonsPressed } from '../utils/mouse'
-import {
-  existingReparentSubjects,
-  getReparentTargetUnified,
-} from '../components/canvas/canvas-strategies/strategies/reparent-strategy-helpers'
-import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
-import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage, JSXImageOptions } from '../components/images'
-import {
-  cancelInsertModeActions,
-  HandleInteractionSession,
-} from '../components/editor/actions/meta-actions'
+import RU from '../utils/react-utils'
+import Utils from '../utils/utils'
+import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
-import { isFeatureEnabled } from '../utils/feature-switches'
-import { saveAssets } from '../components/editor/server'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

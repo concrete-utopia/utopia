@@ -352,8 +352,6 @@ import {
   KeyboardInteractionData,
   KeyState,
   PaddingResizeHandle,
-  reparentTargetsToFilter,
-  ReparentTargetsToFilter,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
