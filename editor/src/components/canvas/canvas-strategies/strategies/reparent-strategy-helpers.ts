@@ -822,7 +822,7 @@ export function applyStaticReparent(
               ...propertyChangeCommands,
               setElementsToRerenderCommand([target, newPath]),
               updateHighlightedViews('mid-interaction', []),
-              setCursorCommand('mid-interaction', CSSCursor.Move),
+              setCursorCommand(CSSCursor.Move),
             ]
 
             function midInteractionCommandsForTarget(): Array<CanvasCommand> {

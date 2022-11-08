@@ -55,11 +55,7 @@ export function applyReorderCommon(
     )
 
     if (!isReorderAllowed(siblings)) {
-      return strategyApplicationResult(
-        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        {},
-        'failure',
-      )
+      return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
     }
 
     const pointOnCanvas = offsetPoint(
@@ -86,7 +82,7 @@ export function applyReorderCommon(
         [
           updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(siblings),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
+          setCursorCommand(CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
@@ -98,7 +94,7 @@ export function applyReorderCommon(
           reorderElement('always', target, absolute(newResultOrLastIndex)),
           setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
+          setCursorCommand(CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
@@ -107,7 +103,7 @@ export function applyReorderCommon(
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
+    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)])
   }
 }
 

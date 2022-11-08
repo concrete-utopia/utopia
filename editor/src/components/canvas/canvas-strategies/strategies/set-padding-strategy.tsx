@@ -128,7 +128,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
         return strategyApplicationResult([
-          setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+          setCursorCommand(pickCursorFromEdge(edgePiece)),
           updateHighlightedViews('mid-interaction', []),
         ])
       }
@@ -147,7 +147,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ),
         setProperty('always', selectedElement, StylePaddingProp, paddingString),
         updateHighlightedViews('mid-interaction', []),
-        setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+        setCursorCommand(pickCursorFromEdge(edgePiece)),
         setElementsToRerenderCommand(selectedElements),
       ])
     },
