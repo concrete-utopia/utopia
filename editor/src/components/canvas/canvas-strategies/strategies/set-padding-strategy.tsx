@@ -1,11 +1,9 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
-import * as PP from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { CSSPadding, ParsedCSSProperties } from '../../../inspector/common/css-utils'
+import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -16,9 +14,9 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
 import {
-  PaddingValueIndicator,
-  PaddingValueIndicatorProps,
-} from '../../controls/select-mode/padding-value-indicator'
+  FloatingCSSNumberIndicator,
+  FloatingCSSNumberIndicatorProps,
+} from '../../controls/select-mode/floating-number-indicator'
 import {
   deltaFromEdge,
   offsetPaddingByEdge,
@@ -37,6 +35,8 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
+import { offsetMeasurementByDelta } from '../../controls/select-mode/controls-common'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
@@ -86,7 +86,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     (props) => [
       resizeControl,
       controlWithProps({
-        control: PaddingValueIndicator,
+        control: FloatingCSSNumberIndicator,
         props: props,
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -205,7 +205,7 @@ function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElements: ElementPath[],
-): PaddingValueIndicatorProps | null {
+): FloatingCSSNumberIndicatorProps | null {
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   if (
@@ -217,7 +217,8 @@ function paddingValueIndicatorProps(
   ) {
     return null
   }
-  const drag = interactionSession.interactionData.drag
+
+  const { drag, dragStart } = interactionSession.interactionData
 
   const edgePiece = interactionSession.activeControl.edgePiece
 
@@ -225,13 +226,34 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-
   const currentPadding = paddingMeasurementForEdge(edgePiece, padding)
 
+  const updatedPaddingMeasurement = offsetMeasurementByDelta(
+    currentPadding,
+    deltaFromEdge(drag, edgePiece),
+  )
+
   return {
-    dragStart: interactionSession.interactionData.dragStart,
-    dragDelta: drag,
-    activeEdge: edgePiece,
-    currentPaddingValue: currentPadding,
+    value: updatedPaddingMeasurement.value,
+    position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
+  }
+}
+
+function indicatorPosition(
+  edge: EdgePiece,
+  scale: number,
+  dragStart: CanvasPoint,
+  dragDelta: CanvasVector,
+): CanvasPoint {
+  const Offset = 4 / scale
+  switch (edge) {
+    case 'top':
+    case 'bottom':
+      return canvasPoint({ x: dragStart.x + Offset, y: dragStart.y + dragDelta.y + Offset })
+    case 'left':
+    case 'right':
+      return canvasPoint({ x: dragStart.x + dragDelta.x + Offset, y: dragStart.y + Offset })
+    default:
+      assertNever(edge)
   }
 }
