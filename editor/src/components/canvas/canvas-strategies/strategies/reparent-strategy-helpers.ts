@@ -12,7 +12,7 @@ import {
 } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { mapDropNulls, reverse, stripNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
@@ -525,7 +525,14 @@ function drawTargetRectanglesForChildrenOfElement(
     index: forwardsOrBackwards === 'forward' ? children.length : -1,
   }
 
-  const childrenBounds: Array<ElemBounds> = children.map((childPath, index) => {
+  const childrenBounds: Array<ElemBounds> = mapDropNulls((childPath, index) => {
+    if (
+      // TODO make a MetadataUtils.elementParticipatesInLayout helper function and use it in Flow Reorder, Flex Reorder too
+      MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, childPath))
+    ) {
+      return null
+    }
+
     const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
     return {
       start: bounds[leftOrTop],
@@ -533,7 +540,7 @@ function drawTargetRectanglesForChildrenOfElement(
       end: bounds[leftOrTop] + bounds[widthOrHeight],
       index: index,
     }
-  })
+  }, children)
 
   const childrenBoundsAlongAxis: Array<ElemBounds> = [
     pseudoElementLeftOrTop,
