@@ -41,8 +41,13 @@ export const offsetMeasurementByDelta = (
     measurement.value.value + deltaInUnits,
     precision,
   )
+  const newRenderedValuePx = valueWithUnitAppropriatePrecision(
+    'px',
+    newValueInPixels / pixelsPerUnit,
+    precision,
+  )
   return {
-    renderedValuePx: Math.floor(newValueInPixels / pixelsPerUnit),
+    renderedValuePx: newRenderedValuePx,
     value: {
       unit: measurement.value.unit,
       value: newValueRounded,
