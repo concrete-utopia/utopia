@@ -10,6 +10,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
+import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -224,7 +225,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         onMouseEnter={handleHoverStartInner}
         onMouseLeave={handleHoverEnd}
       >
-        {shouldShowIndicator(path) && (
+        {when(
+          shouldShowIndicator(path),
           <div
             style={{
               position: 'absolute',
@@ -234,15 +236,16 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
             }}
           >
             <CSSNumberLabel value={gapValue} scale={scale} color={indicatorColor} />
-          </div>
+          </div>,
         )}
-        {backgroundShown && (
+        {when(
+          backgroundShown,
           <PillHandle
             width={width}
             height={height}
             pillColor={indicatorColor}
             borderWidth={borderWidth}
-          />
+          />,
         )}
       </div>
     </div>
