@@ -1,5 +1,6 @@
 import React from 'react'
 import { roundTo } from '../../../../core/shared/math-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export interface CSSNumberWithRenderedValue {
@@ -7,30 +8,44 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
-function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
-  if (unit === 'em' || unit === 'cm') {
-    return roundTo(value, 1)
-  }
-  return roundTo(value, 0)
+export type AdjustPrecision = 'precise' | 'coarse'
+
+export function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
+  return modifiers.shift ? 'coarse' : 'precise'
+}
+
+export function valueWithUnitAppropriatePrecision(
+  unit: CSSNumberUnit | null,
+  value: number,
+  precision: AdjustPrecision,
+): number {
+  const baseMultiplicator = unit === 'em' || unit === 'cm' ? 1 : 0
+  const multiplicator = precision === 'coarse' ? baseMultiplicator - 1 : baseMultiplicator
+  return roundTo(value, multiplicator)
 }
 
 export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
+  precision: AdjustPrecision,
 ): CSSNumberWithRenderedValue => {
-  if (measurement.renderedValuePx === 0) {
+  if (measurement.renderedValuePx === 0 || delta === 0) {
     return measurement
   }
+
   const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
-  const deltaInUnits = valueWithUnitAppropriatePrecision(
+  const deltaInUnits = delta * pixelsPerUnit
+  const newValueInPixels = measurement.renderedValuePx + delta
+  const newValueRounded = valueWithUnitAppropriatePrecision(
     measurement.value.unit,
-    delta * pixelsPerUnit,
+    measurement.value.value + deltaInUnits,
+    precision,
   )
   return {
-    renderedValuePx: measurement.renderedValuePx + delta,
+    renderedValuePx: Math.floor(newValueInPixels / pixelsPerUnit),
     value: {
       unit: measurement.value.unit,
-      value: measurement.value.value + deltaInUnits,
+      value: newValueRounded,
     },
   }
 }
