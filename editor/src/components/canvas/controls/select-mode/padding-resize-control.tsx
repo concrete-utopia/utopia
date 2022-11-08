@@ -15,11 +15,17 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-utils'
+import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PaddingValueLabel } from './padding-value-indicator'
+import {
+  CSSNumberLabel,
+  CSSNumberWithRenderedValue,
+  PillHandle,
+  StripedBackgroundCSS,
+  useHoverWithDelay,
+} from './controls-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
@@ -33,7 +39,7 @@ type Orientation = 'vertical' | 'horizontal'
 interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
-  paddingValue: PaddingMeasurement
+  paddingValue: CSSNumberWithRenderedValue
 }
 
 function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {
@@ -48,8 +54,6 @@ function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size 
 }
 
 export const PaddingResizeControlHoverTimeout: number = 200
-
-type Timeout = ReturnType<typeof setTimeout>
 
 const PaddingResizeControlWidth = 2
 const PaddingResizeControlHeight = 12
@@ -148,11 +152,8 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundImage: hidden
-            ? undefined
-            : `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
-          backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
+          ...(hidden ? {} : StripedBackgroundCSS(stripeColor, scale)),
         }}
       >
         <div
@@ -177,18 +178,10 @@ const PaddingResizeControlI = React.memo(
                 paddingLeft: paddingIndicatorOffset,
               }}
             >
-              <PaddingValueLabel value={props.paddingValue.value} scale={scale} color={color} />
+              <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
             </div>
           )}
-          <div
-            style={{
-              boxSizing: 'border-box',
-              width: width,
-              height: height,
-              backgroundColor: color,
-              border: `${borderWidth}px solid rgba(255, 255, 255)`,
-            }}
-          />
+          <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
         </div>
       </div>
     )
@@ -318,27 +311,6 @@ function startResizeInteraction(
       ),
     ])
   }
-}
-
-function useHoverWithDelay(
-  delay: number,
-  update: (hovered: boolean) => void,
-): [React.MouseEventHandler, React.MouseEventHandler] {
-  const fadeInTimeout = React.useRef<Timeout | null>(null)
-
-  const onHoverEnd = () => {
-    if (fadeInTimeout.current) {
-      clearTimeout(fadeInTimeout.current)
-    }
-    fadeInTimeout.current = null
-    update(false)
-  }
-
-  const onHoverStart = () => {
-    fadeInTimeout.current = setTimeout(() => update(true), delay)
-  }
-
-  return [onHoverStart, onHoverEnd]
 }
 
 function edgePieceDerivedProps(edgePiece: EdgePiece): {

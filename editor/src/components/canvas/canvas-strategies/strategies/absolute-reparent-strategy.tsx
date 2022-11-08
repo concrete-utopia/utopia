@@ -8,6 +8,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -74,6 +75,12 @@ export function baseAbsoluteReparentStrategy(
           control: ParentBounds,
           props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
       ],
