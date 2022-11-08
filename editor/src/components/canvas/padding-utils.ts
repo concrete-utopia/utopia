@@ -1,7 +1,7 @@
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { Either, isLeft, right } from '../../core/shared/either'
-import { cssParsers } from '../../components/inspector/common/css-utils'
+import { Either, isLeft, isRight, right } from '../../core/shared/either'
+import { parseCSSLengthPercent } from '../../components/inspector/common/css-utils'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -10,6 +10,7 @@ import { AllElementProps } from '../editor/store/editor-state'
 import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 import { toString } from '../../core/shared/element-path'
+import { parsePadding } from '../../printer-parsers/css/css-parser-padding'
 
 type CSSPaddingKey = keyof CSSPadding
 type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
@@ -52,27 +53,32 @@ export function simplePaddingFromMetadata(
   }
 
   const padding = cssPaddingToMeasurement(
-    getLayoutProperty('padding', right(allElementProps[toString(elementPath)]), ['style']),
+    getLayoutProperty('padding', right(element.element.value.props), ['style']),
+    paddingFromAllElementProps(allElementProps, elementPath),
     paddingMappedMeasurements,
   )
 
   const paddingTop = paddingMeasurementFromEither(
     getLayoutProperty('paddingTop', right(element.element.value.props), ['style']),
+    paddingPartFromAllElementProps(allElementProps, elementPath, 'paddingTop'),
     paddingMappedMeasurements.paddingTop,
   )
 
   const paddingBottom = paddingMeasurementFromEither(
     getLayoutProperty('paddingBottom', right(element.element.value.props), ['style']),
+    paddingPartFromAllElementProps(allElementProps, elementPath, 'paddingBottom'),
     paddingMappedMeasurements.paddingBottom,
   )
 
   const paddingLeft = paddingMeasurementFromEither(
     getLayoutProperty('paddingLeft', right(element.element.value.props), ['style']),
+    paddingPartFromAllElementProps(allElementProps, elementPath, 'paddingLeft'),
     paddingMappedMeasurements.paddingLeft,
   )
 
   const paddingRight = paddingMeasurementFromEither(
     getLayoutProperty('paddingRight', right(element.element.value.props), ['style']),
+    paddingPartFromAllElementProps(allElementProps, elementPath, 'paddingRight'),
     paddingMappedMeasurements.paddingRight,
   )
 
@@ -98,42 +104,89 @@ function cssPaddingWithDefaults(
 
 function paddingMeasurementFromEither(
   value: Either<string, CSSNumber | undefined>,
+  valueFromAllElementProps: Either<string, CSSNumber | undefined>,
   renderedDimension: number,
 ): PaddingMeasurement | undefined {
-  if (isLeft(value) || value.value == null) {
-    return undefined
+  if (isRight(value) && value.value != null) {
+    return {
+      renderedValuePx: renderedDimension,
+      value: value.value,
+    }
   }
 
-  return {
-    renderedValuePx: renderedDimension,
-    value: value.value,
+  if (isRight(valueFromAllElementProps) && valueFromAllElementProps.value != null) {
+    return {
+      renderedValuePx: renderedDimension,
+      value: valueFromAllElementProps.value,
+    }
   }
+
+  return undefined
+}
+
+function paddingPartFromAllElementProps(
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  paddingKey: keyof CSSPadding,
+): Either<string, CSSNumber | undefined> {
+  const value = allElementProps[toString(elementPath)]?.['style']?.[paddingKey]
+  if (value == null) {
+    return right(undefined)
+  }
+
+  return parseCSSLengthPercent(value)
+}
+
+function paddingFromAllElementProps(
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Either<string, CSSPadding | undefined> {
+  const value = allElementProps[toString(elementPath)]?.['style']?.['padding']
+  if (value == null) {
+    return right(undefined)
+  }
+
+  return parsePadding(value)
 }
 
 function cssPaddingToMeasurement(
   p: Either<string, CSSPadding | undefined>,
-  padding: CSSPaddingMappedValues<number>,
+  pFromAllElementProps: Either<string, CSSPadding | undefined>,
+  renderedPadding: CSSPaddingMappedValues<number>,
 ): Partial<CSSPaddingMeasurements> {
-  if (isLeft(p) || p.value == null) {
+  const paddingToUse = (): CSSPadding | undefined => {
+    if (isRight(p) && p.value != null) {
+      return p.value
+    }
+
+    if (isRight(pFromAllElementProps) && pFromAllElementProps.value != null) {
+      return pFromAllElementProps.value
+    }
+    return undefined
+  }
+
+  const padding = paddingToUse()
+
+  if (padding == null) {
     return {}
   }
 
   return {
     paddingTop: {
-      value: p.value.paddingTop,
-      renderedValuePx: padding.paddingTop,
+      value: padding.paddingTop,
+      renderedValuePx: renderedPadding.paddingTop,
     },
     paddingBottom: {
-      value: p.value.paddingBottom,
-      renderedValuePx: padding.paddingBottom,
+      value: padding.paddingBottom,
+      renderedValuePx: renderedPadding.paddingBottom,
     },
     paddingLeft: {
-      value: p.value.paddingLeft,
-      renderedValuePx: padding.paddingLeft,
+      value: padding.paddingLeft,
+      renderedValuePx: renderedPadding.paddingLeft,
     },
     paddingRight: {
-      value: p.value.paddingRight,
-      renderedValuePx: padding.paddingRight,
+      value: padding.paddingRight,
+      renderedValuePx: renderedPadding.paddingRight,
     },
   }
 }
