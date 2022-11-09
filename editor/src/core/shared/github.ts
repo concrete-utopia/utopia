@@ -31,6 +31,7 @@ import {
   EditorStorePatched,
   emptyGithubData,
   GithubChecksums,
+  GithubData,
   GithubOperation,
   GithubRepo,
   PersistentModel,
@@ -311,6 +312,7 @@ export async function updateProjectAgainstGithub(
               specificCommitContent.content,
               branchLatestContent.originCommit,
             ),
+            updateGithubData({ upstreamChanges: null }),
             showToast(notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS')),
           ],
           'everyone',
@@ -365,19 +367,25 @@ export async function updateProjectWithBranchContent(
         )
         break
       case 'SUCCESS':
-        const actions: Array<EditorAction> = [
-          updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
-          updateProjectContents(responseBody.content),
-          updateBranchContents(responseBody.content),
-          updateGithubSettings(
-            projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
-          ),
-          showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
-        ]
-        if (resetBranches) {
-          actions.push(updateGithubData({ branches: [] }))
+        const newGithubData: Partial<GithubData> = {
+          upstreamChanges: null,
         }
-        dispatch(actions, 'everyone')
+        if (resetBranches) {
+          newGithubData.branches = []
+        }
+        dispatch(
+          [
+            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
+            updateProjectContents(responseBody.content),
+            updateBranchContents(responseBody.content),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+            ),
+            updateGithubData(newGithubData),
+            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
+          ],
+          'everyone',
+        )
         break
       default:
         const _exhaustiveCheck: never = responseBody
