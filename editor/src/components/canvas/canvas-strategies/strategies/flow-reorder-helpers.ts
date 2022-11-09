@@ -50,8 +50,8 @@ export function staticContainerDirections(
   if (elementMetadata == null) {
     return 'non-1d-static'
   }
-  const isFlex = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
-  const isFlow = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flow'
+  const isFlex = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flex'
+  const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
   const children = MetadataUtils.getChildren(metadata, path)
 
   // TODO make it work if there is 0 children but the container is Flex!!!!!!!!!!!!
