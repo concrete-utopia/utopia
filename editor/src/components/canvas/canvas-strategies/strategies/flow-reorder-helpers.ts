@@ -38,6 +38,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   | {
       direction: SimpleFlexDirection | null
       forwardsOrBackwards: FlexForwardsOrBackwards | null
+      flexOrFlow: 'flex' | 'flow'
     }
   | 'non-1d-static' {
   const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
@@ -69,7 +70,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     if (!is1D) {
       return 'non-1d-static'
     }
-    return flexDirection
+    return { ...flexDirection, flexOrFlow: 'flex' }
   } else {
     const targetDirection = getElementDirection(targetElement)
     const shouldReverse =
@@ -97,6 +98,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return {
       direction: targetDirection === 'horizontal' ? 'row' : 'column', // TODO use 'horizontal' | 'vertical' in the main type
       forwardsOrBackwards: shouldReverse ? 'reverse' : 'forward',
+      flexOrFlow: 'flow',
     }
   }
 }
@@ -197,7 +199,22 @@ export function getOptionalDisplayPropCommandsForFlow(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType)
+    return getNewDisplayTypeCommands(element, newDisplayType) // TODO this is wrong, it will convert a display: flex to block!!!
+  } else {
+    return []
+  }
+}
+
+export function getOptionalCommandToConvertDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['block', 'flex', 'grid'].some((p) => displayValue === p)
+
+  if (displayValue == null) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-${displayValue}`)]
   } else {
     return []
   }

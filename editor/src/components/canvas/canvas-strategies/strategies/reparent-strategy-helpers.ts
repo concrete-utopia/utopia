@@ -57,7 +57,10 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
-import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
+import {
+  areAllSiblingsInOneDimensionFlexOrFlow,
+  getOptionalCommandToConvertDisplayInline,
+} from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -214,6 +217,8 @@ export interface ReparentTarget {
   newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
+  shouldConvertToInline: boolean
+  // TODO add shouldBeStaticReparentOrAbsolute here!! then remove 100 lines of code
 }
 
 export function reparentTarget(
@@ -221,12 +226,14 @@ export function reparentTarget(
   newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
+  shouldConvertToInline: boolean,
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
     newParent: newParent,
     shouldReorder: shouldReorder,
     newIndex: newIndex,
+    shouldConvertToInline: shouldConvertToInline,
   }
 }
 
@@ -375,7 +382,7 @@ export function getReparentTargetUnified(
 
   // first try to find a flex element insertion area
   for (const staticContainer of staticContainersUnderPoint) {
-    const { direction, forwardsOrBackwards } = staticContainer.directions
+    const { direction, forwardsOrBackwards, flexOrFlow } = staticContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -407,6 +414,7 @@ export function getReparentTargetUnified(
         shouldReorder: true,
         newParent: staticContainer.path,
         newIndex: targetUnderMouseIndex,
+        shouldConvertToInline: direction === 'row' && flexOrFlow === 'flow',
       }
     }
   }
@@ -426,9 +434,10 @@ export function getReparentTargetUnified(
       newParent: targetParentPath,
       shouldReorder: false,
       newIndex: -1,
+      shouldConvertToInline: false,
     }
   } else {
-    const { direction, forwardsOrBackwards } = staticDirection
+    const { direction, forwardsOrBackwards, flexOrFlow } = staticDirection
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -450,6 +459,7 @@ export function getReparentTargetUnified(
       newParent: targetParentPath,
       shouldReorder: targetUnderMouseIndex != null,
       newIndex: targetUnderMouseIndex ?? -1,
+      shouldConvertToInline: direction === 'row' && flexOrFlow === 'flow',
     }
   }
 }
@@ -790,6 +800,8 @@ export function applyStaticReparent(
             const propertyChangeCommands = getStaticReparentPropertyChanges(
               newPath,
               targetMetadata?.specialSizeMeasurements.position ?? null,
+              targetMetadata?.specialSizeMeasurements.display ?? null,
+              reparentResult.shouldConvertToInline,
             )
 
             const commandsBeforeReorder = [
@@ -962,12 +974,22 @@ export function getAbsoluteReparentPropertyChanges(
 export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
+  targetOriginalDisplayProp: string | null,
+  convertToInline: boolean,
 ): Array<CanvasCommand> {
+  const optionalInlineConversionCommand = convertToInline
+    ? getOptionalCommandToConvertDisplayInline(newPath, targetOriginalDisplayProp)
+    : []
+
   if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
-    return [deleteProperties('always', newPath, propertiesToRemove)]
+    return [
+      ...optionalInlineConversionCommand,
+      deleteProperties('always', newPath, propertiesToRemove),
+    ]
   }
 
   return [
+    ...optionalInlineConversionCommand,
     deleteProperties('always', newPath, [...propertiesToRemove, PP.create(['style', 'position'])]),
     setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
   ]
@@ -982,6 +1004,7 @@ export function getReparentPropertyChanges(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
+  targetOriginalDisplayProp: string | null,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -995,7 +1018,17 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
+      const directions = staticContainerDirections(newParent, newParentStartingMetadata)
+      const convertToInline =
+        directions !== 'non-1d-static'
+          ? directions.direction === 'row' && directions.flexOrFlow === 'flow'
+          : false
+      return getStaticReparentPropertyChanges(
+        newPath,
+        targetOriginalStylePosition,
+        targetOriginalDisplayProp,
+        convertToInline,
+      )
   }
 }
 
@@ -1006,6 +1039,7 @@ export function staticContainerDirections(
   | {
       direction: SimpleFlexDirection | null
       forwardsOrBackwards: FlexForwardsOrBackwards | null
+      flexOrFlow: 'flex' | 'flow'
     }
   | 'non-1d-static' {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -1023,9 +1057,9 @@ export function staticContainerDirections(
   }
 
   if (isFlex) {
-    // TODO check if 1D!
+    // TODO check if 1D! use areAllSiblingsInOneDimensionFlexOrFlow
     const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return MetadataUtils.getSimpleFlexDirection(element)
+    return { ...MetadataUtils.getSimpleFlexDirection(element), flexOrFlow: 'flex' }
   } else {
     const flowChildren = children.filter(
       (child) => child.specialSizeMeasurements.position !== 'absolute',
