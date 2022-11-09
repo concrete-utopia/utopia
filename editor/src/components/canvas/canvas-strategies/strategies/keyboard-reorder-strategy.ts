@@ -1,13 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasVector,
-  mod,
-  offsetPoint,
-  scaleVector,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
+import { CanvasVector, mod, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { KeyCharacter } from '../../../../utils/keyboard'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -22,7 +17,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDirectionFlexOrFlow, isReorderAllowed } from './reorder-utils'
-import { accumulatePresses, getMovementDeltaFromKey } from './shared-keyboard-strategy-helpers'
+import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function keyboardReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -37,7 +32,7 @@ export function keyboardReorderStrategy(
   const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
     (element) => element.elementPath,
   )
-  if (!isReorderAllowed(siblings) || !isApplicable(canvasState, target)) {
+  if ((siblings.length > 1 && !isReorderAllowed(siblings)) || !isApplicable(canvasState, target)) {
     return null
   }
 
@@ -51,14 +46,11 @@ export function keyboardReorderStrategy(
     apply: () => {
       if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
         const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-        let keyboardMovement: CanvasVector = zeroCanvasPoint
+        let keyboardResult: CanvasVector = zeroCanvasPoint
         accumulatedPresses.forEach((accumulatedPress) => {
           accumulatedPress.keysPressed.forEach((key) => {
-            const keyPressMovement = scaleVector(
-              getMovementDeltaFromKey(key, accumulatedPress.modifiers),
-              accumulatedPress.count,
-            )
-            keyboardMovement = offsetPoint(keyboardMovement, keyPressMovement)
+            const keyPressIndexChange = getIndexChangeDeltaFromKey(key, accumulatedPress.count)
+            keyboardResult = offsetPoint(keyboardResult, keyPressIndexChange)
           })
         })
 
@@ -69,13 +61,13 @@ export function keyboardReorderStrategy(
         if (direction === 'horizontal') {
           // left and right arrow keys
           newIndex = mod(
-            unpatchedIndex + keyboardMovement.x * (shouldReverse ? -1 : 1),
+            unpatchedIndex + keyboardResult.x * (shouldReverse ? -1 : 1),
             siblings.length,
           )
         } else {
           // up and down arrow keys
           newIndex = mod(
-            unpatchedIndex + keyboardMovement.y * (shouldReverse ? -1 : 1),
+            unpatchedIndex + keyboardResult.y * (shouldReverse ? -1 : 1),
             siblings.length,
           )
         }
@@ -115,4 +107,34 @@ function isApplicable(canvasState: InteractionCanvasState, path: ElementPath) {
       canvasState.startingMetadata,
     ) || MetadataUtils.isPositionedByFlow(elementMetadata)
   )
+}
+
+function getIndexChangeDeltaFromKey(key: KeyCharacter, delta: number): CanvasVector {
+  switch (key) {
+    case 'left':
+      return {
+        x: -delta,
+        y: 0,
+      } as CanvasVector
+    case 'right':
+      return {
+        x: delta,
+        y: 0,
+      } as CanvasVector
+    case 'up':
+      return {
+        x: 0,
+        y: -delta,
+      } as CanvasVector
+    case 'down':
+      return {
+        x: 0,
+        y: delta,
+      } as CanvasVector
+    default:
+      return {
+        x: 0,
+        y: 0,
+      } as CanvasVector
+  }
 }
