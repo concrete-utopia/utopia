@@ -254,4 +254,188 @@ describe('Flow Reparent To Flow Strategy', () => {
   `),
     )
   })
+  it('reparents flow element to flow parent in row layout', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+  <div
+    style={{
+      position: 'absolute',
+      width: 700,
+      height: 600,
+    }}
+    data-uid='container'
+    data-testid='container'
+  >
+    <div
+      style={{
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 0,
+        top: 0,
+        backgroundColor: 'blue',
+      }}
+      data-uid='flowparent1'
+      data-testid='flowparent1'
+    >
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'purple',
+          display: 'inline-block',
+        }}
+        data-uid='flowchild1'
+        data-testid='flowchild1'
+      />
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'pink',
+          display: 'inline-block',
+        }}
+        data-uid='flowchild2'
+        data-testid='flowchild2'
+      />
+    </div>
+    <div
+      style={{
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 350,
+        top: 0,
+        backgroundColor: 'lightgreen',
+      }}
+      data-uid='flowparent2'
+      data-testid='flowparent2'
+    >
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'teal',
+        }}
+        data-uid='flowchild3'
+        data-testid='flowchild3'
+      />
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'red',
+        }}
+        data-uid='flowchild4'
+        data-testid='flowchild4'
+      />
+    </div>
+  </div>
+`),
+      'await-first-dom-report',
+    )
+
+    const targetFlowParent = await renderResult.renderedDOM.findByTestId('flowparent1')
+    const targetFlowParentRect = targetFlowParent.getBoundingClientRect()
+    const targetFlowParentEnd = {
+      x: targetFlowParentRect.x + targetFlowParentRect.width - 15,
+      y: targetFlowParentRect.y + targetFlowParentRect.height - 2,
+    }
+    const flowChildToReparent = await renderResult.renderedDOM.findByTestId('flowchild3')
+    const flowChildToReparentRect = flowChildToReparent.getBoundingClientRect()
+    const flowChildToReparentCenter = {
+      x: flowChildToReparentRect.x + flowChildToReparentRect.width / 2,
+      y: flowChildToReparentRect.y + flowChildToReparentRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const dragDelta = windowPoint({
+      x: targetFlowParentEnd.x - flowChildToReparentCenter.x + 5,
+      y: targetFlowParentEnd.y - flowChildToReparentCenter.y,
+    })
+
+    dragElement(renderResult, 'flowchild3', dragDelta, cmdModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        position: 'absolute',
+        width: 700,
+        height: 600,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 0,
+          top: 0,
+          backgroundColor: 'blue',
+        }}
+        data-uid='flowparent1'
+        data-testid='flowparent1'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'purple',
+            display: 'inline-block',
+          }}
+          data-uid='flowchild1'
+          data-testid='flowchild1'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'pink',
+            display: 'inline-block',
+          }}
+          data-uid='flowchild2'
+          data-testid='flowchild2'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'teal',
+            display: 'inline-block',
+          }}
+          data-uid='flowchild3'
+          data-testid='flowchild3'
+        />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 350,
+          top: 0,
+          backgroundColor: 'lightgreen',
+        }}
+        data-uid='flowparent2'
+        data-testid='flowparent2'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'red',
+          }}
+          data-uid='flowchild4'
+          data-testid='flowchild4'
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
 })
