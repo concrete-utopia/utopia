@@ -36,7 +36,10 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
-import { offsetMeasurementByDelta } from '../../controls/select-mode/controls-common'
+import {
+  offsetMeasurementByDelta,
+  precisionFromModifiers,
+} from '../../controls/select-mode/controls-common'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
@@ -128,7 +131,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
         return strategyApplicationResult([
-          setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+          setCursorCommand(pickCursorFromEdge(edgePiece)),
           updateHighlightedViews('mid-interaction', []),
         ])
       }
@@ -138,7 +141,12 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
       const currentPadding = paddingForEdge(edgePiece, padding)
       const delta = Math.max(-currentPadding, deltaFromEdge(drag, edgePiece))
-      const newPadding = offsetPaddingByEdge(edgePiece, delta, padding)
+      const newPadding = offsetPaddingByEdge(
+        edgePiece,
+        delta,
+        padding,
+        precisionFromModifiers(interactionSession.interactionData.modifiers),
+      )
       const paddingString = paddingToPaddingString(newPadding)
 
       return strategyApplicationResult([
@@ -147,7 +155,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ),
         setProperty('always', selectedElement, StylePaddingProp, paddingString),
         updateHighlightedViews('mid-interaction', []),
-        setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
+        setCursorCommand(pickCursorFromEdge(edgePiece)),
         setElementsToRerenderCommand(selectedElements),
       ])
     },
@@ -231,6 +239,7 @@ function paddingValueIndicatorProps(
   const updatedPaddingMeasurement = offsetMeasurementByDelta(
     currentPadding,
     deltaFromEdge(drag, edgePiece),
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   return {

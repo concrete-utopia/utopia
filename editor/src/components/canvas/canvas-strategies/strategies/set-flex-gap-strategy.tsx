@@ -1,12 +1,16 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
+import { Modifiers } from '../../../../utils/modifiers'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
-import { offsetMeasurementByDelta } from '../../controls/select-mode/controls-common'
+import {
+  offsetMeasurementByDelta,
+  precisionFromModifiers,
+} from '../../controls/select-mode/controls-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
   FloatingCSSNumberIndicator,
@@ -69,7 +73,15 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     dragDeltaForOrientation(flexGap.direction, drag),
   )
 
-  const updatedFlexGapMeasurement = offsetMeasurementByDelta(flexGap.value, dragDelta)
+  const adjustPrecision =
+    optionalMap(precisionFromModifiers, modifiersFromInteractionSession(interactionSession)) ??
+    'precise'
+
+  const updatedFlexGapMeasurement = offsetMeasurementByDelta(
+    flexGap.value,
+    dragDelta,
+    adjustPrecision,
+  )
 
   const resizeControl = controlWithProps({
     control: FlexGapControl,
@@ -118,7 +130,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           StyleGapProp,
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
-        setCursorCommand('always', cursorFromFlexDirection(flexGap.direction)),
+        setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children]),
       ])
     },
@@ -130,6 +142,15 @@ function dragFromInteractionSession(
 ): CanvasVector | null {
   if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
     return interactionSession.interactionData.drag
+  }
+  return null
+}
+
+function modifiersFromInteractionSession(
+  interactionSession: InteractionSession | null,
+): Modifiers | null {
+  if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
+    return interactionSession.interactionData.modifiers
   }
   return null
 }
@@ -154,7 +175,11 @@ function flexGapValueIndicatorProps(
     dragDeltaForOrientation(flexGap.direction, drag),
   )
 
-  const updatedFlexGapMeasurement = offsetMeasurementByDelta(flexGap.value, dragDelta)
+  const updatedFlexGapMeasurement = offsetMeasurementByDelta(
+    flexGap.value,
+    dragDelta,
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
+  )
 
   const position = flexGap.direction.startsWith('row')
     ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })

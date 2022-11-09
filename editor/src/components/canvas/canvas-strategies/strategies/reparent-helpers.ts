@@ -68,10 +68,6 @@ export function ifAllowedToReparent(
   if (allowed) {
     return ifAllowed()
   } else {
-    return strategyApplicationResult(
-      [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-      {},
-      'failure',
-    )
+    return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
   }
 }

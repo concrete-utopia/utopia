@@ -163,7 +163,7 @@ ${snippet}
 `)
 }
 
-const forcedAbsoluteReparentMetastrategy: MetaCanvasStrategy = (
+const absoluteReparentMetastrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
@@ -173,15 +173,18 @@ const forcedAbsoluteReparentMetastrategy: MetaCanvasStrategy = (
     interactionSession,
     customStrategyState,
   )
-  return allReparentingStrategies.filter((strategy) => strategy.id.startsWith('FORCED'))
+  return allReparentingStrategies.filter(
+    (strategy) =>
+      strategy.id === 'ABSOLUTE_REPARENT' || strategy.id === 'FLEX_REPARENT_TO_ABSOLUTE',
+  )
 }
 
-describe('Forced Absolute Reparent Strategies', () => {
-  it('Absolute to forced absolute can be applied', async () => {
+describe('Fallback Absolute Reparent Strategies', () => {
+  it('Absolute to absolute can be applied as a fallback', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [forcedAbsoluteReparentMetastrategy],
+      [absoluteReparentMetastrategy],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -289,7 +292,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     )
   })
 
-  it('Absolute to forced absolute can be accessed by using the strategy selector', async () => {
+  it('Absolute to absolute as a fallback can be accessed by using the strategy selector', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
@@ -322,7 +325,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       dragDelta,
       cmdModifier,
       function midDragCallback() {
-        pressKey('3') // this should select the Reparent (Abs, Forced) strategy
+        pressKey('2') // this should select the Reparent (Abs) strategy
       },
     )
 
@@ -519,11 +522,11 @@ describe('Forced Absolute Reparent Strategies', () => {
   </div>`),
     )
   })
-  it('Flex to forced absolute can be applied', async () => {
+  it('Flex to absolute can be applied as a fallback', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [forcedAbsoluteReparentMetastrategy],
+      [absoluteReparentMetastrategy],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()

@@ -997,11 +997,13 @@ export function updateGithubSettings(settings: ProjectGithubSettings): UpdateGit
     settings: settings,
   }
 }
-
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
-    data: data,
+    data: {
+      lastUpdatedAt: Date.now(),
+      ...data,
+    },
   }
 }
 
