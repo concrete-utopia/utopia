@@ -37,198 +37,6 @@ async function dragElement(
   })
 }
 
-const defaultTestCode = `
-  <div
-    style={{
-      position: 'absolute',
-      width: 700,
-      height: 600,
-    }}
-    data-uid='container'
-    data-testid='container'
-  >
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 0,
-        top: 0,
-        backgroundColor: 'lightblue',
-      }}
-      data-uid='absoluteparent'
-      data-testid='absoluteparent'
-    >
-      {[1, 2].map((n) => (
-        <div
-          style={{
-            position: 'absolute',
-            left: 20 + (n * 100),
-            top: 150,
-            width: 100,
-            height: 100,
-            borderWidth: 10,
-            borderColor: 'black',
-            borderStyle: 'solid',
-            backgroundColor: 'yellow',
-          }}
-          data-uid='generatedabsolutechild'
-          data-testid='generatedabsolutechild'
-        />
-      ))}
-      <div
-        style={{
-          position: 'absolute',
-          left: 93.5,
-          top: 58,
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'yellow',
-        }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
-      />
-    </div>
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 400,
-        left: 350,
-        top: 0,
-        backgroundColor: 'lightgreen',
-      }}
-      data-uid='flowparent'
-      data-testid='flowparent'
-    >
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'teal',
-        }}
-        data-uid='flowchild1'
-        data-testid='flowchild1'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'red',
-        }}
-        data-uid='flowchild2'
-        data-testid='flowchild2'
-      />
-    </div>
-  </div>
-`
-
-const defaultTestCodeWithInlineBlocks = `
-  <div
-    style={{
-      position: 'absolute',
-      width: 700,
-      height: 600,
-    }}
-    data-uid='container'
-    data-testid='container'
-  >
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 0,
-        top: 0,
-        backgroundColor: 'lightblue',
-      }}
-      data-uid='absoluteparent'
-      data-testid='absoluteparent'
-    >
-      {[1, 2].map((n) => (
-        <div
-          style={{
-            position: 'absolute',
-            left: 20 + (n * 100),
-            top: 150,
-            width: 100,
-            height: 100,
-            borderWidth: 10,
-            borderColor: 'black',
-            borderStyle: 'solid',
-            backgroundColor: 'yellow',
-          }}
-          data-uid='generatedabsolutechild'
-          data-testid='generatedabsolutechild'
-        />
-      ))}
-      <div
-        style={{
-          position: 'absolute',
-          left: 93.5,
-          top: 58,
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'yellow',
-        }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
-      />
-    </div>
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 400,
-        left: 350,
-        top: 0,
-        backgroundColor: 'lightgreen',
-      }}
-      data-uid='flowparent'
-      data-testid='flowparent'
-    >
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'teal',
-          display: 'inline-block',
-        }}
-        data-uid='flowchild1'
-        data-testid='flowchild1'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          borderWidth: 10,
-          borderColor: 'black',
-          borderStyle: 'solid',
-          backgroundColor: 'red',
-          display: 'inline-block',
-        }}
-        data-uid='flowchild2'
-        data-testid='flowchild2'
-      />
-    </div>
-  </div>
-`
-
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
@@ -268,7 +76,100 @@ ${snippet}
 describe('Absolute Reparent To Flow Strategy', () => {
   it('reparents to the end', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'absolute',
+          width: 700,
+          height: 600,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 500,
+            left: 0,
+            top: 0,
+            backgroundColor: 'lightblue',
+          }}
+          data-uid='absoluteparent'
+          data-testid='absoluteparent'
+        >
+          {[1, 2].map((n) => (
+            <div
+              style={{
+                position: 'absolute',
+                left: 20 + (n * 100),
+                top: 150,
+                width: 100,
+                height: 100,
+                borderWidth: 10,
+                borderColor: 'black',
+                borderStyle: 'solid',
+                backgroundColor: 'yellow',
+              }}
+              data-uid='generatedabsolutechild'
+              data-testid='generatedabsolutechild'
+            />
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              left: 93.5,
+              top: 58,
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'yellow',
+            }}
+            data-uid='absolutechild'
+            data-testid='absolutechild'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 400,
+            left: 350,
+            top: 0,
+            backgroundColor: 'lightgreen',
+          }}
+          data-uid='flowparent'
+          data-testid='flowparent'
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'teal',
+            }}
+            data-uid='flowchild1'
+            data-testid='flowchild1'
+          />
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'red',
+            }}
+            data-uid='flowchild2'
+            data-testid='flowchild2'
+          />
+        </div>
+      </div>
+    `),
       'await-first-dom-report',
     )
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -389,7 +290,102 @@ describe('Absolute Reparent To Flow Strategy', () => {
   })
   it('reparents to the end in row layout', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCodeWithInlineBlocks),
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'absolute',
+          width: 700,
+          height: 600,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 500,
+            left: 0,
+            top: 0,
+            backgroundColor: 'lightblue',
+          }}
+          data-uid='absoluteparent'
+          data-testid='absoluteparent'
+        >
+          {[1, 2].map((n) => (
+            <div
+              style={{
+                position: 'absolute',
+                left: 20 + (n * 100),
+                top: 150,
+                width: 100,
+                height: 100,
+                borderWidth: 10,
+                borderColor: 'black',
+                borderStyle: 'solid',
+                backgroundColor: 'yellow',
+              }}
+              data-uid='generatedabsolutechild'
+              data-testid='generatedabsolutechild'
+            />
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              left: 93.5,
+              top: 58,
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'yellow',
+            }}
+            data-uid='absolutechild'
+            data-testid='absolutechild'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 400,
+            left: 350,
+            top: 0,
+            backgroundColor: 'lightgreen',
+          }}
+          data-uid='flowparent'
+          data-testid='flowparent'
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'teal',
+              display: 'inline-block',
+            }}
+            data-uid='flowchild1'
+            data-testid='flowchild1'
+          />
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'red',
+              display: 'inline-block',
+            }}
+            data-uid='flowchild2'
+            data-testid='flowchild2'
+          />
+        </div>
+      </div>
+    `),
       'await-first-dom-report',
     )
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -513,7 +509,100 @@ describe('Absolute Reparent To Flow Strategy', () => {
   })
   it('reparents to between the two existing flow elements', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          position: 'absolute',
+          width: 700,
+          height: 600,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 500,
+            left: 0,
+            top: 0,
+            backgroundColor: 'lightblue',
+          }}
+          data-uid='absoluteparent'
+          data-testid='absoluteparent'
+        >
+          {[1, 2].map((n) => (
+            <div
+              style={{
+                position: 'absolute',
+                left: 20 + (n * 100),
+                top: 150,
+                width: 100,
+                height: 100,
+                borderWidth: 10,
+                borderColor: 'black',
+                borderStyle: 'solid',
+                backgroundColor: 'yellow',
+              }}
+              data-uid='generatedabsolutechild'
+              data-testid='generatedabsolutechild'
+            />
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              left: 93.5,
+              top: 58,
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'yellow',
+            }}
+            data-uid='absolutechild'
+            data-testid='absolutechild'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 400,
+            left: 350,
+            top: 0,
+            backgroundColor: 'lightgreen',
+          }}
+          data-uid='flowparent'
+          data-testid='flowparent'
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'teal',
+            }}
+            data-uid='flowchild1'
+            data-testid='flowchild1'
+          />
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'red',
+            }}
+            data-uid='flowchild2'
+            data-testid='flowchild2'
+          />
+        </div>
+      </div>
+    `),
       'await-first-dom-report',
     )
 
@@ -635,8 +724,103 @@ describe('Absolute Reparent To Flow Strategy', () => {
     )
   })
   it('cannot reparent a generated element', async () => {
+    const testCode = `
+      <div
+        style={{
+          position: 'absolute',
+          width: 700,
+          height: 600,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 500,
+            left: 0,
+            top: 0,
+            backgroundColor: 'lightblue',
+          }}
+          data-uid='absoluteparent'
+          data-testid='absoluteparent'
+        >
+          {[1, 2].map((n) => (
+            <div
+              style={{
+                position: 'absolute',
+                left: 20 + (n * 100),
+                top: 150,
+                width: 100,
+                height: 100,
+                borderWidth: 10,
+                borderColor: 'black',
+                borderStyle: 'solid',
+                backgroundColor: 'yellow',
+              }}
+              data-uid='generatedabsolutechild'
+              data-testid='generatedabsolutechild'
+            />
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              left: 93.5,
+              top: 58,
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'yellow',
+            }}
+            data-uid='absolutechild'
+            data-testid='absolutechild'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 400,
+            left: 350,
+            top: 0,
+            backgroundColor: 'lightgreen',
+          }}
+          data-uid='flowparent'
+          data-testid='flowparent'
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'teal',
+            }}
+            data-uid='flowchild1'
+            data-testid='flowchild1'
+          />
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'red',
+            }}
+            data-uid='flowchild2'
+            data-testid='flowchild2'
+          />
+        </div>
+      </div>
+    `
+
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(testCode),
       'await-first-dom-report',
     )
 
@@ -667,7 +851,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(testCode),
     )
   })
 })
