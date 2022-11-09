@@ -1,22 +1,13 @@
 import React from 'react'
-import {
-  canvasPoint,
-  CanvasPoint,
-  CanvasVector,
-  Size,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
+import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import {
-  BorderRadiusHandleSize,
-  borderRadiusOffsetPx,
-  handlePosition,
-} from '../../border-radius-utis'
+import { CSSNumber } from '../../../inspector/common/css-utils'
+import { BorderRadiusHandleSize, handlePosition } from '../../border-radius-utis'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -44,10 +35,11 @@ export interface BorderRadiusControlProps {
   elementSize: Size
   borderRadius: CSSNumberWithRenderedValue
   showIndicatorOnEdge: EdgePosition | null
+  indicatorValue: CSSNumber
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge } = props
+  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge, indicatorValue } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const { dispatch, scale, isDragging } = useEditorState(
@@ -108,6 +100,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
             showIndicatorFromParent={
               showIndicatorOnEdge?.x === edgePosition.x && showIndicatorOnEdge?.y === edgePosition.y
             }
+            indicatorValue={indicatorValue}
           />
         ))}
       </div>
@@ -120,6 +113,7 @@ interface CircularHandleProp {
   canvasOffsetRef: { current: CanvasVector }
   dispatch: EditorDispatch
   edgePosition: EdgePosition
+  indicatorValue: CSSNumber
   isDragging: boolean
   backgroundShown: boolean
   scale: number
@@ -134,6 +128,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     isDragging,
     backgroundShown,
     scale,
+    indicatorValue,
     color,
     canvasOffsetRef,
     dispatch,
@@ -171,12 +166,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel
-              prefix='Radius'
-              value={borderRadius.value}
-              scale={scale}
-              color={color}
-            />
+            <CSSNumberLabel prefix='Radius' value={indicatorValue} scale={scale} color={color} />
           </div>,
         )}
         {when(

@@ -3,7 +3,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
 import {
-  canvasPoint,
   CanvasPoint,
   canvasVector,
   CanvasVector,
@@ -12,6 +11,7 @@ import {
   size,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { borderRadiusOffsetPx } from '../../border-radius-utis'
@@ -28,6 +28,7 @@ import { BorderRadiusControl } from '../../controls/select-mode/border-radius-co
 import {
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
+  precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -79,8 +80,9 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   const borderRadiusAdjustData = borderRadiusAdjustDataFromInteractionSession(interactionSession)
 
   const dragDelta = clamp(
-    -borderRadius.renderedValuePx,
-    Math.min(elementSize.width / 2, elementSize.height / 2) - borderRadius.renderedValuePx,
+    -borderRadius.adjustedBorderRadius.renderedValuePx,
+    Math.min(elementSize.width / 2, elementSize.height / 2) -
+      borderRadius.adjustedBorderRadius.renderedValuePx,
     optionalMap(
       ({ drag, edgePosition }) => deltaFromDrag(drag, edgePosition),
       borderRadiusAdjustData,
@@ -89,10 +91,23 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
 
   const borderRadiusOffset = borderRadiusOffsetPx(
     dragDelta != 0,
-    borderRadius.renderedValuePx + dragDelta,
+    borderRadius.adjustedBorderRadius.renderedValuePx + dragDelta,
   )
 
-  const updatedBorderRadius = measurementBasedOnOtherMeasurement(borderRadius, borderRadiusOffset)
+  const precision =
+    optionalMap(({ modifiers }) => precisionFromModifiers(modifiers), borderRadiusAdjustData) ??
+    'precise'
+  const updatedBorderRadius = measurementBasedOnOtherMeasurement(
+    borderRadius.adjustedBorderRadius,
+    borderRadiusOffset,
+    precision,
+  )
+
+  const isDragging = borderRadiusAdjustData != null
+
+  const borderRadiusValueForIndicator = (
+    isDragging ? updatedBorderRadius : borderRadius.actualBorderRadius
+  ).value
 
   return {
     id: SetBorderRadiusStrategyId,
@@ -105,6 +120,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
           selectedElement: selectedElement,
           elementSize: elementSize,
           borderRadius: updatedBorderRadius,
+          indicatorValue: borderRadiusValueForIndicator,
           showIndicatorOnEdge: borderRadiusAdjustData?.edgePosition ?? null,
         },
         key: 'border-radius-handle',
@@ -128,6 +144,7 @@ interface BorderRadiusAdjustData {
   drag: CanvasVector
   dragStart: CanvasPoint
   edgePosition: EdgePosition
+  modifiers: Modifiers
 }
 
 function borderRadiusAdjustDataFromInteractionSession(
@@ -144,6 +161,7 @@ function borderRadiusAdjustDataFromInteractionSession(
     drag: interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
     dragStart: interactionSession.interactionData.dragStart,
     edgePosition: interactionSession.activeControl.edgePosition,
+    modifiers: interactionSession.interactionData.modifiers,
   }
 }
 
@@ -168,38 +186,12 @@ function deltaFromDrag(drag: CanvasVector, edgePosition: EdgePosition): number {
   return 0
 }
 
-function indicatorPositionFromDrag(
-  dragStart: CanvasPoint,
-  offset: number,
-  edgePosition: EdgePosition,
-  scale: number,
-): CanvasPoint {
-  const pointWithOffset = (point: CanvasPoint) =>
-    canvasPoint({ x: point.x + 15 / scale, y: point.y + 15 / scale })
-
-  const { x, y } = edgePosition
-  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return pointWithOffset(canvasPoint({ x: dragStart.x + offset, y: dragStart.y + offset }))
-  }
-
-  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return pointWithOffset(canvasPoint({ x: dragStart.x - offset, y: dragStart.y + offset }))
-  }
-
-  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return pointWithOffset(canvasPoint({ x: dragStart.x + offset, y: dragStart.y - offset }))
-  }
-
-  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return pointWithOffset(canvasPoint({ x: dragStart.x - offset, y: dragStart.y - offset }))
-  }
-
-  return pointWithOffset(dragStart)
+interface BorderRadiusData {
+  actualBorderRadius: CSSNumberWithRenderedValue
+  adjustedBorderRadius: CSSNumberWithRenderedValue
 }
 
-function borderRadiusFromElement(
-  element: ElementInstanceMetadata,
-): CSSNumberWithRenderedValue | null {
+function borderRadiusFromElement(element: ElementInstanceMetadata): BorderRadiusData | null {
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
   }
@@ -216,13 +208,24 @@ function borderRadiusFromElement(
     return null
   }
 
-  return measurementBasedOnOtherMeasurement(
+  const actualBorderRadius: CSSNumberWithRenderedValue = {
+    value: borderRadius.value.value,
+    renderedValuePx: renderedValuePx,
+  }
+
+  const adjustedBorderRadius = measurementBasedOnOtherMeasurement(
     {
       value: borderRadius.value.value,
       renderedValuePx: renderedValuePx,
     },
     Math.max(renderedValuePx, 20),
+    'precise',
   )
+
+  return {
+    actualBorderRadius: actualBorderRadius,
+    adjustedBorderRadius: adjustedBorderRadius,
+  }
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
