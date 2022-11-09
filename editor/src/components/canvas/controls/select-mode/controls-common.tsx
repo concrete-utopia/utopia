@@ -24,26 +24,6 @@ export function valueWithUnitAppropriatePrecision(
   return roundTo(value, multiplicator)
 }
 
-let mutableLatestPixelsPerUnit: Partial<Record<CSSNumberUnit, number>> = {}
-
-function cachePixelPerUnit(unit: CSSNumberUnit | null, value: number): number {
-  if (unit != null) {
-    mutableLatestPixelsPerUnit[unit] = value
-  }
-  return value
-}
-
-function pixelPerUnitFromCache(measurement: CSSNumberWithRenderedValue): number {
-  if (measurement.renderedValuePx > 0) {
-    return measurement.value.value / measurement.renderedValuePx
-  }
-  if (measurement.value.unit == null) {
-    return 1
-  }
-
-  return mutableLatestPixelsPerUnit[measurement.value.unit] ?? 1
-}
-
 export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
@@ -53,12 +33,16 @@ export const offsetMeasurementByDelta = (
     return measurement
   }
 
-  const pixelsPerUnit = cachePixelPerUnit(
-    measurement.value.unit,
-    pixelPerUnitFromCache(measurement),
-  )
+  if (measurement.renderedValuePx === 0) {
+    return {
+      renderedValuePx: delta,
+      value: { value: delta, unit: null },
+    }
+  }
 
-  const deltaInUnits = delta * pixelsPerUnit
+  const unitsPerPixel = measurement.value.value / measurement.renderedValuePx
+
+  const deltaInUnits = delta * unitsPerPixel
 
   const newValueInPixels = measurement.renderedValuePx + delta
   const newValueRounded = valueWithUnitAppropriatePrecision(
@@ -69,7 +53,7 @@ export const offsetMeasurementByDelta = (
 
   const newRenderedValuePx = valueWithUnitAppropriatePrecision(
     'px',
-    newValueInPixels / pixelsPerUnit,
+    newValueInPixels / unitsPerPixel,
     precision,
   )
 
