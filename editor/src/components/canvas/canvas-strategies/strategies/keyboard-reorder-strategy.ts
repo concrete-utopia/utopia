@@ -24,6 +24,10 @@ export function keyboardReorderStrategy(
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy | null {
+  if (interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL') {
+    return null
+  }
+
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -32,7 +36,16 @@ export function keyboardReorderStrategy(
   const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
     (element) => element.elementPath,
   )
-  if ((siblings.length > 1 && !isReorderAllowed(siblings)) || !isApplicable(canvasState, target)) {
+  const elementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    target,
+  )
+  const isFlexOrFlow =
+    MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
+      elementMetadata,
+    ) || MetadataUtils.isPositionedByFlow(elementMetadata)
+
+  if (siblings.length <= 1 || !isReorderAllowed(siblings) || !isFlexOrFlow) {
     return null
   }
 
@@ -97,16 +110,6 @@ export function keyboardReorderStrategy(
       }
     },
   }
-}
-
-function isApplicable(canvasState: InteractionCanvasState, path: ElementPath) {
-  const elementMetadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path)
-  return (
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      path,
-      canvasState.startingMetadata,
-    ) || MetadataUtils.isPositionedByFlow(elementMetadata)
-  )
 }
 
 function getIndexChangeDeltaFromKey(key: KeyCharacter, delta: number): CanvasVector {
