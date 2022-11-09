@@ -8,8 +8,6 @@ import { MenuTile } from './menu-tile'
 import { FullHeightButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
 
-interface TitleBarProps {}
-
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
     onClick={onClick}
@@ -28,8 +26,8 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
   return <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px' }}>{children}</div>
 }
 
-const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
-  const { loginState, projectName, isCodeEditorVisible, isPreviewPaneVisible, dispatch } =
+const TitleBar = React.memo(() => {
+  const { dispatch, loginState, projectName, isCodeEditorVisible, isPreviewPaneVisible } =
     useEditorState(
       (store) => ({
         dispatch: store.dispatch,
@@ -115,6 +113,6 @@ const TitleBar: React.FC<React.PropsWithChildren<TitleBarProps>> = () => {
       </div>
     </SimpleFlexRow>
   )
-}
+})
 
 export default TitleBar

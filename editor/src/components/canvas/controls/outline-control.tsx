@@ -39,7 +39,7 @@ export function getSelectionColor(
   } else if (MetadataUtils.isFocusableComponent(path, metadata)) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
-    return colorTheme.CanvasSelectionNotFocusable.value
+    return colorTheme.canvasSelectionNotFocusable.value
   }
 }
 
@@ -364,7 +364,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
         scale={props.scale}
         color={selectionColor}
         striped={createsYogaLayout}
-        stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
+        stripedColor={colorTheme.selectionOutlines.value}
       />,
     )
   })
