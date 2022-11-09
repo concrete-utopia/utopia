@@ -54,7 +54,7 @@ export const SettingsPane = React.memo(() => {
   const isMyProject = useIsMyProject(projectId)
 
   const [theme, setTheme] = React.useState<SelectOption>(
-    themeOptions.find((option) => option.value === themeConfig) || defaultTheme,
+    themeOptions.find((option) => option.value === themeConfig) ?? defaultTheme,
   )
 
   const handleSubmitValueTheme = React.useCallback(

@@ -4621,7 +4621,7 @@ export const UPDATE_FNS = {
     }
     // Side effect.
     void saveUserConfiguration(updatedUserConfiguration)
-    return { ...userState, themeConfig: action.theme }
+    return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
     return {
