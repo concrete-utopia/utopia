@@ -397,12 +397,12 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const staticElementsUnderPoint = [...filteredElementsUnderPoint]
+  const staticContainersUnderPoint = [...filteredElementsUnderPoint]
     .reverse()
     .filter((element) => is1DStaticContainer(element, metadata))
 
   // first try to find a flex element insertion area
-  for (const staticElementPath of staticElementsUnderPoint) {
+  for (const staticElementPath of staticContainersUnderPoint) {
     const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(
       metadata,
       staticElementPath,
