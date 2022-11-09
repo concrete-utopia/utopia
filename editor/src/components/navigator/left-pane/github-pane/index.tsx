@@ -16,7 +16,7 @@ import {
 } from '../../../../core/shared/github'
 import { NO_OP } from '../../../../core/shared/utils'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexColumn,
@@ -256,7 +256,6 @@ export const GithubPane = React.memo(() => {
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
-
   const githubLastUpdatedAt = useEditorState(
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
@@ -401,73 +400,74 @@ export const GithubPane = React.memo(() => {
                 changes={githubFileChanges}
                 githubWorking={githubWorking}
               />
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <Button
+                  spotlight
+                  highlight
+                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+                  onMouseUp={triggerSaveToGithub}
+                >
+                  {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
+                </Button>
+              </UIGridRow>
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <div
+                  style={{
+                    padding: '10px 0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {when(
+                    hasUpstreamChanges,
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: 4,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <FlexRow style={{ gap: 2, color: '#f90' }}>
+                          Upstream:
+                          <FlexRow>
+                            {upstreamChangesCount} file{upstreamChangesCount !== 1 ? 's' : ''}{' '}
+                            changed
+                          </FlexRow>
+                        </FlexRow>
+                      </div>
+                      <GithubFileChangesList
+                        showHeader={false}
+                        revertable={false}
+                        conflicts={bothModified}
+                        changes={upstreamChanges}
+                        githubWorking={githubWorking}
+                      />
+                    </div>,
+                  )}
+                  {unless(hasUpstreamChanges, <span>Upstream: up-to-date.</span>)}
+                  <div style={{ color: '#aaa' }}>
+                    <TimeAgo date={githubLastUpdatedAt || 0} formatter={compactTimeagoFormatter} />
+                  </div>
+                </div>
+                <Button
+                  spotlight
+                  highlight
+                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+                  onMouseUp={triggerUpdateAgainstGithub}
+                >
+                  {isGithubUpdating(githubOperations) ? (
+                    <GithubSpinner />
+                  ) : (
+                    <>
+                      {bothModified.length > 0 && <WarningIcon />}
+                      Update Against Github
+                    </>
+                  )}
+                </Button>
+              </UIGridRow>
             </>,
           )}
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <Button
-              spotlight
-              highlight
-              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-              onMouseUp={triggerSaveToGithub}
-            >
-              {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
-            </Button>
-          </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <div
-              style={{
-                padding: '10px 0',
-                display: 'flex',
-                justifyContent: 'space-between',
-              }}
-            >
-              {hasUpstreamChanges ? (
-                <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 4,
-                      alignItems: 'center',
-                    }}
-                  >
-                    <FlexRow style={{ gap: 2, color: '#f90' }}>
-                      Upstream:
-                      <FlexRow>
-                        {upstreamChangesCount} file{upstreamChangesCount !== 1 ? 's' : ''} changed
-                      </FlexRow>
-                    </FlexRow>
-                  </div>
-                  <GithubFileChangesList
-                    showHeader={false}
-                    revertable={false}
-                    conflicts={bothModified}
-                    changes={upstreamChanges}
-                    githubWorking={githubWorking}
-                  />
-                </div>
-              ) : (
-                <span>Upstream: up-to-date.</span>
-              )}
-              <div style={{ color: '#aaa' }}>
-                <TimeAgo date={githubLastUpdatedAt || 0} formatter={compactTimeagoFormatter} />
-              </div>
-            </div>
-            <Button
-              spotlight
-              highlight
-              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-              onMouseUp={triggerUpdateAgainstGithub}
-            >
-              {isGithubUpdating(githubOperations) ? (
-                <GithubSpinner />
-              ) : (
-                <>
-                  {bothModified.length > 0 && <WarningIcon />}
-                  Update Against Github
-                </>
-              )}
-            </Button>
-          </UIGridRow>
           {loadBranchesUI}
         </SectionBodyArea>
       </Section>
