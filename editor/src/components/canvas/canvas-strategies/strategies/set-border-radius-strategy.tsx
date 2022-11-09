@@ -116,7 +116,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
       borderRadiusControl,
       controlWithProps({
         control: FloatingCSSNumberIndicator,
-        props: { value: updatedBorderRadius.value, position: position },
+        props: { value: updatedBorderRadius.value, position: position, label: 'Radius' },
         key: 'border-radius-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),

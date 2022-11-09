@@ -12,6 +12,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { BorderRadiusHandleSize } from '../../border-radius-utis'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -135,6 +136,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     borderRadius.renderedValuePx,
     elementSize,
     edgePosition,
+    scale,
   )
 
   const [hovered, setHovered] = React.useState<boolean>(false)
@@ -165,7 +167,12 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel value={borderRadius.value} scale={scale} color={color} />
+            <CSSNumberLabel
+              prefix='Radius'
+              value={borderRadius.value}
+              scale={scale}
+              color={color}
+            />
           </div>,
         )}
         {when(
@@ -175,8 +182,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             onMouseLeave={handleHoverEnd}
             style={{
               position: 'absolute',
-              width: 10,
-              height: 10,
+              width: BorderRadiusHandleSize(scale),
+              height: BorderRadiusHandleSize(scale),
               left: position.x,
               top: position.y,
               background: 'white',
@@ -221,23 +228,30 @@ function handlePosition(
   borderRadiusPx: number,
   elementSize: Size,
   edgePosition: EdgePosition,
+  scale: number,
 ): CanvasPoint {
   const offset = isDragging ? borderRadiusPx : Math.max(borderRadiusPx, 20) // TODO: keep control under cursor
+
+  const handleSize = BorderRadiusHandleSize(scale)
+
   const { x, y } = edgePosition
   if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
     return canvasPoint({ x: offset, y: offset })
   }
 
   if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return canvasPoint({ x: elementSize.width - offset, y: offset })
+    return canvasPoint({ x: elementSize.width - offset - handleSize, y: offset })
   }
 
   if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return canvasPoint({ x: offset, y: elementSize.height - offset })
+    return canvasPoint({ x: offset, y: elementSize.height - offset - handleSize })
   }
 
   if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return canvasPoint({ x: elementSize.width - offset, y: elementSize.height - offset })
+    return canvasPoint({
+      x: elementSize.width - offset - handleSize,
+      y: elementSize.height - offset - handleSize,
+    })
   }
 
   return canvasPoint({ x: 0, y: 0 })

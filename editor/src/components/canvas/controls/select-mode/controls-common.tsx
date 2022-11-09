@@ -1,5 +1,6 @@
 import React from 'react'
 import { roundTo } from '../../../../core/shared/math-utils'
+import { when } from '../../../../utils/react-conditionals'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export interface CSSNumberWithRenderedValue {
@@ -42,6 +43,7 @@ interface PaddingValueLabelProps {
   scale: number
   color: string
   value: CSSNumber
+  prefix?: string
 }
 
 export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.Element => {
@@ -55,9 +57,13 @@ export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.El
         padding: padding,
         backgroundColor: color,
         color: 'white',
+        borderRadius: 2,
       }}
     >
-      {printCSSNumber(value, null)}
+      <>
+        {when(props.prefix != null, <span>{props.prefix} </span>)}
+        {printCSSNumber(value, null)}
+      </>
     </div>
   )
 })
