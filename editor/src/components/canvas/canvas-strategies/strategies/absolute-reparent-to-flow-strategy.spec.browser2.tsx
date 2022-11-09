@@ -387,7 +387,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
   </div>`),
     )
   })
-  it('reparents to the end in column layout', async () => {
+  it('reparents to the end in row layout', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCodeWithInlineBlocks),
       'await-first-dom-report',
