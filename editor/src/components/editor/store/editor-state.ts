@@ -3050,7 +3050,7 @@ export function getElementFromProjectContents(
 }
 
 export function getCurrentTheme(userState: UserState): Theme {
-  return userState.themeConfig === null ? 'light' : userState.themeConfig
+  return userState.themeConfig
 }
 
 export function getNewSceneName(editor: EditorState): string {
