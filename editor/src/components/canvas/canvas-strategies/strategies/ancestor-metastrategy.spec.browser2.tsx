@@ -345,4 +345,21 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
       }
       expect(strategies[0].strategy.id).toEqual('FLOW_REORDER')
     }))
+
+  it('keyboard based strategy, element with no siblings', async () => {
+    const editor = await renderTestEditorWithCode(
+      codeElementWithNoSiblings,
+      'await-first-dom-report',
+    )
+    await editor.dispatch(selectComponents([pathForShallowNestedElement], false), true)
+
+    const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
+
+    expect(strategies?.length).toBeGreaterThan(1)
+    if (strategies == null) {
+      // here for type assertion
+      throw new Error('`strategies` should not be null')
+    }
+    expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+  })
 })
