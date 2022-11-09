@@ -452,7 +452,9 @@ import {
   textResult,
 } from '../../../core/shared/file-utils'
 import {
+  emptyGithubFileChanges,
   GithubBranch,
+  GithubFileChanges,
   GithubFileStatus,
   repositoryEntry,
   RepositoryEntry,
@@ -3241,11 +3243,26 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine2EqualityCalls(
+export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
+  combine3EqualityCalls(
+    (settings) => settings.modified,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (settings) => settings.untracked,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (settings) => settings.deleted,
+    arrayDeepEquality(StringKeepDeepEquality),
+    emptyGithubFileChanges,
+  )
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
   (data) => data.branches,
   arrayDeepEquality(GithubBranchKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.lastUpdatedAt,
+  NullableNumberKeepDeepEquality,
+  (data) => data.upstreamChanges,
+  nullableDeepEquality(GithubFileChangesKeepDeepEquality),
   emptyGithubData,
 )
 
