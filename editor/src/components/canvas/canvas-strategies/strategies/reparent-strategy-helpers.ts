@@ -420,7 +420,7 @@ export function getReparentTargetUnified(
     }
   }
 
-  // fall back to trying to find an absolute element, or the "background" area of a static element
+  // fall back to trying to find an absolute element, or the "background" area of a static container
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
