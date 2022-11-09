@@ -205,7 +205,22 @@ export function getOptionalDisplayPropCommandsForFlow(
   }
 }
 
-export function getOptionalCommandToConvertDisplayInline(
+export function getOptionalCommandToConvertDisplayInlineBlock(
+  target: ElementPath,
+  displayValue: string | null,
+  convertTo: 'row' | 'column' | 'do-not-convert',
+): Array<SetProperty> {
+  switch (convertTo) {
+    case 'row':
+      return getOptionalCommandToConvertDisplayInline(target, displayValue)
+    case 'column':
+      return getOptionalCommandToRemoveDisplayInline(target, displayValue)
+    default:
+      return []
+  }
+}
+
+function getOptionalCommandToConvertDisplayInline(
   target: ElementPath,
   displayValue: string | null,
 ): Array<SetProperty> {
@@ -215,6 +230,23 @@ export function getOptionalCommandToConvertDisplayInline(
     return [setProperty('always', target, StyleDisplayProp, `inline-block`)]
   } else if (displayValueKnownGood) {
     return [setProperty('always', target, StyleDisplayProp, `inline-${displayValue}`)]
+  } else {
+    return []
+  }
+}
+
+function getOptionalCommandToRemoveDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['inline-block', 'inline-flex', 'inline-grid'].some(
+    (p) => displayValue === p,
+  )
+
+  if (displayValue == null || displayValue === 'inline') {
+    return [setProperty('always', target, StyleDisplayProp, `block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, displayValue.slice('inline-'.length))]
   } else {
     return []
   }

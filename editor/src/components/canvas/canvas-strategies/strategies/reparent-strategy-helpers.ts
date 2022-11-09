@@ -59,7 +59,7 @@ import {
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import {
   areAllSiblingsInOneDimensionFlexOrFlow,
-  getOptionalCommandToConvertDisplayInline,
+  getOptionalCommandToConvertDisplayInlineBlock,
 } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -217,7 +217,7 @@ export interface ReparentTarget {
   newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
-  shouldConvertToInline: boolean
+  shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
   // TODO add shouldBeStaticReparentOrAbsolute here!! then remove 100 lines of code
 }
 
@@ -226,7 +226,7 @@ export function reparentTarget(
   newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
-  shouldConvertToInline: boolean,
+  shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
@@ -414,7 +414,8 @@ export function getReparentTargetUnified(
         shouldReorder: true,
         newParent: staticContainer.path,
         newIndex: targetUnderMouseIndex,
-        shouldConvertToInline: direction === 'row' && flexOrFlow === 'flow',
+        shouldConvertToInline:
+          flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
       }
     }
   }
@@ -434,7 +435,7 @@ export function getReparentTargetUnified(
       newParent: targetParentPath,
       shouldReorder: false,
       newIndex: -1,
-      shouldConvertToInline: false,
+      shouldConvertToInline: 'do-not-convert',
     }
   } else {
     const { direction, forwardsOrBackwards, flexOrFlow } = staticDirection
@@ -459,7 +460,8 @@ export function getReparentTargetUnified(
       newParent: targetParentPath,
       shouldReorder: targetUnderMouseIndex != null,
       newIndex: targetUnderMouseIndex ?? -1,
-      shouldConvertToInline: direction === 'row' && flexOrFlow === 'flow',
+      shouldConvertToInline:
+        flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
     }
   }
 }
@@ -975,11 +977,13 @@ export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  convertToInline: boolean,
+  convertToInline: 'row' | 'column' | 'do-not-convert',
 ): Array<CanvasCommand> {
-  const optionalInlineConversionCommand = convertToInline
-    ? getOptionalCommandToConvertDisplayInline(newPath, targetOriginalDisplayProp)
-    : []
+  const optionalInlineConversionCommand = getOptionalCommandToConvertDisplayInlineBlock(
+    newPath,
+    targetOriginalDisplayProp,
+    convertToInline,
+  )
 
   if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
     return [
@@ -1019,15 +1023,19 @@ export function getReparentPropertyChanges(
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       const directions = staticContainerDirections(newParent, newParentStartingMetadata)
-      const convertToInline =
-        directions !== 'non-1d-static'
-          ? directions.direction === 'row' && directions.flexOrFlow === 'flow'
-          : false
+
+      const convertDisplayInline =
+        directions === 'non-1d-static' ||
+        directions.direction == null ||
+        directions.flexOrFlow === 'flex'
+          ? 'do-not-convert'
+          : directions.direction
+
       return getStaticReparentPropertyChanges(
         newPath,
         targetOriginalStylePosition,
         targetOriginalDisplayProp,
-        convertToInline,
+        convertDisplayInline,
       )
   }
 }
