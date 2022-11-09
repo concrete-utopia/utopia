@@ -4,12 +4,7 @@ import {
   framePointForPinnedProp,
   LayoutPinnedProp,
 } from '../../../../core/layout/layout-helpers-new'
-import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../../../../core/layout/layout-utils'
+import { FlexForwardsOrBackwards, SimpleFlexDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
@@ -33,7 +28,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
