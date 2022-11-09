@@ -100,8 +100,9 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return 'non-1d-static'
   }
 
-  if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
-    const flexDirection = MetadataUtils.getSimpleFlexDirection(targetElement)
+  if (MetadataUtils.isParentFlexLayoutedContainerForElement(targetElement)) {
+    const parentElement = MetadataUtils.getParent(metadata, target)
+    const flexDirection = MetadataUtils.getSimpleFlexDirection(parentElement)
     const targetDirection = flexDirection.direction === 'row' ? 'horizontal' : 'vertical' // TODO unify row and horizontal types
 
     const shouldReverse = flexDirection.forwardsOrBackwards === 'reverse'

@@ -263,11 +263,11 @@ export const MetadataUtils = {
       return false
     }
     return (
-      MetadataUtils.isParentYogaLayoutedContainerForElement(element) &&
+      MetadataUtils.isParentFlexLayoutedContainerForElement(element) &&
       !MetadataUtils.isPositionAbsolute(element)
     )
   },
-  isParentYogaLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
+  isParentFlexLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
     return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
