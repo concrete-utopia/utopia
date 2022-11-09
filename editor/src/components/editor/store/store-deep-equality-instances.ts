@@ -3125,15 +3125,15 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
       break
     case 'file-revert-all':
       if (newValue.type === oldValue.type) {
-        return keepDeepEqualityResult(newValue, true)
+        return keepDeepEqualityResult(oldValue, true)
       } else {
-        return keepDeepEqualityResult(oldValue, false)
+        return keepDeepEqualityResult(newValue, false)
       }
     case 'disconnect-github-project':
       if (newValue.type === oldValue.type) {
-        return keepDeepEqualityResult(newValue, true)
+        return keepDeepEqualityResult(oldValue, true)
       } else {
-        return keepDeepEqualityResult(oldValue, false)
+        return keepDeepEqualityResult(newValue, false)
       }
       break
     default:
