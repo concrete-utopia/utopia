@@ -55,8 +55,8 @@ const defaultTestCode = `
         top: 0,
         backgroundColor: 'blue',
       }}
-      data-uid='flexparent1'
-      data-testid='flexparent1'
+      data-uid='flowparent1'
+      data-testid='flowparent1'
     >
       <div
         style={{
@@ -64,8 +64,8 @@ const defaultTestCode = `
           height: 100,
           backgroundColor: 'purple',
         }}
-        data-uid='flexchild1'
-        data-testid='flexchild1'
+        data-uid='flowchild1'
+        data-testid='flowchild1'
       />
       <div
         style={{
@@ -73,8 +73,8 @@ const defaultTestCode = `
           height: 100,
           backgroundColor: 'pink',
         }}
-        data-uid='flexchild2'
-        data-testid='flexchild2'
+        data-uid='flowchild2'
+        data-testid='flowchild2'
       />
     </div>
     <div
@@ -132,8 +132,8 @@ const defaultTestCodeWithInlineBlocks = `
         top: 0,
         backgroundColor: 'blue',
       }}
-      data-uid='flexparent1'
-      data-testid='flexparent1'
+      data-uid='flowparent1'
+      data-testid='flowparent1'
     >
       <div
         style={{
@@ -142,8 +142,8 @@ const defaultTestCodeWithInlineBlocks = `
           backgroundColor: 'purple',
           display: 'inline-block',
         }}
-        data-uid='flexchild1'
-        data-testid='flexchild1'
+        data-uid='flowchild1'
+        data-testid='flowchild1'
       />
       <div
         style={{
@@ -152,8 +152,8 @@ const defaultTestCodeWithInlineBlocks = `
           backgroundColor: 'pink',
           display: 'inline-block',
         }}
-        data-uid='flexchild2'
-        data-testid='flexchild2'
+        data-uid='flowchild2'
+        data-testid='flowchild2'
       />
     </div>
     <div
@@ -235,7 +235,7 @@ describe('Flex Reparent To Flow Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
+    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flowparent1')
     const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
     const targetFlexParentEnd = {
       x: targetFlexParentRect.x + targetFlexParentRect.width / 2,
@@ -278,8 +278,8 @@ describe('Flex Reparent To Flow Strategy', () => {
           top: 0,
           backgroundColor: 'blue',
         }}
-        data-uid='flexparent1'
-        data-testid='flexparent1'
+        data-uid='flowparent1'
+        data-testid='flowparent1'
       >
         <div
           style={{
@@ -287,8 +287,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             height: 100,
             backgroundColor: 'purple',
           }}
-          data-uid='flexchild1'
-          data-testid='flexchild1'
+          data-uid='flowchild1'
+          data-testid='flowchild1'
         />
         <div
           style={{
@@ -296,8 +296,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             height: 100,
             backgroundColor: 'pink',
           }}
-          data-uid='flexchild2'
-          data-testid='flexchild2'
+          data-uid='flowchild2'
+          data-testid='flowchild2'
         />
         <div
           style={{
@@ -344,7 +344,7 @@ describe('Flex Reparent To Flow Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
+    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flowparent1')
     const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
     const targetFlexParentEnd = {
       x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
@@ -387,8 +387,8 @@ describe('Flex Reparent To Flow Strategy', () => {
           top: 0,
           backgroundColor: 'blue',
         }}
-        data-uid='flexparent1'
-        data-testid='flexparent1'
+        data-uid='flowparent1'
+        data-testid='flowparent1'
       >
         <div
           style={{
@@ -397,8 +397,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             backgroundColor: 'purple',
             display: 'inline-block',
           }}
-          data-uid='flexchild1'
-          data-testid='flexchild1'
+          data-uid='flowchild1'
+          data-testid='flowchild1'
         />
         <div
           style={{
@@ -407,8 +407,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             backgroundColor: 'pink',
             display: 'inline-block',
           }}
-          data-uid='flexchild2'
-          data-testid='flexchild2'
+          data-uid='flowchild2'
+          data-testid='flowchild2'
         />
         <div
           style={{
@@ -457,7 +457,7 @@ describe('Flex Reparent To Flow Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+    const targetFlexChild = await renderResult.renderedDOM.findByTestId('flowchild1')
     const targetFlexChildRect = targetFlexChild.getBoundingClientRect()
     const targetFlexChildCenter = {
       x: targetFlexChildRect.x + 10,
@@ -500,8 +500,8 @@ describe('Flex Reparent To Flow Strategy', () => {
           top: 0,
           backgroundColor: 'blue',
         }}
-        data-uid='flexparent1'
-        data-testid='flexparent1'
+        data-uid='flowparent1'
+        data-testid='flowparent1'
       >
         <div
           style={{
@@ -520,8 +520,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             backgroundColor: 'purple',
             display: 'inline-block',
           }}
-          data-uid='flexchild1'
-          data-testid='flexchild1'
+          data-uid='flowchild1'
+          data-testid='flowchild1'
         />
         <div
           style={{
@@ -530,8 +530,8 @@ describe('Flex Reparent To Flow Strategy', () => {
             backgroundColor: 'pink',
             display: 'inline-block',
           }}
-          data-uid='flexchild2'
-          data-testid='flexchild2'
+          data-uid='flowchild2'
+          data-testid='flowchild2'
         />
       </div>
       <div
