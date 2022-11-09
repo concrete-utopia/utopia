@@ -8,12 +8,6 @@ export interface UtopiColor {
   value: string
 
   /**
-   * The color palette shade of the base color.
-   * @param value 0 is white, 200 is black, 100 is identity
-   */
-  shade: (value: number) => UtopiColor
-
-  /**
    * Opacity or Alpha. Value goes from 0 to 100
    */
   o: (value: number) => UtopiColor
@@ -43,7 +37,6 @@ export function createUtopiColor(baseColor: string): UtopiColor {
 
     const value = {
       value: hexWithAlpha,
-      shade: shade,
       o: opacity,
     }
     utopiColorCache[key] = value
