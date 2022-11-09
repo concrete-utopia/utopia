@@ -113,6 +113,85 @@ const defaultTestCode = `
   </div>
 `
 
+const defaultTestCodeWithInlineBlocks = `
+  <div
+    style={{
+      position: 'absolute',
+      width: 700,
+      height: 600,
+    }}
+    data-uid='container'
+    data-testid='container'
+  >
+    <div
+      style={{
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 0,
+        top: 0,
+        backgroundColor: 'blue',
+      }}
+      data-uid='flexparent1'
+      data-testid='flexparent1'
+    >
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'purple',
+          display: 'inline-block',
+        }}
+        data-uid='flexchild1'
+        data-testid='flexchild1'
+      />
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'pink',
+          display: 'inline-block',
+        }}
+        data-uid='flexchild2'
+        data-testid='flexchild2'
+      />
+    </div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        position: 'absolute',
+        width: 250,
+        height: 500,
+        left: 350,
+        top: 0,
+        backgroundColor: 'lightgreen',
+      }}
+      data-uid='flexparent2'
+      data-testid='flexparent2'
+    >
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'teal',
+        }}
+        data-uid='flexchild3'
+        data-testid='flexchild3'
+      />
+      <div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: 'red',
+        }}
+        data-uid='flexchild4'
+        data-testid='flexchild4'
+      />
+    </div>
+  </div>
+`
+
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
@@ -259,10 +338,122 @@ describe('Flex Reparent To Flow Strategy', () => {
     )
   })
 
-  // TODO: enable when insertion to zero position is fixed
-  xit('reparents flex as first child when moving the mouse to the top edge of the first child', async () => {
+  it('reparents flex element to flow parent in row layout', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(defaultTestCodeWithInlineBlocks),
+      'await-first-dom-report',
+    )
+
+    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
+    const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
+    const targetFlexParentEnd = {
+      x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
+      y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
+    }
+    const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
+    const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
+    const flexChildToReparentCenter = {
+      x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
+      y: flexChildToReparentRect.y + flexChildToReparentRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const dragDelta = windowPoint({
+      x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
+      y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
+    })
+
+    dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        position: 'absolute',
+        width: 700,
+        height: 600,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 0,
+          top: 0,
+          backgroundColor: 'blue',
+        }}
+        data-uid='flexparent1'
+        data-testid='flexparent1'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'purple',
+            display: 'inline-block',
+          }}
+          data-uid='flexchild1'
+          data-testid='flexchild1'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'pink',
+            display: 'inline-block',
+          }}
+          data-uid='flexchild2'
+          data-testid='flexchild2'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'teal',
+            display: 'inline-block',
+          }}
+          data-uid='flexchild3'
+          data-testid='flexchild3'
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 350,
+          top: 0,
+          backgroundColor: 'lightgreen',
+        }}
+        data-uid='flexparent2'
+        data-testid='flexparent2'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'red',
+          }}
+          data-uid='flexchild4'
+          data-testid='flexchild4'
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
+
+  // TODO: enable when insertion to zero position is fixed
+  it('reparents flex as first child when moving the mouse to the top edge of the first child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(defaultTestCodeWithInlineBlocks),
       'await-first-dom-report',
     )
 
@@ -281,8 +472,8 @@ describe('Flex Reparent To Flow Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const dragDelta = windowPoint({
-      x: targetFlexChildCenter.x - flexChildToReparentCenter.x,
-      y: targetFlexChildCenter.y - flexChildToReparentCenter.y - 5,
+      x: targetFlexChildCenter.x - flexChildToReparentCenter.x - 5,
+      y: targetFlexChildCenter.y - flexChildToReparentCenter.y,
     })
 
     dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
@@ -317,6 +508,7 @@ describe('Flex Reparent To Flow Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'teal',
+            display: 'inline-block',
           }}
           data-uid='flexchild3'
           data-testid='flexchild3'
@@ -326,6 +518,7 @@ describe('Flex Reparent To Flow Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'purple',
+            display: 'inline-block',
           }}
           data-uid='flexchild1'
           data-testid='flexchild1'
@@ -335,6 +528,7 @@ describe('Flex Reparent To Flow Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'pink',
+            display: 'inline-block',
           }}
           data-uid='flexchild2'
           data-testid='flexchild2'
