@@ -86,13 +86,13 @@ function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): 
   switch (targetLayout) {
     case 'flex':
       return {
-        id: `REPARENT_TO_FLEX`,
-        name: `Reparent (Flex)`,
+        id: 'REPARENT_TO_FLEX',
+        name: 'Reparent (Flex)',
       }
     case 'flow':
       return {
-        id: `REPARENT_TO_FLOW`,
-        name: `Reparent (Flow)`,
+        id: 'REPARENT_TO_FLOW',
+        name: 'Reparent (Flow)',
       }
     default:
       assertNever(targetLayout)
