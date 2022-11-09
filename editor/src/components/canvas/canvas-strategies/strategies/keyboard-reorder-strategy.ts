@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { CanvasVector, mod, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { CanvasVector, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
 import { KeyCharacter } from '../../../../utils/keyboard'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -68,40 +67,33 @@ export function keyboardReorderStrategy(
         })
 
         const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-        const lastReorderIdx = customStrategyState.lastReorderIdx ?? unpatchedIndex
-
-        let newIndex = -1
+        let newIndex = unpatchedIndex
         if (direction === 'horizontal') {
           // left and right arrow keys
-          newIndex = mod(
-            unpatchedIndex + keyboardResult.x * (shouldReverse ? -1 : 1),
-            siblings.length,
-          )
+          const result = unpatchedIndex + keyboardResult.x * (shouldReverse ? -1 : 1)
+          newIndex = Math.min(Math.max(0, result), siblings.length - 1)
         } else {
           // up and down arrow keys
-          newIndex = mod(
-            unpatchedIndex + keyboardResult.y * (shouldReverse ? -1 : 1),
-            siblings.length,
-          )
+          const result = unpatchedIndex + keyboardResult.y * (shouldReverse ? -1 : 1)
+          newIndex = Math.min(Math.max(0, result), siblings.length - 1)
         }
 
-        const newResultOrLastIndex = newIndex > -1 ? newIndex : lastReorderIdx
-        if (newResultOrLastIndex === unpatchedIndex) {
+        if (newIndex === unpatchedIndex) {
           return strategyApplicationResult(
             [updateHighlightedViews('mid-interaction', []), setElementsToRerenderCommand(siblings)],
             {
-              lastReorderIdx: newResultOrLastIndex,
+              lastReorderIdx: newIndex,
             },
           )
         } else {
           return strategyApplicationResult(
             [
-              reorderElement('always', target, absolute(newResultOrLastIndex)),
+              reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblings),
               updateHighlightedViews('mid-interaction', []),
             ],
             {
-              lastReorderIdx: newResultOrLastIndex,
+              lastReorderIdx: newIndex,
             },
           )
         }
