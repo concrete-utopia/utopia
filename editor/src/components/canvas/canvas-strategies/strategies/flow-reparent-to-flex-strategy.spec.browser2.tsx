@@ -36,83 +36,6 @@ function dragElement(
   })
 }
 
-const defaultTestCode = `
-  <div
-    style={{
-      position: 'absolute',
-      width: 700,
-      height: 600,
-    }}
-    data-uid='container'
-    data-testid='container'
-  >
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 0,
-        top: 0,
-        backgroundColor: 'blue',
-      }}
-      data-uid='flexparent1'
-      data-testid='flexparent1'
-    >
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'purple',
-        }}
-        data-uid='flexchild1'
-        data-testid='flexchild1'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'pink',
-        }}
-        data-uid='flexchild2'
-        data-testid='flexchild2'
-      />
-    </div>
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 350,
-        top: 0,
-        backgroundColor: 'lightgreen',
-      }}
-      data-uid='flowparent2'
-      data-testid='flowparent2'
-    >
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'teal',
-        }}
-        data-uid='flowchild3'
-        data-testid='flowchild3'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'red',
-        }}
-        data-uid='flowchild4'
-        data-testid='flowchild4'
-      />
-    </div>
-  </div>
-`
-
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
@@ -152,7 +75,82 @@ ${snippet}
 describe('Flow Reparent To Flex Strategy', () => {
   it('reparents flow element to flex parent', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            position: 'absolute',
+            width: 700,
+            height: 600,
+          }}
+          data-uid='container'
+          data-testid='container'
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 0,
+              top: 0,
+              backgroundColor: 'blue',
+            }}
+            data-uid='flexparent1'
+            data-testid='flexparent1'
+          >
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'purple',
+              }}
+              data-uid='flexchild1'
+              data-testid='flexchild1'
+            />
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'pink',
+              }}
+              data-uid='flexchild2'
+              data-testid='flexchild2'
+            />
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 350,
+              top: 0,
+              backgroundColor: 'lightgreen',
+            }}
+            data-uid='flowparent2'
+            data-testid='flowparent2'
+          >
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'teal',
+              }}
+              data-uid='flowchild3'
+              data-testid='flowchild3'
+            />
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'red',
+              }}
+              data-uid='flowchild4'
+              data-testid='flowchild4'
+            />
+          </div>
+        </div>
+      `),
       'await-first-dom-report',
     )
 

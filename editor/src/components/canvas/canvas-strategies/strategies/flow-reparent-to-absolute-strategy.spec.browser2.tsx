@@ -37,75 +37,6 @@ function dragElement(
   })
 }
 
-const defaultTestCode = `
-  <div
-    style={{
-      position: 'absolute',
-      width: 700,
-      height: 600,
-    }}
-    data-uid='container'
-    data-testid='container'
-  >
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 0,
-        top: 0,
-        backgroundColor: 'lightblue',
-      }}
-      data-uid='absoluteparent'
-      data-testid='absoluteparent'
-    >
-      <div
-        style={{
-          position: 'absolute',
-          left: 93.5,
-          top: 58,
-          width: 100,
-          height: 100,
-          backgroundColor: 'yellow',
-        }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
-      />
-    </div>
-    <div
-      style={{
-        position: 'absolute',
-        width: 250,
-        height: 500,
-        left: 350,
-        top: 0,
-        backgroundColor: 'lightgreen',
-      }}
-      data-uid='flowparent'
-      data-testid='flowparent'
-    >
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'teal',
-        }}
-        data-uid='flowchild1'
-        data-testid='flowchild1'
-      />
-      <div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: 'red',
-        }}
-        data-uid='flowchild2'
-        data-testid='flowchild2'
-      />
-    </div>
-  </div>
-`
-
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
@@ -145,7 +76,74 @@ ${snippet}
 describe('Flow Reparent To Absolute Strategy', () => {
   it('reparents flow element to absolute parent', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(defaultTestCode),
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            position: 'absolute',
+            width: 700,
+            height: 600,
+          }}
+          data-uid='container'
+          data-testid='container'
+        >
+          <div
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 0,
+              top: 0,
+              backgroundColor: 'lightblue',
+            }}
+            data-uid='absoluteparent'
+            data-testid='absoluteparent'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                left: 93.5,
+                top: 58,
+                width: 100,
+                height: 100,
+                backgroundColor: 'yellow',
+              }}
+              data-uid='absolutechild'
+              data-testid='absolutechild'
+            />
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 350,
+              top: 0,
+              backgroundColor: 'lightgreen',
+            }}
+            data-uid='flowparent'
+            data-testid='flowparent'
+          >
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'teal',
+              }}
+              data-uid='flowchild1'
+              data-testid='flowchild1'
+            />
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'red',
+              }}
+              data-uid='flowchild2'
+              data-testid='flowchild2'
+            />
+          </div>
+        </div>
+      `),
       'await-first-dom-report',
     )
 
