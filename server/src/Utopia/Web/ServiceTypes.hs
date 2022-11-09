@@ -222,14 +222,14 @@ instance ToJSON UserResponse where
 
 data UserConfigurationResponse = UserConfigurationResponse
                                { _shortcutConfig :: Maybe Value,
-                                _theme :: Maybe Value
+                                _themeConfig :: Maybe Value
                                } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationResponse)
 
 data UserConfigurationRequest = UserConfigurationRequest
                               { _shortcutConfig :: Maybe Value,
-                                _theme :: Maybe Value
+                                _themeConfig :: Maybe Value
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)

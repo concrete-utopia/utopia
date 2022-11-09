@@ -235,13 +235,13 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
-  themeConfig: Theme | null
+  themeConfig: Theme
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
   return {
     shortcutConfig: null,
-    themeConfig: null,
+    themeConfig: 'light',
   }
 }
 
@@ -1206,7 +1206,6 @@ export function editorState(
   vscodeReady: boolean,
   focusedElementPath: ElementPath | null,
   config: UtopiaVSCodeConfig,
-  theme: Theme,
   vscodeLoadingScreenVisible: boolean,
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,

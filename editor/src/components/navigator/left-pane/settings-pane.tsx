@@ -36,26 +36,26 @@ const themeOptions = [
   },
 ]
 
+const defaultTheme = themeOptions[1]
+
 export const SettingsPane = React.memo(() => {
-  const { dispatch, userState, projectId, projectName, projectDescription } = useEditorState(
-    (store) => {
+  const { dispatch, userState, projectId, projectName, projectDescription, themeConfig } =
+    useEditorState((store) => {
       return {
         dispatch: store.dispatch,
         userState: store.userState,
         projectId: store.editor.id,
         projectName: store.editor.projectName,
         projectDescription: store.editor.projectDescription,
+        themeConfig: store.userState.themeConfig,
       }
-    },
-    'SettingsPane',
-  )
+    }, 'SettingsPane')
 
   const isMyProject = useIsMyProject(projectId)
 
-  const [theme, setTheme] = React.useState<SelectOption>({
-    label: 'Light',
-    value: 'light',
-  })
+  const [theme, setTheme] = React.useState<SelectOption>(
+    themeOptions.find((option) => option.value === themeConfig) || defaultTheme,
+  )
 
   const handleSubmitValueTheme = React.useCallback(
     (option: SelectOption) => {
