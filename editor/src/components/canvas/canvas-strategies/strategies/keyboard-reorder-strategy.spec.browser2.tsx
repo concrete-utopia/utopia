@@ -1,8 +1,4 @@
-import {
-  getPrintedUiJsCode,
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-} from '../../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { pressKey } from '../../event-helpers.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { KeyboardInteractionTimeout } from '../interaction-state'
@@ -58,6 +54,51 @@ const TestProject = (
 </div>
 `
 
+const TestProjectMixedInlineFlow = `
+<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#CA1E4C80',
+      display: 'block',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#297374',
+      display: 'inline-block',
+    }}
+    data-uid='bbb'
+    data-testid='bbb'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#292E74',
+      display: 'inline-block',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#FF00B3AB',
+      display: 'block',
+    }}
+    data-uid='ddd'
+    data-testid='ddd'
+  />
+</div>
+`
+
 function configureClock() {
   let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
@@ -72,20 +113,6 @@ function configureClock() {
     clock.current?.restore()
   })
   return { clock: clock }
-}
-
-async function pressKeyExpectNoChange(
-  clock: { current: SinonFakeTimers },
-  renderResult: any,
-  direction: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown',
-  snippet: string,
-) {
-  pressKey(direction)
-  clock.current.tick(KeyboardInteractionTimeout)
-  await renderResult.getDispatchFollowUpActionsFinished()
-  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-    makeTestProjectCodeWithSnippet(snippet),
-  )
 }
 
 async function pressKeysRepeat(
@@ -120,10 +147,6 @@ describe('Keyboard Reorder Strategy', () => {
       ],
       true,
     )
-
-    // pressing keyboard left and right does not change elements
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowRight', TestProjectFlow)
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowLeft', TestProjectFlow)
 
     // pressing keyboard up and down reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
@@ -174,10 +197,6 @@ describe('Keyboard Reorder Strategy', () => {
       true,
     )
 
-    // pressing keyboard up and down does not change elements
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowDown', TestProjectFlexRow)
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowUp', TestProjectFlexRow)
-
     // pressing keyboard left and right reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 3)
 
@@ -226,9 +245,6 @@ describe('Keyboard Reorder Strategy', () => {
       true,
     )
 
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowRight', TestProjectFlexColumnReverse)
-    await pressKeyExpectNoChange(clock, renderResult, 'ArrowLeft', TestProjectFlexColumnReverse)
-
     // pressing keyboard up and down reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
 
@@ -258,6 +274,54 @@ describe('Keyboard Reorder Strategy', () => {
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
       expectedNavigatorTargetsAfterArrowDown,
+    )
+  })
+
+  it('pressing the arrow keys reorders in a 2d flow layout', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectMixedInlineFlow),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    // pressing keyboard up and down reorders elements
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
     )
   })
 })

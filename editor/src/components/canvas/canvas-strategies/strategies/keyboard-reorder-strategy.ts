@@ -1,6 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { CanvasVector, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
 import { KeyCharacter } from '../../../../utils/keyboard'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -15,6 +14,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { getOptionalDisplayPropCommandsForFlow } from './flow-reorder-helpers'
 import { getDirectionFlexOrFlow, isReorderAllowed } from './reorder-utils'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
@@ -58,25 +58,17 @@ export function keyboardReorderStrategy(
     apply: () => {
       if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
         const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-        let keyboardResult: CanvasVector = zeroCanvasPoint
+        let keyboardResult: number = 0
         accumulatedPresses.forEach((accumulatedPress) => {
           accumulatedPress.keysPressed.forEach((key) => {
             const keyPressIndexChange = getIndexChangeDeltaFromKey(key, accumulatedPress.count)
-            keyboardResult = offsetPoint(keyboardResult, keyPressIndexChange)
+            keyboardResult = keyboardResult + keyPressIndexChange
           })
         })
 
         const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-        let newIndex = unpatchedIndex
-        if (direction === 'horizontal') {
-          // left and right arrow keys
-          const result = unpatchedIndex + keyboardResult.x * (shouldReverse ? -1 : 1)
-          newIndex = Math.min(Math.max(0, result), siblings.length - 1)
-        } else {
-          // up and down arrow keys
-          const result = unpatchedIndex + keyboardResult.y * (shouldReverse ? -1 : 1)
-          newIndex = Math.min(Math.max(0, result), siblings.length - 1)
-        }
+        const result = unpatchedIndex + keyboardResult * (shouldReverse ? -1 : 1)
+        const newIndex = Math.min(Math.max(0, result), siblings.length - 1)
 
         if (newIndex === unpatchedIndex) {
           return strategyApplicationResult(
@@ -91,6 +83,11 @@ export function keyboardReorderStrategy(
               reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblings),
               updateHighlightedViews('mid-interaction', []),
+              ...getOptionalDisplayPropCommandsForFlow(
+                newIndex,
+                canvasState.interactionTarget,
+                canvasState.startingMetadata,
+              ),
             ],
             {
               lastReorderIdx: newIndex,
@@ -104,32 +101,15 @@ export function keyboardReorderStrategy(
   }
 }
 
-function getIndexChangeDeltaFromKey(key: KeyCharacter, delta: number): CanvasVector {
+function getIndexChangeDeltaFromKey(key: KeyCharacter, delta: number): number {
   switch (key) {
     case 'left':
-      return {
-        x: -delta,
-        y: 0,
-      } as CanvasVector
-    case 'right':
-      return {
-        x: delta,
-        y: 0,
-      } as CanvasVector
     case 'up':
-      return {
-        x: 0,
-        y: -delta,
-      } as CanvasVector
+      return -delta
+    case 'right':
     case 'down':
-      return {
-        x: 0,
-        y: delta,
-      } as CanvasVector
+      return delta
     default:
-      return {
-        x: 0,
-        y: 0,
-      } as CanvasVector
+      return 0
   }
 }
