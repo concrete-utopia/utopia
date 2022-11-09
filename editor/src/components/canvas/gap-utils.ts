@@ -158,15 +158,15 @@ export function maybeFlexGapFromElement(
   }
 
   const flexGap = children[0].specialSizeMeasurements.parentFlexGap
-  if (flexGap === 0) {
+
+  const gapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('gap', right(element.element.value.props), ['style']),
+  )
+
+  if (gapFromProps == null) {
     return null
   }
-
-  const gapFromProps: CSSNumber | undefined =
-    defaultEither(
-      undefined,
-      getLayoutProperty('gap', right(element.element.value.props), ['style']),
-    ) ?? cssNumber(flexGap, null)
 
   const flexDirection =
     optionalMap(
