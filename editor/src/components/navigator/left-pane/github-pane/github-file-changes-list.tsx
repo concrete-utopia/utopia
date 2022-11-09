@@ -15,6 +15,7 @@ import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { when } from '../../../../utils/react-conditionals'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -128,20 +129,25 @@ export const GithubFileChangesList: React.FC<{
               cursor: conflicting ? 'help' : 'default',
             }}
           >
-            <UIGridRow padded variant='|--16px--|<--------auto-------->'>
-              <GithubFileStatusLetter status={i.status} />
-              <FlexRow style={{ gap: 2 }}>
-                <Ellipsis>{i.filename}</Ellipsis>
-                {conflicting && <WarningIcon color='error' />}
-              </FlexRow>
-            </UIGridRow>
-            {revertable && (
-              <RevertButton
-                disabled={githubWorking}
-                text='Revert'
-                onMouseUp={handleClickRevertFile(i)}
-              />
-            )}
+            <>
+              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+                <GithubFileStatusLetter status={i.status} />
+                <FlexRow style={{ gap: 2 }}>
+                  <>
+                    <Ellipsis>{i.filename}</Ellipsis>
+                    {when(conflicting, <WarningIcon color='error' />)}
+                  </>
+                </FlexRow>
+              </UIGridRow>
+              {when(
+                revertable,
+                <RevertButton
+                  disabled={githubWorking}
+                  text='Revert'
+                  onMouseUp={handleClickRevertFile(i)}
+                />,
+              )}
+            </>
           </UIGridRow>
         )
       })}
@@ -157,12 +163,15 @@ const Header: React.FC<{
 }> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
   return (
     <UIGridRow padded variant='<----------1fr---------><-auto->'>
-      <div>
-        {count} file{count !== 1 ? 's' : ''} changed
-      </div>
-      {revertable && (
-        <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />
-      )}
+      <>
+        <div>
+          {count} file{count !== 1 ? 's' : ''} changed
+        </div>
+        {when(
+          revertable,
+          <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
+        )}
+      </>
     </UIGridRow>
   )
 }
