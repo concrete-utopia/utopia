@@ -48,7 +48,7 @@ export function keyboardReorderStrategy(
     return null
   }
 
-  const { direction, shouldReverse } = getDirectionFlexOrFlow(target, canvasState.startingMetadata)
+  const { shouldReverse } = getDirectionFlexOrFlow(target, canvasState.startingMetadata)
 
   return {
     id: 'KEYBOARD_REORDER',
