@@ -45,11 +45,10 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   const { selectedElement, borderRadius, elementSize } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const { dispatch, scale, metadata, isDragging } = useEditorState(
+  const { dispatch, scale, isDragging } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
-      metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
       isDragging:
         store.editor.canvas.interactionSession?.activeControl.type ===
         'BORDER_RADIUS_RESIZE_HANDLE',
