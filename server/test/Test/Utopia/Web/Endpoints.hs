@@ -239,16 +239,15 @@ saveUserConfigurationSpec enableExternalTests = databaseAround enableExternalTes
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         getUserConfigurationClient cookieHeader
-      userConfig `shouldBe` (Right $ UserConfigurationResponse Nothing Nothing)
+      (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse Nothing)
     it "should return the previously set config" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let shortcutConf = Just $ object ["ctrl+m" .= ("do something" :: Text), "ctrl+n" .= ("do something else" :: Text)]
-      let themeConf = Just $ toJSON ("light" :: Text)
       userConfig <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
-        _ <- saveUserConfigurationClient cookieHeader (UserConfigurationRequest shortcutConf themeConf)
+        _ <- saveUserConfigurationClient cookieHeader (UserConfigurationRequest shortcutConf)
         getUserConfigurationClient cookieHeader
-      userConfig `shouldBe` (Right $ UserConfigurationResponse shortcutConf themeConf)
+      (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse shortcutConf)
 
 projectsSpec :: Bool -> Spec
 projectsSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
