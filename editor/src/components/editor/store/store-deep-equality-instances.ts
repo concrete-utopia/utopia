@@ -322,8 +322,6 @@ import {
   GithubData,
   emptyGithubData,
   projectGithubSettings,
-  DisconnectGithubProjectModal,
-  disconnectGithubProjectModal,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -439,10 +437,6 @@ import {
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import {
-  reparentTarget,
-  ReparentTarget,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import { assertNever } from '../../../core/shared/utils'
 import {
   assetResult,
@@ -3107,13 +3101,6 @@ export const FileRevertModalKeepDeepEquality: KeepDeepEqualityCall<FileRevertMod
     (modal) => modal.status,
     nullableDeepEquality(GithubFileStatusKeepDeepEquality),
     fileRevertModal,
-  )
-
-export const DisconnectGithubProjectModalKeepDeepEquality: KeepDeepEqualityCall<DisconnectGithubProjectModal> =
-  combine1EqualityCall(
-    (modal) => modal.branchName,
-    StringKeepDeepEquality,
-    disconnectGithubProjectModal,
   )
 
 export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
