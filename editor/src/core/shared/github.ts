@@ -756,6 +756,93 @@ export function projectContentsTreeContentOrTypeChange(
   }
 }
 
+export function checkForTreeConflicts(
+  fullPath: string,
+  currentContents: ProjectContentsTree | null,
+  originContents: ProjectContentsTree | null,
+  branchContents: ProjectContentsTree | null,
+): WithTreeConflicts<ProjectContentsTree | null> {
+  // Check what changes have been made against the origin and potentially between Utopia and the branch.
+  const currentContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
+    originContents,
+    currentContents,
+  )
+  const branchContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
+    originContents,
+    branchContents,
+  )
+  const branchContentsToCurrentChanged = projectContentsTreeContentOrTypeChange(
+    currentContents,
+    branchContents,
+  )
+
+  if (currentContentsToOriginChanged && !branchContentsToOriginChanged) {
+    // Utopia has changed from the origin, but the branch has not.
+    return withTreeConflicts(currentContents, {})
+  } else if (!currentContentsToOriginChanged && branchContentsToOriginChanged) {
+    // The branch has changed from the origin, but Utopia has not.
+    return withTreeConflicts(branchContents, {})
+    // Neither Utopia nor the branch have changed from the origin.
+  } else if (!currentContentsToOriginChanged && !branchContentsToOriginChanged) {
+    return withTreeConflicts(originContents, {})
+  } else if (
+    currentContentsToOriginChanged &&
+    branchContentsToOriginChanged &&
+    !branchContentsToCurrentChanged
+  ) {
+    // Utopia has changed from the origin, the branch has changed from the origin but Utopia and the branch are compatible values.
+    return withTreeConflicts(currentContents, {})
+  } else if (
+    currentContentsToOriginChanged &&
+    branchContentsToOriginChanged &&
+    branchContentsToCurrentChanged
+  ) {
+    // Utopia has changed from the origin, the branch has changed from the origin and Utopia and the branch are incompatible.
+    if (currentContents == null) {
+      if (originContents == null) {
+        // Origin and Utopia project lack an entry, so go with whatever the branch contains.
+        return withTreeConflicts(branchContents, {})
+      } else {
+        if (branchContents == null) {
+          // Both Utopia and the branch have deleted this.
+          return withTreeConflicts(branchContents, {})
+        } else {
+          // Utopia deleted this, but it changed in the branch.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: currentDeletedBranchChanged(originContents, branchContents),
+          })
+        }
+      }
+    } else {
+      if (originContents == null) {
+        if (branchContents == null) {
+          // Created in Utopia, didn't exist before.
+          return withTreeConflicts(currentContents, {})
+        } else {
+          // Didn't exist previously, created in both the branch and Utopia.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
+          })
+        }
+      } else {
+        if (branchContents == null) {
+          // Deleted on the branch, but changed in Utopia.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: currentChangedBranchDeleted(currentContents, originContents),
+          })
+        } else {
+          // Existed previously, but changed incompatibly in both Utopia and the branch.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
+          })
+        }
+      }
+    }
+  } else {
+    throw new Error(`Unhandled case reached.`)
+  }
+}
+
 /*
  * Indication of the change flow that is expected:
  *       /-->current
@@ -779,7 +866,7 @@ export function mergeProjectContentsTree(
     isProjectContentFile(branchContents) &&
     isTextFile(branchContents.content)
   ) {
-    // At this path it was and in Utopia and in the branch is a text file.
+    // At this location in all 3 places there is a text file.
     const currentCode = currentContents.content.fileContents.code
     const originCode = originContents.content.fileContents.code
     const branchCode = branchContents.content.fileContents.code
@@ -818,85 +905,7 @@ export function mergeProjectContentsTree(
       mergedResult.treeConflicts,
     )
   } else {
-    // Check what changes have been made against the origin and potentially between Utopia and the branch.
-    const currentContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
-      originContents,
-      currentContents,
-    )
-    const branchContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
-      originContents,
-      branchContents,
-    )
-    const branchContentsToCurrentChanged = projectContentsTreeContentOrTypeChange(
-      currentContents,
-      branchContents,
-    )
-
-    if (currentContentsToOriginChanged && !branchContentsToOriginChanged) {
-      // Utopia has changed from the origin, but the branch has not.
-      return withTreeConflicts(currentContents, {})
-    } else if (!currentContentsToOriginChanged && branchContentsToOriginChanged) {
-      // The branch has changed from the origin, but Utopia has not.
-      return withTreeConflicts(branchContents, {})
-      // Neither Utopia nor the branch have changed from the origin.
-    } else if (!currentContentsToOriginChanged && !branchContentsToOriginChanged) {
-      return withTreeConflicts(originContents, {})
-    } else if (
-      currentContentsToOriginChanged &&
-      branchContentsToOriginChanged &&
-      !branchContentsToCurrentChanged
-    ) {
-      // Utopia has changed from the origin, the branch has changed from the origin but Utopia and the branch are compatible values.
-      return withTreeConflicts(currentContents, {})
-    } else if (
-      currentContentsToOriginChanged &&
-      branchContentsToOriginChanged &&
-      branchContentsToCurrentChanged
-    ) {
-      // Utopia has changed from the origin, the branch has changed from the origin and Utopia and the branch are incompatible.
-      if (currentContents == null) {
-        if (originContents == null) {
-          // Origin and Utopia project lack an entry, so go with whatever the branch contains.
-          return withTreeConflicts(branchContents, {})
-        } else {
-          if (branchContents == null) {
-            // Both Utopia and the branch have deleted this.
-            return withTreeConflicts(branchContents, {})
-          } else {
-            // Utopia deleted this, but it changed in the branch.
-            return withTreeConflicts(currentContents, {
-              [fullPath]: currentDeletedBranchChanged(originContents, branchContents),
-            })
-          }
-        }
-      } else {
-        if (originContents == null) {
-          if (branchContents == null) {
-            // Created in Utopia, didn't exist before.
-            return withTreeConflicts(currentContents, {})
-          } else {
-            // Didn't exist previously, created in both the branch and Utopia.
-            return withTreeConflicts(currentContents, {
-              [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
-            })
-          }
-        } else {
-          if (branchContents == null) {
-            // Deleted on the branch, but changed in Utopia.
-            return withTreeConflicts(currentContents, {
-              [fullPath]: currentChangedBranchDeleted(currentContents, originContents),
-            })
-          } else {
-            // Existed previously, but changed incompatibly in both Utopia and the branch.
-            return withTreeConflicts(currentContents, {
-              [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
-            })
-          }
-        }
-      }
-    } else {
-      throw new Error(`Unhandled case reached.`)
-    }
+    return checkForTreeConflicts(fullPath, currentContents, originContents, branchContents)
   }
 }
 
