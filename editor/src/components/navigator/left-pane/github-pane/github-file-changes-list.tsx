@@ -3,17 +3,19 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { WarningIcon } from '../../../../uuiui/warning-icon'
 import {
   getGithubFileChangesCount,
   GithubFileChanges,
   GithubFileChangesListItem,
   githubFileChangesToList,
 } from '../../../../core/shared/github'
-import { Button } from '../../../../uuiui'
+import { Button, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { when } from '../../../../utils/react-conditionals'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -60,21 +62,30 @@ const RevertButton = ({
 export const GithubFileChangesList: React.FC<{
   changes: GithubFileChanges | null
   githubWorking: boolean
-}> = ({ changes, githubWorking }) => {
+  revertable: boolean
+  showHeader: boolean
+  conflicts?: string[]
+}> = ({ changes, githubWorking, revertable, showHeader, conflicts }) => {
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
 
   const handleClickRevertAllFiles = React.useCallback(
     (e: React.MouseEvent) => {
+      if (!revertable) {
+        return
+      }
       e.preventDefault()
       dispatch([EditorActions.showModal({ type: 'file-revert-all' })], 'everyone')
     },
-    [dispatch],
+    [dispatch, revertable],
   )
 
   const handleClickRevertFile = React.useCallback(
     (item: GithubFileChangesListItem) => (e: React.MouseEvent) => {
+      if (!revertable) {
+        return
+      }
       e.preventDefault()
       dispatch(
         [
@@ -87,7 +98,7 @@ export const GithubFileChangesList: React.FC<{
         'everyone',
       )
     },
-    [dispatch],
+    [dispatch, revertable],
   )
 
   if (count === 0) {
@@ -96,29 +107,71 @@ export const GithubFileChangesList: React.FC<{
 
   return (
     <>
-      <UIGridRow padded variant='<----------1fr---------><-auto->'>
+      {showHeader && (
+        <Header
+          count={count}
+          revertable={revertable}
+          githubWorking={githubWorking}
+          onClickRevertAll={handleClickRevertAllFiles}
+        />
+      )}
+      {list.map((i) => {
+        const conflicting = conflicts?.includes(i.filename) || false
+        return (
+          <UIGridRow
+            key={i.filename}
+            padded
+            variant='<----------1fr---------><-auto->'
+            title={conflicting ? 'Potential conflicts' : i.filename}
+            style={{
+              gap: 2,
+              color: conflicting ? '#f00' : 'inherit',
+              cursor: conflicting ? 'help' : 'default',
+            }}
+          >
+            <>
+              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+                <GithubFileStatusLetter status={i.status} />
+                <FlexRow style={{ gap: 2 }}>
+                  <>
+                    <Ellipsis>{i.filename}</Ellipsis>
+                    {when(conflicting, <WarningIcon color='error' />)}
+                  </>
+                </FlexRow>
+              </UIGridRow>
+              {when(
+                revertable,
+                <RevertButton
+                  disabled={githubWorking}
+                  text='Revert'
+                  onMouseUp={handleClickRevertFile(i)}
+                />,
+              )}
+            </>
+          </UIGridRow>
+        )
+      })}
+    </>
+  )
+}
+
+const Header: React.FC<{
+  count: number
+  revertable: boolean
+  githubWorking: boolean
+  onClickRevertAll: (e: React.MouseEvent) => void
+}> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
+  return (
+    <UIGridRow padded variant='<----------1fr---------><-auto->'>
+      <>
         <div>
           {count} file{count !== 1 ? 's' : ''} changed
         </div>
-        <RevertButton
-          disabled={githubWorking}
-          text='Revert all'
-          onMouseUp={handleClickRevertAllFiles}
-        />
-      </UIGridRow>
-      {list.map((i) => (
-        <UIGridRow key={i.filename} padded variant='<----------1fr---------><-auto->'>
-          <UIGridRow padded variant='|--16px--|<--------auto-------->'>
-            <GithubFileStatusLetter status={i.status} />
-            <Ellipsis title={i.filename}>{i.filename}</Ellipsis>
-          </UIGridRow>
-          <RevertButton
-            disabled={githubWorking}
-            text='Revert'
-            onMouseUp={handleClickRevertFile(i)}
-          />
-        </UIGridRow>
-      ))}
-    </>
+        {when(
+          revertable,
+          <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
+        )}
+      </>
+    </UIGridRow>
   )
 }

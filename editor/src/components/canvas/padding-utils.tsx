@@ -5,19 +5,19 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
+import {
+  AdjustPrecision,
+  CSSNumberWithRenderedValue,
+  offsetMeasurementByDelta,
+} from './controls/select-mode/controls-common'
 
 type CSSPaddingKey = keyof CSSPadding
 type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
-export type CSSPaddingMeasurements = CSSPaddingMappedValues<PaddingMeasurement>
+export type CSSPaddingMeasurements = CSSPaddingMappedValues<CSSNumberWithRenderedValue>
 
-export interface PaddingMeasurement {
-  value: CSSNumber
-  renderedValuePx: number
-}
-
-export const defaultPaddingMeasurement = (sizePx: number): PaddingMeasurement => ({
+export const defaultPaddingMeasurement = (sizePx: number): CSSNumberWithRenderedValue => ({
   value: { value: sizePx, unit: null },
   renderedValuePx: sizePx,
 })
@@ -95,7 +95,7 @@ function cssPaddingWithDefaults(
 function paddingMeasurementFromEither(
   value: Either<string, CSSNumber | undefined>,
   renderedDimension: number,
-): PaddingMeasurement | undefined {
+): CSSNumberWithRenderedValue | undefined {
   if (isLeft(value) || value.value == null) {
     return undefined
   }
@@ -152,7 +152,7 @@ export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurem
 export function paddingMeasurementForEdge(
   edgePiece: EdgePiece,
   padding: CSSPaddingMeasurements,
-): PaddingMeasurement {
+): CSSNumberWithRenderedValue {
   switch (edgePiece) {
     case 'top':
       return padding.paddingTop
@@ -167,54 +167,39 @@ export function paddingMeasurementForEdge(
   }
 }
 
-function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
-  if (unit === 'em') {
-    return Math.floor(value * 10) / 10
-  }
-  return Math.floor(value)
-}
-
-export const offsetMeasurementByDelta = (
-  measurement: PaddingMeasurement,
-  delta: number,
-): PaddingMeasurement => {
-  if (measurement.renderedValuePx === 0) {
-    return measurement
-  }
-  const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
-  const deltaInUnits = valueWithUnitAppropriatePrecision(
-    measurement.value.unit,
-    delta * pixelsPerUnit,
-  )
-  return {
-    renderedValuePx: measurement.renderedValuePx + delta,
-    value: {
-      unit: measurement.value.unit,
-      value: measurement.value.value + deltaInUnits,
-    },
-  }
-}
-
 export function offsetPaddingByEdge(
   edge: EdgePiece,
   delta: number,
   padding: CSSPaddingMeasurements,
+  precision: AdjustPrecision,
 ): CSSPaddingMeasurements {
   switch (edge) {
     case 'bottom':
-      return { ...padding, paddingBottom: offsetMeasurementByDelta(padding.paddingBottom, delta) }
+      return {
+        ...padding,
+        paddingBottom: offsetMeasurementByDelta(padding.paddingBottom, delta, precision),
+      }
     case 'top':
-      return { ...padding, paddingTop: offsetMeasurementByDelta(padding.paddingTop, delta) }
+      return {
+        ...padding,
+        paddingTop: offsetMeasurementByDelta(padding.paddingTop, delta, precision),
+      }
     case 'left':
-      return { ...padding, paddingLeft: offsetMeasurementByDelta(padding.paddingLeft, delta) }
+      return {
+        ...padding,
+        paddingLeft: offsetMeasurementByDelta(padding.paddingLeft, delta, precision),
+      }
     case 'right':
-      return { ...padding, paddingRight: offsetMeasurementByDelta(padding.paddingRight, delta) }
+      return {
+        ...padding,
+        paddingRight: offsetMeasurementByDelta(padding.paddingRight, delta, precision),
+      }
     default:
       assertNever(edge)
   }
 }
 
-function paddingMeasurementToString(measurement: PaddingMeasurement): string {
+function paddingMeasurementToString(measurement: CSSNumberWithRenderedValue): string {
   return `${measurement.value.value}${measurement.value.unit ?? 'px'}`
 }
 

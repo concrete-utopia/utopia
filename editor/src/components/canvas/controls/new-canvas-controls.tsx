@@ -54,6 +54,7 @@ import { CursorComponent } from './select-mode/cursor-component'
 import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { ZeroSizedElementControls } from './zero-sized-element-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -437,6 +438,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           )}
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
           <OutlineHighlightControl />
+          <ZeroSizedElementControls.control showAllPossibleElements={false} />
           {when(
             isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
             <>

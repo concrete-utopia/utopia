@@ -1,16 +1,10 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import {
-  addAllUniquelyBy,
-  mapDropNulls,
-  sortBy,
-  stripNulls,
-} from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { absoluteMoveStrategy } from './strategies/absolute-move-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -43,6 +37,7 @@ import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrate
 import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
+import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -85,6 +80,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
       setPaddingStrategy,
+      setFlexGapStrategy,
     ],
   )
 }
