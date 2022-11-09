@@ -37,6 +37,10 @@ const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmDisconn
       Are you sure you want to disconnect this project from the Github branch{' '}
       <strong>“{props.branchName}”</strong>?
     </p>
+    <p>
+      Your project will not be affected by this, but won't be able to save to or load from Github
+      until you reconnect to a branch.
+    </p>
   </React.Fragment>
 )
 
