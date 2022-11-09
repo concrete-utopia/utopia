@@ -736,7 +736,6 @@ export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
-  targetLayout: 'flex' | 'flow',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -805,7 +804,7 @@ export function applyStaticReparent(
               setCursorCommand(CSSCursor.Move),
             ]
 
-            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
               const commonPatches = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
@@ -818,17 +817,16 @@ export function applyStaticReparent(
                       displayNoneInstances: { $push: [target] },
                     }),
               ]
-              switch (targetLayout) {
-                case 'flow':
-                  return commonPatches
-                case 'flex':
-                  return [
-                    ...commonPatches,
-                    showReorderIndicator(newParent, newIndex),
-                    wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [newPath] },
-                    }),
-                  ]
+              if (shouldReorder) {
+                return [
+                  ...commonPatches,
+                  showReorderIndicator(newParent, newIndex),
+                  wildcardPatch('mid-interaction', {
+                    displayNoneInstances: { $push: [newPath] },
+                  }),
+                ]
+              } else {
+                return commonPatches
               }
             }
 
@@ -836,7 +834,7 @@ export function applyStaticReparent(
             let midInteractionCommands: Array<CanvasCommand>
 
             if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-              midInteractionCommands = midInteractionCommandsForTarget()
+              midInteractionCommands = midInteractionCommandsForTarget(reparentResult.shouldReorder)
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
@@ -845,7 +843,9 @@ export function applyStaticReparent(
               ]
             } else {
               if (parentRect != null) {
-                midInteractionCommands = midInteractionCommandsForTarget()
+                midInteractionCommands = midInteractionCommandsForTarget(
+                  reparentResult.shouldReorder,
+                )
               } else {
                 // this should be an error because parentRect should never be null
                 midInteractionCommands = []
@@ -999,8 +999,7 @@ export function getReparentPropertyChanges(
   }
 }
 
-// maybe move this to reparent-strategy-helpers
-function staticContainerDirections(
+export function staticContainerDirections(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ):
