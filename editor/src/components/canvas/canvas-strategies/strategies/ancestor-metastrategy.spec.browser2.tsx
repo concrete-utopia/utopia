@@ -424,6 +424,7 @@ describe('finds keyboard strategy for absolute ancestor', () => {
       throw new Error('`strategies` should not be null')
     }
     expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+    expect(strategies[0].strategy.name).toContain('Move')
   })
   it('element with flow parent should trigger ancestor reorder', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -448,5 +449,6 @@ describe('finds keyboard strategy for absolute ancestor', () => {
       throw new Error('`strategies` should not be null')
     }
     expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+    expect(strategies[0].strategy.name).toContain('Reorder')
   })
 })
