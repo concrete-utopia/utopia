@@ -14,6 +14,7 @@ import {
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { borderRadiusOffsetPx } from '../../border-radius-utis'
 import {
   EdgePosition,
   EdgePositionBottomLeft,
@@ -26,9 +27,8 @@ import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import {
   CSSNumberWithRenderedValue,
-  offsetMeasurementByDelta,
+  measurementBasedOnOtherMeasurement,
 } from '../../controls/select-mode/controls-common'
-import { FloatingCSSNumberIndicator } from '../../controls/select-mode/floating-number-indicator'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
@@ -87,48 +87,30 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     ) ?? 0,
   )
 
-  const scale = canvasState.scale
-  const indicatorPosition =
-    borderRadiusAdjustData == null
-      ? null
-      : indicatorPositionFromDrag(
-          borderRadiusAdjustData.dragStart,
-          dragDelta,
-          borderRadiusAdjustData.edgePosition,
-          scale,
-        )
+  const borderRadiusOffset = borderRadiusOffsetPx(
+    dragDelta != 0,
+    borderRadius.renderedValuePx + dragDelta,
+  )
 
-  const updatedBorderRadius = offsetMeasurementByDelta(borderRadius, dragDelta)
-
-  const borderRadiusControl = controlWithProps({
-    control: BorderRadiusControl,
-    props: {
-      selectedElement: selectedElement,
-      elementSize: elementSize,
-      borderRadius: updatedBorderRadius,
-    },
-    key: 'border-radius-handle',
-    show: 'visible-except-when-other-strategy-is-active',
-  })
-
-  const controlToRender = optionalMap(
-    (position) => [
-      borderRadiusControl,
-      controlWithProps({
-        control: FloatingCSSNumberIndicator,
-        props: { value: updatedBorderRadius.value, position: position, label: 'Radius' },
-        key: 'border-radius-value-indicator-control',
-        show: 'visible-except-when-other-strategy-is-active',
-      }),
-    ],
-    indicatorPosition,
-  ) ?? [borderRadiusControl]
+  const updatedBorderRadius = measurementBasedOnOtherMeasurement(borderRadius, borderRadiusOffset)
 
   return {
     id: SetBorderRadiusStrategyId,
     name: 'Set border radius',
     fitness: 1,
-    controlsToRender: controlToRender,
+    controlsToRender: [
+      controlWithProps({
+        control: BorderRadiusControl,
+        props: {
+          selectedElement: selectedElement,
+          elementSize: elementSize,
+          borderRadius: updatedBorderRadius,
+          showIndicatorOnEdge: borderRadiusAdjustData?.edgePosition ?? null,
+        },
+        key: 'border-radius-handle',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
     apply: () =>
       strategyApplicationResult([
         setProperty(
@@ -234,10 +216,13 @@ function borderRadiusFromElement(
     return null
   }
 
-  return {
-    value: borderRadius.value.value,
-    renderedValuePx: renderedValuePx,
-  }
+  return measurementBasedOnOtherMeasurement(
+    {
+      value: borderRadius.value.value,
+      renderedValuePx: renderedValuePx,
+    },
+    Math.max(renderedValuePx, 20),
+  )
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {

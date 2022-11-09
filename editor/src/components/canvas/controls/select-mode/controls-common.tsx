@@ -18,20 +18,26 @@ function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: nu
 export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
-): CSSNumberWithRenderedValue => {
-  if (measurement.renderedValuePx === 0) {
-    return measurement
+): CSSNumberWithRenderedValue =>
+  measurementBasedOnOtherMeasurement(measurement, measurement.renderedValuePx + delta)
+
+export function measurementBasedOnOtherMeasurement(
+  base: CSSNumberWithRenderedValue,
+  desiredRenderedValue: number,
+): CSSNumberWithRenderedValue {
+  if (base.renderedValuePx === 0) {
+    return base
   }
-  const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
-  const deltaInUnits = valueWithUnitAppropriatePrecision(
-    measurement.value.unit,
-    delta * pixelsPerUnit,
+  const pixelsPerUnit = base.value.value / base.renderedValuePx
+  const desiredValueInUnits = valueWithUnitAppropriatePrecision(
+    base.value.unit,
+    desiredRenderedValue * pixelsPerUnit,
   )
   return {
-    renderedValuePx: measurement.renderedValuePx + delta,
+    renderedValuePx: desiredRenderedValue,
     value: {
-      unit: measurement.value.unit,
-      value: measurement.value.value + deltaInUnits,
+      unit: base.value.unit,
+      value: desiredValueInUnits,
     },
   }
 }

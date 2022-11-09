@@ -12,7 +12,11 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { BorderRadiusHandleSize } from '../../border-radius-utis'
+import {
+  BorderRadiusHandleSize,
+  borderRadiusOffsetPx,
+  handlePosition,
+} from '../../border-radius-utis'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -39,16 +43,18 @@ export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
   borderRadius: CSSNumberWithRenderedValue
+  showIndicatorOnEdge: EdgePosition | null
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const { selectedElement, borderRadius, elementSize } = props
+  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const { dispatch, scale, isDragging } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
+
       isDragging:
         store.editor.canvas.interactionSession?.activeControl.type ===
         'BORDER_RADIUS_RESIZE_HANDLE',
@@ -99,6 +105,9 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
             dispatch={dispatch}
             edgePosition={edgePosition}
             elementSize={elementSize}
+            showIndicatorFromParent={
+              showIndicatorOnEdge?.x === edgePosition.x && showIndicatorOnEdge?.y === edgePosition.y
+            }
           />
         ))}
       </div>
@@ -116,6 +125,7 @@ interface CircularHandleProp {
   scale: number
   color: string
   elementSize: Size
+  showIndicatorFromParent: boolean
 }
 
 const CircularHandle = React.memo((props: CircularHandleProp) => {
@@ -129,20 +139,15 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     dispatch,
     edgePosition,
     elementSize,
+    showIndicatorFromParent,
   } = props
-  const position = handlePosition(
-    isDragging,
-    borderRadius.renderedValuePx,
-    elementSize,
-    edgePosition,
-    scale,
-  )
+  const position = handlePosition(borderRadius.renderedValuePx, elementSize, edgePosition, scale)
 
   const [hovered, setHovered] = React.useState<boolean>(false)
   const handleHoverStart = React.useCallback(() => setHovered(true), [])
   const handleHoverEnd = React.useCallback(() => setHovered(false), [])
 
-  const shouldShowIndicator = !isDragging && hovered
+  const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
   return (
@@ -220,38 +225,4 @@ function startInteraction(
       ),
     ])
   }
-}
-
-function handlePosition(
-  isDragging: boolean,
-  borderRadiusPx: number,
-  elementSize: Size,
-  edgePosition: EdgePosition,
-  scale: number,
-): CanvasPoint {
-  const offset = isDragging ? borderRadiusPx : Math.max(borderRadiusPx, 20) // TODO: keep control under cursor
-
-  const handleSize = BorderRadiusHandleSize(scale)
-
-  const { x, y } = edgePosition
-  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return canvasPoint({ x: offset, y: offset })
-  }
-
-  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return canvasPoint({ x: elementSize.width - offset - handleSize, y: offset })
-  }
-
-  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return canvasPoint({ x: offset, y: elementSize.height - offset - handleSize })
-  }
-
-  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return canvasPoint({
-      x: elementSize.width - offset - handleSize,
-      y: elementSize.height - offset - handleSize,
-    })
-  }
-
-  return canvasPoint({ x: 0, y: 0 })
 }
