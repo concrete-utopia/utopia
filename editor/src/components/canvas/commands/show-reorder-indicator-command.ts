@@ -1,5 +1,5 @@
 import {
-  flexDirectionToForwardOrReverse,
+  flexDirectionToFlexForwardsOrBackwards,
   flexDirectionToSimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -47,9 +47,9 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     'Should have a valid flex direction.',
     flexDirectionToSimpleFlexDirection(flexDirection),
   )
-  const forwardOrReverse = forceNotNull(
+  const forwardsOrBackwards = forceNotNull(
     'Should have a valid flex orientation.',
-    flexDirectionToForwardOrReverse(flexDirection),
+    flexDirectionToFlexForwardsOrBackwards(flexDirection),
   )
   const siblings = MetadataUtils.getChildren(editor.jsxMetadata, command.target).map(
     (sibling) => sibling.elementPath,
@@ -57,7 +57,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
 
   const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
     newParentFlexDirection,
-    forwardOrReverse,
+    forwardsOrBackwards,
     parentFrame,
     siblings,
     editor.jsxMetadata,
@@ -74,7 +74,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
               precedingSiblingPosition,
               succeedingSiblingPosition,
               'row',
-              forwardOrReverse,
+              forwardsOrBackwards,
             ),
             y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
             height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
@@ -86,7 +86,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
               precedingSiblingPosition,
               succeedingSiblingPosition,
               'column',
-              forwardOrReverse,
+              forwardsOrBackwards,
             ),
             width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
             height: 0,

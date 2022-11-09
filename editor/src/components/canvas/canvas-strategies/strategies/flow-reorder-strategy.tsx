@@ -78,7 +78,7 @@ export function flowReorderStrategy(
             canvasState,
             interactionSession,
             customStrategyState,
-            getElementDirection(elementMetadata).direction,
+            getElementDirection(elementMetadata),
             isValidFlowReorderTarget,
           )
     },

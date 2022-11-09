@@ -14,9 +14,9 @@ import {
   siblingAndPseudoPositions,
 } from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import {
-  flexDirectionToForwardOrReverse,
+  flexDirectionToFlexForwardsOrBackwards,
   flexDirectionToSimpleFlexDirection,
-  ForwardOrReverse,
+  FlexForwardsOrBackwards,
   SimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 
@@ -67,17 +67,17 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return null
     }
     let direction: SimpleFlexDirection | null = null
-    let forwardOrReverse: ForwardOrReverse | null = null
+    let forwardsOrBackwards: FlexForwardsOrBackwards | null = null
 
     if (parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex') {
       direction = flexDirectionToSimpleFlexDirection(
         parentElement.specialSizeMeasurements.flexDirection,
       )
-      forwardOrReverse = flexDirectionToForwardOrReverse(
+      forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(
         parentElement.specialSizeMeasurements.flexDirection,
       )
     }
-    if (direction == null || forwardOrReverse == null) {
+    if (direction == null || forwardsOrBackwards == null) {
       return null
     }
 
@@ -86,14 +86,14 @@ export const InsertionControls: React.FunctionComponent = React.memo(
 
     const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
       direction,
-      forwardOrReverse,
+      forwardsOrBackwards,
       parentFrame,
       children.map((m) => m.elementPath),
       jsxMetadata,
     )
 
     const nonNullDirection: SimpleFlexDirection = direction
-    const nonNullForwardOrReverse: ForwardOrReverse = forwardOrReverse
+    const nonNullForwardsOrBackwards: FlexForwardsOrBackwards = forwardsOrBackwards
 
     function getBetweenChildrenPosition(index: number): number {
       const precedingSiblingPosition: CanvasRectangle = siblingPositions[index]
@@ -102,7 +102,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         precedingSiblingPosition,
         succeedingSiblingPosition,
         nonNullDirection,
-        nonNullForwardOrReverse,
+        nonNullForwardsOrBackwards,
       )
     }
 
