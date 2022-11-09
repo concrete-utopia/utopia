@@ -1,3 +1,4 @@
+import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
@@ -30,6 +31,7 @@ import {
 import {
   EditorStorePatched,
   emptyGithubData,
+  emptyGithubSettings,
   GithubChecksums,
   GithubData,
   GithubOperation,
@@ -38,11 +40,10 @@ import {
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { propOrNull } from './object-utils'
+import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 import { emptySet } from './set-utils'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
-import { mergeDiff3 } from 'node-diff3'
-import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -741,4 +742,13 @@ export async function refreshGithubData(
   } else {
     dispatch([updateGithubData(emptyGithubData())], 'everyone')
   }
+}
+
+export function disconnectGithubProjectActions(): EditorAction[] {
+  return [
+    updateGithubData(emptyGithubData()),
+    updateGithubChecksums({}),
+    updateBranchContents(null),
+    updateGithubSettings({ ...emptyGithubSettings() }),
+  ]
 }

@@ -392,6 +392,16 @@ export function fileRevertAllModal(): FileRevertAllModal {
   }
 }
 
+export interface DisconnectGithubProjectModal {
+  type: 'disconnect-github-project'
+}
+
+export function disconnectGithubProjectModal(branchName: string): DisconnectGithubProjectModal {
+  return {
+    type: 'disconnect-github-project',
+  }
+}
+
 export interface FileUploadInfo {
   fileResult: FileResult
   targetPath: string
@@ -421,6 +431,7 @@ export type ModalDialog =
   | FileOverwriteModal
   | FileRevertModal
   | FileRevertAllModal
+  | DisconnectGithubProjectModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -1048,6 +1059,14 @@ export function projectGithubSettings(
     targetRepository: targetRepository,
     originCommit: originCommit,
     branchName: branchName,
+  }
+}
+
+export function emptyGithubSettings(): ProjectGithubSettings {
+  return {
+    targetRepository: null,
+    originCommit: null,
+    branchName: null,
   }
 }
 
@@ -2099,11 +2118,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
-    githubSettings: {
-      targetRepository: null,
-      originCommit: null,
-      branchName: null,
-    },
+    githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
     githubChecksums: null,
@@ -2477,11 +2492,7 @@ export function persistentModelForProjectContents(
     navigator: {
       minimised: false,
     },
-    githubSettings: {
-      targetRepository: null,
-      originCommit: null,
-      branchName: null,
-    },
+    githubSettings: emptyGithubSettings(),
     githubChecksums: null,
     branchContents: null,
   }

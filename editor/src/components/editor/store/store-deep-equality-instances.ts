@@ -322,6 +322,8 @@ import {
   GithubData,
   emptyGithubData,
   projectGithubSettings,
+  DisconnectGithubProjectModal,
+  disconnectGithubProjectModal,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3107,6 +3109,13 @@ export const FileRevertModalKeepDeepEquality: KeepDeepEqualityCall<FileRevertMod
     fileRevertModal,
   )
 
+export const DisconnectGithubProjectModalKeepDeepEquality: KeepDeepEqualityCall<DisconnectGithubProjectModal> =
+  combine1EqualityCall(
+    (modal) => modal.branchName,
+    StringKeepDeepEquality,
+    disconnectGithubProjectModal,
+  )
+
 export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
   oldValue,
   newValue,
@@ -3133,6 +3142,13 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
       } else {
         return keepDeepEqualityResult(oldValue, false)
       }
+    case 'disconnect-github-project':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(newValue, true)
+      } else {
+        return keepDeepEqualityResult(oldValue, false)
+      }
+      break
     default:
       assertNever(oldValue)
   }
