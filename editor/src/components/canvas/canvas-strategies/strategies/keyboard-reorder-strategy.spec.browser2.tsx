@@ -128,32 +128,32 @@ describe('Keyboard Reorder Strategy', () => {
     // pressing keyboard up and down reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+
     const expectedNavigatorTargetsAfterArrowUp = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
       expectedNavigatorTargetsAfterArrowUp,
-    )
-
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
-
-    const expectedNavigatorTargetsAfter3ArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-    ]
-    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfter3ArrowDown,
     )
   })
 
@@ -181,7 +181,7 @@ describe('Keyboard Reorder Strategy', () => {
     // pressing keyboard left and right reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 3)
 
-    const expectedNavigatorTargetsAfterArrowLeft = [
+    const expectedNavigatorTargetsAfterArrowRight = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -191,12 +191,12 @@ describe('Keyboard Reorder Strategy', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfterArrowLeft,
+      expectedNavigatorTargetsAfterArrowRight,
     )
 
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
-    const expectedNavigatorTargetsAfter3ArrowRight = [
+    const expectedNavigatorTargetsAfterLeft = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -206,7 +206,7 @@ describe('Keyboard Reorder Strategy', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfter3ArrowRight,
+      expectedNavigatorTargetsAfterLeft,
     )
   })
   it('pressing the arrow keys reorders in a flex column-reverse layout', async () => {
@@ -232,32 +232,32 @@ describe('Keyboard Reorder Strategy', () => {
     // pressing keyboard up and down reorders elements
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
 
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+
     const expectedNavigatorTargetsAfterArrowDown = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
       expectedNavigatorTargetsAfterArrowDown,
-    )
-
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
-
-    const expectedNavigatorTargetsAfter3ArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-    ]
-    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfter3ArrowUp,
     )
   })
 })
