@@ -165,6 +165,7 @@ import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
 import {
   GithubBranch,
+  GithubFileChanges,
   GithubFileStatus,
   RepositoryEntry,
   TreeConflicts,
@@ -1055,6 +1056,8 @@ export interface GithubData {
   branches: Array<GithubBranch>
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
+  lastUpdatedAt: number | null
+  upstreamChanges: GithubFileChanges | null
 }
 
 export function emptyGithubData(): GithubData {
@@ -1062,6 +1065,8 @@ export function emptyGithubData(): GithubData {
     branches: [],
     publicRepositories: [],
     treeConflicts: {},
+    lastUpdatedAt: null,
+    upstreamChanges: null,
   }
 }
 

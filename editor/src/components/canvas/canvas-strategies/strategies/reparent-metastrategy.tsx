@@ -17,14 +17,7 @@ import {
   isInsertionSubjects,
   isTargetPaths,
 } from '../canvas-strategy-types'
-import {
-  AllowSmallerParent,
-  DragInteractionData,
-  InteractionSession,
-  MissingBoundsHandling,
-  reparentTargetsToFilter,
-  ReparentTargetsToFilter,
-} from '../interaction-state'
+import { AllowSmallerParent, DragInteractionData, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
@@ -35,6 +28,7 @@ import {
   newReparentSubjects,
   ReparentStrategy,
   reparentSubjectsForInteractionTarget,
+  ReparentTarget,
 } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -42,7 +36,6 @@ interface ReparentFactoryAndDetails {
   targetParent: ElementPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
-  missingBoundsHandling: MissingBoundsHandling
   targetParentDisplayType: 'flex' | 'flow' // should this be here?
   fitness: number
   factory: CanvasStrategyFactory
@@ -63,34 +56,26 @@ export function getApplicableReparentFactories(
   )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
-    const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_AS_ABSOLUTE': {
-        const fitness =
-          missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
+        const fitness = result.isFallback ? 2 : 3
         if (allDraggedElementsAbsolute) {
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
             targetParentDisplayType: 'flow',
             fitness: fitness,
-            factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
+            factory: baseAbsoluteReparentStrategy(result.target, fitness),
           }
         } else {
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
             targetParentDisplayType: 'flow',
             fitness: fitness,
-            factory: baseFlexReparentToAbsoluteStrategy(
-              result.target,
-              missingBoundsHandling,
-              fitness,
-            ),
+            factory: baseFlexReparentToAbsoluteStrategy(result.target, fitness),
           }
         }
       }
@@ -109,7 +94,6 @@ export function getApplicableReparentFactories(
           targetParent: result.target.newParent,
           targetIndex: result.target.newIndex,
           strategyType: result.strategy,
-          missingBoundsHandling: result.missingBoundsHandling,
           targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
           factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
@@ -126,7 +110,7 @@ export function getApplicableReparentFactories(
 function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-): ReparentTargetsToFilter | null {
+): ReparentTarget | null {
   if (isInsertionSubjects(canvasState.interactionTarget)) {
     return null
   }
@@ -145,29 +129,15 @@ function getStartingTargetParentsToFilterOutInner(
 
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
 
-  const strictBoundsResult = getReparentTargetUnified(
+  return getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
-    'use-strict-bounds',
     allowSmallerParent,
   )
-
-  const missingBoundsResult = getReparentTargetUnified(
-    reparentSubjects,
-    pointOnCanvas,
-    interactionData.modifiers.cmd,
-    canvasState,
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    'allow-missing-bounds',
-    allowSmallerParent,
-  )
-
-  return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
 }
 
 function isCanvasState(
@@ -232,7 +202,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
 
   const existingParents = reparentSubjects.map(parentPath)
 
-  const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
+  const startingTargetToFilter = getStartingTargetParentsToFilterOut(
     canvasState,
     interactionSession,
   )
@@ -251,22 +221,19 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     cmdPressed ? 'allow-smaller-parent' : 'disallow-smaller-parent',
   )
 
-  const targetIsValid = (
-    target: ElementPath,
-    missingBoundsHandling: MissingBoundsHandling,
-  ): boolean => {
+  const targetIsValid = (target: ElementPath): boolean => {
     if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
       return false
-    } else if (startingTargetsToFilter == null) {
+    } else if (startingTargetToFilter == null) {
       return true
     } else {
-      const targetToFilter = startingTargetsToFilter[missingBoundsHandling]?.newParent ?? null
+      const targetToFilter = startingTargetToFilter.newParent ?? null
       return !pathsEqual(target, targetToFilter)
     }
   }
 
   const filteredReparentFactories = factories.filter((reparentStrategy) =>
-    targetIsValid(reparentStrategy.targetParent, reparentStrategy.missingBoundsHandling),
+    targetIsValid(reparentStrategy.targetParent),
   )
 
   return mapDropNulls(

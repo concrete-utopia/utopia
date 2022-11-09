@@ -115,7 +115,7 @@ export function applyMoveCommon(
         pushIntendedBounds(commandsForSelectedElements.intendedBounds),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(selectedElements),
-        setCursorCommand('mid-interaction', CSSCursor.Select),
+        setCursorCommand(CSSCursor.Select),
       ])
     } else {
       const constrainedDragAxis =
@@ -144,7 +144,7 @@ export function applyMoveCommon(
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
         pushIntendedBounds(commandsForSelectedElements.intendedBounds),
         setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
-        setCursorCommand('mid-interaction', CSSCursor.Select),
+        setCursorCommand(CSSCursor.Select),
       ])
     }
   } else {

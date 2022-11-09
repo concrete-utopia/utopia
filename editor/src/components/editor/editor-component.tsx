@@ -401,18 +401,21 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const useGithubData = (): void => {
   const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
-  const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
-    (store) => ({
-      githubAuthenticated: store.userState.githubState.authenticated,
-      githubRepo: store.editor.githubSettings.targetRepository,
-      githubOperations: store.editor.githubOperations,
-    }),
-    'Github data',
-  )
+  const { githubAuthenticated, githubRepo, githubOperations, branchName, githubChecksums } =
+    useEditorState(
+      (store) => ({
+        githubAuthenticated: store.userState.githubState.authenticated,
+        githubRepo: store.editor.githubSettings.targetRepository,
+        githubOperations: store.editor.githubOperations,
+        branchName: store.editor.githubSettings.branchName,
+        githubChecksums: store.editor.githubChecksums,
+      }),
+      'Github data',
+    )
 
   const refresh = React.useCallback(() => {
-    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
-  }, [dispatch, githubAuthenticated, githubRepo])
+    void refreshGithubData(dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums)
+  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums])
 
   // perform a straight refresh then the repo or the auth change
   React.useEffect(() => refresh(), [refresh])

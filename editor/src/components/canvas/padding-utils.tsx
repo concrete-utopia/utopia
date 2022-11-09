@@ -8,6 +8,7 @@ import { assertNever } from '../../core/shared/utils'
 import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 import {
+  AdjustPrecision,
   CSSNumberWithRenderedValue,
   offsetMeasurementByDelta,
 } from './controls/select-mode/controls-common'
@@ -170,16 +171,29 @@ export function offsetPaddingByEdge(
   edge: EdgePiece,
   delta: number,
   padding: CSSPaddingMeasurements,
+  precision: AdjustPrecision,
 ): CSSPaddingMeasurements {
   switch (edge) {
     case 'bottom':
-      return { ...padding, paddingBottom: offsetMeasurementByDelta(padding.paddingBottom, delta) }
+      return {
+        ...padding,
+        paddingBottom: offsetMeasurementByDelta(padding.paddingBottom, delta, precision),
+      }
     case 'top':
-      return { ...padding, paddingTop: offsetMeasurementByDelta(padding.paddingTop, delta) }
+      return {
+        ...padding,
+        paddingTop: offsetMeasurementByDelta(padding.paddingTop, delta, precision),
+      }
     case 'left':
-      return { ...padding, paddingLeft: offsetMeasurementByDelta(padding.paddingLeft, delta) }
+      return {
+        ...padding,
+        paddingLeft: offsetMeasurementByDelta(padding.paddingLeft, delta, precision),
+      }
     case 'right':
-      return { ...padding, paddingRight: offsetMeasurementByDelta(padding.paddingRight, delta) }
+      return {
+        ...padding,
+        paddingRight: offsetMeasurementByDelta(padding.paddingRight, delta, precision),
+      }
     default:
       assertNever(edge)
   }
