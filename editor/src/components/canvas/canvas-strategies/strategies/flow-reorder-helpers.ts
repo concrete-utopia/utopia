@@ -63,7 +63,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     const targetDirection = getElementDirection(targetElement)
     const shouldReverse =
       targetDirection === 'horizontal' &&
-      targetElement.specialSizeMeasurements?.textDirection === 'rtl'
+      targetElement.specialSizeMeasurements?.parentTextDirection === 'rtl'
 
     let allHorizontalOrVertical = true
     let frames: Array<CanvasRectangle> = []
