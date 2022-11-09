@@ -488,13 +488,7 @@ export const GithubPane = React.memo(() => {
               variant='<-------------1fr------------->'
               style={{ margin: '10px 0' }}
             >
-              <Button
-                spotlight
-                highlight
-                style={{ backgroundColor: '#fee', border: '1px solid #f00' }}
-                onClick={disconnectFromGithub}
-                disabled={githubWorking}
-              >
+              <Button spotlight highlight onClick={disconnectFromGithub} disabled={githubWorking}>
                 Disconnect from branch
               </Button>
             </UIGridRow>,
