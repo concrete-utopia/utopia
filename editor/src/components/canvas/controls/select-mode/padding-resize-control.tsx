@@ -3,6 +3,7 @@ import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/m
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
+import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
@@ -15,7 +16,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { simplePaddingFromMetadata } from '../../padding-utils'
+import { CSSPaddingMeasurements, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -40,6 +41,7 @@ interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
   paddingValue: CSSNumberWithRenderedValue
+  shouldShowIndicatorFromParent: string | null
 }
 
 function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {
@@ -125,6 +127,8 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
+    const shouldShowIndicator =
+      props.shouldShowIndicatorFromParent === props.edge || (!isDragging && indicatorShown)
     const shown = !(props.hiddenByParent && hidden)
 
     const { width, height } = sizeFromOrientation(
@@ -170,16 +174,18 @@ const PaddingResizeControlI = React.memo(
             cursor: cursor,
           }}
         >
-          {!isDragging && indicatorShown && (
+          {when(
+            shouldShowIndicator,
             <div
               style={{
+                visibility: 'visible',
                 position: 'absolute',
                 paddingTop: paddingIndicatorOffset,
                 paddingLeft: paddingIndicatorOffset,
               }}
             >
               <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
-            </div>
+            </div>,
           )}
           <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
         </div>
@@ -190,6 +196,8 @@ const PaddingResizeControlI = React.memo(
 
 interface PaddingControlProps {
   targets: Array<ElementPath>
+  shouldShowIndicator: string | null
+  padding: CSSPaddingMeasurements | null
 }
 
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
@@ -210,22 +218,26 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   })
 
-  const currentPadding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const currentPadding =
+    props.padding ?? simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding =
+      props.padding ?? simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.height = numberToPxValue(boundingBox.height)
     ref.current.style.width = numberToPxValue(padding.paddingLeft.renderedValuePx)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding =
+      props.padding ?? simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.width = numberToPxValue(boundingBox.width)
     ref.current.style.height = numberToPxValue(padding.paddingTop.renderedValuePx)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding =
+      props.padding ?? simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.left = numberToPxValue(
       boundingBox.width - padding.paddingRight.renderedValuePx,
     )
@@ -234,7 +246,8 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding =
+      props.padding ?? simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.top = numberToPxValue(
       boundingBox.height - padding.paddingBottom.renderedValuePx,
     )
@@ -263,24 +276,28 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
           edge={'right'}
           hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingRight}
+          shouldShowIndicatorFromParent={props.shouldShowIndicator}
         />
         <PaddingResizeControlI
           ref={bottomRef}
           edge={'bottom'}
           hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingBottom}
+          shouldShowIndicatorFromParent={props.shouldShowIndicator}
         />
         <PaddingResizeControlI
           ref={leftRef}
           edge={'left'}
           hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingLeft}
+          shouldShowIndicatorFromParent={props.shouldShowIndicator}
         />
         <PaddingResizeControlI
           ref={topRef}
           edge={'top'}
           hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingTop}
+          shouldShowIndicatorFromParent={props.shouldShowIndicator}
         />
       </div>
     </CanvasOffsetWrapper>

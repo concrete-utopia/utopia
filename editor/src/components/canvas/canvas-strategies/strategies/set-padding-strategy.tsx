@@ -18,9 +18,11 @@ import {
   FloatingCSSNumberIndicatorProps,
 } from '../../controls/select-mode/floating-number-indicator'
 import {
+  CSSPaddingMeasurements,
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
+  paddingKeyForEdge,
   paddingMeasurementForEdge,
   paddingToPaddingString,
   simplePaddingFromMetadata,
@@ -72,36 +74,28 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
-  const maybePaddingValueProps = paddingValueIndicatorProps(
+  const activeEdge = optionalMap(edgeFromInteractionSession, interactionSession)
+  const measurements = updatedPaddingMeasurements(
     canvasState,
     interactionSession,
-    selectedElements,
+    selectedElements[0],
   )
-
-  const resizeControl = controlWithProps({
-    control: PaddingResizeControl,
-    props: { targets: selectedElements },
-    key: 'padding-resize-control',
-    show: 'visible-except-when-other-strategy-is-active',
-  })
-
-  const controlsToRender = optionalMap(
-    (props) => [
-      resizeControl,
-      controlWithProps({
-        control: FloatingCSSNumberIndicator,
-        props: props,
-        key: 'padding-value-indicator-control',
-        show: 'visible-except-when-other-strategy-is-active',
-      }),
-    ],
-    maybePaddingValueProps,
-  ) ?? [resizeControl]
 
   return {
     id: 'SET_PADDING_STRATEGY',
     name: SetPaddingStrategyName,
-    controlsToRender: controlsToRender,
+    controlsToRender: [
+      controlWithProps({
+        control: PaddingResizeControl,
+        props: {
+          targets: selectedElements,
+          shouldShowIndicator: activeEdge,
+          padding: measurements,
+        },
+        key: 'padding-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
     fitness: 1,
     apply: () => {
       if (
@@ -209,24 +203,30 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   return true
 }
 
-function paddingValueIndicatorProps(
+function edgeFromInteractionSession(interactionSession: InteractionSession): EdgePiece | null {
+  if (interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE') {
+    return null
+  }
+  return interactionSession.activeControl.edgePiece
+}
+
+function updatedPaddingMeasurements(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  selectedElements: ElementPath[],
-): FloatingCSSNumberIndicatorProps | null {
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  selectedElement: ElementPath,
+): CSSPaddingMeasurements | null {
+  const filteredSelectedElements = getDragTargets([selectedElement])
 
   if (
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE' ||
-    interactionSession.interactionData.drag == null ||
-    filteredSelectedElements.length !== 1
+    interactionSession.interactionData.drag == null
   ) {
     return null
   }
 
-  const { drag, dragStart } = interactionSession.interactionData
+  const { drag } = interactionSession.interactionData
 
   const edgePiece = interactionSession.activeControl.edgePiece
 
@@ -243,8 +243,8 @@ function paddingValueIndicatorProps(
   )
 
   return {
-    value: updatedPaddingMeasurement.value,
-    position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
+    ...padding,
+    [paddingKeyForEdge(edgePiece)]: updatedPaddingMeasurement,
   }
 }
 

@@ -149,6 +149,21 @@ export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurem
   }
 }
 
+export function paddingKeyForEdge(edgePiece: EdgePiece): keyof CSSPadding {
+  switch (edgePiece) {
+    case 'top':
+      return 'paddingTop'
+    case 'bottom':
+      return 'paddingBottom'
+    case 'right':
+      return 'paddingRight'
+    case 'left':
+      return 'paddingLeft'
+    default:
+      assertNever(edgePiece)
+  }
+}
+
 export function paddingMeasurementForEdge(
   edgePiece: EdgePiece,
   padding: CSSPaddingMeasurements,
