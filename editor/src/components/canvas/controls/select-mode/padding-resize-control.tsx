@@ -24,6 +24,7 @@ import {
   CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
+  StripeOpacity,
   useHoverWithDelay,
 } from './controls-common'
 import { useMaybeHighlightElement } from './select-mode-hooks'
@@ -139,7 +140,7 @@ const PaddingResizeControlI = React.memo(
       PaddingIndicatorOffset,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink.o(50).value
+    const stripeColor = colorTheme.brandNeonPink.o(StripeOpacity).value
     const color = colorTheme.brandNeonPink.value
 
     return (

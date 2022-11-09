@@ -115,6 +115,8 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
   )
 })
 
+export const StripeOpacity: number = 100
+
 export const StripedBackgroundCSS = (
   stripeColor: string,
   scale: number,
