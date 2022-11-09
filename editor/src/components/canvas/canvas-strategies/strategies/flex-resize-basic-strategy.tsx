@@ -194,13 +194,13 @@ export function flexResizeBasicStrategy(
           return strategyApplicationResult([
             ...resizeCommands,
             updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
           ])
         } else {
           return strategyApplicationResult([
             updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
           ])
         }
       }

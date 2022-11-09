@@ -1,6 +1,7 @@
 import React from 'react'
 import { roundTo } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
+import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export interface CSSNumberWithRenderedValue {
@@ -8,33 +9,60 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
-function valueWithUnitAppropriatePrecision(unit: CSSNumberUnit | null, value: number): number {
-  if (unit === 'em' || unit === 'cm') {
-    return roundTo(value, 1)
-  }
-  return roundTo(value, 0)
+export type AdjustPrecision = 'precise' | 'coarse'
+
+export function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
+  return modifiers.shift ? 'coarse' : 'precise'
+}
+
+export function valueWithUnitAppropriatePrecision(
+  unit: CSSNumberUnit | null,
+  value: number,
+  precision: AdjustPrecision,
+): number {
+  const baseMultiplicator = unit === 'em' || unit === 'cm' ? 1 : 0
+  const multiplicator = precision === 'coarse' ? baseMultiplicator - 1 : baseMultiplicator
+  return roundTo(value, multiplicator)
 }
 
 export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
+  precision: AdjustPrecision,
 ): CSSNumberWithRenderedValue =>
-  measurementBasedOnOtherMeasurement(measurement, measurement.renderedValuePx + delta)
+  measurementBasedOnOtherMeasurement(measurement, measurement.renderedValuePx + delta, precision)
 
 export function measurementBasedOnOtherMeasurement(
   base: CSSNumberWithRenderedValue,
   desiredRenderedValue: number,
+  precision: AdjustPrecision,
 ): CSSNumberWithRenderedValue {
   if (base.renderedValuePx === 0) {
     return base
   }
+
+  const desiredRenderedValueWithPrecision = valueWithUnitAppropriatePrecision(
+    'px',
+    desiredRenderedValue,
+    precision,
+  )
+
+  if (base.renderedValuePx === 0) {
+    return {
+      renderedValuePx: desiredRenderedValueWithPrecision,
+      value: { value: desiredRenderedValueWithPrecision, unit: null },
+    }
+  }
+
   const pixelsPerUnit = base.value.value / base.renderedValuePx
   const desiredValueInUnits = valueWithUnitAppropriatePrecision(
     base.value.unit,
     desiredRenderedValue * pixelsPerUnit,
+    precision,
   )
+
   return {
-    renderedValuePx: desiredRenderedValue,
+    renderedValuePx: desiredRenderedValueWithPrecision,
     value: {
       unit: base.value.unit,
       value: desiredValueInUnits,

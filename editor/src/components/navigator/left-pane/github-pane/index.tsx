@@ -2,21 +2,21 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useCallback } from 'react'
 import urljoin from 'url-join'
 import { BASE_URL } from '../../../../common/env-vars'
 import {
   updateProjectWithBranchContent,
   getBranchesForGithubRepository,
-  GetBranchesResponse,
   githubFileChangesSelector,
   parseGithubProjectString,
   updateProjectAgainstGithub,
+  getGithubFileChangesCount,
+  githubFileChangesToList,
 } from '../../../../core/shared/github'
-import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexColumn,
@@ -42,6 +42,8 @@ import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
+import TimeAgo from 'react-timeago'
+import { WarningIcon } from '../../../../uuiui/warning-icon'
 
 const GitBranchIcon = () => {
   return (
@@ -64,11 +66,14 @@ const GitBranchIcon = () => {
   )
 }
 
+const compactTimeagoFormatter = (value: number, unit: string) => {
+  return `${value}${unit.charAt(0)}`
+}
+
 export const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
-  const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
   const githubOperations = useEditorState(
     (store) => store.editor.githubOperations,
     'Github operations',
@@ -250,6 +255,43 @@ export const GithubPane = React.memo(() => {
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubLastUpdatedAt = useEditorState(
+    (store) => store.editor.githubData.lastUpdatedAt,
+    'Github last updated',
+  )
+  const upstreamChanges = useEditorState(
+    (store) => store.editor.githubData.upstreamChanges,
+    'Github upstream changes',
+  )
+  const upstreamChangesCount = React.useMemo(
+    () => getGithubFileChangesCount(upstreamChanges),
+    [upstreamChanges],
+  )
+  const hasUpstreamChanges = React.useMemo(() => {
+    return upstreamChangesCount > 0
+  }, [upstreamChangesCount])
+
+  const bothModified = React.useMemo(() => {
+    const upstreamList = githubFileChangesToList(upstreamChanges)
+    const localList = githubFileChangesToList(githubFileChanges)
+    const intersection = upstreamList
+      .filter((upstream) => localList.some((local) => local.filename === upstream.filename))
+      .map((change) => change.filename)
+    return intersection
+  }, [upstreamChanges, githubFileChanges])
+
+  const disconnectFromGithub = useCallback(() => {
+    if (currentBranch != null) {
+      dispatch(
+        [
+          EditorActions.showModal({
+            type: 'disconnect-github-project',
+          }),
+        ],
+        'everyone',
+      )
+    }
+  }, [dispatch, currentBranch])
 
   return (
     <FlexColumn
@@ -364,30 +406,93 @@ export const GithubPane = React.memo(() => {
                   </span>
                 </Ellipsis>
               </UIGridRow>
-              <GithubFileChangesList changes={githubFileChanges} githubWorking={githubWorking} />
+              <GithubFileChangesList
+                showHeader={true}
+                revertable={true}
+                changes={githubFileChanges}
+                githubWorking={githubWorking}
+              />
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <Button
+                  spotlight
+                  highlight
+                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+                  onMouseUp={triggerSaveToGithub}
+                >
+                  {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
+                </Button>
+              </UIGridRow>
+              <UIGridRow padded variant='<-------------1fr------------->'>
+                <div
+                  style={{
+                    padding: '10px 0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {when(
+                    hasUpstreamChanges,
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: 4,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <FlexRow style={{ gap: 2, color: '#f90' }}>
+                          Upstream:
+                          <FlexRow>
+                            {upstreamChangesCount} file{upstreamChangesCount !== 1 ? 's' : ''}{' '}
+                            changed
+                          </FlexRow>
+                        </FlexRow>
+                      </div>
+                      <GithubFileChangesList
+                        showHeader={false}
+                        revertable={false}
+                        conflicts={bothModified}
+                        changes={upstreamChanges}
+                        githubWorking={githubWorking}
+                      />
+                    </div>,
+                  )}
+                  {unless(hasUpstreamChanges, <span>Upstream: up-to-date.</span>)}
+                  <div style={{ color: '#aaa' }}>
+                    <TimeAgo date={githubLastUpdatedAt || 0} formatter={compactTimeagoFormatter} />
+                  </div>
+                </div>
+                <Button
+                  spotlight
+                  highlight
+                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
+                  onMouseUp={triggerUpdateAgainstGithub}
+                >
+                  {isGithubUpdating(githubOperations) ? (
+                    <GithubSpinner />
+                  ) : (
+                    <>
+                      {bothModified.length > 0 && <WarningIcon />}
+                      Update Against Github
+                    </>
+                  )}
+                </Button>
+              </UIGridRow>
             </>,
           )}
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <Button
-              spotlight
-              highlight
-              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-              onMouseUp={triggerSaveToGithub}
-            >
-              {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
-            </Button>
-          </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <Button
-              spotlight
-              highlight
-              disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-              onMouseUp={triggerUpdateAgainstGithub}
-            >
-              {isGithubUpdating(githubOperations) ? <GithubSpinner /> : 'Update Against Github'}
-            </Button>
-          </UIGridRow>
           {loadBranchesUI}
+          {when(
+            currentBranch != null,
+            <UIGridRow
+              padded
+              variant='<-------------1fr------------->'
+              style={{ margin: '10px 0' }}
+            >
+              <Button spotlight highlight onClick={disconnectFromGithub} disabled={githubWorking}>
+                Disconnect from branch
+              </Button>
+            </UIGridRow>,
+          )}
         </SectionBodyArea>
       </Section>
       <Section>

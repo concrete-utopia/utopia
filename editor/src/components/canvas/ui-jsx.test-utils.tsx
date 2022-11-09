@@ -307,6 +307,7 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: loginState,
       shortcutConfig: {},
+      themeConfig: 'light',
       githubState: {
         authenticated: false,
       },

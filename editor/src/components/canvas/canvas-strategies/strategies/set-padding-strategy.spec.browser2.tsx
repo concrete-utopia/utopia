@@ -1,8 +1,9 @@
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { AdjustPrecision } from '../../controls/select-mode/controls-common'
 import {
   paddingControlHandleTestId,
   paddingControlTestId,
@@ -231,27 +232,58 @@ describe('Padding resize strategy', () => {
       'await-first-dom-report',
     )
 
-    await testPaddingResizeForEdge(editor, dragDelta, 'top')
+    await testPaddingResizeForEdge(editor, dragDelta, 'top', 'precise')
     await editor.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithStringPaddingValues('8.3em 1em 3em 2em'),
     )
   })
 
-  describe('Adjusting individual padding values', () => {
+  it('padding can be set to zero and then resized to a non-zero value', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('2em 1em 3em 2em'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const dragDeltaFromZero = 100
+    await testPaddingResizeForEdge(editor, dragDeltaFromZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues(`${dragDeltaFromZero}px 1em 3em 2em`),
+    )
+  })
+
+  describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
-    it('top', async () => testAdjustIndividualPaddingValue('top'))
+    it('top', async () => testAdjustIndividualPaddingValue('top', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('bottom', async () => testAdjustIndividualPaddingValue('top'))
+    it('bottom', async () => testAdjustIndividualPaddingValue('top', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('left', async () => testAdjustIndividualPaddingValue('top'))
+    it('left', async () => testAdjustIndividualPaddingValue('top', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('right', async () => testAdjustIndividualPaddingValue('top'))
+    it('right', async () => testAdjustIndividualPaddingValue('top', 'precise'))
+  })
+
+  describe('Adjusting individual padding values, coarse', () => {
+    // the expect is in `testAdjustIndividualPaddingValue`
+    // eslint-disable-next-line jest/expect-expect
+    it('top', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    // eslint-disable-next-line jest/expect-expect
+    it('bottom', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    // eslint-disable-next-line jest/expect-expect
+    it('left', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    // eslint-disable-next-line jest/expect-expect
+    it('right', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
   })
 })
 
-async function testAdjustIndividualPaddingValue(edge: EdgePiece) {
+async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: AdjustPrecision) {
   const padding: CSSPaddingMeasurements = {
     paddingTop: defaultPaddingMeasurement(22),
     paddingBottom: defaultPaddingMeasurement(33),
@@ -264,11 +296,11 @@ async function testAdjustIndividualPaddingValue(edge: EdgePiece) {
     'await-first-dom-report',
   )
 
-  await testPaddingResizeForEdge(editor, dragDelta, edge)
+  await testPaddingResizeForEdge(editor, dragDelta, edge, precision)
   await editor.getDispatchFollowUpActionsFinished()
   expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
     makeTestProjectCodeWithStringPaddingValues(
-      paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding)),
+      paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding, precision)),
     ),
   )
 }
@@ -277,6 +309,7 @@ async function testPaddingResizeForEdge(
   editor: EditorRenderResult,
   delta: number,
   edge: EdgePiece,
+  precision: AdjustPrecision,
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -289,15 +322,16 @@ async function testPaddingResizeForEdge(
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
   const paddingControl = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
-  const bounds = paddingControl.getBoundingClientRect()
+  const paddingControlBounds = paddingControl.getBoundingClientRect()
 
-  const center = {
-    x: Math.floor(bounds.x + bounds.width / 2),
-    y: Math.floor(bounds.y + bounds.height / 2),
+  const paddingControlCenter = {
+    x: Math.floor(paddingControlBounds.x + paddingControlBounds.width / 2),
+    y: Math.floor(paddingControlBounds.y + paddingControlBounds.height / 2),
   }
-  const endPoint = offsetPointByEdge(edge, delta, center)
+  const endPoint = offsetPointByEdge(edge, delta, paddingControlCenter)
 
-  mouseDragFromPointToPoint(paddingControl, center, endPoint)
+  const modifiers = precision === 'coarse' ? shiftModifier : undefined
+  mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
   await editor.getDispatchFollowUpActionsFinished()
 }
 

@@ -95,7 +95,7 @@ export function ancestorMetaStrategy(
           apply: appendCommandsToApplyResult(s.apply, [
             appendElementsToRerenderCommand([target]),
             highlightElementsCommand([parentPath]),
-            setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
+            setCursorCommand(CSSCursor.MovingMagic),
           ]),
         })),
       )

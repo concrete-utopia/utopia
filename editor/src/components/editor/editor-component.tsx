@@ -44,6 +44,7 @@ import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
+import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -401,18 +402,26 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const useGithubData = (): void => {
   const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
-  const { githubAuthenticated, githubRepo, githubOperations } = useEditorState(
-    (store) => ({
-      githubAuthenticated: store.userState.githubState.authenticated,
-      githubRepo: store.editor.githubSettings.targetRepository,
-      githubOperations: store.editor.githubOperations,
-    }),
-    'Github data',
-  )
+  const { githubAuthenticated, githubRepo, githubOperations, branchName, githubChecksums } =
+    useEditorState(
+      (store) => ({
+        githubAuthenticated: store.userState.githubState.authenticated,
+        githubRepo: store.editor.githubSettings.targetRepository,
+        githubOperations: store.editor.githubOperations,
+        branchName: store.editor.githubSettings.branchName,
+        githubChecksums: store.editor.githubChecksums,
+      }),
+      'Github data',
+    )
 
   const refresh = React.useCallback(() => {
-    void refreshGithubData(dispatch, { githubAuthenticated, githubRepo })
-  }, [dispatch, githubAuthenticated, githubRepo])
+    void refreshGithubData(dispatch, {
+      githubAuthenticated,
+      githubRepo,
+      branchName,
+      branchChecksums: githubChecksums,
+    })
+  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums])
 
   // perform a straight refresh then the repo or the auth change
   React.useEffect(() => refresh(), [refresh])
@@ -432,10 +441,11 @@ const useGithubData = (): void => {
 }
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch } = useEditorState((store) => {
+  const { modal, dispatch, currentBranch } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       modal: store.editor.modal,
+      currentBranch: store.editor.githubSettings.branchName,
     }
   }, 'ModalComponent')
   if (modal != null) {
@@ -454,6 +464,11 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
         )
       case 'file-revert-all':
         return <ConfirmRevertAllDialogProps dispatch={dispatch} />
+      case 'disconnect-github-project':
+        if (currentBranch != null) {
+          return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />
+        }
+        break
     }
   }
   return null

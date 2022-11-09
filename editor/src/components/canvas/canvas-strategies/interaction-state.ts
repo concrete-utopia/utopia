@@ -72,23 +72,7 @@ export function isHoverInteractionData(inputData: InputData): inputData is Hover
 
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
-export interface ReparentTargetsToFilter {
-  'use-strict-bounds': ReparentTarget | null
-  'allow-missing-bounds': ReparentTarget | null
-}
-
-export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
 export type AllowSmallerParent = 'allow-smaller-parent' | 'disallow-smaller-parent'
-
-export function reparentTargetsToFilter(
-  strictBoundsTarget: ReparentTarget | null,
-  missingBoundsTarget: ReparentTarget | null,
-): ReparentTargetsToFilter {
-  return {
-    'use-strict-bounds': strictBoundsTarget,
-    'allow-missing-bounds': missingBoundsTarget,
-  }
-}
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag

@@ -1,3 +1,4 @@
+import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
@@ -30,18 +31,19 @@ import {
 import {
   EditorStorePatched,
   emptyGithubData,
+  emptyGithubSettings,
+  GithubChecksums,
+  GithubData,
   GithubOperation,
   GithubRepo,
   PersistentModel,
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { propOrNull } from './object-utils'
-import { forceNotNull } from './optional-utils'
+import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 import { emptySet } from './set-utils'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
-import { merge, mergeDiff3 } from 'node-diff3'
-import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -311,6 +313,7 @@ export async function updateProjectAgainstGithub(
               specificCommitContent.content,
               branchLatestContent.originCommit,
             ),
+            updateGithubData({ upstreamChanges: null }),
             showToast(notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS')),
           ],
           'everyone',
@@ -365,19 +368,25 @@ export async function updateProjectWithBranchContent(
         )
         break
       case 'SUCCESS':
-        const actions: Array<EditorAction> = [
-          updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
-          updateProjectContents(responseBody.content),
-          updateBranchContents(responseBody.content),
-          updateGithubSettings(
-            projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
-          ),
-          showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
-        ]
-        if (resetBranches) {
-          actions.push(updateGithubData({ branches: [] }))
+        const newGithubData: Partial<GithubData> = {
+          upstreamChanges: null,
         }
-        dispatch(actions, 'everyone')
+        if (resetBranches) {
+          newGithubData.branches = []
+        }
+        dispatch(
+          [
+            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
+            updateProjectContents(responseBody.content),
+            updateBranchContents(responseBody.content),
+            updateGithubSettings(
+              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+            ),
+            updateGithubData(newGithubData),
+            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
+          ],
+          'everyone',
+        )
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -495,6 +504,14 @@ export interface GithubFileChanges {
   untracked: Array<string>
   modified: Array<string>
   deleted: Array<string>
+}
+
+export function emptyGithubFileChanges(): GithubFileChanges {
+  return {
+    untracked: [],
+    modified: [],
+    deleted: [],
+  }
 }
 
 export function getGithubFileChangesCount(changes: GithubFileChanges | null): number {
@@ -685,24 +702,53 @@ export function mergeProjectContentsTree(
   }
 }
 
-export function refreshGithubData(
+export async function refreshGithubData(
   dispatch: EditorDispatch,
   {
     githubAuthenticated,
     githubRepo,
+    branchName,
+    branchChecksums,
   }: {
     githubAuthenticated: boolean
     githubRepo: GithubRepo | null
+    branchName: string | null
+    branchChecksums: GithubChecksums | null
   },
-): void {
+): Promise<void> {
   if (githubAuthenticated) {
     void getUsersPublicGithubRepositories(dispatch)
     if (githubRepo != null) {
+      let upstreamChangesSuccess = false
       void getBranchesForGithubRepository(dispatch, githubRepo)
+      if (branchName != null && branchChecksums != null) {
+        const branchContentResponse = await getBranchContentFromServer(githubRepo, branchName, null)
+        if (branchContentResponse.ok) {
+          const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
+          if (branchLatestContent.type === 'SUCCESS') {
+            upstreamChangesSuccess = true
+            const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.content)
+            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums)
+            dispatch([updateGithubData({ upstreamChanges: upstreamChanges })], 'everyone')
+          }
+        }
+      }
+      if (!upstreamChangesSuccess) {
+        dispatch([updateGithubData({ upstreamChanges: null })], 'everyone')
+      }
     } else {
       dispatch([updateGithubData({ branches: [] })], 'everyone')
     }
   } else {
     dispatch([updateGithubData(emptyGithubData())], 'everyone')
   }
+}
+
+export function disconnectGithubProjectActions(): EditorAction[] {
+  return [
+    updateGithubData(emptyGithubData()),
+    updateGithubChecksums({}),
+    updateBranchContents(null),
+    updateGithubSettings(emptyGithubSettings()),
+  ]
 }
