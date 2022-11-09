@@ -7,10 +7,10 @@ import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { staticContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-  staticContainerDirections,
 } from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 

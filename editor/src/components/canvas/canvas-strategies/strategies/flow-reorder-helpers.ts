@@ -34,6 +34,18 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+): boolean {
+  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
+  if (siblings.length === 1) {
+    return false
+  }
+
+  return staticContainerDirections(EP.parentPath(target), metadata) !== 'non-1d-static'
+}
+
+export function staticContainerDirections(
+  container: ElementPath,
+  metadata: ElementInstanceMetadataMap,
 ):
   | {
       direction: SimpleFlexDirection | null
@@ -41,57 +53,69 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
       flexOrFlow: 'flex' | 'flow'
     }
   | 'non-1d-static' {
-  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
-  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
-  if (targetElement == null || siblings.length === 1) {
+  const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
+  const children = MetadataUtils.getChildren(metadata, container)
+  if (containerElement == null) {
     return 'non-1d-static'
   }
 
-  if (MetadataUtils.isParentFlexLayoutedContainerForElement(targetElement)) {
-    const parentElement = MetadataUtils.getParent(metadata, target)
-    const flexDirection = MetadataUtils.getSimpleFlexDirection(parentElement)
+  const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
+
+  if (layoutSystem === 'flex') {
+    const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
     const targetDirection = flexDirection.direction === 'row' ? 'horizontal' : 'vertical' // TODO unify row and horizontal types
 
     const shouldReverse = flexDirection.forwardsOrBackwards === 'reverse'
-    const frames = mapDropNulls((sibling) => {
+    const childrenFrames = mapDropNulls((child) => {
       if (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          sibling.elementPath,
+          child.elementPath,
           metadata,
         )
       ) {
-        return sibling.globalFrame
+        return child.globalFrame
       } else {
         return null
       }
-    }, siblings)
+    }, children)
 
-    const is1D = areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    const is1D = areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
     if (!is1D) {
       return 'non-1d-static'
     }
     return { ...flexDirection, flexOrFlow: 'flex' }
-  } else {
-    const targetDirection = getElementDirection(targetElement)
+  } else if (layoutSystem === 'flow') {
+    if (children.length === 0) {
+      return {
+        direction: 'column',
+        forwardsOrBackwards: 'forward',
+        flexOrFlow: 'flow',
+      }
+    }
+    const firstChild = children[0]
+    const targetDirection = getElementDirection(firstChild)
     const shouldReverse =
       targetDirection === 'horizontal' &&
-      targetElement.specialSizeMeasurements?.textDirection === 'rtl'
+      firstChild.specialSizeMeasurements?.textDirection === 'rtl'
 
     let allHorizontalOrVertical = true
-    let frames: Array<CanvasRectangle> = []
-    fastForEach(siblings, (sibling) => {
-      if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
-        if (getElementDirection(sibling) !== targetDirection) {
+    let childrenFrames: Array<CanvasRectangle> = []
+
+    // TODO turn this into a loop with early return
+    fastForEach(children, (child) => {
+      if (isValidFlowReorderTarget(child.elementPath, metadata)) {
+        if (getElementDirection(child) !== targetDirection) {
           allHorizontalOrVertical = false
         }
-        if (sibling.globalFrame != null) {
-          frames.push(sibling.globalFrame)
+        if (child.globalFrame != null) {
+          childrenFrames.push(child.globalFrame)
         }
       }
     })
 
     const is1D =
-      allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+      allHorizontalOrVertical &&
+      areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
     if (!is1D) {
       return 'non-1d-static'
     }
@@ -100,6 +124,8 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
       forwardsOrBackwards: shouldReverse ? 'reverse' : 'forward',
       flexOrFlow: 'flow',
     }
+  } else {
+    return 'non-1d-static'
   }
 }
 

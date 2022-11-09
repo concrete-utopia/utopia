@@ -58,8 +58,8 @@ import {
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import {
-  areAllSiblingsInOneDimensionFlexOrFlow,
   getOptionalCommandToConvertDisplayInlineBlock,
+  staticContainerDirections,
 } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -370,7 +370,7 @@ export function getReparentTargetUnified(
   // if the mouse is over the canvas, return the canvas root as the target path
 
   const staticContainersUnderPoint = mapDropNulls((element) => {
-    const directionResults = staticContainerDirections(element, metadata)
+    const directionResults = getDirectionsForValidStaticReparentTarget(element, metadata)
     if (directionResults === 'non-1d-static') {
       return null
     }
@@ -420,13 +420,13 @@ export function getReparentTargetUnified(
     }
   }
 
-  // fall back to trying to find an absolute element, or the "background" area of a static element
+  // fall back to trying to find an absolute element, or the "background" area of a static container
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const staticDirection = staticContainerDirections(targetParentPath, metadata)
+  const staticDirection = getDirectionsForValidStaticReparentTarget(targetParentPath, metadata)
 
   if (staticDirection === 'non-1d-static') {
     // TODO we now assume this is "absolute", but this is too vauge
@@ -1022,7 +1022,10 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      const directions = staticContainerDirections(newParent, newParentStartingMetadata)
+      const directions = getDirectionsForValidStaticReparentTarget(
+        newParent,
+        newParentStartingMetadata,
+      )
 
       const convertDisplayInline =
         directions === 'non-1d-static' ||
@@ -1040,7 +1043,7 @@ export function getReparentPropertyChanges(
   }
 }
 
-export function staticContainerDirections(
+function getDirectionsForValidStaticReparentTarget(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ):
@@ -1054,37 +1057,16 @@ export function staticContainerDirections(
   if (elementMetadata == null) {
     return 'non-1d-static'
   }
-  const isFlex = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
-  const children = MetadataUtils.getChildren(metadata, path)
-
-  // TODO make it work if there is 0 children but the container is Flex!!!!!!!!!!!!
-
-  if (!isFlex && !isFlow) {
-    return 'non-1d-static'
-  }
-
-  if (isFlex) {
-    // TODO check if 1D! use areAllSiblingsInOneDimensionFlexOrFlow
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return { ...MetadataUtils.getSimpleFlexDirection(element), flexOrFlow: 'flex' }
-  } else {
-    const flowChildren = children.filter(
-      (child) => child.specialSizeMeasurements.position !== 'absolute',
-    )
-
+  const flowChildren = MetadataUtils.getChildren(metadata, path).filter(
+    (child) => child.specialSizeMeasurements.position !== 'absolute',
+  )
+  if (isFlow && flowChildren.length < 2) {
     // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
     // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
     // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
-    if (flowChildren.length < 2) {
-      return 'non-1d-static'
-    }
-
-    const directionResult = areAllSiblingsInOneDimensionFlexOrFlow(
-      children[0].elementPath,
-      metadata,
-    )
-
-    return directionResult
+    return 'non-1d-static'
   }
+
+  return staticContainerDirections(path, metadata)
 }
