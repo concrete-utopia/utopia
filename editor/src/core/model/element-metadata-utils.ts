@@ -99,6 +99,12 @@ import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import {
+  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToSimpleFlexDirection,
+  FlexForwardsOrBackwards,
+  SimpleFlexDirection,
+} from '../layout/layout-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -388,6 +394,17 @@ export const MetadataUtils = {
   },
   getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
+  },
+  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): {
+    direction: SimpleFlexDirection | null
+    forwardsOrBackwards: FlexForwardsOrBackwards | null
+  } {
+    // TODO move the actual helper functions here
+    const direction = MetadataUtils.getFlexDirection(instance)
+    return {
+      direction: flexDirectionToSimpleFlexDirection(direction),
+      forwardsOrBackwards: flexDirectionToFlexForwardsOrBackwards(direction),
+    }
   },
   getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)

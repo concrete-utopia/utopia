@@ -63,7 +63,7 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
-import { getElementDirection, is1DStaticContainer } from './flow-reorder-helpers'
+import { getElementDirection, staticContainerDirections } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -337,7 +337,7 @@ export function getReparentTargetUnified(
       validParentForStaticOrAbsolute = true
     } else {
       const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-      const is1DContainer = is1DStaticContainer(target, metadata)
+      const is1DContainer = staticContainerDirections(target, metadata) !== 'non-1d-static'
       const providesBoundsForAbsoluteChildren =
         targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
 
@@ -397,21 +397,25 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const staticContainersUnderPoint = [...filteredElementsUnderPoint]
-    .reverse()
-    .filter((element) => is1DStaticContainer(element, metadata))
+  const staticContainersUnderPoint = mapDropNulls((element) => {
+    const directionResults = staticContainerDirections(element, metadata)
+    if (directionResults === 'non-1d-static') {
+      return null
+    }
+    return {
+      path: element,
+      directions: directionResults,
+    }
+  }, [...filteredElementsUnderPoint].reverse())
 
   // first try to find a flex element insertion area
-  for (const staticElementPath of staticContainersUnderPoint) {
-    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(
-      metadata,
-      staticElementPath,
-    )
+  for (const staticContainer of staticContainersUnderPoint) {
+    const { direction, forwardsOrBackwards } = staticContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        staticElementPath,
+        staticContainer.path,
         'padded-edge',
         canvasScale,
         direction,
@@ -427,7 +431,7 @@ export function getReparentTargetUnified(
       // we found a target!
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        staticElementPath,
+        staticContainer.path,
         'padded-edge',
         canvasScale,
         direction,
@@ -436,7 +440,7 @@ export function getReparentTargetUnified(
       return {
         shouldReparent: true,
         shouldReorder: true,
-        newParent: staticElementPath,
+        newParent: staticContainer.path,
         newIndex: targetUnderMouseIndex,
       }
     }
@@ -448,9 +452,9 @@ export function getReparentTargetUnified(
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const is1DStatic = is1DStaticContainer(targetParentPath, metadata)
+  const staticDirection = staticContainerDirections(targetParentPath, metadata)
 
-  if (!is1DStatic) {
+  if (staticDirection === 'non-1d-static') {
     // TODO we now assume this is "absolute", but this is too vauge
     return {
       shouldReparent: true,
@@ -459,7 +463,7 @@ export function getReparentTargetUnified(
       newIndex: -1,
     }
   } else {
-    const { direction, forwardsOrBackwards } = getDirectionForFlexOrFlow(metadata, targetParentPath)
+    const { direction, forwardsOrBackwards } = staticDirection
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -494,7 +498,7 @@ const propertiesToRemove: Array<PropertyPath> = [
 
 function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
-  flexElementPath: ElementPath,
+  staticContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
   simpleFlexDirection: SimpleFlexDirection | null,
@@ -502,7 +506,7 @@ function drawTargetRectanglesForChildrenOfElement(
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(staticContainerPath, metadata)
 
   if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
     // TODO should we throw an error?
@@ -514,7 +518,7 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
-  const children = MetadataUtils.getChildrenPaths(metadata, flexElementPath)
+  const children = MetadataUtils.getChildrenPaths(metadata, staticContainerPath)
 
   interface ElemBounds {
     start: number
@@ -1027,40 +1031,5 @@ export function getReparentPropertyChanges(
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
-  }
-}
-
-function getDirectionForFlexOrFlow(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): {
-  direction: SimpleFlexDirection | null
-  forwardsOrBackwards: FlexForwardsOrBackwards | null
-} {
-  const instanceMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const isFlex = MetadataUtils.isFlexLayoutedContainer(instanceMetadata)
-
-  if (isFlex) {
-    const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-    const direction = MetadataUtils.getFlexDirection(element)
-    return {
-      direction: flexDirectionToSimpleFlexDirection(direction),
-      forwardsOrBackwards: flexDirectionToFlexForwardsOrBackwards(direction),
-    }
-  }
-  return {
-    direction: flowToStaticDirection(getElementDirection(instanceMetadata)),
-    forwardsOrBackwards: 'forward',
-  }
-}
-
-function flowToStaticDirection(dir: 'vertical' | 'horizontal'): SimpleFlexDirection {
-  switch (dir) {
-    case 'vertical':
-      return 'column'
-    case 'horizontal':
-      return 'row'
-    default:
-      assertNever(dir)
   }
 }

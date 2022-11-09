@@ -27,7 +27,7 @@ import {
 } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { is1DStaticContainer } from './flow-reorder-helpers'
+import { staticContainerDirections } from './flow-reorder-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
   existingReparentSubjects,
@@ -106,12 +106,11 @@ export function getApplicableReparentFactories(
             ? 'flex'
             : 'flow'
 
-        const nrDimensions = is1DStaticContainer(
-          result.target.newParent,
-          canvasState.startingMetadata,
-        )
-          ? 1
-          : 2
+        const nrDimensions =
+          staticContainerDirections(result.target.newParent, canvasState.startingMetadata) ===
+          'non-1d-static'
+            ? 2
+            : 1
 
         return {
           targetParent: result.target.newParent,

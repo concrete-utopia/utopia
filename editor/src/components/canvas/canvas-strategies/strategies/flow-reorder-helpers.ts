@@ -1,3 +1,9 @@
+import {
+  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToSimpleFlexDirection,
+  FlexForwardsOrBackwards,
+  SimpleFlexDirection,
+} from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
@@ -30,55 +36,75 @@ export function isValidFlowReorderTarget(
   }
 }
 
-export function is1DStaticContainer(
+// maybe move this to reparent-strategy-helpers
+export function staticContainerDirections(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): boolean {
+):
+  | {
+      direction: SimpleFlexDirection | null
+      forwardsOrBackwards: FlexForwardsOrBackwards | null
+    }
+  | 'non-1d-static' {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (elementMetadata == null) {
-    return false
+    return 'non-1d-static'
   }
   const isFlex = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
   const isFlow = elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flow'
+  const children = MetadataUtils.getChildren(metadata, path)
+
+  // TODO make it work if there is 0 children but the container is Flex!!!!!!!!!!!!
+
   if (!isFlex && !isFlow) {
-    return false
+    return 'non-1d-static'
   }
 
   if (isFlex) {
-    return true // TODO: only return true if it is one dimensional
+    // TODO check if 1D!
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.getSimpleFlexDirection(element)
+  } else {
+    const flowChildren = children.filter(
+      (child) => child.specialSizeMeasurements.position !== 'absolute',
+    )
+
+    // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
+    // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
+    // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
+    if (flowChildren.length < 2) {
+      return 'non-1d-static'
+    }
+
+    const directionResult = areAllSiblingsInOneDimensionFlexOrFlow(
+      children[0].elementPath,
+      metadata,
+    )
+
+    return directionResult
   }
-
-  const children = MetadataUtils.getChildren(metadata, path)
-
-  const flowChildren = children.filter(
-    (child) => child.specialSizeMeasurements.position !== 'absolute',
-  )
-
-  if (flowChildren.length < 2) {
-    return false
-  }
-
-  // TODO we should probably (re) use the rules from flowParentAbsoluteOrStatic here
-  // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
-
-  return areAllSiblingsInOneDimensionFlexOrFlow(children[0].elementPath, metadata)
 }
 
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): boolean {
+):
+  | {
+      direction: SimpleFlexDirection | null
+      forwardsOrBackwards: FlexForwardsOrBackwards | null
+    }
+  | 'non-1d-static' {
   const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
   const siblings = MetadataUtils.getSiblings(metadata, target) // including target
   if (targetElement == null || siblings.length === 1) {
-    return false
+    return 'non-1d-static'
   }
 
   if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
-    const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
-    const targetDirection =
-      flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
-    const shouldReverse = flexDirection?.includes('reverse') ?? false
+    const flexDirection = MetadataUtils.getSimpleFlexDirection(targetElement)
+    const targetDirection = flexDirection.direction === 'row' ? 'horizontal' : 'vertical' // TODO unify row and horizontal types
+
+    const shouldReverse = flexDirection.forwardsOrBackwards === 'reverse'
     const frames = mapDropNulls((sibling) => {
       if (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -92,7 +118,11 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
       }
     }, siblings)
 
-    return areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    const is1D = areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-1d-static'
+    }
+    return flexDirection
   } else {
     const targetDirection = getElementDirection(targetElement)
     const shouldReverse =
@@ -112,7 +142,15 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
       }
     })
 
-    return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    const is1D =
+      allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-1d-static'
+    }
+    return {
+      direction: targetDirection === 'horizontal' ? 'row' : 'column', // TODO use 'horizontal' | 'vertical' in the main type
+      forwardsOrBackwards: shouldReverse ? 'reverse' : 'forward',
+    }
   }
 }
 

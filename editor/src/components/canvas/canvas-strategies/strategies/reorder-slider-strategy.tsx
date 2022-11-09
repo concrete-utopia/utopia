@@ -41,7 +41,8 @@ export function reorderSliderStategy(
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       canvasState.startingMetadata,
-    ) && !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
+    ) &&
+    areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata) === 'non-1d-static'
 
   if (
     siblings.length <= 1 ||
