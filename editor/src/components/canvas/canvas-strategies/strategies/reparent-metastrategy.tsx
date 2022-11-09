@@ -19,7 +19,6 @@ import {
 } from '../canvas-strategy-types'
 import {
   AllowSmallerParent,
-  DragInteractionData,
   InteractionSession,
   MissingBoundsHandling,
   reparentTargetsToFilter,
@@ -27,13 +26,10 @@ import {
 } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { staticContainerDirections } from './flow-reorder-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
-  existingReparentSubjects,
   findReparentStrategies,
   getReparentTargetUnified,
-  newReparentSubjects,
   ReparentStrategy,
   reparentSubjectsForInteractionTarget,
 } from './reparent-strategy-helpers'
@@ -106,12 +102,6 @@ export function getApplicableReparentFactories(
             ? 'flex'
             : 'flow'
 
-        const nrDimensions =
-          staticContainerDirections(result.target.newParent, canvasState.startingMetadata) ===
-          'non-1d-static'
-            ? 2
-            : 1
-
         return {
           targetParent: result.target.newParent,
           targetIndex: result.target.newIndex,
@@ -119,12 +109,7 @@ export function getApplicableReparentFactories(
           missingBoundsHandling: result.missingBoundsHandling,
           targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
-          factory: baseReparentAsStaticStrategy(
-            result.target,
-            fitness,
-            targetParentDisplayType,
-            nrDimensions,
-          ),
+          factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
       default:

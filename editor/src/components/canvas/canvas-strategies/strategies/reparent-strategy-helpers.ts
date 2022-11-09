@@ -63,7 +63,7 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession, MissingBoundsHandling } from '../interaction-state'
-import { getElementDirection, staticContainerDirections } from './flow-reorder-helpers'
+import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -1031,5 +1031,54 @@ export function getReparentPropertyChanges(
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
+  }
+}
+
+// maybe move this to reparent-strategy-helpers
+function staticContainerDirections(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+):
+  | {
+      direction: SimpleFlexDirection | null
+      forwardsOrBackwards: FlexForwardsOrBackwards | null
+    }
+  | 'non-1d-static' {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (elementMetadata == null) {
+    return 'non-1d-static'
+  }
+  const isFlex = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flex'
+  const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
+  const children = MetadataUtils.getChildren(metadata, path)
+
+  // TODO make it work if there is 0 children but the container is Flex!!!!!!!!!!!!
+
+  if (!isFlex && !isFlow) {
+    return 'non-1d-static'
+  }
+
+  if (isFlex) {
+    // TODO check if 1D!
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.getSimpleFlexDirection(element)
+  } else {
+    const flowChildren = children.filter(
+      (child) => child.specialSizeMeasurements.position !== 'absolute',
+    )
+
+    // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
+    // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
+    // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
+    if (flowChildren.length < 2) {
+      return 'non-1d-static'
+    }
+
+    const directionResult = areAllSiblingsInOneDimensionFlexOrFlow(
+      children[0].elementPath,
+      metadata,
+    )
+
+    return directionResult
   }
 }
