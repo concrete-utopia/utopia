@@ -749,6 +749,6 @@ export function disconnectGithubProjectActions(): EditorAction[] {
     updateGithubData(emptyGithubData()),
     updateGithubChecksums({}),
     updateBranchContents(null),
-    updateGithubSettings({ ...emptyGithubSettings() }),
+    updateGithubSettings(emptyGithubSettings()),
   ]
 }
