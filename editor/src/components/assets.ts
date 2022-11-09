@@ -77,9 +77,7 @@ export function deriveGithubFileChanges(
   let untracked: Array<string> = []
   let modified: Array<string> = []
   let deleted: Array<string> = []
-  let conflicted: Array<string> = []
-
-  conflicted = Object.keys(treeConflicts)
+  const conflicted: Array<string> = Object.keys(treeConflicts)
   const conflictedSet = new Set(conflicted)
 
   projectFiles.forEach((f) => {
