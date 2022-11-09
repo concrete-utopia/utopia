@@ -209,8 +209,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         position: 'absolute',
         left: bounds.x,
         top: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
+        width: bounds.width || 1,
+        height: bounds.height || 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -240,12 +240,14 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         )}
         {when(
           backgroundShown,
-          <PillHandle
-            width={width}
-            height={height}
-            pillColor={indicatorColor}
-            borderWidth={borderWidth}
-          />,
+          <div style={{ position: 'absolute' }}>
+            <PillHandle
+              width={width}
+              height={height}
+              pillColor={indicatorColor}
+              borderWidth={borderWidth}
+            />
+          </div>,
         )}
       </div>
     </div>
