@@ -3480,7 +3480,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.focusedElementPath,
   )
   const configResults = UtopiaVSCodeConfigKeepDeepEquality(oldValue.config, newValue.config)
-  const themeResults = createCallWithTripleEquals<Theme>()(oldValue.theme, newValue.theme)
   const vscodeLoadingScreenVisibleResults = BooleanKeepDeepEquality(
     oldValue.vscodeLoadingScreenVisible,
     newValue.vscodeLoadingScreenVisible,
@@ -3589,7 +3588,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeReadyResults.areEqual &&
     focusedElementPathResults.areEqual &&
     configResults.areEqual &&
-    themeResults.areEqual &&
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
@@ -3665,7 +3663,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       vscodeReadyResults.value,
       focusedElementPathResults.value,
       configResults.value,
-      themeResults.value,
       vscodeLoadingScreenVisibleResults.value,
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
