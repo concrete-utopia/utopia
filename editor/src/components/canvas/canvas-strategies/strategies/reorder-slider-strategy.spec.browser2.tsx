@@ -12,7 +12,7 @@ import { IconSize } from '../../controls/reorder-slider-control'
 import { ReorderChangeThreshold } from './flow-reorder-helpers'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 
-const TestProject = `
+const TestProjectComplex = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
   <div
     style={{
@@ -169,11 +169,43 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
-const TestProjectFlex = `
-<div style={{ width: 100, height: '100%', position: 'absolute', display: 'flex', flexWrap: 'wrap' }} data-uid='container'>
+const TestProjectSimpleBlocks = `
+<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
   <div
     style={{
-      width: 70,
+      width: 50,
+      height: 50,
+      backgroundColor: '#CA1E4C80',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#297374',
+    }}
+    data-uid='bbb'
+    data-testid='bbb'
+  />
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#297374',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+</div>
+`
+
+const TestProjectFlex = (flexWrap: 'wrap' | 'nowrap') => `
+<div style={{ width: 200, height: '100%', position: 'absolute', display: 'flex', flexWrap: '${flexWrap}' }} data-uid='container'>
+  <div
+    style={{
+      width: 100,
       height: 50,
       backgroundColor: '#CA1E4C80',
     }}
@@ -188,6 +220,24 @@ const TestProjectFlex = `
     }}
     data-uid='bbb'
     data-testid='bbb'
+  />
+  <div
+    style={{
+      width: 40,
+      height: 50,
+      backgroundColor: '#2D2974',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+  <div
+    style={{
+      width: 30,
+      height: 50,
+      backgroundColor: '#F8731B',
+    }}
+    data-uid='ddd'
+    data-testid='ddd'
   />
 </div>
 `
@@ -219,7 +269,7 @@ function dragControl(
 describe('Reorder Slider Strategy', () => {
   it('dragging the control in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestProjectComplex),
       'await-first-dom-report',
     )
 
@@ -253,7 +303,7 @@ describe('Reorder Slider Strategy', () => {
   })
   it('dragging a control for a block element, reorder is using conversion to inline row', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestProjectComplex),
       'await-first-dom-report',
     )
 
@@ -288,7 +338,7 @@ describe('Reorder Slider Strategy', () => {
   })
   it('dragging the control too far to the right restarts the reorder after reaching the end', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestProjectComplex),
       'await-first-dom-report',
     )
 
@@ -321,9 +371,12 @@ describe('Reorder Slider Strategy', () => {
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
   })
+})
+
+describe('Reorder Slider Strategy Control', () => {
   it('the reorder control is visible on wrapping flex layouts', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectFlex),
+      makeTestProjectCodeWithSnippet(TestProjectFlex('wrap')),
       'await-first-dom-report',
     )
 
@@ -341,9 +394,9 @@ describe('Reorder Slider Strategy', () => {
     const targetControl = renderResult.renderedDOM.getByTestId('reorder-slider-control')
     expect(targetControl).toBeDefined()
   })
-  it('the reorder control is visible on flow layouts', async () => {
+  it('the reorder control is visible on wrapping flow layouts', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestProjectComplex),
       'await-first-dom-report',
     )
 
@@ -360,5 +413,45 @@ describe('Reorder Slider Strategy', () => {
 
     const targetControl = renderResult.renderedDOM.getByTestId('reorder-slider-control')
     expect(targetControl).toBeDefined()
+  })
+  it('the reorder control is not visible on non-wrapping flex layouts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlex('nowrap')),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bbb')],
+          false,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
+    expect(targetControl).toBeNull()
+  })
+  it('the reorder control is not visible on simple, 1d flow layouts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectSimpleBlocks),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc')],
+          false,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
+    expect(targetControl).toBeNull()
   })
 })
