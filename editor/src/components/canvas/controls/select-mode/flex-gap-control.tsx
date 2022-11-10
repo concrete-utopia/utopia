@@ -32,6 +32,7 @@ import {
   CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
+  StripeOpacity,
   useHoverWithDelay,
 } from './controls-common'
 
@@ -47,7 +48,7 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.brandNeonPink.value
+  const indicatorColor = colorTheme.brandNeonPink.o(StripeOpacity).value
 
   const [indicatorShown, setIndicatorShown] = useState<string | null>(null)
   const [backgroundShown, setBackgroundShown] = useState<boolean>(false)
@@ -184,6 +185,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     backgroundShown,
   } = props
 
+  const colorTheme = useColorTheme()
+
   const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
   const { width, height } = handleDimensions(flexDirection, scale)
@@ -235,7 +238,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel value={gapValue} scale={scale} color={indicatorColor} />
+            <CSSNumberLabel value={gapValue} scale={scale} color={colorTheme.brandNeonPink.value} />
           </div>,
         )}
         {when(
@@ -243,7 +246,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           <PillHandle
             width={width}
             height={height}
-            pillColor={indicatorColor}
+            pillColor={colorTheme.brandNeonPink.value}
             borderWidth={borderWidth}
           />,
         )}
