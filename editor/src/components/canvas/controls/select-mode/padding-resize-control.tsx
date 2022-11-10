@@ -18,7 +18,6 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isZeroSizedElement } from '../outline-utils'
 import {
   CSSNumberLabel,
   CSSNumberWithRenderedValue,
