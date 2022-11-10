@@ -19,7 +19,7 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, isRight, left } from '../../core/shared/either'
+import { applicative4Either, eitherToMaybe, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -40,6 +40,7 @@ import {
   CSSPosition,
   positionValues,
   computedStyleKeys,
+  parseDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -851,6 +852,7 @@ function getSpecialMeasurements(
   const parentProvidesLayout = element.parentElement === element.offsetParent
   const parentFlexDirection = parentElementStyle?.flexDirection ?? null
   const flexDirection = elementStyle.flexDirection ?? null
+  const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -943,7 +945,7 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
-    elementStyle.direction,
+    parentTextDirection,
     hasTransform,
   )
 }
