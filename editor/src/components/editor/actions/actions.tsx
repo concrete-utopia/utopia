@@ -2831,6 +2831,7 @@ export const UPDATE_FNS = {
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename,
               pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
             )
 
             const allCommands = [...reparentCommands, ...propertyChangeCommands]

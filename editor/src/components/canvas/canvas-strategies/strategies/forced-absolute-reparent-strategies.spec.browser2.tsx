@@ -802,8 +802,8 @@ describe('Fallback Absolute Reparent Strategies', () => {
     }
 
     const dragDelta = windowPoint({
-      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x,
-      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y,
+      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x - 2, // TODO BALAZS remove these -2's once this is fixed https://github.com/concrete-utopia/utopia/issues/2739
+      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y - 2,
     })
     await dragElement(renderResult, 'ccc', dragDelta, cmdModifier)
 
