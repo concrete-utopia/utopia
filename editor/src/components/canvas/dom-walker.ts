@@ -915,7 +915,7 @@ function getSpecialMeasurements(
   const hasTransform = elementStyle.transform !== 'none'
 
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
-  const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : null
+  const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
   return specialSizeMeasurements(
     offset,
