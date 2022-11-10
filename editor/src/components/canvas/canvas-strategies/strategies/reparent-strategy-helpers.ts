@@ -451,14 +451,6 @@ export function getReparentTargetUnified(
 
     if (targetUnderMouseIndex != null) {
       // we found a target!
-      drawTargetRectanglesForChildrenOfElement(
-        metadata,
-        singleAxisAutoLayoutContainer.path,
-        'padded-edge',
-        canvasScale,
-        direction,
-        forwardsOrBackwards,
-      )
       return {
         shouldReparent: true,
         shouldReorder: true,
