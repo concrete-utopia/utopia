@@ -169,11 +169,11 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
-const TestProjectFlex = `
-<div style={{ width: 100, height: '100%', position: 'absolute', display: 'flex', flexWrap: 'wrap' }} data-uid='container'>
+const TestProjectFlex = (flexWrap: 'wrap' | 'nowrap') => `
+<div style={{ width: 200, height: '100%', position: 'absolute', display: 'flex', flexWrap: '${flexWrap}' }} data-uid='container'>
   <div
     style={{
-      width: 70,
+      width: 100,
       height: 50,
       backgroundColor: '#CA1E4C80',
     }}
@@ -188,6 +188,24 @@ const TestProjectFlex = `
     }}
     data-uid='bbb'
     data-testid='bbb'
+  />
+  <div
+    style={{
+      width: 40,
+      height: 50,
+      backgroundColor: '#2D2974',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
+  />
+  <div
+    style={{
+      width: 30,
+      height: 50,
+      backgroundColor: '#F8731B',
+    }}
+    data-uid='ddd'
+    data-testid='ddd'
   />
 </div>
 `
@@ -321,9 +339,29 @@ describe('Reorder Slider Strategy', () => {
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
   })
+  it('the reorder control is not visible on non-wrapping flex layouts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlex('nowrap')),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bbb')],
+          false,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
+    expect(targetControl).toBeNull()
+  })
   it('the reorder control is visible on wrapping flex layouts', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectFlex),
+      makeTestProjectCodeWithSnippet(TestProjectFlex('wrap')),
       'await-first-dom-report',
     )
 
