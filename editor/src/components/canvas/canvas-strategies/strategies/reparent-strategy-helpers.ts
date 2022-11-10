@@ -169,9 +169,18 @@ function reparentStrategyForReparentTarget(
   target: ReparentTarget,
   convertToAbsolute: boolean, // TODO this can probably be cleaned up in a follow-up PR
 ): FindReparentStrategyResult {
-  return {
-    ...reparentStrategyForParent(targetMetadata, target.newParent, convertToAbsolute),
-    target: target,
+  if (target.defaultReparentType === 'static') {
+    return {
+      strategy: 'REPARENT_AS_STATIC',
+      isFallback: false,
+      target: target,
+    }
+  } else {
+    return {
+      strategy: 'REPARENT_AS_ABSOLUTE',
+      isFallback: convertToAbsolute,
+      target: target,
+    }
   }
 }
 
@@ -199,16 +208,14 @@ export function findReparentStrategies(
 
   const strategy = reparentStrategyForReparentTarget(metadata, targetParent, false)
 
-  const fallbackStrategy: FindReparentStrategyResult =
-    strategy.strategy === 'REPARENT_AS_ABSOLUTE'
-      ? // in case of an absolute reparent to a flow parent, we want to offer a secondary option to reparent as static
-        {
-          isFallback: true,
-          target: strategy.target,
-          strategy: 'REPARENT_AS_STATIC',
-        }
-      : // in case of a static reparent, we want to offer a secondary option to force absolute.
-        reparentStrategyForReparentTarget(metadata, targetParent, true)
+  const fallbackStrategy: FindReparentStrategyResult = {
+    isFallback: true,
+    target: strategy.target,
+    strategy:
+      strategy.strategy === 'REPARENT_AS_ABSOLUTE'
+        ? 'REPARENT_AS_STATIC' // in case of an absolute reparent to a flow parent, we want to offer a secondary option to reparent as static
+        : 'REPARENT_AS_ABSOLUTE', // in case of a static reparent, we want to offer a secondary option to force absolute.
+  }
 
   return [strategy, fallbackStrategy]
 }
@@ -219,7 +226,7 @@ export interface ReparentTarget {
   shouldReorder: boolean
   newIndex: number
   shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
-  // TODO add shouldBeStaticReparentOrAbsolute here!! then remove 100 lines of code
+  defaultReparentType: 'static' | 'absolute'
 }
 
 export function reparentTarget(
@@ -228,6 +235,7 @@ export function reparentTarget(
   shouldReorder: boolean,
   newIndex: number,
   shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
+  defaultReparentType: 'static' | 'absolute',
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
@@ -235,6 +243,7 @@ export function reparentTarget(
     shouldReorder: shouldReorder,
     newIndex: newIndex,
     shouldConvertToInline: shouldConvertToInline,
+    defaultReparentType: defaultReparentType,
   }
 }
 
@@ -417,6 +426,7 @@ export function getReparentTargetUnified(
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
           flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
+        defaultReparentType: 'static',
       }
     }
   }
@@ -437,6 +447,10 @@ export function getReparentTargetUnified(
       shouldReorder: false,
       newIndex: -1,
       shouldConvertToInline: 'do-not-convert',
+      defaultReparentType:
+        flowParentAbsoluteOrStatic(metadata, targetParentPath) === 'REPARENT_AS_ABSOLUTE' // TODO BEFORE MERGE move this check to singleAxisAutoLayoutContainersUnderPoint
+          ? 'absolute'
+          : 'static',
     }
   } else {
     const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
@@ -463,6 +477,7 @@ export function getReparentTargetUnified(
       newIndex: targetUnderMouseIndex ?? -1,
       shouldConvertToInline:
         flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
+      defaultReparentType: 'static',
     }
   }
 }
