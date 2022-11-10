@@ -2,6 +2,8 @@
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  EditorRenderResult,
+  getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -19,9 +21,12 @@ import { CSSCursor } from '../../../../uuiui-deps'
 import {
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  mouseDownAtPoint,
   mouseMoveToPoint,
+  mouseUpAtPoint,
+  pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
 
 function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
   mouseMoveToPoint(target, { x: clientX, y: clientY })
@@ -720,6 +725,224 @@ describe('Selection with locked elements', () => {
     doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+})
+
+describe('mouseup selection', () => {
+  const MouseupTestProject = makeTestProjectCodeWithSnippet(`
+    <div
+      style={{ width: '100%', height: '100%' }}
+      data-uid='app-root'
+    >
+      <div
+        data-uid='red'
+        data-testid='red'
+        style={{
+          position: 'absolute',
+          left: 0,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'red',
+        }}
+      />
+      <div
+        data-uid='blue'
+        data-testid='blue'
+        style={{
+          position: 'absolute',
+          left: 75,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'blue',
+        }}
+      />
+      <div
+        data-uid='green'
+        data-testid='green'
+        style={{
+          position: 'absolute',
+          left: 150,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'green',
+        }}
+      />
+    </div>
+  `)
+
+  const RedPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'red'],
+  ])
+  const BluePath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'blue'],
+  ])
+  const GreenPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'green'],
+  ])
+
+  async function getElementRect(testId: string, renderResult: EditorRenderResult) {
+    const targetElement = await renderResult.renderedDOM.findByTestId(testId)
+    return targetElement.getBoundingClientRect()
+  }
+
+  function getDOMRectCentre(domRect: DOMRect) {
+    return {
+      x: domRect.x + domRect.width / 2,
+      y: domRect.y + domRect.height / 2,
+    }
+  }
+
+  async function getElementCentre(testId: string, renderResult: EditorRenderResult) {
+    const elementRect = await getElementRect(testId, renderResult)
+    return getDOMRectCentre(elementRect)
+  }
+
+  it('mouseup in the gap between a multi-selection will select the element behind if no drag happens', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+    const greenCentre = await getElementCentre('green', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    mouseClickAtPoint(canvasControlsLayer, greenCentre, { modifiers: shiftCmdModifier })
+
+    // Check we have multi-selected the red and green elements
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // mousedown over the blue element to check that doesn't select it, as it is within the multiselect bounds
+    mouseMoveToPoint(canvasControlsLayer, blueCentre)
+    mouseDownAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // now mouseup over that blue element to check that it _does_ select it
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([BluePath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  it('mouseup in the gap between a multi-selection will not select the element behind if a drag happens', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+    const greenCentre = await getElementCentre('green', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    mouseClickAtPoint(canvasControlsLayer, greenCentre, { modifiers: shiftCmdModifier })
+
+    // Check we have multi-selected the red and green elements
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // mousedown over the blue element to check that doesn't select it, as it is within the multiselect bounds
+    mouseMoveToPoint(canvasControlsLayer, blueCentre)
+    mouseDownAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // trigger enough of a drag to surpass the dragging threshold, but move the element back
+    mouseMoveToPoint(canvasControlsLayer, redCentre, { eventOptions: { buttons: 1 } })
+    mouseMoveToPoint(canvasControlsLayer, blueCentre, { eventOptions: { buttons: 1 } })
+
+    // now mouseup over that blue element to check that the selection doesn't change
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  it('mouseup does not change selection after a cancelled interaction', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Drag the red element directly over the blue element
+    mouseDownAtPoint(canvasControlsLayer, redCentre)
+    mouseMoveToPoint(canvasControlsLayer, blueCentre, { eventOptions: { buttons: 1 } })
+
+    // Cancel the interaction, then mouseup and check that the selection wasn't changed
+    pressKey('Escape')
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  xit('clicking on the catchment area of a control but over another element does not change the selection', async () => {
+    // FIXME for some reason the absolute resize controls don't capture the mousedown event here
+    // even though they definitely should
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redElementRect = await getElementRect('red', renderResult)
+    const redCentre = getDOMRectCentre(redElementRect)
+
+    // Far enough to the left to be outside of the element, but still inside the resize control
+    // catchment area
+    const justToTheLeftOfRedElement = {
+      x: redElementRect.x - 2,
+      y: redElementRect.y + redElementRect.height / 2,
+    }
+
+    // Miles away
+    const farToTheLeftOfRedElement = {
+      x: redElementRect.x - 200,
+      y: redElementRect.y + redElementRect.height / 2,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Click just to the left of the red element
+    mouseMoveToPoint(canvasControlsLayer, justToTheLeftOfRedElement)
+    mouseClickAtPoint(canvasControlsLayer, justToTheLeftOfRedElement)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Just to be sure, if we move further left it clears the selection
+    mouseMoveToPoint(canvasControlsLayer, farToTheLeftOfRedElement)
+    mouseClickAtPoint(canvasControlsLayer, farToTheLeftOfRedElement)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
   })
 })
 
