@@ -69,18 +69,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
-  const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
-      ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
-
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
     selectedElement,
@@ -97,7 +85,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={FlexGapControlTestId} ref={controlRef}>
+      <div data-testid={FlexGapControlTestId}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
           return (
