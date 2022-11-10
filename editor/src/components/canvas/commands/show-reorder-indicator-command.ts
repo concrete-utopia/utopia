@@ -7,7 +7,7 @@ import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { staticContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
+import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
@@ -39,9 +39,12 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     return { editorStatePatches: [], commandDescription: `Show reorder indicator FAILED` }
   }
 
-  const staticContainerDirection = staticContainerDirections(command.target, editor.jsxMetadata)
+  const staticContainerDirection = singleAxisAutoLayoutContainerDirections(
+    command.target,
+    editor.jsxMetadata,
+  )
 
-  if (staticContainerDirection === 'non-1d-static') {
+  if (staticContainerDirection === 'non-single-axis-autolayout') {
     return {
       editorStatePatches: [],
       commandDescription: `Show reorder indicator FAILED: non 1d static parent`,

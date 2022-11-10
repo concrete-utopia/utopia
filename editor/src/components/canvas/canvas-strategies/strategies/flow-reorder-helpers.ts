@@ -40,10 +40,13 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return false
   }
 
-  return staticContainerDirections(EP.parentPath(target), metadata) !== 'non-1d-static'
+  return (
+    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
+    'non-single-axis-autolayout'
+  )
 }
 
-export function staticContainerDirections(
+export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ):
@@ -52,11 +55,11 @@ export function staticContainerDirections(
       forwardsOrBackwards: FlexForwardsOrBackwards | null
       flexOrFlow: 'flex' | 'flow'
     }
-  | 'non-1d-static' {
+  | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
   const children = MetadataUtils.getChildren(metadata, container)
   if (containerElement == null) {
-    return 'non-1d-static'
+    return 'non-single-axis-autolayout'
   }
 
   const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
@@ -81,7 +84,7 @@ export function staticContainerDirections(
 
     const is1D = areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
     if (!is1D) {
-      return 'non-1d-static'
+      return 'non-single-axis-autolayout'
     }
     return { ...flexDirection, flexOrFlow: 'flex' }
   } else if (layoutSystem === 'flow') {
@@ -117,7 +120,7 @@ export function staticContainerDirections(
       allHorizontalOrVertical &&
       areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
     if (!is1D) {
-      return 'non-1d-static'
+      return 'non-single-axis-autolayout'
     }
     return {
       direction: targetDirection === 'horizontal' ? 'row' : 'column', // TODO use 'horizontal' | 'vertical' in the main type
@@ -125,7 +128,7 @@ export function staticContainerDirections(
       flexOrFlow: 'flow',
     }
   } else {
-    return 'non-1d-static'
+    return 'non-single-axis-autolayout'
   }
 }
 

@@ -59,7 +59,7 @@ import {
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
-  staticContainerDirections,
+  singleAxisAutoLayoutContainerDirections,
 } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -369,25 +369,25 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const staticContainersUnderPoint = mapDropNulls((element) => {
-    const directionResults = getDirectionsForValidStaticReparentTarget(element, metadata)
-    if (directionResults === 'non-1d-static') {
+  const singleAxisAutoLayotuContainersUnderPoint = mapDropNulls((element) => {
+    const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(element, metadata)
+    if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
     return {
       path: element,
-      directions: directionResults,
+      directions: autolayoutDirection,
     }
   }, [...filteredElementsUnderPoint].reverse())
 
   // first try to find a flex element insertion area
-  for (const staticContainer of staticContainersUnderPoint) {
-    const { direction, forwardsOrBackwards, flexOrFlow } = staticContainer.directions
+  for (const singleAxisAutoLayoutContainer of singleAxisAutoLayotuContainersUnderPoint) {
+    const { direction, forwardsOrBackwards, flexOrFlow } = singleAxisAutoLayoutContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        staticContainer.path,
+        singleAxisAutoLayoutContainer.path,
         'padded-edge',
         canvasScale,
         direction,
@@ -403,7 +403,7 @@ export function getReparentTargetUnified(
       // we found a target!
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        staticContainer.path,
+        singleAxisAutoLayoutContainer.path,
         'padded-edge',
         canvasScale,
         direction,
@@ -412,7 +412,7 @@ export function getReparentTargetUnified(
       return {
         shouldReparent: true,
         shouldReorder: true,
-        newParent: staticContainer.path,
+        newParent: singleAxisAutoLayoutContainer.path,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
           flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
@@ -420,15 +420,15 @@ export function getReparentTargetUnified(
     }
   }
 
-  // fall back to trying to find an absolute element, or the "background" area of a static container
+  // fall back to trying to find an absolute element, or the "background" area of an autolayout container
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const staticDirection = getDirectionsForValidStaticReparentTarget(targetParentPath, metadata)
+  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
 
-  if (staticDirection === 'non-1d-static') {
+  if (autolayoutDirection === 'non-single-axis-autolayout') {
     // TODO we now assume this is "absolute", but this is too vauge
     return {
       shouldReparent: true,
@@ -438,7 +438,7 @@ export function getReparentTargetUnified(
       shouldConvertToInline: 'do-not-convert',
     }
   } else {
-    const { direction, forwardsOrBackwards, flexOrFlow } = staticDirection
+    const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -475,7 +475,7 @@ const propertiesToRemove: Array<PropertyPath> = [
 
 function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
-  staticContainerPath: ElementPath,
+  singleAxisAutolayoutContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
   simpleFlexDirection: SimpleFlexDirection | null,
@@ -483,7 +483,10 @@ function drawTargetRectanglesForChildrenOfElement(
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(staticContainerPath, metadata)
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+    singleAxisAutolayoutContainerPath,
+    metadata,
+  )
 
   if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
     // TODO should we throw an error?
@@ -495,7 +498,7 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
-  const children = MetadataUtils.getChildrenPaths(metadata, staticContainerPath)
+  const children = MetadataUtils.getChildrenPaths(metadata, singleAxisAutolayoutContainerPath)
 
   interface ElemBounds {
     start: number
@@ -1022,13 +1025,13 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      const directions = getDirectionsForValidStaticReparentTarget(
+      const directions = getDirectionsForSingleAxisAutoLayoutTarget(
         newParent,
         newParentStartingMetadata,
       )
 
       const convertDisplayInline =
-        directions === 'non-1d-static' ||
+        directions === 'non-single-axis-autolayout' ||
         directions.direction == null ||
         directions.flexOrFlow === 'flex'
           ? 'do-not-convert'
@@ -1043,7 +1046,7 @@ export function getReparentPropertyChanges(
   }
 }
 
-function getDirectionsForValidStaticReparentTarget(
+function getDirectionsForSingleAxisAutoLayoutTarget(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ):
@@ -1052,10 +1055,10 @@ function getDirectionsForValidStaticReparentTarget(
       forwardsOrBackwards: FlexForwardsOrBackwards | null
       flexOrFlow: 'flex' | 'flow'
     }
-  | 'non-1d-static' {
+  | 'non-single-axis-autolayout' {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (elementMetadata == null) {
-    return 'non-1d-static'
+    return 'non-single-axis-autolayout'
   }
   const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
   const flowChildren = MetadataUtils.getChildren(metadata, path).filter(
@@ -1065,8 +1068,8 @@ function getDirectionsForValidStaticReparentTarget(
     // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
     // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
     // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
-    return 'non-1d-static'
+    return 'non-single-axis-autolayout'
   }
 
-  return staticContainerDirections(path, metadata)
+  return singleAxisAutoLayoutContainerDirections(path, metadata)
 }
