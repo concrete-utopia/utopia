@@ -4,12 +4,7 @@ import {
   framePointForPinnedProp,
   LayoutPinnedProp,
 } from '../../../../core/layout/layout-helpers-new'
-import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../../../../core/layout/layout-utils'
+import { FlexForwardsOrBackwards, SimpleFlexDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
@@ -33,7 +28,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
@@ -63,6 +57,11 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
+import {
+  getOptionalCommandToConvertDisplayInlineBlock,
+  SingleAxisAutolayoutContainerDirections,
+  singleAxisAutoLayoutContainerDirections,
+} from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
@@ -219,6 +218,8 @@ export interface ReparentTarget {
   newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
+  shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
+  // TODO add shouldBeStaticReparentOrAbsolute here!! then remove 100 lines of code
 }
 
 export function reparentTarget(
@@ -226,12 +227,14 @@ export function reparentTarget(
   newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
+  shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
     newParent: newParent,
     shouldReorder: shouldReorder,
     newIndex: newIndex,
+    shouldConvertToInline: shouldConvertToInline,
   }
 }
 
@@ -367,22 +370,29 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const flexElementsUnderPoint = [...filteredElementsUnderPoint]
-    .reverse()
-    .filter((element) =>
-      MetadataUtils.isFlexLayoutedContainer(
-        MetadataUtils.findElementByElementPath(metadata, element),
-      ),
-    )
+  const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
+    const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(element, metadata)
+    if (autolayoutDirection === 'non-single-axis-autolayout') {
+      return null
+    }
+    return {
+      path: element,
+      directions: autolayoutDirection,
+    }
+  }, [...filteredElementsUnderPoint].reverse())
 
   // first try to find a flex element insertion area
-  for (const flexElementPath of flexElementsUnderPoint) {
+  for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
+    const { direction, forwardsOrBackwards, flexOrFlow } = singleAxisAutoLayoutContainer.directions
+
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        flexElementPath,
+        singleAxisAutoLayoutContainer.path,
         'padded-edge',
         canvasScale,
+        direction,
+        forwardsOrBackwards,
       )
 
     const foundTarget = targets.find((target) => {
@@ -394,39 +404,52 @@ export function getReparentTargetUnified(
       // we found a target!
       drawTargetRectanglesForChildrenOfElement(
         metadata,
-        flexElementPath,
+        singleAxisAutoLayoutContainer.path,
         'padded-edge',
         canvasScale,
+        direction,
+        forwardsOrBackwards,
       )
       return {
         shouldReparent: true,
         shouldReorder: true,
-        newParent: flexElementPath,
+        newParent: singleAxisAutoLayoutContainer.path,
         newIndex: targetUnderMouseIndex,
+        shouldConvertToInline:
+          flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
       }
     }
   }
 
-  // fall back to trying to find an absolute element, or the "background" area of a flex element
+  // fall back to trying to find an absolute element, or the "background" area of an autolayout container
   const targetParentPath = filteredElementsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const element = MetadataUtils.findElementByElementPath(metadata, targetParentPath)
-  const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
+  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
 
-  if (!isFlex) {
+  if (autolayoutDirection === 'non-single-axis-autolayout') {
     // TODO we now assume this is "absolute", but this is too vauge
     return {
       shouldReparent: true,
       newParent: targetParentPath,
       shouldReorder: false,
       newIndex: -1,
+      shouldConvertToInline: 'do-not-convert',
     }
   } else {
+    const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
+
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
-      drawTargetRectanglesForChildrenOfElement(metadata, targetParentPath, 'full-size', canvasScale)
+      drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        targetParentPath,
+        'full-size',
+        canvasScale,
+        direction,
+        forwardsOrBackwards,
+      )
 
     const targetUnderMouseIndex = targets.find((target) => {
       return rectContainsPointInclusive(target.rect, pointOnCanvas)
@@ -438,6 +461,8 @@ export function getReparentTargetUnified(
       newParent: targetParentPath,
       shouldReorder: targetUnderMouseIndex != null,
       newIndex: targetUnderMouseIndex ?? -1,
+      shouldConvertToInline:
+        flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
     }
   }
 }
@@ -451,17 +476,18 @@ const propertiesToRemove: Array<PropertyPath> = [
 
 function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
-  flexElementPath: ElementPath,
+  singleAxisAutolayoutContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
+  simpleFlexDirection: SimpleFlexDirection | null,
+  forwardsOrBackwards: FlexForwardsOrBackwards | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
-  const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
-  const flexDirection = MetadataUtils.getFlexDirection(flexElement)
-  const simpleFlexDirection = flexDirectionToSimpleFlexDirection(flexDirection)
-  const forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(flexDirection)
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+    singleAxisAutolayoutContainerPath,
+    metadata,
+  )
 
   if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
     // TODO should we throw an error?
@@ -473,7 +499,7 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
-  const children = MetadataUtils.getChildrenPaths(metadata, flexElementPath)
+  const children = MetadataUtils.getChildrenPaths(metadata, singleAxisAutolayoutContainerPath)
 
   interface ElemBounds {
     start: number
@@ -726,7 +752,6 @@ export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
-  targetLayout: 'flex' | 'flow',
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -781,6 +806,8 @@ export function applyStaticReparent(
             const propertyChangeCommands = getStaticReparentPropertyChanges(
               newPath,
               targetMetadata?.specialSizeMeasurements.position ?? null,
+              targetMetadata?.specialSizeMeasurements.display ?? null,
+              reparentResult.shouldConvertToInline,
             )
 
             const commandsBeforeReorder = [
@@ -795,7 +822,7 @@ export function applyStaticReparent(
               setCursorCommand(CSSCursor.Move),
             ]
 
-            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
               const commonPatches = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
@@ -808,19 +835,16 @@ export function applyStaticReparent(
                       displayNoneInstances: { $push: [target] },
                     }),
               ]
-              switch (targetLayout) {
-                case 'flow':
-                  return commonPatches
-                case 'flex':
-                  return [
-                    ...commonPatches,
-                    showReorderIndicator(newParent, newIndex),
-                    wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [newPath] },
-                    }),
-                  ]
-                default:
-                  assertNever(targetLayout)
+              if (shouldReorder) {
+                return [
+                  ...commonPatches,
+                  showReorderIndicator(newParent, newIndex),
+                  wildcardPatch('mid-interaction', {
+                    displayNoneInstances: { $push: [newPath] },
+                  }),
+                ]
+              } else {
+                return commonPatches
               }
             }
 
@@ -828,7 +852,7 @@ export function applyStaticReparent(
             let midInteractionCommands: Array<CanvasCommand>
 
             if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-              midInteractionCommands = midInteractionCommandsForTarget()
+              midInteractionCommands = midInteractionCommandsForTarget(reparentResult.shouldReorder)
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
@@ -837,7 +861,9 @@ export function applyStaticReparent(
               ]
             } else {
               if (parentRect != null) {
-                midInteractionCommands = midInteractionCommandsForTarget()
+                midInteractionCommands = midInteractionCommandsForTarget(
+                  reparentResult.shouldReorder,
+                )
               } else {
                 // this should be an error because parentRect should never be null
                 midInteractionCommands = []
@@ -954,12 +980,24 @@ export function getAbsoluteReparentPropertyChanges(
 export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
+  targetOriginalDisplayProp: string | null,
+  convertToInline: 'row' | 'column' | 'do-not-convert',
 ): Array<CanvasCommand> {
+  const optionalInlineConversionCommand = getOptionalCommandToConvertDisplayInlineBlock(
+    newPath,
+    targetOriginalDisplayProp,
+    convertToInline,
+  )
+
   if (targetOriginalStylePosition !== 'absolute' && targetOriginalStylePosition !== 'relative') {
-    return [deleteProperties('always', newPath, propertiesToRemove)]
+    return [
+      ...optionalInlineConversionCommand,
+      deleteProperties('always', newPath, propertiesToRemove),
+    ]
   }
 
   return [
+    ...optionalInlineConversionCommand,
     deleteProperties('always', newPath, [...propertiesToRemove, PP.create(['style', 'position'])]),
     setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
   ]
@@ -974,6 +1012,7 @@ export function getReparentPropertyChanges(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
+  targetOriginalDisplayProp: string | null,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -987,6 +1026,45 @@ export function getReparentPropertyChanges(
       )
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      return getStaticReparentPropertyChanges(newPath, targetOriginalStylePosition)
+      const directions = getDirectionsForSingleAxisAutoLayoutTarget(
+        newParent,
+        newParentStartingMetadata,
+      )
+
+      const convertDisplayInline =
+        directions === 'non-single-axis-autolayout' ||
+        directions.direction == null ||
+        directions.flexOrFlow === 'flex'
+          ? 'do-not-convert'
+          : directions.direction
+
+      return getStaticReparentPropertyChanges(
+        newPath,
+        targetOriginalStylePosition,
+        targetOriginalDisplayProp,
+        convertDisplayInline,
+      )
   }
+}
+
+function getDirectionsForSingleAxisAutoLayoutTarget(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (elementMetadata == null) {
+    return 'non-single-axis-autolayout'
+  }
+  const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
+  const flowChildren = MetadataUtils.getChildren(metadata, path).filter(
+    (child) => child.specialSizeMeasurements.position !== 'absolute',
+  )
+  if (isFlow && flowChildren.length < 2) {
+    // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
+    // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
+    // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
+    return 'non-single-axis-autolayout'
+  }
+
+  return singleAxisAutoLayoutContainerDirections(path, metadata)
 }

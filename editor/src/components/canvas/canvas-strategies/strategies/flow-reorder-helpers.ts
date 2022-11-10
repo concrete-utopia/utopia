@@ -1,3 +1,4 @@
+import { FlexForwardsOrBackwards, SimpleFlexDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
@@ -34,51 +35,100 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
   const siblings = MetadataUtils.getSiblings(metadata, target) // including target
-  if (targetElement == null || siblings.length === 1) {
+  if (siblings.length === 1) {
     return false
   }
 
-  if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
-    const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
-    const targetDirection =
-      flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
-    const shouldReverse = flexDirection?.includes('reverse') ?? false
-    const frames = mapDropNulls((sibling) => {
+  return (
+    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
+    'non-single-axis-autolayout'
+  )
+}
+
+export type SingleAxisAutolayoutContainerDirections = {
+  direction: SimpleFlexDirection | null
+  forwardsOrBackwards: FlexForwardsOrBackwards | null
+  flexOrFlow: 'flex' | 'flow'
+}
+
+export function singleAxisAutoLayoutContainerDirections(
+  container: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
+  const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
+  const children = MetadataUtils.getChildren(metadata, container)
+  if (containerElement == null) {
+    return 'non-single-axis-autolayout'
+  }
+
+  const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
+
+  if (layoutSystem === 'flex') {
+    const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
+    const targetDirection = flexDirection.direction === 'row' ? 'horizontal' : 'vertical' // TODO unify row and horizontal types
+
+    const shouldReverse = flexDirection.forwardsOrBackwards === 'reverse'
+    const childrenFrames = mapDropNulls((child) => {
       if (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          sibling.elementPath,
+          child.elementPath,
           metadata,
         )
       ) {
-        return sibling.globalFrame
+        return child.globalFrame
       } else {
         return null
       }
-    }, siblings)
+    }, children)
 
-    return areNonWrappingSiblings(frames, targetDirection, shouldReverse)
-  } else {
-    const targetDirection = getElementDirection(targetElement)
+    const is1D = areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-single-axis-autolayout'
+    }
+    return { ...flexDirection, flexOrFlow: 'flex' }
+  } else if (layoutSystem === 'flow') {
+    if (children.length === 0) {
+      return {
+        direction: 'column',
+        forwardsOrBackwards: 'forward',
+        flexOrFlow: 'flow',
+      }
+    }
+    const firstChild = children[0]
+    const targetDirection = getElementDirection(firstChild)
     const shouldReverse =
       targetDirection === 'horizontal' &&
-      targetElement.specialSizeMeasurements?.parentTextDirection === 'rtl'
+      firstChild.specialSizeMeasurements?.parentTextDirection === 'rtl'
 
     let allHorizontalOrVertical = true
-    let frames: Array<CanvasRectangle> = []
-    fastForEach(siblings, (sibling) => {
-      if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
-        if (getElementDirection(sibling) !== targetDirection) {
+    let childrenFrames: Array<CanvasRectangle> = []
+
+    // TODO turn this into a loop with early return
+    fastForEach(children, (child) => {
+      if (isValidFlowReorderTarget(child.elementPath, metadata)) {
+        if (getElementDirection(child) !== targetDirection) {
           allHorizontalOrVertical = false
         }
-        if (sibling.globalFrame != null) {
-          frames.push(sibling.globalFrame)
+        if (child.globalFrame != null) {
+          childrenFrames.push(child.globalFrame)
         }
       }
     })
 
-    return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    const is1D =
+      allHorizontalOrVertical &&
+      areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-single-axis-autolayout'
+    }
+    return {
+      direction: targetDirection === 'horizontal' ? 'row' : 'column', // TODO use 'horizontal' | 'vertical' in the main type
+      forwardsOrBackwards: shouldReverse ? 'reverse' : 'forward',
+      flexOrFlow: 'flow',
+    }
+  } else {
+    return 'non-single-axis-autolayout'
   }
 }
 
@@ -178,7 +228,54 @@ export function getOptionalDisplayPropCommandsForFlow(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType)
+    return getNewDisplayTypeCommands(element, newDisplayType) // TODO this is wrong, it will convert a display: flex to block!!!
+  } else {
+    return []
+  }
+}
+
+export function getOptionalCommandToConvertDisplayInlineBlock(
+  target: ElementPath,
+  displayValue: string | null,
+  convertTo: 'row' | 'column' | 'do-not-convert',
+): Array<SetProperty> {
+  switch (convertTo) {
+    case 'row':
+      return getOptionalCommandToConvertDisplayInline(target, displayValue)
+    case 'column':
+      return getOptionalCommandToRemoveDisplayInline(target, displayValue)
+    default:
+      return []
+  }
+}
+
+function getOptionalCommandToConvertDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['block', 'flex', 'grid'].some((p) => displayValue === p)
+
+  if (displayValue == null) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-${displayValue}`)]
+  } else {
+    return []
+  }
+}
+
+function getOptionalCommandToRemoveDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['inline-block', 'inline-flex', 'inline-grid'].some(
+    (p) => displayValue === p,
+  )
+
+  if (displayValue == null || displayValue === 'inline') {
+    return [setProperty('always', target, StyleDisplayProp, `block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, displayValue.slice('inline-'.length))]
   } else {
     return []
   }

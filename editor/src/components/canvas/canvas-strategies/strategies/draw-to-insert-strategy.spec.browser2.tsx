@@ -810,11 +810,11 @@ describe('Forced inserting into Static', () => {
 
     const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
+      y: targetElementBounds.y + 15,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 25,
-      y: targetElementBounds.y + 25,
+      y: targetElementBounds.y + 35,
     })
 
     // Move before starting dragging
@@ -885,11 +885,11 @@ describe('Forced inserting into Static', () => {
 
     const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
+      y: targetElementBounds.y + 15,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 25,
-      y: targetElementBounds.y + 25,
+      y: targetElementBounds.y + 35,
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -935,7 +935,7 @@ describe('Forced inserting into Static', () => {
               backgroundColor: '#0091FFAA',
               position: 'absolute',
               left: 5,
-              top: 5,
+              top: 15,
               width: 20,
               height: 20,
             }}
