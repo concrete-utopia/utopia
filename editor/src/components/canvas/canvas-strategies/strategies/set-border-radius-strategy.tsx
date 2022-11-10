@@ -14,7 +14,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { borderRadiusOffsetPx } from '../../border-radius-utis'
+import { borderRadiusOffsetPx, BorderRadiusThreshold } from '../../border-radius-utis'
 import {
   EdgePosition,
   EdgePositionBottomLeft,
@@ -218,7 +218,7 @@ function borderRadiusFromElement(element: ElementInstanceMetadata): BorderRadius
       value: borderRadius.value.value,
       renderedValuePx: renderedValuePx,
     },
-    Math.max(renderedValuePx, 20),
+    Math.max(renderedValuePx, BorderRadiusThreshold),
     'precise',
   )
 

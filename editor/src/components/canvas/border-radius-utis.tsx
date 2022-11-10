@@ -9,8 +9,10 @@ import {
 
 export const BorderRadiusHandleSize = (scale: number): number => 10 / scale
 
+export const BorderRadiusThreshold: number = 10
+
 export const borderRadiusOffsetPx = (isDragging: boolean, desiredOffset: number): number =>
-  isDragging ? desiredOffset : Math.max(desiredOffset, 20)
+  isDragging ? desiredOffset : Math.max(desiredOffset, BorderRadiusThreshold)
 
 export function handlePosition(
   offset: number,
