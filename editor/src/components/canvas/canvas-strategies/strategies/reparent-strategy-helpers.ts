@@ -59,6 +59,7 @@ import {
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
+  SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from './flow-reorder-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
@@ -1049,13 +1050,7 @@ export function getReparentPropertyChanges(
 function getDirectionsForSingleAxisAutoLayoutTarget(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-):
-  | {
-      direction: SimpleFlexDirection | null
-      forwardsOrBackwards: FlexForwardsOrBackwards | null
-      flexOrFlow: 'flex' | 'flow'
-    }
-  | 'non-single-axis-autolayout' {
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (elementMetadata == null) {
     return 'non-single-axis-autolayout'

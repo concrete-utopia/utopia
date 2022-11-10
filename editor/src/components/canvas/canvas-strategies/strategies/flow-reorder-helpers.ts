@@ -46,16 +46,16 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   )
 }
 
+export type SingleAxisAutolayoutContainerDirections = {
+  direction: SimpleFlexDirection | null
+  forwardsOrBackwards: FlexForwardsOrBackwards | null
+  flexOrFlow: 'flex' | 'flow'
+}
+
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
-):
-  | {
-      direction: SimpleFlexDirection | null
-      forwardsOrBackwards: FlexForwardsOrBackwards | null
-      flexOrFlow: 'flex' | 'flow'
-    }
-  | 'non-single-axis-autolayout' {
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
   const children = MetadataUtils.getChildren(metadata, container)
   if (containerElement == null) {
