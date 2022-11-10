@@ -478,7 +478,7 @@ export function getReparentTargetUnified(
   )
 
   if (
-    autolayoutDirection === 'non-single-axis-autolayout' ||
+    autolayoutDirection === 'non-single-axis-autolayout' || // hmmmmmm this should be not here
     shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE'
   ) {
     // TODO we now assume this is "absolute", but this is too vauge
