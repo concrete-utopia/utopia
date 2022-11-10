@@ -102,6 +102,37 @@ export function reparentStrategyForParent(
   }
 }
 
+function isAutoLayoutComaptibleWithSingleAxisReorder(
+  metadata: ElementInstanceMetadataMap,
+  parent: ElementPath,
+): boolean {
+  const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+  if (parentIsFlexLayout) {
+    return true
+  }
+
+  const flowChildren = MetadataUtils.getChildren(metadata, parent).filter(
+    (child) => child.specialSizeMeasurements.position !== 'absolute',
+  )
+
+  return flowChildren.length > 1
+}
+
+function autoLayoutParentAbsoluteOrStatic(
+  metadata: ElementInstanceMetadataMap,
+  parent: ElementPath,
+): 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC' {
+  const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+
+  if (parentIsFlexLayout) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  return flowParentAbsoluteOrStatic(metadata, parent)
+}
+
 function flowParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
@@ -384,6 +415,15 @@ export function getReparentTargetUnified(
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
+    const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
+    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
+      return null
+    }
+    const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(metadata, element)
+    if (!compatibleWith1DReorder) {
+      return null
+    }
+
     return {
       path: element,
       directions: autolayoutDirection,
@@ -437,9 +477,18 @@ export function getReparentTargetUnified(
     // none of the targets were under the mouse, fallback return
     return null
   }
-  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
 
-  if (autolayoutDirection === 'non-single-axis-autolayout') {
+  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
+  const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
+  const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(
+    metadata,
+    targetParentPath,
+  )
+
+  if (
+    autolayoutDirection === 'non-single-axis-autolayout' ||
+    shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE'
+  ) {
     // TODO we now assume this is "absolute", but this is too vauge
     return {
       shouldReparent: true,
@@ -447,12 +496,9 @@ export function getReparentTargetUnified(
       shouldReorder: false,
       newIndex: -1,
       shouldConvertToInline: 'do-not-convert',
-      defaultReparentType:
-        flowParentAbsoluteOrStatic(metadata, targetParentPath) === 'REPARENT_AS_ABSOLUTE' // TODO BEFORE MERGE move this check to singleAxisAutoLayoutContainersUnderPoint
-          ? 'absolute'
-          : 'static',
+      defaultReparentType: 'absolute',
     }
-  } else {
+  } else if (compatibleWith1DReorder) {
     const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
@@ -477,6 +523,16 @@ export function getReparentTargetUnified(
       newIndex: targetUnderMouseIndex ?? -1,
       shouldConvertToInline:
         flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
+      defaultReparentType: 'static',
+    }
+  } else {
+    // element is static parent but don't look for index
+    return {
+      shouldReparent: true,
+      newParent: targetParentPath,
+      shouldReorder: false,
+      newIndex: -1,
+      shouldConvertToInline: 'do-not-convert',
       defaultReparentType: 'static',
     }
   }
@@ -1068,16 +1124,6 @@ function getDirectionsForSingleAxisAutoLayoutTarget(
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (elementMetadata == null) {
-    return 'non-single-axis-autolayout'
-  }
-  const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
-  const flowChildren = MetadataUtils.getChildren(metadata, path).filter(
-    (child) => child.specialSizeMeasurements.position !== 'absolute',
-  )
-  if (isFlow && flowChildren.length < 2) {
-    // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
-    // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here
-    // for example, should only disallow a Flow parent if it has a single child which is contiguous with the padded area
     return 'non-single-axis-autolayout'
   }
 
