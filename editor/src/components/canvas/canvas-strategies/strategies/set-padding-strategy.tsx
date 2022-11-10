@@ -21,6 +21,7 @@ import {
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
+  PaddingIndictorOffset,
   paddingMeasurementForEdge,
   paddingToPaddingString,
   simplePaddingFromMetadata,
@@ -238,7 +239,7 @@ function paddingValueIndicatorProps(
 
   const updatedPaddingMeasurement = offsetMeasurementByDelta(
     currentPadding,
-    deltaFromEdge(drag, edgePiece),
+    deltaFromEdge(drag, edgePiece) + PaddingIndictorOffset(canvasState.scale),
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 

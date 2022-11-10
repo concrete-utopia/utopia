@@ -1,5 +1,5 @@
 import React from 'react'
-import { roundTo } from '../../../../core/shared/math-utils'
+import { CanvasVector, roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 

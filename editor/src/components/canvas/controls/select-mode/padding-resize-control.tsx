@@ -15,7 +15,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { simplePaddingFromMetadata } from '../../padding-utils'
+import { PaddingIndictorOffset, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -61,7 +61,6 @@ const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 0.5
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
-const PaddingIndicatorOffset = 10
 
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
@@ -133,11 +132,10 @@ const PaddingResizeControlI = React.memo(
       size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
     )
 
-    const [hitAreaWidth, borderWidth, dragBorderWidth, paddingIndicatorOffset] = [
+    const [hitAreaWidth, borderWidth, dragBorderWidth] = [
       PaddingResizeControlHitAreaWidth,
       PaddingResizeControlBorder,
       PaddingResizeDragBorder,
-      PaddingIndicatorOffset,
     ].map((v) => v / scale)
 
     const stripeColor = colorTheme.brandNeonPink.o(StripeOpacity).value
@@ -175,8 +173,8 @@ const PaddingResizeControlI = React.memo(
             <div
               style={{
                 position: 'absolute',
-                paddingTop: paddingIndicatorOffset,
-                paddingLeft: paddingIndicatorOffset,
+                paddingTop: PaddingIndictorOffset(scale),
+                paddingLeft: PaddingIndictorOffset(scale),
               }}
             >
               <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
