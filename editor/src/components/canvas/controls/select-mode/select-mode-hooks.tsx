@@ -584,17 +584,22 @@ function useSelectOrLiveModeSelectAndHover(
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
-          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.hasMouseMoved
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
       const hasInteractionSession = editorStoreRef.current.editor.canvas.interactionSession != null
       const hadInteractionSessionThatWasCancelled =
         interactionSessionHappened.current && !hasInteractionSession
 
+      const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
+      const mouseUpSelectionAllowed =
+        !hadInteractionSessionThatWasCancelled &&
+        (activeControl == null || activeControl.type === 'BOUNDING_AREA')
+
       if (event.type === 'mouseup') {
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false
 
-        if (hadInteractionSessionThatWasCancelled) {
+        if (!mouseUpSelectionAllowed) {
           // We should skip this mouseup
           return
         }
