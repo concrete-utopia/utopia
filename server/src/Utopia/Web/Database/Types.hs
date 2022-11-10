@@ -78,12 +78,12 @@ data UserDetails = UserDetails
                  , picture :: Maybe Text
                  } deriving (Eq, Show, Generic)
 
-type UserConfigurationFields = (Field SqlText, FieldNullable SqlText)
+type UserConfigurationFields = (Field SqlText, FieldNullable SqlText, FieldNullable SqlText)
 
-type UserConfiguration = (Text, Maybe Text)
+type UserConfiguration = (Text, Maybe Text, Maybe Text)
 
 userConfigurationTable :: Table UserConfigurationFields UserConfigurationFields
-userConfigurationTable = table "user_configuration" (p2 (tableField "user_id", tableField "shortcut_config"))
+userConfigurationTable = table "user_configuration" (p3 (tableField "user_id", tableField "shortcut_config", tableField "theme"))
 
 userConfigurationSelect :: Select UserConfigurationFields
 userConfigurationSelect = selectTable userConfigurationTable
@@ -114,6 +114,7 @@ data ProjectMetadata = ProjectMetadata
 data DecodedUserConfiguration = DecodedUserConfiguration
                          { id             :: Text
                          , shortcutConfig :: Maybe Value
+                         , theme          :: Maybe Value
                          } deriving (Eq, Show, Generic)
 
 

@@ -437,10 +437,6 @@ import {
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import {
-  reparentTarget,
-  ReparentTarget,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import { assertNever } from '../../../core/shared/utils'
 import {
   assetResult,
@@ -3129,10 +3125,17 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
       break
     case 'file-revert-all':
       if (newValue.type === oldValue.type) {
-        return keepDeepEqualityResult(newValue, true)
+        return keepDeepEqualityResult(oldValue, true)
       } else {
-        return keepDeepEqualityResult(oldValue, false)
+        return keepDeepEqualityResult(newValue, false)
       }
+    case 'disconnect-github-project':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      } else {
+        return keepDeepEqualityResult(newValue, false)
+      }
+      break
     default:
       assertNever(oldValue)
   }
@@ -3480,7 +3483,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.focusedElementPath,
   )
   const configResults = UtopiaVSCodeConfigKeepDeepEquality(oldValue.config, newValue.config)
-  const themeResults = createCallWithTripleEquals<Theme>()(oldValue.theme, newValue.theme)
   const vscodeLoadingScreenVisibleResults = BooleanKeepDeepEquality(
     oldValue.vscodeLoadingScreenVisible,
     newValue.vscodeLoadingScreenVisible,
@@ -3589,7 +3591,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeReadyResults.areEqual &&
     focusedElementPathResults.areEqual &&
     configResults.areEqual &&
-    themeResults.areEqual &&
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
@@ -3665,7 +3666,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       vscodeReadyResults.value,
       focusedElementPathResults.value,
       configResults.value,
-      themeResults.value,
       vscodeLoadingScreenVisibleResults.value,
       indexedDBFailedResults.value,
       forceParseFilesResults.value,

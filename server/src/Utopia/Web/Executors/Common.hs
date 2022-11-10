@@ -328,9 +328,9 @@ getUserConfigurationWithDBPool metrics pool userID action = do
   possibleUserConfiguration <- liftIO $ DB.getUserConfiguration metrics pool userID
   return $ action possibleUserConfiguration
 
-saveUserConfigurationWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> Maybe Value -> m ()
-saveUserConfigurationWithDBPool metrics pool userID possibleShortcutConfig = do
-  liftIO $ DB.saveUserConfiguration metrics pool userID possibleShortcutConfig
+saveUserConfigurationWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> Maybe Value -> Maybe Value -> m ()
+saveUserConfigurationWithDBPool metrics pool userID possibleShortcutConfig possibleTheme = do
+  liftIO $ DB.saveUserConfiguration metrics pool userID possibleShortcutConfig possibleTheme
 
 getProjectDetailsWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> m ProjectDetails
 getProjectDetailsWithDBPool metrics pool projectID = do

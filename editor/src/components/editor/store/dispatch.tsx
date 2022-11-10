@@ -112,6 +112,11 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
     }
+  } else if (action.action === 'SET_CURRENT_THEME') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
+    }
   } else if (action.action === 'SET_LOGIN_STATE') {
     return {
       ...working,

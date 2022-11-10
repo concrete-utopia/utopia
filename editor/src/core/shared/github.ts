@@ -30,6 +30,7 @@ import {
 import {
   EditorStorePatched,
   emptyGithubData,
+  emptyGithubSettings,
   GithubChecksums,
   GithubData,
   GithubOperation,
@@ -959,4 +960,13 @@ export async function refreshGithubData(
   } else {
     dispatch([updateGithubData(emptyGithubData())], 'everyone')
   }
+}
+
+export function disconnectGithubProjectActions(): EditorAction[] {
+  return [
+    updateGithubData(emptyGithubData()),
+    updateGithubChecksums({}),
+    updateBranchContents(null),
+    updateGithubSettings(emptyGithubSettings()),
+  ]
 }

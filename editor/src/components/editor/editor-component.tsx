@@ -44,6 +44,7 @@ import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
+import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -435,10 +436,11 @@ const useGithubData = (): void => {
 }
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch } = useEditorState((store) => {
+  const { modal, dispatch, currentBranch } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       modal: store.editor.modal,
+      currentBranch: store.editor.githubSettings.branchName,
     }
   }, 'ModalComponent')
   if (modal != null) {
@@ -457,6 +459,11 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
         )
       case 'file-revert-all':
         return <ConfirmRevertAllDialogProps dispatch={dispatch} />
+      case 'disconnect-github-project':
+        if (currentBranch != null) {
+          return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />
+        }
+        break
     }
   }
   return null

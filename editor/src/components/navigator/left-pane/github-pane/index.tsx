@@ -2,7 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useCallback } from 'react'
 import urljoin from 'url-join'
 import { BASE_URL } from '../../../../common/env-vars'
 import {
@@ -74,7 +74,6 @@ export const GithubPane = React.memo(() => {
   const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
   const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
-  const projectID = useEditorState((store) => store.editor.id, 'GithubPane projectID')
   const githubOperations = useEditorState(
     (store) => store.editor.githubOperations,
     'Github operations',
@@ -281,6 +280,19 @@ export const GithubPane = React.memo(() => {
     return intersection
   }, [upstreamChanges, githubFileChanges])
 
+  const disconnectFromGithub = useCallback(() => {
+    if (currentBranch != null) {
+      dispatch(
+        [
+          EditorActions.showModal({
+            type: 'disconnect-github-project',
+          }),
+        ],
+        'everyone',
+      )
+    }
+  }, [dispatch, currentBranch])
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -469,6 +481,18 @@ export const GithubPane = React.memo(() => {
             </>,
           )}
           {loadBranchesUI}
+          {when(
+            currentBranch != null,
+            <UIGridRow
+              padded
+              variant='<-------------1fr------------->'
+              style={{ margin: '10px 0' }}
+            >
+              <Button spotlight highlight onClick={disconnectFromGithub} disabled={githubWorking}>
+                Disconnect from branch
+              </Button>
+            </UIGridRow>,
+          )}
         </SectionBodyArea>
       </Section>
       <Section>
