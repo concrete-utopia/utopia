@@ -168,6 +168,7 @@ import {
   GithubFileChanges,
   GithubFileStatus,
   RepositoryEntry,
+  TreeConflicts,
 } from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
@@ -1076,6 +1077,7 @@ export function emptyGithubSettings(): ProjectGithubSettings {
 export interface GithubData {
   branches: Array<GithubBranch>
   publicRepositories: Array<RepositoryEntry>
+  treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
   upstreamChanges: GithubFileChanges | null
 }
@@ -1084,6 +1086,7 @@ export function emptyGithubData(): GithubData {
   return {
     branches: [],
     publicRepositories: [],
+    treeConflicts: {},
     lastUpdatedAt: null,
     upstreamChanges: null,
   }

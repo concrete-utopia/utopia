@@ -3426,6 +3426,8 @@ export type CSSFontSize = CSSNumber
 
 export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | 'end'
 
+export type CSSDirection = 'ltr' | 'rtl'
+
 export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
@@ -3610,6 +3612,8 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
   'start',
   'end',
 ])
+
+export const parseDirection = isOneOfTheseParser<CSSDirection>(['ltr', 'rtl'])
 
 function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
   return jsxAttributeValue(cssTextAlign, emptyComments)

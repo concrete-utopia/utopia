@@ -17,15 +17,13 @@ import {
   isInsertionSubjects,
   isTargetPaths,
 } from '../canvas-strategy-types'
-import { AllowSmallerParent, DragInteractionData, InteractionSession } from '../interaction-state'
+import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
-  existingReparentSubjects,
   findReparentStrategies,
   getReparentTargetUnified,
-  newReparentSubjects,
   ReparentStrategy,
   reparentSubjectsForInteractionTarget,
   ReparentTarget,

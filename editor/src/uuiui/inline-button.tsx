@@ -34,7 +34,7 @@ export const InlineButton = styled.button({
   position: 'relative',
   '&:hover': {
     borderRadius: 1,
-    background: colorTheme.primary.shade(10).value,
+    background: colorTheme.canvasElementBackground.value,
   },
   '&:focus': {
     outline: 'none',
@@ -56,18 +56,22 @@ export const InlineIndicator = styled.div<{
   outline: 'none',
   paddingLeft: 2,
   paddingRight: 2,
-  color: props.shouldIndicate ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+  color: props.shouldIndicate
+    ? colorTheme.primary.value
+    : colorTheme.canvasControlsInlineIndicatorInactive.value,
 }))
 
 export const InlineToggleButton = styled(InlineButton)<{
   toggleValue: boolean
 }>((props) => ({
-  color: props.toggleValue ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+  color: props.toggleValue
+    ? colorTheme.primary.value
+    : colorTheme.canvasControlsInlineToggleUnsetText.value,
   '&:hover': {
-    background: colorTheme.primary.shade(5).value,
-    color: colorTheme.primary.shade(90).value,
+    background: colorTheme.canvasControlsInlineToggleHoverBackground.value,
+    color: colorTheme.canvasControlsInlineToggleHoverText.value,
   },
   '&:active': {
-    background: colorTheme.primary.shade(10).value,
+    background: colorTheme.canvasControlsInlineToggleActiveBackground.value,
   },
 }))

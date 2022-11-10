@@ -442,7 +442,7 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'absolute',
-        backgroundColor: colorTheme.primary.shade(10).value,
+        backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
         boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${
@@ -469,7 +469,7 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'absolute',
-        backgroundColor: colorTheme.primary.shade(10).value,
+        backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
         boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${

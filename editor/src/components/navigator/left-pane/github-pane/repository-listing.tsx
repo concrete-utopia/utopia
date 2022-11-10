@@ -144,7 +144,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           color:
             props.importPermitted && !githubWorking
               ? colorTheme.inlineButtonColor.value
-              : colorTheme.inlineButtonColor.shade(50).value,
+              : colorTheme.inlineButtonColorDisabled.value,
           borderRadius: 2,
           cursor: 'pointer',
           minWidth: '44px',

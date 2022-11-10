@@ -9,7 +9,7 @@ import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
 
 const isControlledStyling = (colorTheme: any) => ({
-  backgroundColor: colorTheme.primary.shade(5).value,
+  backgroundColor: colorTheme.inspectorControlledBackground.value,
   color: colorTheme.primary.value,
 })
 

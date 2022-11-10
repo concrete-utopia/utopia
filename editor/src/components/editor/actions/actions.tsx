@@ -2831,6 +2831,7 @@ export const UPDATE_FNS = {
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename,
               pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
             )
 
             const allCommands = [...reparentCommands, ...propertyChangeCommands]
@@ -5022,17 +5023,27 @@ export const UPDATE_FNS = {
       githubSettings.branchName != null &&
       githubSettings.originCommit != null
     ) {
-      const updatedProjectContents = mergeProjectContents(
+      const mergeResults = mergeProjectContents(
+        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,
       )
+      // If there are conflicts, then don't update the origin commit so we can try again.
+      const newOriginCommit =
+        Object.keys(mergeResults.treeConflicts).length > 0
+          ? githubSettings.originCommit
+          : action.latestCommit
       return {
         ...editor,
-        projectContents: updatedProjectContents,
+        projectContents: mergeResults.value,
         githubSettings: {
           ...githubSettings,
-          originCommit: action.latestCommit,
+          originCommit: newOriginCommit,
+        },
+        githubData: {
+          ...editor.githubData,
+          treeConflicts: mergeResults.treeConflicts,
         },
       }
     } else {

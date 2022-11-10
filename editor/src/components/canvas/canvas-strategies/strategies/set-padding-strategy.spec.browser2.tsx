@@ -47,16 +47,7 @@ describe('Padding resize strategy', () => {
         height: 461,
       }}
       data-uid='24a'
-    >
-      <div
-        style={{
-          backgroundColor: '#0091FFAA',
-          width: 22,
-          height: 22,
-        }}
-        data-uid='002'
-      />
-    </div>`),
+    />`),
       'await-first-dom-report',
     )
 
@@ -78,7 +69,7 @@ describe('Padding resize strategy', () => {
     expect(paddingControls).toEqual([])
   })
 
-  it('Padding resize handle is present for elements that are dimensioned and have no children', async () => {
+  it('Padding resize handle is present for elements that are dimensioned and have children', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
       data-testid='mydiv'
@@ -91,7 +82,16 @@ describe('Padding resize strategy', () => {
         height: 461,
       }}
       data-uid='24a'
-    />`),
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 22,
+          height: 22,
+        }}
+        data-uid='002'
+      />
+    </div>`),
       'await-first-dom-report',
     )
 
@@ -99,8 +99,8 @@ describe('Padding resize strategy', () => {
     const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
-      x: divBounds.x + 5,
-      y: divBounds.y + 4,
+      x: divBounds.x + 25,
+      y: divBounds.y + 24,
     }
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })

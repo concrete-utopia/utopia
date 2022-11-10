@@ -271,7 +271,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     }),
     float: 'none',
     hasPositionOffset: false,
-    textDirection: 'initial',
+    parentTextDirection: 'ltr',
     hasTransform: false,
   }
 
@@ -329,7 +329,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     }),
     float: 'none',
     hasPositionOffset: false,
-    textDirection: 'initial',
+    parentTextDirection: 'ltr',
     hasTransform: false,
   }
 
@@ -442,7 +442,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       }),
       float: 'none',
       hasPositionOffset: false,
-      textDirection: 'initial',
+      parentTextDirection: 'ltr',
       hasTransform: false,
     },
     computedStyle: {
@@ -528,7 +528,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       }),
       float: 'none',
       hasPositionOffset: false,
-      textDirection: 'initial',
+      parentTextDirection: 'ltr',
       hasTransform: false,
     },
     computedStyle: {
@@ -640,7 +640,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        textDirection: 'initial',
+        parentTextDirection: 'ltr',
         hasTransform: false,
       },
       computedStyle: {
@@ -728,7 +728,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        textDirection: 'initial',
+        parentTextDirection: 'ltr',
         hasTransform: false,
       },
       computedStyle: {
@@ -816,7 +816,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         }),
         float: 'none',
         hasPositionOffset: false,
-        textDirection: 'initial',
+        parentTextDirection: 'ltr',
         hasTransform: false,
       },
       computedStyle: {

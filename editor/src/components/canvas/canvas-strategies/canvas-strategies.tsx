@@ -36,6 +36,7 @@ import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrate
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
+import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 
 export type CanvasStrategyFactory = (
@@ -60,6 +61,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
     [
       absoluteDuplicateStrategy,
       keyboardAbsoluteMoveStrategy,
+      keyboardReorderStrategy,
       convertToAbsoluteAndMoveStrategy,
       reorderSliderStategy,
     ],

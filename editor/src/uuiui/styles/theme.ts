@@ -1,6 +1,5 @@
-import { useEditorState } from './../../components/editor/store/store-hook'
-import { Interpolation } from '@emotion/react'
 import { Theme } from './../../components/editor/store/editor-state'
+import { useEditorState } from './../../components/editor/store/store-hook'
 import { createUtopiColor } from './utopi-color-helpers'
 
 const base = {
@@ -19,8 +18,10 @@ const base = {
 }
 
 const lightBase = {
-  darkPrimary: base.blue.shade(150),
+  darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
+  primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
+  primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
   component: base.purple,
   componentChild: base.orange,
   css: base.neongreen,
@@ -55,6 +56,8 @@ const lightBase = {
 const lightPrimitives = {
   // backgrounds
   emphasizedBackground: lightBase.bg0,
+  emphasizedBackgroundPop: createUtopiColor('rgba(252,252,252,1)'),
+  emphasizedBackgroundReduced: createUtopiColor('rgba(255,255,255,1)'),
   neutralBackground: lightBase.bg1,
   secondaryBackground: lightBase.bg2,
   subtleBackground: lightBase.bg3,
@@ -73,10 +76,12 @@ const lightPrimitives = {
 
 const lightErrorStates = {
   errorForeground: base.red,
-  errorBgSolid: base.red.shade(70),
+  errorForegroundSubdued: createUtopiColor('rgba(253,26,79,1)'),
+  errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
+  errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
   warningBgTranslucent: base.orange.o(20),
-  warningBgSolid: base.orange.shade(70),
+  warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
 
 const light = {
@@ -91,7 +96,7 @@ const light = {
   leftPaneBackground: lightPrimitives.neutralBackground,
   inspectorBackground: lightPrimitives.neutralBackground,
   canvasBackground: lightPrimitives.secondaryBackground,
-  canvasLiveBackground: lightPrimitives.secondaryBackground.shade(30),
+  canvasLiveBackground: createUtopiColor('rgba(252,252,252,1)'),
   canvasLiveBorder: lightBase.primary,
 
   // tabs. Nb: active tab matches canvasBackground
@@ -107,15 +112,20 @@ const light = {
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
   canvasControlsImmediateParentMarks: base.black.o(25),
+  canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
+  canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
+  canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
+  canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
+  canvasControlsInlineToggleActiveBackground: createUtopiColor('rgba(230,242,255,1)'),
 
   canvasSelectionPrimaryOutline: lightBase.primary,
   canvasSelectionInstanceOutline: base.purple,
   canvasSelectionSceneOutline: base.purple,
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
-  canvasSelectionAlternateOutlineYogaChild: base.neonpink.shade(80),
+  canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
   canvasSelectionSecondaryOutline: base.almostBlack.o(50),
-  CanvasSelectionNotFocusable: base.darkgray,
+  canvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
   canvasDragOutlineBlock: lightBase.primary,
   canvasDragOutlineInline: base.red,
@@ -128,17 +138,24 @@ const light = {
 
   canvasLayoutForeground: base.neonpink,
   canvasLayoutFillSolid: base.neonpink,
-  canvasLayoutFillTranslucent: base.neonpink.shade(10).o(90),
+  canvasLayoutFillTranslucent: createUtopiColor('rgba(255,230,255,0.9)'),
   canvasLayoutStroke: base.neonpink,
 
   paddingForeground: base.neongreen,
   paddingFillSolid: base.neongreen,
-  paddingFillTranslucent: base.neongreen.shade(10).o(70),
+  paddingFillTranslucent: createUtopiColor('rgba(230,248,230,0.7)'),
   paddingStroke: base.neongreen,
+
+  selectionOutlines: createUtopiColor('rgba(255,128,255,1)'),
+  canvasElementBackground: createUtopiColor('rgba(230,242,255,1)'),
+  canvasComponentButtonFocusable: createUtopiColor('rgba(238,237,252,1)'),
+  canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
+  inspectorControlledBackground: createUtopiColor('rgba(242,248,255,1)'),
 
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: lightBase.primary,
+  inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: lightBase.bg2,
   buttonHoverBackground: lightBase.bg3,
 
@@ -163,8 +180,10 @@ const light = {
 
 /** DARK **/
 const darkBase = {
-  darkPrimary: base.blue.shade(150),
+  darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
+  primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
+  primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
   component: base.purple,
   componentChild: base.orange,
   css: base.neongreen,
@@ -199,6 +218,8 @@ const darkBase = {
 const darkPrimitives = {
   // backgrounds
   emphasizedBackground: darkBase.bg0,
+  emphasizedBackgroundPop: createUtopiColor('rgba(0,0,0,1)'),
+  emphasizedBackgroundReduced: createUtopiColor('rgba(5,5,5,1)'),
   neutralBackground: darkBase.bg1,
   secondaryBackground: darkBase.bg2,
   subtleBackground: darkBase.bg3,
@@ -217,10 +238,12 @@ const darkPrimitives = {
 
 const darkErrorStates = {
   errorForeground: base.red,
-  errorBgSolid: base.red.shade(70),
+  errorForegroundSubdued: createUtopiColor('rgba(253,26,79,1)'),
+  errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
+  errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
   warningBgTranslucent: base.orange.o(20),
-  warningBgSolid: base.orange.shade(70),
+  warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
 const dark: typeof light = {
   ...darkBase,
@@ -234,7 +257,7 @@ const dark: typeof light = {
   leftPaneBackground: darkPrimitives.neutralBackground,
   inspectorBackground: darkPrimitives.neutralBackground,
   canvasBackground: darkPrimitives.secondaryBackground,
-  canvasLiveBackground: darkPrimitives.secondaryBackground.shade(30),
+  canvasLiveBackground: createUtopiColor('rgba(195,197,201,1)'),
   canvasLiveBorder: darkBase.primary,
 
   // tabs. Nb: active tab matches canvasBackground
@@ -250,15 +273,20 @@ const dark: typeof light = {
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
   canvasControlsImmediateParentMarks: base.black.o(25),
+  canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
+  canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
+  canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
+  canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
+  canvasControlsInlineToggleActiveBackground: createUtopiColor('rgba(230,242,255,1)'),
 
   canvasSelectionPrimaryOutline: darkBase.primary,
   canvasSelectionInstanceOutline: base.purple,
   canvasSelectionSceneOutline: base.purple,
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
-  canvasSelectionAlternateOutlineYogaChild: base.neonpink.shade(80),
+  canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
   canvasSelectionSecondaryOutline: base.almostBlack.o(50),
-  CanvasSelectionNotFocusable: base.darkgray,
+  canvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
   canvasDragOutlineBlock: darkBase.primary,
   canvasDragOutlineInline: base.red,
@@ -271,17 +299,24 @@ const dark: typeof light = {
 
   canvasLayoutForeground: base.neonpink,
   canvasLayoutFillSolid: base.neonpink,
-  canvasLayoutFillTranslucent: base.neonpink.shade(10).o(90),
+  canvasLayoutFillTranslucent: createUtopiColor('rgba(255,230,255,0.9)'),
   canvasLayoutStroke: base.neonpink,
 
   paddingForeground: base.neongreen,
   paddingFillSolid: base.neongreen,
-  paddingFillTranslucent: base.neongreen.shade(10).o(90),
+  paddingFillTranslucent: createUtopiColor('rgba(230,248,230,0.9)'),
   paddingStroke: base.neongreen,
+
+  selectionOutlines: createUtopiColor('rgba(255,128,255,1)'),
+  canvasElementBackground: createUtopiColor('rgba(230,242,255,1)'),
+  canvasComponentButtonFocusable: createUtopiColor('rgba(238,237,252,1)'),
+  canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
+  inspectorControlledBackground: createUtopiColor('rgba(242,248,255,1)'),
 
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: darkBase.primary,
+  inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: darkBase.bg2,
   buttonHoverBackground: darkBase.bg3,
 

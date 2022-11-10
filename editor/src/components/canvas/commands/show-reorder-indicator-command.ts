@@ -7,6 +7,7 @@ import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
@@ -34,29 +35,36 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
 ) => {
   const targetParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, command.target)
   const parentFrame = MetadataUtils.getFrameInCanvasCoords(command.target, editor.jsxMetadata)
-  if (
-    targetParent == null ||
-    parentFrame == null ||
-    targetParent.specialSizeMeasurements.display !== 'flex'
-  ) {
-    return { editorStatePatches: [], commandDescription: `` }
+  if (targetParent == null || parentFrame == null) {
+    return { editorStatePatches: [], commandDescription: `Show reorder indicator FAILED` }
   }
 
-  const flexDirection = MetadataUtils.getFlexDirection(targetParent)
-  const newParentFlexDirection = forceNotNull(
+  const staticContainerDirection = singleAxisAutoLayoutContainerDirections(
+    command.target,
+    editor.jsxMetadata,
+  )
+
+  if (staticContainerDirection === 'non-single-axis-autolayout') {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Show reorder indicator FAILED: non 1d static parent`,
+    }
+  }
+
+  const newParentDirection = forceNotNull(
     'Should have a valid flex direction.',
-    flexDirectionToSimpleFlexDirection(flexDirection),
+    staticContainerDirection.direction,
   )
   const forwardsOrBackwards = forceNotNull(
     'Should have a valid flex orientation.',
-    flexDirectionToFlexForwardsOrBackwards(flexDirection),
+    staticContainerDirection.forwardsOrBackwards,
   )
   const siblings = MetadataUtils.getChildren(editor.jsxMetadata, command.target).map(
     (sibling) => sibling.elementPath,
   )
 
   const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
-    newParentFlexDirection,
+    newParentDirection,
     forwardsOrBackwards,
     parentFrame,
     siblings,
@@ -68,7 +76,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     const succeedingSiblingPosition: CanvasRectangle = siblingPositions[command.index + 1]
 
     const targetLineBeforeSibling: CanvasRectangle =
-      newParentFlexDirection === 'row'
+      newParentDirection === 'row'
         ? canvasRectangle({
             x: getSiblingMidPointPosition(
               precedingSiblingPosition,
@@ -101,11 +109,11 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     }
     return {
       editorStatePatches: [editorStatePatch],
-      commandDescription: `Show Outline Highlight`,
+      commandDescription: `Show Reorder Indicator at index ${command.index}`,
     }
   } else {
     const targetLineBeginningOfParent: CanvasRectangle =
-      newParentFlexDirection === 'row'
+      newParentDirection === 'row'
         ? canvasRectangle({
             x: parentFrame.x,
             y: parentFrame.y,
@@ -127,7 +135,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     }
     return {
       editorStatePatches: [editorStatePatch],
-      commandDescription: `Show Outline Highlight`,
+      commandDescription: `Show Reorder Indicator at beginning of parent`,
     }
   }
 }
