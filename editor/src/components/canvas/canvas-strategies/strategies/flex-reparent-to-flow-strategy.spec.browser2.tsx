@@ -445,7 +445,6 @@ describe('Flex Reparent To Flow Strategy', () => {
     )
   })
 
-  // TODO: enable when insertion to zero position is fixed
   it('reparents flex as first child when moving the mouse to the top edge of the first child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
