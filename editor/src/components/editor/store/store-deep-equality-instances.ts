@@ -437,10 +437,6 @@ import {
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import {
-  reparentTarget,
-  ReparentTarget,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import { assertNever } from '../../../core/shared/utils'
 import {
   assetResult,
@@ -3129,10 +3125,17 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
       break
     case 'file-revert-all':
       if (newValue.type === oldValue.type) {
-        return keepDeepEqualityResult(newValue, true)
+        return keepDeepEqualityResult(oldValue, true)
       } else {
-        return keepDeepEqualityResult(oldValue, false)
+        return keepDeepEqualityResult(newValue, false)
       }
+    case 'disconnect-github-project':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      } else {
+        return keepDeepEqualityResult(newValue, false)
+      }
+      break
     default:
       assertNever(oldValue)
   }
