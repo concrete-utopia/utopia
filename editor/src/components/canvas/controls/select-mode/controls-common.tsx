@@ -29,23 +29,34 @@ export const offsetMeasurementByDelta = (
   delta: number,
   precision: AdjustPrecision,
 ): CSSNumberWithRenderedValue => {
-  if (measurement.renderedValuePx === 0 || delta === 0) {
+  if (delta === 0) {
     return measurement
   }
 
-  const pixelsPerUnit = measurement.value.value / measurement.renderedValuePx
-  const deltaInUnits = delta * pixelsPerUnit
+  if (measurement.renderedValuePx === 0) {
+    return {
+      renderedValuePx: delta,
+      value: { value: delta, unit: null },
+    }
+  }
+
+  const unitsPerPixel = measurement.value.value / measurement.renderedValuePx
+
+  const deltaInUnits = delta * unitsPerPixel
+
   const newValueInPixels = measurement.renderedValuePx + delta
   const newValueRounded = valueWithUnitAppropriatePrecision(
     measurement.value.unit,
     measurement.value.value + deltaInUnits,
     precision,
   )
+
   const newRenderedValuePx = valueWithUnitAppropriatePrecision(
     'px',
-    newValueInPixels / pixelsPerUnit,
+    newValueInPixels / unitsPerPixel,
     precision,
   )
+
   return {
     renderedValuePx: newRenderedValuePx,
     value: {

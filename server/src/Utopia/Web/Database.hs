@@ -349,33 +349,39 @@ getUserDetails metrics pool userId = invokeAndMeasure (_getUserDetailsMetrics me
   pure $ fmap userDetailsFromRow $ listToMaybe userDetails
 
 userConfigurationToDecodedUserConfiguration :: UserConfiguration -> IO DecodedUserConfiguration
-userConfigurationToDecodedUserConfiguration (userId, encodedShortcutConfig) = do
+userConfigurationToDecodedUserConfiguration (userId, encodedShortcutConfig, encodedTheme) = do
   let decodeShortcutConfig conf = either fail return $ eitherDecodeStrict' $ encodeUtf8 conf
   decodedShortcutConfig <- traverse decodeShortcutConfig encodedShortcutConfig
+  let decodeTheme conf = either fail return $ eitherDecodeStrict' $ encodeUtf8 conf
+  decodedTheme <- traverse decodeTheme encodedTheme
   return $ DecodedUserConfiguration
               { id = userId
               , shortcutConfig = decodedShortcutConfig
+              , theme = decodedTheme
               }
 
 getUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedUserConfiguration)
 getUserConfiguration metrics pool userId = invokeAndMeasure (_getUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
   userConf <- fmap listToMaybe $ runSelect connection $ do
-    configurationRow@(rowUserId, _) <- userConfigurationSelect
+    configurationRow@(rowUserId, _, _) <- userConfigurationSelect
     where_ $ rowUserId .== toFields userId
     pure configurationRow
   traverse userConfigurationToDecodedUserConfiguration userConf
 
-saveUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> Maybe Value -> IO ()
-saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
+saveUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> Maybe Value -> Maybe Value -> IO ()
+saveUserConfiguration metrics pool userId updatedShortcutConfig updatedTheme = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
   encodedShortcutConfig <- do
     let encoded = fmap encode updatedShortcutConfig
     either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
-  let newRecord = (toFields userId, toFields encodedShortcutConfig)
+  encodedTheme <- do
+    let encoded = fmap encode updatedTheme
+    either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
+  let newRecord = (toFields userId, toFields encodedShortcutConfig, toFields encodedTheme)
   let insertConfig = void $ insert userConfigurationTable newRecord
-  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _) -> (rowUserId, toFields encodedShortcutConfig)) (\(rowUserId, _) -> rowUserId .== toFields userId)
+  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _, _) -> (rowUserId, toFields encodedShortcutConfig, toFields encodedTheme)) (\(rowUserId, _, _) -> rowUserId .== toFields userId)
   runOpaleyeT connection $ transaction $ do
     userConf <- queryFirst $ do
-      (rowUserId, _) <- userConfigurationSelect
+      (rowUserId, _, _) <- userConfigurationSelect
       where_ $ rowUserId .== toFields userId
       pure rowUserId
     maybe insertConfig updateConfig (userConf :: Maybe Text)

@@ -974,7 +974,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeReady: currentEditor.vscodeReady,
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
-    theme: currentEditor.theme,
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
@@ -4369,6 +4368,7 @@ export const UPDATE_FNS = {
     updatedShortcutConfig[action.shortcutName] = [action.newKey]
     const updatedUserConfiguration: UserConfiguration = {
       shortcutConfig: updatedShortcutConfig,
+      themeConfig: userState.themeConfig,
     }
     // Side effect.
     void saveUserConfiguration(updatedUserConfiguration)
@@ -4615,11 +4615,14 @@ export const UPDATE_FNS = {
       forkedFromProjectId: action.id,
     }
   },
-  SET_CURRENT_THEME: (action: SetCurrentTheme, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      theme: action.theme,
+  SET_CURRENT_THEME: (action: SetCurrentTheme, userState: UserState): UserState => {
+    const updatedUserConfiguration: UserConfiguration = {
+      shortcutConfig: userState.shortcutConfig,
+      themeConfig: action.theme,
     }
+    // Side effect.
+    void saveUserConfiguration(updatedUserConfiguration)
+    return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
     return {
@@ -5020,17 +5023,27 @@ export const UPDATE_FNS = {
       githubSettings.branchName != null &&
       githubSettings.originCommit != null
     ) {
-      const updatedProjectContents = mergeProjectContents(
+      const mergeResults = mergeProjectContents(
+        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,
       )
+      // If there are conflicts, then don't update the origin commit so we can try again.
+      const newOriginCommit =
+        Object.keys(mergeResults.treeConflicts).length > 0
+          ? githubSettings.originCommit
+          : action.latestCommit
       return {
         ...editor,
-        projectContents: updatedProjectContents,
+        projectContents: mergeResults.value,
         githubSettings: {
           ...githubSettings,
-          originCommit: action.latestCommit,
+          originCommit: newOriginCommit,
+        },
+        githubData: {
+          ...editor.githubData,
+          treeConflicts: mergeResults.treeConflicts,
         },
       }
     } else {

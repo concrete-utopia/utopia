@@ -239,6 +239,25 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  it('padding can be set to zero and then resized to a non-zero value', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('2em 1em 3em 2em'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const dragDeltaFromZero = 100
+    await testPaddingResizeForEdge(editor, dragDeltaFromZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues(`${dragDeltaFromZero}px 1em 3em 2em`),
+    )
+  })
+
   describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -303,16 +322,16 @@ async function testPaddingResizeForEdge(
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
   const paddingControl = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
-  const bounds = paddingControl.getBoundingClientRect()
+  const paddingControlBounds = paddingControl.getBoundingClientRect()
 
-  const center = {
-    x: Math.floor(bounds.x + bounds.width / 2),
-    y: Math.floor(bounds.y + bounds.height / 2),
+  const paddingControlCenter = {
+    x: Math.floor(paddingControlBounds.x + paddingControlBounds.width / 2),
+    y: Math.floor(paddingControlBounds.y + paddingControlBounds.height / 2),
   }
-  const endPoint = offsetPointByEdge(edge, delta, center)
+  const endPoint = offsetPointByEdge(edge, delta, paddingControlCenter)
 
   const modifiers = precision === 'coarse' ? shiftModifier : undefined
-  mouseDragFromPointToPoint(paddingControl, center, endPoint, { modifiers })
+  mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
   await editor.getDispatchFollowUpActionsFinished()
 }
 

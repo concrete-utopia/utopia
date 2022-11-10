@@ -99,7 +99,7 @@ export function singleAxisAutoLayoutContainerDirections(
     const targetDirection = getElementDirection(firstChild)
     const shouldReverse =
       targetDirection === 'horizontal' &&
-      firstChild.specialSizeMeasurements?.textDirection === 'rtl'
+      firstChild.specialSizeMeasurements?.parentFlexDirection === 'rtl'
 
     let allHorizontalOrVertical = true
     let childrenFrames: Array<CanvasRectangle> = []

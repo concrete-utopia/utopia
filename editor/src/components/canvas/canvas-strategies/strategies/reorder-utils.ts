@@ -24,6 +24,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getElementDirection } from './flow-reorder-helpers'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -33,6 +34,32 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
   const uid = EP.toUid(target)
   const staticUid = EP.toStaticUid(target)
   return uid !== staticUid
+}
+
+export function getDirectionFlexOrFlow(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): { direction: 'vertical' | 'horizontal'; shouldReverse: boolean } {
+  const element = MetadataUtils.findElementByElementPath(metadata, target)
+  if (
+    MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(element)
+  ) {
+    const flexDirection = element?.specialSizeMeasurements.parentFlexDirection
+    return {
+      direction:
+        flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical',
+      shouldReverse: flexDirection?.includes('reverse') ?? false,
+    }
+  } else {
+    const flowDirection = getElementDirection(element)
+
+    return {
+      direction: flowDirection,
+      shouldReverse:
+        flowDirection === 'horizontal' &&
+        element?.specialSizeMeasurements.parentTextDirection === 'rtl',
+    }
+  }
 }
 
 export function applyReorderCommon(
