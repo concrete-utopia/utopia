@@ -369,7 +369,7 @@ export function getReparentTargetUnified(
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
-  const singleAxisAutoLayotuContainersUnderPoint = mapDropNulls((element) => {
+  const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
     const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(element, metadata)
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
@@ -381,7 +381,7 @@ export function getReparentTargetUnified(
   }, [...filteredElementsUnderPoint].reverse())
 
   // first try to find a flex element insertion area
-  for (const singleAxisAutoLayoutContainer of singleAxisAutoLayotuContainersUnderPoint) {
+  for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
     const { direction, forwardsOrBackwards, flexOrFlow } = singleAxisAutoLayoutContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
