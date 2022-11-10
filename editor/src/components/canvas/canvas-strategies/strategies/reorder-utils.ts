@@ -56,7 +56,8 @@ export function getDirectionFlexOrFlow(
     return {
       direction: flowDirection,
       shouldReverse:
-        flowDirection === 'horizontal' && element?.specialSizeMeasurements.textDirection === 'rtl',
+        flowDirection === 'horizontal' &&
+        element?.specialSizeMeasurements.parentTextDirection === 'rtl',
     }
   }
 }
