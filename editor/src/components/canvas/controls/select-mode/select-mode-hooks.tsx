@@ -600,7 +600,7 @@ function useSelectOrLiveModeSelectAndHover(
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
-          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.hasMouseMoved
           : false
 
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
