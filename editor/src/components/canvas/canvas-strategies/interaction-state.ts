@@ -13,6 +13,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
+import { BorderRadiusCorner } from '../border-radius-utis'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -535,13 +536,13 @@ export function paddingResizeHandle(edgePosition: EdgePiece): PaddingResizeHandl
 
 export interface BorderRadiusResizeHandle {
   type: 'BORDER_RADIUS_RESIZE_HANDLE'
-  edgePosition: EdgePosition
+  corner: BorderRadiusCorner
 }
 
-export function borderRadiusResizeHandle(edgePosition: EdgePosition): BorderRadiusResizeHandle {
+export function borderRadiusResizeHandle(corner: BorderRadiusCorner): BorderRadiusResizeHandle {
   return {
     type: 'BORDER_RADIUS_RESIZE_HANDLE',
-    edgePosition: edgePosition,
+    corner: corner,
   }
 }
 

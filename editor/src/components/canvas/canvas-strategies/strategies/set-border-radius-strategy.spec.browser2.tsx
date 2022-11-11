@@ -1,12 +1,7 @@
 import { canvasVector, CanvasVector, size } from '../../../../core/shared/math-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier } from '../../../../utils/modifiers'
-import {
-  EdgePosition,
-  EdgePositionBottomLeft,
-  EdgePositionBottomRight,
-  EdgePositionTopLeft,
-  EdgePositionTopRight,
-} from '../../canvas-types'
+import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-utis'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -16,13 +11,6 @@ import {
   EditorRenderResult,
   getPrintedUiJsCode,
 } from '../../ui-jsx.test-utils'
-
-const Corners = [
-  EdgePositionTopLeft,
-  EdgePositionTopRight,
-  EdgePositionBottomLeft,
-  EdgePositionBottomRight,
-]
 
 describe('set border radius strategy', () => {
   it('border radius controls show up for elements that have border radius set', async () => {
@@ -41,8 +29,8 @@ describe('set border radius strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = Corners.flatMap((edgePosition) =>
-      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(edgePosition)),
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
     )
 
     expect(paddingControls.length).toEqual(4)
@@ -61,8 +49,8 @@ describe('set border radius strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = Corners.flatMap((edgePosition) =>
-      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(edgePosition)),
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
     )
 
     expect(paddingControls).toEqual([])
@@ -77,7 +65,7 @@ describe('set border radius strategy', () => {
 
     const expectedBorderRadius = Math.min(width, height) / 2
 
-    await doDragTest(editor, EdgePositionTopLeft, 400)
+    await doDragTest(editor, 'tl', 400)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '${expectedBorderRadius}px'`),
     )
@@ -88,7 +76,7 @@ describe('set border radius strategy', () => {
       codeForDragTest(`borderRadius: '4px'`),
       'await-first-dom-report',
     )
-    await doDragTest(editor, EdgePositionTopLeft, -10)
+    await doDragTest(editor, 'tl', -10)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '0px'`),
     )
@@ -100,7 +88,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, EdgePositionTopLeft, 10)
+      await doDragTest(editor, 'tl', 10)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -111,7 +99,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, EdgePositionTopRight, 10)
+      await doDragTest(editor, 'tr', 10)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -122,7 +110,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, EdgePositionBottomLeft, 10)
+      await doDragTest(editor, 'bl', 10)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -133,7 +121,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, EdgePositionBottomRight, 10)
+      await doDragTest(editor, 'br', 10)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -166,7 +154,7 @@ function codeForDragTest(borderRadius: string): string {
   </div>`)
 }
 
-async function doDragTest(editor: EditorRenderResult, edgePosition: EdgePosition, offset: number) {
+async function doDragTest(editor: EditorRenderResult, corner: BorderRadiusCorner, offset: number) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
@@ -177,7 +165,7 @@ async function doDragTest(editor: EditorRenderResult, edgePosition: EdgePosition
 
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-  const borderRadiusControl = editor.renderedDOM.getByTestId(CircularHandleTestId(edgePosition))
+  const borderRadiusControl = editor.renderedDOM.getByTestId(CircularHandleTestId(corner))
   const borderRadiusControlBounds = borderRadiusControl.getBoundingClientRect()
 
   const center = {
@@ -185,7 +173,7 @@ async function doDragTest(editor: EditorRenderResult, edgePosition: EdgePosition
     y: Math.floor(borderRadiusControlBounds.y + borderRadiusControlBounds.height / 2),
   }
 
-  const dragDelta = dragDeltaFromEdgePosition(edgePosition, offset)
+  const dragDelta = dragDeltaFromEdgePosition(corner, offset)
 
   mouseDragFromPointToPoint(borderRadiusControl, center, {
     x: center.x + dragDelta.x,
@@ -194,23 +182,17 @@ async function doDragTest(editor: EditorRenderResult, edgePosition: EdgePosition
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-function dragDeltaFromEdgePosition(edgePosition: EdgePosition, offset: number): CanvasVector {
-  const { x, y } = edgePosition
-  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return canvasVector({ x: offset, y: offset })
+function dragDeltaFromEdgePosition(corner: BorderRadiusCorner, offset: number): CanvasVector {
+  switch (corner) {
+    case 'tl':
+      return canvasVector({ x: offset, y: offset })
+    case 'tr':
+      return canvasVector({ x: -offset, y: offset })
+    case 'bl':
+      return canvasVector({ x: offset, y: -offset })
+    case 'br':
+      return canvasVector({ x: -offset, y: -offset })
+    default:
+      assertNever(corner)
   }
-
-  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return canvasVector({ x: -offset, y: offset })
-  }
-
-  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return canvasVector({ x: offset, y: -offset })
-  }
-
-  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return canvasVector({ x: -offset, y: -offset })
-  }
-
-  return canvasVector({ x: 0, y: 0 })
 }

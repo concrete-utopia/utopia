@@ -9,10 +9,11 @@ import { useEditorState, useRefEditorState } from '../../../editor/store/store-h
 import { CSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
+  BorderRadiusCorner,
+  BorderRadiusCorners,
   BorderRadiusHandleSize,
   BorderRadiusSides,
   handlePosition,
-  valueFromEdgePosition,
 } from '../../border-radius-utis'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -20,34 +21,33 @@ import {
   borderRadiusResizeHandle,
   createInteractionViaMouse,
 } from '../../canvas-strategies/interaction-state'
-import {
-  EdgePosition,
-  EdgePositionBottomLeft,
-  EdgePositionBottomRight,
-  EdgePositionTopLeft,
-  EdgePositionTopRight,
-} from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { CSSNumberLabel, CSSNumberWithRenderedValue, useHoverWithDelay } from './controls-common'
 
-export const CircularHandleTestId = (position: EdgePosition): string =>
-  `circular-handle-${position.x}-${position.y}`
+export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
+  `circular-handle-${corner}`
 
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
   borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
-  showIndicatorOnEdge: EdgePosition | null
+  showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
   indicatorValue: BorderRadiusSides<CSSNumberWithRenderedValue>
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge, indicatorValue, mode } =
-    props
+  const {
+    selectedElement,
+    borderRadius,
+    elementSize,
+    showIndicatorOnCorner: showIndicatorOnEdge,
+    indicatorValue,
+    mode,
+  } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const { dispatch, scale, isDragging } = useEditorState(
@@ -88,27 +88,20 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
         ref={controlRef}
         style={{ position: 'absolute' }}
       >
-        {[
-          EdgePositionTopLeft,
-          EdgePositionTopRight,
-          EdgePositionBottomLeft,
-          EdgePositionBottomRight,
-        ].map((edgePosition) => (
+        {BorderRadiusCorners.map((corner) => (
           <CircularHandle
-            key={CircularHandleTestId(edgePosition)}
-            borderRadius={valueFromEdgePosition(edgePosition, borderRadius)}
+            key={CircularHandleTestId(corner)}
+            borderRadius={borderRadius[corner]}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}
             color={colorTheme.brandNeonPink.value}
             canvasOffsetRef={canvasOffset}
             dispatch={dispatch}
-            edgePosition={edgePosition}
+            corner={corner}
             elementSize={elementSize}
-            showIndicatorFromParent={
-              showIndicatorOnEdge?.x === edgePosition.x && showIndicatorOnEdge?.y === edgePosition.y
-            }
-            indicatorValue={valueFromEdgePosition(edgePosition, indicatorValue).value}
+            showIndicatorFromParent={showIndicatorOnEdge === corner}
+            indicatorValue={indicatorValue[corner].value}
             showDot={mode === 'individual'}
           />
         ))}
@@ -121,7 +114,7 @@ interface CircularHandleProp {
   borderRadius: CSSNumberWithRenderedValue
   canvasOffsetRef: { current: CanvasVector }
   dispatch: EditorDispatch
-  edgePosition: EdgePosition
+  corner: BorderRadiusCorner
   indicatorValue: CSSNumber
   isDragging: boolean
   backgroundShown: boolean
@@ -142,7 +135,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     color,
     canvasOffsetRef,
     dispatch,
-    edgePosition,
+    corner,
     elementSize,
     showIndicatorFromParent,
     showDot,
@@ -156,11 +149,11 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowHandle = isDragging || backgroundShown
 
   const size = BorderRadiusHandleSize(scale)
-  const position = handlePosition(borderRadius.renderedValuePx, elementSize, edgePosition, scale)
+  const position = handlePosition(borderRadius.renderedValuePx, elementSize, corner, scale)
 
   return (
     <div
-      data-testid={CircularHandleTestId(edgePosition)}
+      data-testid={CircularHandleTestId(corner)}
       style={{
         position: 'absolute',
         left: position.x,
@@ -168,9 +161,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
-      onMouseDown={(e) =>
-        startInteraction(e, dispatch, canvasOffsetRef.current, scale, edgePosition)
-      }
+      onMouseDown={(e) => startInteraction(e, dispatch, canvasOffsetRef.current, scale, corner)}
     >
       <>
         {when(
@@ -223,7 +214,7 @@ function startInteraction(
   dispatch: EditorDispatch,
   canvasOffset: CanvasVector,
   scale: number,
-  edgePosition: EdgePosition,
+  corner: BorderRadiusCorner,
 ) {
   event.stopPropagation()
   if (event.buttons === 1 && event.button !== 2) {
@@ -237,7 +228,7 @@ function startInteraction(
         createInteractionViaMouse(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
-          borderRadiusResizeHandle(edgePosition),
+          borderRadiusResizeHandle(corner),
         ),
       ),
     ])

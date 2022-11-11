@@ -17,6 +17,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { assertNever } from '../../../../core/shared/utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import {
   CSSBorderRadiusIndividual,
@@ -29,18 +30,12 @@ import {
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
   BorderRadiusAdjustMode,
+  BorderRadiusCorner,
   borderRadiusOffsetPx,
   BorderRadiusSides,
   BorderRadiusThreshold,
   maxBorderRadius,
 } from '../../border-radius-utis'
-import {
-  EdgePosition,
-  EdgePositionBottomLeft,
-  EdgePositionBottomRight,
-  EdgePositionTopLeft,
-  EdgePositionTopRight,
-} from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
@@ -122,7 +117,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
           elementSize: elementSize,
           borderRadius: updatedBorderRadius,
           indicatorValue: borderRadiusValueForIndicator,
-          showIndicatorOnEdge: borderRadiusAdjustData?.edgePosition ?? null,
+          showIndicatorOnCorner: borderRadiusAdjustData?.corner ?? null,
         },
         key: 'border-radius-handle',
         show: 'visible-except-when-other-strategy-is-active',
@@ -139,7 +134,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
 interface BorderRadiusAdjustData {
   drag: CanvasVector
   dragStart: CanvasPoint
-  edgePosition: EdgePosition
+  corner: BorderRadiusCorner
   modifiers: Modifiers
 }
 
@@ -156,30 +151,24 @@ function borderRadiusAdjustDataFromInteractionSession(
   return {
     drag: interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
     dragStart: interactionSession.interactionData.dragStart,
-    edgePosition: interactionSession.activeControl.edgePosition,
+    corner: interactionSession.activeControl.corner,
     modifiers: interactionSession.interactionData.modifiers,
   }
 }
 
-function deltaFromDrag(drag: CanvasVector, edgePosition: EdgePosition): number {
-  const { x, y } = edgePosition
-  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return Math.max(drag.x, drag.y)
+function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
+  switch (corner) {
+    case 'tl':
+      return Math.max(drag.x, drag.y)
+    case 'tr':
+      return Math.max(-drag.x, drag.y)
+    case 'bl':
+      return Math.max(drag.x, -drag.y)
+    case 'br':
+      return Math.max(-drag.x, -drag.y)
+    default:
+      assertNever(corner)
   }
-
-  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return Math.max(-drag.x, drag.y)
-  }
-
-  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return Math.max(drag.x, -drag.y)
-  }
-
-  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return Math.max(-drag.x, -drag.y)
-  }
-
-  return 0
 }
 
 interface BorderRadiusData<T> {
@@ -356,52 +345,58 @@ interface BoderRadiusCorner {
 
 function borderRadiusFromData(
   data: BorderRadiusData<CSSNumberWithRenderedValue>,
-  edgePosition: EdgePosition,
+  corner: BorderRadiusCorner,
 ): BoderRadiusCorner {
   if (data.mode === 'all') {
     return { actual: data.actualBorderRadius.tl, adjusted: data.adjustedBorderRadius.tl, key: 'tl' }
   }
 
-  const { x, y } = edgePosition
-  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return { actual: data.actualBorderRadius.tl, adjusted: data.adjustedBorderRadius.tl, key: 'tl' }
+  switch (corner) {
+    case 'tl':
+      return {
+        actual: data.actualBorderRadius.tl,
+        adjusted: data.adjustedBorderRadius.tl,
+        key: 'tl',
+      }
+    case 'tr':
+      return {
+        actual: data.actualBorderRadius.tr,
+        adjusted: data.adjustedBorderRadius.tr,
+        key: 'tr',
+      }
+    case 'bl':
+      return {
+        actual: data.actualBorderRadius.bl,
+        adjusted: data.adjustedBorderRadius.bl,
+        key: 'bl',
+      }
+    case 'br':
+      return {
+        actual: data.actualBorderRadius.br,
+        adjusted: data.adjustedBorderRadius.br,
+        key: 'br',
+      }
+    default:
+      assertNever(corner)
   }
-
-  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return { actual: data.actualBorderRadius.tr, adjusted: data.adjustedBorderRadius.tr, key: 'tr' }
-  }
-
-  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return { actual: data.actualBorderRadius.bl, adjusted: data.adjustedBorderRadius.bl, key: 'bl' }
-  }
-
-  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-    return { actual: data.actualBorderRadius.br, adjusted: data.adjustedBorderRadius.br, key: 'br' }
-  }
-
-  return { actual: data.actualBorderRadius.br, adjusted: data.adjustedBorderRadius.br, key: 'br' }
 }
 
 function longhandFromEdgePosition(
   mode: BorderRadiusAdjustMode,
-  edgePosition: EdgePosition,
+  corner: BorderRadiusCorner,
 ): keyof ParsedCSSProperties {
   if (mode === 'individual') {
-    const { x, y } = edgePosition
-    if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-      return 'borderTopLeftRadius'
-    }
-
-    if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-      return 'borderTopRightRadius'
-    }
-
-    if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-      return 'borderBottomLeftRadius'
-    }
-
-    if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
-      return 'borderBottomRightRadius'
+    switch (corner) {
+      case 'tl':
+        return 'borderTopLeftRadius'
+      case 'tr':
+        return 'borderTopRightRadius'
+      case 'bl':
+        return 'borderBottomLeftRadius'
+      case 'br':
+        return 'borderBottomRightRadius'
+      default:
+        assertNever(corner)
     }
   }
   return 'borderRadius'
@@ -415,10 +410,7 @@ function updateBorderRadiusFn(
     const dragDelta = clamp(
       -borderRadius.renderedValuePx,
       maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
-      optionalMap(
-        ({ drag, edgePosition: ep }) => deltaFromDrag(drag, ep),
-        borderRadiusAdjustData,
-      ) ?? 0,
+      optionalMap(({ drag, corner: ep }) => deltaFromDrag(drag, ep), borderRadiusAdjustData) ?? 0,
     )
 
     const borderRadiusOffset = borderRadiusOffsetPx(
@@ -445,7 +437,7 @@ function setBorderRadiusStrategyRunResult(
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
   elementSize: Size,
 ): SetBorderRadiusStrategyRunResult {
-  const edgePosition = borderRadiusAdjustData?.edgePosition ?? EdgePositionTopLeft
+  const edgePosition = borderRadiusAdjustData?.corner ?? 'tl'
 
   const mode: BorderRadiusAdjustMode =
     data.mode === 'individual' || borderRadiusAdjustData?.modifiers.cmd === true
