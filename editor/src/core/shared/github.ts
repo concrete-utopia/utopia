@@ -7,6 +7,7 @@ import {
   deriveGithubFileChanges,
   getContentsTreeFileFromString,
   getProjectContentsChecksums,
+  getProjectFileFromContents,
   isProjectContentDirectory,
   isProjectContentFile,
   projectContentDirectory,
@@ -18,9 +19,11 @@ import { notice } from '../../components/common/notice'
 import { EditorAction, EditorDispatch } from '../../components/editor/action-types'
 import {
   deleteFile,
+  removeFileConflict,
   showToast,
   updateAgainstGithub,
   updateBranchContents,
+  updateFile,
   updateGithubChecksums,
   updateGithubData,
   updateGithubOperations,
@@ -203,6 +206,7 @@ export async function saveProjectToGithub(
                 persistentModel.githubSettings.targetRepository,
                 responseBody.newCommit,
                 responseBody.branchName,
+                responseBody.newCommit,
               ),
             ),
             updateBranchContents(persistentModel.projectContents),
@@ -387,7 +391,12 @@ export async function updateProjectWithBranchContent(
             updateProjectContents(responseBody.content),
             updateBranchContents(responseBody.content),
             updateGithubSettings(
-              projectGithubSettings(githubRepo, responseBody.originCommit, branchName),
+              projectGithubSettings(
+                githubRepo,
+                responseBody.originCommit,
+                branchName,
+                responseBody.originCommit,
+              ),
             ),
             updateGithubData(newGithubData),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
@@ -969,4 +978,133 @@ export function disconnectGithubProjectActions(): EditorAction[] {
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]
+}
+
+interface GithubSaveAssetResponseSuccess {
+  type: 'SUCCESS'
+}
+
+type GithubSaveAssetResponse = GithubSaveAssetResponseSuccess | GithubFailure
+
+export async function saveGithubAsset(
+  githubRepo: GithubRepo,
+  assetSha: string,
+  projectID: string,
+  path: string,
+): Promise<void> {
+  const url = urljoin(
+    UTOPIA_BACKEND,
+    'github',
+    'branches',
+    githubRepo.owner,
+    githubRepo.repository,
+    'asset',
+    assetSha,
+  )
+
+  const paramsRecord: Record<string, string> = {
+    project_id: projectID,
+    path: path,
+  }
+  const searchParams = new URLSearchParams(paramsRecord)
+  const urlToUse = `${url}?${searchParams}`
+
+  const response = await fetch(urlToUse, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: GithubSaveAssetResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        throw new Error(`Failed to save asset ${responseBody.failureReason}`)
+      case 'SUCCESS':
+        return Promise.resolve()
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    throw new Error(`Failed to save asset due to status code ${response.status}.`)
+  }
+}
+
+export async function resolveConflict(
+  githubRepo: GithubRepo,
+  projectID: string,
+  path: string,
+  conflict: Conflict,
+  whichChange: 'utopia' | 'branch',
+  dispatch: EditorDispatch,
+): Promise<void> {
+  async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
+    // Update the file in the server first before putting it into the project contents.
+    const projectFile = getProjectFileFromContents(file)
+    let gitBlobSha: string | undefined = undefined
+    switch (projectFile.type) {
+      case 'IMAGE_FILE':
+      case 'ASSET_FILE':
+        gitBlobSha = projectFile.gitBlobSha
+        break
+      default:
+    }
+    let saveAssetPromise: Promise<void>
+    if (gitBlobSha == null) {
+      saveAssetPromise = Promise.resolve()
+    } else {
+      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path)
+    }
+    saveAssetPromise.then(() => {
+      dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
+    })
+  }
+
+  async function removeFromContents(): Promise<void> {
+    return new Promise((resolve) => {
+      dispatch([deleteFile(path), removeFileConflict(path)], 'everyone')
+      resolve()
+    })
+  }
+
+  // Handle the varying cases here.
+  switch (conflict.type) {
+    case 'DIFFERING_TYPES':
+      switch (whichChange) {
+        case 'utopia':
+          return updateFileInProjectContents(conflict.currentContents)
+        case 'branch':
+          return updateFileInProjectContents(conflict.branchContents)
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    case 'CURRENT_DELETED_BRANCH_CHANGED':
+      switch (whichChange) {
+        case 'utopia':
+          return removeFromContents()
+        case 'branch':
+          return updateFileInProjectContents(conflict.branchContents)
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    case 'CURRENT_CHANGED_BRANCH_DELETED':
+      switch (whichChange) {
+        case 'utopia':
+          return updateFileInProjectContents(conflict.currentContents)
+        case 'branch':
+          return removeFromContents()
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = conflict
+      throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
+  }
 }

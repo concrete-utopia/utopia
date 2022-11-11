@@ -379,6 +379,17 @@ innerServerExecutor (GetUsersRepositories user action) = do
     Just githubResources -> do
       result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
       pure $ action result
+innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- saveGithubAssetToProject githubResources awsResource logger metrics pool user owner repository assetSha projectID assetPath
+      pure $ action result
 
 {-|
   Invokes a service call using the supplied resources.

@@ -139,6 +139,7 @@ data ServiceCallsF a = NotFound
                      | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
                      | GetBranchContent Text Text Text Text (Maybe Text) (GetBranchContentResponse -> a)
                      | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)
+                     | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
                      deriving Functor
 
 {-
