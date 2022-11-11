@@ -31,9 +31,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import {
   BorderRadiusAdjustMode,
   BorderRadiusCorner,
-  borderRadiusOffsetPx,
   BorderRadiusSides,
-  BorderRadiusThreshold,
   maxBorderRadius,
 } from '../../border-radius-utis'
 import { CanvasCommand } from '../../commands/commands'
@@ -96,8 +94,11 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   const elementSize = sizeFromElement(element)
   const borderRadiusAdjustData = borderRadiusAdjustDataFromInteractionSession(interactionSession)
 
-  const { commands, updatedBorderRadius, borderRadiusValueForIndicator } =
-    setBorderRadiusStrategyRunResult(borderRadius, borderRadiusAdjustData, elementSize)
+  const { commands, updatedBorderRadius } = setBorderRadiusStrategyRunResult(
+    borderRadius,
+    borderRadiusAdjustData,
+    elementSize,
+  )
 
   const mode: BorderRadiusAdjustMode =
     borderRadius.mode === 'individual' || borderRadiusAdjustData?.modifiers.cmd === true
@@ -116,7 +117,6 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
           selectedElement: selectedElement,
           elementSize: elementSize,
           borderRadius: updatedBorderRadius,
-          indicatorValue: borderRadiusValueForIndicator,
           showIndicatorOnCorner: borderRadiusAdjustData?.corner ?? null,
         },
         key: 'border-radius-handle',
@@ -173,8 +173,7 @@ function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
 
 interface BorderRadiusData<T> {
   mode: BorderRadiusAdjustMode
-  actualBorderRadius: BorderRadiusSides<T>
-  adjustedBorderRadius: BorderRadiusSides<T>
+  borderRadius: BorderRadiusSides<T>
 }
 
 function borderRadiusFromElement(
@@ -205,9 +204,8 @@ function borderRadiusFromElement(
 
   return {
     mode: fromProps?.type === 'sides' ? 'individual' : 'all',
-    actualBorderRadius: borderRadius,
-    adjustedBorderRadius: mapBorderRadiusSides(
-      (n) => adjustBorderRadius({ min: BorderRadiusThreshold, max: borderRadiusUpperLimit }, n),
+    borderRadius: mapBorderRadiusSides(
+      (n) => adjustBorderRadius({ min: 0, max: borderRadiusUpperLimit }, n),
       borderRadius,
     ),
   }
@@ -334,12 +332,10 @@ function adjustBorderRadius(
 interface SetBorderRadiusStrategyRunResult {
   commands: (target: ElementPath) => CanvasCommand
   updatedBorderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
-  borderRadiusValueForIndicator: BorderRadiusSides<CSSNumberWithRenderedValue>
 }
 
 interface BoderRadiusCorner {
-  actual: CSSNumberWithRenderedValue
-  adjusted: CSSNumberWithRenderedValue
+  borderRadius: CSSNumberWithRenderedValue
   key: keyof CSSBorderRadiusIndividual
 }
 
@@ -348,32 +344,28 @@ function borderRadiusFromData(
   corner: BorderRadiusCorner,
 ): BoderRadiusCorner {
   if (data.mode === 'all') {
-    return { actual: data.actualBorderRadius.tl, adjusted: data.adjustedBorderRadius.tl, key: 'tl' }
+    return { borderRadius: data.borderRadius[corner], key: corner }
   }
 
   switch (corner) {
     case 'tl':
       return {
-        actual: data.actualBorderRadius.tl,
-        adjusted: data.adjustedBorderRadius.tl,
+        borderRadius: data.borderRadius.tl,
         key: 'tl',
       }
     case 'tr':
       return {
-        actual: data.actualBorderRadius.tr,
-        adjusted: data.adjustedBorderRadius.tr,
+        borderRadius: data.borderRadius.tr,
         key: 'tr',
       }
     case 'bl':
       return {
-        actual: data.actualBorderRadius.bl,
-        adjusted: data.adjustedBorderRadius.bl,
+        borderRadius: data.borderRadius.bl,
         key: 'bl',
       }
     case 'br':
       return {
-        actual: data.actualBorderRadius.br,
-        adjusted: data.adjustedBorderRadius.br,
+        borderRadius: data.borderRadius.br,
         key: 'br',
       }
     default:
@@ -413,10 +405,7 @@ function updateBorderRadiusFn(
       optionalMap(({ drag, corner: ep }) => deltaFromDrag(drag, ep), borderRadiusAdjustData) ?? 0,
     )
 
-    const borderRadiusOffset = borderRadiusOffsetPx(
-      dragDelta != 0,
-      borderRadius.renderedValuePx + dragDelta,
-    )
+    const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta
 
     const precision =
       optionalMap(({ modifiers }) => precisionFromModifiers(modifiers), borderRadiusAdjustData) ??
@@ -437,7 +426,7 @@ function setBorderRadiusStrategyRunResult(
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
   elementSize: Size,
 ): SetBorderRadiusStrategyRunResult {
-  const edgePosition = borderRadiusAdjustData?.corner ?? 'tl'
+  const edgePosition = borderRadiusAdjustData?.corner ?? 'br'
 
   const mode: BorderRadiusAdjustMode =
     data.mode === 'individual' || borderRadiusAdjustData?.modifiers.cmd === true
@@ -445,10 +434,11 @@ function setBorderRadiusStrategyRunResult(
       : 'all'
 
   if (mode === 'individual') {
-    const { actual, adjusted, key } = borderRadiusFromData(data, edgePosition)
-    const updatedBorderRadius = updateBorderRadiusFn(elementSize, borderRadiusAdjustData)(adjusted)
-
-    const isDragging = borderRadiusFromData != null
+    const { borderRadius, key } = borderRadiusFromData(data, edgePosition)
+    const updatedBorderRadius = updateBorderRadiusFn(
+      elementSize,
+      borderRadiusAdjustData,
+    )(borderRadius)
 
     return {
       commands: setPropertyCommand(
@@ -456,25 +446,20 @@ function setBorderRadiusStrategyRunResult(
         printCSSNumber(updatedBorderRadius.value, null),
       ),
       updatedBorderRadius: {
-        ...data.adjustedBorderRadius,
+        ...data.borderRadius,
         [key]: updatedBorderRadius,
-      },
-      borderRadiusValueForIndicator: {
-        ...data.actualBorderRadius,
-        [key]: isDragging ? updatedBorderRadius : actual,
       },
     }
   }
 
   const allUpdated = mapBorderRadiusSides(
     updateBorderRadiusFn(elementSize, borderRadiusAdjustData),
-    data.adjustedBorderRadius,
+    data.borderRadius,
   )
 
   return {
     commands: setPropertyCommand('borderRadius', printCSSNumber(allUpdated.tl.value, null)),
     updatedBorderRadius: allUpdated,
-    borderRadiusValueForIndicator: allUpdated,
   }
 }
 

@@ -12,11 +12,6 @@ export type BorderRadiusAdjustMode = 'individual' | 'all'
 
 export const BorderRadiusHandleSize = (scale: number): number => 12 / scale
 
-export const BorderRadiusThreshold: number = 10
-
-export const borderRadiusOffsetPx = (isDragging: boolean, desiredOffset: number): number =>
-  isDragging ? desiredOffset : Math.max(desiredOffset, BorderRadiusThreshold)
-
 export const maxBorderRadius = (elementSize: Size): number =>
   roundTo(Math.min(elementSize.height, elementSize.width) / 2, 0)
 

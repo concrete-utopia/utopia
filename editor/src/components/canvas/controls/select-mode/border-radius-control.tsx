@@ -36,7 +36,6 @@ export interface BorderRadiusControlProps {
   borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
   showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
-  indicatorValue: BorderRadiusSides<CSSNumberWithRenderedValue>
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
@@ -45,7 +44,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     borderRadius,
     elementSize,
     showIndicatorOnCorner: showIndicatorOnEdge,
-    indicatorValue,
     mode,
   } = props
 
@@ -101,7 +99,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
             corner={corner}
             elementSize={elementSize}
             showIndicatorFromParent={showIndicatorOnEdge === corner}
-            indicatorValue={indicatorValue[corner].value}
             showDot={mode === 'individual'}
           />
         ))}
@@ -115,7 +112,6 @@ interface CircularHandleProp {
   canvasOffsetRef: { current: CanvasVector }
   dispatch: EditorDispatch
   corner: BorderRadiusCorner
-  indicatorValue: CSSNumber
   isDragging: boolean
   backgroundShown: boolean
   scale: number
@@ -131,7 +127,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     isDragging,
     backgroundShown,
     scale,
-    indicatorValue,
     color,
     canvasOffsetRef,
     dispatch,
@@ -174,7 +169,12 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel prefix='Radius' value={indicatorValue} scale={scale} color={color} />
+            <CSSNumberLabel
+              prefix='Radius'
+              value={borderRadius.value}
+              scale={scale}
+              color={color}
+            />
           </div>,
         )}
         {when(
