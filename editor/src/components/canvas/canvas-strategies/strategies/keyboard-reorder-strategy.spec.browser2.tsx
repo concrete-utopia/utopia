@@ -4,13 +4,14 @@ import * as EP from '../../../../core/shared/element-path'
 import { KeyboardInteractionTimeout } from '../interaction-state'
 import sinon, { SinonFakeTimers } from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
-
+s
 const TestProject = (
   display: 'block' | 'inline-block',
   parentDisplay: 'flex' | 'block',
+  parentTextDirection: 'ltr' | 'rtl' = 'ltr',
   parentFlexDirection: 'row' | 'column' | 'row-reverse' | 'column-reverse' = 'row',
 ) => `
-<div style={{ width: '100%', height: '100%', position: 'absolute', display: '${parentDisplay}', flexDirection: '${parentFlexDirection}' }} data-uid='container'>
+<div style={{ width: '100%', height: '100%', position: 'absolute', display: '${parentDisplay}', flexDirection: '${parentFlexDirection}', direction: '${parentTextDirection}' }} data-uid='container'>
   <div
     style={{
       width: 50,
@@ -128,6 +129,9 @@ async function pressKeysRepeat(
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
+// In standard layouts keyboard up and left moves backward and keyboard down and right moves forward.
+// In flex reverse layouts this is fully reversed: keyboard up and left moves forward and keyboard down and right moves backward.
+// If you have rtl text direction on top of any layouts, that should switch the effect of the left and right keys (but leave up and down as it is)
 describe('Keyboard Reorder Strategy', () => {
   const { clock } = configureClock()
 
@@ -178,27 +182,9 @@ describe('Keyboard Reorder Strategy', () => {
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
       expectedNavigatorTargetsAfterArrowUp,
     )
-  })
-
-  it('pressing the arrow keys reorders in a flex layout', async () => {
-    const TestProjectFlexRow = TestProject('block', 'flex', 'row')
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectFlexRow),
-      'await-first-dom-report',
-    )
-
-    await renderResult.dispatch(
-      [
-        selectComponents(
-          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
-          false,
-        ),
-      ],
-      true,
-    )
 
     // pressing keyboard left and right reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 3)
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'utopia-storyboard-uid/scene-aaa',
@@ -215,7 +201,7 @@ describe('Keyboard Reorder Strategy', () => {
 
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
-    const expectedNavigatorTargetsAfterLeft = [
+    const expectedNavigatorTargetsAfterArrowLeft = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -225,11 +211,250 @@ describe('Keyboard Reorder Strategy', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfterLeft,
+      expectedNavigatorTargetsAfterArrowLeft,
+    )
+  })
+
+  it('pressing the arrow keys reorders in a flow layout with rtl text direction', async () => {
+    const TestProjectFlow = TestProject('block', 'block', 'rtl')
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlow),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    // pressing keyboard up and down reorders elements as in ltr case
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
+    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+
+    const expectedNavigatorTargetsAfterArrowRight = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowRight,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+
+    const expectedNavigatorTargetsAfterArrowLeft = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowLeft,
+    )
+  })
+
+  it('pressing the arrow keys reorders in a flex layout', async () => {
+    const TestProjectFlexRow = TestProject('block', 'flex', 'ltr', 'row')
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlexRow),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    // pressing keyboard up and down reorders elements
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    // pressing keyboard left and right reorders elements
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+
+    const expectedNavigatorTargetsAfterArrowRight = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowRight,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+
+    const expectedNavigatorTargetsAfterArrowLeft = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowLeft,
+    )
+  })
+  it('pressing the arrow keys reorders in a flex layout with rtl text direction', async () => {
+    const TestProjectFlexRow = TestProject('block', 'flex', 'rtl', 'row')
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlexRow),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    // pressing keyboard up and down reorders elements
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
+    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+
+    const expectedNavigatorTargetsAfterArrowRight = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowRight,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+
+    const expectedNavigatorTargetsAfterArrowLeft = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowLeft,
     )
   })
   it('pressing the arrow keys reorders in a flex column-reverse layout', async () => {
-    const TestProjectFlexColumnReverse = TestProject('block', 'flex', 'column-reverse')
+    const TestProjectFlexColumnReverse = TestProject('block', 'flex', 'ltr', 'column-reverse')
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProjectFlexColumnReverse),
       'await-first-dom-report',
@@ -245,35 +470,145 @@ describe('Keyboard Reorder Strategy', () => {
       true,
     )
 
-    // pressing keyboard up and down reorders elements
+    // pressing keyboard up and down reorders elements in reverse order
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
-
-    const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-    ]
-    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-      expectedNavigatorTargetsAfterArrowUp,
-    )
-
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    // pressing keyboard left and right reorders elements in reverse order
+    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+
+    const expectedNavigatorTargetsAfterArrowRight = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowRight,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+
+    const expectedNavigatorTargetsAfterArrowLeft = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowLeft,
+    )
+  })
+  it('pressing the arrow keys reorders in a flex column-reverse layout with rtl text direction', async () => {
+    const TestProjectFlexColumnReverse = TestProject('block', 'flex', 'ltr', 'column-reverse')
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectFlexColumnReverse),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    // pressing keyboard up and down reorders elements in reverse order, same is in ltr text direction
+    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
+
+    const expectedNavigatorTargetsAfterArrowDown = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
       expectedNavigatorTargetsAfterArrowDown,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+
+    const expectedNavigatorTargetsAfterArrowUp = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowUp,
+    )
+
+    // pressing keyboard left and right reorders elements in "normal order", because flex reverse and rtl together reverses the directions twice
+    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+
+    const expectedNavigatorTargetsAfterArrowRight = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowRight,
+    )
+
+    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+
+    const expectedNavigatorTargetsAfterArrowLeft = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+    ]
+    expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
+      expectedNavigatorTargetsAfterArrowLeft,
     )
   })
 
