@@ -226,3 +226,5 @@ export function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number
       assertNever(edgePiece)
   }
 }
+
+export const PaddingIndictorOffset = (scale: number): number => 10 / scale
