@@ -20,6 +20,8 @@ import { getOptionalDisplayPropCommandsForFlow } from './flow-reorder-helpers'
 import { isReorderAllowed } from './reorder-utils'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
+type ArrowKey = 'left' | 'right' | 'up' | 'down'
+
 export function keyboardReorderStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -61,12 +63,14 @@ export function keyboardReorderStrategy(
         let keyboardResult: number = 0
         accumulatedPresses.forEach((accumulatedPress) => {
           accumulatedPress.keysPressed.forEach((key) => {
-            const keyPressIndexChange = getIndexChangeDeltaFromKey(
-              key,
-              accumulatedPress.count,
-              elementMetadata,
-            )
-            keyboardResult = keyboardResult + keyPressIndexChange
+            if (key === 'left' || key === 'right' || key === 'up' || key === 'down') {
+              const keyPressIndexChange = getIndexChangeDeltaFromKey(
+                key,
+                accumulatedPress.count,
+                elementMetadata,
+              )
+              keyboardResult = keyboardResult + keyPressIndexChange
+            }
           })
         })
 
@@ -110,7 +114,10 @@ export function keyboardReorderStrategy(
 // In flex reverse layouts this is fully reversed: keyboard up and left moves forward and keyboard down and right moves backward.
 // If you have rtl text direction on top of any layouts, that should switch the effect of the left and right keys (but leave up and down as it is)
 function getIndexChangesForArrowKeys(element: ElementInstanceMetadata | null): {
-  [key: string]: number
+  left: number
+  up: number
+  right: number
+  down: number
 } {
   const textDirection = element?.specialSizeMeasurements.parentTextDirection ?? 'ltr'
 
@@ -154,7 +161,7 @@ function getIndexChangesForArrowKeys(element: ElementInstanceMetadata | null): {
 }
 
 function getIndexChangeDeltaFromKey(
-  key: KeyCharacter,
+  key: ArrowKey,
   delta: number,
   element: ElementInstanceMetadata | null,
 ): number {
