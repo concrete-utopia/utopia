@@ -1579,6 +1579,7 @@ export function elementInstanceMetadata(
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
+export type TextDirection = 'ltr' | 'rtl'
 
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
@@ -1606,7 +1607,7 @@ export interface SpecialSizeMeasurements {
   globalContentBox: CanvasRectangle | null
   float: string
   hasPositionOffset: boolean
-  textDirection: string
+  parentTextDirection: TextDirection | null
   hasTransform: boolean
   borderRadius: number | null
 }
@@ -1637,7 +1638,7 @@ export function specialSizeMeasurements(
   globalContentBox: CanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
-  textDirection: string,
+  parentTextDirection: TextDirection | null,
   hasTransform: boolean,
   borderRadius: number | null,
 ): SpecialSizeMeasurements {
@@ -1667,7 +1668,7 @@ export function specialSizeMeasurements(
     globalContentBox,
     float,
     hasPositionOffset,
-    textDirection,
+    parentTextDirection,
     hasTransform,
     borderRadius,
   }
@@ -1702,7 +1703,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'none',
   false,
-  'initial',
+  'ltr',
   false,
   null,
 )

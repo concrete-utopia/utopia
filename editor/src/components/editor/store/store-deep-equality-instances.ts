@@ -1244,7 +1244,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     ).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
-    const textDirectionEquals = oldSize.textDirection === newSize.textDirection
+    const textDirectionEquals = oldSize.parentTextDirection === newSize.parentTextDirection
     const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
     const borderRadiusEquals = oldSize.borderRadius === newSize.borderRadius
     const areEqual =
@@ -1305,7 +1305,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.globalContentBox,
         newSize.float,
         newSize.hasPositionOffset,
-        newSize.textDirection,
+        newSize.parentTextDirection,
         newSize.hasTransform,
         newSize.borderRadius,
       )

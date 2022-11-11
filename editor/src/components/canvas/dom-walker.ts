@@ -24,6 +24,7 @@ import {
   defaultEither,
   isRight,
   left,
+  eitherToMaybe,
   mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -46,6 +47,7 @@ import {
   CSSPosition,
   positionValues,
   computedStyleKeys,
+  parseDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -859,6 +861,7 @@ function getSpecialMeasurements(
   const parentProvidesLayout = element.parentElement === element.offsetParent
   const parentFlexDirection = parentElementStyle?.flexDirection ?? null
   const flexDirection = elementStyle.flexDirection ?? null
+  const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -954,7 +957,7 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
-    elementStyle.direction,
+    parentTextDirection,
     hasTransform,
     borderRadius,
   )

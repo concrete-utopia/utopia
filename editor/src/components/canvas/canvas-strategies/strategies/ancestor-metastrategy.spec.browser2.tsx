@@ -1,9 +1,11 @@
 import * as EP from '../../../../core/shared/element-path'
 import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { shiftModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
+  keyDown,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
@@ -11,6 +13,7 @@ import {
 import {
   EditorRenderResult,
   formatTestProjectCode,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 
@@ -268,6 +271,56 @@ export var storyboard = (
 )
 `)
 
+const TestProjectAbsoluteAndFlow = `
+<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
+  <div
+    style={{
+      width: 200,
+      height: 200,
+      backgroundColor: '#CA1E4C80',
+      position: 'absolute'
+    }}
+    data-uid='aaa'
+  >
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#297374',
+      }}
+      data-uid='bbb'
+      data-testid='bbb'
+    />
+  </div>
+  <div
+    style={{
+      width: 200,
+      height: 200,
+      backgroundColor: '#FF2200AB',
+    }}
+    data-uid='ccc'
+  >
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFE600AB',
+      }}
+      data-uid='ddd'
+      data-testid='ddd'
+    />
+  </div>
+  <div
+    style={{
+      width: 200,
+      height: 200,
+      backgroundColor: '#00FFA2AB',
+    }}
+    data-uid='eee'
+  />
+</div>
+`
+
 function dragElement(
   canvasControlsLayer: HTMLElement,
   startPoint: WindowPoint,
@@ -345,4 +398,57 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
       }
       expect(strategies[0].strategy.id).toEqual('FLOW_REORDER')
     }))
+})
+
+describe('finds keyboard strategy for absolute ancestor', () => {
+  it('element with absolute parent should trigger ancestor move', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectAbsoluteAndFlow),
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch(
+      selectComponents(
+        [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa/bbb')],
+        false,
+      ),
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    keyDown('ArrowRight', { modifiers: shiftModifier })
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    expect(strategies?.length).toBeGreaterThan(0)
+    if (strategies == null) {
+      // here for type assertion
+      throw new Error('`strategies` should not be null')
+    }
+    expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+    expect(strategies[0].strategy.name).toContain('Move')
+  })
+  it('element with flow parent should trigger ancestor reorder', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectAbsoluteAndFlow),
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch(
+      selectComponents(
+        [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc/ddd')],
+        false,
+      ),
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    keyDown('ArrowDown')
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    expect(strategies?.length).toBeGreaterThan(0)
+    if (strategies == null) {
+      // here for type assertion
+      throw new Error('`strategies` should not be null')
+    }
+    expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+    expect(strategies[0].strategy.name).toContain('Reorder')
+  })
 })

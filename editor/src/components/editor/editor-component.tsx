@@ -415,12 +415,7 @@ const useGithubData = (): void => {
     )
 
   const refresh = React.useCallback(() => {
-    void refreshGithubData(dispatch, {
-      githubAuthenticated,
-      githubRepo,
-      branchName,
-      branchChecksums: githubChecksums,
-    })
+    void refreshGithubData(dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums)
   }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums])
 
   // perform a straight refresh then the repo or the auth change

@@ -88,7 +88,7 @@ export const PropertyTargetSelector = React.memo(
       <div
         style={{
           position: 'absolute',
-          backgroundColor: colorTheme.primary.shade(10).value,
+          backgroundColor: colorTheme.canvasElementBackground.value,
           border: `1px solid ${colorTheme.primary.value}`,
           borderRadius: 5,
           top: props.top,

@@ -571,14 +571,18 @@ export function textFile(
   }
 }
 
-export function codeFile(fileContents: string, lastSavedContents: string | null): TextFile {
+export function codeFile(
+  fileContents: string,
+  lastSavedContents: string | null,
+  lastRevisedTime: number = 0,
+): TextFile {
   return textFile(
     textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
     lastSavedContents == null
       ? null
       : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
     null,
-    0,
+    lastRevisedTime,
   )
 }
 

@@ -1,4 +1,3 @@
-import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
@@ -40,10 +39,18 @@ import {
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
 import { propOrNull } from './object-utils'
-import { isTextFile, RevisionsState, textFile, textFileContents } from './project-file-types'
 import { emptySet } from './set-utils'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
+import {
+  isTextFile,
+  ProjectFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from './project-file-types'
+import { mergeDiff3 } from 'node-diff3'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -489,21 +496,28 @@ export const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
-  (projectContents, githubAuthenticated, githubChecksums): GithubFileChanges | null => {
+  (store) => store.editor.githubData.treeConflicts,
+  (
+    projectContents,
+    githubAuthenticated,
+    githubChecksums,
+    treeConflicts,
+  ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
     const checksums = getProjectContentsChecksums(projectContents)
-    return deriveGithubFileChanges(checksums, githubChecksums)
+    return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
 
-export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflict'
+export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'
 
 export interface GithubFileChanges {
   untracked: Array<string>
   modified: Array<string>
   deleted: Array<string>
+  conflicted: Array<string>
 }
 
 export function emptyGithubFileChanges(): GithubFileChanges {
@@ -511,6 +525,7 @@ export function emptyGithubFileChanges(): GithubFileChanges {
     untracked: [],
     modified: [],
     deleted: [],
+    conflicted: [],
   }
 }
 
@@ -518,7 +533,12 @@ export function getGithubFileChangesCount(changes: GithubFileChanges | null): nu
   if (changes == null) {
     return 0
   }
-  return changes.untracked.length + changes.modified.length + changes.deleted.length
+  return (
+    changes.untracked.length +
+    changes.modified.length +
+    changes.deleted.length +
+    changes.conflicted.length
+  )
 }
 
 export function githubFileChangesEquals(
@@ -534,7 +554,8 @@ export function githubFileChangesEquals(
   return (
     arrayEquals(a.untracked, b.untracked) &&
     arrayEquals(a.modified, b.modified) &&
-    arrayEquals(a.deleted, b.deleted)
+    arrayEquals(a.deleted, b.deleted) &&
+    arrayEquals(a.conflicted, b.conflicted)
   )
 }
 
@@ -560,6 +581,7 @@ export function githubFileChangesToList(
     ...toItem('untracked', changes.untracked),
     ...toItem('modified', changes.modified),
     ...toItem('deleted', changes.deleted),
+    ...toItem('conflicted', changes.conflicted),
   ].sort(sortByFilename)
 }
 
@@ -598,17 +620,92 @@ export function revertGithubFile(
   return actions
 }
 
+export interface DifferingTypesConflict {
+  type: 'DIFFERING_TYPES'
+  currentContents: ProjectContentsTree
+  originContents: ProjectContentsTree | null
+  branchContents: ProjectContentsTree
+}
+
+export function differingTypesConflict(
+  currentContents: ProjectContentsTree,
+  originContents: ProjectContentsTree | null,
+  branchContents: ProjectContentsTree,
+): DifferingTypesConflict {
+  return {
+    type: 'DIFFERING_TYPES',
+    currentContents: currentContents,
+    originContents: originContents,
+    branchContents: branchContents,
+  }
+}
+
+export interface CurrentChangedBranchDeleted {
+  type: 'CURRENT_CHANGED_BRANCH_DELETED'
+  currentContents: ProjectContentsTree
+  originContents: ProjectContentsTree
+}
+
+export function currentChangedBranchDeleted(
+  currentContents: ProjectContentsTree,
+  originContents: ProjectContentsTree,
+): CurrentChangedBranchDeleted {
+  return {
+    type: 'CURRENT_CHANGED_BRANCH_DELETED',
+    currentContents: currentContents,
+    originContents: originContents,
+  }
+}
+
+export interface CurrentDeletedBranchChanged {
+  type: 'CURRENT_DELETED_BRANCH_CHANGED'
+  originContents: ProjectContentsTree
+  branchContents: ProjectContentsTree
+}
+
+export function currentDeletedBranchChanged(
+  originContents: ProjectContentsTree,
+  branchContents: ProjectContentsTree,
+): CurrentDeletedBranchChanged {
+  return {
+    type: 'CURRENT_DELETED_BRANCH_CHANGED',
+    originContents: originContents,
+    branchContents: branchContents,
+  }
+}
+
+export type Conflict =
+  | DifferingTypesConflict
+  | CurrentChangedBranchDeleted
+  | CurrentDeletedBranchChanged
+
+export type TreeConflicts = { [path: string]: Conflict }
+
+export interface WithTreeConflicts<T> {
+  value: T
+  treeConflicts: TreeConflicts
+}
+
+export function withTreeConflicts<T>(value: T, treeConflicts: TreeConflicts): WithTreeConflicts<T> {
+  return {
+    value: value,
+    treeConflicts: treeConflicts,
+  }
+}
+
 export function mergeProjectContents(
+  currentTime: number,
   currentTree: ProjectContentTreeRoot,
   originTree: ProjectContentTreeRoot,
   branchTree: ProjectContentTreeRoot,
-): ProjectContentTreeRoot {
+): WithTreeConflicts<ProjectContentTreeRoot> {
   let keys: Set<string> = emptySet()
   Object.keys(currentTree).forEach(keys.add, keys)
   Object.keys(originTree).forEach(keys.add, keys)
   Object.keys(branchTree).forEach(keys.add, keys)
 
   let result: ProjectContentTreeRoot = {}
+  let treeConflicts: TreeConflicts = {}
   for (const key of keys) {
     const currentContents = propOrNull(key, currentTree)
     const originContents = propOrNull(key, originTree)
@@ -619,18 +716,149 @@ export function mergeProjectContents(
       throw new Error(`Invalid state of the elements being null reached.`)
     } else {
       const combinedElement = mergeProjectContentsTree(
+        currentTime,
         fullPath,
         currentContents,
         originContents,
         branchContents,
       )
-      if (combinedElement != null) {
-        result[key] = combinedElement
+      treeConflicts = {
+        ...treeConflicts,
+        ...combinedElement.treeConflicts,
+      }
+      if (combinedElement.value != null) {
+        result[key] = combinedElement.value
       }
     }
   }
 
-  return result
+  return withTreeConflicts(result, treeConflicts)
+}
+
+export function projectFileContentOrTypeChanged(first: ProjectFile, second: ProjectFile): boolean {
+  if (first.type === second.type) {
+    if (first.type === 'TEXT_FILE' && second.type === 'TEXT_FILE') {
+      return first.fileContents.code !== second.fileContents.code
+    } else if (first.type === 'IMAGE_FILE' && second.type === 'IMAGE_FILE') {
+      return first.hash !== second.hash
+    } else if (
+      first.type === 'ASSET_FILE' &&
+      second.type === 'ASSET_FILE' &&
+      first.gitBlobSha !== null &&
+      second.gitBlobSha != null
+    ) {
+      return first.gitBlobSha !== second.gitBlobSha
+    } else if (first.type === 'DIRECTORY' && second.type === 'DIRECTORY') {
+      return false
+    } else {
+      return false
+    }
+  } else {
+    return true
+  }
+}
+
+export function projectContentsTreeContentOrTypeChange(
+  first: ProjectContentsTree | null,
+  second: ProjectContentsTree | null,
+): boolean {
+  if (first?.type === 'PROJECT_CONTENT_FILE' && second?.type === 'PROJECT_CONTENT_FILE') {
+    return projectFileContentOrTypeChanged(first.content, second.content)
+  } else if (
+    first?.type === 'PROJECT_CONTENT_DIRECTORY' &&
+    second?.type === 'PROJECT_CONTENT_DIRECTORY'
+  ) {
+    return projectFileContentOrTypeChanged(first.directory, second.directory)
+  } else {
+    return first?.type !== second?.type
+  }
+}
+
+export function checkForTreeConflicts(
+  fullPath: string,
+  currentContents: ProjectContentsTree | null,
+  originContents: ProjectContentsTree | null,
+  branchContents: ProjectContentsTree | null,
+): WithTreeConflicts<ProjectContentsTree | null> {
+  // Check what changes have been made against the origin and potentially between Utopia and the branch.
+  const currentContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
+    originContents,
+    currentContents,
+  )
+  const branchContentsToOriginChanged = projectContentsTreeContentOrTypeChange(
+    originContents,
+    branchContents,
+  )
+  const branchContentsToCurrentChanged = projectContentsTreeContentOrTypeChange(
+    currentContents,
+    branchContents,
+  )
+
+  if (currentContentsToOriginChanged && !branchContentsToOriginChanged) {
+    // Utopia has changed from the origin, but the branch has not.
+    return withTreeConflicts(currentContents, {})
+  } else if (!currentContentsToOriginChanged && branchContentsToOriginChanged) {
+    // The branch has changed from the origin, but Utopia has not.
+    return withTreeConflicts(branchContents, {})
+    // Neither Utopia nor the branch have changed from the origin.
+  } else if (!currentContentsToOriginChanged && !branchContentsToOriginChanged) {
+    return withTreeConflicts(originContents, {})
+  } else if (
+    currentContentsToOriginChanged &&
+    branchContentsToOriginChanged &&
+    !branchContentsToCurrentChanged
+  ) {
+    // Utopia has changed from the origin, the branch has changed from the origin but Utopia and the branch are compatible values.
+    return withTreeConflicts(currentContents, {})
+  } else if (
+    currentContentsToOriginChanged &&
+    branchContentsToOriginChanged &&
+    branchContentsToCurrentChanged
+  ) {
+    // Utopia has changed from the origin, the branch has changed from the origin and Utopia and the branch are incompatible.
+    if (currentContents == null) {
+      if (originContents == null) {
+        // Origin and Utopia project lack an entry, so go with whatever the branch contains.
+        return withTreeConflicts(branchContents, {})
+      } else {
+        if (branchContents == null) {
+          // Both Utopia and the branch have deleted this.
+          return withTreeConflicts(branchContents, {})
+        } else {
+          // Utopia deleted this, but it changed in the branch.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: currentDeletedBranchChanged(originContents, branchContents),
+          })
+        }
+      }
+    } else {
+      if (originContents == null) {
+        if (branchContents == null) {
+          // Created in Utopia, didn't exist before.
+          return withTreeConflicts(currentContents, {})
+        } else {
+          // Didn't exist previously, created in both the branch and Utopia.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
+          })
+        }
+      } else {
+        if (branchContents == null) {
+          // Deleted on the branch, but changed in Utopia.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: currentChangedBranchDeleted(currentContents, originContents),
+          })
+        } else {
+          // Existed previously, but changed incompatibly in both Utopia and the branch.
+          return withTreeConflicts(currentContents, {
+            [fullPath]: differingTypesConflict(currentContents, originContents, branchContents),
+          })
+        }
+      }
+    }
+  } else {
+    throw new Error(`Unhandled case reached.`)
+  }
 }
 
 /*
@@ -642,18 +870,13 @@ export function mergeProjectContents(
  *       \-->branch
  */
 export function mergeProjectContentsTree(
+  currentTime: number,
   fullPath: string,
   currentContents: ProjectContentsTree | null,
   originContents: ProjectContentsTree | null,
   branchContents: ProjectContentsTree | null,
-): ProjectContentsTree | null {
-  if (originContents == null && branchContents == null) {
-    // Origin and branch lack an entry, so go with whatever the Utopia project contains.
-    return currentContents
-  } else if (originContents == null && currentContents == null) {
-    // Origin and Utopia project lack an entry, so go with whatever the branch contains.
-    return branchContents
-  } else if (
+): WithTreeConflicts<ProjectContentsTree | null> {
+  if (
     isProjectContentFile(currentContents) &&
     isTextFile(currentContents.content) &&
     isProjectContentFile(originContents) &&
@@ -661,28 +884,28 @@ export function mergeProjectContentsTree(
     isProjectContentFile(branchContents) &&
     isTextFile(branchContents.content)
   ) {
-    // All 3 branches are a file.
-    const mergedResult = mergeDiff3(
-      currentContents.content.fileContents.code,
-      originContents.content.fileContents.code,
-      branchContents.content.fileContents.code,
-      {
+    // At this location in all 3 places there is a text file.
+    const currentCode = currentContents.content.fileContents.code
+    const originCode = originContents.content.fileContents.code
+    const branchCode = branchContents.content.fileContents.code
+    if (currentCode === originCode && branchCode === originCode) {
+      // Code is the same in all 3 places, skip any merging activity.
+      return withTreeConflicts(originContents, {})
+    } else {
+      // There's a code change between the 3 places, perform a merge of the changes.
+      const mergedResult = mergeDiff3(currentCode, originCode, branchCode, {
         label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
         stringSeparator: /\r?\n/,
-      },
-    ).result.join('\n')
-    const updatedTextFile = textFile(
-      textFileContents(
-        mergedResult,
-        originContents.content.fileContents.parsed,
-        RevisionsState.CodeAhead,
-      ),
-      originContents.content.lastSavedContents,
-      originContents.content.lastParseSuccess,
-      Date.now(),
-    )
+      }).result.join('\n')
+      const updatedTextFile = textFile(
+        textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
+        null,
+        null,
+        currentTime,
+      )
 
-    return projectContentFile(fullPath, updatedTextFile)
+      return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), {})
+    }
   } else if (
     isProjectContentDirectory(currentContents) &&
     isProjectContentDirectory(originContents) &&
@@ -690,31 +913,26 @@ export function mergeProjectContentsTree(
   ) {
     // All 3 branches are directories.
     const mergedResult = mergeProjectContents(
+      currentTime,
       currentContents.children,
       originContents.children,
       branchContents.children,
     )
-    return projectContentDirectory(fullPath, currentContents.directory, mergedResult)
+    return withTreeConflicts(
+      projectContentDirectory(fullPath, currentContents.directory, mergedResult.value),
+      mergedResult.treeConflicts,
+    )
   } else {
-    // More cases in the future needed for tree conflicts at the least.
-    // For now go with whatever the editor has.
-    return currentContents
+    return checkForTreeConflicts(fullPath, currentContents, originContents, branchContents)
   }
 }
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
-  {
-    githubAuthenticated,
-    githubRepo,
-    branchName,
-    branchChecksums,
-  }: {
-    githubAuthenticated: boolean
-    githubRepo: GithubRepo | null
-    branchName: string | null
-    branchChecksums: GithubChecksums | null
-  },
+  githubAuthenticated: boolean,
+  githubRepo: GithubRepo | null,
+  branchName: string | null,
+  branchChecksums: GithubChecksums | null,
 ): Promise<void> {
   if (githubAuthenticated) {
     void getUsersPublicGithubRepositories(dispatch)
@@ -728,7 +946,7 @@ export async function refreshGithubData(
           if (branchLatestContent.type === 'SUCCESS') {
             upstreamChangesSuccess = true
             const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.content)
-            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums)
+            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
             dispatch([updateGithubData({ upstreamChanges: upstreamChanges })], 'everyone')
           }
         }

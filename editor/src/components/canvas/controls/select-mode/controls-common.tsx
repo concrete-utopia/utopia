@@ -1,6 +1,6 @@
 import React from 'react'
-import { roundTo } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
+import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
@@ -124,12 +124,14 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
   )
 })
 
+export const StripeOpacity: number = 30
+
 export const StripedBackgroundCSS = (
   stripeColor: string,
   scale: number,
 ): { backgroundImage: string; backgroundSize: string } => ({
-  backgroundImage: `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
-  backgroundSize: `${20 / scale}px ${20 / scale}px`,
+  backgroundImage: `linear-gradient(135deg, ${stripeColor} 24.5%, rgba(255,255,255,0) 24.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 74%, rgba(255,255,255,0) 74%, rgba(255,255,255,0) 100%)`,
+  backgroundSize: `${4 / scale}px ${4 / scale}px`,
 })
 
 export type Timeout = ReturnType<typeof setTimeout>

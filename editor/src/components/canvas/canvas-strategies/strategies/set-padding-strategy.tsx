@@ -21,6 +21,7 @@ import {
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
+  PaddingIndictorOffset,
   paddingMeasurementForEdge,
   paddingToPaddingString,
   simplePaddingFromMetadata,
@@ -185,9 +186,15 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
+  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
+  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
+  if (elementHasNonzeroPadding) {
+    return true
+  }
+
   const children = MetadataUtils.getChildren(metadata, path)
   if (children.length === 0) {
-    return true
+    return false
   }
 
   const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
@@ -196,17 +203,11 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
       child.specialSizeMeasurements.position !== 'sticky',
   )
 
-  if (childrenNotPositionedAbsoluteOrSticky.length < 1) {
-    return false
+  if (childrenNotPositionedAbsoluteOrSticky.length > 0) {
+    return true
   }
 
-  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
-  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
-  if (!elementHasNonzeroPadding) {
-    return false
-  }
-
-  return true
+  return false
 }
 
 function paddingValueIndicatorProps(
@@ -238,7 +239,7 @@ function paddingValueIndicatorProps(
 
   const updatedPaddingMeasurement = offsetMeasurementByDelta(
     currentPadding,
-    deltaFromEdge(drag, edgePiece),
+    deltaFromEdge(drag, edgePiece) + PaddingIndictorOffset(canvasState.scale),
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 

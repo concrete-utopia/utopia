@@ -100,9 +100,9 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   // slightly subdued colors in default state
   backgroundColor: props.primary
     ? props.danger
-      ? colorTheme.errorForeground.shade(90).value
-      : colorTheme.primary.shade(90).value
-    : colorTheme.emphasizedBackground.shade(101).value,
+      ? colorTheme.errorForegroundSubdued.value
+      : colorTheme.primarySubdued.value
+    : colorTheme.emphasizedBackgroundPop.value,
 
   color: props.primary ? 'white' : props.danger ? colorTheme.errorForeground.value : 'inherit',
 
@@ -138,8 +138,8 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     // slightly brighter backgrounds while pressed
     backgroundColor: props.primary
       ? props.danger
-        ? colorTheme.errorForeground.shade(103).value
-        : colorTheme.primary.shade(103).value
-      : colorTheme.emphasizedBackground.shade(98).value,
+        ? colorTheme.errorForegroundEmphasized.value
+        : colorTheme.primaryEmphasized.value
+      : colorTheme.emphasizedBackgroundReduced.value,
   },
 }))
