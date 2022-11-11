@@ -126,7 +126,7 @@ function isAutoLayoutComaptibleWithSingleAxisReorder(
 function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
-): 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC' {
+): ReparentStrategy {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
@@ -140,7 +140,7 @@ function autoLayoutParentAbsoluteOrStatic(
 function flowParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
-): 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC' {
+): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const children = MetadataUtils.getChildren(metadata, parent)
 
@@ -199,26 +199,6 @@ function flowParentAbsoluteOrStatic(
   // should there be a DO_NOT_REPARENT return type here?
 }
 
-function reparentStrategyForReparentTarget(
-  targetMetadata: ElementInstanceMetadataMap,
-  target: ReparentTarget,
-  convertToAbsolute: boolean, // TODO this can probably be cleaned up in a follow-up PR
-): FindReparentStrategyResult {
-  if (target.defaultReparentType === 'static') {
-    return {
-      strategy: 'REPARENT_AS_STATIC',
-      isFallback: false,
-      target: target,
-    }
-  } else {
-    return {
-      strategy: 'REPARENT_AS_ABSOLUTE',
-      isFallback: convertToAbsolute,
-      target: target,
-    }
-  }
-}
-
 export function findReparentStrategies(
   canvasState: InteractionCanvasState,
   cmdPressed: boolean,
@@ -241,7 +221,11 @@ export function findReparentStrategies(
     return []
   }
 
-  const strategy = reparentStrategyForReparentTarget(metadata, targetParent, false)
+  const strategy = {
+    target: targetParent,
+    strategy: targetParent.defaultReparentType,
+    isFallback: false,
+  }
 
   const fallbackStrategy: FindReparentStrategyResult = {
     isFallback: true,
@@ -261,7 +245,7 @@ export interface ReparentTarget {
   shouldReorder: boolean
   newIndex: number
   shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
-  defaultReparentType: 'static' | 'absolute'
+  defaultReparentType: ReparentStrategy
 }
 
 export function reparentTarget(
@@ -270,7 +254,7 @@ export function reparentTarget(
   shouldReorder: boolean,
   newIndex: number,
   shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
-  defaultReparentType: 'static' | 'absolute',
+  defaultReparentType: ReparentStrategy,
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
@@ -559,7 +543,7 @@ function findParentUnderPointByArea(
         shouldReorder: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
-        defaultReparentType: 'absolute',
+        defaultReparentType: 'REPARENT_AS_ABSOLUTE',
       }
     } else if (compatibleWith1DReorder) {
       const { targetUnderMouseIndex, shouldConvertToInline } =
@@ -577,7 +561,7 @@ function findParentUnderPointByArea(
         shouldReorder: targetUnderMouseIndex !== -1,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
-        defaultReparentType: 'static',
+        defaultReparentType: 'REPARENT_AS_STATIC',
       }
     } else {
       // element is static parent but don't look for index
@@ -587,7 +571,7 @@ function findParentUnderPointByArea(
         shouldReorder: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
-        defaultReparentType: 'static',
+        defaultReparentType: 'REPARENT_AS_STATIC',
       }
     }
   })()
@@ -682,7 +666,7 @@ function findParentByPaddedInsertionZone(
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
           flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
-        defaultReparentType: 'static',
+        defaultReparentType: 'REPARENT_AS_STATIC',
       }
     }
   }
