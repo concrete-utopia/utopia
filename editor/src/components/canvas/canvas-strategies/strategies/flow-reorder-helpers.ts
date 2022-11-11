@@ -57,7 +57,7 @@ export function singleAxisAutoLayoutContainerDirections(
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
-  const children = MetadataUtils.getChildren(metadata, container)
+  const children = MetadataUtils.getChildrenParticipateInAutoLayout(metadata, container)
   if (containerElement == null) {
     return 'non-single-axis-autolayout'
   }
@@ -106,13 +106,11 @@ export function singleAxisAutoLayoutContainerDirections(
 
     // TODO turn this into a loop with early return
     fastForEach(children, (child) => {
-      if (isValidFlowReorderTarget(child.elementPath, metadata)) {
-        if (getElementDirection(child) !== targetDirection) {
-          allHorizontalOrVertical = false
-        }
-        if (child.globalFrame != null) {
-          childrenFrames.push(child.globalFrame)
-        }
+      if (getElementDirection(child) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (child.globalFrame != null) {
+        childrenFrames.push(child.globalFrame)
       }
     })
 

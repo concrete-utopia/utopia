@@ -11,6 +11,7 @@ import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/st
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
+  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -63,7 +64,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     (sibling) => sibling.elementPath,
   )
 
-  const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
+  const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
     newParentDirection,
     forwardsOrBackwards,
     parentFrame,
@@ -72,8 +73,8 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   )
 
   if (siblings.length > 0) {
-    const precedingSiblingPosition: CanvasRectangle = siblingPositions[command.index]
-    const succeedingSiblingPosition: CanvasRectangle = siblingPositions[command.index + 1]
+    const precedingSiblingPosition: CanvasRectangle = siblingPositions[command.index].frame
+    const succeedingSiblingPosition: CanvasRectangle = siblingPositions[command.index + 1].frame
 
     const targetLineBeforeSibling: CanvasRectangle =
       newParentDirection === 'row'
