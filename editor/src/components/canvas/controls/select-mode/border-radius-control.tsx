@@ -42,7 +42,7 @@ export interface BorderRadiusControlProps {
   borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
   showIndicatorOnEdge: EdgePosition | null
   mode: BorderRadiusAdjustMode
-  indicatorValue: CSSNumber
+  indicatorValue: BorderRadiusSides<CSSNumberWithRenderedValue>
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
@@ -108,7 +108,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
             showIndicatorFromParent={
               showIndicatorOnEdge?.x === edgePosition.x && showIndicatorOnEdge?.y === edgePosition.y
             }
-            indicatorValue={indicatorValue}
+            indicatorValue={valueFromEdgePosition(edgePosition, indicatorValue).value}
             showDot={mode === 'individual'}
           />
         ))}
@@ -192,9 +192,12 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             style={{
               width: size,
               height: size,
-              background: 'white',
+              backgroundColor: 'white',
               border: `${1 / scale}px solid blue`,
               borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {when(
@@ -203,7 +206,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
                 style={{
                   width: 2 / scale,
                   height: 2 / scale,
-                  background: 'blue',
+                  backgroundColor: 'blue',
                   borderRadius: '50%',
                 }}
               />,

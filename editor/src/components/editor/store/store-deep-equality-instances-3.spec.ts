@@ -273,7 +273,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     hasPositionOffset: false,
     parentTextDirection: 'ltr',
     hasTransform: false,
-    borderRadius: 12,
+    borderRadius: {
+      top: 10,
+      right: 20,
+      bottom: 30,
+      left: 40,
+    },
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -332,7 +337,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     hasPositionOffset: false,
     parentTextDirection: 'ltr',
     hasTransform: false,
-    borderRadius: 15,
+    borderRadius: {
+      top: 10,
+      right: 20,
+      bottom: 30,
+      left: 40,
+    },
   }
 
   it('same reference returns the same reference', () => {
@@ -446,7 +456,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       hasPositionOffset: false,
       parentTextDirection: 'ltr',
       hasTransform: false,
-      borderRadius: 10,
+      borderRadius: {
+        top: 10,
+        right: 20,
+        bottom: 30,
+        left: 40,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -533,7 +548,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       hasPositionOffset: false,
       parentTextDirection: 'ltr',
       hasTransform: false,
-      borderRadius: 12,
+      borderRadius: {
+        top: 10,
+        right: 20,
+        bottom: 30,
+        left: 40,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -646,7 +666,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         hasPositionOffset: false,
         parentTextDirection: 'ltr',
         hasTransform: false,
-        borderRadius: 12,
+        borderRadius: {
+          top: 10,
+          right: 20,
+          bottom: 30,
+          left: 40,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -735,7 +760,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         hasPositionOffset: false,
         parentTextDirection: 'ltr',
         hasTransform: false,
-        borderRadius: 12,
+        borderRadius: {
+          top: 10,
+          right: 20,
+          bottom: 30,
+          left: 40,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -824,7 +854,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         hasPositionOffset: false,
         parentTextDirection: 'ltr',
         hasTransform: false,
-        borderRadius: 11,
+        borderRadius: {
+          top: 10,
+          right: 20,
+          bottom: 30,
+          left: 40,
+        },
       },
       computedStyle: {
         a: 'a',

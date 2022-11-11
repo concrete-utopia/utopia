@@ -4126,6 +4126,22 @@ export const cssEmptyValues: ParsedCSSProperties = {
       unit: 'px',
     },
   },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
   boxShadow: [],
   color: {
     type: 'Hex',
@@ -4370,6 +4386,10 @@ const cssPrinters: CSSPrinters = {
   mixBlendMode: printMixBlendMode,
   border: printBorder,
   borderRadius: printBorderRadius,
+  borderTopLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderTopRightRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomRightRadius: printCSSNumberAsAttributeValue('px'),
   boxShadow: printBoxShadow,
   color: printColorToJsx,
   fontFamily: printFontFamily,
@@ -4989,6 +5009,22 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
       value: 0,
       unit: 'px',
     },
+  },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
   },
   boxShadow: [],
   color: nontrivial,
