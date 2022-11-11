@@ -4,7 +4,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { KeyboardInteractionTimeout } from '../interaction-state'
 import sinon, { SinonFakeTimers } from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
-s
+
 const TestProject = (
   display: 'block' | 'inline-block',
   parentDisplay: 'flex' | 'block',
