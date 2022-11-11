@@ -41,8 +41,8 @@
   color: var(--contextmenu-foreground);
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover {
-  color: var(--contextmenu-highlightForeground);
-  background-color: var(--contextmenu-highlightBackground);
+  color: var(--contextmenu-highlight-foreground);
+  background-color: var(--contextmenu-highlight-background);
   border-radius: 2px;
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover > .react-contexify__submenu {

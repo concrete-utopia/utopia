@@ -178,6 +178,12 @@ const light = {
   flasherHookColor: base.neonpink,
 }
 
+export const cssVariables = Object.keys(light).reduce((prev, curr) => {
+  const parts = curr.replace(/([A-Z]|[0-9]+)/g, '-$1'),
+    varName = `--${parts.toLowerCase()}`
+  return { ...prev, [curr]: varName }
+}, {})
+
 /** DARK **/
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
@@ -338,6 +344,16 @@ const dark: typeof light = {
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
 }
+
+Object.entries(light).forEach((entry) => {
+  const [key, value] = entry
+  value.value = `var(${cssVariables[key as keyof typeof cssVariables]})`
+})
+
+Object.entries(dark).forEach((entry) => {
+  const [key, value] = entry
+  value.value = `var(${cssVariables[key as keyof typeof cssVariables]})`
+})
 
 export const colorTheme = { ...light, inverted: dark }
 export const darkColorTheme = { ...dark, inverted: light }
