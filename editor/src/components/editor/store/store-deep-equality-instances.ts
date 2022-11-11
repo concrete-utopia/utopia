@@ -1742,14 +1742,8 @@ export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = 
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
 
-// This will break should the definition of `FlexGapHandle` change.
-flexGapHandle()
-export const FlexGapHandleKeepDeepEquality: KeepDeepEqualityCall<FlexGapHandle> = (
-  oldValue,
-  newValue,
-) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
+export const FlexGapHandleKeepDeepEquality: KeepDeepEqualityCall<FlexGapHandle> =
+  combine1EqualityCall((handle) => handle.offset, NumberKeepDeepEquality, flexGapHandle)
 
 // This will break should the definition of `KeyboardCatcherControl` change.
 keyboardCatcherControl()

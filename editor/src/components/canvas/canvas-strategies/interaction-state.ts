@@ -513,11 +513,13 @@ export function resizeHandle(edgePosition: EdgePosition): ResizeHandle {
 
 export interface FlexGapHandle {
   type: 'FLEX_GAP_HANDLE'
+  offset: number
 }
 
-export function flexGapHandle(): FlexGapHandle {
+export function flexGapHandle(offset: number): FlexGapHandle {
   return {
     type: 'FLEX_GAP_HANDLE',
+    offset: offset,
   }
 }
 

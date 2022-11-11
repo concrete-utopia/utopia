@@ -90,8 +90,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const onMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      startInteraction(e, dispatch, canvasOffset.current, scale)
+    (offset: number) => (e: React.MouseEvent<HTMLDivElement>) => {
+      startInteraction(e, dispatch, canvasOffset.current, scale, offset)
     },
     [canvasOffset, dispatch, scale],
   )
@@ -99,7 +99,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} ref={controlRef}>
-        {controlBounds.map(({ bounds, path: p }) => {
+        {controlBounds.map(({ bounds, path: p }, offset) => {
           const path = EP.toString(p)
           return (
             <GapControlSegment
@@ -108,7 +108,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               hoverEnd={controlHoverEnd}
               handleHoverStart={handleHoverStart}
               handleHoverEnd={handleHoverEnd}
-              onMouseDown={onMouseDown}
+              onMouseDown={onMouseDown(offset + 1)}
               indicatorShown={indicatorShown}
               path={path}
               bounds={bounds}
@@ -270,6 +270,7 @@ function startInteraction(
   dispatch: EditorDispatch,
   canvasOffset: CanvasVector,
   scale: number,
+  offset: number,
 ) {
   event.stopPropagation()
   if (event.buttons === 1 && event.button !== 2) {
@@ -283,7 +284,7 @@ function startInteraction(
         createInteractionViaMouse(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
-          flexGapHandle(),
+          flexGapHandle(offset),
         ),
       ),
     ])

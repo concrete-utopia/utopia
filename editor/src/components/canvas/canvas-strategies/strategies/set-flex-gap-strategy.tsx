@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -66,21 +66,17 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
+  const data = interactionSessionData(interactionSession)
 
   const dragDelta = Math.max(
     -flexGap.value.renderedValuePx,
-    dragDeltaForOrientation(flexGap.direction, drag),
+    dragDeltaForOrientation(flexGap.direction, data.drag) * data.offset,
   )
-
-  const adjustPrecision =
-    optionalMap(precisionFromModifiers, modifiersFromInteractionSession(interactionSession)) ??
-    'precise'
 
   const updatedFlexGapMeasurement = offsetMeasurementByDelta(
     flexGap.value,
     dragDelta,
-    adjustPrecision,
+    precisionFromModifiers(data.modifiers),
   )
 
   const resizeControl = controlWithProps({
@@ -137,22 +133,31 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 }
 
-function dragFromInteractionSession(
-  interactionSession: InteractionSession | null,
-): CanvasVector | null {
-  if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
-    return interactionSession.interactionData.drag
-  }
-  return null
+interface InteractionSessionData {
+  modifiers: Modifiers
+  offset: number
+  drag: CanvasVector
 }
 
-function modifiersFromInteractionSession(
+function interactionSessionData(
   interactionSession: InteractionSession | null,
-): Modifiers | null {
-  if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
-    return interactionSession.interactionData.modifiers
+): InteractionSessionData {
+  if (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.activeControl.type !== 'FLEX_GAP_HANDLE'
+  ) {
+    return {
+      modifiers: emptyModifiers,
+      offset: 1,
+      drag: canvasVector({ x: 0, y: 0 }),
+    }
   }
-  return null
+  return {
+    modifiers: interactionSession.interactionData.modifiers,
+    offset: interactionSession.activeControl.offset,
+    drag: interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
+  }
 }
 
 function flexGapValueIndicatorProps(
