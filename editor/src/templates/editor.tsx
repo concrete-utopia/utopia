@@ -88,7 +88,7 @@ import {
 } from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
-import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
@@ -171,7 +171,6 @@ export class Editor {
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)

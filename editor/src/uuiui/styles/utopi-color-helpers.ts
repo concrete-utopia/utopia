@@ -5,6 +5,11 @@ export interface UtopiColor {
   /**
    * css-compatible rgba string: `rgba(255,0,255,1)` format
    */
+  cssValue: string
+
+  /**
+   * css variable associated with this color: val(--variable-name) format
+   */
   value: string
 
   /**
@@ -17,14 +22,14 @@ type ColorHex = string
 
 const opacitycache: { [colorHex: string]: { [opacity: string]: ColorHex } } = {}
 function opacity(this: UtopiColor, value: number): UtopiColor {
-  if (opacitycache[this.value] == null) {
-    opacitycache[this.value] = {}
+  if (opacitycache[this.cssValue] == null) {
+    opacitycache[this.cssValue] = {}
   }
-  if (opacitycache[this.value][value] == null) {
+  if (opacitycache[this.cssValue][value] == null) {
     const alpha = value / 100
-    opacitycache[this.value][value] = Chroma(this.value).alpha(alpha).css('rgba')
+    opacitycache[this.cssValue][value] = Chroma(this.cssValue).alpha(alpha).css('rgba')
   }
-  return createUtopiColor(opacitycache[this.value][value])
+  return createUtopiColor(opacitycache[this.cssValue][value])
 }
 
 const utopiColorCache: { [key: string]: UtopiColor } = {}
@@ -34,9 +39,11 @@ export function createUtopiColor(baseColor: string): UtopiColor {
   const fromCache = utopiColorCache[key]
   if (fromCache == null) {
     const hexWithAlpha = Chroma(baseColor).css('rgba')
+    const cssVar = '--null'
 
     const value = {
-      value: hexWithAlpha,
+      value: `var(${cssVar})`,
+      cssValue: hexWithAlpha,
       o: opacity,
     }
     utopiColorCache[key] = value
