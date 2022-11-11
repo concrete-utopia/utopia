@@ -10,7 +10,11 @@ import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -330,13 +334,62 @@ export function getReparentTargetUnified(
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
 ): ReparentTarget | null {
+  const canvasScale = canvasState.scale
+
+  const validTargetparentsUnderPoint = findValidTargetsUnderPoint(
+    reparentSubjects,
+    pointOnCanvas,
+    cmdPressed,
+    canvasState,
+    metadata,
+    allElementProps,
+    allowSmallerParent,
+  )
+
+  // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
+  const targetParentWithPaddedInsertionZone: ReparentTarget | null =
+    findParentByPaddedInsertionZone(
+      metadata,
+      validTargetparentsUnderPoint,
+      canvasScale,
+      pointOnCanvas,
+    )
+
+  if (targetParentWithPaddedInsertionZone != null) {
+    return targetParentWithPaddedInsertionZone
+  }
+
+  // fall back to trying to find an absolute element, or the "background" area of an autolayout container
+  const targetParentPath = validTargetparentsUnderPoint[0]
+  if (targetParentPath == null) {
+    // none of the targets were under the mouse, fallback return
+    return null
+  }
+
+  const targetParentUnderPoint: ReparentTarget = findParentUnderPointByArea(
+    targetParentPath,
+    metadata,
+    canvasScale,
+    pointOnCanvas,
+  )
+  return targetParentUnderPoint
+}
+
+function findValidTargetsUnderPoint(
+  reparentSubjects: ReparentSubjects,
+  pointOnCanvas: CanvasPoint,
+  cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
+  canvasState: InteractionCanvasState,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  allowSmallerParent: AllowSmallerParent,
+): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
-  const canvasScale = canvasState.scale
 
   const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
   if (storyboardComponent == null) {
-    return null
+    return []
   }
 
   const multiselectBounds: Size =
@@ -357,59 +410,230 @@ export function getReparentTargetUnified(
     storyboardComponent,
   ]
 
-  const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
-    const canReparent =
-      // simply skip elements that do not support children
-      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
-      (allowSmallerParent === 'allow-smaller-parent' ||
-        sizeFitsInTarget(
-          multiselectBounds,
-          MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-        ))
+  const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
-    if (reparentSubjects.type === 'EXISTING_ELEMENTS') {
-      const selectedElementsMetadata = mapDropNulls(
-        (path) => MetadataUtils.findElementByElementPath(metadata, path),
-        reparentSubjects.elements,
-      )
-      const containingComponents = selectedElementsMetadata.map((e) =>
-        EP.getContainingComponent(e.elementPath),
-      )
-
-      const containingComponentsUnderMouse = containingComponents.filter((c) =>
-        allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
-      )
-
-      const isTargetOutsideOfContainingComponentUnderMouse = containingComponentsUnderMouse.some(
-        (c) => EP.isDescendantOf(c, target),
-      )
-      if (isTargetOutsideOfContainingComponentUnderMouse) {
-        return false
-      }
-
-      // TODO BEFORE MERGE consider multiselect!!!!!
+    if (currentParent) {
       // the current parent should be included in the array of valid targets
-      return (
-        selectedElementsMetadata.some((maybeChild) =>
-          EP.isChildOf(maybeChild.elementPath, target),
-        ) ||
-        // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
-        (!selectedElementsMetadata.some((maybeAncestorOrEqual) =>
-          !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO if we work on Reorder for Relative Elements, this will probably need to change
-            ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
-              EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
-            : // for non-flex elements, we filter out their descendants and themselves
-              EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
-        ) &&
-          canReparent)
-      )
-    } else {
-      return canReparent
+      return true
     }
+
+    if (!MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target)) {
+      // simply skip elements that do not support children
+      return false
+    }
+
+    const sizeFitsTarget =
+      allowSmallerParent === 'allow-smaller-parent' ||
+      sizeFitsInTarget(
+        multiselectBounds,
+        MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
+      )
+
+    if (!sizeFitsTarget) {
+      // skip elements that are smaller than the dragged elements, unless 'allow-smaller-parent'
+      return false
+    }
+
+    if (reparentSubjects.type === 'NEW_ELEMENTS') {
+      return true
+    }
+
+    const selectedElementsMetadata = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      reparentSubjects.elements,
+    )
+
+    if (
+      isTargetOutsideOfContainingComponentUnderMouse(
+        selectedElementsMetadata,
+        allElementsUnderPoint,
+        target,
+      )
+    ) {
+      return false
+    }
+
+    const isTargetParentSiblingOrDescendantOfSubjects = selectedElementsMetadata.some(
+      (maybeAncestorOrEqual) => {
+        // Note: in this function, true means "not suitable for reparent"
+        const isChildOfReparentSubject = EP.isDescendantOfOrEqualTo(
+          target,
+          maybeAncestorOrEqual.elementPath,
+        )
+        if (isChildOfReparentSubject) {
+          // any of the dragged elements and their descendants are not game for reparenting
+          return true
+        }
+
+        const targetParticipatesInAutolayout =
+          maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO also use the shared elementParticipatesInAutoLayout Eni is making
+
+        const isSiblingOrDescendantOfReparentSubject = EP.isDescendantOf(
+          target,
+          EP.parentPath(maybeAncestorOrEqual.elementPath),
+        )
+
+        if (
+          !cmdPressed &&
+          targetParticipatesInAutolayout &&
+          isSiblingOrDescendantOfReparentSubject
+        ) {
+          // Filter out Autolayout-participating siblings of the reparented elements, to allow for Single Axis Autolayout Reorder
+          return true
+        }
+
+        return false
+      },
+    )
+    if (isTargetParentSiblingOrDescendantOfSubjects) {
+      return false
+    }
+
+    // we found no reason to exclude this element as a target parent, congratulations!
+    return true
   })
+  return possibleTargetParentsUnderPoint
+}
 
-  // if the mouse is over the canvas, return the canvas root as the target path
+const propertiesToRemove: Array<PropertyPath> = [
+  PP.create(['style', 'left']),
+  PP.create(['style', 'top']),
+  PP.create(['style', 'right']),
+  PP.create(['style', 'bottom']),
+]
 
+function isTargetAParentOfAnySubject(
+  reparentSubjects: ReparentSubjects,
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+) {
+  if (reparentSubjects.type === 'NEW_ELEMENTS') {
+    return false
+  }
+  const selectedElementsMetadata = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    reparentSubjects.elements,
+  )
+  return selectedElementsMetadata.some((maybeChild) => EP.isChildOf(maybeChild.elementPath, target))
+}
+
+function isTargetOutsideOfContainingComponentUnderMouse(
+  selectedElementsMetadata: Array<ElementInstanceMetadata>,
+  allElementsUnderPoint: Array<ElementPath>,
+  target: ElementPath,
+) {
+  const containingComponents = selectedElementsMetadata.map((e) =>
+    EP.getContainingComponent(e.elementPath),
+  )
+
+  const containingComponentsUnderMouse = containingComponents.filter((c) =>
+    allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
+  )
+
+  return containingComponentsUnderMouse.some((c) => EP.isDescendantOf(c, target))
+}
+
+function findParentUnderPointByArea(
+  targetParentPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  canvasScale: number,
+  pointOnCanvas: CanvasPoint,
+) {
+  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
+  const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
+  const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(
+    metadata,
+    targetParentPath,
+  )
+
+  const targetParentUnderPoint: ReparentTarget = (() => {
+    if (
+      autolayoutDirection === 'non-single-axis-autolayout' || // hmmmmmm this should be not here
+      shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE'
+    ) {
+      // TODO we now assume this is "absolute", but this is too vauge
+      return {
+        shouldReparent: true,
+        newParent: targetParentPath,
+        shouldReorder: false,
+        newIndex: -1,
+        shouldConvertToInline: 'do-not-convert',
+        defaultReparentType: 'absolute',
+      }
+    } else if (compatibleWith1DReorder) {
+      const { targetUnderMouseIndex, shouldConvertToInline } =
+        findIndexForSingleAxisAutolayoutParent(
+          autolayoutDirection,
+          metadata,
+          targetParentPath,
+          canvasScale,
+          pointOnCanvas,
+        )
+
+      return {
+        shouldReparent: true,
+        newParent: targetParentPath,
+        shouldReorder: targetUnderMouseIndex !== -1,
+        newIndex: targetUnderMouseIndex,
+        shouldConvertToInline: shouldConvertToInline,
+        defaultReparentType: 'static',
+      }
+    } else {
+      // element is static parent but don't look for index
+      return {
+        shouldReparent: true,
+        newParent: targetParentPath,
+        shouldReorder: false,
+        newIndex: -1,
+        shouldConvertToInline: 'do-not-convert',
+        defaultReparentType: 'static',
+      }
+    }
+  })()
+  return targetParentUnderPoint
+}
+
+function findIndexForSingleAxisAutolayoutParent(
+  autolayoutDirection: SingleAxisAutolayoutContainerDirections,
+  metadata: ElementInstanceMetadataMap,
+  targetParentPath: ElementPath,
+  canvasScale: number,
+  pointOnCanvas: CanvasPoint,
+): {
+  targetUnderMouseIndex: number
+  shouldConvertToInline: SimpleFlexDirection | 'do-not-convert'
+} {
+  const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
+
+  const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
+    drawTargetRectanglesForChildrenOfElement(
+      metadata,
+      targetParentPath,
+      'full-size',
+      canvasScale,
+      direction,
+      forwardsOrBackwards,
+    )
+
+  const targetUnderMouseIndex =
+    targets.find((target) => {
+      return rectContainsPointInclusive(target.rect, pointOnCanvas)
+    })?.insertionIndex ?? -1
+
+  const shouldConvertToInline =
+    flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction
+
+  return { targetUnderMouseIndex, shouldConvertToInline }
+}
+
+function findParentByPaddedInsertionZone(
+  metadata: ElementInstanceMetadataMap,
+  validTargetparentsUnderPoint: ElementPath[],
+  canvasScale: number,
+  pointOnCanvas: CanvasPoint,
+) {
+  let targetParentWithPaddedInsertionZone: ReparentTarget | null = null
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
     const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(element, metadata)
     if (autolayoutDirection === 'non-single-axis-autolayout') {
@@ -428,7 +652,7 @@ export function getReparentTargetUnified(
       path: element,
       directions: autolayoutDirection,
     }
-  }, [...filteredElementsUnderPoint].reverse())
+  }, [...validTargetparentsUnderPoint].reverse())
 
   // first try to find a flex element insertion area
   for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
@@ -451,7 +675,7 @@ export function getReparentTargetUnified(
 
     if (targetUnderMouseIndex != null) {
       // we found a target!
-      return {
+      targetParentWithPaddedInsertionZone = {
         shouldReparent: true,
         shouldReorder: true,
         newParent: singleAxisAutoLayoutContainer.path,
@@ -462,80 +686,8 @@ export function getReparentTargetUnified(
       }
     }
   }
-
-  // fall back to trying to find an absolute element, or the "background" area of an autolayout container
-  const targetParentPath = filteredElementsUnderPoint[0]
-  if (targetParentPath == null) {
-    // none of the targets were under the mouse, fallback return
-    return null
-  }
-
-  const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
-  const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
-  const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(
-    metadata,
-    targetParentPath,
-  )
-
-  if (
-    autolayoutDirection === 'non-single-axis-autolayout' || // hmmmmmm this should be not here
-    shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE'
-  ) {
-    // TODO we now assume this is "absolute", but this is too vauge
-    return {
-      shouldReparent: true,
-      newParent: targetParentPath,
-      shouldReorder: false,
-      newIndex: -1,
-      shouldConvertToInline: 'do-not-convert',
-      defaultReparentType: 'absolute',
-    }
-  } else if (compatibleWith1DReorder) {
-    const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
-
-    const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
-      drawTargetRectanglesForChildrenOfElement(
-        metadata,
-        targetParentPath,
-        'full-size',
-        canvasScale,
-        direction,
-        forwardsOrBackwards,
-      )
-
-    const targetUnderMouseIndex = targets.find((target) => {
-      return rectContainsPointInclusive(target.rect, pointOnCanvas)
-    })?.insertionIndex
-
-    // found flex element, todo index
-    return {
-      shouldReparent: true,
-      newParent: targetParentPath,
-      shouldReorder: targetUnderMouseIndex != null,
-      newIndex: targetUnderMouseIndex ?? -1,
-      shouldConvertToInline:
-        flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
-      defaultReparentType: 'static',
-    }
-  } else {
-    // element is static parent but don't look for index
-    return {
-      shouldReparent: true,
-      newParent: targetParentPath,
-      shouldReorder: false,
-      newIndex: -1,
-      shouldConvertToInline: 'do-not-convert',
-      defaultReparentType: 'static',
-    }
-  }
+  return targetParentWithPaddedInsertionZone
 }
-
-const propertiesToRemove: Array<PropertyPath> = [
-  PP.create(['style', 'left']),
-  PP.create(['style', 'top']),
-  PP.create(['style', 'right']),
-  PP.create(['style', 'bottom']),
-]
 
 function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
