@@ -136,7 +136,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     elementSize,
     showIndicatorFromParent,
   } = props
-  const position = handlePosition(borderRadius.renderedValuePx, elementSize, edgePosition, scale)
 
   const [hovered, setHovered] = React.useState<boolean>(false)
   const handleHoverStart = React.useCallback(() => setHovered(true), [])
@@ -145,10 +144,19 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
+  const size = BorderRadiusHandleSize(scale)
+  const position = handlePosition(borderRadius.renderedValuePx, elementSize, edgePosition, scale)
+
   return (
     <div
       data-testid={CircularHandleTestId(edgePosition)}
-      style={{ padding: 10 / scale }}
+      style={{
+        position: 'absolute',
+        left: position.x,
+        top: position.y,
+      }}
+      onMouseEnter={handleHoverStart}
+      onMouseLeave={handleHoverEnd}
       onMouseDown={(e) =>
         startInteraction(e, dispatch, canvasOffsetRef.current, scale, edgePosition)
       }
@@ -172,16 +180,11 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         {when(
           shouldShowHandle,
           <div
-            onMouseEnter={handleHoverStart}
-            onMouseLeave={handleHoverEnd}
             style={{
-              position: 'absolute',
-              width: BorderRadiusHandleSize(scale),
-              height: BorderRadiusHandleSize(scale),
-              left: position.x,
-              top: position.y,
+              width: size,
+              height: size,
               background: 'white',
-              border: '1px solid blue',
+              border: `${1 / scale}px solid blue`,
               borderRadius: '50%',
             }}
           />,

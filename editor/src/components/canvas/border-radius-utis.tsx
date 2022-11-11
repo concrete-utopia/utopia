@@ -7,7 +7,7 @@ import {
   EdgePositionBottomRight,
 } from './canvas-types'
 
-export const BorderRadiusHandleSize = (scale: number): number => 10 / scale
+export const BorderRadiusHandleSize = (scale: number): number => 12 / scale
 
 export const BorderRadiusThreshold: number = 10
 
@@ -20,19 +20,19 @@ export function handlePosition(
   edgePosition: EdgePosition,
   scale: number,
 ): CanvasPoint {
-  const handleSize = BorderRadiusHandleSize(scale)
+  const handleSize = BorderRadiusHandleSize(scale) / 2
 
   const { x, y } = edgePosition
   if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
-    return canvasPoint({ x: offset, y: offset })
+    return canvasPoint({ x: offset - handleSize, y: offset - handleSize })
   }
 
   if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
-    return canvasPoint({ x: elementSize.width - offset - handleSize, y: offset })
+    return canvasPoint({ x: elementSize.width - offset - handleSize, y: offset - handleSize })
   }
 
   if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
-    return canvasPoint({ x: offset, y: elementSize.height - offset - handleSize })
+    return canvasPoint({ x: offset - handleSize, y: elementSize.height - offset - handleSize })
   }
 
   if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
