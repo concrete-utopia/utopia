@@ -167,8 +167,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
           <div
             style={{
               position: 'absolute',
-              left: position.x,
-              top: position.y,
               paddingLeft: 20 / scale,
               paddingTop: 20 / scale,
               pointerEvents: 'none',

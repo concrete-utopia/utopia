@@ -14,7 +14,11 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { borderRadiusOffsetPx, BorderRadiusThreshold } from '../../border-radius-utis'
+import {
+  borderRadiusOffsetPx,
+  BorderRadiusThreshold,
+  maxBorderRadius,
+} from '../../border-radius-utis'
 import {
   EdgePosition,
   EdgePositionBottomLeft,
@@ -81,8 +85,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
 
   const dragDelta = clamp(
     -borderRadius.adjustedBorderRadius.renderedValuePx,
-    Math.min(elementSize.width / 2, elementSize.height / 2) -
-      borderRadius.adjustedBorderRadius.renderedValuePx,
+    maxBorderRadius(elementSize) - borderRadius.adjustedBorderRadius.renderedValuePx,
     optionalMap(
       ({ drag, edgePosition }) => deltaFromDrag(drag, edgePosition),
       borderRadiusAdjustData,
@@ -204,6 +207,7 @@ function borderRadiusFromElement(element: ElementInstanceMetadata): BorderRadius
   const borderRadius = getLayoutProperty('borderRadius', right(element.element.value.props), [
     'style',
   ])
+
   if (isLeft(borderRadius) || borderRadius.value == null || isRight(borderRadius.value)) {
     return null
   }
@@ -218,7 +222,16 @@ function borderRadiusFromElement(element: ElementInstanceMetadata): BorderRadius
       value: borderRadius.value.value,
       renderedValuePx: renderedValuePx,
     },
-    Math.max(renderedValuePx, BorderRadiusThreshold),
+    clamp(
+      BorderRadiusThreshold,
+      maxBorderRadius(
+        size(
+          element.specialSizeMeasurements.clientWidth,
+          element.specialSizeMeasurements.clientHeight,
+        ),
+      ),
+      renderedValuePx,
+    ),
     'precise',
   )
 

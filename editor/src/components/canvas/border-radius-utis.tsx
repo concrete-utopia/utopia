@@ -1,4 +1,4 @@
-import { CanvasPoint, canvasPoint, Size } from '../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, roundTo, Size } from '../../core/shared/math-utils'
 import {
   EdgePosition,
   EdgePositionTopLeft,
@@ -13,6 +13,9 @@ export const BorderRadiusThreshold: number = 10
 
 export const borderRadiusOffsetPx = (isDragging: boolean, desiredOffset: number): number =>
   isDragging ? desiredOffset : Math.max(desiredOffset, BorderRadiusThreshold)
+
+export const maxBorderRadius = (elementSize: Size): number =>
+  roundTo(Math.min(elementSize.height, elementSize.width) / 2, 0)
 
 export function handlePosition(
   offset: number,
