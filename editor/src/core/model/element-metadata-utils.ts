@@ -293,6 +293,25 @@ export const MetadataUtils = {
       position === 'relative' || position === 'static' || position === 'sticky'
     return containerLayoutSystem === 'flow' && participatesInFlow
   },
+  elementParticipatesInAutoLayout(element: ElementInstanceMetadata | null): boolean {
+    return !MetadataUtils.isPositionAbsolute(element)
+  },
+  targetParticipatesInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
+    return MetadataUtils.elementParticipatesInAutoLayout(
+      MetadataUtils.findElementByElementPath(elements, target),
+    )
+  },
+  getChildrenParticipateInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return MetadataUtils.getChildren(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (
