@@ -928,8 +928,16 @@ function getSpecialMeasurements(
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
-  const borderRadius =
-    defaultEither(null, mapEither(pxTransform, parseCSSLength(elementStyle.borderRadius))) ?? null
+  const borderRadius = defaultEither(
+    null,
+    applicative4Either(
+      applicativeSidesPxTransform,
+      parseCSSLength(elementStyle.borderTopLeftRadius),
+      parseCSSLength(elementStyle.borderTopRightRadius),
+      parseCSSLength(elementStyle.borderBottomLeftRadius),
+      parseCSSLength(elementStyle.borderBottomRightRadius),
+    ),
+  )
 
   return specialSizeMeasurements(
     offset,

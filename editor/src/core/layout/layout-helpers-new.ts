@@ -86,6 +86,10 @@ export type StyleLayoutProp =
   | 'margin'
   | 'display'
   | 'borderRadius'
+  | 'borderTopLeftRadius'
+  | 'borderTopRightRadius'
+  | 'borderBottomLeftRadius'
+  | 'borderBottomRightRadius'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

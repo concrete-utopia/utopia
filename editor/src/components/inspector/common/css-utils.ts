@@ -4037,6 +4037,10 @@ export interface ParsedCSSProperties {
   backgroundSize: CSSBackgroundSize
   border: CSSBorder
   borderRadius: CSSBorderRadius
+  borderTopLeftRadius: CSSNumber
+  borderTopRightRadius: CSSNumber
+  borderBottomLeftRadius: CSSNumber
+  borderBottomRightRadius: CSSNumber
   boxShadow: CSSBoxShadows
   color: CSSColor
   fontFamily: CSSFontFamily
@@ -4292,6 +4296,10 @@ export const cssParsers: CSSParsers = {
   backgroundSize: parseBackgroundSize,
   border: parseBorder,
   borderRadius: parseBorderRadius,
+  borderTopLeftRadius: parseCSSLengthPercent,
+  borderTopRightRadius: parseCSSLengthPercent,
+  borderBottomLeftRadius: parseCSSLengthPercent,
+  borderBottomRightRadius: parseCSSLengthPercent,
   boxShadow: parseBoxShadow,
   color: parseColorHexHashOptional,
   fontFamily: parseFontFamily,

@@ -9,6 +9,11 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
+export const cssNumberWithRenderedValue = (
+  value: CSSNumber,
+  renderedValuePx: number,
+): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
+
 export type AdjustPrecision = 'precise' | 'coarse'
 
 export function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {

@@ -1,4 +1,5 @@
 import { CanvasPoint, canvasPoint, roundTo, Size } from '../../core/shared/math-utils'
+import { CSSBorderRadiusIndividual } from '../inspector/common/css-utils'
 import {
   EdgePosition,
   EdgePositionTopLeft,
@@ -6,6 +7,11 @@ import {
   EdgePositionBottomLeft,
   EdgePositionBottomRight,
 } from './canvas-types'
+import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
+
+export type BorderRadiusAdjustMode = 'individual' | 'all'
+
+export type BorderRadiusSides<T> = { [key in keyof CSSBorderRadiusIndividual]: T }
 
 export const BorderRadiusHandleSize = (scale: number): number => 12 / scale
 
@@ -46,4 +52,30 @@ export function handlePosition(
   }
 
   return canvasPoint({ x: 0, y: 0 })
+}
+
+// this whole `EdgePosition` business is instant legacy, `keyof CSSBorderRadiusIndividual` should be used instead
+// TODO delete me before merge!
+export function valueFromEdgePosition(
+  edgePosition: EdgePosition,
+  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>,
+): CSSNumberWithRenderedValue {
+  const { x, y } = edgePosition
+  if (x === EdgePositionTopLeft.x && y === EdgePositionTopLeft.y) {
+    return borderRadius.tl
+  }
+
+  if (x === EdgePositionTopRight.x && y === EdgePositionTopRight.y) {
+    return borderRadius.tr
+  }
+
+  if (x === EdgePositionBottomLeft.x && y === EdgePositionBottomLeft.y) {
+    return borderRadius.bl
+  }
+
+  if (x === EdgePositionBottomRight.x && y === EdgePositionBottomRight.y) {
+    return borderRadius.br
+  }
+
+  return borderRadius.tl // ughh
 }

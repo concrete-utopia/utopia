@@ -7,7 +7,13 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber } from '../../../inspector/common/css-utils'
-import { BorderRadiusHandleSize, handlePosition } from '../../border-radius-utis'
+import {
+  BorderRadiusAdjustMode,
+  BorderRadiusHandleSize,
+  BorderRadiusSides,
+  handlePosition,
+  valueFromEdgePosition,
+} from '../../border-radius-utis'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -33,13 +39,15 @@ export const CircularHandleTestId = (position: EdgePosition): string =>
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
-  borderRadius: CSSNumberWithRenderedValue
+  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
   showIndicatorOnEdge: EdgePosition | null
+  mode: BorderRadiusAdjustMode
   indicatorValue: CSSNumber
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge, indicatorValue } = props
+  const { selectedElement, borderRadius, elementSize, showIndicatorOnEdge, indicatorValue, mode } =
+    props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const { dispatch, scale, isDragging } = useEditorState(
@@ -88,7 +96,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
         ].map((edgePosition) => (
           <CircularHandle
             key={CircularHandleTestId(edgePosition)}
-            borderRadius={borderRadius}
+            borderRadius={valueFromEdgePosition(edgePosition, borderRadius)}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}
@@ -101,6 +109,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
               showIndicatorOnEdge?.x === edgePosition.x && showIndicatorOnEdge?.y === edgePosition.y
             }
             indicatorValue={indicatorValue}
+            showDot={mode === 'individual'}
           />
         ))}
       </div>
@@ -120,6 +129,7 @@ interface CircularHandleProp {
   color: string
   elementSize: Size
   showIndicatorFromParent: boolean
+  showDot: boolean
 }
 
 const CircularHandle = React.memo((props: CircularHandleProp) => {
@@ -135,6 +145,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     edgePosition,
     elementSize,
     showIndicatorFromParent,
+    showDot,
   } = props
 
   const [hovered, setHovered] = React.useState<boolean>(false)
@@ -185,7 +196,19 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
               border: `${1 / scale}px solid blue`,
               borderRadius: '50%',
             }}
-          />,
+          >
+            {when(
+              showDot,
+              <div
+                style={{
+                  width: 2 / scale,
+                  height: 2 / scale,
+                  background: 'blue',
+                  borderRadius: '50%',
+                }}
+              />,
+            )}
+          </div>,
         )}
       </>
     </div>

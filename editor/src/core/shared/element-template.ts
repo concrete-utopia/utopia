@@ -1609,7 +1609,7 @@ export interface SpecialSizeMeasurements {
   hasPositionOffset: boolean
   parentTextDirection: TextDirection | null
   hasTransform: boolean
-  borderRadius: number | null
+  borderRadius: Sides | null
 }
 
 export function specialSizeMeasurements(
@@ -1640,7 +1640,7 @@ export function specialSizeMeasurements(
   hasPositionOffset: boolean,
   parentTextDirection: TextDirection | null,
   hasTransform: boolean,
-  borderRadius: number | null,
+  borderRadius: Sides | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
