@@ -1006,7 +1006,7 @@ export function roundJSXElementLayoutValues(
 export type SimpleFlexDirection = 'row' | 'column'
 
 export function flexDirectionToSimpleFlexDirection(
-  flexDirection: string,
+  flexDirection: string | null,
 ): SimpleFlexDirection | null {
   switch (flexDirection) {
     case 'row':
@@ -1016,14 +1016,14 @@ export function flexDirectionToSimpleFlexDirection(
     case 'column-reverse':
       return 'column'
     default:
-      return null
+      return 'row'
   }
 }
 
 export type FlexForwardsOrBackwards = 'forward' | 'reverse'
 
 export function flexDirectionToFlexForwardsOrBackwards(
-  flexDirection: string,
+  flexDirection: string | null,
 ): FlexForwardsOrBackwards | null {
   switch (flexDirection) {
     case 'row':
@@ -1033,6 +1033,6 @@ export function flexDirectionToFlexForwardsOrBackwards(
     case 'column-reverse':
       return 'reverse'
     default:
-      return null
+      return 'forward'
   }
 }
