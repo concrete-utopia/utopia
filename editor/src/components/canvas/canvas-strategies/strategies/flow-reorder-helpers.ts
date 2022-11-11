@@ -224,11 +224,13 @@ export function getOptionalDisplayPropCommandsForFlow(
     lastReorderIdx != null &&
     lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
   ) {
-    const newDisplayType = getNewDisplayTypeForIndex(
+    const targetSibling = MetadataUtils.findElementByElementPath(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType) // TODO this is wrong, it will convert a display: flex to block!!!
+    const elementDisplayType = elementMetadata?.specialSizeMeasurements.display ?? null
+    const newDirection = getElementDirection(targetSibling) === 'horizontal' ? 'row' : 'column'
+    return getOptionalCommandToConvertDisplayInlineBlock(target, elementDisplayType, newDirection)
   } else {
     return []
   }
