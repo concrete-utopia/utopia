@@ -364,27 +364,6 @@ function useStartDragState(): (
   )
 }
 
-function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
-  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
-
-  return React.useCallback(
-    (event: MouseEvent, target: ElementPath) => {
-      const start = windowToCanvasCoordinates(
-        windowPoint(point(event.clientX, event.clientY)),
-      ).canvasPositionRounded
-      if (event.button !== 2) {
-        dispatch([
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
-          ),
-        ])
-      }
-    },
-    [dispatch, windowToCanvasCoordinates],
-  )
-}
-
 function callbackAfterDragExceedsThreshold(
   startEvent: MouseEvent,
   threshold: number,
@@ -567,8 +546,8 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  //const startCanvasModeSession = useStartCanvasSession()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+  const interactionSessionHappened = React.useRef(false)
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
@@ -590,7 +569,12 @@ function useSelectOrLiveModeSelectAndHover(
       if (isDragIntention) {
         return
       }
-      innerOnMouseMove(event)
+      if (editorStoreRef.current.editor.canvas.interactionSession == null) {
+        innerOnMouseMove(event)
+      } else {
+        // An interaction session has happened, which is important to know on mouseup
+        interactionSessionHappened.current = true
+      }
     },
     [innerOnMouseMove, editorStoreRef],
   )
@@ -602,93 +586,110 @@ function useSelectOrLiveModeSelectAndHover(
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
+      const hasInteractionSession = editorStoreRef.current.editor.canvas.interactionSession != null
+      const hadInteractionSessionThatWasCancelled =
+        interactionSessionHappened.current && !hasInteractionSession
 
-      // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
-      if (!(isDragIntention || hasInteractionSessionWithMouseMoved)) {
-        const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
-        const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-        const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
-        const foundTarget = findValidTarget(
-          selectableViews,
-          windowPoint(point(event.clientX, event.clientY)),
-          preferAlreadySelected,
-        )
+      const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
+      const mouseUpSelectionAllowed =
+        !hadInteractionSessionThatWasCancelled &&
+        (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
-        const isMultiselect = event.shiftKey
-        const isDeselect = foundTarget == null && !isMultiselect
-        let editorActions: Array<EditorAction> = []
+      if (event.type === 'mouseup') {
+        // Clear the interaction session tracking flag
+        interactionSessionHappened.current = false
 
-        if (foundTarget != null || isDeselect) {
-          if (foundTarget != null && draggingAllowed) {
-            if (isFeatureEnabled('Canvas Strategies')) {
-              const start = windowToCanvasCoordinates(
-                windowPoint(point(event.clientX, event.clientY)),
-              ).canvasPositionRounded
-              if (event.button !== 2 && event.type !== 'mouseup') {
-                editorActions.push(
-                  CanvasActions.createInteractionSession(
-                    createInteractionViaMouse(
-                      start,
-                      Modifier.modifiersForEvent(event),
-                      boundingArea(),
-                    ),
+        if (!mouseUpSelectionAllowed) {
+          // We should skip this mouseup
+          return
+        }
+      }
+
+      if (isDragIntention || hasInteractionSessionWithMouseMoved) {
+        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
+        return
+      }
+
+      const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
+      const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
+      const foundTarget = findValidTarget(
+        selectableViews,
+        windowPoint(point(event.clientX, event.clientY)),
+        preferAlreadySelected,
+      )
+
+      const isMultiselect = event.shiftKey
+      const isDeselect = foundTarget == null && !isMultiselect
+      let editorActions: Array<EditorAction> = []
+
+      if (foundTarget != null || isDeselect) {
+        if (foundTarget != null && draggingAllowed) {
+          if (isFeatureEnabled('Canvas Strategies')) {
+            const start = windowToCanvasCoordinates(
+              windowPoint(point(event.clientX, event.clientY)),
+            ).canvasPositionRounded
+            if (event.button !== 2 && event.type !== 'mouseup') {
+              editorActions.push(
+                CanvasActions.createInteractionSession(
+                  createInteractionViaMouse(
+                    start,
+                    Modifier.modifiersForEvent(event),
+                    boundingArea(),
                   ),
-                )
-              }
-            } else {
-              startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
-            }
-          }
-
-          let updatedSelection: Array<ElementPath>
-          if (isMultiselect) {
-            updatedSelection = EP.addPathIfMissing(
-              foundTarget!.elementPath,
-              selectedViewsRef.current,
-            )
-          } else {
-            updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
-          }
-
-          const foundTargetIsSelected = foundTarget?.isSelected ?? false
-
-          if (foundTarget != null && foundTargetIsSelected && doubleClick) {
-            // for components without passed children doubleclicking enters focus mode
-            const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
-              foundTarget.elementPath,
-              editorStoreRef.current.editor.jsxMetadata,
-            )
-            if (isFocusableLeaf) {
-              editorActions.push(setFocusedElement(foundTarget.elementPath))
-            }
-          }
-
-          if (!foundTargetIsSelected) {
-            // first we only set the selected views for the canvas controls
-            setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
-            // In either case cancel insert mode.
-            if (isInsertMode(editorStoreRef.current.editor.mode)) {
-              editorActions.push(...cancelInsertModeActions('apply-changes'))
-            }
-
-            // then we set the selected views for the editor state, 1 frame later
-            if (updatedSelection.length === 0) {
-              const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-                'Click on empty canvas unfocuses',
+                ),
               )
-                ? [setFocusedElement(null)]
-                : []
-
-              editorActions.push(clearSelection())
-              editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
-            } else {
-              editorActions.push(selectComponents(updatedSelection, event.shiftKey))
             }
+          } else {
+            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
           }
         }
-        dispatch(editorActions)
+
+        let updatedSelection: Array<ElementPath>
+        if (isMultiselect) {
+          updatedSelection = EP.addPathIfMissing(foundTarget!.elementPath, selectedViewsRef.current)
+        } else {
+          updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
+        }
+
+        const foundTargetIsSelected = foundTarget?.isSelected ?? false
+
+        if (foundTarget != null && foundTargetIsSelected && doubleClick) {
+          // for components without passed children doubleclicking enters focus mode
+          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+            foundTarget.elementPath,
+            editorStoreRef.current.editor.jsxMetadata,
+          )
+          if (isFocusableLeaf) {
+            editorActions.push(setFocusedElement(foundTarget.elementPath))
+          }
+        }
+
+        if (!foundTargetIsSelected) {
+          // first we only set the selected views for the canvas controls
+          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
+          // In either case cancel insert mode.
+          if (isInsertMode(editorStoreRef.current.editor.mode)) {
+            editorActions.push(...cancelInsertModeActions('apply-changes'))
+          }
+
+          // then we set the selected views for the editor state, 1 frame later
+          if (updatedSelection.length === 0) {
+            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
+              'Click on empty canvas unfocuses',
+            )
+              ? [setFocusedElement(null)]
+              : []
+
+            editorActions.push(clearSelection())
+            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
+          } else {
+            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+          }
+        }
       }
+      dispatch(editorActions)
     },
     [
       dispatch,
@@ -743,7 +744,7 @@ export function useSelectAndHover(
 
   if (hasInteractionSession) {
     return {
-      onMouseMove: Utils.NO_OP,
+      onMouseMove: selectModeCallbacks.onMouseMove,
       onMouseDown: Utils.NO_OP,
       onMouseUp: selectModeCallbacks.onMouseUp,
     }
