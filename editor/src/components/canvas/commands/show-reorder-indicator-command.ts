@@ -3,6 +3,7 @@ import {
   flexDirectionToSimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { reverse } from '../../../core/shared/array-utils'
 import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -73,8 +74,17 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   )
 
   if (siblings.length > 0) {
-    const precedingSiblingPosition: CanvasRectangle = siblingPositions[command.index].frame
-    const succeedingSiblingPosition: CanvasRectangle = siblingPositions[command.index + 1].frame
+    const closestPreviousSiblingPosition = forceNotNull(
+      'no sibling found for reorder indicator',
+      reverse(siblingPositions).find((siblingPosition) => siblingPosition.index <= command.index),
+    )
+    const closestNextSiblingPosition = forceNotNull(
+      'no sibling found for reorder indicator',
+      siblingPositions.find((siblingPosition) => siblingPosition.index > command.index),
+    )
+
+    const precedingSiblingPosition: CanvasRectangle = closestPreviousSiblingPosition.frame
+    const succeedingSiblingPosition: CanvasRectangle = closestNextSiblingPosition.frame
 
     const targetLineBeforeSibling: CanvasRectangle =
       newParentDirection === 'row'
