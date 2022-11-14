@@ -1087,7 +1087,7 @@ function getDirectionsForSingleAxisAutoLayoutTarget(
     return 'non-single-axis-autolayout'
   }
   const isFlow = elementMetadata.specialSizeMeasurements.layoutSystemForChildren === 'flow'
-  const flowChildren = MetadataUtils.getChildrenParticipateInAutoLayout(metadata, path)
+  const flowChildren = MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, path)
   if (isFlow && flowChildren.length < 2) {
     // TODO !!!!!!!!! this check should not be here!! we are mixing responsibilities!!!! the container dimensions don't depend on the number
     // we should probably (re) use the rules from flowParentAbsoluteOrStatic instead of putting rules here

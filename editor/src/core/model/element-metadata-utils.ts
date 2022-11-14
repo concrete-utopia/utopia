@@ -304,7 +304,7 @@ export const MetadataUtils = {
       MetadataUtils.findElementByElementPath(elements, target),
     )
   },
-  getChildrenParticipateInAutoLayout(
+  getChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {

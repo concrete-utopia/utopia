@@ -57,7 +57,7 @@ export function singleAxisAutoLayoutContainerDirections(
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
-  const children = MetadataUtils.getChildrenParticipateInAutoLayout(metadata, container)
+  const children = MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, container)
   if (containerElement == null) {
     return 'non-single-axis-autolayout'
   }
