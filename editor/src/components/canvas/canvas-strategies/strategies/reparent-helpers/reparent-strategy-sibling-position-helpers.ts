@@ -62,10 +62,7 @@ export function drawTargetRectanglesForChildrenOfElement(
   }
 
   const childrenBounds: Array<ElemBounds> = mapDropNulls((childPath, index) => {
-    if (
-      // TODO make a MetadataUtils.elementParticipatesInLayout helper function and use it in Flow Reorder, Flex Reorder too
-      MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, childPath))
-    ) {
+    if (!MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath)) {
       return null
     }
 
@@ -198,15 +195,23 @@ export function getSiblingMidPointPosition(
   return value
 }
 
+export interface SiblingPosition {
+  frame: CanvasRectangle
+  index: number
+}
+
 export function siblingAndPseudoPositions(
   parentFlexDirection: SimpleFlexDirection,
   forwardsOrBackwards: FlexForwardsOrBackwards,
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-): Array<CanvasRectangle> {
+): Array<SiblingPosition> {
+  const siblingsFiltered = siblingsOfTarget.filter((sibling) =>
+    MetadataUtils.targetParticipatesInAutoLayout(metadata, sibling),
+  )
   const siblingsPossiblyReversed =
-    forwardsOrBackwards === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
+    forwardsOrBackwards === 'forward' ? siblingsFiltered : reverse(siblingsFiltered)
 
   const pseudoElements = createPseudoElements(
     siblingsPossiblyReversed,
@@ -215,14 +220,42 @@ export function siblingAndPseudoPositions(
     metadata,
   )
 
-  const siblingPositions: Array<CanvasRectangle> = [
-    pseudoElements.before,
-    ...siblingsPossiblyReversed.map((sibling) => {
-      return MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect
-    }),
-    pseudoElements.after,
-  ]
-  return forwardsOrBackwards === 'forward' ? siblingPositions : reverse(siblingPositions)
+  const siblingFramesAndIndexInAutoLayout = mapDropNulls((sibling, index) => {
+    if (MetadataUtils.targetParticipatesInAutoLayout(metadata, sibling)) {
+      return {
+        frame: MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect,
+        index: index + 1,
+      }
+    } else {
+      return null
+    }
+  }, siblingsOfTarget)
+
+  if (forwardsOrBackwards === 'forward') {
+    return [
+      {
+        frame: pseudoElements.before,
+        index: 0,
+      },
+      ...siblingFramesAndIndexInAutoLayout,
+      {
+        frame: pseudoElements.after,
+        index: siblingsOfTarget.length + 1,
+      },
+    ]
+  } else {
+    return [
+      {
+        frame: pseudoElements.after,
+        index: 0,
+      },
+      ...siblingFramesAndIndexInAutoLayout,
+      {
+        frame: pseudoElements.before,
+        index: siblingsOfTarget.length + 1,
+      },
+    ]
+  }
 }
 
 function createPseudoElements(
