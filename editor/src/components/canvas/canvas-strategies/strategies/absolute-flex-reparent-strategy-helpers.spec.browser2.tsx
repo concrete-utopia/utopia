@@ -2459,6 +2459,6 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 778, 145, 2, 40)
+    await checkReparentIndicator(renderResult, 788, 145, 2, 40)
   })
 })
