@@ -1056,7 +1056,7 @@ export async function resolveConflict(
     } else {
       saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path)
     }
-    saveAssetPromise.then(() => {
+    void saveAssetPromise.then(() => {
       dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
     })
   }
