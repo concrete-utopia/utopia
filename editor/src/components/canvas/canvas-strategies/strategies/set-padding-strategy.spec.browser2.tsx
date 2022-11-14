@@ -22,6 +22,7 @@ import {
   offsetPaddingByEdge,
   paddingToPaddingString,
   CSSPaddingMeasurements,
+  CSSPaddingMappedValues,
 } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -258,6 +259,155 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  it('paddingLeft can be removed by dragging', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('10px 10px 10px 10px'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'left', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingTop: `'10px'`,
+        paddingBottom: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+    )
+  })
+
+  it('paddingTop can be removed by dragging', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('10px 10px 10px 10px'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingBottom: `'10px'`,
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+    )
+  })
+
+  it('paddingRight can be removed by dragging', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('10px 10px 10px 10px'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'right', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingTop: `'10px'`,
+        paddingBottom: `'10px'`,
+        paddingLeft: `'10px'`,
+      }),
+    )
+  })
+
+  it('paddingBottom can be removed by dragging', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('10px 10px 10px 10px'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'bottom', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingTop: `'10px'`,
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+    )
+  })
+
+  it('paddingTop can be readded by dragging', async () => {
+    const dragDeltaToZero = 10
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingBottom: `'10px'`,
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues('10px 10px 10px 10px'),
+    )
+  })
+
+  it('paddingTop can be removed by dragging when longhand props are present', async () => {
+    const dragDeltaToZero = -100
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingTop: `'10px'`,
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+    )
+  })
+
+  it('paddingTop can be readded when only two longhands are present', async () => {
+    const dragDeltaToZero = 10
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithLongHandPaddingValues({
+        paddingTop: `10`,
+        paddingLeft: `'10px'`,
+        paddingRight: `'10px'`,
+      }),
+    )
+  })
+
   describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -379,4 +529,42 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
         data-uid='002'
       />
     </div>`)
+}
+
+function makeTestProjectCodeWithLongHandPaddingValues(
+  padding: Partial<CSSPaddingMappedValues<string>>,
+): string {
+  return makeTestProjectCodeWithSnippet(`<div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 28,
+        top: 28,
+        width: 612,
+        height: 461,
+        ${formatPaddingLonghandValues(padding)}
+      }}
+      data-uid='24a'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: '100%',
+          height: '100%',
+        }}
+        data-uid='002'
+      />
+    </div>`)
+}
+
+function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<string>>): string {
+  return [
+    padding.paddingTop == null ? null : `        paddingTop: ${padding.paddingTop},`,
+    padding.paddingBottom == null ? null : `        paddingBottom: ${padding.paddingBottom},`,
+    padding.paddingLeft == null ? null : `        paddingLeft: ${padding.paddingLeft},`,
+    padding.paddingRight == null ? null : `        paddingRight: ${padding.paddingRight},`,
+  ]
+    .filter((s) => s != null)
+    .join('\n')
 }

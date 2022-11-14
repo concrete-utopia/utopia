@@ -14,7 +14,7 @@ import {
 } from './controls/select-mode/controls-common'
 
 export type CSSPaddingKey = keyof CSSPadding
-type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
+export type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
 export type CSSPaddingMeasurements = CSSPaddingMappedValues<CSSNumberWithRenderedValue>
 
 export const defaultPaddingMeasurement = (sizePx: number): CSSNumberWithRenderedValue => ({
@@ -151,24 +151,6 @@ export function paddingPropForEdge(edgePiece: EdgePiece): CSSPaddingKey {
 
 export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
   return padding[paddingPropForEdge(edgePiece)].renderedValuePx
-}
-
-export function paddingMeasurementForEdge(
-  edgePiece: EdgePiece,
-  padding: CSSPaddingMeasurements,
-): CSSNumberWithRenderedValue {
-  switch (edgePiece) {
-    case 'top':
-      return padding.paddingTop
-    case 'bottom':
-      return padding.paddingBottom
-    case 'right':
-      return padding.paddingRight
-    case 'left':
-      return padding.paddingLeft
-    default:
-      assertNever(edgePiece)
-  }
 }
 
 export function offsetPaddingByEdge(
