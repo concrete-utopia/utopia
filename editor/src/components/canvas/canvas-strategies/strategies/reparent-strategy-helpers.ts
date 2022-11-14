@@ -106,7 +106,7 @@ export function reparentStrategyForParent(
   }
 }
 
-function isAutoLayoutComaptibleWithSingleAxisReorder(
+function isSingleAxisAutoLayoutComaptibleWithReorder(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
 ): boolean {
@@ -526,16 +526,13 @@ function findParentUnderPointByArea(
 ) {
   const autolayoutDirection = getDirectionsForSingleAxisAutoLayoutTarget(targetParentPath, metadata)
   const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
-  const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(
+  const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(
     metadata,
     targetParentPath,
   )
 
   const targetParentUnderPoint: ReparentTarget = (() => {
-    if (
-      autolayoutDirection === 'non-single-axis-autolayout' || // hmmmmmm this should be not here
-      shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE'
-    ) {
+    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
@@ -545,7 +542,7 @@ function findParentUnderPointByArea(
         shouldConvertToInline: 'do-not-convert',
         defaultReparentType: 'REPARENT_AS_ABSOLUTE',
       }
-    } else if (compatibleWith1DReorder) {
+    } else if (compatibleWith1DReorder && autolayoutDirection !== 'non-single-axis-autolayout') {
       const { targetUnderMouseIndex, shouldConvertToInline } =
         findIndexForSingleAxisAutolayoutParent(
           autolayoutDirection,
@@ -627,7 +624,7 @@ function findParentByPaddedInsertionZone(
     if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
-    const compatibleWith1DReorder = isAutoLayoutComaptibleWithSingleAxisReorder(metadata, element)
+    const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(metadata, element)
     if (!compatibleWith1DReorder) {
       return null
     }
