@@ -13,7 +13,7 @@ import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
   SiblingPosition,
-} from '../canvas-strategies/strategies/reparent-strategy-helpers'
+} from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ShowReorderIndicator extends BaseCommand {

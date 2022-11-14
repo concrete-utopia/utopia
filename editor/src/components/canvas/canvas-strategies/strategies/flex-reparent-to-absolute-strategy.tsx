@@ -32,8 +32,8 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
-import { ifAllowedToReparent } from './reparent-helpers'
-import { ReparentTarget } from './reparent-strategy-helpers'
+import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(

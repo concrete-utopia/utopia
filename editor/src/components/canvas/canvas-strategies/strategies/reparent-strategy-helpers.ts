@@ -62,7 +62,7 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from './flow-reorder-helpers'
-import { ifAllowedToReparent } from './reparent-helpers'
+import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 

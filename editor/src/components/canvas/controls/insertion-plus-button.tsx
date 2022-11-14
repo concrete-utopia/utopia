@@ -1,25 +1,23 @@
 import React from 'react'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { useEditorState } from '../../editor/store/store-hook'
-import uuid from 'uuid'
-import { IndexPosition } from '../../../utils/utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import * as EP from '../../../core/shared/element-path'
-import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
-import { useColorTheme } from '../../../uuiui/styles/theme'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
-import {
-  getSiblingMidPointPosition,
-  siblingAndPseudoPositions,
-  SiblingPosition,
-} from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   flexDirectionToFlexForwardsOrBackwards,
   flexDirectionToSimpleFlexDirection,
   FlexForwardsOrBackwards,
   SimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { IndexPosition } from '../../../utils/utils'
+import { useColorTheme } from '../../../uuiui/styles/theme'
+import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
+import { useEditorState } from '../../editor/store/store-hook'
+import {
+  getSiblingMidPointPosition,
+  siblingAndPseudoPositions,
+} from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
+import { SiblingPosition } from '../canvas-strategies/strategies/reparent-strategy-helpers'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const InsertionButtonOffset = 10
 
