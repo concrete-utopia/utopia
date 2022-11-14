@@ -133,6 +133,8 @@ type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> 
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
 
+type GithubSaveAssetAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "asset" :> Capture "asset_sha" Text :> QueryParam' '[Required, Strict] "project_id" Text :> QueryParam' '[Required, Strict] "path" Text :> Post '[JSON] GithubSaveAssetResponse
+
 type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> Get '[JSON] GetBranchContentResponse
 
 type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
@@ -193,6 +195,7 @@ type Protected = LogoutAPI
             :<|> GithubBranchesAPI
             :<|> GithubBranchLoadAPI
             :<|> GithubUsersRepositoriesAPI
+            :<|> GithubSaveAssetAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

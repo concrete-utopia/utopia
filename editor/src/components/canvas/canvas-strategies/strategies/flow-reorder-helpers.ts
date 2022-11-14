@@ -161,46 +161,7 @@ export function getElementDirection(
   return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
-function getNewDisplayTypeForIndex(
-  metadata: ElementInstanceMetadataMap,
-  targetSibling: ElementPath,
-) {
-  const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
-    ?.specialSizeMeasurements.display
-  const displayBlockInlineBlock =
-    displayType === 'block' || displayType === 'inline-block' ? displayType : null
-
-  return displayBlockInlineBlock
-}
-
-function shouldRemoveDisplayProp(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): boolean {
-  if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
-    return false
-  } else {
-    return (
-      // TODO global css overrides can change these defaults
-      defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
-      newDisplayValue
-    )
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-function getNewDisplayTypeCommands(
-  element: ElementInstanceMetadata,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): Array<SetProperty | DeleteProperties> {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
-  } else if (newDisplayValue != null) {
-    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
-  } else {
-    return []
-  }
-}
 
 export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,
@@ -224,11 +185,13 @@ export function getOptionalDisplayPropCommandsForFlow(
     lastReorderIdx != null &&
     lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
   ) {
-    const newDisplayType = getNewDisplayTypeForIndex(
+    const targetSibling = MetadataUtils.findElementByElementPath(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType) // TODO this is wrong, it will convert a display: flex to block!!!
+    const elementDisplayType = elementMetadata?.specialSizeMeasurements.display ?? null
+    const newDirection = getElementDirection(targetSibling) === 'horizontal' ? 'row' : 'column'
+    return getOptionalCommandToConvertDisplayInlineBlock(target, elementDisplayType, newDirection)
   } else {
     return []
   }

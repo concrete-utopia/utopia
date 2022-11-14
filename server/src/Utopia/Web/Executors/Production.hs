@@ -293,6 +293,14 @@ innerServerExecutor (GetUsersRepositories user action) = do
   pool <- fmap _projectPool ask
   result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
   pure $ action result
+innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  githubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath 
+  pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do

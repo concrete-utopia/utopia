@@ -628,6 +628,11 @@ export interface UpdateGithubData {
   data: Partial<GithubData>
 }
 
+export interface RemoveFileConflict {
+  action: 'REMOVE_FILE_CONFLICT'
+  path: string
+}
+
 export interface WorkerCodeUpdate {
   type: 'WORKER_CODE_UPDATE'
   filePath: string
@@ -1127,6 +1132,7 @@ export type EditorAction =
   | UpdateProjectContents
   | UpdateGithubSettings
   | UpdateGithubData
+  | RemoveFileConflict
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight

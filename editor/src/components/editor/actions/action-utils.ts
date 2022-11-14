@@ -119,6 +119,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_GITHUB_OPERATIONS':
     case 'UPDATE_GITHUB_CHECKSUMS':
     case 'UPDATE_GITHUB_DATA':
+    case 'REMOVE_FILE_CONFLICT':
       return true
 
     case 'NEW':

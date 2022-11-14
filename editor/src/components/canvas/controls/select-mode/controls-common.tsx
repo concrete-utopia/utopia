@@ -1,5 +1,5 @@
 import React from 'react'
-import { roundTo } from '../../../../core/shared/math-utils'
+import { CanvasVector, roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
@@ -105,7 +105,6 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
   return (
     <div
       style={{
-        boxSizing: 'border-box',
         width: width,
         height: height,
         backgroundColor: pillColor,
