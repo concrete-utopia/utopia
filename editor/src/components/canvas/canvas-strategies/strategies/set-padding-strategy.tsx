@@ -3,7 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
+import { ParsedCSSProperties, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -14,8 +14,8 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
 import {
-  FloatingCSSNumberIndicator,
-  FloatingCSSNumberIndicatorProps,
+  FloatingIndicator,
+  FloatingIndicatorProps,
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   deltaFromEdge,
@@ -90,7 +90,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     (props) => [
       resizeControl,
       controlWithProps({
-        control: FloatingCSSNumberIndicator,
+        control: FloatingIndicator,
         props: props,
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -214,7 +214,7 @@ function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElements: ElementPath[],
-): FloatingCSSNumberIndicatorProps | null {
+): FloatingIndicatorProps | null {
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   if (
@@ -237,14 +237,19 @@ function paddingValueIndicatorProps(
   )
   const currentPadding = paddingMeasurementForEdge(edgePiece, padding)
 
+  const delta = deltaFromEdge(drag, edgePiece)
+
   const updatedPaddingMeasurement = offsetMeasurementByDelta(
     currentPadding,
-    deltaFromEdge(drag, edgePiece) + PaddingIndictorOffset(canvasState.scale),
+    delta + PaddingIndictorOffset(canvasState.scale),
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   return {
-    value: updatedPaddingMeasurement.value,
+    value:
+      updatedPaddingMeasurement.renderedValuePx > -10
+        ? printCSSNumber(updatedPaddingMeasurement.value, null)
+        : 'Remove padding from props',
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }

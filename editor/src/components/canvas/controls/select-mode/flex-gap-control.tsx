@@ -14,7 +14,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber } from '../../../inspector/common/css-utils'
+import { CSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
@@ -28,7 +28,7 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import {
-  CSSNumberLabel,
+  CanvasLabel,
   CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
@@ -238,7 +238,11 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel value={gapValue} scale={scale} color={colorTheme.brandNeonPink.value} />
+            <CanvasLabel
+              value={printCSSNumber(gapValue, null)}
+              scale={scale}
+              color={colorTheme.brandNeonPink.value}
+            />
           </div>,
         )}
         {when(

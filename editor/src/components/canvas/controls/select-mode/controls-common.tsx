@@ -69,13 +69,13 @@ export const offsetMeasurementByDelta = (
 const FontSize = 12
 const Padding = 4
 
-interface PaddingValueLabelProps {
+interface CanvasLabelProps {
   scale: number
   color: string
-  value: CSSNumber
+  value: string | number
 }
 
-export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.Element => {
+export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
@@ -88,7 +88,7 @@ export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.El
         color: 'white',
       }}
     >
-      {printCSSNumber(value, null)}
+      {value}
     </div>
   )
 })

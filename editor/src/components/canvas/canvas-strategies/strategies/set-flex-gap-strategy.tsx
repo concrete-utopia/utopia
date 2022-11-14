@@ -13,8 +13,8 @@ import {
 } from '../../controls/select-mode/controls-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
-  FloatingCSSNumberIndicator,
-  FloatingCSSNumberIndicatorProps,
+  FloatingIndicator,
+  FloatingIndicatorProps,
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   cursorFromFlexDirection,
@@ -100,7 +100,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     (props) => [
       resizeControl,
       controlWithProps({
-        control: FloatingCSSNumberIndicator,
+        control: FloatingIndicator,
         props: props,
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -158,7 +158,7 @@ function modifiersFromInteractionSession(
 function flexGapValueIndicatorProps(
   interactionSession: InteractionSession | null,
   flexGap: FlexGapData,
-): FloatingCSSNumberIndicatorProps | null {
+): FloatingIndicatorProps | null {
   if (
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
@@ -186,7 +186,7 @@ function flexGapValueIndicatorProps(
     : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
-    value: updatedFlexGapMeasurement.value,
+    value: printCSSNumber(updatedFlexGapMeasurement.value, null),
     position: position,
   }
 }
