@@ -23,11 +23,11 @@ import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
   findReparentStrategies,
-  getReparentTargetUnified,
   ReparentStrategy,
   reparentSubjectsForInteractionTarget,
   ReparentTarget,
-} from './reparent-strategy-helpers'
+} from './reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 interface ReparentFactoryAndDetails {
