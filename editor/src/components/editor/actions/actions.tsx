@@ -457,7 +457,10 @@ import {
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
-import { refreshDependencies } from '../../../core/shared/dependencies'
+import {
+  refreshDependencies,
+  removeModulesFromNodeModules,
+} from '../../../core/shared/dependencies'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1455,19 +1458,6 @@ function updateSelectedComponentsFromEditorPosition(
       dispatch,
     )
   }
-}
-
-export function removeModulesFromNodeModules(
-  modulesToRemove: Array<string>,
-  nodeModules: NodeModules,
-): NodeModules {
-  const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
-
-  return objectFilter(
-    (_module, modulePath) =>
-      !filePathsToRemove.some((pathToRemove) => (modulePath as string).startsWith(pathToRemove)),
-    nodeModules,
-  )
 }
 
 // JS Editor Actions:

@@ -5,7 +5,6 @@ import {
   setRefreshingDependencies,
   updateNodeModulesContents,
 } from '../../components/editor/actions/action-creators'
-import { removeModulesFromNodeModules } from '../../components/editor/actions/actions'
 import {
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJsonContents,
@@ -17,8 +16,22 @@ import {
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
 import { RequestedNpmDependency } from './npm-dependency-types'
+import { objectFilter } from './object-utils'
 import { isTextFile, NodeModules } from './project-file-types'
 import { fastForEach } from './utils'
+
+export function removeModulesFromNodeModules(
+  modulesToRemove: Array<string>,
+  nodeModules: NodeModules,
+): NodeModules {
+  const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
+
+  return objectFilter(
+    (_module, modulePath) =>
+      !filePathsToRemove.some((pathToRemove) => (modulePath as string).startsWith(pathToRemove)),
+    nodeModules,
+  )
+}
 
 export async function refreshDependencies(
   dispatch: EditorDispatch,
