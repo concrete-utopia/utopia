@@ -529,6 +529,11 @@ const LockedOverlay = React.memo(() => {
     'EditorComponentInner editorLocked',
   )
 
+  const refreshingDependencies = useEditorState(
+    (store) => store.editor.refreshingDependencies,
+    'EditorComponentInner refreshingDependencies',
+  )
+
   const anim = keyframes`
     from {
       opacity: 0;
@@ -555,14 +560,32 @@ const LockedOverlay = React.memo(() => {
         left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
         width: '100vw',
         height: '100vh',
-        backgroundColor: '#000',
+        backgroundColor: '#00000044',
         zIndex: 30,
-        opacity: 0.2,
         transition: 'all .1s ease-in-out',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
       css={css`
         animation: ${anim} 0.3s ease-in-out;
       `}
-    />
+    >
+      {refreshingDependencies && (
+        <div
+          style={{
+            opacity: 1,
+            fontSize: 12,
+            fontWeight: 500,
+            background: '#fff',
+            padding: 30,
+            borderRadius: 2,
+          }}
+        >
+          Updating dependencies…
+        </div>
+      )}
+    </div>
   )
 })

@@ -1,0 +1,100 @@
+import { createSelector } from 'reselect'
+import { EditorDispatch } from '../../components/editor/action-types'
+import {
+  setPackageStatus,
+  setRefreshingDependencies,
+  updateNodeModulesContents,
+} from '../../components/editor/actions/action-creators'
+import { removeModulesFromNodeModules } from '../../components/editor/actions/actions'
+import {
+  createLoadedPackageStatusMapFromDependencies,
+  dependenciesFromPackageJsonContents,
+} from '../../components/editor/npm-dependency/npm-dependency'
+import {
+  EditorStorePatched,
+  packageJsonFileFromProjectContents,
+} from '../../components/editor/store/editor-state'
+import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
+import { RequestedNpmDependency } from './npm-dependency-types'
+import { isTextFile, NodeModules } from './project-file-types'
+import { fastForEach } from './utils'
+
+export async function refreshDependencies(
+  dispatch: EditorDispatch,
+  packageJsonContents: string,
+  currentDeps: RequestedNpmDependency[] | null,
+  builtInDependencies: BuiltInDependencies,
+  nodeModules: NodeModules,
+): Promise<NodeModules> {
+  async function doRefresh() {
+    const deps = dependenciesFromPackageJsonContents(packageJsonContents)
+    let newDeps: RequestedNpmDependency[] = []
+    let updatedDeps: RequestedNpmDependency[] = []
+    let removedDeps: RequestedNpmDependency[] = []
+    if (currentDeps != null) {
+      let foundMatchingDeps: RequestedNpmDependency[] = []
+
+      fastForEach(deps, (dep) => {
+        const matchingCurrentDep = currentDeps.find((currentDep) => dep.name === currentDep.name)
+
+        // Find the new or updated dependencies
+        if (matchingCurrentDep == null) {
+          // A new dependency has been added
+          newDeps.push(dep)
+        } else {
+          foundMatchingDeps.push(matchingCurrentDep)
+
+          if (matchingCurrentDep.version !== dep.version) {
+            // An updated dependency
+            updatedDeps.push(dep)
+          }
+        }
+
+        // Find the deleted dependencies
+        removedDeps = currentDeps.filter((currentDep) => !foundMatchingDeps.includes(currentDep))
+      })
+    } else {
+      newDeps = deps
+    }
+
+    const modulesToRemove = updatedDeps.concat(removedDeps).map((d) => d.name)
+
+    const updatedNodeModulesFiles = removeModulesFromNodeModules(modulesToRemove, nodeModules)
+
+    const depsToFetch = newDeps.concat(updatedDeps)
+
+    const fetchNodeModulesResult = await fetchNodeModules(depsToFetch, builtInDependencies)
+
+    const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+      deps,
+      fetchNodeModulesResult.dependenciesWithError,
+      fetchNodeModulesResult.dependenciesNotFound,
+    )
+    const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+      setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+    )
+    dispatch([
+      ...packageErrorActions,
+      updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
+    ])
+
+    return updatedNodeModulesFiles
+  }
+
+  dispatch([setRefreshingDependencies(true)], 'everyone')
+  return doRefresh().finally(() => {
+    dispatch([setRefreshingDependencies(false)], 'everyone')
+  })
+}
+
+export const projectDependenciesSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (projectContents): Array<RequestedNpmDependency> => {
+    const currentDepsFile = packageJsonFileFromProjectContents(projectContents)
+    if (currentDepsFile != null && isTextFile(currentDepsFile)) {
+      return dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
+    }
+    return []
+  },
+)

@@ -312,6 +312,7 @@ import {
   UpdateAgainstGithub,
   UpdateGithubData,
   RemoveFileConflict,
+  SetRefreshingDependencies,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -456,6 +457,7 @@ import {
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
+import { refreshDependencies } from '../../../core/shared/dependencies'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -993,6 +995,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubChecksums: currentEditor.githubChecksums,
     branchContents: currentEditor.branchContents,
     githubData: currentEditor.githubData,
+    refreshingDependencies: currentEditor.refreshingDependencies,
   }
 }
 
@@ -1454,7 +1457,7 @@ function updateSelectedComponentsFromEditorPosition(
   }
 }
 
-function removeModulesFromNodeModules(
+export function removeModulesFromNodeModules(
   modulesToRemove: Array<string>,
   nodeModules: NodeModules,
 ): NodeModules {
@@ -1950,6 +1953,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  SET_REFRESHING_DEPENDENCIES: (
+    action: SetRefreshingDependencies,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      refreshingDependencies: action.value,
     }
   },
   UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
@@ -3646,71 +3658,17 @@ export const UPDATE_FNS = {
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isTextFile(file)) {
-      const deps = dependenciesFromPackageJsonContents(file.fileContents.code)
-      if (deps != null) {
-        packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
-          packageStatus[dep.name] = { status: 'loading' }
-          return packageStatus
-        }, {})
-        let newDeps: RequestedNpmDependency[] = []
-        let updatedDeps: RequestedNpmDependency[] = []
-        let removedDeps: RequestedNpmDependency[] = []
-        const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
-        if (isTextFile(currentDepsFile)) {
-          const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
-          let foundMatchingDeps: RequestedNpmDependency[] = []
-
-          fastForEach(deps, (dep) => {
-            const matchingCurrentDep = currentDeps.find(
-              (currentDep) => dep.name === currentDep.name,
-            )
-
-            // Find the new or updated dependencies
-            if (matchingCurrentDep == null) {
-              // A new dependency has been added
-              newDeps.push(dep)
-            } else {
-              foundMatchingDeps.push(matchingCurrentDep)
-
-              if (matchingCurrentDep.version !== dep.version) {
-                // An updated dependency
-                updatedDeps.push(dep)
-              }
-            }
-
-            // Find the deleted dependencies
-            removedDeps = currentDeps.filter(
-              (currentDep) => !foundMatchingDeps.includes(currentDep),
-            )
-          })
-        } else {
-          newDeps = deps
-        }
-
-        const modulesToRemove = updatedDeps.concat(removedDeps).map((d) => d.name)
-
-        updatedNodeModulesFiles = removeModulesFromNodeModules(
-          modulesToRemove,
-          editor.nodeModules.files,
-        )
-
-        const depsToFetch = newDeps.concat(updatedDeps)
-
-        void fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
-          const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
-            deps,
-            fetchNodeModulesResult.dependenciesWithError,
-            fetchNodeModulesResult.dependenciesNotFound,
-          )
-          const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-            setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
-          )
-          dispatch([
-            ...packageErrorActions,
-            updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-          ])
-        })
-      }
+      const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
+      const currentDeps = isTextFile(packageJson)
+        ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
+        : null
+      void refreshDependencies(
+        dispatch,
+        file.fileContents.code,
+        currentDeps,
+        builtInDependencies,
+        editor.nodeModules.files,
+      )
     }
 
     return {
