@@ -410,6 +410,7 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
+  sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
@@ -4473,10 +4474,12 @@ export const UPDATE_FNS = {
   SEND_CODE_EDITOR_INITIALISATION: (
     action: SendCodeEditorInitialisation,
     editor: EditorModel,
+    userState: UserState,
   ): EditorModel => {
     // Side effects.
     void sendCodeEditorDecorations(editor)
     void sendSelectedElement(editor)
+    void sendSetVSCodeTheme(userState.themeConfig)
     return {
       ...editor,
       vscodeReady: true,
@@ -4648,8 +4651,11 @@ export const UPDATE_FNS = {
       shortcutConfig: userState.shortcutConfig,
       themeConfig: action.theme,
     }
-    // Side effect.
+    // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
+
+    // Side effect - update the setting in VS Code
+    void sendSetVSCodeTheme(action.theme)
     return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
