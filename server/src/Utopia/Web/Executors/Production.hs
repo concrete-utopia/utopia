@@ -299,7 +299,7 @@ innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID as
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath 
+  result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath
   pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text

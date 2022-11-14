@@ -104,6 +104,7 @@ executable utopia-web
     , lens-aeson <1.2
     , lifted-async
     , lifted-base
+    , magic
     , mime
     , mime-types
     , modern-uri
@@ -247,6 +248,7 @@ test-suite utopia-web-test
     , lens-aeson <1.2
     , lifted-async
     , lifted-base
+    , magic
     , mime
     , mime-types
     , modern-uri
