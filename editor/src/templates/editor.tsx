@@ -87,7 +87,7 @@ import {
 } from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
-import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { colorTheme, updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
@@ -110,6 +110,7 @@ import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
+import ThemeContext, { ThemeProvider } from '../uuiui/styles/theme-context'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -572,7 +573,9 @@ export const EditorRoot: React.FunctionComponent<{
         <CanvasStateContext.Provider value={{ api: canvasStore, useStore: canvasStore }}>
           <InspectorStateContext.Provider value={{ api: inspectorStore, useStore: inspectorStore }}>
             <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-              <EditorComponent />
+              <ThemeProvider>
+                <EditorComponent />
+              </ThemeProvider>
             </UiJsxCanvasCtxAtom.Provider>
           </InspectorStateContext.Provider>
         </CanvasStateContext.Provider>

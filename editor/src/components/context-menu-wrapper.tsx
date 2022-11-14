@@ -13,8 +13,10 @@ import {
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import fastDeepEquals from 'fast-deep-equal'
-import { Icons, UtopiaTheme } from '../uuiui'
+import { colorTheme, Icons, useColorTheme, UtopiaTheme } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
+import { EditorStateContext } from './editor/store/store-hook'
+import ThemeContext from '../uuiui/styles/theme-context'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -191,8 +193,13 @@ export class ContextMenuWrapper<T> extends ReactComponent<
 export class InspectorContextMenuWrapper<T> extends ReactComponent<
   React.PropsWithChildren<ContextMenuWrapperProps<T>>
 > {
+  static contextType = ThemeContext
   getData = () => this.props.data
   render() {
+    const theme: any = this.context
+    // console.log(this.context)
+    //   const currentTheme: Theme = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
+    // currentTheme === 'dark' ? darkColorTheme : colorTheme
     const name = `${this.props.id}-context-menu-wrapper`
     return (
       <div
@@ -201,10 +208,10 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
         css={{
           width: '100%',
           ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+          '--control-styles-interactive-unset-main-color': theme.fg7.value,
+          '--control-styles-interactive-unset-secondary-color': theme.fg7.value,
+          '--control-styles-interactive-unset-track-color': theme.bg5.value,
+          '--control-styles-interactive-unset-rail-color': theme.bg3.value,
           '&:hover': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
             '--control-styles-interactive-unset-secondary-color':
