@@ -2,39 +2,21 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React, { ChangeEventHandler, useCallback, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
-import urljoin from 'url-join'
-import { BASE_URL } from '../../../../common/env-vars'
 import {
   getBranchesForGithubRepository,
   getGithubFileChangesCount,
   githubFileChangesSelector,
   githubFileChangesToList,
-  parseGithubProjectString,
   updateProjectAgainstGithub,
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
-import { NO_OP } from '../../../../core/shared/utils'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  Section,
-  SectionBodyArea,
-  SectionTitleRow,
-  StringInput,
-  Title,
-  useColorTheme,
-  UtopiaTheme,
-} from '../../../../uuiui'
-import { WarningIcon } from '../../../../uuiui/warning-icon'
-import { setFocus } from '../../../common/actions'
+import { Button, FlexColumn, FlexRow, StringInput, useColorTheme } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
-  githubOperationPrettyName,
   isGithubCommishing,
   isGithubLoadingBranch,
   isGithubUpdating,
@@ -46,34 +28,13 @@ import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 
-const GitBranchIcon = () => {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='11'
-      height='11'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <line x1='6' y1='3' x2='6' y2='15'></line>
-      <circle cx='18' cy='6' r='3'></circle>
-      <circle cx='6' cy='18' r='3'></circle>
-      <path d='M18 9a9 9 0 0 1-9 9'></path>
-    </svg>
-  )
-}
-
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
 }
 
-type SemaphoreState = 'pending' | 'stopped' | 'ready' | 'warning'
+type IndicatorState = 'pending' | 'stopped' | 'ready' | 'warning'
 
-function getSemaphoreColor(state: SemaphoreState): string {
+function getIndicatorColor(state: IndicatorState): string {
   switch (state) {
     case 'pending':
       return '#FFFFFF'
@@ -89,100 +50,153 @@ function getSemaphoreColor(state: SemaphoreState): string {
   }
 }
 
-const Semaphore = ({ state }: { state: SemaphoreState }) => {
-  const color = getSemaphoreColor(state)
+const IndicatorLight = ({
+  state,
+  hasBlockBefore,
+}: {
+  state: IndicatorState
+  hasBlockBefore: boolean
+}) => {
+  const color = getIndicatorColor(state)
   return (
     <FlexColumn
       style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 20,
+        height: 13,
+        position: 'relative',
+        justifyContent: 'flex-end',
       }}
     >
+      {when(hasBlockBefore === true, <IndicatorLightConnector up />)}
       <svg
-        width='10px'
-        height='10px'
-        viewBox='0 0 10 10'
+        style={{ zIndex: 1 }}
+        width='9px'
+        height='9px'
+        viewBox='0 0 11 11'
         fill='none'
         xmlns='http://www.w3.org/2000/svg'
       >
-        <rect x='0.5' y='0.5' width='8' height='8' rx='4.5' fill={color} />
-        <rect x='0.5' y='0.5' width='8' height='8' rx='4.5' stroke='#2D2E33' />
+        <rect x='1' y='1' width='9' height='9' rx='4.5' fill={color} />
+        <rect x='1' y='1' width='9' height='9' rx='4.5' stroke='#2D2E33' />
       </svg>
     </FlexColumn>
   )
 }
 
-const Connector = () => {
+const IndicatorLightConnector = ({ up, down }: { up?: boolean; down?: boolean }) => {
   return (
     <div
       style={{
-        width: 1,
         flex: 1,
+        width: 1,
         background: '#2D2E33',
-        marginLeft: 4,
-        marginTop: -6,
-        marginBottom: -5,
+        left: 4,
+        position: 'absolute',
+        top: down ? 6 : 0,
+        bottom: up ? 1 : 0,
       }}
     />
+  )
+}
+
+const ChevronDownIcon = () => {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='11px'
+      height='11px'
+      viewBox='11 0 2 22'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <polyline points='6 9 12 15 18 9'></polyline>
+    </svg>
+  )
+}
+
+const ChevronUpIcon = () => {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='12px'
+      height='12px'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <polyline points='18 15 12 9 6 15'></polyline>
+    </svg>
   )
 }
 
 const Block = (props: {
   title: string
   subtitle?: string | JSX.Element
-  state: SemaphoreState
-  hasMore: boolean
+  state: IndicatorState
+  hasBlockBefore: boolean
+  hasBlockAfter: boolean
   onClick?: (e: React.MouseEvent) => void
   active?: boolean
   children: any
 }) => {
   useColorTheme()
-  const { title, subtitle, state, hasMore, onClick, children, active } = props
+  const { title, subtitle, state, hasBlockAfter, onClick, children, active, hasBlockBefore } = props
   return (
-    <FlexRow
-      style={{
-        alignItems: 'stretch',
-      }}
+    <UIGridRow
+      variant='|--16px--|<--------auto-------->'
+      padded={false}
+      alignItems='stretch'
+      style={{ position: 'relative' }}
     >
-      <FlexColumn>
-        <Semaphore state={state} />
-        {when(hasMore, <Connector />)}
-      </FlexColumn>
-      <FlexColumn
-        style={{
-          gap: 4,
-          paddingBottom: 10,
-          flexGrow: 1,
-          boxSizing: 'border-box',
-          flex: '1 1 100%',
-        }}
-      >
-        <FlexRow
-          style={{
-            justifyContent: 'space-between',
-            height: 20,
-            borderRadius: 2,
-            padding: '0 5px',
-            margin: '0 5px',
-          }}
-          css={{
-            background: (active && '#ddd') || undefined,
-            '&:hover':
-              (onClick != undefined && {
-                cursor: 'pointer',
-                background: '#ddd',
-              }) ||
-              undefined,
-          }}
-          onClick={onClick}
+      <div>
+        <IndicatorLight state={state} hasBlockBefore={hasBlockBefore} />
+        {when(hasBlockAfter, <IndicatorLightConnector down />)}
+      </div>
+      <FlexColumn style={{ gap: 8 }}>
+        <UIGridRow
+          variant='<----------1fr---------><-auto->'
+          padded={false}
+          alignItems='start'
+          style={{ minHeight: 0 }}
         >
-          <span style={{ fontWeight: 700 }}>{title}</span>
-          {when(subtitle != undefined, <Ellipsis style={{ maxWidth: 120 }}>{subtitle}</Ellipsis>)}
-        </FlexRow>
-        {children}
+          <div style={{ fontWeight: 700 }}>{title}</div>
+          {when(
+            subtitle != undefined,
+            <FlexRow
+              onClick={onClick}
+              css={{
+                gap: 2,
+                borderRadius: 2,
+                '&:hover': onClick != undefined && {
+                  cursor: 'pointer',
+                  background: '#eee',
+                },
+                background: active ? '#eee' : undefined,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingLeft: 4,
+                paddingRight: 2,
+                paddingTop: 1,
+                paddingBottom: 1,
+              }}
+            >
+              <Ellipsis style={{ maxWidth: 120 }}>{subtitle}</Ellipsis>
+              {onClick && (active ? <ChevronUpIcon /> : <ChevronDownIcon />)}
+            </FlexRow>,
+          )}
+        </UIGridRow>
+        {children && (
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
+            {children}
+          </UIGridRow>
+        )}
       </FlexColumn>
-    </FlexRow>
+    </UIGridRow>
   )
 }
 
@@ -208,7 +222,8 @@ const AccountBlock = () => {
       title='Account'
       state={state}
       subtitle={authenticated ? email : undefined}
-      hasMore={authenticated}
+      hasBlockAfter={authenticated}
+      hasBlockBefore={false}
     >
       {unless(
         authenticated,
@@ -255,9 +270,10 @@ const RepositoryBlock = () => {
   return (
     <Block
       title={hasRepo ? 'Repository' : 'Select Repository'}
-      state={hasRepo ? 'ready' : 'pending'}
+      state={!expanded && hasRepo != null ? 'ready' : 'pending'}
       subtitle={repoName}
-      hasMore={hasRepo}
+      hasBlockBefore={true}
+      hasBlockAfter={hasRepo}
       active={expanded}
       onClick={expand}
     >
@@ -321,47 +337,53 @@ const BranchBlock = () => {
     },
     [setBranchFilter],
   )
+  const filteredBranches = React.useMemo(() => {
+    return branchesForRepository.filter((b) => {
+      if (branchFilter.length === 0) {
+        return true
+      }
+      return b.name.includes(branchFilter)
+    })
+  }, [branchesForRepository, branchFilter])
 
   const loadBranchesUI = React.useMemo(() => {
     return (
       <>
-        <FlexColumn style={{ gap: 10, padding: 4 }}>
-          <FlexRow style={{ gap: 4 }}>
-            <StringInput
-              testId='branches-input'
-              placeholder='Filter…'
-              style={{ flex: 1 }}
-              value={branchFilter}
-              onChange={updateBranchFilter}
-            />
-            <Button
-              spotlight
-              highlight
-              style={{ padding: '0 6px' }}
-              onMouseUp={refreshBranches}
-              disabled={githubWorking}
+        <UIGridRow
+          padded={false}
+          variant='<-------------1fr------------->'
+          style={{ paddingBottom: 10 }}
+        >
+          <FlexColumn style={{ gap: 8 }}>
+            <FlexRow style={{ gap: 4 }}>
+              <StringInput
+                testId='branches-input'
+                placeholder='Filter…'
+                style={{ flex: 1 }}
+                value={branchFilter}
+                onChange={updateBranchFilter}
+              />
+              <Button
+                spotlight
+                highlight
+                style={{ padding: '0 6px' }}
+                onMouseUp={refreshBranches}
+                disabled={githubWorking}
+              >
+                {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+              </Button>
+            </FlexRow>
+            <FlexColumn
+              style={{
+                height: 220,
+                overflowY: 'scroll',
+                padding: 8,
+                border: '1px solid #2D2E33',
+                borderRadius: 3,
+                gap: 8,
+              }}
             >
-              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-            </Button>
-          </FlexRow>
-          <FlexColumn
-            style={{
-              height: 220,
-              overflowY: 'scroll',
-              padding: 8,
-              border: '1px solid #2D2E33',
-              borderRadius: 3,
-              gap: 8,
-            }}
-          >
-            {branchesForRepository
-              .filter((b) => {
-                if (branchFilter.length === 0) {
-                  return true
-                }
-                return b.name.includes(branchFilter)
-              })
-              .map((branch, index) => {
+              {filteredBranches.map((branch, index) => {
                 function loadContentForBranch() {
                   if (storedTargetGithubRepo != null) {
                     void updateProjectWithBranchContent(
@@ -403,12 +425,12 @@ const BranchBlock = () => {
                   </FlexRow>
                 )
               })}
+            </FlexColumn>
           </FlexColumn>
-        </FlexColumn>
+        </UIGridRow>
       </>
     )
   }, [
-    branchesForRepository,
     storedTargetGithubRepo,
     dispatch,
     githubWorking,
@@ -419,6 +441,7 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     setExpanded,
+    filteredBranches,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -435,14 +458,12 @@ const BranchBlock = () => {
       title={currentBranch != null ? 'Branch' : 'Select Branch'}
       state={!expanded && currentBranch != null ? 'ready' : 'pending'}
       subtitle={currentBranch || undefined}
-      hasMore={currentBranch != null}
+      hasBlockBefore={true}
+      hasBlockAfter={currentBranch != null}
       onClick={expand}
       active={expanded}
     >
-      {when(
-        expanded || currentBranch == null,
-        <FlexColumn style={{ gap: 10 }}>{loadBranchesUI}</FlexColumn>,
-      )}
+      {when(expanded || currentBranch == null, loadBranchesUI)}
     </Block>
   )
 }
@@ -482,7 +503,7 @@ const RemoteChangesBlock = () => {
   }, [upstreamChanges, githubFileChanges])
 
   const state = React.useMemo(
-    (): SemaphoreState =>
+    (): IndicatorState =>
       hasUpstreamChanges ? (bothModified.length > 0 ? 'stopped' : 'warning') : 'ready',
     [hasUpstreamChanges, bothModified],
   )
@@ -523,7 +544,8 @@ const RemoteChangesBlock = () => {
     <Block
       title={hasUpstreamChanges ? 'Remote Changes' : 'No Remote Changes'}
       state={state}
-      hasMore={true}
+      hasBlockBefore={true}
+      hasBlockAfter={true}
       subtitle={
         <TimeAgo
           style={{ color: '#aaa' }}
@@ -587,7 +609,7 @@ const LocalChangesBlock = () => {
   )
   const hasLocalChanges = React.useMemo(() => changesCount > 0, [changesCount])
   const state = React.useMemo(
-    (): SemaphoreState => (hasLocalChanges ? 'pending' : 'ready'),
+    (): IndicatorState => (hasLocalChanges ? 'pending' : 'ready'),
     [hasLocalChanges],
   )
   const githubOperations = useEditorState(
@@ -619,7 +641,8 @@ const LocalChangesBlock = () => {
     <Block
       title={hasLocalChanges ? 'Local Changes' : 'No Local Changes'}
       state={state}
-      hasMore={false}
+      hasBlockBefore={true}
+      hasBlockAfter={false}
     >
       {when(
         hasLocalChanges,
@@ -654,468 +677,12 @@ const LocalChangesBlock = () => {
 
 export const GithubPane = React.memo(() => {
   return (
-    <FlexColumn style={{ padding: 10 }}>
+    <FlexColumn style={{ padding: 10, gap: 0 }}>
       <AccountBlock />
       <RepositoryBlock />
       <BranchBlock />
       <RemoteChangesBlock />
       <LocalChangesBlock />
-    </FlexColumn>
-  )
-})
-
-export const GithubPane2 = React.memo(() => {
-  const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
-  const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
-  const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
-  const githubOperations = useEditorState(
-    (store) => store.editor.githubOperations,
-    'Github operations',
-  )
-
-  const githubWorking = React.useMemo(() => {
-    return githubOperations.length > 0
-  }, [githubOperations])
-
-  const storedTargetGithubRepo = useEditorState((store) => {
-    return store.editor.githubSettings.targetRepository
-  }, 'GithubPane storedTargetGithubRepo')
-
-  const currentBranch = useEditorState(
-    (store) => store.editor.githubSettings.branchName,
-    'Github current branch',
-  )
-
-  const originCommit = useEditorState((store) => {
-    return store.editor.githubSettings.originCommit
-  }, 'GithubPane currentBranch')
-
-  const onStartImport = React.useCallback(() => {
-    if (parsedImportRepo != null) {
-      const { owner, repository } = parsedImportRepo
-
-      const url = new URL(urljoin(BASE_URL, 'p'))
-      url.searchParams.set('github_owner', owner)
-      url.searchParams.set('github_repo', repository)
-
-      window.open(url.toString())
-    }
-  }, [parsedImportRepo])
-
-  const onChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setImportGithubRepoStr(e.currentTarget.value)
-    },
-    [setImportGithubRepoStr],
-  )
-
-  const githubAuthenticated = useEditorState((store) => {
-    return store.userState.githubState.authenticated
-  }, 'GithubPane githubAuthenticated')
-
-  const triggerAuthentication = React.useCallback(() => {
-    void startGithubAuthentication(dispatch)
-  }, [dispatch])
-
-  const [urlToImportFrom, setURLToImportFrom] = React.useState<string | null>(null)
-
-  const importFromURLChange = React.useCallback(
-    (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
-      setURLToImportFrom(changeEvent.currentTarget.value)
-    },
-    [setURLToImportFrom],
-  )
-
-  const triggerImportFromURL = React.useCallback(() => {
-    if (urlToImportFrom != null) {
-      const url = new URL(urljoin(BASE_URL, 'p'))
-      url.searchParams.set('import_url', urlToImportFrom)
-
-      window.open(url.toString())
-    }
-  }, [urlToImportFrom])
-
-  const onFocus = React.useCallback(
-    (event: React.FocusEvent<HTMLElement>) => {
-      dispatch([setFocus('githuboptions')], 'everyone')
-    },
-    [dispatch],
-  )
-
-  const triggerSaveToGithub = React.useCallback(() => {
-    if (storedTargetGithubRepo != null) {
-      dispatch([EditorActions.saveToGithub(storedTargetGithubRepo)], 'everyone')
-    }
-  }, [dispatch, storedTargetGithubRepo])
-
-  const triggerUpdateAgainstGithub = React.useCallback(() => {
-    if (storedTargetGithubRepo != null && currentBranch != null && originCommit != null) {
-      void updateProjectAgainstGithub(dispatch, storedTargetGithubRepo, currentBranch, originCommit)
-    }
-  }, [dispatch, storedTargetGithubRepo, currentBranch, originCommit])
-
-  const branchesForRepository = useEditorState(
-    (store) => store.editor.githubData.branches,
-    'Github repo branches',
-  )
-
-  const isLoadingBranches = React.useMemo(
-    () => githubOperations.some((op) => op.name === 'listBranches'),
-    [githubOperations],
-  )
-
-  const refreshBranches = React.useCallback(() => {
-    if (storedTargetGithubRepo != null) {
-      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo)
-    }
-  }, [dispatch, storedTargetGithubRepo])
-
-  const loadBranchesUI = React.useMemo(() => {
-    return (
-      <>
-        {when(
-          storedTargetGithubRepo != null,
-          <UIGridRow padded variant='<----------1fr---------><-auto->'>
-            <span style={{ fontWeight: 500 }}>Branches</span>
-            <Button
-              spotlight
-              highlight
-              style={{ padding: '0 6px' }}
-              onMouseUp={refreshBranches}
-              disabled={githubWorking}
-            >
-              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-            </Button>
-          </UIGridRow>,
-        )}
-        {when(
-          branchesForRepository.length > 0,
-          <div style={{ overflowY: 'auto', height: UtopiaTheme.layout.rowHeight.normal * 11.5 }}>
-            {branchesForRepository.map((branch, index) => {
-              function loadContentForBranch() {
-                if (storedTargetGithubRepo != null) {
-                  void updateProjectWithBranchContent(
-                    dispatch,
-                    storedTargetGithubRepo,
-                    branch.name,
-                    false,
-                  )
-                }
-              }
-              return (
-                <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
-                  <Ellipsis style={{ fontWeight: branch.name === currentBranch ? 600 : 400 }}>
-                    {when(currentBranch === branch.name, <span>&rarr; </span>)}
-                    <span title={branch.name}>{branch.name}</span>
-                  </Ellipsis>
-                  <Button
-                    spotlight
-                    highlight
-                    onMouseUp={loadContentForBranch}
-                    disabled={githubWorking}
-                  >
-                    {isGithubLoadingBranch(
-                      githubOperations,
-                      branch.name,
-                      storedTargetGithubRepo,
-                    ) ? (
-                      <GithubSpinner />
-                    ) : (
-                      'Load'
-                    )}
-                  </Button>
-                </UIGridRow>
-              )
-            })}
-          </div>,
-        )}
-      </>
-    )
-  }, [
-    branchesForRepository,
-    storedTargetGithubRepo,
-    dispatch,
-    githubWorking,
-    githubOperations,
-    currentBranch,
-    isLoadingBranches,
-    refreshBranches,
-  ])
-
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
-  const githubLastUpdatedAt = useEditorState(
-    (store) => store.editor.githubData.lastUpdatedAt,
-    'Github last updated',
-  )
-  const upstreamChanges = useEditorState(
-    (store) => store.editor.githubData.upstreamChanges,
-    'Github upstream changes',
-  )
-  const upstreamChangesCount = React.useMemo(
-    () => getGithubFileChangesCount(upstreamChanges),
-    [upstreamChanges],
-  )
-  const hasUpstreamChanges = React.useMemo(() => {
-    return upstreamChangesCount > 0
-  }, [upstreamChangesCount])
-
-  const bothModified = React.useMemo(() => {
-    const upstreamList = githubFileChangesToList(upstreamChanges)
-    const localList = githubFileChangesToList(githubFileChanges)
-    const intersection = upstreamList
-      .filter((upstream) => localList.some((local) => local.filename === upstream.filename))
-      .map((change) => change.filename)
-    return intersection
-  }, [upstreamChanges, githubFileChanges])
-
-  const disconnectFromGithub = useCallback(() => {
-    if (currentBranch != null) {
-      dispatch(
-        [
-          EditorActions.showModal({
-            type: 'disconnect-github-project',
-          }),
-        ],
-        'everyone',
-      )
-    }
-  }, [dispatch, currentBranch])
-
-  return (
-    <FlexColumn
-      id='leftPaneGithub'
-      key='leftPaneGithub'
-      style={{
-        display: 'relative',
-        alignItems: 'stretch',
-        paddingBottom: 50,
-      }}
-      onFocus={onFocus}
-    >
-      <Section>
-        <SectionTitleRow minimised={false}>
-          <Title style={{ flexGrow: 1 }}>Github</Title>
-          {githubWorking && (
-            <FlexRow style={{ gap: 4 }}>
-              <GithubSpinner />
-              <span>{githubOperationPrettyName(githubOperations[0])}…</span>
-            </FlexRow>
-          )}
-        </SectionTitleRow>
-        <SectionBodyArea minimised={false}>
-          <div
-            style={{
-              height: 'initial',
-              minHeight: 34,
-              alignItems: 'flex-start',
-              paddingTop: 8,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingBottom: 8,
-              whiteSpace: 'pre-wrap',
-              letterSpacing: 0.1,
-              lineHeight: '17px',
-              fontSize: '11px',
-            }}
-          >
-            {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
-          </div>
-          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-            <Button
-              spotlight
-              highlight
-              disabled={githubAuthenticated}
-              onMouseUp={triggerAuthentication}
-            >
-              Authenticate With Github
-            </Button>
-          </UIGridRow>
-          <div
-            style={{
-              height: 'initial',
-              minHeight: 34,
-              alignItems: 'flex-start',
-              paddingTop: 8,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingBottom: 8,
-              whiteSpace: 'pre-wrap',
-              letterSpacing: 0.1,
-              lineHeight: '17px',
-              fontSize: '11px',
-            }}
-          >
-            You can import a new project from Github. It might take a few minutes, and will show up
-            in a new tab.
-          </div>
-          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-            <StringInput testId='importProject' value={importGithubRepoStr} onChange={onChange} />
-            <Button
-              spotlight
-              highlight
-              disabled={parsedImportRepo == null}
-              onMouseUp={onStartImport}
-            >
-              Start
-            </Button>
-          </UIGridRow>
-
-          <div
-            style={{
-              height: 'initial',
-              minHeight: 34,
-              alignItems: 'flex-start',
-              paddingTop: 8,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingBottom: 8,
-              whiteSpace: 'pre-wrap',
-              letterSpacing: 0.1,
-              lineHeight: '17px',
-              fontSize: '11px',
-            }}
-          >
-            Connect this project to a Github repository. You can then import and export to the repo
-            if you have the correct permissions. Please note we don’t support connecting to private
-            repositories at the moment.
-          </div>
-          <RepositoryListing
-            githubAuthenticated={githubAuthenticated}
-            storedTargetGithubRepo={storedTargetGithubRepo}
-          />
-          {when(
-            currentBranch != null,
-            <>
-              <UIGridRow padded variant='<-------------1fr------------->'>
-                <Ellipsis style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <GitBranchIcon />
-                  <span style={{ fontWeight: 600 }} title={currentBranch || undefined}>
-                    {currentBranch}
-                  </span>
-                </Ellipsis>
-              </UIGridRow>
-              <GithubFileChangesList
-                showHeader={true}
-                revertable={true}
-                changes={githubFileChanges}
-                githubWorking={githubWorking}
-              />
-              <UIGridRow padded variant='<-------------1fr------------->'>
-                <Button
-                  spotlight
-                  highlight
-                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-                  onMouseUp={triggerSaveToGithub}
-                >
-                  {isGithubCommishing(githubOperations) ? <GithubSpinner /> : 'Save To Github'}
-                </Button>
-              </UIGridRow>
-              <UIGridRow padded variant='<-------------1fr------------->'>
-                <div
-                  style={{
-                    padding: '10px 0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  {when(
-                    hasUpstreamChanges,
-                    <div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: 4,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <FlexRow style={{ gap: 2, color: '#f90' }}>
-                          Upstream:
-                          <FlexRow>
-                            {upstreamChangesCount} file{upstreamChangesCount !== 1 ? 's' : ''}{' '}
-                            changed
-                          </FlexRow>
-                        </FlexRow>
-                      </div>
-                      <GithubFileChangesList
-                        showHeader={false}
-                        revertable={false}
-                        conflicts={bothModified}
-                        changes={upstreamChanges}
-                        githubWorking={githubWorking}
-                      />
-                    </div>,
-                  )}
-                  {unless(hasUpstreamChanges, <span>Upstream: up-to-date.</span>)}
-                  <div style={{ color: '#aaa' }}>
-                    <TimeAgo date={githubLastUpdatedAt || 0} formatter={compactTimeagoFormatter} />
-                  </div>
-                </div>
-                <Button
-                  spotlight
-                  highlight
-                  disabled={!githubAuthenticated || storedTargetGithubRepo == null || githubWorking}
-                  onMouseUp={triggerUpdateAgainstGithub}
-                >
-                  {isGithubUpdating(githubOperations) ? (
-                    <GithubSpinner />
-                  ) : (
-                    <>
-                      {bothModified.length > 0 && <WarningIcon />}
-                      Update Against Github
-                    </>
-                  )}
-                </Button>
-              </UIGridRow>
-            </>,
-          )}
-          {loadBranchesUI}
-          {when(
-            currentBranch != null,
-            <UIGridRow
-              padded
-              variant='<-------------1fr------------->'
-              style={{ margin: '10px 0' }}
-            >
-              <Button spotlight highlight onClick={disconnectFromGithub} disabled={githubWorking}>
-                Disconnect from branch
-              </Button>
-            </UIGridRow>,
-          )}
-        </SectionBodyArea>
-      </Section>
-      <Section>
-        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
-          <Title style={{ flexGrow: 1 }}>Import From URL</Title>
-        </SectionTitleRow>
-        <SectionBodyArea minimised={false}>
-          <div
-            style={{
-              height: 'initial',
-              minHeight: UtopiaTheme.layout.rowHeight.normal,
-              alignItems: 'flex-start',
-              paddingTop: 8,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingBottom: 8,
-              whiteSpace: 'pre-wrap',
-              letterSpacing: 0.1,
-              lineHeight: '17px',
-              fontSize: '11px',
-            }}
-          >
-            <p style={{ marginTop: 0, marginBottom: 12 }}>
-              Import a project from an existing project based on its URL.
-            </p>
-          </div>
-
-          <UIGridRow variant='<--------auto-------->|--45px--|' padded>
-            <StringInput testId='import-from-url-input' onChange={importFromURLChange} />
-            <Button spotlight highlight onClick={triggerImportFromURL}>
-              Import
-            </Button>
-          </UIGridRow>
-        </SectionBodyArea>
-      </Section>
     </FlexColumn>
   )
 })

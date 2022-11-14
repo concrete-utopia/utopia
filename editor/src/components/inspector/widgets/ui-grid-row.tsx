@@ -86,7 +86,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
   /**
    * alignItems: default value is 'center'
    */
-  alignItems?: 'start' | 'center'
+  alignItems?: 'start' | 'center' | 'stretch'
 }
 
 export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({

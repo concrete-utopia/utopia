@@ -226,7 +226,7 @@ export const RepositoryListing = React.memo(
     }
 
     return (
-      <FlexColumn style={{ gap: 10 }}>
+      <FlexColumn style={{ gap: 10, paddingBottom: 10 }}>
         <FlexRow style={{ gap: 4 }}>
           <StringInput
             style={{ flex: 1 }}

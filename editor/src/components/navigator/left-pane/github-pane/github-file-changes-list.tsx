@@ -14,7 +14,6 @@ import { Button, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
-import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { when } from '../../../../utils/react-conditionals'
 
 export const Ellipsis: React.FC<{
