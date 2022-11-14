@@ -42,10 +42,6 @@ export function measurementBasedOnOtherMeasurement(
   desiredRenderedValue: number,
   precision: AdjustPrecision,
 ): CSSNumberWithRenderedValue {
-  if (base.renderedValuePx === 0) {
-    return base
-  }
-
   const desiredRenderedValueWithPrecision = valueWithUnitAppropriatePrecision(
     'px',
     desiredRenderedValue,

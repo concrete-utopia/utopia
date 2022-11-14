@@ -137,8 +137,15 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   } = props
 
   const [hovered, setHovered] = React.useState<boolean>(false)
+
   const handleHoverStart = React.useCallback(() => setHovered(true), [])
   const handleHoverEnd = React.useCallback(() => setHovered(false), [])
+
+  const handleMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) =>
+      startInteraction(e, dispatch, canvasOffsetRef.current, scale, corner),
+    [canvasOffsetRef, corner, dispatch, scale],
+  )
 
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
@@ -156,7 +163,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
-      onMouseDown={(e) => startInteraction(e, dispatch, canvasOffsetRef.current, scale, corner)}
+      onMouseDown={handleMouseDown}
     >
       <>
         {when(
@@ -177,33 +184,29 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             />
           </div>,
         )}
-        {when(
-          shouldShowHandle,
+        <div
+          style={{
+            visibility: shouldShowHandle ? 'visible' : 'hidden',
+            width: size,
+            height: size,
+            backgroundColor: 'white',
+            border: `${1 / scale}px solid blue`,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <div
             style={{
-              width: size,
-              height: size,
-              backgroundColor: 'white',
-              border: `${1 / scale}px solid blue`,
+              visibility: shouldShowHandle && showDot ? 'visible' : 'hidden',
+              width: 2 / scale,
+              height: 2 / scale,
+              backgroundColor: 'blue',
               borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
-          >
-            {when(
-              showDot,
-              <div
-                style={{
-                  width: 2 / scale,
-                  height: 2 / scale,
-                  backgroundColor: 'blue',
-                  borderRadius: '50%',
-                }}
-              />,
-            )}
-          </div>,
-        )}
+          />
+        </div>
       </>
     </div>
   )

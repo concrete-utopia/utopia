@@ -1,10 +1,23 @@
-import { canvasVector, CanvasVector, size } from '../../../../core/shared/math-utils'
+import {
+  canvasVector,
+  CanvasVector,
+  size,
+  windowPoint,
+  WindowPoint,
+} from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { wait } from '../../../../utils/utils.test-utils'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-utis'
+import { EdgePosition, EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
-import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDragFromPointToPoint,
+  mouseDragFromPointWithDelta,
+  mouseEnterAtPoint,
+} from '../../event-helpers.test-utils'
 import {
   renderTestEditorWithCode,
   makeTestProjectCodeWithSnippet,
@@ -65,7 +78,7 @@ describe('set border radius strategy', () => {
 
     const expectedBorderRadius = Math.min(width, height) / 2
 
-    await doDragTest(editor, 'tl', 400)
+    await doDragTest(editor, 'tl', 400, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '${expectedBorderRadius}px'`),
     )
@@ -76,19 +89,72 @@ describe('set border radius strategy', () => {
       codeForDragTest(`borderRadius: '4px'`),
       'await-first-dom-report',
     )
-    await doDragTest(editor, 'tl', -10)
+    await doDragTest(editor, 'tl', -10, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '0px'`),
     )
   })
 
-  describe('adjust padding via handles', () => {
+  it('can resize border radius on element that has larger than 50% border radius', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div
+    data-testid='mydiv'
+    style={{
+      backgroundColor: '#0091FFAA',
+      position: 'absolute',
+      left: 28,
+      top: 28,
+      width: 600,
+      height: 400,
+      borderRadius: '4px',
+    }}
+    data-uid='24a'
+  />`,
+      ),
+      'await-first-dom-report',
+    )
+    await doDragTest(editor, 'tl', 400, emptyModifiers)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      codeForDragTest(`borderRadius: '200px'`),
+    )
+
+    resizeElement(
+      editor,
+      windowPoint({ x: -300, y: -300 }),
+      EdgePositionBottomRight,
+      emptyModifiers,
+    )
+
+    await doDragTest(editor, 'br', -5, emptyModifiers)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div
+    data-testid='mydiv'
+    style={{
+      backgroundColor: '#0091FFAA',
+      position: 'absolute',
+      left: 28,
+      top: 28,
+      width: 300,
+      height: 100,
+      borderRadius: '45px',
+    }}
+    data-uid='24a'
+  />`,
+      ),
+    )
+  })
+
+  describe('adjust border radius via handles', () => {
     it('top left', async () => {
       const editor = await renderTestEditorWithCode(
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, 'tl', 10)
+      await doDragTest(editor, 'tl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -99,7 +165,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, 'tr', 10)
+      await doDragTest(editor, 'tr', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -110,7 +176,7 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, 'bl', 10)
+      await doDragTest(editor, 'bl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
       )
@@ -121,9 +187,59 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderRadius: '4px'`),
         'await-first-dom-report',
       )
-      await doDragTest(editor, 'br', 10)
+      await doDragTest(editor, 'br', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         codeForDragTest(`borderRadius: '14px'`),
+      )
+    })
+  })
+
+  describe('adjust border radius via handles, individually', () => {
+    it('top left', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '4px',`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'tl', 10, cmdModifier)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        codeForDragTest(`borderRadius: '4px',
+                         borderTopLeftRadius: '14px',`),
+      )
+    })
+
+    it('top right', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '4px'`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'tr', 10, cmdModifier)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        codeForDragTest(`borderRadius: '4px',
+                         borderTopRightRadius: '14px',`),
+      )
+    })
+
+    it('bottom left', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '4px'`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'bl', 10, cmdModifier)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        codeForDragTest(`borderRadius: '4px',
+                         borderBottomLeftRadius: '14px',`),
+      )
+    })
+
+    it('bottom right', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '4px'`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'br', 10, cmdModifier)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        codeForDragTest(`borderRadius: '4px',
+                         borderBottomRightRadius: '14px',`),
       )
     })
   })
@@ -142,25 +258,21 @@ function codeForDragTest(borderRadius: string): string {
       ${borderRadius}
     }}
     data-uid='24a'
-  >
-    <div
-      style={{
-        backgroundColor: '#0091FFAA',
-        width: 22,
-        height: 22,
-      }}
-      data-uid='002'
-    />
-  </div>`)
+  />`)
 }
 
-async function doDragTest(editor: EditorRenderResult, corner: BorderRadiusCorner, offset: number) {
+async function doDragTest(
+  editor: EditorRenderResult,
+  corner: BorderRadiusCorner,
+  offset: number,
+  modifiers: Modifiers,
+) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+    x: divBounds.x + Math.floor(divBounds.width / 2),
+    y: divBounds.y + Math.floor(divBounds.height / 2),
   }
 
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
@@ -175,10 +287,17 @@ async function doDragTest(editor: EditorRenderResult, corner: BorderRadiusCorner
 
   const dragDelta = dragDeltaFromEdgePosition(corner, offset)
 
-  mouseDragFromPointToPoint(borderRadiusControl, center, {
-    x: center.x + dragDelta.x,
-    y: center.y + dragDelta.y,
-  })
+  mouseEnterAtPoint(borderRadiusControl, divCorner)
+
+  mouseDragFromPointToPoint(
+    borderRadiusControl,
+    center,
+    {
+      x: center.x + dragDelta.x,
+      y: center.y + dragDelta.y,
+    },
+    { modifiers },
+  )
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -195,4 +314,23 @@ function dragDeltaFromEdgePosition(corner: BorderRadiusCorner, offset: number): 
     default:
       assertNever(corner)
   }
+}
+
+function resizeElement(
+  renderResult: EditorRenderResult,
+  dragDelta: WindowPoint,
+  edgePosition: EdgePosition,
+  modifiers: Modifiers,
+) {
+  const canvasControl = renderResult.renderedDOM.getByTestId(
+    `resize-control-${edgePosition.x}-${edgePosition.y}`,
+  )
+
+  const resizeCornerBounds = canvasControl.getBoundingClientRect()
+  const startPoint = windowPoint({
+    x: resizeCornerBounds.x + 2,
+    y: resizeCornerBounds.y + 2,
+  })
+
+  mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
 }

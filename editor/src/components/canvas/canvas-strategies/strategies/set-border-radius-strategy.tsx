@@ -54,8 +54,6 @@ import {
 import { InteractionSession } from '../interaction-state'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
-const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
-  stylePropPathMappingFn(p, ['style'])
 
 export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -441,7 +439,7 @@ function setBorderRadiusStrategyRunResult(
     )(borderRadius)
 
     return {
-      commands: setPropertyCommand(
+      commands: setStylePropertyCommand(
         longhandFromEdgePosition(mode, edgePosition),
         printCSSNumber(updatedBorderRadius.value, null),
       ),
@@ -458,12 +456,15 @@ function setBorderRadiusStrategyRunResult(
   )
 
   return {
-    commands: setPropertyCommand('borderRadius', printCSSNumber(allUpdated.tl.value, null)),
+    commands: setStylePropertyCommand('borderRadius', printCSSNumber(allUpdated.tl.value, null)),
     updatedBorderRadius: allUpdated,
   }
 }
 
-const setPropertyCommand =
+const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
+  stylePropPathMappingFn(p, ['style'])
+
+const setStylePropertyCommand =
   <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>
   (target: ElementPath): CanvasCommand =>
     setProperty('always', target, StylePaddingProp(prop), value)
