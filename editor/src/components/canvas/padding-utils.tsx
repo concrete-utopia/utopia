@@ -13,7 +13,7 @@ import {
   offsetMeasurementByDelta,
 } from './controls/select-mode/controls-common'
 
-type CSSPaddingKey = keyof CSSPadding
+export type CSSPaddingKey = keyof CSSPadding
 type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
 export type CSSPaddingMeasurements = CSSPaddingMappedValues<CSSNumberWithRenderedValue>
 
@@ -134,19 +134,23 @@ function cssPaddingToMeasurement(
   }
 }
 
-export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
+export function paddingPropForEdge(edgePiece: EdgePiece): CSSPaddingKey {
   switch (edgePiece) {
     case 'top':
-      return padding.paddingTop.renderedValuePx
+      return 'paddingTop'
     case 'bottom':
-      return padding.paddingBottom.renderedValuePx
+      return 'paddingBottom'
     case 'right':
-      return padding.paddingRight.renderedValuePx
+      return 'paddingRight'
     case 'left':
-      return padding.paddingLeft.renderedValuePx
+      return 'paddingLeft'
     default:
       assertNever(edgePiece)
   }
+}
+
+export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
+  return padding[paddingPropForEdge(edgePiece)].renderedValuePx
 }
 
 export function paddingMeasurementForEdge(

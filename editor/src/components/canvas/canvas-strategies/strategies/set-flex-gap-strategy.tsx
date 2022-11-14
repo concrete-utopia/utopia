@@ -4,6 +4,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
@@ -25,7 +26,6 @@ import {
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -37,10 +37,11 @@ export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
 const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
 
+const FlexGapTearThreshold: number = -50
+
 export const setFlexGapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customtrategyState: CustomStrategyState,
 ) => {
   if (
     interactionSession != null &&
@@ -68,10 +69,14 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
 
+  const rawDragDelta = dragDeltaForOrientation(flexGap.direction, drag)
+
   const dragDelta = Math.max(
     -flexGap.value.renderedValuePx,
     dragDeltaForOrientation(flexGap.direction, drag),
   )
+
+  const shouldTearOffGap = rawDragDelta + flexGap.value.renderedValuePx < FlexGapTearThreshold
 
   const adjustPrecision =
     optionalMap(precisionFromModifiers, modifiersFromInteractionSession(interactionSession)) ??
@@ -123,6 +128,12 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      if (shouldTearOffGap) {
+        return strategyApplicationResult([
+          deleteProperties('always', selectedElement, [StyleGapProp]),
+        ])
+      }
+
       return strategyApplicationResult([
         setProperty(
           'always',
@@ -170,10 +181,9 @@ function flexGapValueIndicatorProps(
 
   const { drag, dragStart } = interactionSession.interactionData
 
-  const dragDelta = Math.max(
-    -flexGap.value.renderedValuePx,
-    dragDeltaForOrientation(flexGap.direction, drag),
-  )
+  const rawDragDelta = dragDeltaForOrientation(flexGap.direction, drag)
+
+  const dragDelta = Math.max(-flexGap.value.renderedValuePx, rawDragDelta)
 
   const updatedFlexGapMeasurement = offsetMeasurementByDelta(
     flexGap.value,
@@ -186,7 +196,10 @@ function flexGapValueIndicatorProps(
     : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
-    value: printCSSNumber(updatedFlexGapMeasurement.value, null),
+    value:
+      rawDragDelta + flexGap.value.renderedValuePx > FlexGapTearThreshold
+        ? printCSSNumber(updatedFlexGapMeasurement.value, null)
+        : 'Remove gap from props',
     position: position,
   }
 }
