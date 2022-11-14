@@ -64,10 +64,6 @@ export async function refreshDependencies(
 
     const depsToFetch = newDeps.concat(updatedDeps)
 
-    if (depsToFetch.length > 0) {
-      dispatch([setRefreshingDependencies(true)], 'everyone')
-    }
-
     const fetchNodeModulesResult = await fetchNodeModules(depsToFetch, builtInDependencies)
 
     const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
@@ -86,6 +82,7 @@ export async function refreshDependencies(
     return updatedNodeModulesFiles
   }
 
+  dispatch([setRefreshingDependencies(true)], 'everyone')
   return doRefresh().finally(() => {
     dispatch([setRefreshingDependencies(false)], 'everyone')
   })
