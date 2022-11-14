@@ -678,7 +678,7 @@ export function siblingAndPseudoPositions(
     metadata,
   )
 
-  const siblingFramesAndIndexFiltered = mapDropNulls((sibling, index) => {
+  const siblingFramesAndIndexInAutoLayout = mapDropNulls((sibling, index) => {
     if (MetadataUtils.targetParticipatesInAutoLayout(metadata, sibling)) {
       return {
         frame: MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect,
@@ -695,7 +695,7 @@ export function siblingAndPseudoPositions(
         frame: pseudoElements.before,
         index: 0,
       },
-      ...siblingFramesAndIndexFiltered,
+      ...siblingFramesAndIndexInAutoLayout,
       {
         frame: pseudoElements.after,
         index: siblingsOfTarget.length + 1,
@@ -707,7 +707,7 @@ export function siblingAndPseudoPositions(
         frame: pseudoElements.after,
         index: 0,
       },
-      ...siblingFramesAndIndexFiltered,
+      ...siblingFramesAndIndexInAutoLayout,
       {
         frame: pseudoElements.before,
         index: siblingsOfTarget.length + 1,
