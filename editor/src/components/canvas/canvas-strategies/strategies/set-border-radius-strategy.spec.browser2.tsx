@@ -9,7 +9,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-utis'
-import { EdgePosition, EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types'
+import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
@@ -127,7 +127,8 @@ describe('set border radius strategy', () => {
       emptyModifiers,
     )
 
-    await doDragTest(editor, 'br', -5, emptyModifiers)
+    await doDragTest(editor, 'tl', -5, emptyModifiers)
+    await doDragTest(editor, 'tl', -5, emptyModifiers)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -140,7 +141,7 @@ describe('set border radius strategy', () => {
       top: 28,
       width: 300,
       height: 100,
-      borderRadius: '45px',
+      borderRadius: '40px',
     }}
     data-uid='24a'
   />`,
