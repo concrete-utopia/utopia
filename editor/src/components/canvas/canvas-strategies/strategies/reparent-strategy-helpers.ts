@@ -78,10 +78,9 @@ export type FindReparentStrategyResult = {
   target: ReparentTarget
 }
 
-export function reparentStrategyForParent(
+export function reparentStrategyForPaste(
   targetMetadata: ElementInstanceMetadataMap,
   parent: ElementPath,
-  convertToAbsolute: boolean,
 ): {
   strategy: ReparentStrategy
   isFallback: boolean
@@ -90,8 +89,7 @@ export function reparentStrategyForParent(
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
-  const reparentAsStatic =
-    !convertToAbsolute && (parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC')
+  const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
 
   if (reparentAsStatic) {
     return {
@@ -101,7 +99,7 @@ export function reparentStrategyForParent(
   } else {
     return {
       strategy: 'REPARENT_AS_ABSOLUTE',
-      isFallback: convertToAbsolute,
+      isFallback: false,
     }
   }
 }

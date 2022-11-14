@@ -413,7 +413,7 @@ import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategie
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
 import {
   getReparentPropertyChanges,
-  reparentStrategyForParent,
+  reparentStrategyForPaste,
 } from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -2802,10 +2802,9 @@ export const UPDATE_FNS = {
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
 
-          const reparentStrategy = reparentStrategyForParent(
+          const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
             action.pasteInto,
-            false,
           )
           const pastedElementIsFlex =
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
