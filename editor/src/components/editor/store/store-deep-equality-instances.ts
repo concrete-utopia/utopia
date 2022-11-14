@@ -1246,7 +1246,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const textDirectionEquals = oldSize.parentTextDirection === newSize.parentTextDirection
     const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
-    const borderRadiusEquals = oldSize.borderRadius === newSize.borderRadius
+    const borderRadiusEquals = nullableDeepEquality(SidesKeepDeepEquality)(
+      oldSize.borderRadius,
+      newSize.borderRadius,
+    )
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
