@@ -117,7 +117,7 @@ function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): 
   }
 }
 
-export function applyStaticReparent(
+function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
