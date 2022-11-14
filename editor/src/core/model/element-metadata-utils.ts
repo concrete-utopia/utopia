@@ -294,6 +294,8 @@ export const MetadataUtils = {
     return containerLayoutSystem === 'flow' && participatesInFlow
   },
   elementParticipatesInAutoLayout(element: ElementInstanceMetadata | null): boolean {
+    // this contains the ruleset about style properties that make an element autolayouted
+    // TODO extend with transform: translate, relative offset etc.
     return !MetadataUtils.isPositionAbsolute(element)
   },
   targetParticipatesInAutoLayout(
