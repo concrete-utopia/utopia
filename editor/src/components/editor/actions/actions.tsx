@@ -127,6 +127,9 @@ import {
   addFileToProjectContents,
   contentsToTree,
   getContentsTreeFileFromString,
+  getProjectContentsChecksums,
+  getProjectFileFromContents,
+  ProjectContentsTree,
   ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
@@ -308,6 +311,7 @@ import {
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
+  RemoveFileConflict,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -386,7 +390,11 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { mergeProjectContents, saveProjectToGithub } from '../../../core/shared/github'
+import {
+  mergeProjectContents,
+  saveProjectToGithub,
+  TreeConflicts,
+} from '../../../core/shared/github'
 import { objectFilter } from '../../../core/shared/object-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
@@ -3752,6 +3760,29 @@ export const UPDATE_FNS = {
       },
     }
   },
+  REMOVE_FILE_CONFLICT: (action: RemoveFileConflict, editor: EditorModel): EditorModel => {
+    let updatedConflicts: TreeConflicts = { ...editor.githubData.treeConflicts }
+    delete updatedConflicts[action.path]
+    const treeConflictsRemain = Object.keys(updatedConflicts).length > 0
+    const newOriginCommit = treeConflictsRemain
+      ? editor.githubSettings.originCommit
+      : editor.githubSettings.pendingCommit
+    const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
+    const newChecksums = treeConflictsRemain ? editor.githubChecksums : null
+    return {
+      ...editor,
+      githubSettings: {
+        ...editor.githubSettings,
+        originCommit: newOriginCommit,
+        pendingCommit: newPendingCommit,
+      },
+      githubData: {
+        ...editor.githubData,
+        treeConflicts: updatedConflicts,
+      },
+      githubChecksums: newChecksums,
+    }
+  },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
@@ -5030,16 +5061,18 @@ export const UPDATE_FNS = {
         action.branchLatestContent,
       )
       // If there are conflicts, then don't update the origin commit so we can try again.
-      const newOriginCommit =
-        Object.keys(mergeResults.treeConflicts).length > 0
-          ? githubSettings.originCommit
-          : action.latestCommit
+      const treeConflictsPresent = Object.keys(mergeResults.treeConflicts).length > 0
+      const newOriginCommit = treeConflictsPresent
+        ? githubSettings.originCommit
+        : action.latestCommit
+      const newPendingCommit = treeConflictsPresent ? action.latestCommit : null
       return {
         ...editor,
         projectContents: mergeResults.value,
         githubSettings: {
           ...githubSettings,
           originCommit: newOriginCommit,
+          pendingCommit: newPendingCommit,
         },
         githubData: {
           ...editor.githubData,

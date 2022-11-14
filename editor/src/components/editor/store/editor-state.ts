@@ -1052,17 +1052,20 @@ export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
   branchName: string | null
+  pendingCommit: string | null
 }
 
 export function projectGithubSettings(
   targetRepository: GithubRepo | null,
   originCommit: string | null,
   branchName: string | null,
+  pendingCommit: string | null,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
     branchName: branchName,
+    pendingCommit: pendingCommit,
   }
 }
 
@@ -1071,6 +1074,7 @@ export function emptyGithubSettings(): ProjectGithubSettings {
     targetRepository: null,
     originCommit: null,
     branchName: null,
+    pendingCommit: null,
   }
 }
 

@@ -130,6 +130,8 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
               & WR.checkResponse .~ (Just $ \_ _ -> return ())
               & WR.params .~ queryParameters
   result <- liftIO $ makeRequest options (toS restURL) request
+  -- Uncomment the next line if you want to see the headers.
+  -- liftIO $ print $ view WR.responseHeaders result
   let status = view WR.responseStatus result
   unless (statusIsSuccessful status) $ handleErrorCases status
   except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)

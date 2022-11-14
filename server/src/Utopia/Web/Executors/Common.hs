@@ -11,6 +11,7 @@
 
 module Utopia.Web.Executors.Common where
 
+import qualified Data.ByteString.Lazy.Base64     as BLB64
 import           Conduit
 import           Control.Concurrent.Async.Lifted
 import           Control.Concurrent.ReadWriteLock
@@ -484,3 +485,13 @@ saveAsset :: Maybe AWSResources -> SaveAsset
 saveAsset awsResource projectID path assetContent = do
   let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
   saveCall (projectID : path) assetContent
+
+saveGithubAssetToProject :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> [Text] -> m GithubSaveAssetResponse
+saveGithubAssetToProject githubResources awsResource logger metrics pool userID owner repository assetSha projectID path = do
+  result <- runExceptT $ do
+    assetBytes <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      blobResult <- getGitBlob accessToken owner repository assetSha
+      pure $ BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") blobResult
+    liftIO $ saveAsset awsResource projectID path assetBytes
+  pure $ either getGithubSaveAssetFailureFromReason getGithubSaveAssetSuccessFromResult result 
+
