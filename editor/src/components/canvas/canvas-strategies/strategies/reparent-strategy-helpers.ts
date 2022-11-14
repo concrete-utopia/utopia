@@ -714,8 +714,6 @@ export function siblingAndPseudoPositions(
       },
     ]
   }
-
-  // return forwardsOrBackwards === 'forward' ? siblingPositions : reverse(siblingPositions)
 }
 
 function createPseudoElements(
