@@ -18,7 +18,7 @@ import { ElementPath, PropertyPath } from '../../../../../core/shared/project-fi
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
 import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
-import { CSSPosition } from '../../../../inspector/common/css-utils'
+import { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -136,7 +136,7 @@ export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  convertToInline: 'row' | 'column' | 'do-not-convert',
+  convertToInline: Direction | 'do-not-convert',
 ): Array<CanvasCommand> {
   const optionalInlineConversionCommand = getOptionalCommandToConvertDisplayInlineBlock(
     newPath,

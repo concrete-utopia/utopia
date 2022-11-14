@@ -100,11 +100,10 @@ import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
 import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../layout/layout-utils'
+  Direction,
+  FlexDirection,
+  ForwardOrReverse,
+} from '../../components/inspector/common/css-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -413,18 +412,44 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
   getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): {
-    direction: SimpleFlexDirection | null
-    forwardsOrBackwards: FlexForwardsOrBackwards | null
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
   } {
     // TODO move the actual helper functions here
-    const direction = MetadataUtils.getFlexDirection(instance)
+    const flexDirection = MetadataUtils.getFlexDirection(instance)
+    const direction: Direction = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'row-reverse':
+          return 'horizontal'
+        case 'column':
+        case 'column-reverse':
+          return 'vertical'
+        default:
+          return 'horizontal'
+      }
+    })()
+
+    const forwardOrReverse: ForwardOrReverse = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'column':
+          return 'forward'
+        case 'row-reverse':
+        case 'column-reverse':
+          return 'reverse'
+        default:
+          return 'forward'
+      }
+    })()
+
     return {
-      direction: flexDirectionToSimpleFlexDirection(direction),
-      forwardsOrBackwards: flexDirectionToFlexForwardsOrBackwards(direction),
+      direction: direction,
+      forwardOrReverse: forwardOrReverse,
     }
   },
   getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {

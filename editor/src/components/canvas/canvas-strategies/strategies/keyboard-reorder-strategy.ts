@@ -1,4 +1,3 @@
-import { flexDirectionToFlexForwardsOrBackwards } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
@@ -125,11 +124,10 @@ function getIndexChangesForArrowKeys(element: ElementInstanceMetadata | null): {
     if (
       MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(element)
     ) {
-      const flexDirection = element?.specialSizeMeasurements.parentFlexDirection ?? null
-      const forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(flexDirection)
+      const { forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(element)
 
       // when flex is reversed we need to move the opposite way in the indexes as in the screen
-      if (forwardsOrBackwards === 'reverse') {
+      if (forwardOrReverse === 'reverse') {
         return {
           left: 1,
           up: 1,

@@ -3967,6 +3967,9 @@ const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.WrapReverse,
 ])
 
+export type Direction = 'horizontal' | 'vertical'
+export type ForwardOrReverse = 'forward' | 'reverse'
+
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
 
 export const parseFlexDirection: Parser<FlexDirection> = isOneOfTheseParser([

@@ -1,10 +1,10 @@
+import { Direction } from 'react-window'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import {
   framePointForPinnedProp,
   LayoutPinnedProp,
 } from '../../../../core/layout/layout-helpers-new'
-import { FlexForwardsOrBackwards, SimpleFlexDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../../core/shared/array-utils'
@@ -31,7 +31,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
-import { CSSPosition } from '../../../inspector/common/css-utils'
+import { CSSPosition, ForwardOrReverse } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor } from '../../canvas-types'
 import {
@@ -218,7 +218,7 @@ export interface ReparentTarget {
   newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
-  shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
+  shouldConvertToInline: Direction | 'do-not-convert'
   // TODO add shouldBeStaticReparentOrAbsolute here!! then remove 100 lines of code
 }
 
@@ -227,7 +227,7 @@ export function reparentTarget(
   newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
-  shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
+  shouldConvertToInline: Direction | 'do-not-convert',
 ): ReparentTarget {
   return {
     shouldReparent: shouldReparent,
@@ -383,7 +383,11 @@ export function getReparentTargetUnified(
 
   // first try to find a flex element insertion area
   for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
-    const { direction, forwardsOrBackwards, flexOrFlow } = singleAxisAutoLayoutContainer.directions
+    const {
+      direction,
+      forwardOrReverse: forwardsOrBackwards,
+      flexOrFlow,
+    } = singleAxisAutoLayoutContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -439,7 +443,7 @@ export function getReparentTargetUnified(
       shouldConvertToInline: 'do-not-convert',
     }
   } else {
-    const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
+    const { direction, forwardOrReverse: forwardsOrBackwards, flexOrFlow } = autolayoutDirection
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -479,8 +483,8 @@ function drawTargetRectanglesForChildrenOfElement(
   singleAxisAutolayoutContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-  simpleFlexDirection: SimpleFlexDirection | null,
-  forwardsOrBackwards: FlexForwardsOrBackwards | null,
+  simpleFlexDirection: Direction | null,
+  forwardsOrBackwards: ForwardOrReverse | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
@@ -494,10 +498,10 @@ function drawTargetRectanglesForChildrenOfElement(
     return []
   }
 
-  const leftOrTop = simpleFlexDirection === 'row' ? 'x' : 'y'
-  const leftOrTopComplement = simpleFlexDirection === 'row' ? 'y' : 'x'
-  const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
-  const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
+  const leftOrTop = simpleFlexDirection === 'horizontal' ? 'x' : 'y'
+  const leftOrTopComplement = simpleFlexDirection === 'horizontal' ? 'y' : 'x'
+  const widthOrHeight = simpleFlexDirection === 'horizontal' ? 'width' : 'height'
+  const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
   const children = MetadataUtils.getChildrenPaths(metadata, singleAxisAutolayoutContainerPath)
 
@@ -620,13 +624,13 @@ function drawTargetRectanglesForChildrenOfElement(
 export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
-  direction: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  direction: Direction,
+  forwardOrReverse: ForwardOrReverse,
 ): number {
   let getStartPosition: (rect: CanvasRectangle) => number
   let getEndPosition: (rect: CanvasRectangle) => number
   switch (direction) {
-    case 'row':
+    case 'horizontal':
       getStartPosition = (rect: CanvasRectangle) => {
         return rect.x
       }
@@ -634,7 +638,7 @@ export function getSiblingMidPointPosition(
         return rect.x + rect.width
       }
       break
-    case 'column':
+    case 'vertical':
       getStartPosition = (rect: CanvasRectangle) => {
         return rect.y
       }
@@ -648,7 +652,7 @@ export function getSiblingMidPointPosition(
   }
 
   const value =
-    forwardsOrBackwards === 'forward'
+    forwardOrReverse === 'forward'
       ? (getEndPosition(precedingSiblingPosition) + getStartPosition(succeedingSiblingPosition)) / 2
       : (getEndPosition(succeedingSiblingPosition) + getStartPosition(precedingSiblingPosition)) / 2
 
@@ -659,8 +663,8 @@ export interface SiblingPosition {
   index: number
 }
 export function siblingAndPseudoPositions(
-  parentFlexDirection: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  parentFlexDirection: Direction,
+  forwardsOrBackwards: ForwardOrReverse,
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
@@ -718,7 +722,7 @@ export function siblingAndPseudoPositions(
 
 function createPseudoElements(
   siblings: Array<ElementPath>,
-  parentFlexDirection: SimpleFlexDirection,
+  parentFlexDirection: Direction,
   parentFrame: CanvasRectangle,
   metadata: ElementInstanceMetadataMap,
 ): { before: CanvasRectangle; after: CanvasRectangle } {
@@ -735,7 +739,7 @@ function createPseudoElements(
     MetadataUtils.getFrameInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
   const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
 
-  if (parentFlexDirection === 'row') {
+  if (parentFlexDirection === 'horizontal') {
     const marginLeftAndGapOffset = ((firstElementMargin?.left ?? 0) + flexGap) * 2
     const marginRightAndGapOffset = ((lastElementMargin?.right ?? 0) + flexGap) * 2
     return {
@@ -1012,7 +1016,7 @@ export function getStaticReparentPropertyChanges(
   newPath: ElementPath,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  convertToInline: 'row' | 'column' | 'do-not-convert',
+  convertToInline: Direction | 'do-not-convert',
 ): Array<CanvasCommand> {
   const optionalInlineConversionCommand = getOptionalCommandToConvertDisplayInlineBlock(
     newPath,
