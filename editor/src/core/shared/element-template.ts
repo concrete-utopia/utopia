@@ -13,7 +13,7 @@ import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api/core'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import {
   dropKeyFromNestedObject,
   getJSXAttributeAtPathInner,
@@ -1601,7 +1601,7 @@ export interface SpecialSizeMeasurements {
   clientHeight: number
   parentFlexDirection: string | null
   parentFlexGap: number
-  flexDirection: string | null
+  flexDirection: FlexDirection | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
@@ -1631,7 +1631,7 @@ export function specialSizeMeasurements(
   clientHeight: number,
   parentFlexDirection: string | null,
   parentFlexGap: number,
-  flexDirection: string | null,
+  flexDirection: FlexDirection | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,

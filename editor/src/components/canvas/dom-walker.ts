@@ -41,6 +41,7 @@ import {
   positionValues,
   computedStyleKeys,
   parseDirection,
+  parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -851,7 +852,7 @@ function getSpecialMeasurements(
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
   const parentFlexDirection = parentElementStyle?.flexDirection ?? null
-  const flexDirection = elementStyle.flexDirection ?? null
+  const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const margin = applicative4Either(

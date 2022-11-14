@@ -1,7 +1,6 @@
 import React from 'react'
 import { FlexAlignment, FlexJustifyContent, FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles } from '../../../common/control-status'
-import { FlexDirection } from 'utopia-api/core'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
@@ -18,6 +17,7 @@ import {
 } from '../../../../../uuiui'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
 import { useContextSelector } from 'use-context-selector'
+import { FlexDirection } from '../../../common/css-utils'
 
 type uglyLabel =
   | 'left'

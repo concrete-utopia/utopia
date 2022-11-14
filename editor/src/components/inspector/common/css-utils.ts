@@ -4,7 +4,6 @@ import fastDeepEqual from 'fast-deep-equal'
 import { Property } from 'csstype'
 import {
   FlexAlignment,
-  FlexDirection,
   FlexJustifyContent,
   FlexLength,
   FlexWrap,
@@ -3968,11 +3967,13 @@ const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.WrapReverse,
 ])
 
-const flexDirectionParser: Parser<FlexDirection> = isOneOfTheseParser([
-  FlexDirection.Column,
-  FlexDirection.ColumnReverse,
-  FlexDirection.Row,
-  FlexDirection.RowReverse,
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
+
+export const parseFlexDirection: Parser<FlexDirection> = isOneOfTheseParser([
+  'row',
+  'row-reverse',
+  'column',
+  'column-reverse',
 ])
 
 const flexAlignmentsParser: Parser<FlexAlignment> = isOneOfTheseParser([
@@ -4159,7 +4160,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
   objectFit: 'fill',
 
   flexWrap: FlexWrap.NoWrap,
-  flexDirection: FlexDirection.Row,
+  flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
@@ -4314,7 +4315,7 @@ export const cssParsers: CSSParsers = {
   objectFit: parseCSSObjectFit,
 
   flexWrap: flexWrapParser,
-  flexDirection: flexDirectionParser,
+  flexDirection: parseFlexDirection,
   alignItems: flexAlignmentsParser,
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
@@ -5007,7 +5008,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   objectFit: 'fill',
 
   flexWrap: FlexWrap.NoWrap,
-  flexDirection: FlexDirection.Row,
+  flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
