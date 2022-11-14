@@ -1599,7 +1599,7 @@ export interface SpecialSizeMeasurements {
   naturalHeight: number | null
   clientWidth: number
   clientHeight: number
-  parentFlexDirection: string | null
+  parentFlexDirection: FlexDirection | null
   parentFlexGap: number
   flexDirection: FlexDirection | null
   htmlElementName: string
@@ -1629,7 +1629,7 @@ export function specialSizeMeasurements(
   naturalHeight: number | null,
   clientWidth: number,
   clientHeight: number,
-  parentFlexDirection: string | null,
+  parentFlexDirection: FlexDirection | null,
   parentFlexGap: number,
   flexDirection: FlexDirection | null,
   htmlElementName: string,
