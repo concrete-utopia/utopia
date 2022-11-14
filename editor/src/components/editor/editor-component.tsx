@@ -543,7 +543,11 @@ const LockedOverlay = React.memo(() => {
     }
   `
 
-  if (!editorLocked) {
+  const locked = React.useMemo(() => {
+    return editorLocked || refreshingDependencies
+  }, [editorLocked, refreshingDependencies])
+
+  if (!locked) {
     return null
   }
 
