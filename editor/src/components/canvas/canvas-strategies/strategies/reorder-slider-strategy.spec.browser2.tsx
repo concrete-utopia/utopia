@@ -11,8 +11,9 @@ import { selectComponents } from '../../../editor/actions/action-creators'
 import { IconSize } from '../../controls/reorder-slider-control'
 import { ReorderChangeThreshold } from './flow-reorder-helpers'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
-const TestProjectComplex = `
+const TestProjectComplex = (additionalStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
   <div
     style={{
@@ -37,6 +38,7 @@ const TestProjectComplex = `
       width: 50,
       height: 50,
       backgroundColor: '#292E74',
+      ${additionalStyle}
     }}
     data-uid='ccc'
     data-testid='ccc'
@@ -116,7 +118,7 @@ const TestProjectCCCDraggedToSecond = `
 </div>
 `
 
-const TestProjectCCCInlineBlock = `
+const TestProjectDraggedCCCInline = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
   <div
     style={{
@@ -269,7 +271,7 @@ function dragControl(
 describe('Reorder Slider Strategy', () => {
   it('dragging the control in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectComplex),
+      makeTestProjectCodeWithSnippet(TestProjectComplex()),
       'await-first-dom-report',
     )
 
@@ -301,9 +303,9 @@ describe('Reorder Slider Strategy', () => {
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
   })
-  it('dragging a control for a block element, reorder is using conversion to inline row', async () => {
+  it('dragging a control for a block element, after reorder to conversion result is inline-block', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectComplex),
+      makeTestProjectCodeWithSnippet(TestProjectComplex()),
       'await-first-dom-report',
     )
 
@@ -333,12 +335,104 @@ describe('Reorder Slider Strategy', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(TestProjectCCCInlineBlock),
+      makeTestProjectCodeWithSnippet(TestProjectDraggedCCCInline),
     )
+  })
+  it('dragging a control for an inline-block element, after reorder to conversion result is block', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectComplex(`display: 'inline-block'`)),
+      'await-first-dom-report',
+    )
+    const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    // drag control for 'CCC' to the left, the element is inserted into a column with conversion to block
+    const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const draggedElementMetadata = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      target,
+    )
+    const newDisplayValue = draggedElementMetadata?.specialSizeMeasurements.display
+    expect(newDisplayValue).toEqual('block')
+  })
+  it('dragging a control for a flex element, after reorder to conversion result is inline flex', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectComplex(`display: 'flex'`)),
+      'await-first-dom-report',
+    )
+    const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    // drag control for 'CCC' right, the element is inserted into a row with conversion to inline-flex
+    const dragDelta = windowPoint({ x: ReorderChangeThreshold, y: 0 })
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const draggedElementMetadata = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      target,
+    )
+    const newDisplayValue = draggedElementMetadata?.specialSizeMeasurements.display
+    expect(newDisplayValue).toEqual('inline-flex')
+  })
+  it('dragging a control for a inline-flex element, after reorder to conversion result is flex', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectComplex(`display: 'inline-flex'`)),
+      'await-first-dom-report',
+    )
+    const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    // drag control for 'CCC' left, the element is inserted into a column with conversion to flex
+    const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const draggedElementMetadata = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      target,
+    )
+    const newDisplayValue = draggedElementMetadata?.specialSizeMeasurements.display
+    expect(newDisplayValue).toEqual('flex')
   })
   it('dragging the control too far to the right restarts the reorder after reaching the end', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectComplex),
+      makeTestProjectCodeWithSnippet(TestProjectComplex()),
       'await-first-dom-report',
     )
 
@@ -396,7 +490,7 @@ describe('Reorder Slider Strategy Control', () => {
   })
   it('the reorder control is visible on wrapping flow layouts', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectComplex),
+      makeTestProjectCodeWithSnippet(TestProjectComplex()),
       'await-first-dom-report',
     )
 
