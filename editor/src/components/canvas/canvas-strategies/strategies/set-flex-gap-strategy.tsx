@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -22,6 +23,7 @@ import {
   dragDeltaForOrientation,
   FlexGapData,
   maybeFlexGapFromElement,
+  SimpleFlexDirectionForGap,
 } from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -76,7 +78,10 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     dragDeltaForOrientation(flexGap.direction, drag),
   )
 
-  const shouldTearOffGap = rawDragDelta + flexGap.value.renderedValuePx < FlexGapTearThreshold
+  const shouldTearOffGap = isDragOverThreshold(flexGap.direction, {
+    deltaPx: rawDragDelta,
+    gapPx: flexGap.value.renderedValuePx,
+  })
 
   const adjustPrecision =
     optionalMap(precisionFromModifiers, modifiersFromInteractionSession(interactionSession)) ??
@@ -164,6 +169,22 @@ function modifiersFromInteractionSession(
     return interactionSession.interactionData.modifiers
   }
   return null
+}
+
+function isDragOverThreshold(
+  direction: SimpleFlexDirectionForGap,
+  { gapPx, deltaPx }: { gapPx: number; deltaPx: number },
+): boolean {
+  switch (direction) {
+    case 'row':
+    case 'column':
+      return deltaPx + gapPx < FlexGapTearThreshold
+    case 'row-reverse':
+    case 'column-reverse':
+      return deltaPx - gapPx < FlexGapTearThreshold
+    default:
+      assertNever(direction)
+  }
 }
 
 function flexGapValueIndicatorProps(

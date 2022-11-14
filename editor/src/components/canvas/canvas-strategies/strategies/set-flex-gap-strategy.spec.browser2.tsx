@@ -5,9 +5,14 @@ import {
 } from '../../controls/select-mode/flex-gap-control'
 import { valueWithUnitAppropriatePrecision } from '../../controls/select-mode/controls-common'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import {
+  EditorRenderResult,
+  getPrintedUiJsCode,
+  renderTestEditorWithCode,
+} from '../../ui-jsx.test-utils'
 import { shiftModifier } from '../../../../utils/modifiers'
 import { FlexGapTearThreshold } from './set-flex-gap-strategy'
+import { canvasPoint, CanvasPoint } from '../../../../core/shared/math-utils'
 
 const DivTestId = 'mydiv'
 
@@ -372,83 +377,56 @@ export var storyboard = (
       'await-first-dom-report',
     )
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId(DivTestId)
-    const divBounds = div.getBoundingClientRect()
+    await doGapResize(editor, canvasPoint({ x: FlexGapTearThreshold - 12 - 1, y: 0 }))
 
-    mouseClickAtPoint(canvasControlsLayer, {
-      x: divBounds.x + 5,
-      y: divBounds.y + 5,
-    })
-
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
-    const gapControlBounds = gapControlHandle.getBoundingClientRect()
-
-    const center = {
-      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
-      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
-    }
-
-    const endPoint = {
-      x:
-        Math.floor(gapControlBounds.x + gapControlBounds.width / 2) +
-        (FlexGapTearThreshold - 12 - 1),
-      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
-    }
-
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
-    await editor.getDispatchFollowUpActionsFinished()
-
-    // no `gap` prop in the code
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+      testCodeWithNoGap({ flexDirection: 'row' }),
+    )
+  })
 
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <div
-      data-testid='${DivTestId}'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 167,
-        top: 180,
-        width: 557,
-        height: 359,
-        display: 'flex',
-        flexDirection: 'row',
-      }}
-      data-uid='fac'
-    >
-      <div
-        style={{
-          backgroundColor: '#0091FFAA',
-          width: 102,
-          height: 80,
-          contain: 'layout',
-        }}
-        data-uid='fed'
-      />
-      <div
-        style={{
-          backgroundColor: '#0091FFAA',
-          width: 187,
-          height: 150,
-          contain: 'layout',
-        }}
-        data-uid='a39'
-      />
-    </div>
-  </Storyboard>
-)
-`,
+  it('can remove gap prop by dragging more than a set threshold, in flex column', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '12px',`, flexDirection: 'column' }),
+      'await-first-dom-report',
+    )
+
+    await doGapResize(editor, canvasPoint({ x: 0, y: FlexGapTearThreshold - 12 - 1 }))
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithNoGap({ flexDirection: 'column' }),
+    )
+  })
+
+  it('can remove gap prop by dragging more than a set threshold, in flex row-reverse', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '12px',`, flexDirection: 'row-reverse' }),
+      'await-first-dom-report',
+    )
+
+    await doGapResize(editor, canvasPoint({ x: -(FlexGapTearThreshold - 12 - 1), y: 0 }))
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithNoGap({ flexDirection: 'row-reverse' }),
+    )
+  })
+
+  it('can remove gap prop by dragging more than a set threshold, in flex column-reverse', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGap({ gap: `gap: '12px',`, flexDirection: 'column-reverse' }),
+      'await-first-dom-report',
+    )
+
+    await doGapResize(editor, canvasPoint({ x: 0, y: -(FlexGapTearThreshold - 12 - 1) }))
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      testCodeWithNoGap({ flexDirection: 'column-reverse' }),
     )
   })
 })
 
 interface GapTestCodeParams {
   flexDirection: string
-  gap?: string
+  gap: string
 }
 
 function testCodeWithGap(params: GapTestCodeParams): string {
@@ -494,4 +472,77 @@ export var storyboard = (
   </Storyboard>
 )
 `
+}
+
+type NoGapParams = Omit<GapTestCodeParams, 'gap'>
+
+function testCodeWithNoGap(params: NoGapParams): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='${DivTestId}'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 167,
+        top: 180,
+        width: 557,
+        height: 359,
+        display: 'flex',
+        flexDirection: '${params.flexDirection}',
+      }}
+      data-uid='fac'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 102,
+          height: 80,
+          contain: 'layout',
+        }}
+        data-uid='fed'
+      />
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 187,
+          height: 150,
+          contain: 'layout',
+        }}
+        data-uid='a39'
+      />
+    </div>
+  </Storyboard>
+)
+`
+}
+
+async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId(DivTestId)
+  const divBounds = div.getBoundingClientRect()
+
+  mouseClickAtPoint(canvasControlsLayer, {
+    x: divBounds.x + 5,
+    y: divBounds.y + 5,
+  })
+
+  const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+  const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+  const center = {
+    x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+    y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+  }
+
+  const endPoint = {
+    x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + delta.x,
+    y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + delta.y,
+  }
+
+  mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+  await editor.getDispatchFollowUpActionsFinished()
 }
