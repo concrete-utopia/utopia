@@ -135,7 +135,7 @@ interface GapControlSizeConstants {
 
 const DefaultGapControlSizeConstants: GapControlSizeConstants = {
   dragBorderWidth: 1,
-  borderWidth: 0.5,
+  borderWidth: 1,
   paddingIndicatorOffset: 10,
   hitAreaPadding: 5,
 }
@@ -257,10 +257,10 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
 function handleDimensions(flexDirection: SimpleFlexDirectionForGap, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-    return size(2 / scale, 12 / scale)
+    return size(4 / scale, 12 / scale)
   }
   if (flexDirection === 'column' || flexDirection === 'column-reverse') {
-    return size(12 / scale, 2 / scale)
+    return size(12 / scale, 4 / scale)
   }
   assertNever(flexDirection)
 }
