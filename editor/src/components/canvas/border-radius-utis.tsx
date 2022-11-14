@@ -12,6 +12,12 @@ export type BorderRadiusAdjustMode = 'individual' | 'all'
 
 export const BorderRadiusHandleSize = (scale: number): number => 12 / scale
 
+export const BorderRadiusHandleDotSize = (scale: number): number => 2 / scale
+
+export const BorderRadiusHandleBorderWidth = (scale: number): number => 1 / scale
+
+export const BorderRadiusHandleHitArea = (scale: number): number => 20 / scale
+
 export const maxBorderRadius = (elementSize: Size): number =>
   roundTo(Math.min(elementSize.height, elementSize.width) / 2, 0)
 

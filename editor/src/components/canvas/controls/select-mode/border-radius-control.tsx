@@ -6,11 +6,13 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
   BorderRadiusCorner,
   BorderRadiusCorners,
+  BorderRadiusHandleBorderWidth,
+  BorderRadiusHandleDotSize,
+  BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
   BorderRadiusSides,
   handlePosition,
@@ -171,8 +173,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
           <div
             style={{
               position: 'absolute',
-              paddingLeft: 20 / scale,
-              paddingTop: 20 / scale,
+              paddingLeft: BorderRadiusHandleHitArea(scale),
+              paddingTop: BorderRadiusHandleHitArea(scale),
               pointerEvents: 'none',
             }}
           >
@@ -190,7 +192,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             width: size,
             height: size,
             backgroundColor: 'white',
-            border: `${1 / scale}px solid blue`,
+            border: `${BorderRadiusHandleBorderWidth(scale)}px solid blue`,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -200,8 +202,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
           <div
             style={{
               visibility: shouldShowHandle && showDot ? 'visible' : 'hidden',
-              width: 2 / scale,
-              height: 2 / scale,
+              width: BorderRadiusHandleDotSize(scale),
+              height: BorderRadiusHandleDotSize(scale),
               backgroundColor: 'blue',
               borderRadius: '50%',
             }}

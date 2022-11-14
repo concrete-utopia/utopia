@@ -25,7 +25,6 @@ import {
   isRight,
   left,
   eitherToMaybe,
-  mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -66,8 +65,7 @@ import {
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { MapLike } from 'typescript'
+import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
   EditorState,
@@ -142,8 +140,6 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   }
   return false
 }
-
-const pxTransform = (t: CSSNumber): number | undefined => (t.unit === 'px' ? t.value : undefined)
 
 const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
   sides(
