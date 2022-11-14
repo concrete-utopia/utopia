@@ -10,7 +10,7 @@ import {
   GithubFileChangesListItem,
   githubFileChangesToList,
 } from '../../../../core/shared/github'
-import { Button, FlexRow } from '../../../../uuiui'
+import { Button, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
@@ -43,19 +43,32 @@ const RevertButton = ({
   onMouseUp,
 }: {
   disabled: boolean
-  text: string
+  text?: string
   onMouseUp: (e: React.MouseEvent) => void
 }) => {
   return (
     <Button
-      style={{ padding: '0 6px' }}
+      style={{ padding: '0 6px', gap: 4 }}
       spotlight
       highlight
       disabled={disabled}
       onMouseUp={onMouseUp}
     >
+      <RevertIcon />
       {text}
     </Button>
+  )
+}
+
+const RevertIcon = () => {
+  return (
+    <svg width='9' height='7' viewBox='0 0 9 7' fill='none' xmlns='http://www.w3.org/2000/svg'>
+      <path
+        d='M7.93601 6.35693V2.72081H0.845703M0.845703 2.72081L2.90299 4.77809M0.845703 2.72081L2.90299 0.643075'
+        stroke='#2D2E33'
+        strokeWidth='0.7'
+      />
+    </svg>
   )
 }
 
@@ -106,7 +119,7 @@ export const GithubFileChangesList: React.FC<{
   }
 
   return (
-    <>
+    <FlexColumn style={{ gap: 4 }}>
       {showHeader && (
         <Header
           count={count}
@@ -115,22 +128,21 @@ export const GithubFileChangesList: React.FC<{
           onClickRevertAll={handleClickRevertAllFiles}
         />
       )}
-      {list.map((i) => {
-        const conflicting = conflicts?.includes(i.filename) || false
-        return (
-          <UIGridRow
-            key={i.filename}
-            padded
-            variant='<----------1fr---------><-auto->'
-            title={conflicting ? 'Potential conflicts' : i.filename}
-            style={{
-              gap: 2,
-              color: conflicting ? '#f00' : 'inherit',
-              cursor: conflicting ? 'help' : 'default',
-            }}
-          >
-            <>
-              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+      <FlexColumn style={{ border: '1px solid #2D2E33', borderRadius: 2 }}>
+        {list.map((i) => {
+          const conflicting = conflicts?.includes(i.filename) || false
+          return (
+            <FlexRow
+              key={i.filename}
+              title={conflicting ? 'Potential conflicts' : i.filename}
+              style={{
+                gap: 2,
+                padding: '4px 8px',
+                color: conflicting ? '#f00' : 'inherit',
+                cursor: conflicting ? 'help' : 'default',
+              }}
+            >
+              <FlexRow style={{ flex: 1, gap: 2 }}>
                 <GithubFileStatusLetter status={i.status} />
                 <FlexRow style={{ gap: 2 }}>
                   <>
@@ -138,20 +150,16 @@ export const GithubFileChangesList: React.FC<{
                     {when(conflicting, <WarningIcon color='error' />)}
                   </>
                 </FlexRow>
-              </UIGridRow>
+              </FlexRow>
               {when(
                 revertable,
-                <RevertButton
-                  disabled={githubWorking}
-                  text='Revert'
-                  onMouseUp={handleClickRevertFile(i)}
-                />,
+                <RevertButton disabled={githubWorking} onMouseUp={handleClickRevertFile(i)} />,
               )}
-            </>
-          </UIGridRow>
-        )
-      })}
-    </>
+            </FlexRow>
+          )
+        })}
+      </FlexColumn>
+    </FlexColumn>
   )
 }
 
@@ -162,16 +170,16 @@ const Header: React.FC<{
   onClickRevertAll: (e: React.MouseEvent) => void
 }> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
   return (
-    <UIGridRow padded variant='<----------1fr---------><-auto->'>
-      <>
-        <div>
+    <FlexColumn>
+      <FlexRow>
+        <div style={{ flex: 1 }}>
           {count} file{count !== 1 ? 's' : ''} changed
         </div>
         {when(
           revertable,
           <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
         )}
-      </>
-    </UIGridRow>
+      </FlexRow>
+    </FlexColumn>
   )
 }

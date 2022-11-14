@@ -37,7 +37,7 @@ export async function startGithubAuthentication(dispatch: EditorDispatch): Promi
   async function checkAuthenticatedPeriodically(timeLeftMS: number): Promise<void> {
     const currentStatus = await checkIfAuthenticatedWithGithub()
     if (currentStatus) {
-      dispatch([setGithubState({ authenticated: true })], 'everyone')
+      dispatch([setGithubState({ authenticated: true, email: 'foo@bar.com' })], 'everyone')
     } else {
       if (timeLeftMS > 0) {
         // Wait for a bit and try again.

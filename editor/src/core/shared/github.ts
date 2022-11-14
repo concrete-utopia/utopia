@@ -18,6 +18,7 @@ import { notice } from '../../components/common/notice'
 import { EditorAction, EditorDispatch } from '../../components/editor/action-types'
 import {
   deleteFile,
+  setGithubState,
   showToast,
   updateAgainstGithub,
   updateBranchContents,
@@ -127,7 +128,6 @@ export interface RepositoryEntry {
   avatarUrl: string | null
   private: boolean
   description: string | null
-  name: string | null
   updatedAt: string | null
   defaultBranch: string | null
   permissions: RepositoryEntryPermissions
@@ -138,7 +138,6 @@ export function repositoryEntry(
   priv: boolean,
   fullName: string,
   description: string | null,
-  name: string | null,
   updatedAt: string | null,
   defaultBranch: string | null,
   permissions: RepositoryEntryPermissions,
@@ -148,7 +147,6 @@ export function repositoryEntry(
     private: priv,
     fullName,
     description,
-    name,
     updatedAt,
     defaultBranch,
     permissions,
@@ -456,17 +454,21 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
     const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
     switch (responseBody.type) {
       case 'FAILURE':
-        dispatch(
-          [
-            showToast(
-              notice(
-                `Error when getting a user's repositories: ${responseBody.failureReason}`,
-                'ERROR',
-              ),
+        const actions: EditorAction[] = [
+          showToast(
+            notice(
+              `Error when getting a user's repositories: ${responseBody.failureReason}`,
+              'ERROR',
             ),
-          ],
-          'everyone',
-        )
+          ),
+        ]
+        if (responseBody.failureReason.includes('Authentication')) {
+          actions.push(
+            updateGithubSettings(emptyGithubSettings()),
+            setGithubState({ authenticated: false }),
+          )
+        }
+        dispatch(actions, 'everyone')
         break
       case 'SUCCESS':
         dispatch(
