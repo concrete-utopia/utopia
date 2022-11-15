@@ -67,8 +67,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     (factory) => factory(canvasState, interactionSession, customStrategyState),
     baseMoveStrategyFactories,
   )
-  const foundStrategies = [...reparentStrategies, ...dragStrategies]
-  if (foundStrategies.length > 0) {
+  if (reparentStrategies.length > 0 || dragStrategies.length > 0) {
     return [
       ...reparentStrategies,
       ...dragStrategies.map((strategy) => {

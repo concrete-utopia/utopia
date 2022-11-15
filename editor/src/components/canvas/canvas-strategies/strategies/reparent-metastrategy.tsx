@@ -9,6 +9,7 @@ import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { arrayEquals, assertNever } from '../../../../core/shared/utils'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
@@ -19,6 +20,7 @@ import {
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
+import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
@@ -36,6 +38,7 @@ interface ReparentFactoryAndDetails {
   strategyType: ReparentStrategy // FIXME horrible name
   targetParentDisplayType: 'flex' | 'flow' // should this be here?
   fitness: number
+  dragType: 'absolute' | 'static'
   factory: CanvasStrategyFactory
 }
 
@@ -64,6 +67,7 @@ export function getApplicableReparentFactories(
             strategyType: result.strategy,
             targetParentDisplayType: 'flow',
             fitness: fitness,
+            dragType: 'absolute',
             factory: baseAbsoluteReparentStrategy(result.target, fitness),
           }
         } else {
@@ -73,6 +77,7 @@ export function getApplicableReparentFactories(
             strategyType: result.strategy,
             targetParentDisplayType: 'flow',
             fitness: fitness,
+            dragType: 'absolute',
             factory: baseFlexReparentToAbsoluteStrategy(result.target, fitness),
           }
         }
@@ -94,6 +99,7 @@ export function getApplicableReparentFactories(
           strategyType: result.strategy,
           targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
+          dragType: 'static',
           factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
@@ -234,8 +240,27 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     targetIsValid(reparentStrategy.targetParent),
   )
 
-  return mapDropNulls(
-    ({ factory }) => factory(canvasState, interactionSession, customStrategyState),
-    filteredReparentFactories,
-  )
+  return mapDropNulls(({ factory, dragType }) => {
+    const strategy = factory(canvasState, interactionSession, customStrategyState)
+    if (strategy == null) {
+      return null
+    }
+    const indicatorCommand = wildcardPatch('mid-interaction', {
+      canvas: {
+        controls: {
+          dragToMoveIndicatorFlags: {
+            $set: {
+              dragType: dragType,
+              reparent: true,
+              ancestor: false,
+            },
+          },
+        },
+      },
+    })
+    return {
+      ...strategy,
+      apply: appendCommandsToApplyResult(strategy.apply, [indicatorCommand]),
+    }
+  }, filteredReparentFactories)
 }
