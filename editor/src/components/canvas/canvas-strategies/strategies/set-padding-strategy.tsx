@@ -170,15 +170,16 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       if (rawDelta < PaddingTearThreshold) {
         const paddingPropToBeRemoved = paddingPropForEdge(edgePiece)
+        const nonZeroPropsToAdd = IndividualPaddingProps.filter(
+          (p) => p !== paddingPropToBeRemoved && newPaddingMaxed[p].renderedValuePx > 0,
+        )
         return strategyApplicationResult([
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
             stylePropPathMappingFn(paddingPropToBeRemoved, ['style']),
           ]),
-          ...IndividualPaddingProps.filter(
-            (p) => p !== paddingPropToBeRemoved && newPaddingMaxed[p].renderedValuePx > 0,
-          ).map((p) =>
+          ...nonZeroPropsToAdd.map((p) =>
             setProperty(
               'always',
               selectedElement,
