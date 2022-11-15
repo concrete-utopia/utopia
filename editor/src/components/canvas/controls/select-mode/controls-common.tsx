@@ -1,4 +1,5 @@
 import React from 'react'
+import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
@@ -158,4 +159,12 @@ export function indicatorMessage(
   }
 
   return Emdash // emdash
+}
+
+type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
+
+export function getShownCanvasPropControl(
+  element: ElementInstanceMetadata,
+): Set<CanvasPropControl> {
+  return new Set()
 }
