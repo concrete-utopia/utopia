@@ -45,6 +45,7 @@ import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from '.
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
+import { when } from '../../utils/react-conditionals'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -576,7 +577,8 @@ const LockedOverlay = React.memo(() => {
         animation: ${anim} 0.3s ease-in-out;
       `}
     >
-      {refreshingDependencies && (
+      {when(
+        refreshingDependencies,
         <div
           style={{
             opacity: 1,
@@ -588,7 +590,7 @@ const LockedOverlay = React.memo(() => {
           }}
         >
           Updating dependencies…
-        </div>
+        </div>,
       )}
     </div>
   )
