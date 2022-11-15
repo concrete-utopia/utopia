@@ -10,19 +10,16 @@ import {
   GithubFileChanges,
   GithubFileChangesListItem,
   githubFileChangesToList,
-  resolveConflict,
 } from '../../../../core/shared/github'
 import { Button, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { when } from '../../../../utils/react-conditionals'
-import { ContextMenuItem } from '../../../../components/context-menu-items'
 import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
-import { EditorDispatch } from '../../../../components/editor/action-types'
 import { NO_OP } from '../../../../core/shared/utils'
-import { GithubRepo } from '../../../../components/editor/store/editor-state'
 import { useContextMenu } from 'react-contexify'
+import { getConflictMenuItems } from '../../../../core/shared/github-ui'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -85,76 +82,6 @@ interface ConflictButtonProps {
   disabled: boolean
 }
 
-function getConflictMenuItems(
-  githubRepo: GithubRepo,
-  projectID: string,
-  dispatch: EditorDispatch,
-  path: string,
-  conflict: Conflict,
-): Array<ContextMenuItem<unknown>> {
-  function applyChange(whichChange: 'utopia' | 'branch'): void {
-    void resolveConflict(githubRepo, projectID, path, conflict, whichChange, dispatch)
-  }
-  switch (conflict.type) {
-    case 'DIFFERING_TYPES':
-      return [
-        {
-          name: 'Accept what is in Utopia.',
-          enabled: true,
-          action: () => {
-            applyChange('utopia')
-          },
-        },
-        {
-          name: 'Apply what is in Github.',
-          enabled: true,
-          action: () => {
-            applyChange('branch')
-          },
-        },
-      ]
-    case 'CURRENT_DELETED_BRANCH_CHANGED':
-      return [
-        {
-          name: 'Delete the file.',
-          enabled: true,
-          action: () => {
-            applyChange('utopia')
-          },
-        },
-        {
-          name: 'Restore the file from Github.',
-          enabled: true,
-          action: () => {
-            applyChange('branch')
-          },
-        },
-      ]
-
-    case 'CURRENT_CHANGED_BRANCH_DELETED':
-      return [
-        {
-          name: 'Keep the file in Utopia.',
-          enabled: true,
-          action: () => {
-            applyChange('utopia')
-          },
-        },
-        {
-          name: 'Delete the file.',
-          enabled: true,
-          action: () => {
-            applyChange('branch')
-          },
-        },
-      ]
-
-    default:
-      const _exhaustiveCheck: never = conflict
-      throw new Error(`Unhandled conflict type ${JSON.stringify(conflict)}`)
-  }
-}
-
 const ConflictButton = React.memo((props: ConflictButtonProps) => {
   const menuId = `conflict-context-menu-${props.fullPath}`
   const dispatch = useEditorState((store) => {
@@ -168,7 +95,14 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
   }, 'ConflictButton projectID')
   const menuItems = React.useMemo(() => {
     if (githubRepo != null && projectID != null) {
-      return getConflictMenuItems(githubRepo, projectID, dispatch, props.fullPath, props.conflict)
+      return getConflictMenuItems(
+        githubRepo,
+        projectID,
+        dispatch,
+        props.fullPath,
+        props.conflict,
+        undefined,
+      )
     } else {
       return []
     }

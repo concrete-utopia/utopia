@@ -181,11 +181,11 @@ instance Arbitrary TextFile where
   shrink = genericShrink
 
 data ImageFile = ImageFile
-               { imageType :: Maybe Text
-               , base64    :: Maybe Text
-               , width     :: Maybe Double
-               , height    :: Maybe Double
-               , hash      :: Int
+               { imageType  :: Maybe Text
+               , base64     :: Maybe Text
+               , width      :: Maybe Double
+               , height     :: Maybe Double
+               , hash       :: Int
                , gitBlobSha :: Maybe Text
                }
                deriving (Eq, Show, Generic, Data, Typeable)

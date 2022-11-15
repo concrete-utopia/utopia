@@ -1,7 +1,3 @@
-import {
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls, reverse } from '../../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
@@ -13,14 +9,15 @@ import {
   zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { Direction, ForwardOrReverse } from '../../../../inspector/common/css-utils'
 
 export function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
   singleAxisAutolayoutContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-  simpleFlexDirection: SimpleFlexDirection | null,
-  forwardsOrBackwards: FlexForwardsOrBackwards | null,
+  simpleFlexDirection: Direction | null,
+  forwardsOrBackwards: ForwardOrReverse | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const ExtraPadding = 10 / canvasScale
 
@@ -34,10 +31,10 @@ export function drawTargetRectanglesForChildrenOfElement(
     return []
   }
 
-  const leftOrTop = simpleFlexDirection === 'row' ? 'x' : 'y'
-  const leftOrTopComplement = simpleFlexDirection === 'row' ? 'y' : 'x'
-  const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
-  const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
+  const leftOrTop = simpleFlexDirection === 'horizontal' ? 'x' : 'y'
+  const leftOrTopComplement = simpleFlexDirection === 'horizontal' ? 'y' : 'x'
+  const widthOrHeight = simpleFlexDirection === 'horizontal' ? 'width' : 'height'
+  const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
   const children = MetadataUtils.getChildrenPaths(metadata, singleAxisAutolayoutContainerPath)
 
@@ -160,13 +157,13 @@ export function drawTargetRectanglesForChildrenOfElement(
 export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
-  direction: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  direction: Direction,
+  forwardsOrBackwards: ForwardOrReverse,
 ): number {
   let getStartPosition: (rect: CanvasRectangle) => number
   let getEndPosition: (rect: CanvasRectangle) => number
   switch (direction) {
-    case 'row':
+    case 'horizontal':
       getStartPosition = (rect: CanvasRectangle) => {
         return rect.x
       }
@@ -174,7 +171,7 @@ export function getSiblingMidPointPosition(
         return rect.x + rect.width
       }
       break
-    case 'column':
+    case 'vertical':
       getStartPosition = (rect: CanvasRectangle) => {
         return rect.y
       }
@@ -201,8 +198,8 @@ export interface SiblingPosition {
 }
 
 export function siblingAndPseudoPositions(
-  parentFlexDirection: SimpleFlexDirection,
-  forwardsOrBackwards: FlexForwardsOrBackwards,
+  parentFlexDirection: Direction,
+  forwardsOrBackwards: ForwardOrReverse,
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
@@ -260,7 +257,7 @@ export function siblingAndPseudoPositions(
 
 function createPseudoElements(
   siblings: Array<ElementPath>,
-  parentFlexDirection: SimpleFlexDirection,
+  parentFlexDirection: Direction,
   parentFrame: CanvasRectangle,
   metadata: ElementInstanceMetadataMap,
 ): { before: CanvasRectangle; after: CanvasRectangle } {
@@ -277,7 +274,7 @@ function createPseudoElements(
     MetadataUtils.getFrameInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
   const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
 
-  if (parentFlexDirection === 'row') {
+  if (parentFlexDirection === 'horizontal') {
     const marginLeftAndGapOffset = ((firstElementMargin?.left ?? 0) + flexGap) * 2
     const marginRightAndGapOffset = ((lastElementMargin?.right ?? 0) + flexGap) * 2
     return {

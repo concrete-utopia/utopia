@@ -1002,37 +1002,3 @@ export function roundJSXElementLayoutValues(
     props: roundAttributeLayoutValues(propertyTarget, element.props),
   }
 }
-
-export type SimpleFlexDirection = 'row' | 'column'
-
-export function flexDirectionToSimpleFlexDirection(
-  flexDirection: string | null,
-): SimpleFlexDirection | null {
-  switch (flexDirection) {
-    case 'row':
-    case 'row-reverse':
-      return 'row'
-    case 'column':
-    case 'column-reverse':
-      return 'column'
-    default:
-      return 'row'
-  }
-}
-
-export type FlexForwardsOrBackwards = 'forward' | 'reverse'
-
-export function flexDirectionToFlexForwardsOrBackwards(
-  flexDirection: string | null,
-): FlexForwardsOrBackwards | null {
-  switch (flexDirection) {
-    case 'row':
-    case 'column':
-      return 'forward'
-    case 'row-reverse':
-    case 'column-reverse':
-      return 'reverse'
-    default:
-      return 'forward'
-  }
-}

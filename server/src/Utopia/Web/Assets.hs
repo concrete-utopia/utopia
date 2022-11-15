@@ -8,14 +8,18 @@ import           Conduit
 import           Control.Lens
 import           Control.Monad.Fail
 import           Control.Monad.Trans.AWS
+import qualified Data.ByteString         as B
 import qualified Data.ByteString.Lazy    as BL
-import qualified Data.ByteString    as B
 import           Data.Generics.Sum
+import           Data.List               hiding (intercalate)
+import           Data.Map.Strict         as M
 import           Data.String
-import           Data.Text
+import           Data.Text               hiding (isInfixOf, isPrefixOf,
+                                          isSuffixOf)
 import           Data.Text.Strict.Lens
 import qualified Data.UUID               as U
 import           Data.UUID.V4
+import           Magic
 import           Network.AWS.Auth
 import           Network.AWS.Data.Text
 import           Network.AWS.S3
@@ -23,8 +27,9 @@ import           Protolude               hiding (intercalate)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
-import Network.Mime
-import Data.Map.Strict as M
+
+
+import           Data.Time
 
 data AWSResources = AWSResources
                   { _awsEnv :: Env
@@ -208,32 +213,24 @@ data BlobEntryType = TextEntryType
                    deriving (Eq, Ord, Show)
 
 -- Keep in sync with core/model/project-file-utils.ts.
-expandedMimeMap :: MimeMap
-expandedMimeMap = defaultMimeMap <> M.fromList
-  [ ("ts", "application/typescript")
-  , ("tsx" , "application/typescript")
-  , ("jsx", "application/javascript")
-  ]
+looksLikeJavaScript :: String -> Bool
+looksLikeJavaScript mimeType = isInfixOf "/javascript" mimeType || isInfixOf "/typescript" mimeType
 
 -- Keep in sync with core/model/project-file-utils.ts.
-looksLikeJavaScript :: MimeType -> Bool
-looksLikeJavaScript mimeType = B.isSuffixOf "/javascript" mimeType || B.isSuffixOf "/typescript" mimeType
+looksLikeText :: String -> Bool
+looksLikeText mimeType = looksLikeJavaScript mimeType || isPrefixOf "text/" mimeType || isPrefixOf "application/json" mimeType
 
 -- Keep in sync with core/model/project-file-utils.ts.
-looksLikeText :: MimeType -> Bool
-looksLikeText mimeType = looksLikeJavaScript mimeType || B.isPrefixOf "text/" mimeType || B.isPrefixOf "application/json" mimeType
+looksLikeImage :: String -> Bool
+looksLikeImage mimeType = isPrefixOf "image/" mimeType
 
--- Keep in sync with core/model/project-file-utils.ts.
-looksLikeImage :: MimeType -> Bool
-looksLikeImage mimeType = B.isPrefixOf "image/" mimeType
-
-mimeLookup :: FileName -> MimeType
-mimeLookup = mimeByExt expandedMimeMap defaultMimeType
-
-blobEntryTypeFromFilename :: FileName -> BlobEntryType
-blobEntryTypeFromFilename filename =
-  let mimeType = mimeLookup filename
-      possiblyText = if looksLikeText mimeType then Just TextEntryType else Nothing
-      possiblyImage = if looksLikeImage mimeType then Just ImageEntryType else Nothing
-  in  fromMaybe AssetEntryType (possiblyText <|> possiblyImage)
+blobEntryTypeFromContents :: (MonadIO m) => BL.ByteString -> m BlobEntryType
+blobEntryTypeFromContents bytes = liftIO $ do
+  magic <- magicOpen [MagicMime]
+  magicLoadDefault magic
+  let strictBytes = BL.toStrict bytes
+  mimeType <- B.useAsCStringLen strictBytes $ magicCString magic
+  let possiblyText = if looksLikeText mimeType then Just TextEntryType else Nothing
+  let possiblyImage = if looksLikeImage mimeType then Just ImageEntryType else Nothing
+  pure $ fromMaybe AssetEntryType (possiblyText <|> possiblyImage)
 
