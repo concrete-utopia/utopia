@@ -66,7 +66,7 @@ const IndicatorLight = ({
         justifyContent: 'flex-end',
       }}
     >
-      {when(hasBlockBefore === true, <IndicatorLightConnector up />)}
+      {when(hasBlockBefore, <IndicatorLightConnector up />)}
       <svg
         style={{ zIndex: 1 }}
         width='9px'
@@ -277,7 +277,8 @@ const RepositoryBlock = () => {
       active={expanded}
       onClick={expand}
     >
-      {(expanded || repo == null) && (
+      {when(
+        expanded || repo == null,
         <FlexColumn style={{ gap: 10 }}>
           <div style={{ fontSize: 10, whiteSpace: 'pre-wrap' }}>
             We only support <strong>public</strong> repositories at this time.
@@ -286,7 +287,7 @@ const RepositoryBlock = () => {
             githubAuthenticated={githubAuthenticated}
             storedTargetGithubRepo={storedTargetGithubRepo}
           />
-        </FlexColumn>
+        </FlexColumn>,
       )}
     </Block>
   )
@@ -338,12 +339,9 @@ const BranchBlock = () => {
     [setBranchFilter],
   )
   const filteredBranches = React.useMemo(() => {
-    return branchesForRepository.filter((b) => {
-      if (branchFilter.length === 0) {
-        return true
-      }
-      return b.name.includes(branchFilter)
-    })
+    return branchesForRepository.filter(
+      (b) => branchFilter.length === 0 || b.name.includes(branchFilter),
+    )
   }, [branchesForRepository, branchFilter])
 
   const loadBranchesUI = React.useMemo(() => {
@@ -355,11 +353,10 @@ const BranchBlock = () => {
           style={{ paddingBottom: 20 }}
         >
           <FlexColumn style={{ gap: 8 }}>
-            <FlexRow style={{ gap: 4 }}>
+            <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
               <StringInput
                 testId='branches-input'
                 placeholder='Filter…'
-                style={{ flex: 1 }}
                 value={branchFilter}
                 onChange={updateBranchFilter}
               />
@@ -372,15 +369,14 @@ const BranchBlock = () => {
               >
                 {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
               </Button>
-            </FlexRow>
+            </UIGridRow>
             <FlexColumn
               style={{
                 height: 220,
                 overflowY: 'scroll',
-                padding: 8,
+                padding: '2px 6px',
                 border: '1px solid #2D2E33',
                 borderRadius: 2,
-                gap: 8,
               }}
             >
               {filteredBranches.map((branch, index) => {
@@ -395,7 +391,7 @@ const BranchBlock = () => {
                   }
                 }
                 return (
-                  <FlexRow key={index} style={{ justifyContent: 'space-between' }}>
+                  <UIGridRow key={index} variant='<----------1fr---------><-auto->' padded={false}>
                     <Ellipsis
                       style={{
                         maxWidth: 150,
@@ -422,7 +418,7 @@ const BranchBlock = () => {
                         'Load'
                       )}
                     </Button>
-                  </FlexRow>
+                  </UIGridRow>
                 )
               })}
             </FlexColumn>
