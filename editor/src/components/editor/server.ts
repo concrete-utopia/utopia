@@ -311,11 +311,7 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
         mode: MODE,
       })
       if (response.ok) {
-        const responseConfig: UserConfiguration = await response.json()
-        return {
-          ...responseConfig,
-          themeConfig: responseConfig.themeConfig ?? 'light',
-        }
+        return await response.json()
       } else {
         // FIXME Client should show an error if server requests fail
         throw new Error(`server responded with ${response.status} ${response.statusText}`)
