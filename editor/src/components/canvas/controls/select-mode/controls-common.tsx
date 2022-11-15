@@ -11,6 +11,11 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
+export const cssNumberWithRenderedValue = (
+  value: CSSNumber,
+  renderedValuePx: number,
+): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
+
 export type AdjustPrecision = 'precise' | 'coarse'
 
 export function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
@@ -31,40 +36,39 @@ export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
   precision: AdjustPrecision,
-): CSSNumberWithRenderedValue => {
-  if (delta === 0) {
-    return measurement
-  }
+): CSSNumberWithRenderedValue =>
+  measurementBasedOnOtherMeasurement(measurement, measurement.renderedValuePx + delta, precision)
 
-  if (measurement.renderedValuePx === 0) {
-    return {
-      renderedValuePx: delta,
-      value: { value: delta, unit: null },
-    }
-  }
-
-  const unitsPerPixel = measurement.value.value / measurement.renderedValuePx
-
-  const deltaInUnits = delta * unitsPerPixel
-
-  const newValueInPixels = measurement.renderedValuePx + delta
-  const newValueRounded = valueWithUnitAppropriatePrecision(
-    measurement.value.unit,
-    measurement.value.value + deltaInUnits,
+export function measurementBasedOnOtherMeasurement(
+  base: CSSNumberWithRenderedValue,
+  desiredRenderedValue: number,
+  precision: AdjustPrecision,
+): CSSNumberWithRenderedValue {
+  const desiredRenderedValueWithPrecision = valueWithUnitAppropriatePrecision(
+    'px',
+    desiredRenderedValue,
     precision,
   )
 
-  const newRenderedValuePx = valueWithUnitAppropriatePrecision(
-    'px',
-    newValueInPixels / unitsPerPixel,
+  if (base.renderedValuePx === 0) {
+    return {
+      renderedValuePx: desiredRenderedValueWithPrecision,
+      value: { value: desiredRenderedValueWithPrecision, unit: null },
+    }
+  }
+
+  const pixelsPerUnit = base.value.value / base.renderedValuePx
+  const desiredValueInUnits = valueWithUnitAppropriatePrecision(
+    base.value.unit,
+    desiredRenderedValue * pixelsPerUnit,
     precision,
   )
 
   return {
-    renderedValuePx: newRenderedValuePx,
+    renderedValuePx: desiredRenderedValueWithPrecision,
     value: {
-      unit: measurement.value.unit,
-      value: newValueRounded,
+      unit: base.value.unit,
+      value: desiredValueInUnits,
     },
   }
 }
@@ -89,6 +93,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         padding: padding,
         backgroundColor: color,
         color: 'white',
+        borderRadius: 2,
       }}
     >
       {value}

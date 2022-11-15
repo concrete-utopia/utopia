@@ -4041,6 +4041,10 @@ export interface ParsedCSSProperties {
   backgroundSize: CSSBackgroundSize
   border: CSSBorder
   borderRadius: CSSBorderRadius
+  borderTopLeftRadius: CSSNumber
+  borderTopRightRadius: CSSNumber
+  borderBottomLeftRadius: CSSNumber
+  borderBottomRightRadius: CSSNumber
   boxShadow: CSSBoxShadows
   color: CSSColor
   fontFamily: CSSFontFamily
@@ -4125,6 +4129,22 @@ export const cssEmptyValues: ParsedCSSProperties = {
       value: 0,
       unit: 'px',
     },
+  },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
   },
   boxShadow: [],
   color: {
@@ -4296,6 +4316,10 @@ export const cssParsers: CSSParsers = {
   backgroundSize: parseBackgroundSize,
   border: parseBorder,
   borderRadius: parseBorderRadius,
+  borderTopLeftRadius: parseCSSLengthPercent,
+  borderTopRightRadius: parseCSSLengthPercent,
+  borderBottomLeftRadius: parseCSSLengthPercent,
+  borderBottomRightRadius: parseCSSLengthPercent,
   boxShadow: parseBoxShadow,
   color: parseColorHexHashOptional,
   fontFamily: parseFontFamily,
@@ -4366,6 +4390,10 @@ const cssPrinters: CSSPrinters = {
   mixBlendMode: printMixBlendMode,
   border: printBorder,
   borderRadius: printBorderRadius,
+  borderTopLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderTopRightRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomRightRadius: printCSSNumberAsAttributeValue('px'),
   boxShadow: printBoxShadow,
   color: printColorToJsx,
   fontFamily: printFontFamily,
@@ -4985,6 +5013,22 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
       value: 0,
       unit: 'px',
     },
+  },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
   },
   boxShadow: [],
   color: nontrivial,
