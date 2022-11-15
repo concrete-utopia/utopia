@@ -279,10 +279,12 @@ const RepositoryBlock = () => {
     >
       {when(
         expanded || repo == null,
-        <FlexColumn style={{ gap: 10 }}>
-          <div style={{ fontSize: 10, whiteSpace: 'pre-wrap' }}>
-            We only support <strong>public</strong> repositories at this time.
-          </div>
+        <FlexColumn style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
+            <div>
+              We only support <strong>public</strong> repositories at this time.
+            </div>
+          </UIGridRow>
           <RepositoryListing
             githubAuthenticated={githubAuthenticated}
             storedTargetGithubRepo={storedTargetGithubRepo}

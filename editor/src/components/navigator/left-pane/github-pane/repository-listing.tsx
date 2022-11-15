@@ -227,7 +227,7 @@ export const RepositoryListing = React.memo(
     }
 
     return (
-      <FlexColumn style={{ gap: 10, paddingBottom: 20 }}>
+      <FlexColumn style={{ gap: 4, paddingBottom: 10 }}>
         <UIGridRow padded={false} variant={'<----------1fr---------><-auto->'}>
           <StringInput
             placeholder={
@@ -273,11 +273,11 @@ export const RepositoryListing = React.memo(
             })
           )}
         </FlexColumn>
-        <div>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
             Create new repository on Github.
           </a>
-        </div>
+        </UIGridRow>
       </FlexColumn>
     )
   },
