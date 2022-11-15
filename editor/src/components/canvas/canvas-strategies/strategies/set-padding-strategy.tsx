@@ -38,7 +38,7 @@ import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  Emdash,
+  canShowCanvasPropControl,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -71,6 +71,23 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
+    return null
+  }
+
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  if (element == null) {
+    return null
+  }
+
+  const canShowPadding = canShowCanvasPropControl(
+    canvasState.projectContents,
+    canvasState.openFile ?? null,
+    element,
+  ).has('padding')
+  if (!canShowPadding) {
     return null
   }
 

@@ -1,7 +1,9 @@
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
+import { ProjectContentTreeRoot } from '../../../assets'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export const Emdash: string = '\u2014'
@@ -168,8 +170,30 @@ export function indicatorMessage(
 
 type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
 
-export function getShownCanvasPropControl(
+export function canShowCanvasPropControl(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   element: ElementInstanceMetadata,
 ): Set<CanvasPropControl> {
-  return new Set()
+  if (
+    element.specialSizeMeasurements.clientWidth > 80 &&
+    element.specialSizeMeasurements.clientHeight > 80
+  ) {
+    return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
+  }
+
+  if (
+    Math.min(
+      element.specialSizeMeasurements.clientWidth,
+      element.specialSizeMeasurements.clientHeight,
+    ) < 40
+  ) {
+    return new Set<CanvasPropControl>([])
+  }
+
+  if (!MetadataUtils.targetElementSupportsChildren(projectContents, openFile, element)) {
+    return new Set<CanvasPropControl>(['borderRadius', 'gap'])
+  }
+
+  return new Set<CanvasPropControl>(['padding', 'gap'])
 }
