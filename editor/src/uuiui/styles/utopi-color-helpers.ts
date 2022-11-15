@@ -39,7 +39,7 @@ export function createUtopiColor(baseColor: string): UtopiColor {
   const fromCache = utopiColorCache[key]
   if (fromCache == null) {
     const hexWithAlpha = Chroma(baseColor).css('rgba')
-    const cssVar = '--null'
+    const cssVar = '--utopitheme-not-set'
 
     const value = {
       value: `var(${cssVar})`,
