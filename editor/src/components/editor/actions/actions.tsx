@@ -4651,11 +4651,13 @@ export const UPDATE_FNS = {
       shortcutConfig: userState.shortcutConfig,
       themeConfig: action.theme,
     }
-    // Side effect - store the setting on the server
-    void saveUserConfiguration(updatedUserConfiguration)
 
     // Side effect - update the setting in VS Code
     void sendSetVSCodeTheme(action.theme)
+
+    // Side effect - store the setting on the server
+    void saveUserConfiguration(updatedUserConfiguration)
+
     return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {

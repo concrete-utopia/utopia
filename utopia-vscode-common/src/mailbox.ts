@@ -22,7 +22,7 @@ let lastConsumedMessage: number = -1
 let mailboxLastClearedTimestamp: number = Date.now()
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const MIN_POLLING_TIMEOUT = 8
-const MAX_POLLING_TIMEOUT = MIN_POLLING_TIMEOUT * Math.pow(2, 6) // Max out at 512ms
+const MAX_POLLING_TIMEOUT = MIN_POLLING_TIMEOUT * Math.pow(2, 4) // Max out at 128ms
 let POLLING_TIMEOUT = MIN_POLLING_TIMEOUT
 let pollTimeout: any | null = null
 
