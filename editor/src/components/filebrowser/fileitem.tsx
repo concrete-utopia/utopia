@@ -48,6 +48,7 @@ import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state
 import { optionalMap } from '../../core/shared/optional-utils'
 import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
+import { getConflictMenuItems } from '../../core/shared/github-ui'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -310,6 +311,9 @@ class FileBrowserItemInner extends React.PureComponent<
   toggleCollapse = () => this.props.toggleCollapse(this.props.path)
 
   renderGithubStatus = () => {
+    if (this.props.conflict != null) {
+      return <GithubFileStatusLetter status={'conflicted'} />
+    }
     if (this.props.githubStatus != undefined) {
       return <GithubFileStatusLetter status={this.props.githubStatus} />
     }
@@ -831,6 +835,22 @@ class FileBrowserItemInner extends React.PureComponent<
       const items = [this.deleteContextMenuItem(), this.renameContextMenuItem()]
       if (this.props.githubStatus != undefined) {
         items.push(this.revertContextMenuItem())
+      }
+      if (
+        this.props.conflict != null &&
+        this.props.githubRepo != null &&
+        this.props.projectID != null
+      ) {
+        items.push(
+          ...getConflictMenuItems(
+            this.props.githubRepo,
+            this.props.projectID,
+            this.props.dispatch,
+            this.props.path,
+            this.props.conflict,
+            'Resolve Conflict',
+          ),
+        )
       }
       fileBrowserItem = (
         <div
