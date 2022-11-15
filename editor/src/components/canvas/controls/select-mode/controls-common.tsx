@@ -107,7 +107,6 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
   return (
     <div
       style={{
-        boxSizing: 'border-box',
         width: width,
         height: height,
         backgroundColor: pillColor,

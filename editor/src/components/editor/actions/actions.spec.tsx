@@ -937,6 +937,7 @@ describe('LOAD', () => {
         targetRepository: null,
         originCommit: null,
         branchName: null,
+        pendingCommit: null,
       },
       githubChecksums: null,
       branchContents: null,

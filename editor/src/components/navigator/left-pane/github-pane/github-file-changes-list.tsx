@@ -5,6 +5,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import {
+  Conflict,
   getGithubFileChangesCount,
   GithubFileChanges,
   GithubFileChangesListItem,
@@ -16,6 +17,10 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { when } from '../../../../utils/react-conditionals'
+import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
+import { NO_OP } from '../../../../core/shared/utils'
+import { useContextMenu } from 'react-contexify'
+import { getConflictMenuItems } from '../../../../core/shared/github-ui'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -59,6 +64,63 @@ const RevertButton = ({
   )
 }
 
+interface ConflictButtonProps {
+  fullPath: string
+  conflict: Conflict
+  disabled: boolean
+}
+
+const ConflictButton = React.memo((props: ConflictButtonProps) => {
+  const menuId = `conflict-context-menu-${props.fullPath}`
+  const dispatch = useEditorState((store) => {
+    return store.dispatch
+  }, 'ConflictButton dispatch')
+  const githubRepo = useEditorState((store) => {
+    return store.editor.githubSettings.targetRepository
+  }, 'ConflictButton githubRepo')
+  const projectID = useEditorState((store) => {
+    return store.editor.id
+  }, 'ConflictButton projectID')
+  const menuItems = React.useMemo(() => {
+    if (githubRepo != null && projectID != null) {
+      return getConflictMenuItems(
+        githubRepo,
+        projectID,
+        dispatch,
+        props.fullPath,
+        props.conflict,
+        undefined,
+      )
+    } else {
+      return []
+    }
+  }, [props.fullPath, props.conflict, dispatch, githubRepo, projectID])
+  const { show } = useContextMenu({
+    id: menuId,
+  })
+  const openContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      show(event)
+    },
+    [show],
+  )
+  return (
+    <MenuProvider id={menuId} itemsLength={menuItems.length}>
+      <Button
+        style={{ padding: '0 6px' }}
+        spotlight
+        highlight
+        disabled={props.disabled}
+        onClick={openContextMenu}
+      >
+        Action...
+      </Button>
+      <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+    </MenuProvider>
+  )
+})
+
 export const GithubFileChangesList: React.FC<{
   changes: GithubFileChanges | null
   githubWorking: boolean
@@ -69,6 +131,10 @@ export const GithubFileChangesList: React.FC<{
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
+  const treeConflicts = useEditorState(
+    (store) => store.editor.githubData.treeConflicts,
+    'GithubFileChangesList treeConflicts',
+  )
 
   const handleClickRevertAllFiles = React.useCallback(
     (e: React.MouseEvent) => {
@@ -116,7 +182,8 @@ export const GithubFileChangesList: React.FC<{
         />
       )}
       {list.map((i) => {
-        const conflicting = conflicts?.includes(i.filename) || false
+        const conflicting = conflicts?.includes(i.filename) ?? false
+        const isTreeConflict = i.filename in treeConflicts
         return (
           <UIGridRow
             key={i.filename}
@@ -140,11 +207,19 @@ export const GithubFileChangesList: React.FC<{
                 </FlexRow>
               </UIGridRow>
               {when(
-                revertable,
+                revertable && !isTreeConflict,
                 <RevertButton
                   disabled={githubWorking}
                   text='Revert'
                   onMouseUp={handleClickRevertFile(i)}
+                />,
+              )}
+              {when(
+                isTreeConflict,
+                <ConflictButton
+                  fullPath={i.filename}
+                  conflict={treeConflicts[i.filename]}
+                  disabled={githubWorking}
                 />,
               )}
             </>

@@ -57,9 +57,9 @@ function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size 
 
 export const PaddingResizeControlHoverTimeout: number = 200
 
-const PaddingResizeControlWidth = 2
+const PaddingResizeControlWidth = 4
 const PaddingResizeControlHeight = 12
-const PaddingResizeControlBorder = 0.5
+const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
 

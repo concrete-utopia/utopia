@@ -9,34 +9,14 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { cssNumber, CSSNumber } from '../inspector/common/css-utils'
-
-export type SimpleFlexDirectionForGap = 'row' | 'column' | 'row-reverse' | 'column-reverse'
+import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
   path: ElementPath
 }
 
-export function simpleFlexDirectionFromString(raw: string): SimpleFlexDirectionForGap | null {
-  switch (raw) {
-    case 'row':
-      return 'row'
-    case 'column':
-      return 'column'
-    case 'row-reverse':
-      return 'row-reverse'
-    case 'column-reverse':
-      return 'column-reverse'
-    default:
-      return null
-  }
-}
-
-export function dragDeltaForOrientation(
-  orientation: SimpleFlexDirectionForGap,
-  delta: CanvasVector,
-): number {
+export function dragDeltaForOrientation(orientation: FlexDirection, delta: CanvasVector): number {
   switch (orientation) {
     case 'row':
       return delta.x
@@ -51,7 +31,7 @@ export function dragDeltaForOrientation(
   }
 }
 
-export function cursorFromFlexDirection(direction: SimpleFlexDirectionForGap): CSSCursor {
+export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
   switch (direction) {
     case 'column':
     case 'column-reverse':
@@ -67,7 +47,7 @@ export function cursorFromFlexDirection(direction: SimpleFlexDirectionForGap): C
 export function gapControlBounds(
   parentBounds: CanvasRectangle,
   bounds: CanvasRectangle,
-  flexDirection: SimpleFlexDirectionForGap,
+  flexDirection: FlexDirection,
   gap: number,
 ): CanvasRectangle {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
@@ -94,7 +74,7 @@ function paddingControlContainerBoundsFromChildBounds(
   parentBounds: CanvasRectangle,
   children: Array<PathWithBounds>,
   gap: number,
-  flexDirection: SimpleFlexDirectionForGap,
+  flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
   return children.map(({ bounds, path }) => ({
     path: path,
@@ -106,7 +86,7 @@ export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
   gap: number,
-  flexDirection: SimpleFlexDirectionForGap,
+  flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
   if (parentBounds == null) {
@@ -135,7 +115,7 @@ export function gapControlBoundsFromMetadata(
 
 export interface FlexGapData {
   value: CSSNumberWithRenderedValue
-  direction: SimpleFlexDirectionForGap
+  direction: FlexDirection
 }
 
 export function maybeFlexGapFromElement(
@@ -168,11 +148,7 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const flexDirection =
-    optionalMap(
-      simpleFlexDirectionFromString,
-      children[0].specialSizeMeasurements.parentFlexDirection,
-    ) ?? 'row'
+  const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
 
   return { value: { renderedValuePx: flexGap, value: gapFromProps }, direction: flexDirection }
 }
