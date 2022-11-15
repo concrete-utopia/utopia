@@ -271,8 +271,8 @@ function startInteraction(
   canvasOffset: CanvasVector,
   scale: number,
 ) {
-  event.stopPropagation()
   if (event.buttons === 1 && event.button !== 2) {
+    event.stopPropagation()
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,
