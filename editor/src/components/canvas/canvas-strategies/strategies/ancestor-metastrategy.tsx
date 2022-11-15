@@ -104,7 +104,7 @@ export function ancestorMetaStrategy(
 }
 
 type ApplyFn = CanvasStrategy['apply']
-function appendCommandsToApplyResult(
+export function appendCommandsToApplyResult(
   applyFn: ApplyFn,
   commandsToAppend: Array<CanvasCommand>,
 ): ApplyFn {

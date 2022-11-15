@@ -1,4 +1,5 @@
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -13,16 +14,24 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   controlWithProps,
+  MoveStrategy,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flowReorderStrategy } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-const baseMoveStrategyFactories: Array<CanvasStrategyFactory> = [
+type MoveStrategyFactory = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => MoveStrategy | null
+
+const baseMoveStrategyFactories: Array<MoveStrategyFactory> = [
   absoluteMoveStrategy,
   flexReorderStrategy,
   flowReorderStrategy,
@@ -59,9 +68,45 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
   )
   const foundStrategies = [...reparentStrategies, ...dragStrategies]
   if (foundStrategies.length > 0) {
-    return foundStrategies
+    return [
+      ...reparentStrategies,
+      ...dragStrategies.map((s) => {
+        const indicatorCommand = wildcardPatch('mid-interaction', {
+          canvas: {
+            controls: {
+              dragToMoveIndicatorFlags: {
+                $set: {
+                  dragType: s.dragType,
+                  reparent: false,
+                  ancestor: false,
+                },
+              },
+            },
+          },
+        })
+        return {
+          ...s.strategy,
+          apply: appendCommandsToApplyResult(s.strategy.apply, [indicatorCommand]),
+        }
+      }),
+    ]
   } else {
-    return [doNothingStrategy(canvasState, interactionSession, customStrategyState)]
+    const noneStrategy = doNothingStrategy(canvasState, interactionSession, customStrategyState)
+    const indicatorCommand = wildcardPatch('mid-interaction', {
+      canvas: {
+        controls: {
+          dragToMoveIndicatorFlags: {
+            $set: { dragType: 'none', reparent: false, ancestor: false },
+          },
+        },
+      },
+    })
+    return [
+      {
+        ...noneStrategy,
+        apply: appendCommandsToApplyResult(noneStrategy.apply, [indicatorCommand]),
+      },
+    ]
   }
 }
 

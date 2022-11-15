@@ -322,6 +322,8 @@ import {
   GithubData,
   emptyGithubData,
   projectGithubSettings,
+  DragToMoveIndicatorFlags,
+  dragToMoveIndicatorFlags,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1584,8 +1586,19 @@ export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: Ke
     guidelineWithSnappingVectorAndPointsOfRelevance,
   )
 
+export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<DragToMoveIndicatorFlags> =
+  combine3EqualityCalls(
+    (indicatorFlag) => indicatorFlag.dragType,
+    createCallWithTripleEquals<'absolute' | 'static' | 'none'>(),
+    (indicatorFlag) => indicatorFlag.reparent,
+    BooleanKeepDeepEquality,
+    (indicatorFlag) => indicatorFlag.ancestor,
+    BooleanKeepDeepEquality,
+    dragToMoveIndicatorFlags,
+  )
+
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1598,6 +1611,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
+    (controls) => controls.dragToMoveIndicatorFlags,
+    nullableDeepEquality(DragToMoveIndicatorFlagsKeepDeepEquality),
     editorStateCanvasControls,
   )
 

@@ -736,6 +736,24 @@ export function editorStateCanvasTransientProperty(
   }
 }
 
+export function dragToMoveIndicatorFlags(
+  dragType: 'absolute' | 'static' | 'none',
+  reparent: boolean,
+  ancestor: boolean,
+): DragToMoveIndicatorFlags {
+  return {
+    dragType,
+    reparent,
+    ancestor,
+  }
+}
+
+export interface DragToMoveIndicatorFlags {
+  dragType: 'absolute' | 'static' | 'none'
+  reparent: boolean
+  ancestor: boolean
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -744,6 +762,7 @@ export interface EditorStateCanvasControls {
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
+  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags | null
 }
 
 export function editorStateCanvasControls(
@@ -753,6 +772,7 @@ export function editorStateCanvasControls(
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
+  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -761,6 +781,7 @@ export function editorStateCanvasControls(
     flexReparentTargetLines: flexReparentTargetLines,
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
+    dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
   }
 }
 
@@ -2052,6 +2073,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: null,
       },
     },
     floatingInsertMenu: {
@@ -2357,6 +2379,7 @@ export function editorModelFromPersistentModel(
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: null,
       },
     },
     floatingInsertMenu: {
