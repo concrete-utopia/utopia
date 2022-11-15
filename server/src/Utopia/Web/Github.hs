@@ -11,6 +11,7 @@
 module Utopia.Web.Github where
 
 import           Codec.MIME.Base64
+import           Codec.Picture
 import           Control.Concurrent.Async.Lifted
 import           Control.Lens                    hiding (children, (.=), (<.>))
 import           Control.Monad
@@ -29,6 +30,7 @@ import           Data.Foldable
 import           Data.Generics.Product
 import           Data.Generics.Sum
 import qualified Data.HashMap.Strict             as M
+import qualified Data.Hashable                   as H
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Text.Encoding.Base64
@@ -43,8 +45,6 @@ import           Protolude
 import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Github.Types
-import qualified Data.Hashable as H
-import Codec.Picture
 
 fetchRepoArchive :: Text -> Text -> IO (Maybe BL.ByteString)
 fetchRepoArchive owner repo = do
@@ -130,6 +130,8 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
               & WR.checkResponse .~ (Just $ \_ _ -> return ())
               & WR.params .~ queryParameters
   result <- liftIO $ makeRequest options (toS restURL) request
+  -- Uncomment the next line if you want to see the headers.
+  -- liftIO $ print $ view WR.responseHeaders result
   let status = view WR.responseStatus result
   unless (statusIsSuccessful status) $ handleErrorCases status
   except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
@@ -270,13 +272,13 @@ getGitCommit accessToken owner repository commitSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits/" <> commitSha
   callGithub getFromGithub [] getGitCommitErrorCases accessToken repoUrl ()
 
-makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> ExceptT Text m (ProjectContentsTree, [Text])
-makeProjectTextFileFromEntry gitEntry blobResult = do
-  let decodedContent = decodeBase64Lenient $ view (field @"content") blobResult
+makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
+makeProjectTextFileFromEntry gitEntry _ decodedContent = do
   let path = view (field @"path") gitEntry
   let pathParts = T.splitOn "/" path
   let pathWithForwardSlash = "/" <> path
-  let textFileContents = TextFileContents decodedContent (ParsedTextFileUnparsed Unparsed) CodeAhead
+  decodedText <- except $ first (\exception -> T.pack $ show exception) $ decodeUtf8' $ BL.toStrict decodedContent
+  let textFileContents = TextFileContents decodedText (ParsedTextFileUnparsed Unparsed) CodeAhead
   let textFile = TextFile textFileContents Nothing 0.0
   let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectTextFile textFile
   pure (fileResult, pathParts)
@@ -287,9 +289,8 @@ getImageDimensions decodedContent = do
   decodedImage <- either (const Nothing) pure $ decodeImage strictBytes
   pure $ dynamicMap (\image -> (fromIntegral $ imageWidth image, fromIntegral $ imageHeight image)) decodedImage
 
-makeProjectImageFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> ExceptT Text m (ProjectContentsTree, [Text])
-makeProjectImageFileFromEntry gitEntry blobResult = do
-  let decodedContent = BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") blobResult
+makeProjectImageFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
+makeProjectImageFileFromEntry gitEntry blobResult decodedContent = do
   let path = view (field @"path") gitEntry
   let pathParts = T.splitOn "/" path
   let pathWithForwardSlash = "/" <> path
@@ -298,11 +299,11 @@ makeProjectImageFileFromEntry gitEntry blobResult = do
   let possibleHeight = firstOf (_Just . _2) dimensions
   let imageSha = view (field @"sha") blobResult
   let imageFile = ImageFile Nothing Nothing possibleWidth possibleHeight (H.hash decodedContent) (Just imageSha)
-  let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectImageFile imageFile 
+  let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectImageFile imageFile
   pure (fileResult, pathParts)
 
-makeProjectAssetFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> ExceptT Text m (ProjectContentsTree, [Text])
-makeProjectAssetFileFromEntry gitEntry blobResult = do
+makeProjectAssetFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
+makeProjectAssetFileFromEntry gitEntry blobResult _ = do
   let path = view (field @"path") gitEntry
   let pathParts = T.splitOn "/" path
   let pathWithForwardSlash = "/" <> path
@@ -324,14 +325,16 @@ projectContentFromGitTreeEntry accessToken owner repository entry = do
     "blob" -> do
       let entrySha = view (field @"sha") entry
       gitBlob <- getGitBlob accessToken owner repository entrySha
-      case blobEntryTypeFromFilename (view (field @"path") entry) of
+      let decodedContent = BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") gitBlob
+      blobEntryType <- blobEntryTypeFromContents decodedContent
+      case blobEntryType of
         TextEntryType -> do
           -- This entry is a regular file.
-          makeProjectTextFileFromEntry entry gitBlob
+          makeProjectTextFileFromEntry entry gitBlob decodedContent
         ImageEntryType -> do
-          makeProjectImageFileFromEntry entry gitBlob
+          makeProjectImageFileFromEntry entry gitBlob decodedContent
         AssetEntryType -> do
-          makeProjectAssetFileFromEntry entry gitBlob
+          makeProjectAssetFileFromEntry entry gitBlob decodedContent
     _ -> do
       throwError "Not a blob."
 

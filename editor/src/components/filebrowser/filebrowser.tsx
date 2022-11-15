@@ -10,7 +10,12 @@ import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import { getAllCodeEditorErrors, getOpenFilename } from '../editor/store/editor-state'
+import {
+  getAllCodeEditorErrors,
+  getOpenFilename,
+  GithubChecksums,
+  GithubRepo,
+} from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {
@@ -27,9 +32,11 @@ import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import {
+  Conflict,
   GithubFileChanges,
   githubFileChangesSelector,
   GithubFileStatus,
+  TreeConflicts,
 } from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
@@ -47,6 +54,9 @@ export interface FileBrowserItemInfo {
   imageFile: ImageFile | null
   projectContents: ProjectContentTreeRoot
   githubStatus?: GithubFileStatus
+  conflict: Conflict | null
+  githubRepo: GithubRepo | null
+  projectID: string | null
 }
 
 export function filterErrorMessages(
@@ -66,6 +76,9 @@ function collectFileBrowserItems(
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
   githubChanges: GithubFileChanges | null,
+  projectID: string | null,
+  conflicts: TreeConflicts,
+  githubRepo: GithubRepo | null,
 ): FileBrowserItemInfo[] {
   const getGithubStatus = (filename: string) => {
     if (githubChanges?.untracked.includes(filename)) {
@@ -96,6 +109,9 @@ function collectFileBrowserItems(
         imageFile: element.type === 'IMAGE_FILE' ? element : null,
         projectContents: projectContents,
         githubStatus: getGithubStatus(fullPath),
+        githubRepo: githubRepo,
+        conflict: conflicts[fullPath] ?? null,
+        projectID: projectID,
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -119,6 +135,9 @@ function collectFileBrowserItems(
                 isUploadedAssetFile: false,
                 imageFile: null,
                 projectContents: projectContents,
+                githubRepo: githubRepo,
+                conflict: conflicts[fullPath] ?? null,
+                projectID: projectID,
               })
             }
           })
@@ -237,6 +256,9 @@ const FileBrowserItems = React.memo(() => {
     codeResultCache,
     renamingTarget,
     dropTarget,
+    conflicts,
+    githubRepo,
+    projectID,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -247,6 +269,9 @@ const FileBrowserItems = React.memo(() => {
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       dropTarget: store.editor.fileBrowser.dropTarget,
+      conflicts: store.editor.githubData.treeConflicts,
+      githubRepo: store.editor.githubSettings.targetRepository,
+      projectID: store.editor.id,
     }
   }, 'FileBrowserItems')
 
@@ -287,8 +312,20 @@ const FileBrowserItems = React.memo(() => {
       codeResultCache,
       errorMessages,
       githubFileChanges,
+      projectID,
+      conflicts,
+      githubRepo,
     )
-  }, [projectContents, collapsedPaths, codeResultCache, errorMessages, githubFileChanges])
+  }, [
+    projectContents,
+    collapsedPaths,
+    codeResultCache,
+    errorMessages,
+    githubFileChanges,
+    projectID,
+    conflicts,
+    githubRepo,
+  ])
 
   const generateNewUid = React.useCallback(
     () => generateUidWithExistingComponents(projectContents),

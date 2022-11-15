@@ -1,4 +1,3 @@
-import { FlexForwardsOrBackwards, SimpleFlexDirection } from '../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
@@ -10,6 +9,7 @@ import {
 import { CanvasRectangle, CanvasVector, mod } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
+import { Direction, ForwardOrReverse } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
@@ -47,8 +47,8 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
 }
 
 export type SingleAxisAutolayoutContainerDirections = {
-  direction: SimpleFlexDirection | null
-  forwardsOrBackwards: FlexForwardsOrBackwards | null
+  direction: Direction | null
+  forwardOrReverse: ForwardOrReverse | null
   flexOrFlow: 'flex' | 'flow'
 }
 
@@ -57,7 +57,7 @@ export function singleAxisAutoLayoutContainerDirections(
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
-  const children = MetadataUtils.getChildren(metadata, container)
+  const children = MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, container)
   if (containerElement == null) {
     return 'non-single-axis-autolayout'
   }
@@ -66,9 +66,9 @@ export function singleAxisAutoLayoutContainerDirections(
 
   if (layoutSystem === 'flex') {
     const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
-    const targetDirection = flexDirection.direction === 'row' ? 'horizontal' : 'vertical' // TODO unify row and horizontal types
+    const targetDirection = flexDirection.direction
 
-    const shouldReverse = flexDirection.forwardsOrBackwards === 'reverse'
+    const shouldReverse = flexDirection.forwardOrReverse === 'reverse'
     const childrenFrames = mapDropNulls((child) => {
       if (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -90,8 +90,8 @@ export function singleAxisAutoLayoutContainerDirections(
   } else if (layoutSystem === 'flow') {
     if (children.length === 0) {
       return {
-        direction: 'column',
-        forwardsOrBackwards: 'forward',
+        direction: 'vertical',
+        forwardOrReverse: 'forward',
         flexOrFlow: 'flow',
       }
     }
@@ -106,13 +106,11 @@ export function singleAxisAutoLayoutContainerDirections(
 
     // TODO turn this into a loop with early return
     fastForEach(children, (child) => {
-      if (isValidFlowReorderTarget(child.elementPath, metadata)) {
-        if (getElementDirection(child) !== targetDirection) {
-          allHorizontalOrVertical = false
-        }
-        if (child.globalFrame != null) {
-          childrenFrames.push(child.globalFrame)
-        }
+      if (getElementDirection(child) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (child.globalFrame != null) {
+        childrenFrames.push(child.globalFrame)
       }
     })
 
@@ -123,8 +121,8 @@ export function singleAxisAutoLayoutContainerDirections(
       return 'non-single-axis-autolayout'
     }
     return {
-      direction: targetDirection === 'horizontal' ? 'row' : 'column', // TODO use 'horizontal' | 'vertical' in the main type
-      forwardsOrBackwards: shouldReverse ? 'reverse' : 'forward',
+      direction: targetDirection,
+      forwardOrReverse: shouldReverse ? 'reverse' : 'forward',
       flexOrFlow: 'flow',
     }
   } else {
@@ -154,53 +152,12 @@ function areNonWrappingSiblings(
   })
 }
 
-export function getElementDirection(
-  element: ElementInstanceMetadata | null,
-): 'vertical' | 'horizontal' {
+export function getElementDirection(element: ElementInstanceMetadata | null): Direction {
   const displayValue = element?.specialSizeMeasurements.display
   return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
-function getNewDisplayTypeForIndex(
-  metadata: ElementInstanceMetadataMap,
-  targetSibling: ElementPath,
-) {
-  const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
-    ?.specialSizeMeasurements.display
-  const displayBlockInlineBlock =
-    displayType === 'block' || displayType === 'inline-block' ? displayType : null
-
-  return displayBlockInlineBlock
-}
-
-function shouldRemoveDisplayProp(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): boolean {
-  if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
-    return false
-  } else {
-    return (
-      // TODO global css overrides can change these defaults
-      defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
-      newDisplayValue
-    )
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-function getNewDisplayTypeCommands(
-  element: ElementInstanceMetadata,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): Array<SetProperty | DeleteProperties> {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
-  } else if (newDisplayValue != null) {
-    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
-  } else {
-    return []
-  }
-}
 
 export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,
@@ -224,11 +181,13 @@ export function getOptionalDisplayPropCommandsForFlow(
     lastReorderIdx != null &&
     lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
   ) {
-    const newDisplayType = getNewDisplayTypeForIndex(
+    const targetSibling = MetadataUtils.findElementByElementPath(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType) // TODO this is wrong, it will convert a display: flex to block!!!
+    const elementDisplayType = elementMetadata?.specialSizeMeasurements.display ?? null
+    const newDirection = getElementDirection(targetSibling)
+    return getOptionalCommandToConvertDisplayInlineBlock(target, elementDisplayType, newDirection)
   } else {
     return []
   }
@@ -237,12 +196,12 @@ export function getOptionalDisplayPropCommandsForFlow(
 export function getOptionalCommandToConvertDisplayInlineBlock(
   target: ElementPath,
   displayValue: string | null,
-  convertTo: 'row' | 'column' | 'do-not-convert',
+  convertTo: Direction | 'do-not-convert',
 ): Array<SetProperty> {
   switch (convertTo) {
-    case 'row':
+    case 'horizontal':
       return getOptionalCommandToConvertDisplayInline(target, displayValue)
-    case 'column':
+    case 'vertical':
       return getOptionalCommandToRemoveDisplayInline(target, displayValue)
     default:
       return []

@@ -684,7 +684,12 @@ getGithubBranchContentEndpoint cookie owner repository branchName possibleCommit
 
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do
-  getUsersRepositories (view (field @"_id") sessionUser) 
+  getUsersRepositories (view (field @"_id") sessionUser)
+
+saveGithubAssetEndpoint :: Maybe Text -> Text -> Text -> Text -> Text -> Text -> ServerMonad GithubSaveAssetResponse
+saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = requireUser cookie $ \sessionUser -> do
+  let splitPath = drop 1 $ T.splitOn "/" fullPath
+  saveGithubAsset (view (field @"_id") sessionUser) owner repository assetSha projectId splitPath
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
@@ -712,6 +717,7 @@ protected authCookie = logoutPage authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
+                  :<|> saveGithubAssetEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

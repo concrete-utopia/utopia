@@ -6,6 +6,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
   BorderRadiusCorner,
@@ -27,7 +28,7 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CSSNumberLabel, CSSNumberWithRenderedValue, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, CSSNumberWithRenderedValue, useHoverWithDelay } from './controls-common'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
@@ -178,9 +179,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
               pointerEvents: 'none',
             }}
           >
-            <CSSNumberLabel
-              prefix='Radius'
-              value={borderRadius.value}
+            <CanvasLabel
+              value={`Radius ${printCSSNumber(borderRadius.value, null)}`}
               scale={scale}
               color={color}
             />

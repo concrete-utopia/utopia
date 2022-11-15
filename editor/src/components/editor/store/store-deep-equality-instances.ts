@@ -3256,12 +3256,14 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.branchName,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.pendingCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     projectGithubSettings,
   )

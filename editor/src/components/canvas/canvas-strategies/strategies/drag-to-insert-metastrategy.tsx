@@ -54,7 +54,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
-import { ReparentStrategy } from './reparent-strategy-helpers'
+import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,

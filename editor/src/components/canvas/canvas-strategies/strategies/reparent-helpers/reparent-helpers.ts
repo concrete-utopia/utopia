@@ -1,18 +1,18 @@
-import { foldEither } from '../../../../core/shared/either'
+import { foldEither } from '../../../../../core/shared/either'
 import {
   ElementInstanceMetadataMap,
   elementReferencesElsewhere,
-} from '../../../../core/shared/element-template'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { CSSCursor } from '../../canvas-types'
-import { setCursorCommand } from '../../commands/set-cursor-command'
+} from '../../../../../core/shared/element-template'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { CSSCursor } from '../../../canvas-types'
+import { setCursorCommand } from '../../../commands/set-cursor-command'
 import {
   InteractionCanvasState,
   strategyApplicationResult,
   StrategyApplicationResult,
-} from '../canvas-strategy-types'
-import { ProjectContentTreeRoot } from '../../../assets'
+} from '../../canvas-strategy-types'
+import { ProjectContentTreeRoot } from '../../../../assets'
 
 export function isGeneratedElement(
   projectContents: ProjectContentTreeRoot,

@@ -139,6 +139,7 @@ data ServiceCallsF a = NotFound
                      | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
                      | GetBranchContent Text Text Text Text (Maybe Text) (GetBranchContentResponse -> a)
                      | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)
+                     | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
                      deriving Functor
 
 {-
@@ -222,14 +223,14 @@ instance ToJSON UserResponse where
 
 data UserConfigurationResponse = UserConfigurationResponse
                                { _shortcutConfig :: Maybe Value,
-                                _themeConfig :: Maybe Value
+                                _themeConfig     :: Maybe Value
                                } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationResponse)
 
 data UserConfigurationRequest = UserConfigurationRequest
                               { _shortcutConfig :: Maybe Value,
-                                _themeConfig :: Maybe Value
+                                _themeConfig    :: Maybe Value
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)

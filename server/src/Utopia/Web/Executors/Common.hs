@@ -22,6 +22,7 @@ import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
+import qualified Data.ByteString.Lazy.Base64      as BLB64
 import qualified Data.Conduit                     as C
 import qualified Data.Conduit.Combinators         as C hiding (concatMap)
 import qualified Data.Conduit.List                as C hiding (map)
@@ -38,8 +39,8 @@ import           Network.OAuth.OAuth2
 import           Network.Wai
 import qualified Network.Wreq                     as WR
 import           Protolude                        hiding (Handler, concatMap,
-                                                   intersperse, map, yield,
-                                                   (<.>), getField)
+                                                   getField, intersperse, map,
+                                                   yield, (<.>))
 import           Servant
 import           Servant.Client                   hiding (Response)
 import           System.Directory
@@ -463,7 +464,7 @@ getGithubUsersPublicRepositories githubResources logger metrics pool userID = do
   result <- runExceptT $ do
     repositories <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Gives us a function that just takes the page.
-      let getPage = getUsersPublicRepositories accessToken 
+      let getPage = getUsersPublicRepositories accessToken
       -- Now we have a function compatible with `unfoldM`.
       let getUnfoldStep (Just page) = fmap (\result -> convertUsersRepositoriesResultToUnfold page result) $ getPage page
           getUnfoldStep Nothing = pure Nothing
@@ -484,3 +485,13 @@ saveAsset :: Maybe AWSResources -> SaveAsset
 saveAsset awsResource projectID path assetContent = do
   let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
   saveCall (projectID : path) assetContent
+
+saveGithubAssetToProject :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> [Text] -> m GithubSaveAssetResponse
+saveGithubAssetToProject githubResources awsResource logger metrics pool userID owner repository assetSha projectID path = do
+  result <- runExceptT $ do
+    assetBytes <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      blobResult <- getGitBlob accessToken owner repository assetSha
+      pure $ BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") blobResult
+    liftIO $ saveAsset awsResource projectID path assetBytes
+  pure $ either getGithubSaveAssetFailureFromReason getGithubSaveAssetSuccessFromResult result
+

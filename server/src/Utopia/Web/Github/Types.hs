@@ -412,9 +412,9 @@ instance ToJSON RepositoryOwner where
   toJSON = genericToJSON defaultOptions
 
 data UsersRepositoryPermissions = UsersRepositoryPermissions
-                                { admin       :: Bool
-                                , push        :: Bool
-                                , pull        :: Bool
+                                { admin :: Bool
+                                , push  :: Bool
+                                , pull  :: Bool
                                 }
                                 deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -425,14 +425,14 @@ instance ToJSON UsersRepositoryPermissions where
   toJSON = genericToJSON defaultOptions
 
 data UsersRepository = UsersRepository
-                     { full_name        :: Text
-                     , owner            :: RepositoryOwner
-                     , private          :: Bool
-                     , description      :: Maybe Text
-                     , name             :: Maybe Text
-                     , updated_at       :: UTCTime
-                     , default_branch   :: Text
-                     , permissions      :: UsersRepositoryPermissions
+                     { full_name      :: Text
+                     , owner          :: RepositoryOwner
+                     , private        :: Bool
+                     , description    :: Maybe Text
+                     , name           :: Maybe Text
+                     , updated_at     :: UTCTime
+                     , default_branch :: Text
+                     , permissions    :: UsersRepositoryPermissions
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -445,14 +445,14 @@ instance ToJSON UsersRepository where
 type GetUsersPublicRepositoriesResult = [UsersRepository]
 
 data RepositoryEntry = RepositoryEntry
-                     { fullName         :: Text
-                     , avatarUrl        :: Maybe Text
-                     , private          :: Bool
-                     , description      :: Maybe Text
-                     , name             :: Maybe Text
-                     , updatedAt        :: Maybe UTCTime
-                     , defaultBranch    :: Maybe Text
-                     , permissions      :: UsersRepositoryPermissions
+                     { fullName      :: Text
+                     , avatarUrl     :: Maybe Text
+                     , private       :: Bool
+                     , description   :: Maybe Text
+                     , name          :: Maybe Text
+                     , updatedAt     :: Maybe UTCTime
+                     , defaultBranch :: Maybe Text
+                     , permissions   :: UsersRepositoryPermissions
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -495,3 +495,37 @@ getUsersPublicRepositoriesFailureFromReason failureReason = GetUsersPublicReposi
 
 getUsersPublicRepositoriesSuccessFromContent :: [RepositoryEntry] -> GetUsersPublicRepositoriesResponse
 getUsersPublicRepositoriesSuccessFromContent repositories = GetUsersPublicRepositoriesResponseSuccess GetUsersPublicRepositoriesSuccess{..}
+
+data GithubSaveAssetSuccess = GithubSaveAssetSuccess
+                            {}
+                            deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GithubSaveAssetSuccess where
+  parseJSON = const $ pure GithubSaveAssetSuccess
+
+instance ToJSON GithubSaveAssetSuccess where
+  toJSON = const $ object []
+
+data GithubSaveAssetResponse = GithubSaveAssetResponseSuccess GithubSaveAssetSuccess
+                             | GithubSaveAssetResponseFailure GithubFailure
+                             deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GithubSaveAssetResponse where
+  parseJSON value =
+    let fileType = firstOf (key "type" . _String) value
+     in case fileType of
+          (Just "SUCCESS")  -> fmap GithubSaveAssetResponseSuccess $ parseJSON value
+          (Just "FAILURE")  -> fmap GithubSaveAssetResponseFailure $ parseJSON value
+          (Just unknownType)  -> fail ("Unknown type: " <> T.unpack unknownType)
+          _                   -> fail "No type for GithubSaveAssetResponse specified."
+
+instance ToJSON GithubSaveAssetResponse where
+  toJSON (GithubSaveAssetResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
+  toJSON (GithubSaveAssetResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
+
+getGithubSaveAssetFailureFromReason :: Text -> GithubSaveAssetResponse
+getGithubSaveAssetFailureFromReason failureReason = GithubSaveAssetResponseFailure GithubFailure{..}
+
+getGithubSaveAssetSuccessFromResult :: () -> GithubSaveAssetResponse
+getGithubSaveAssetSuccessFromResult _ = GithubSaveAssetResponseSuccess GithubSaveAssetSuccess
+

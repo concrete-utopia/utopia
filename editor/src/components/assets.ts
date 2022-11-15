@@ -504,6 +504,18 @@ export function addFileToProjectContents(
   return addAtCurrentIndex(tree, 0)
 }
 
+export function getProjectFileFromContents(contents: ProjectContentsTree): ProjectFile {
+  switch (contents.type) {
+    case 'PROJECT_CONTENT_FILE':
+      return contents.content
+    case 'PROJECT_CONTENT_DIRECTORY':
+      return contents.directory
+    default:
+      const _exhaustiveCheck: never = contents
+      throw new Error(`Unhandled contents ${JSON.stringify(contents)}`)
+  }
+}
+
 export function removeFromProjectContents(
   projectContents: ProjectContentTreeRoot,
   path: string,
