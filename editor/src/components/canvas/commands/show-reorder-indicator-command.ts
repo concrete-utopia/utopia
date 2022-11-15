@@ -1,7 +1,3 @@
-import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-} from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { findLastIndex, reverse } from '../../../core/shared/array-utils'
 import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
@@ -59,7 +55,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   )
   const forwardsOrBackwards = forceNotNull(
     'Should have a valid flex orientation.',
-    staticContainerDirection.forwardsOrBackwards,
+    staticContainerDirection.forwardOrReverse,
   )
   const siblings = MetadataUtils.getChildren(editor.jsxMetadata, command.target).map(
     (sibling) => sibling.elementPath,
@@ -91,12 +87,12 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     const succeedingSiblingPosition: CanvasRectangle = closestNextSiblingPosition.frame
 
     const targetLineBeforeSibling: CanvasRectangle =
-      newParentDirection === 'row'
+      newParentDirection === 'horizontal'
         ? canvasRectangle({
             x: getSiblingMidPointPosition(
               precedingSiblingPosition,
               succeedingSiblingPosition,
-              'row',
+              'horizontal',
               forwardsOrBackwards,
             ),
             y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
@@ -108,7 +104,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
             y: getSiblingMidPointPosition(
               precedingSiblingPosition,
               succeedingSiblingPosition,
-              'column',
+              'vertical',
               forwardsOrBackwards,
             ),
             width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
@@ -128,7 +124,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     }
   } else {
     const targetLineBeginningOfParent: CanvasRectangle =
-      newParentDirection === 'row'
+      newParentDirection === 'horizontal'
         ? canvasRectangle({
             x: parentFrame.x,
             y: parentFrame.y,

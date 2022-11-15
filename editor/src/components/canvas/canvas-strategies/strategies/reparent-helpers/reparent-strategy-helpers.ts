@@ -13,6 +13,7 @@ import {
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
 import { getDragTargets } from '../shared-move-strategies-helpers'
+import { Direction } from '../../../../inspector/common/css-utils'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
@@ -93,7 +94,7 @@ export interface ReparentTarget {
   newParent: ElementPath
   shouldReorder: boolean
   newIndex: number
-  shouldConvertToInline: 'row' | 'column' | 'do-not-convert'
+  shouldConvertToInline: Direction | 'do-not-convert'
   defaultReparentType: ReparentStrategy
 }
 
@@ -102,7 +103,7 @@ export function reparentTarget(
   newParent: ElementPath,
   shouldReorder: boolean,
   newIndex: number,
-  shouldConvertToInline: 'row' | 'column' | 'do-not-convert',
+  shouldConvertToInline: Direction | 'do-not-convert',
   defaultReparentType: ReparentStrategy,
 ): ReparentTarget {
   return {

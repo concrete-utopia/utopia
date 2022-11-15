@@ -14,16 +14,12 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber } from '../../../inspector/common/css-utils'
+import { CSSNumber, FlexDirection } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import {
-  cursorFromFlexDirection,
-  gapControlBoundsFromMetadata,
-  SimpleFlexDirectionForGap,
-} from '../../gap-utils'
+import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -38,7 +34,7 @@ import {
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
-  flexDirection: SimpleFlexDirectionForGap
+  flexDirection: FlexDirection
   updatedGapValue: CSSNumberWithRenderedValue
 }
 
@@ -157,7 +153,7 @@ interface GapControlSegmentProps {
   handleHoverEnd: () => void
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
-  flexDirection: SimpleFlexDirectionForGap
+  flexDirection: FlexDirection
   gapValue: CSSNumber
   indicatorShown: string | null
   path: string
@@ -255,7 +251,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   )
 })
 
-function handleDimensions(flexDirection: SimpleFlexDirectionForGap, scale: number): Size {
+function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
     return size(4 / scale, 12 / scale)
   }

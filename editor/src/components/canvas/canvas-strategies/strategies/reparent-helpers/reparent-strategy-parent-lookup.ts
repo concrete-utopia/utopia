@@ -1,4 +1,3 @@
-import { SimpleFlexDirection } from '../../../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
@@ -18,6 +17,7 @@ import {
 } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../../editor/store/editor-state'
+import { Direction } from '../../../../inspector/common/css-utils'
 import { getAllTargetsAtPointAABB } from '../../../dom-lookup'
 import { InteractionCanvasState } from '../../canvas-strategy-types'
 import { AllowSmallerParent } from '../../interaction-state'
@@ -265,7 +265,11 @@ function findParentByPaddedInsertionZone(
 
   // first try to find a flex element insertion area
   for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
-    const { direction, forwardsOrBackwards, flexOrFlow } = singleAxisAutoLayoutContainer.directions
+    const {
+      direction,
+      forwardOrReverse: forwardsOrBackwards,
+      flexOrFlow,
+    } = singleAxisAutoLayoutContainer.directions
 
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
@@ -363,9 +367,9 @@ function findIndexForSingleAxisAutolayoutParent(
   pointOnCanvas: CanvasPoint,
 ): {
   targetUnderMouseIndex: number
-  shouldConvertToInline: SimpleFlexDirection | 'do-not-convert'
+  shouldConvertToInline: Direction | 'do-not-convert'
 } {
-  const { direction, forwardsOrBackwards, flexOrFlow } = autolayoutDirection
+  const { direction, forwardOrReverse: forwardsOrBackwards, flexOrFlow } = autolayoutDirection
 
   const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
     drawTargetRectanglesForChildrenOfElement(

@@ -1,10 +1,4 @@
 import React from 'react'
-import {
-  flexDirectionToFlexForwardsOrBackwards,
-  flexDirectionToSimpleFlexDirection,
-  FlexForwardsOrBackwards,
-  SimpleFlexDirection,
-} from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -65,34 +59,23 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     ) {
       return null
     }
-    let direction: SimpleFlexDirection | null = null
-    let forwardsOrBackwards: FlexForwardsOrBackwards | null = null
 
-    if (parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex') {
-      direction = flexDirectionToSimpleFlexDirection(
-        parentElement.specialSizeMeasurements.flexDirection,
-      )
-      forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(
-        parentElement.specialSizeMeasurements.flexDirection,
-      )
-    }
-    if (direction == null || forwardsOrBackwards == null) {
+    if (parentElement.specialSizeMeasurements.layoutSystemForChildren !== 'flex') {
       return null
     }
+
+    const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
 
     const children = MetadataUtils.getChildren(jsxMetadata, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
       direction,
-      forwardsOrBackwards,
+      forwardOrReverse,
       parentFrame,
       children.map((m) => m.elementPath),
       jsxMetadata,
     )
-
-    const nonNullDirection: SimpleFlexDirection = direction
-    const nonNullForwardsOrBackwards: FlexForwardsOrBackwards = forwardsOrBackwards
 
     function getBetweenChildrenPosition(index: number): number {
       const precedingSiblingPosition: CanvasRectangle = siblingPositions[index].frame
@@ -100,8 +83,8 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return getSiblingMidPointPosition(
         precedingSiblingPosition,
         succeedingSiblingPosition,
-        nonNullDirection,
-        nonNullForwardsOrBackwards,
+        direction,
+        forwardOrReverse,
       )
     }
 
@@ -109,20 +92,20 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       for (let index = 0; index < siblingPositions.length - 1; index++) {
         const insertionIndex = siblingPositions[index].index
         const positionX =
-          direction == 'column'
+          direction == 'vertical'
             ? parentFrame.x - InsertionButtonOffset
             : getBetweenChildrenPosition(index)
         const positionY =
-          direction == 'column'
+          direction == 'vertical'
             ? getBetweenChildrenPosition(index)
             : parentFrame.y - InsertionButtonOffset
 
         const lineEndX =
-          direction == 'column'
+          direction == 'vertical'
             ? parentFrame.x + parentFrame.width
             : getBetweenChildrenPosition(index)
         const lineEndY =
-          direction == 'column'
+          direction == 'vertical'
             ? getBetweenChildrenPosition(index)
             : parentFrame.y + parentFrame.height
         controlProps.push({
@@ -132,7 +115,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
           positionY: positionY,
           lineEndX: lineEndX,
           lineEndY: lineEndY,
-          isHorizontalLine: direction === 'column',
+          isHorizontalLine: direction === 'vertical',
           parentPath: parentPath,
           indexPosition: {
             type: 'absolute',
@@ -142,12 +125,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       }
     } else {
       const positionX =
-        direction == 'column' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
+        direction == 'vertical' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
       const positionY =
-        direction == 'column' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
+        direction == 'vertical' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
 
-      const lineEndX = direction == 'column' ? parentFrame.x + parentFrame.width : parentFrame.y
-      const lineEndY = direction == 'column' ? parentFrame.x : parentFrame.y + parentFrame.height
+      const lineEndX = direction == 'vertical' ? parentFrame.x + parentFrame.width : parentFrame.y
+      const lineEndY = direction == 'vertical' ? parentFrame.x : parentFrame.y + parentFrame.height
       controlProps.push({
         identifier: `control-0`,
         scale: scale,
@@ -155,7 +138,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         positionY: positionY,
         lineEndX: lineEndX,
         lineEndY: lineEndY,
-        isHorizontalLine: direction === 'column',
+        isHorizontalLine: direction === 'vertical',
         parentPath: parentPath,
         indexPosition: {
           type: 'absolute',
