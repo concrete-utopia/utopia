@@ -419,11 +419,8 @@ import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
-import {
-  getReparentPropertyChanges,
-  reparentStrategyForParent,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
@@ -461,6 +458,7 @@ import {
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
+import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -2812,10 +2810,9 @@ export const UPDATE_FNS = {
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
 
-          const reparentStrategy = reparentStrategyForParent(
+          const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
             action.pasteInto,
-            false,
           )
           const pastedElementIsFlex =
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(

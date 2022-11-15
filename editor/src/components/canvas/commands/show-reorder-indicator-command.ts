@@ -3,6 +3,7 @@ import {
   flexDirectionToSimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { findLastIndex, reverse } from '../../../core/shared/array-utils'
 import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -11,7 +12,8 @@ import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/st
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-} from '../canvas-strategies/strategies/reparent-strategy-helpers'
+  SiblingPosition,
+} from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ShowReorderIndicator extends BaseCommand {
@@ -63,7 +65,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     (sibling) => sibling.elementPath,
   )
 
-  const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
+  const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
     newParentDirection,
     forwardsOrBackwards,
     parentFrame,
@@ -72,8 +74,21 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   )
 
   if (siblings.length > 0) {
-    const precedingSiblingPosition: CanvasRectangle = siblingPositions[command.index]
-    const succeedingSiblingPosition: CanvasRectangle = siblingPositions[command.index + 1]
+    const closestPreviousSiblingPositionIndex = findLastIndex(
+      (siblingPosition) => siblingPosition.index <= command.index,
+      siblingPositions,
+    )
+    const closestPreviousSiblingPosition = forceNotNull(
+      'no sibling found for reorder indicator',
+      siblingPositions[closestPreviousSiblingPositionIndex],
+    )
+    const closestNextSiblingPosition = forceNotNull(
+      'no sibling found for reorder indicator',
+      siblingPositions.find((siblingPosition) => siblingPosition.index > command.index),
+    )
+
+    const precedingSiblingPosition: CanvasRectangle = closestPreviousSiblingPosition.frame
+    const succeedingSiblingPosition: CanvasRectangle = closestNextSiblingPosition.frame
 
     const targetLineBeforeSibling: CanvasRectangle =
       newParentDirection === 'row'
