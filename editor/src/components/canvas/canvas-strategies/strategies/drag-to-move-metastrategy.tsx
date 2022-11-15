@@ -15,6 +15,7 @@ import {
   emptyStrategyApplicationResult,
   controlWithProps,
   MoveStrategy,
+  strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
@@ -70,13 +71,13 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
   if (foundStrategies.length > 0) {
     return [
       ...reparentStrategies,
-      ...dragStrategies.map((s) => {
+      ...dragStrategies.map((strategy) => {
         const indicatorCommand = wildcardPatch('mid-interaction', {
           canvas: {
             controls: {
               dragToMoveIndicatorFlags: {
                 $set: {
-                  dragType: s.dragType,
+                  dragType: strategy.dragType,
                   reparent: false,
                   ancestor: false,
                 },
@@ -85,28 +86,13 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
           },
         })
         return {
-          ...s.strategy,
-          apply: appendCommandsToApplyResult(s.strategy.apply, [indicatorCommand]),
+          ...strategy.strategy,
+          apply: appendCommandsToApplyResult(strategy.strategy.apply, [indicatorCommand]),
         }
       }),
     ]
   } else {
-    const noneStrategy = doNothingStrategy(canvasState, interactionSession, customStrategyState)
-    const indicatorCommand = wildcardPatch('mid-interaction', {
-      canvas: {
-        controls: {
-          dragToMoveIndicatorFlags: {
-            $set: { dragType: 'none', reparent: false, ancestor: false },
-          },
-        },
-      },
-    })
-    return [
-      {
-        ...noneStrategy,
-        apply: appendCommandsToApplyResult(noneStrategy.apply, [indicatorCommand]),
-      },
-    ]
+    return [doNothingStrategy(canvasState, interactionSession, customStrategyState)]
   }
 }
 
@@ -141,7 +127,17 @@ export function doNothingStrategy(
     ],
     fitness: 1.5,
     apply: () => {
-      return emptyStrategyApplicationResult
+      return strategyApplicationResult([
+        wildcardPatch('mid-interaction', {
+          canvas: {
+            controls: {
+              dragToMoveIndicatorFlags: {
+                $set: { dragType: 'none', reparent: false, ancestor: false },
+              },
+            },
+          },
+        }),
+      ])
     },
   }
 }
