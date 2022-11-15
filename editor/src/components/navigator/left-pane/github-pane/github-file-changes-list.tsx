@@ -209,15 +209,13 @@ export const GithubFileChangesList: React.FC<{
                 cursor: conflicting ? 'help' : 'default',
               }}
             >
-              <FlexRow style={{ flex: 1, gap: 2 }}>
+              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
                 <GithubFileStatusLetter status={i.status} />
                 <FlexRow style={{ gap: 2 }}>
-                  <>
-                    <Ellipsis>{i.filename}</Ellipsis>
-                    {when(conflicting, <WarningIcon color='error' />)}
-                  </>
+                  <Ellipsis>{i.filename}</Ellipsis>
+                  {when(conflicting, <WarningIcon color='error' />)}
                 </FlexRow>
-              </FlexRow>
+              </UIGridRow>
               {when(
                 revertable && !isTreeConflict,
                 <RevertButton
