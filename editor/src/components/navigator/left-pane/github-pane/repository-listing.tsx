@@ -1,5 +1,6 @@
 import React from 'react'
 import TimeAgo from 'react-timeago'
+import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
@@ -88,7 +89,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
   }, [dispatch, props.fullName, props.defaultBranch, currentRepo])
 
   return (
-    <FlexRow style={{ justifyContent: 'space-between' }}>
+    <UIGridRow padded variant='<----------1fr---------><-auto->' style={{ paddingTop: 4 }}>
       <FlexColumn>
         <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
@@ -110,7 +111,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       >
         {importing ? <GithubSpinner /> : 'Load'}
       </Button>
-    </FlexRow>
+    </UIGridRow>
   )
 }
 
@@ -226,10 +227,9 @@ export const RepositoryListing = React.memo(
     }
 
     return (
-      <FlexColumn style={{ gap: 10, paddingBottom: 10 }}>
-        <FlexRow style={{ gap: 4 }}>
+      <FlexColumn style={{ gap: 10, paddingBottom: 20 }}>
+        <UIGridRow padded={false} variant={'<----------1fr---------><-auto->'}>
           <StringInput
-            style={{ flex: 1 }}
             placeholder={
               filteredRepositoriesWithSpecialCases == null
                 ? 'Loading repositories...'
@@ -251,15 +251,14 @@ export const RepositoryListing = React.memo(
           >
             {isLoadingRepositories ? <GithubSpinner /> : <RefreshIcon />}
           </Button>
-        </FlexRow>
+        </UIGridRow>
         <FlexColumn
           style={{
             height: 220,
             overflowY: 'scroll',
-            padding: 8,
             border: '1px solid #2D2E33',
-            borderRadius: 3,
-            gap: 8,
+            borderRadius: 2,
+            gap: 4,
           }}
         >
           {filteredRepositoriesWithSpecialCases == null ? (
@@ -274,11 +273,11 @@ export const RepositoryListing = React.memo(
             })
           )}
         </FlexColumn>
-        <FlexRow>
+        <div>
           <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
             Create new repository on Github.
           </a>
-        </FlexRow>
+        </div>
       </FlexColumn>
     )
   },

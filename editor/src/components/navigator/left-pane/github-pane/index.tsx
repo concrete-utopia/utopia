@@ -352,7 +352,7 @@ const BranchBlock = () => {
         <UIGridRow
           padded={false}
           variant='<-------------1fr------------->'
-          style={{ paddingBottom: 10 }}
+          style={{ paddingBottom: 20 }}
         >
           <FlexColumn style={{ gap: 8 }}>
             <FlexRow style={{ gap: 4 }}>
@@ -379,7 +379,7 @@ const BranchBlock = () => {
                 overflowY: 'scroll',
                 padding: 8,
                 border: '1px solid #2D2E33',
-                borderRadius: 3,
+                borderRadius: 2,
                 gap: 8,
               }}
             >
@@ -556,7 +556,7 @@ const RemoteChangesBlock = () => {
     >
       {when(
         hasUpstreamChanges,
-        <FlexColumn style={{ gap: 10, paddingBottom: 10 }}>
+        <FlexColumn style={{ gap: 10, paddingBottom: 20 }}>
           <GithubFileChangesList
             conflicts={bothModified}
             revertable={false}

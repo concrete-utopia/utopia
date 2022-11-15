@@ -194,17 +194,25 @@ export const GithubFileChangesList: React.FC<{
           onClickRevertAll={handleClickRevertAllFiles}
         />
       )}
-      <FlexColumn style={{ border: '1px solid #2D2E33', borderRadius: 2 }}>
+      <FlexColumn
+        style={{
+          border: '1px solid #2D2E33',
+          borderRadius: 2,
+          paddingTop: 4,
+          paddingBottom: 4,
+        }}
+      >
         {list.map((i) => {
           const conflicting = conflicts?.includes(i.filename) || false
           const isTreeConflict = i.filename in treeConflicts
           return (
             <UIGridRow
               key={i.filename}
-              padded
+              padded={false}
               variant='<----------1fr---------><-auto->'
               title={conflicting ? 'Potential conflicts' : i.filename}
               style={{
+                paddingRight: 6,
                 color: conflicting ? '#f00' : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
               }}
