@@ -10,6 +10,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
+  Emdash,
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
@@ -206,6 +207,12 @@ function flexGapValueIndicatorProps(
 
   const dragDelta = Math.max(-flexGap.value.renderedValuePx, rawDragDelta)
 
+  const rawFlexGapMeasurement = offsetMeasurementByDelta(
+    flexGap.value,
+    rawDragDelta,
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
+  )
+
   const updatedFlexGapMeasurement = offsetMeasurementByDelta(
     flexGap.value,
     dragDelta,
@@ -218,9 +225,9 @@ function flexGapValueIndicatorProps(
 
   return {
     value:
-      rawDragDelta + flexGap.value.renderedValuePx > FlexGapTearThreshold
+      rawFlexGapMeasurement.renderedValuePx > FlexGapTearThreshold
         ? printCSSNumber(updatedFlexGapMeasurement.value, null)
-        : '\u2014', // emdash
+        : Emdash, // emdash
     position: position,
   }
 }

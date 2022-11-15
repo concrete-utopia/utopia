@@ -1,7 +1,9 @@
 import React from 'react'
-import { CanvasVector, roundTo } from '../../../../core/shared/math-utils'
+import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+
+export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber
@@ -146,4 +148,15 @@ export function useHoverWithDelay(
   }
 
   return [onHoverStart, onHoverEnd]
+}
+
+export function indicatorMessage(
+  value: CSSNumberWithRenderedValue,
+  threshold: number,
+): string | number {
+  if (value.renderedValuePx > threshold) {
+    return printCSSNumber(value.value, null)
+  }
+
+  return // emdash
 }

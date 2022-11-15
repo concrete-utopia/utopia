@@ -38,6 +38,8 @@ import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
+  Emdash,
+  indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
@@ -309,15 +311,11 @@ function paddingValueIndicatorProps(
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
-  const message = (): string | number => {
-    if (updatedPaddingMeasurement.renderedValuePx >= PaddingTearThreshold) {
-      return printCSSNumber(maxedPaddingMeasurement.value, null)
-    }
-    return '\u2014' // emdash
-  }
-
   return {
-    value: message(),
+    value:
+      updatedPaddingMeasurement.renderedValuePx > PaddingTearThreshold
+        ? printCSSNumber(maxedPaddingMeasurement.value, null)
+        : Emdash,
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }
