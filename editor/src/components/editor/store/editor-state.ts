@@ -1170,6 +1170,7 @@ export interface EditorState {
   githubOperations: Array<GithubOperation>
   githubChecksums: GithubChecksums | null
   githubData: GithubData
+  refreshingDependencies: boolean
 }
 
 export function editorState(
@@ -1243,6 +1244,7 @@ export function editorState(
   githubChecksums: GithubChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
+  refreshingDependencies: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1315,6 +1317,7 @@ export function editorState(
     githubOperations: githubOperations,
     githubChecksums: githubChecksums,
     githubData: githubData,
+    refreshingDependencies: refreshingDependencies,
   }
 }
 
@@ -2130,6 +2133,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubChecksums: null,
     branchContents: null,
     githubData: emptyGithubData(),
+    refreshingDependencies: false,
   }
 }
 
@@ -2425,6 +2429,7 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    refreshingDependencies: false,
     githubChecksums: persistentModel.githubChecksums,
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),

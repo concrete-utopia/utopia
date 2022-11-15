@@ -1,7 +1,9 @@
 import React from 'react'
-import { CanvasVector, roundTo } from '../../../../core/shared/math-utils'
+import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+
+export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber
@@ -69,13 +71,13 @@ export const offsetMeasurementByDelta = (
 const FontSize = 12
 const Padding = 4
 
-interface PaddingValueLabelProps {
+interface CanvasLabelProps {
   scale: number
   color: string
-  value: CSSNumber
+  value: string | number
 }
 
-export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.Element => {
+export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
@@ -88,7 +90,7 @@ export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.El
         color: 'white',
       }}
     >
-      {printCSSNumber(value, null)}
+      {value}
     </div>
   )
 })
@@ -145,4 +147,15 @@ export function useHoverWithDelay(
   }
 
   return [onHoverStart, onHoverEnd]
+}
+
+export function indicatorMessage(
+  isOverThreshold: boolean,
+  value: CSSNumberWithRenderedValue,
+): string | number {
+  if (isOverThreshold) {
+    return printCSSNumber(value.value, null)
+  }
+
+  return Emdash // emdash
 }

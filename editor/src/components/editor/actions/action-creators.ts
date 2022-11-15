@@ -216,6 +216,7 @@ import type {
   UpdateAgainstGithub,
   UpdateGithubData,
   RemoveFileConflict,
+  SetRefreshingDependencies,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1470,6 +1471,13 @@ export function updateGithubOperations(
     action: 'UPDATE_GITHUB_OPERATIONS',
     operation: operation,
     type: type,
+  }
+}
+
+export function setRefreshingDependencies(value: boolean): SetRefreshingDependencies {
+  return {
+    action: 'SET_REFRESHING_DEPENDENCIES',
+    value: value,
   }
 }
 

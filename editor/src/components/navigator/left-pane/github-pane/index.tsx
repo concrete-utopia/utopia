@@ -27,6 +27,7 @@ import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -345,6 +346,12 @@ const BranchBlock = () => {
       (b) => branchFilter.length === 0 || b.name.includes(branchFilter),
     )
   }, [branchesForRepository, branchFilter])
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
+  )
+
+  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const loadBranchesUI = React.useMemo(() => {
     return (
@@ -389,6 +396,8 @@ const BranchBlock = () => {
                       storedTargetGithubRepo,
                       branch.name,
                       false,
+                      currentDependencies,
+                      builtInDependencies,
                     ).then(() => setExpanded(false))
                   }
                 }
@@ -440,6 +449,8 @@ const BranchBlock = () => {
     updateBranchFilter,
     setExpanded,
     filteredBranches,
+    builtInDependencies,
+    currentDependencies,
   ])
 
   const githubAuthenticated = useEditorState(

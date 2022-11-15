@@ -1,6 +1,7 @@
 import React from 'react'
 import TimeAgo from 'react-timeago'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
@@ -14,7 +15,7 @@ import {
   RepositoryEntry,
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
-import { Button, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
+import { FlexColumn, Button, StringInput } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
@@ -61,6 +62,11 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
+  )
+  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const importRepository = React.useCallback(() => {
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
@@ -83,10 +89,19 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         parsedTargetRepository,
         props.defaultBranch,
         isAnotherRepo,
+        currentDependencies,
+        builtInDependencies,
       )
       setImporting(true)
     }
-  }, [dispatch, props.fullName, props.defaultBranch, currentRepo])
+  }, [
+    dispatch,
+    props.fullName,
+    props.defaultBranch,
+    currentRepo,
+    builtInDependencies,
+    currentDependencies,
+  ])
 
   return (
     <UIGridRow padded variant='<----------1fr---------><-auto->' style={{ paddingTop: 4 }}>

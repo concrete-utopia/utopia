@@ -3531,6 +3531,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
 
+  const refreshingDependenciesResults = BooleanKeepDeepEquality(
+    oldValue.refreshingDependencies,
+    newValue.refreshingDependencies,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3601,7 +3606,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubOperationsResults.areEqual &&
     githubChecksumsResults.areEqual &&
     branchContentsResults.areEqual &&
-    githubDataResults.areEqual
+    githubDataResults.areEqual &&
+    refreshingDependenciesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3677,6 +3683,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubChecksumsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
+      refreshingDependenciesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
