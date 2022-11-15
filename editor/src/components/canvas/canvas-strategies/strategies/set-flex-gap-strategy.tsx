@@ -39,7 +39,7 @@ export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
 const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
 
-export const FlexGapTearThreshold: number = -20
+export const FlexGapTearThreshold: number = -25
 
 export const setFlexGapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,

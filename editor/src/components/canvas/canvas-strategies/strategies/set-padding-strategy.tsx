@@ -51,7 +51,7 @@ const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingRight',
 ]
 
-const PaddingTearThreshold: number = -20
+const PaddingTearThreshold: number = -25
 
 export const SetPaddingStrategyName = 'Set Padding'
 
@@ -146,8 +146,14 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const currentPadding = paddingForEdge(edgePiece, padding)
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const delta = Math.max(-currentPadding, rawDelta)
-
       const newPadding = offsetPaddingByEdge(
+        edgePiece,
+        rawDelta,
+        padding,
+        precisionFromModifiers(interactionSession.interactionData.modifiers),
+      )
+
+      const newPaddingMaxed = offsetPaddingByEdge(
         edgePiece,
         delta,
         padding,
@@ -169,13 +175,13 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             stylePropPathMappingFn(paddingPropToBeRemoved, ['style']),
           ]),
           ...IndividualPaddingProps.filter(
-            (p) => p !== paddingPropToBeRemoved && newPadding[p].renderedValuePx > 0,
+            (p) => p !== paddingPropToBeRemoved && newPaddingMaxed[p].renderedValuePx > 0,
           ).map((p) =>
             setProperty(
               'always',
               selectedElement,
               stylePropPathMappingFn(p, ['style']),
-              printCSSNumber(newPadding[p].value, null),
+              printCSSNumber(newPaddingMaxed[p].value, null),
             ),
           ),
         ])
@@ -186,7 +192,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       if (allPaddingPropsHigherThanZero) {
-        const paddingString = paddingToPaddingString(newPadding)
+        const paddingString = paddingToPaddingString(newPaddingMaxed)
         return strategyApplicationResult([
           ...basicCommands,
           ...IndividualPaddingProps.map((p) =>
@@ -202,12 +208,12 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, ['style'])),
         ]),
-        ...IndividualPaddingProps.filter((p) => newPadding[p].renderedValuePx > 0).map((p) =>
+        ...IndividualPaddingProps.filter((p) => newPaddingMaxed[p].renderedValuePx > 0).map((p) =>
           setProperty(
             'always',
             selectedElement,
             stylePropPathMappingFn(p, ['style']),
-            printCSSNumber(newPadding[p].value, null),
+            printCSSNumber(newPaddingMaxed[p].value, null),
           ),
         ),
       ])
