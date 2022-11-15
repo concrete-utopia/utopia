@@ -3,14 +3,13 @@ import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifiers } from '../../../../utils/modifiers'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
-  Emdash,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -25,7 +24,6 @@ import {
   dragDeltaForOrientation,
   FlexGapData,
   maybeFlexGapFromElement,
-  SimpleFlexDirectionForGap,
 } from '../../gap-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -174,7 +172,7 @@ function modifiersFromInteractionSession(
 }
 
 function isDragOverThreshold(
-  direction: SimpleFlexDirectionForGap,
+  direction: FlexDirection,
   { gapPx, deltaPx }: { gapPx: number; deltaPx: number },
 ): boolean {
   switch (direction) {

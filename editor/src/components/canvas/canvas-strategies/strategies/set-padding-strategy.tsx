@@ -3,7 +3,6 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -24,6 +23,7 @@ import {
   paddingForEdge,
   paddingPropForEdge,
   paddingToPaddingString,
+  printCssNumberWithDefaultUnit,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
@@ -184,7 +184,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               'always',
               selectedElement,
               stylePropPathMappingFn(p, ['style']),
-              printCSSNumber(newPaddingMaxed[p].value, null),
+              printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
             ),
           ),
         ])
@@ -216,7 +216,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             'always',
             selectedElement,
             stylePropPathMappingFn(p, ['style']),
-            printCSSNumber(newPaddingMaxed[p].value, null),
+            printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
           ),
         ),
       ])

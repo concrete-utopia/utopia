@@ -401,7 +401,7 @@ describe('Padding resize strategy', () => {
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithLongHandPaddingValues({
-        paddingTop: `10`,
+        paddingTop: `'10px'`,
         paddingLeft: `'10px'`,
         paddingRight: `'10px'`,
       }),
