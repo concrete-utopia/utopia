@@ -39,7 +39,7 @@ export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
 const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
 
-export const FlexGapTearThreshold: number = -50
+export const FlexGapTearThreshold: number = -20
 
 export const setFlexGapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -220,7 +220,7 @@ function flexGapValueIndicatorProps(
     value:
       rawDragDelta + flexGap.value.renderedValuePx > FlexGapTearThreshold
         ? printCSSNumber(updatedFlexGapMeasurement.value, null)
-        : 'Remove gap from props',
+        : '\u2014', // emdash
     position: position,
   }
 }
