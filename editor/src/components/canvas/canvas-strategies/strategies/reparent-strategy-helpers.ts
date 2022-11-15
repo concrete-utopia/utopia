@@ -1,4 +1,3 @@
-import { Direction } from 'react-window'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import {
@@ -31,7 +30,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
-import { CSSPosition, ForwardOrReverse } from '../../../inspector/common/css-utils'
+import { CSSPosition, Direction, ForwardOrReverse } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor } from '../../canvas-types'
 import {

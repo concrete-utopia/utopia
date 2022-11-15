@@ -419,8 +419,14 @@ export const MetadataUtils = {
     direction: Direction
     forwardOrReverse: ForwardOrReverse
   } {
-    // TODO move the actual helper functions here
-    const flexDirection = MetadataUtils.getFlexDirection(instance)
+    return MetadataUtils.flexDirectionToSimpleFlexDirection(
+      MetadataUtils.getFlexDirection(instance),
+    )
+  },
+  flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
+  } {
     const direction: Direction = (() => {
       switch (flexDirection) {
         case 'row':

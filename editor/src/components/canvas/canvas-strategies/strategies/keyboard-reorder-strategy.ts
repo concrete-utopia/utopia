@@ -124,7 +124,9 @@ function getIndexChangesForArrowKeys(element: ElementInstanceMetadata | null): {
     if (
       MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(element)
     ) {
-      const { forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(element)
+      const { forwardOrReverse } = MetadataUtils.flexDirectionToSimpleFlexDirection(
+        element?.specialSizeMeasurements.parentFlexDirection ?? 'row',
+      )
 
       // when flex is reversed we need to move the opposite way in the indexes as in the screen
       if (forwardOrReverse === 'reverse') {
