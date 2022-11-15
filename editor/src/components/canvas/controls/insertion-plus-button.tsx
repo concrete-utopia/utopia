@@ -9,8 +9,8 @@ import { useEditorState } from '../../editor/store/store-hook'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
+  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
-import { SiblingPosition } from '../canvas-strategies/strategies/reparent-strategy-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const InsertionButtonOffset = 10
