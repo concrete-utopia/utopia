@@ -1,17 +1,48 @@
 import { base } from './base'
 import { dark } from './dark'
-import { light, lightPrimitives } from './light'
-
-export type ColorTheme = typeof colorTheme
-
-export const colorTheme = { ...light, inverted: dark }
-export const darkColorTheme = { ...dark, inverted: light }
+import { light } from './light'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
 const inspectorSmallWidth = 255
 const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
+
+export const colorTheme = { ...light, inverted: dark }
+export const darkColorTheme = { ...dark, inverted: light }
+
+export type ColorTheme = typeof colorTheme
+
+// export interface UtopiaTheme {
+//   layout: {
+//     rowHorizontalPadding: number | string
+//     rowButtonSpacing: number | string
+//     rowHeight: {
+//       smaller: number | string
+//       normal: number | string
+//       large: number | string
+//       max: number | string
+//     }
+//     inputHeight: {
+//       small: number | string
+//       default: number | string
+//       tall: number | string
+//     }
+//     inspectorXPadding: number | string
+//     inspectorSmallPaddedWidth: number | string
+//     inspectorSmallWidth: number | string
+//     inspectorLargeWidth: number | string
+//     canvasMenuWidth: number | string
+//     inspectorModalBaseOffset: number | string
+//   }
+//   inputBorderRadius: number | string
+//   styles: {
+//     inspectorSetSelectedOpacity: number | string
+//     inspectorUnsetSelectedOpacity: number | string
+//     inspectorSetUnselectedOpacity: number | string
+//     inspectorUnsetUnselectedOpacity: number | string
+//   }
+// }
 
 export const UtopiaTheme = {
   layout: {
@@ -36,7 +67,6 @@ export const UtopiaTheme = {
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
   inputBorderRadius: 2,
-  color: colorTheme,
   styles: {
     inspectorSetSelectedOpacity: 1,
     inspectorUnsetSelectedOpacity: 0.3,
@@ -80,10 +110,10 @@ const canvas = {
 
 const scene = {
   live: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(20).value}`,
+    boxShadow: `0px 0px 1px 0px ${light.neutralInvertedBackground.o(20).value}`,
   },
   editing: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(30).value}`,
+    boxShadow: `0px 0px 1px 0px ${light.neutralInvertedBackground.o(30).value}`,
   },
 }
 
@@ -160,9 +190,9 @@ const shadowStyles = {
 }
 
 const popup: React.CSSProperties = {
-  background: lightPrimitives.neutralBackground.value,
-  boxShadow: `inset 0px 0px 0px .5px ${UtopiaTheme.color.border3.value} , 0px 2px 4px 0px ${
-    UtopiaTheme.color.fg6.o(50).value
+  background: light.neutralBackground.value,
+  boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${
+    colorTheme.fg6.o(50).value
   }`,
   paddingTop: 4,
   paddingBottom: 4,
@@ -171,13 +201,14 @@ const popup: React.CSSProperties = {
 
 const checkerboardBackground: Pick<
   React.CSSProperties,
-  'backgroundImage' | 'backgroundSize' | 'backgroundPosition'
+  'backgroundImage' | 'backgroundSize' | 'backgroundPosition' | 'background'
 > = {
   backgroundImage: `
     linear-gradient(to bottom left,   #e7e7e7 25%,  transparent 25%),
     linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
     linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
     linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
+  background: `repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px`,
   backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
   backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
 }

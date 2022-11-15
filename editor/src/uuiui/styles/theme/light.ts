@@ -37,7 +37,7 @@ const lightBase = {
   border3: createUtopiColor('hsl(0,0%,83%)'),
 }
 
-export const lightPrimitives = {
+const lightPrimitives = {
   // backgrounds
   emphasizedBackground: lightBase.bg0,
   emphasizedBackgroundPop: createUtopiColor('rgba(252,252,252,1)'),

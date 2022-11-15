@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { auth0Url } from '../../common/env-vars'
-import { LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
+import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
@@ -23,7 +23,11 @@ const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 interface ProjectTitleProps {}
 
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
-  return <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px' }}>{children}</div>
+  return (
+    <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px', color: colorTheme.fg0.value }}>
+      {children}
+    </div>
+  )
 }
 
 const TitleBar = React.memo(() => {
@@ -64,6 +68,7 @@ const TitleBar = React.memo(() => {
   return (
     <SimpleFlexRow
       style={{
+        backgroundColor: colorTheme.bg0.value,
         padding: '0 10px 0 10px',
         flexGrow: 0,
         height: 40,

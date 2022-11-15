@@ -16,7 +16,6 @@ import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import {
-  UtopiaTheme,
   Section,
   SectionTitleRow,
   FlexRow,
@@ -26,6 +25,7 @@ import {
   InspectorSectionHeader,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
+import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -171,7 +171,7 @@ export const NavigatorComponent = React.memo(() => {
           ref={itemListRef}
           width={'100%'}
           height={size.height}
-          itemSize={UtopiaTheme.layout.rowHeight.smaller}
+          itemSize={UtopiaTheme.layout.rowHeight.smaller as number}
           itemCount={visibleNavigatorTargets.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}

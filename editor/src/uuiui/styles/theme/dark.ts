@@ -2,7 +2,6 @@ import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { light } from './light'
 
-/** DARK **/
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
@@ -39,7 +38,7 @@ const darkBase = {
   border3: createUtopiColor('#181C20'),
 }
 
-export const darkPrimitives = {
+const darkPrimitives = {
   // backgrounds
   emphasizedBackground: darkBase.bg0,
   emphasizedBackgroundPop: createUtopiColor('rgba(0,0,0,1)'),
