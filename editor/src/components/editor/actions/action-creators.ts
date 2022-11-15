@@ -215,6 +215,7 @@ import type {
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
+  RemoveFileConflict,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1004,6 +1005,13 @@ export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
       lastUpdatedAt: Date.now(),
       ...data,
     },
+  }
+}
+
+export function removeFileConflict(path: string): RemoveFileConflict {
+  return {
+    action: 'REMOVE_FILE_CONFLICT',
+    path: path,
   }
 }
 

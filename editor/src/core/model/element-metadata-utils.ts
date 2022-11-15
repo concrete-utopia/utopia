@@ -293,6 +293,27 @@ export const MetadataUtils = {
       position === 'relative' || position === 'static' || position === 'sticky'
     return containerLayoutSystem === 'flow' && participatesInFlow
   },
+  elementParticipatesInAutoLayout(element: ElementInstanceMetadata | null): boolean {
+    // this contains the ruleset about style properties that make an element autolayouted
+    // TODO extend with transform: translate, relative offset etc.
+    return !MetadataUtils.isPositionAbsolute(element)
+  },
+  targetParticipatesInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
+    return MetadataUtils.elementParticipatesInAutoLayout(
+      MetadataUtils.findElementByElementPath(elements, target),
+    )
+  },
+  getChildrenParticipatingInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return MetadataUtils.getChildren(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (

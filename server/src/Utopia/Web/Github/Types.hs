@@ -495,3 +495,37 @@ getUsersPublicRepositoriesFailureFromReason failureReason = GetUsersPublicReposi
 
 getUsersPublicRepositoriesSuccessFromContent :: [RepositoryEntry] -> GetUsersPublicRepositoriesResponse
 getUsersPublicRepositoriesSuccessFromContent repositories = GetUsersPublicRepositoriesResponseSuccess GetUsersPublicRepositoriesSuccess{..}
+
+data GithubSaveAssetSuccess = GithubSaveAssetSuccess
+                            {}
+                            deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GithubSaveAssetSuccess where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GithubSaveAssetSuccess where
+  toJSON = genericToJSON defaultOptions
+
+data GithubSaveAssetResponse = GithubSaveAssetResponseSuccess GithubSaveAssetSuccess 
+                             | GithubSaveAssetResponseFailure GithubFailure
+                             deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GithubSaveAssetResponse where
+  parseJSON value =
+    let fileType = firstOf (key "type" . _String) value
+     in case fileType of
+          (Just "SUCCESS")  -> fmap GithubSaveAssetResponseSuccess $ parseJSON value
+          (Just "FAILURE")  -> fmap GithubSaveAssetResponseFailure $ parseJSON value
+          (Just unknownType)  -> fail ("Unknown type: " <> T.unpack unknownType)
+          _                   -> fail "No type for GithubSaveAssetResponse specified."
+
+instance ToJSON GithubSaveAssetResponse where
+  toJSON (GithubSaveAssetResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
+  toJSON (GithubSaveAssetResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
+
+getGithubSaveAssetFailureFromReason :: Text -> GithubSaveAssetResponse
+getGithubSaveAssetFailureFromReason failureReason = GithubSaveAssetResponseFailure GithubFailure{..}
+
+getGithubSaveAssetSuccessFromResult :: () -> GithubSaveAssetResponse  
+getGithubSaveAssetSuccessFromResult _ = GithubSaveAssetResponseSuccess GithubSaveAssetSuccess 
+
