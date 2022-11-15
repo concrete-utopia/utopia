@@ -100,7 +100,7 @@ export function ancestorMetaStrategy(
             wildcardPatch('mid-interaction', {
               canvas: {
                 controls: {
-                  dragToMoveIndicatorFlags: { showIndicator: { $set: true } },
+                  dragToMoveIndicatorFlags: { ancestor: { $set: true } },
                 },
               },
             }),
