@@ -354,6 +354,9 @@ import {
   PaddingResizeHandle,
   resizeHandle,
   ResizeHandle,
+  paddingResizeHandle,
+  borderRadiusResizeHandle,
+  BorderRadiusResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -1243,6 +1246,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const textDirectionEquals = oldSize.parentTextDirection === newSize.parentTextDirection
     const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
+    const borderRadiusEquals = nullableDeepEquality(SidesKeepDeepEquality)(
+      oldSize.borderRadius,
+      newSize.borderRadius,
+    )
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1270,7 +1277,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       floatEquals &&
       hasPositionOffsetEquals &&
       textDirectionEquals &&
-      hasTransformEquals
+      hasTransformEquals &&
+      borderRadiusEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1302,6 +1310,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.hasPositionOffset,
         newSize.parentTextDirection,
         newSize.hasTransform,
+        newSize.borderRadius,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -1775,6 +1784,12 @@ export const ReorderSliderKeepDeepEquality: KeepDeepEqualityCall<ReorderSlider> 
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
+  BorderRadiusResizeHandle
+> = (oldValue, newValue) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1808,6 +1823,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'REORDER_SLIDER':
       if (newValue.type === oldValue.type) {
         return ReorderSliderKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'BORDER_RADIUS_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
