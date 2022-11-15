@@ -684,7 +684,7 @@ getGithubBranchContentEndpoint cookie owner repository branchName possibleCommit
 
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do
-  getUsersRepositories (view (field @"_id") sessionUser) 
+  getUsersRepositories (view (field @"_id") sessionUser)
 
 saveGithubAssetEndpoint :: Maybe Text -> Text -> Text -> Text -> Text -> Text -> ServerMonad GithubSaveAssetResponse
 saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = requireUser cookie $ \sessionUser -> do
