@@ -556,7 +556,7 @@ const RemoteChangesBlock = () => {
     >
       {when(
         hasUpstreamChanges,
-        <FlexColumn style={{ gap: 10 }}>
+        <FlexColumn style={{ gap: 10, paddingBottom: 10 }}>
           <GithubFileChangesList
             conflicts={bothModified}
             revertable={false}
