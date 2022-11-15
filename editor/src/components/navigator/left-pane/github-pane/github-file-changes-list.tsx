@@ -247,16 +247,14 @@ const Header: React.FC<{
   onClickRevertAll: (e: React.MouseEvent) => void
 }> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
   return (
-    <FlexColumn>
-      <FlexRow>
-        <div style={{ flex: 1 }}>
-          {count} file{count !== 1 ? 's' : ''} changed
-        </div>
-        {when(
-          revertable,
-          <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
-        )}
-      </FlexRow>
-    </FlexColumn>
+    <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
+      <div style={{ flex: 1 }}>
+        {count} file{count !== 1 ? 's' : ''} changed
+      </div>
+      {when(
+        revertable,
+        <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
+      )}
+    </UIGridRow>
   )
 }
