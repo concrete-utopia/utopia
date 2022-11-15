@@ -17,7 +17,7 @@ import {
   BorderRadiusHandleSize,
   BorderRadiusSides,
   handlePosition,
-} from '../../border-radius-utis'
+} from '../../border-radius-control-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {

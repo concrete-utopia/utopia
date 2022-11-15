@@ -8,7 +8,7 @@ import {
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
-import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-utis'
+import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
 import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'

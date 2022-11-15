@@ -33,7 +33,7 @@ import {
   BorderRadiusCorner,
   BorderRadiusSides,
   maxBorderRadius,
-} from '../../border-radius-utis'
+} from '../../border-radius-control-utils'
 import { CanvasCommand } from '../../commands/commands'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
