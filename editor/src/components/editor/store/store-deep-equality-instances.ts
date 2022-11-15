@@ -1587,7 +1587,9 @@ export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: Ke
   )
 
 export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<DragToMoveIndicatorFlags> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
+    (indicatorFlag) => indicatorFlag.showIndicator,
+    BooleanKeepDeepEquality,
     (indicatorFlag) => indicatorFlag.dragType,
     createCallWithTripleEquals<'absolute' | 'static' | 'none'>(),
     (indicatorFlag) => indicatorFlag.reparent,
@@ -1612,7 +1614,7 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
     (controls) => controls.dragToMoveIndicatorFlags,
-    nullableDeepEquality(DragToMoveIndicatorFlagsKeepDeepEquality),
+    DragToMoveIndicatorFlagsKeepDeepEquality,
     editorStateCanvasControls,
   )
 

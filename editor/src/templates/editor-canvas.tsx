@@ -52,6 +52,7 @@ import {
   draggingFromFS,
   EditorState,
   editorStateCanvasControls,
+  emptyDragToMoveIndicatorFlags,
   isOpenFileUiJs,
   notDragging,
   UserState,
@@ -480,7 +481,15 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
-          controls: editorStateCanvasControls([], [], [], [], null, [], null),
+          controls: editorStateCanvasControls(
+            [],
+            [],
+            [],
+            [],
+            null,
+            [],
+            emptyDragToMoveIndicatorFlags,
+          ),
         },
       }
     case 'UPDATE_INTERACTION_SESSION':

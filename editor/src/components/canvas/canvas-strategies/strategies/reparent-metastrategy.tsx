@@ -250,6 +250,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
         controls: {
           dragToMoveIndicatorFlags: {
             $set: {
+              showIndicator: true,
               dragType: dragType,
               reparent: true,
               ancestor: false,

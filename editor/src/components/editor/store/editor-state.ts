@@ -737,18 +737,22 @@ export function editorStateCanvasTransientProperty(
 }
 
 export function dragToMoveIndicatorFlags(
+  showIndicator: boolean,
   dragType: 'absolute' | 'static' | 'none',
   reparent: boolean,
   ancestor: boolean,
 ): DragToMoveIndicatorFlags {
   return {
+    showIndicator,
     dragType,
     reparent,
     ancestor,
   }
 }
 
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(false, 'none', false, false)
 export interface DragToMoveIndicatorFlags {
+  showIndicator: boolean
   dragType: 'absolute' | 'static' | 'none'
   reparent: boolean
   ancestor: boolean
@@ -762,7 +766,7 @@ export interface EditorStateCanvasControls {
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
-  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags | null
+  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
 }
 
 export function editorStateCanvasControls(
@@ -772,7 +776,7 @@ export function editorStateCanvasControls(
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
-  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags | null,
+  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -2073,7 +2077,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
-        dragToMoveIndicatorFlags: null,
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
@@ -2379,7 +2383,7 @@ export function editorModelFromPersistentModel(
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
-        dragToMoveIndicatorFlags: null,
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
