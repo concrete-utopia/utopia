@@ -44,6 +44,7 @@ import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import TimeAgo from 'react-timeago'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 
 const GitBranchIcon = () => {
   return (
@@ -176,6 +177,13 @@ export const GithubPane = React.memo(() => {
     }
   }, [dispatch, storedTargetGithubRepo])
 
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
+  )
+
+  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
+
   const loadBranchesUI = React.useMemo(() => {
     return (
       <>
@@ -211,6 +219,8 @@ export const GithubPane = React.memo(() => {
                     storedTargetGithubRepo,
                     branch.name,
                     false,
+                    currentDependencies,
+                    builtInDependencies,
                   )
                 }
               }
@@ -252,6 +262,8 @@ export const GithubPane = React.memo(() => {
     currentBranch,
     isLoadingBranches,
     refreshBranches,
+    builtInDependencies,
+    currentDependencies,
   ])
 
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')

@@ -1,3 +1,4 @@
+import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../common/env-vars'
@@ -38,13 +39,14 @@ import {
   GithubData,
   GithubOperation,
   GithubRepo,
+  packageJsonFileFromProjectContents,
   PersistentModel,
   projectGithubSettings,
 } from '../../components/editor/store/editor-state'
+import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import { refreshDependencies } from './dependencies'
+import { RequestedNpmDependency } from './npm-dependency-types'
 import { propOrNull } from './object-utils'
-import { emptySet } from './set-utils'
-import { trimUpToAndIncluding } from './string-utils'
-import { arrayEquals } from './utils'
 import {
   isTextFile,
   ProjectFile,
@@ -53,7 +55,9 @@ import {
   textFileContents,
   unparsed,
 } from './project-file-types'
-import { mergeDiff3 } from 'node-diff3'
+import { emptySet } from './set-utils'
+import { trimUpToAndIncluding } from './string-utils'
+import { arrayEquals } from './utils'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -353,6 +357,8 @@ export async function updateProjectWithBranchContent(
   githubRepo: GithubRepo,
   branchName: string,
   resetBranches: boolean,
+  currentDeps: Array<RequestedNpmDependency>,
+  builtInDependencies: BuiltInDependencies,
 ): Promise<void> {
   const operation: GithubOperation = {
     name: 'loadBranch',
@@ -385,6 +391,18 @@ export async function updateProjectWithBranchContent(
         if (resetBranches) {
           newGithubData.branches = []
         }
+
+        const packageJson = packageJsonFileFromProjectContents(responseBody.content)
+        if (packageJson != null && isTextFile(packageJson)) {
+          await refreshDependencies(
+            dispatch,
+            packageJson.fileContents.code,
+            currentDeps,
+            builtInDependencies,
+            {},
+          )
+        }
+
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),

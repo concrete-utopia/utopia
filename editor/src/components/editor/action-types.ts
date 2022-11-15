@@ -919,6 +919,11 @@ export interface UpdateGithubOperations {
   type: GithubOperationType
 }
 
+export interface SetRefreshingDependencies {
+  action: 'SET_REFRESHING_DEPENDENCIES'
+  value: boolean
+}
+
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
   checksums: GithubChecksums
@@ -1209,6 +1214,7 @@ export type EditorAction =
   | UpdateGithubOperations
   | UpdateGithubChecksums
   | UpdateBranchContents
+  | SetRefreshingDependencies
 
 export type DispatchPriority =
   | 'everyone'

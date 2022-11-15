@@ -137,6 +137,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+    case 'SET_REFRESHING_DEPENDENCIES':
+      return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
     case 'UPDATE_GITHUB_CHECKSUMS':
