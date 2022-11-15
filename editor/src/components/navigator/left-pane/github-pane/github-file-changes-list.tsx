@@ -20,6 +20,7 @@ import { MenuProvider, MomentumContextMenu } from '../../../../components/contex
 import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
+import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -198,12 +199,12 @@ export const GithubFileChangesList: React.FC<{
           const conflicting = conflicts?.includes(i.filename) || false
           const isTreeConflict = i.filename in treeConflicts
           return (
-            <FlexRow
+            <UIGridRow
               key={i.filename}
+              padded
+              variant='<----------1fr---------><-auto->'
               title={conflicting ? 'Potential conflicts' : i.filename}
               style={{
-                gap: 2,
-                padding: '4px 8px',
                 color: conflicting ? '#f00' : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
               }}
@@ -233,7 +234,7 @@ export const GithubFileChangesList: React.FC<{
                   disabled={githubWorking}
                 />,
               )}
-            </FlexRow>
+            </UIGridRow>
           )
         })}
       </FlexColumn>
