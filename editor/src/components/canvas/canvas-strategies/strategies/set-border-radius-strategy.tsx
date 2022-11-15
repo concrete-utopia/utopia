@@ -1,11 +1,12 @@
 import { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { defaultEither, isLeft, isRight, right } from '../../../../core/shared/either'
+import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
   isJSXElement,
   JSXAttributes,
+  JSXElement,
 } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -177,7 +178,13 @@ interface BorderRadiusData<T> {
 function borderRadiusFromElement(
   element: ElementInstanceMetadata,
 ): BorderRadiusData<CSSNumberWithRenderedValue> | null {
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+  const jsxElement: JSXElement | null = foldEither(
+    () => null,
+    (e) => (isJSXElement(e) ? e : null),
+    element.element,
+  )
+
+  if (jsxElement == null) {
     return null
   }
 
@@ -186,7 +193,7 @@ function borderRadiusFromElement(
     return null
   }
 
-  const fromProps = borderRadiusFromProps(element.element.value.props)
+  const fromProps = borderRadiusFromProps(jsxElement.props)
   const borderRadius = optionalMap(
     (radius) => measurementFromBorderRadius(renderedValueSides, radius),
     fromProps,
