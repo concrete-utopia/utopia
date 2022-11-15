@@ -312,10 +312,10 @@ function paddingValueIndicatorProps(
   )
 
   return {
-    value:
-      updatedPaddingMeasurement.renderedValuePx > PaddingTearThreshold
-        ? printCSSNumber(maxedPaddingMeasurement.value, null)
-        : Emdash,
+    value: indicatorMessage(
+      updatedPaddingMeasurement.renderedValuePx > PaddingTearThreshold,
+      maxedPaddingMeasurement,
+    ),
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }

@@ -11,6 +11,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { setProperty } from '../../commands/set-property-command'
 import {
   Emdash,
+  indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
@@ -224,10 +225,10 @@ function flexGapValueIndicatorProps(
     : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
-    value:
-      rawFlexGapMeasurement.renderedValuePx > FlexGapTearThreshold
-        ? printCSSNumber(updatedFlexGapMeasurement.value, null)
-        : Emdash, // emdash
+    value: indicatorMessage(
+      rawFlexGapMeasurement.renderedValuePx > FlexGapTearThreshold,
+      updatedFlexGapMeasurement,
+    ),
     position: position,
   }
 }

@@ -151,12 +151,12 @@ export function useHoverWithDelay(
 }
 
 export function indicatorMessage(
+  isOverThreshold: boolean,
   value: CSSNumberWithRenderedValue,
-  threshold: number,
 ): string | number {
-  if (value.renderedValuePx > threshold) {
+  if (isOverThreshold) {
     return printCSSNumber(value.value, null)
   }
 
-  return // emdash
+  return Emdash // emdash
 }
