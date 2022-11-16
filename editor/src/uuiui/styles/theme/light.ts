@@ -66,11 +66,32 @@ const lightErrorStates = {
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
   errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
-  warningBgTranslucent: base.orange.o(20),
+  warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
 
+// TEMP colors with preset opacity pulled from within the app
+const colorsWithOpacity = {
+  bg090: createUtopiColor('hsla(0,0%,100%,0.9)'),
+  fg650: createUtopiColor('hsla(0,0%,0%,0.5)'),
+  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
+  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
+  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
+  canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
+  brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
+  neutralForeground40: createUtopiColor('hsla(0,0%,0%,0.4)'),
+  neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
+  neutralInvertedBackground20: createUtopiColor('hsla(0,0%,0%,0.2)'),
+  neutralInvertedBackground30: createUtopiColor('hsla(0,0%,0%,0.3)'),
+  listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
+  brandPurple70: createUtopiColor('rgba(87, 75, 226,0.7)'),
+  errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
+  primary30: createUtopiColor('rgba(0, 122, 255, 0.3)'),
+  subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
+}
+
 export const light = {
+  ...colorsWithOpacity,
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
@@ -90,14 +111,14 @@ export const light = {
   tabHoveredBackground: lightPrimitives.secondaryBackground,
 
   // lists
-  listNewItemFlashBackground: createUtopiColor('rgb(211, 254, 162)'),
+  listNewItemFlashBackground: createUtopiColor('rgba(211, 254, 162, 1)'),
 
   // canvas controls
   canvasControlsSizeBoxBackground: createUtopiColor('white'),
   canvasControlsSizeBoxShadowColor: createUtopiColor('black'),
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
-  canvasControlsImmediateParentMarks: base.black.o(25),
+  canvasControlsImmediateParentMarks: createUtopiColor('rgba(0, 0, 0, 0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
@@ -110,9 +131,9 @@ export const light = {
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
-  canvasSelectionSecondaryOutline: base.almostBlack.o(50),
+  canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
   canvasSelectionNotFocusable: base.darkgray,
-  canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+  canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
   canvasDragOutlineBlock: lightBase.primary,
   canvasDragOutlineInline: base.red,
 
@@ -150,14 +171,14 @@ export const light = {
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)'),
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
-  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentSelected: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   navigatorComponentIconBorder: base.orange,
 
   contextMenuBackground: lightPrimitives.secondaryBackground,
   contextMenuForeground: lightPrimitives.neutralForeground,
   contextMenuHighlightForeground: base.white,
   contextMenuHighlightBackground: lightBase.primary,
-  contextMenuSeparator: base.black.o(10),
+  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
   inspectorFocusedColor: lightBase.primary,
   inspectorSetBorderColor: lightPrimitives.neutralBorder,

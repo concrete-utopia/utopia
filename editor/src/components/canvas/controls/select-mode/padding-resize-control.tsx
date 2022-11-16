@@ -139,7 +139,7 @@ const PaddingResizeControlI = React.memo(
       PaddingResizeDragBorder,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink.o(StripeOpacity).value
+    const stripeColor = colorTheme.brandNeonPink30.value
     const color = colorTheme.brandNeonPink.value
 
     return (

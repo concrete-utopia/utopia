@@ -127,10 +127,10 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     //  solid subdued outline in focused state
     boxShadow: `0px 0px 0px 2px ${
       props.danger
-        ? colorTheme.errorForeground.o(20).value
+        ? colorTheme.errorForeground20.value
         : props.primary
-        ? colorTheme.primary.o(30).value
-        : colorTheme.subduedBorder.o(80).value
+        ? colorTheme.primary30.value
+        : colorTheme.subduedBorder80.value
     }`,
   },
   '&:active': {

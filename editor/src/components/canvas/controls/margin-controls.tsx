@@ -115,7 +115,7 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
           key='outerDiv'
           style={{
             background: 'transparent',
-            border: colorTheme.canvasLayoutStroke.o(20).value,
+            border: colorTheme.canvasLayoutStroke20.value,
             position: 'absolute',
             pointerEvents: 'none',
             left: props.frame.x + props.canvasOffset.x - (props.margin.left ?? 0),

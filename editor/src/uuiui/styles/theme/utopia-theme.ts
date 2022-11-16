@@ -1,4 +1,3 @@
-import { UtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
@@ -17,7 +16,6 @@ const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
 const [lightThemeAsInverted, lightThemeAsInvertedCssVariables] =
   generateCssVariablesFromThemeObject(light, '--inverted')
-
 const [darkTheme, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
 const [darkThemeAsInverted, darkThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
   dark,
@@ -34,7 +32,7 @@ export interface ThemeVariables extends ThemeVariableObject {
 
 export const colorTheme: ColorTheme = {
   ...lightTheme,
-  inverted: { ...darkThemeAsInverted },
+  inverted: darkThemeAsInverted,
 }
 
 export const colorThemeCssVariables: ThemeVariables = {
@@ -51,7 +49,6 @@ export const darkColorThemeCssVariables: ThemeVariables = {
   ...darkThemeCssVariables,
   inverted: lightThemeAsInvertedCssVariables,
 }
-
 export interface UtopiaTheme {
   layout: {
     rowHorizontalPadding: number
@@ -149,10 +146,10 @@ const canvas = {
 
 const scene = {
   live: {
-    boxShadow: `0px 0px 1px 0px ${light.neutralInvertedBackground.o(20).value}`,
+    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground20.value}`,
   },
   editing: {
-    boxShadow: `0px 0px 1px 0px ${light.neutralInvertedBackground.o(30).value}`,
+    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground30.value}`,
   },
 }
 
@@ -230,9 +227,7 @@ const shadowStyles = {
 
 const popup: React.CSSProperties = {
   background: light.neutralBackground.value,
-  boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${
-    colorTheme.fg6.o(50).value
-  }`,
+  boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${colorTheme.fg650.value}`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,
@@ -240,14 +235,13 @@ const popup: React.CSSProperties = {
 
 const checkerboardBackground: Pick<
   React.CSSProperties,
-  'backgroundImage' | 'backgroundSize' | 'backgroundPosition' | 'background'
+  'backgroundImage' | 'backgroundSize' | 'backgroundPosition'
 > = {
   backgroundImage: `
     linear-gradient(to bottom left,   #e7e7e7 25%,  transparent 25%),
     linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
     linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
     linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
-  background: `repeating-conic-gradient(#e7e7e7 0% 25%, transparent 0% 50%) 50% / 20px 20px`,
   backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
   backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
 }

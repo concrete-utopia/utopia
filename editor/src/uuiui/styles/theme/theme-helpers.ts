@@ -16,7 +16,7 @@ export function generateCssVariablesFromThemeObject(
   const valuesObject = {}
   const variablesObject: Record<string, string> = {}
 
-  traverseObjectAndShadow(themeObject, valuesObject as ThemeObject, basePath)
+  traverseObjectAndShadow({ ...themeObject }, valuesObject as ThemeObject, basePath)
 
   return [valuesObject as ThemeObject, variablesObject as ThemeVariableObject]
 
@@ -25,8 +25,8 @@ export function generateCssVariablesFromThemeObject(
       const [key, value] = entry
       const finalPath = path + '-' + key
 
-      value.value = finalPath
-      shadowObject[key as keyof typeof light] = value
+      const newValue = new UtopiColor(value.cssValue, finalPath)
+      shadowObject[key as keyof typeof light] = newValue
       variablesObject[finalPath] = value.cssValue
     })
 

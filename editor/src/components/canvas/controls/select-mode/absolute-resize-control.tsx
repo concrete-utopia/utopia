@@ -167,8 +167,8 @@ const ResizePoint = React.memo(
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
-            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
               1 / scale
             }px ${2 / scale}px ${1 / scale}px`,
           }}

@@ -85,9 +85,7 @@ const NonResizablePoint = React.memo(
             top: -NonResizablePointOffset / scale,
             left: -NonResizablePointOffset / scale,
             background: colorTheme.canvasControlsSizeBoxBackground.value,
-            border: `${1 / scale}px solid ${
-              colorTheme.canvasControlsSizeBoxShadowColor.o(50).value
-            }`,
+            border: `${1 / scale}px solid ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
             borderRadius: '50%',
           }}
           data-testid={`non-resizable-${props.position.x}-${props.position.y}`}

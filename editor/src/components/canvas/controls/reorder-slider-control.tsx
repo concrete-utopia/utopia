@@ -127,7 +127,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
                 background: colorTheme.bg0.value,
                 boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
                   2 / scale
-                }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
+                }px ${4 / scale}px 0px ${colorTheme.fg650.value}`,
                 cursor: CSSCursor.ResizeEW,
                 display: 'flex',
                 alignItems: 'center',

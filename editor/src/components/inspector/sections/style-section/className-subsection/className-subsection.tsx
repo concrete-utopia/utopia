@@ -146,7 +146,7 @@ const FooterSection = React.memo((props: { filter: string; options: Array<TailWi
       css={{
         label: 'focusedElementMetadata',
         overflow: 'hidden',
-        boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground.o(10).value}`,
+        boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground10.value}`,
         padding: '8px 8px',
         fontSize: '10px',
         pointerEvents: 'none',
@@ -488,7 +488,7 @@ const ClassNameControl = React.memo(() => {
     <div
       style={{
         backgroundColor: theme.emphasizedBackground.value,
-        boxShadow: `0px 0px 1px 0px ${theme.neutralInvertedBackground.o(30).value}`,
+        boxShadow: `0px 0px 1px 0px ${theme.neutralInvertedBackground30.value}`,
         margin: 4,
       }}
     >

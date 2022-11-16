@@ -544,9 +544,9 @@ class ResizePoint extends React.Component<ResizePointProps> {
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
-            boxShadow: `${fixmeColorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
+            boxShadow: `${fixmeColorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px ${
               1 / this.props.scale
-            }px, ${fixmeColorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+            }px, ${fixmeColorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
               1 / this.props.scale
             }px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
             ...this.props.extraStyle,
