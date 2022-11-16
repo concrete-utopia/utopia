@@ -3,7 +3,7 @@ import {
   FlexColumn,
   FlexRow,
   IcnColor,
-  Icons,
+  ModalityIcons,
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
@@ -62,26 +62,30 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
     <FlexColumn style={{ alignItems: 'center', flex: 1.5 }}>
-      <FlexRow>
+      <FlexRow style={{ gap: 4 }}>
         <div
           style={{
             backgroundColor:
               props.dragType === 'absolute' ? colorTheme.primary.value : colorTheme.bg0.value,
-            padding: 4,
+            padding: 2,
             borderRadius: 10,
           }}
         >
-          <Icons.Component color={props.dragType === 'absolute' ? 'on-highlight-main' : 'main'} />
+          <ModalityIcons.MoveAbsolute
+            color={props.dragType === 'absolute' ? 'on-highlight-main' : 'main'}
+          />
         </div>
         <div
           style={{
             backgroundColor:
               props.dragType === 'static' ? colorTheme.primary.value : colorTheme.bg0.value,
-            padding: 4,
+            padding: 2,
             borderRadius: 10,
           }}
         >
-          <Icons.Component color={props.dragType === 'static' ? 'on-highlight-main' : 'main'} />
+          <ModalityIcons.Reorder
+            color={props.dragType === 'static' ? 'on-highlight-main' : 'main'}
+          />
         </div>
       </FlexRow>
       <div style={{}}>{props.dragType === 'absolute' ? 'Move' : 'Reorder'}</div>
@@ -96,8 +100,8 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 4 }}>
-        <Icons.EyeOpen color={props.enabled ? 'primary' : 'subdued'} />
+      <div style={{ padding: 2 }}>
+        <ModalityIcons.Magic color={props.enabled ? 'primary' : 'subdued'} />
       </div>
       <div
         style={{
@@ -128,8 +132,8 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
   }, [status])
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 4 }}>
-        <Icons.EyeOpen color={iconColorFromStatus} />
+      <div style={{ padding: 2 }}>
+        <ModalityIcons.Reparent color={iconColorFromStatus} />
       </div>
       <div
         style={{
