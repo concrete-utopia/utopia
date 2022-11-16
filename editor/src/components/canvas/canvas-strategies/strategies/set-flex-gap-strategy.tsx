@@ -1,20 +1,23 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { Modifiers } from '../../../../utils/modifiers'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
+  indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import {
-  FloatingCSSNumberIndicator,
-  FloatingCSSNumberIndicatorProps,
+  FloatingIndicator,
+  FloatingIndicatorProps,
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   cursorFromFlexDirection,
@@ -25,7 +28,6 @@ import {
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   controlWithProps,
-  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -37,10 +39,11 @@ export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
 const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
 
+export const FlexGapTearThreshold: number = -25
+
 export const setFlexGapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customtrategyState: CustomStrategyState,
 ) => {
   if (
     interactionSession != null &&
@@ -68,10 +71,17 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
 
+  const rawDragDelta = dragDeltaForOrientation(flexGap.direction, drag)
+
   const dragDelta = Math.max(
     -flexGap.value.renderedValuePx,
     dragDeltaForOrientation(flexGap.direction, drag),
   )
+
+  const shouldTearOffGap = isDragOverThreshold(flexGap.direction, {
+    deltaPx: rawDragDelta,
+    gapPx: flexGap.value.renderedValuePx,
+  })
 
   const adjustPrecision =
     optionalMap(precisionFromModifiers, modifiersFromInteractionSession(interactionSession)) ??
@@ -100,7 +110,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     (props) => [
       resizeControl,
       controlWithProps({
-        control: FloatingCSSNumberIndicator,
+        control: FloatingIndicator,
         props: props,
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -121,6 +131,12 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         interactionSession.activeControl.type !== 'FLEX_GAP_HANDLE'
       ) {
         return emptyStrategyApplicationResult
+      }
+
+      if (shouldTearOffGap) {
+        return strategyApplicationResult([
+          deleteProperties('always', selectedElement, [StyleGapProp]),
+        ])
       }
 
       return strategyApplicationResult([
@@ -155,10 +171,26 @@ function modifiersFromInteractionSession(
   return null
 }
 
+function isDragOverThreshold(
+  direction: FlexDirection,
+  { gapPx, deltaPx }: { gapPx: number; deltaPx: number },
+): boolean {
+  switch (direction) {
+    case 'row':
+    case 'column':
+      return deltaPx + gapPx < FlexGapTearThreshold
+    case 'row-reverse':
+    case 'column-reverse':
+      return deltaPx - gapPx < FlexGapTearThreshold
+    default:
+      assertNever(direction)
+  }
+}
+
 function flexGapValueIndicatorProps(
   interactionSession: InteractionSession | null,
   flexGap: FlexGapData,
-): FloatingCSSNumberIndicatorProps | null {
+): FloatingIndicatorProps | null {
   if (
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
@@ -170,9 +202,14 @@ function flexGapValueIndicatorProps(
 
   const { drag, dragStart } = interactionSession.interactionData
 
-  const dragDelta = Math.max(
-    -flexGap.value.renderedValuePx,
-    dragDeltaForOrientation(flexGap.direction, drag),
+  const rawDragDelta = dragDeltaForOrientation(flexGap.direction, drag)
+
+  const dragDelta = Math.max(-flexGap.value.renderedValuePx, rawDragDelta)
+
+  const rawFlexGapMeasurement = offsetMeasurementByDelta(
+    flexGap.value,
+    rawDragDelta,
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   const updatedFlexGapMeasurement = offsetMeasurementByDelta(
@@ -186,7 +223,10 @@ function flexGapValueIndicatorProps(
     : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
-    value: updatedFlexGapMeasurement.value,
+    value: indicatorMessage(
+      rawFlexGapMeasurement.renderedValuePx > FlexGapTearThreshold,
+      updatedFlexGapMeasurement,
+    ),
     position: position,
   }
 }

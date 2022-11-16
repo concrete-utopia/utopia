@@ -158,7 +158,7 @@ export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
   direction: Direction,
-  forwardsOrBackwards: ForwardOrReverse,
+  forwardOrReverse: ForwardOrReverse,
 ): number {
   let getStartPosition: (rect: CanvasRectangle) => number
   let getEndPosition: (rect: CanvasRectangle) => number
@@ -185,7 +185,7 @@ export function getSiblingMidPointPosition(
   }
 
   const value =
-    forwardsOrBackwards === 'forward'
+    forwardOrReverse === 'forward'
       ? (getEndPosition(precedingSiblingPosition) + getStartPosition(succeedingSiblingPosition)) / 2
       : (getEndPosition(succeedingSiblingPosition) + getStartPosition(precedingSiblingPosition)) / 2
 

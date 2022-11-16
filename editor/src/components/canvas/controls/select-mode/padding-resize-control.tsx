@@ -7,6 +7,7 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -20,7 +21,7 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import {
-  CSSNumberLabel,
+  CanvasLabel,
   CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
@@ -177,7 +178,11 @@ const PaddingResizeControlI = React.memo(
                 paddingLeft: PaddingIndictorOffset(scale),
               }}
             >
-              <CSSNumberLabel value={props.paddingValue.value} scale={scale} color={color} />
+              <CanvasLabel
+                value={printCSSNumber(props.paddingValue.value, null)}
+                scale={scale}
+                color={color}
+              />
             </div>
           )}
           <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
@@ -293,8 +298,8 @@ function startResizeInteraction(
   canvasOffset: CanvasVector,
   scale: number,
 ) {
-  event.stopPropagation()
   if (event.buttons === 1 && event.button !== 2) {
+    event.stopPropagation()
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,

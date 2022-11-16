@@ -1,12 +1,19 @@
 import React from 'react'
-import { CanvasVector, roundTo } from '../../../../core/shared/math-utils'
+import { roundTo } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+
+export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber
   renderedValuePx: number
 }
+
+export const cssNumberWithRenderedValue = (
+  value: CSSNumber,
+  renderedValuePx: number,
+): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
 
 export type AdjustPrecision = 'precise' | 'coarse'
 
@@ -28,40 +35,39 @@ export const offsetMeasurementByDelta = (
   measurement: CSSNumberWithRenderedValue,
   delta: number,
   precision: AdjustPrecision,
-): CSSNumberWithRenderedValue => {
-  if (delta === 0) {
-    return measurement
-  }
+): CSSNumberWithRenderedValue =>
+  measurementBasedOnOtherMeasurement(measurement, measurement.renderedValuePx + delta, precision)
 
-  if (measurement.renderedValuePx === 0) {
-    return {
-      renderedValuePx: delta,
-      value: { value: delta, unit: null },
-    }
-  }
-
-  const unitsPerPixel = measurement.value.value / measurement.renderedValuePx
-
-  const deltaInUnits = delta * unitsPerPixel
-
-  const newValueInPixels = measurement.renderedValuePx + delta
-  const newValueRounded = valueWithUnitAppropriatePrecision(
-    measurement.value.unit,
-    measurement.value.value + deltaInUnits,
+export function measurementBasedOnOtherMeasurement(
+  base: CSSNumberWithRenderedValue,
+  desiredRenderedValue: number,
+  precision: AdjustPrecision,
+): CSSNumberWithRenderedValue {
+  const desiredRenderedValueWithPrecision = valueWithUnitAppropriatePrecision(
+    'px',
+    desiredRenderedValue,
     precision,
   )
 
-  const newRenderedValuePx = valueWithUnitAppropriatePrecision(
-    'px',
-    newValueInPixels / unitsPerPixel,
+  if (base.renderedValuePx === 0) {
+    return {
+      renderedValuePx: desiredRenderedValueWithPrecision,
+      value: { value: desiredRenderedValueWithPrecision, unit: null },
+    }
+  }
+
+  const pixelsPerUnit = base.value.value / base.renderedValuePx
+  const desiredValueInUnits = valueWithUnitAppropriatePrecision(
+    base.value.unit,
+    desiredRenderedValue * pixelsPerUnit,
     precision,
   )
 
   return {
-    renderedValuePx: newRenderedValuePx,
+    renderedValuePx: desiredRenderedValueWithPrecision,
     value: {
-      unit: measurement.value.unit,
-      value: newValueRounded,
+      unit: base.value.unit,
+      value: desiredValueInUnits,
     },
   }
 }
@@ -69,13 +75,13 @@ export const offsetMeasurementByDelta = (
 const FontSize = 12
 const Padding = 4
 
-interface PaddingValueLabelProps {
+interface CanvasLabelProps {
   scale: number
   color: string
-  value: CSSNumber
+  value: string | number
 }
 
-export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.Element => {
+export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
@@ -86,9 +92,10 @@ export const CSSNumberLabel = React.memo((props: PaddingValueLabelProps): JSX.El
         padding: padding,
         backgroundColor: color,
         color: 'white',
+        borderRadius: 2,
       }}
     >
-      {printCSSNumber(value, null)}
+      {value}
     </div>
   )
 })
@@ -145,4 +152,15 @@ export function useHoverWithDelay(
   }
 
   return [onHoverStart, onHoverEnd]
+}
+
+export function indicatorMessage(
+  isOverThreshold: boolean,
+  value: CSSNumberWithRenderedValue,
+): string | number {
+  if (isOverThreshold) {
+    return printCSSNumber(value.value, null)
+  }
+
+  return Emdash // emdash
 }

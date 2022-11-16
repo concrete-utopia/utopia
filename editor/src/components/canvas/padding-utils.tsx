@@ -5,7 +5,7 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { CanvasVector } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSPadding } from '../inspector/common/css-utils'
+import { CSSNumber, CSSNumberUnit, CSSPadding, printCSSNumber } from '../inspector/common/css-utils'
 import { EdgePiece } from './canvas-types'
 import {
   AdjustPrecision,
@@ -13,8 +13,8 @@ import {
   offsetMeasurementByDelta,
 } from './controls/select-mode/controls-common'
 
-type CSSPaddingKey = keyof CSSPadding
-type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
+export type CSSPaddingKey = keyof CSSPadding
+export type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
 export type CSSPaddingMeasurements = CSSPaddingMappedValues<CSSNumberWithRenderedValue>
 
 export const defaultPaddingMeasurement = (sizePx: number): CSSNumberWithRenderedValue => ({
@@ -134,37 +134,23 @@ function cssPaddingToMeasurement(
   }
 }
 
-export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
+export function paddingPropForEdge(edgePiece: EdgePiece): CSSPaddingKey {
   switch (edgePiece) {
     case 'top':
-      return padding.paddingTop.renderedValuePx
+      return 'paddingTop'
     case 'bottom':
-      return padding.paddingBottom.renderedValuePx
+      return 'paddingBottom'
     case 'right':
-      return padding.paddingRight.renderedValuePx
+      return 'paddingRight'
     case 'left':
-      return padding.paddingLeft.renderedValuePx
+      return 'paddingLeft'
     default:
       assertNever(edgePiece)
   }
 }
 
-export function paddingMeasurementForEdge(
-  edgePiece: EdgePiece,
-  padding: CSSPaddingMeasurements,
-): CSSNumberWithRenderedValue {
-  switch (edgePiece) {
-    case 'top':
-      return padding.paddingTop
-    case 'bottom':
-      return padding.paddingBottom
-    case 'right':
-      return padding.paddingRight
-    case 'left':
-      return padding.paddingLeft
-    default:
-      assertNever(edgePiece)
-  }
+export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
+  return padding[paddingPropForEdge(edgePiece)].renderedValuePx
 }
 
 export function offsetPaddingByEdge(
@@ -199,16 +185,12 @@ export function offsetPaddingByEdge(
   }
 }
 
-function paddingMeasurementToString(measurement: CSSNumberWithRenderedValue): string {
-  return `${measurement.value.value}${measurement.value.unit ?? 'px'}`
-}
-
 export function paddingToPaddingString(padding: CSSPaddingMeasurements): string {
   return [
-    paddingMeasurementToString(padding.paddingTop),
-    paddingMeasurementToString(padding.paddingRight),
-    paddingMeasurementToString(padding.paddingBottom),
-    paddingMeasurementToString(padding.paddingLeft),
+    printCssNumberWithDefaultUnit(padding.paddingTop.value, 'px'),
+    printCssNumberWithDefaultUnit(padding.paddingRight.value, 'px'),
+    printCssNumberWithDefaultUnit(padding.paddingBottom.value, 'px'),
+    printCssNumberWithDefaultUnit(padding.paddingLeft.value, 'px'),
   ].join(' ')
 }
 
@@ -228,3 +210,13 @@ export function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number
 }
 
 export const PaddingIndictorOffset = (scale: number): number => 10 / scale
+
+export function printCssNumberWithDefaultUnit(
+  value: CSSNumber,
+  defaultUnit?: CSSNumberUnit,
+): string | number {
+  if (defaultUnit != null && value.unit == null) {
+    return printCSSNumber({ value: value.value, unit: defaultUnit }, null)
+  }
+  return printCSSNumber(value, null)
+}

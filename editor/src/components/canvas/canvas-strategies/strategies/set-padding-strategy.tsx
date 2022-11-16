@@ -3,7 +3,6 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { ParsedCSSProperties } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -14,16 +13,17 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
 import {
-  FloatingCSSNumberIndicator,
-  FloatingCSSNumberIndicatorProps,
+  FloatingIndicator,
+  FloatingIndicatorProps,
 } from '../../controls/select-mode/floating-number-indicator'
 import {
+  CSSPaddingKey,
   deltaFromEdge,
   offsetPaddingByEdge,
   paddingForEdge,
-  PaddingIndictorOffset,
-  paddingMeasurementForEdge,
+  paddingPropForEdge,
   paddingToPaddingString,
+  printCssNumberWithDefaultUnit,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
 import { CanvasStrategyFactory } from '../canvas-strategies'
@@ -38,17 +38,22 @@ import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
+  Emdash,
+  indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
+import { CanvasCommand } from '../../commands/commands'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
-const IndividualPaddingProps: Array<keyof ParsedCSSProperties> = [
+const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingTop',
   'paddingBottom',
   'paddingLeft',
   'paddingRight',
 ]
+
+const PaddingTearThreshold: number = -25
 
 export const SetPaddingStrategyName = 'Set Padding'
 
@@ -90,7 +95,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     (props) => [
       resizeControl,
       controlWithProps({
-        control: FloatingCSSNumberIndicator,
+        control: FloatingIndicator,
         props: props,
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -141,23 +146,79 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
       const currentPadding = paddingForEdge(edgePiece, padding)
-      const delta = Math.max(-currentPadding, deltaFromEdge(drag, edgePiece))
+      const rawDelta = deltaFromEdge(drag, edgePiece)
+      const delta = Math.max(-currentPadding, rawDelta)
       const newPadding = offsetPaddingByEdge(
+        edgePiece,
+        rawDelta,
+        padding,
+        precisionFromModifiers(interactionSession.interactionData.modifiers),
+      )
+
+      const newPaddingMaxed = offsetPaddingByEdge(
         edgePiece,
         delta,
         padding,
         precisionFromModifiers(interactionSession.interactionData.modifiers),
       )
-      const paddingString = paddingToPaddingString(newPadding)
 
-      return strategyApplicationResult([
-        ...IndividualPaddingProps.map((p) =>
-          deleteProperties('always', selectedElement, [stylePropPathMappingFn(p, ['style'])]),
-        ),
-        setProperty('always', selectedElement, StylePaddingProp, paddingString),
+      const basicCommands: CanvasCommand[] = [
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand(pickCursorFromEdge(edgePiece)),
         setElementsToRerenderCommand(selectedElements),
+      ]
+
+      if (rawDelta < PaddingTearThreshold) {
+        const paddingPropToBeRemoved = paddingPropForEdge(edgePiece)
+        const nonZeroPropsToAdd = IndividualPaddingProps.filter(
+          (p) => p !== paddingPropToBeRemoved && newPaddingMaxed[p].renderedValuePx > 0,
+        )
+        return strategyApplicationResult([
+          ...basicCommands,
+          deleteProperties('always', selectedElement, [
+            StylePaddingProp,
+            stylePropPathMappingFn(paddingPropToBeRemoved, ['style']),
+          ]),
+          ...nonZeroPropsToAdd.map((p) =>
+            setProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(p, ['style']),
+              printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
+            ),
+          ),
+        ])
+      }
+
+      const allPaddingPropsHigherThanZero = IndividualPaddingProps.every(
+        (p) => newPadding[p].renderedValuePx > 0,
+      )
+
+      if (allPaddingPropsHigherThanZero) {
+        const paddingString = paddingToPaddingString(newPaddingMaxed)
+        return strategyApplicationResult([
+          ...basicCommands,
+          ...IndividualPaddingProps.map((p) =>
+            deleteProperties('always', selectedElement, [stylePropPathMappingFn(p, ['style'])]),
+          ),
+          setProperty('always', selectedElement, StylePaddingProp, paddingString),
+        ])
+      }
+
+      return strategyApplicationResult([
+        ...basicCommands,
+        deleteProperties('always', selectedElement, [
+          StylePaddingProp,
+          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, ['style'])),
+        ]),
+        ...IndividualPaddingProps.filter((p) => newPaddingMaxed[p].renderedValuePx > 0).map((p) =>
+          setProperty(
+            'always',
+            selectedElement,
+            stylePropPathMappingFn(p, ['style']),
+            printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
+          ),
+        ),
       ])
     },
   }
@@ -214,7 +275,7 @@ function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElements: ElementPath[],
-): FloatingCSSNumberIndicatorProps | null {
+): FloatingIndicatorProps | null {
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   if (
@@ -235,16 +296,27 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-  const currentPadding = paddingMeasurementForEdge(edgePiece, padding)
+  const currentPadding = padding[paddingPropForEdge(edgePiece)]
+
+  const delta = deltaFromEdge(drag, edgePiece)
 
   const updatedPaddingMeasurement = offsetMeasurementByDelta(
     currentPadding,
-    deltaFromEdge(drag, edgePiece) + PaddingIndictorOffset(canvasState.scale),
+    delta,
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
+  )
+
+  const maxedPaddingMeasurement = offsetMeasurementByDelta(
+    currentPadding,
+    Math.max(-currentPadding.renderedValuePx, delta),
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   return {
-    value: updatedPaddingMeasurement.value,
+    value: indicatorMessage(
+      updatedPaddingMeasurement.renderedValuePx > PaddingTearThreshold,
+      maxedPaddingMeasurement,
+    ),
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }

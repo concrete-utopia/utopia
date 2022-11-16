@@ -1,5 +1,6 @@
 import React from 'react'
 import TimeAgo from 'react-timeago'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
@@ -13,7 +14,6 @@ import {
   parseGithubProjectString,
   RepositoryEntry,
 } from '../../../../core/shared/github'
-import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { useColorTheme, Button, StringInput } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -65,6 +65,11 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
+  )
+  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const importRepository = React.useCallback(() => {
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
@@ -87,10 +92,19 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         parsedTargetRepository,
         props.defaultBranch,
         isAnotherRepo,
+        currentDependencies,
+        builtInDependencies,
       )
       setImporting(true)
     }
-  }, [dispatch, props.fullName, props.defaultBranch, currentRepo])
+  }, [
+    dispatch,
+    props.fullName,
+    props.defaultBranch,
+    currentRepo,
+    builtInDependencies,
+    currentDependencies,
+  ])
 
   return (
     <div
