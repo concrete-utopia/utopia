@@ -375,16 +375,16 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> PersistentModel -> m SaveToGithubResponse
-createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID model = do
+createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> (Maybe Text) -> (Maybe Text) -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID possibleBranchName possibleCommitMessage model = do
   let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
   result <- runExceptT $ do
     treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
     commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
+      createGitCommitForTree accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
     now <- liftIO getCurrentTime
-    let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
+    let branchName = fromMaybe (toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now) possibleBranchName
     let commitSha = view (field @"sha") commitResult
     branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitBranchForCommit accessToken model commitSha branchName

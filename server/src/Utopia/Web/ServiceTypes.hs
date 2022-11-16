@@ -135,7 +135,7 @@ data ServiceCallsF a = NotFound
                      | GetGithubAuthorizationURI (URI -> a)
                      | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
                      | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
-                     | SaveToGithubRepo Text Text PersistentModel (SaveToGithubResponse -> a)
+                     | SaveToGithubRepo Text Text (Maybe Text) (Maybe Text) PersistentModel (SaveToGithubResponse -> a)
                      | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
                      | GetBranchContent Text Text Text Text (Maybe Text) (GetBranchContentResponse -> a)
                      | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)

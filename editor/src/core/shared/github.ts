@@ -173,6 +173,8 @@ export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
+  branchName: string | null,
+  commitMessage: string | null,
 ): Promise<void> {
   const operation: GithubOperation = { name: 'commish' }
 
@@ -180,8 +182,21 @@ export async function saveProjectToGithub(
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
+  let includeQueryParams: boolean = false
+  let paramsRecord: Record<string, string> = {}
+  if (branchName != null) {
+    includeQueryParams = true
+    paramsRecord.branch_name = branchName
+  }
+  if (commitMessage != null) {
+    includeQueryParams = true
+    paramsRecord.commit_message = commitMessage
+  }
+  const searchParams = new URLSearchParams(paramsRecord)
+  const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+
   const postBody = JSON.stringify(persistentModel)
-  const response = await fetch(url, {
+  const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
     headers: HEADERS,

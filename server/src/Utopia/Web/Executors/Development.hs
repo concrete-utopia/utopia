@@ -338,7 +338,7 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
-innerServerExecutor (SaveToGithubRepo user projectID model action) = do
+innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
   possibleGithubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
@@ -347,7 +347,7 @@ innerServerExecutor (SaveToGithubRepo user projectID model action) = do
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID model
+      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID possibleBranchName possibleCommitMessage model
       pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
   possibleGithubResources <- fmap _githubResources ask
