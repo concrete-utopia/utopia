@@ -10,6 +10,13 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
+export const pureCSSNumberWithRenderedValue = (
+  renderedValuePx: number,
+): CSSNumberWithRenderedValue => ({
+  value: { value: renderedValuePx, unit: null },
+  renderedValuePx,
+})
+
 export const cssNumberWithRenderedValue = (
   value: CSSNumber,
   renderedValuePx: number,
