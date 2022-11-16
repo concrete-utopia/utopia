@@ -29,23 +29,24 @@ import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
+import { Block } from './block'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
 }
 
-type IndicatorState = 'pending' | 'stopped' | 'ready' | 'warning'
+type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
 function getIndicatorColor(state: IndicatorState): string {
   switch (state) {
-    case 'pending':
-      return '#FFFFFF'
-    case 'ready':
+    case 'incomplete':
+      return '#FFFFFF00'
+    case 'successful':
       return '#1FCCB7'
-    case 'stopped':
+    case 'failed':
       return '#FF7759'
-    case 'warning':
-      return '#F1D972'
+    case 'pending':
+      return 'conic-gradient(from 180deg at 50% 50%, #2D2E33 0deg, #FFFFFF 181.87deg, #FFFFFF 360deg)'
     default:
       const _exhaustiveCheck: never = state
       throw new Error(`invalid state ${state}`)
@@ -136,72 +137,6 @@ const ChevronUpIcon = () => {
   )
 }
 
-const Block = (props: {
-  title: string
-  subtitle?: string | JSX.Element
-  state: IndicatorState
-  hasBlockBefore: boolean
-  hasBlockAfter: boolean
-  onClick?: (e: React.MouseEvent) => void
-  active?: boolean
-  children: any
-}) => {
-  useColorTheme()
-  const { title, subtitle, state, hasBlockAfter, onClick, children, active, hasBlockBefore } = props
-  return (
-    <UIGridRow
-      variant='|--16px--|<--------auto-------->'
-      padded={false}
-      alignItems='stretch'
-      style={{ position: 'relative' }}
-    >
-      <div>
-        <IndicatorLight state={state} hasBlockBefore={hasBlockBefore} />
-        {when(hasBlockAfter, <IndicatorLightConnector down />)}
-      </div>
-      <FlexColumn style={{ gap: 8 }}>
-        <UIGridRow
-          variant='<----------1fr---------><-auto->'
-          padded={false}
-          alignItems='start'
-          style={{ minHeight: 0 }}
-        >
-          <div style={{ fontWeight: 700 }}>{title}</div>
-          {when(
-            subtitle != undefined,
-            <FlexRow
-              onClick={onClick}
-              css={{
-                gap: 2,
-                borderRadius: 2,
-                '&:hover': onClick != undefined && {
-                  cursor: 'pointer',
-                  background: '#eee',
-                },
-                background: active ? '#eee' : undefined,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingLeft: 4,
-                paddingRight: 2,
-                paddingTop: 1,
-                paddingBottom: 1,
-              }}
-            >
-              <Ellipsis style={{ maxWidth: 120 }}>{subtitle}</Ellipsis>
-              {onClick && (active ? <ChevronUpIcon /> : <ChevronDownIcon />)}
-            </FlexRow>,
-          )}
-        </UIGridRow>
-        {children && (
-          <UIGridRow padded={false} variant='<-------------1fr------------->'>
-            {children}
-          </UIGridRow>
-        )}
-      </FlexColumn>
-    </UIGridRow>
-  )
-}
-
 const AccountBlock = () => {
   const authenticated = useEditorState(
     (store) => store.userState.githubState.authenticated,
@@ -213,7 +148,7 @@ const AccountBlock = () => {
       undefined,
     'User email',
   )
-  const state = React.useMemo(() => (authenticated ? 'ready' : 'pending'), [authenticated])
+  const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const triggerAuthentication = React.useCallback(() => {
     void startGithubAuthentication(dispatch)
@@ -222,10 +157,10 @@ const AccountBlock = () => {
   return (
     <Block
       title='Account'
-      state={state}
       subtitle={authenticated ? email : undefined}
-      hasBlockAfter={authenticated}
-      hasBlockBefore={false}
+      status={state}
+      first={true}
+      last={!authenticated}
     >
       {unless(
         authenticated,
@@ -269,27 +204,22 @@ const RepositoryBlock = () => {
   return (
     <Block
       title={hasRepo ? 'Repository' : 'Select Repository'}
-      state={!expanded && hasRepo != null ? 'ready' : 'pending'}
       subtitle={repoName}
-      hasBlockBefore={true}
-      hasBlockAfter={hasRepo}
-      active={expanded}
-      onClick={expand}
+      status={!expanded && hasRepo != null ? 'successful' : 'pending'}
+      first={false}
+      last={!hasRepo}
     >
-      {when(
-        expanded || repo == null,
-        <FlexColumn style={{ gap: 4 }}>
-          <UIGridRow padded={false} variant='<-------------1fr------------->'>
-            <div>
-              We only support <strong>public</strong> repositories at this time.
-            </div>
-          </UIGridRow>
-          <RepositoryListing
-            githubAuthenticated={githubAuthenticated}
-            storedTargetGithubRepo={storedTargetGithubRepo}
-          />
-        </FlexColumn>,
-      )}
+      <FlexColumn style={{ gap: 4 }}>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
+          <div>
+            We only support <strong>public</strong> repositories at this time.
+          </div>
+        </UIGridRow>
+        <RepositoryListing
+          githubAuthenticated={githubAuthenticated}
+          storedTargetGithubRepo={storedTargetGithubRepo}
+        />
+      </FlexColumn>
     </Block>
   )
 }
@@ -353,93 +283,87 @@ const BranchBlock = () => {
 
   const loadBranchesUI = React.useMemo(() => {
     return (
-      <>
-        <UIGridRow
-          padded={false}
-          variant='<-------------1fr------------->'
-          style={{ paddingBottom: 20 }}
-        >
-          <FlexColumn style={{ gap: 8 }}>
-            <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
-              <StringInput
-                testId='branches-input'
-                placeholder='Filter…'
-                value={branchFilter}
-                onChange={updateBranchFilter}
-              />
-              <Button
-                spotlight
-                highlight
-                style={{ padding: '0 6px' }}
-                onMouseUp={refreshBranches}
-                disabled={githubWorking}
-              >
-                {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-              </Button>
-            </UIGridRow>
-            <FlexColumn
-              style={{
-                height: 220,
-                overflowY: 'scroll',
-                border: '1px solid #2D2E33',
-                borderRadius: 2,
-              }}
+      <UIGridRow
+        padded={false}
+        variant='<-------------1fr------------->'
+        style={{ paddingBottom: 20 }}
+      >
+        <FlexColumn style={{ gap: 8 }}>
+          <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
+            <StringInput
+              testId='branches-input'
+              placeholder='Filter…'
+              value={branchFilter}
+              onChange={updateBranchFilter}
+            />
+            <Button
+              spotlight
+              highlight
+              style={{ padding: '0 6px' }}
+              onMouseUp={refreshBranches}
+              disabled={githubWorking}
             >
-              {filteredBranches.map((branch, index) => {
-                function loadContentForBranch() {
-                  if (githubWorking) {
-                    return
-                  }
-                  if (storedTargetGithubRepo != null) {
-                    void updateProjectWithBranchContent(
-                      dispatch,
-                      storedTargetGithubRepo,
-                      branch.name,
-                      false,
-                      currentDependencies,
-                      builtInDependencies,
-                    ).then(() => setExpanded(false))
-                  }
+              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+            </Button>
+          </UIGridRow>
+          <FlexColumn
+            style={{
+              height: 220,
+              overflowY: 'scroll',
+              border: '1px solid #2D2E33',
+              borderRadius: 2,
+            }}
+          >
+            {filteredBranches.map((branch, index) => {
+              function loadContentForBranch() {
+                if (githubWorking) {
+                  return
                 }
-                const loadingThisBranch = isGithubLoadingBranch(
-                  githubOperations,
-                  branch.name,
-                  storedTargetGithubRepo,
-                )
-                const isCurrent = currentBranch === branch.name
-                return (
-                  <UIGridRow
-                    key={index}
-                    padded
-                    variant='<----------1fr---------><-auto->'
-                    css={{
-                      cursor: loadingThisBranch
-                        ? 'wait'
-                        : githubWorking
-                        ? 'not-allowed'
-                        : 'pointer',
-                      opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
-                      '&:hover': {
-                        background: '#09f',
-                        color: '#fff',
-                        svg: { stroke: '#fff' },
-                      },
-                      fontWeight: isCurrent ? 'bold' : 'normal',
-                    }}
-                    onClick={loadContentForBranch}
-                  >
-                    <Ellipsis>
-                      {when(isCurrent, <span>&rarr; </span>)}
-                      {branch.name}
-                    </Ellipsis>
-                    {when(loadingThisBranch, <GithubSpinner />)}
-                  </UIGridRow>
-                )
-              })}
-            </FlexColumn>
+                if (storedTargetGithubRepo != null) {
+                  void updateProjectWithBranchContent(
+                    dispatch,
+                    storedTargetGithubRepo,
+                    branch.name,
+                    false,
+                    currentDependencies,
+                    builtInDependencies,
+                  ).then(() => setExpanded(false))
+                }
+              }
+              const loadingThisBranch = isGithubLoadingBranch(
+                githubOperations,
+                branch.name,
+                storedTargetGithubRepo,
+              )
+              const isCurrent = currentBranch === branch.name
+              return (
+                <UIGridRow
+                  key={index}
+                  padded
+                  variant='<----------1fr---------><-auto->'
+                  css={{
+                    cursor: loadingThisBranch ? 'wait' : githubWorking ? 'not-allowed' : 'pointer',
+                    opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
+                    '&:hover': {
+                      background: '#09f',
+                      color: '#fff',
+                      svg: { stroke: '#fff' },
+                    },
+                    fontWeight: isCurrent ? 'bold' : 'normal',
+                  }}
+                  onClick={loadContentForBranch}
+                >
+                  <Ellipsis>
+                    {when(isCurrent, <span>&rarr; </span>)}
+                    {branch.name}
+                  </Ellipsis>
+                  {when(loadingThisBranch, <GithubSpinner />)}
+                </UIGridRow>
+              )
+            })}
           </FlexColumn>
-        </UIGridRow>
-      </>
+        </FlexColumn>
+      </UIGridRow>
     )
   }, [
     storedTargetGithubRepo,
@@ -469,14 +393,11 @@ const BranchBlock = () => {
   return (
     <Block
       title={currentBranch != null ? 'Branch' : 'Select Branch'}
-      state={!expanded && currentBranch != null ? 'ready' : 'pending'}
       subtitle={currentBranch || undefined}
-      hasBlockBefore={true}
-      hasBlockAfter={currentBranch != null}
-      onClick={expand}
-      active={expanded}
+      status={!expanded && currentBranch != null ? 'successful' : 'incomplete'}
+      first={false}
     >
-      {when(expanded || currentBranch == null, loadBranchesUI)}
+      {loadBranchesUI}
     </Block>
   )
 }
@@ -517,7 +438,7 @@ const RemoteChangesBlock = () => {
 
   const state = React.useMemo(
     (): IndicatorState =>
-      hasUpstreamChanges ? (bothModified.length > 0 ? 'stopped' : 'warning') : 'ready',
+      hasUpstreamChanges ? (bothModified.length > 0 ? 'failed' : 'pending') : 'successful',
     [hasUpstreamChanges, bothModified],
   )
   const githubOperations = useEditorState(
@@ -556,9 +477,6 @@ const RemoteChangesBlock = () => {
   return (
     <Block
       title={hasUpstreamChanges ? 'Remote Changes' : 'No Remote Changes'}
-      state={state}
-      hasBlockBefore={true}
-      hasBlockAfter={true}
       subtitle={
         <TimeAgo
           style={{ color: '#aaa' }}
@@ -566,6 +484,7 @@ const RemoteChangesBlock = () => {
           formatter={compactTimeagoFormatter}
         />
       }
+      status={state}
     >
       {when(
         hasUpstreamChanges,
@@ -622,7 +541,7 @@ const LocalChangesBlock = () => {
   )
   const hasLocalChanges = React.useMemo(() => changesCount > 0, [changesCount])
   const state = React.useMemo(
-    (): IndicatorState => (hasLocalChanges ? 'pending' : 'ready'),
+    (): IndicatorState => (hasLocalChanges ? 'incomplete' : 'successful'),
     [hasLocalChanges],
   )
   const githubOperations = useEditorState(
@@ -653,9 +572,8 @@ const LocalChangesBlock = () => {
   return (
     <Block
       title={hasLocalChanges ? 'Local Changes' : 'No Local Changes'}
-      state={state}
-      hasBlockBefore={true}
-      hasBlockAfter={false}
+      status={state}
+      last={true}
     >
       {when(
         hasLocalChanges,
