@@ -482,7 +482,7 @@ export async function updateProjectWithBranchContent(
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
-            //updateProjectContents(responseBody.content),
+            updateProjectContents(responseBody.content),
             updateBranchContents(responseBody.content),
             updateGithubSettings(
               projectGithubSettings(
