@@ -471,7 +471,7 @@ interface RenderControlMemoizedProps {
   propsForControl: any
 }
 
-const RenderControlMemoized = React.memo(
+export const RenderControlMemoized = React.memo(
   ({ control, propsForControl }: RenderControlMemoizedProps) => {
     const ControlToRender = control
 

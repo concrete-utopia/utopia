@@ -31,14 +31,12 @@ import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
-import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
-import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
+import { stylePropHandlesMetaStrategy } from './strategies/style-prop-handles-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -80,9 +78,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
-      setPaddingStrategy,
-      setFlexGapStrategy,
-      setBorderRadiusStrategy,
+      stylePropHandlesMetaStrategy,
     ],
   )
 }

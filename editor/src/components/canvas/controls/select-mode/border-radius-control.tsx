@@ -28,7 +28,7 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CanvasLabel, CSSNumberWithRenderedValue, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, CSSNumberWithRenderedValue } from './controls-common'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
@@ -65,10 +65,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const colorTheme = useColorTheme()
 
-  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
-
-  const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(200, setBackgroundShown)
-
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
       ref.current.style.display = 'none'
@@ -83,18 +79,12 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   return (
     <CanvasOffsetWrapper>
-      <div
-        onMouseEnter={controlHoverStart}
-        onMouseLeave={controlHoverEnd}
-        ref={controlRef}
-        style={{ position: 'absolute' }}
-      >
+      <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
             borderRadius={borderRadius[corner]}
             isDragging={isDragging}
-            backgroundShown={backgroundShown}
             scale={scale}
             color={colorTheme.brandNeonPink.value}
             canvasOffsetRef={canvasOffset}
@@ -116,7 +106,6 @@ interface CircularHandleProp {
   dispatch: EditorDispatch
   corner: BorderRadiusCorner
   isDragging: boolean
-  backgroundShown: boolean
   scale: number
   color: string
   elementSize: Size
@@ -128,7 +117,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const {
     borderRadius,
     isDragging,
-    backgroundShown,
     scale,
     color,
     canvasOffsetRef,
@@ -151,7 +139,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   )
 
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
-  const shouldShowHandle = isDragging || backgroundShown
 
   const size = BorderRadiusHandleSize(scale)
   const position = handlePosition(borderRadius.renderedValuePx, elementSize, corner, scale)
@@ -188,7 +175,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         )}
         <div
           style={{
-            visibility: shouldShowHandle ? 'visible' : 'hidden',
             width: size,
             height: size,
             backgroundColor: 'white',
@@ -201,7 +187,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         >
           <div
             style={{
-              visibility: shouldShowHandle && showDot ? 'visible' : 'hidden',
+              // visibility: isDragging && showDot ? 'visible' : 'hidden',
               width: BorderRadiusHandleDotSize(scale),
               height: BorderRadiusHandleDotSize(scale),
               backgroundColor: 'blue',

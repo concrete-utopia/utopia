@@ -40,7 +40,6 @@ type Orientation = 'vertical' | 'horizontal'
 
 interface ResizeContolProps {
   edge: EdgePiece
-  hiddenByParent: boolean
   paddingValue: CSSNumberWithRenderedValue
 }
 
@@ -126,8 +125,6 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = !(props.hiddenByParent && hidden)
-
     const { width, height } = sizeFromOrientation(
       orientation,
       size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
@@ -164,7 +161,7 @@ const PaddingResizeControlI = React.memo(
           onMouseLeave={hoverEnd}
           onMouseUp={onMouseUp}
           style={{
-            visibility: shown ? 'visible' : 'hidden',
+            // visibility: hidden ? 'hidden' : 'visible',
             position: 'absolute',
             padding: hitAreaWidth,
             cursor: cursor,
@@ -246,46 +243,32 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     ref.current.style.height = numberToPxValue(padding.paddingBottom.renderedValuePx)
   })
 
-  const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
-    setHoverHidden(!h),
-  )
-
   return (
     <CanvasOffsetWrapper>
       <div
         data-testid={PaddingResizeControlContainerTestId}
-        onMouseEnter={hoverStart}
-        onMouseLeave={hoverEnd}
         ref={controlRef}
         style={{
           position: 'absolute',
+          pointerEvents: 'none',
         }}
       >
         <PaddingResizeControlI
           ref={rightRef}
           edge={'right'}
-          hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingRight}
         />
         <PaddingResizeControlI
           ref={bottomRef}
           edge={'bottom'}
-          hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingBottom}
         />
         <PaddingResizeControlI
           ref={leftRef}
           edge={'left'}
-          hiddenByParent={hoverHidden}
           paddingValue={currentPadding.paddingLeft}
         />
-        <PaddingResizeControlI
-          ref={topRef}
-          edge={'top'}
-          hiddenByParent={hoverHidden}
-          paddingValue={currentPadding.paddingTop}
-        />
+        <PaddingResizeControlI ref={topRef} edge={'top'} paddingValue={currentPadding.paddingTop} />
       </div>
     </CanvasOffsetWrapper>
   )
