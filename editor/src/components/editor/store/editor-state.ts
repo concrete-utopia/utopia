@@ -349,7 +349,6 @@ export function isGithubUpdating(operations: Array<GithubOperation>): boolean {
 
 export function isGithubListingPullRequestsForBranch(
   operations: Array<GithubOperation>,
-
   repo: GithubRepo,
   branchName: string,
 ): boolean {
