@@ -7,17 +7,22 @@ import {
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { DragToMoveIndicatorFlags, EditorStorePatched } from '../../../editor/store/editor-state'
 import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
+
+const useDelayedDragToMoveIndicatorFlags = () => {
+  const selector = (store: EditorStorePatched) =>
+    !store.editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator
+      ? null
+      : store.editor.canvas.controls.dragToMoveIndicatorFlags
+  return useDelayedEditorState<DragToMoveIndicatorFlags | null>(selector)
+}
 
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlags = useEditorState(
-    (store) => store.editor.canvas.controls.dragToMoveIndicatorFlags,
-    'StrategyIndicator',
-  )
+  const indicatorFlags = useDelayedDragToMoveIndicatorFlags()
 
-  if (!indicatorFlags.showIndicator) {
+  if (indicatorFlags == null || !indicatorFlags.showIndicator) {
     return null
   }
 
