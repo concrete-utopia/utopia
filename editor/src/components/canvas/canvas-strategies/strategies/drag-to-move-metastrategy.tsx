@@ -78,7 +78,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
                 $set: {
                   showIndicator: true,
                   dragType: strategy.dragType,
-                  reparent: false,
+                  reparent: 'none',
                   ancestor: false,
                 },
               },
@@ -132,7 +132,7 @@ export function doNothingStrategy(
           canvas: {
             controls: {
               dragToMoveIndicatorFlags: {
-                $set: { showIndicator: true, dragType: 'none', reparent: false, ancestor: false },
+                $set: { showIndicator: true, dragType: 'none', reparent: 'none', ancestor: false },
               },
             },
           },

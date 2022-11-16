@@ -739,7 +739,7 @@ export function editorStateCanvasTransientProperty(
 export function dragToMoveIndicatorFlags(
   showIndicator: boolean,
   dragType: 'absolute' | 'static' | 'none',
-  reparent: boolean,
+  reparent: 'same-component' | 'different-component' | 'none',
   ancestor: boolean,
 ): DragToMoveIndicatorFlags {
   return {
@@ -750,11 +750,11 @@ export function dragToMoveIndicatorFlags(
   }
 }
 
-export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(false, 'none', false, false)
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(false, 'none', 'none', false)
 export interface DragToMoveIndicatorFlags {
   showIndicator: boolean
   dragType: 'absolute' | 'static' | 'none'
-  reparent: boolean
+  reparent: 'same-component' | 'different-component' | 'none'
   ancestor: boolean
 }
 

@@ -1,10 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import {
-  isRootElementOfInstance,
-  parentPath,
-  pathsEqual,
-} from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -162,7 +158,8 @@ const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFi
         const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
         const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
         return (
-          l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
+          l.startingMetadata === r.startingMetadata &&
+          arrayEquals(lTargets, rTargets, EP.pathsEqual)
         )
       }
     }
@@ -198,13 +195,13 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
+  const anyDraggedElementsRootElements = reparentSubjects.some(EP.isRootElementOfInstance)
 
   if (anyDraggedElementsRootElements) {
     return []
   }
 
-  const existingParents = reparentSubjects.map(parentPath)
+  const existingParents = reparentSubjects.map(EP.parentPath)
 
   const startingTargetToFilter = getStartingTargetParentsToFilterOut(
     canvasState,
@@ -226,13 +223,13 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   )
 
   const targetIsValid = (target: ElementPath): boolean => {
-    if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
+    if (existingParents.some((existingParent) => EP.pathsEqual(target, existingParent))) {
       return false
     } else if (startingTargetToFilter == null) {
       return true
     } else {
       const targetToFilter = startingTargetToFilter.newParent ?? null
-      return !pathsEqual(target, targetToFilter)
+      return !EP.pathsEqual(target, targetToFilter)
     }
   }
 
@@ -240,11 +237,15 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     targetIsValid(reparentStrategy.targetParent),
   )
 
-  return mapDropNulls(({ factory, dragType }) => {
+  return mapDropNulls(({ factory, dragType, targetParent }) => {
     const strategy = factory(canvasState, interactionSession, customStrategyState)
     if (strategy == null) {
       return null
     }
+    const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const isReparentedWithinComponent = targets.some((target) =>
+      EP.pathsEqual(EP.getContainingComponent(target), EP.getContainingComponent(targetParent)),
+    )
     const indicatorCommand = wildcardPatch('mid-interaction', {
       canvas: {
         controls: {
@@ -252,7 +253,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
             $set: {
               showIndicator: true,
               dragType: dragType,
-              reparent: true,
+              reparent: isReparentedWithinComponent ? 'same-component' : 'different-component',
               ancestor: false,
             },
           },
