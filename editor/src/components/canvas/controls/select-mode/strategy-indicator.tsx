@@ -43,6 +43,7 @@ export const StrategyIndicator = React.memo(() => {
         backgroundColor: colorTheme.bg0.value,
         boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
       }}
+      data-testid='drag-strategy-indicator'
     >
       <MoveIndicatorItem dragType={indicatorFlags.dragType} />
       <Divider />
