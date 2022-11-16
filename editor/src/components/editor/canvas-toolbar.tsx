@@ -117,6 +117,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertButtonCallback}
             />
           </Tooltip>
+          {/* TODO I have to find a better spacer */}
           <IcnSpacer height={0} width={'100%'} />
           <Tooltip title='Insert component...' placement='bottom'>
             <InsertModeButton
