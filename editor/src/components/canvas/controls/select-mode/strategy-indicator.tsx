@@ -18,6 +18,7 @@ const useDelayedDragToMoveIndicatorFlags = () => {
   return useDelayedEditorState<DragToMoveIndicatorFlags | null>(selector)
 }
 
+const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const indicatorFlags = useDelayedDragToMoveIndicatorFlags()
@@ -32,8 +33,8 @@ export const StrategyIndicator = React.memo(() => {
         pointerEvents: 'none',
         position: 'absolute',
         top: 4,
-        left: `calc(50% - ${240 / 2}px)`,
-        width: 240,
+        left: `calc(50% - ${StrategyIndicatorWidth / 2}px)`,
+        width: StrategyIndicatorWidth,
         height: 57,
         borderRadius: 24,
         padding: '0 16px',
