@@ -52,7 +52,7 @@ export function strategyApplicationResult(
 
 export interface MoveStrategy {
   strategy: CanvasStrategy
-  dragType: 'absolute' | 'static' | 'none'
+  dragType: 'absolute' | 'static'
 }
 
 export interface ControlForStrategy<P> {

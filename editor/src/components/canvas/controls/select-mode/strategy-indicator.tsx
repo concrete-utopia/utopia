@@ -55,7 +55,7 @@ export const StrategyIndicator = React.memo(() => {
 })
 
 interface MoveIndicatorItemProps {
-  dragType: 'absolute' | 'static' | 'none'
+  dragType: 'absolute' | 'static'
 }
 
 const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
