@@ -177,19 +177,39 @@ export interface GetBranchPullRequestSuccess {
 
 export type GetBranchPullRequestResponse = GetBranchPullRequestSuccess | GithubFailure
 
+export interface SaveProjectToGithubOptions {
+  branchName: string | null
+  commitMessage: string | null
+}
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
+  options: SaveProjectToGithubOptions,
 ): Promise<void> {
+  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
+  let includeQueryParams: boolean = false
+  let paramsRecord: Record<string, string> = {}
+  if (branchName != null) {
+    includeQueryParams = true
+    paramsRecord.branch_name = branchName
+  }
+  if (commitMessage != null) {
+    includeQueryParams = true
+    paramsRecord.commit_message = commitMessage
+  }
+  const searchParams = new URLSearchParams(paramsRecord)
+  const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+
   const postBody = JSON.stringify(persistentModel)
-  const response = await fetch(url, {
+  const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
     headers: HEADERS,
