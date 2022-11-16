@@ -41,7 +41,7 @@ export const StrategyIndicator = React.memo(() => {
         alignItems: 'center',
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
-        boxShadow: UtopiaStyles.shadowStyles.small.boxShadow,
+        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
       }}
     >
       <MoveIndicatorItem dragType={indicatorFlags.dragType} />
