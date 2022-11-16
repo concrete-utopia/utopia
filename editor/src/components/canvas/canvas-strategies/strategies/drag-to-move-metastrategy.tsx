@@ -132,7 +132,12 @@ export function doNothingStrategy(
           canvas: {
             controls: {
               dragToMoveIndicatorFlags: {
-                $set: { showIndicator: true, dragType: 'none', reparent: 'none', ancestor: false },
+                $set: {
+                  showIndicator: true,
+                  dragType: 'static',
+                  reparent: 'none',
+                  ancestor: false,
+                },
               },
             },
           },
