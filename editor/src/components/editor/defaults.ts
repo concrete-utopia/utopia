@@ -8,8 +8,11 @@ import {
   emptyComments,
   jsxTextBlock,
   JSXAttribute,
+  jsxAttributesEntry,
+  simpleAttribute,
 } from '../../core/shared/element-template'
 import { NormalisedFrame } from 'utopia-api/core'
+import { defaultImageAttributes } from '../shared/project-components'
 
 export function defaultSceneElement(
   uid: string,
@@ -132,6 +135,38 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxAttributesFromMap({
       style: defaultViewElementStyle(),
       'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
+    [],
+  )
+}
+
+export function defaultSpanElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('span', []),
+    uid,
+    jsxAttributesFromMap({
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
+    [jsxTextBlock('utopia')],
+  )
+}
+
+export function defaultImgElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('img', []),
+    uid,
+    [...defaultImageAttributes, simpleAttribute('data-uid', uid)],
+    [],
+  )
+}
+
+export function defaultButtonElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('button', []),
+    uid,
+    jsxAttributesFromMap({
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+      style: jsxAttributeValue({ position: 'absolute' }, emptyComments),
     }),
     [],
   )
