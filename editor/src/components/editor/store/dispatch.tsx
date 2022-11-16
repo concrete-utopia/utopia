@@ -127,6 +127,11 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
     }
+  } else if (action.action === 'SET_USER_CONFIGURATION') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_USER_CONFIGURATION(action, working.userState),
+    }
   } else {
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(

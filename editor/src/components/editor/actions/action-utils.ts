@@ -90,6 +90,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONFIG_FROM_VSCODE':
     case 'SET_LOGIN_STATE':
     case 'SET_GITHUB_STATE':
+    case 'SET_USER_CONFIGURATION':
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
