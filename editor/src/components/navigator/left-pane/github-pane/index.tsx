@@ -383,13 +383,15 @@ const BranchBlock = () => {
               style={{
                 height: 220,
                 overflowY: 'scroll',
-                padding: '2px 6px',
                 border: '1px solid #2D2E33',
                 borderRadius: 2,
               }}
             >
               {filteredBranches.map((branch, index) => {
                 function loadContentForBranch() {
+                  if (githubWorking) {
+                    return
+                  }
                   if (storedTargetGithubRepo != null) {
                     void updateProjectWithBranchContent(
                       dispatch,
@@ -401,34 +403,38 @@ const BranchBlock = () => {
                     ).then(() => setExpanded(false))
                   }
                 }
+                const loadingThisBranch = isGithubLoadingBranch(
+                  githubOperations,
+                  branch.name,
+                  storedTargetGithubRepo,
+                )
+                const isCurrent = currentBranch === branch.name
                 return (
-                  <UIGridRow key={index} variant='<----------1fr---------><-auto->' padded={false}>
-                    <Ellipsis
-                      style={{
-                        maxWidth: 150,
-                        fontWeight: branch.name === currentBranch ? 600 : 400,
-                      }}
-                    >
-                      {when(currentBranch === branch.name, <span>&rarr; </span>)}
-                      <span title={branch.name}>{branch.name}</span>
+                  <UIGridRow
+                    key={index}
+                    padded
+                    variant='<----------1fr---------><-auto->'
+                    css={{
+                      cursor: loadingThisBranch
+                        ? 'wait'
+                        : githubWorking
+                        ? 'not-allowed'
+                        : 'pointer',
+                      opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
+                      '&:hover': {
+                        background: '#09f',
+                        color: '#fff',
+                        svg: { stroke: '#fff' },
+                      },
+                      fontWeight: isCurrent ? 'bold' : 'normal',
+                    }}
+                    onClick={loadContentForBranch}
+                  >
+                    <Ellipsis>
+                      {branch.name}
+                      {when(isCurrent, <span>(current) </span>)}
                     </Ellipsis>
-                    <Button
-                      spotlight
-                      highlight
-                      onMouseUp={loadContentForBranch}
-                      disabled={githubWorking}
-                      style={{ padding: '0 6px' }}
-                    >
-                      {isGithubLoadingBranch(
-                        githubOperations,
-                        branch.name,
-                        storedTargetGithubRepo,
-                      ) ? (
-                        <GithubSpinner />
-                      ) : (
-                        'Load'
-                      )}
-                    </Button>
+                    {when(loadingThisBranch, <GithubSpinner />)}
                   </UIGridRow>
                 )
               })}

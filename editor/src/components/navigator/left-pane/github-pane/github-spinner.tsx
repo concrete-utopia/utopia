@@ -5,7 +5,7 @@ import { css, jsx, keyframes } from '@emotion/react'
 import React from 'react'
 import { FlexColumn } from '../../../../uuiui'
 
-export const GithubSpinner: React.FC = () => {
+export const GithubSpinner: React.FC<{ stroke?: string }> = ({ stroke }) => {
   const anim = keyframes`
         from {
           transform: rotate(0deg);
@@ -23,7 +23,7 @@ export const GithubSpinner: React.FC = () => {
         height='12'
         viewBox='0 0 24 24'
         fill='none'
-        stroke='#999'
+        stroke={stroke || '#999'}
         strokeWidth='2'
         strokeLinecap='round'
         strokeLinejoin='round'

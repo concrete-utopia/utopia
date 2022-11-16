@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
@@ -15,11 +19,12 @@ import {
   RepositoryEntry,
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
-import { FlexColumn, Button, StringInput } from '../../../../uuiui'
+import { FlexColumn, Button, StringInput, FlexRow } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
+import { when } from '../../../../utils/react-conditionals'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -69,6 +74,9 @@ const RepositoryRow = (props: RepositoryRowProps) => {
   const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const importRepository = React.useCallback(() => {
+    if (githubWorking) {
+      return
+    }
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
     if (parsedTargetRepository == null || props.defaultBranch == null) {
       dispatch(
@@ -101,11 +109,30 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     currentRepo,
     builtInDependencies,
     currentDependencies,
+    githubWorking,
   ])
 
   return (
-    <UIGridRow padded variant='<----------1fr---------><-auto->' style={{ paddingTop: 4 }}>
-      <FlexColumn>
+    <UIGridRow
+      padded
+      variant='<----------1fr---------><-auto->'
+      tall={true}
+      css={{
+        cursor: importing
+          ? 'wait'
+          : githubWorking || !props.importPermitted
+          ? 'not-allowed'
+          : 'pointer',
+        opacity: githubWorking || !props.importPermitted ? 0.5 : 1,
+        '&:hover': {
+          background: '#09f',
+          color: '#fff',
+          svg: { stroke: '#fff' },
+        },
+      }}
+      onClick={importRepository}
+    >
+      <div>
         <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {props.private ? 'private' : 'public'}
@@ -116,16 +143,8 @@ const RepositoryRow = (props: RepositoryRowProps) => {
             </>
           )}
         </span>
-      </FlexColumn>
-      <Button
-        spotlight
-        highlight
-        style={{ padding: '0 8px' }}
-        disabled={!props.importPermitted || githubWorking}
-        onMouseUp={importRepository}
-      >
-        {importing ? <GithubSpinner /> : 'Load'}
-      </Button>
+      </div>
+      {when(importing, <GithubSpinner />)}
     </UIGridRow>
   )
 }
@@ -273,7 +292,6 @@ export const RepositoryListing = React.memo(
             overflowY: 'scroll',
             border: '1px solid #2D2E33',
             borderRadius: 2,
-            gap: 4,
           }}
         >
           {filteredRepositoriesWithSpecialCases == null ? (
