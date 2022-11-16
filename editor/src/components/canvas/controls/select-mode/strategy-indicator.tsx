@@ -52,7 +52,7 @@ export const StrategyIndicator = React.memo(() => {
         height: 57,
         borderRadius: 24,
         padding: '0 16px',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
         boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
@@ -81,7 +81,7 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           style={{
             backgroundColor:
               props.dragType === 'absolute' ? colorTheme.primary.value : colorTheme.bg0.value,
-            padding: 2,
+            padding: 4,
             borderRadius: 10,
           }}
         >
@@ -93,7 +93,7 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           style={{
             backgroundColor:
               props.dragType === 'static' ? colorTheme.primary.value : colorTheme.bg0.value,
-            padding: 2,
+            padding: 4,
             borderRadius: 10,
           }}
         >
