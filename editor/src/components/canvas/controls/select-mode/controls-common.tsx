@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { roundTo } from '../../../../core/shared/math-utils'
+import { roundTo, size } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
@@ -77,6 +77,7 @@ export function measurementBasedOnOtherMeasurement(
 
 const FontSize = 12
 const Padding = 4
+const BorderRadius = 2
 
 interface CanvasLabelProps {
   scale: number
@@ -95,7 +96,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         padding: padding,
         backgroundColor: color,
         color: 'white',
-        borderRadius: 2,
+        borderRadius: BorderRadius / scale,
       }}
     >
       {value}
@@ -174,20 +175,18 @@ export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   element: ElementInstanceMetadata,
+  scale: number,
 ): Set<CanvasPropControl> {
-  if (
-    element.specialSizeMeasurements.clientWidth > 80 &&
-    element.specialSizeMeasurements.clientHeight > 80
-  ) {
+  const { width, height } = size(
+    element.specialSizeMeasurements.clientWidth * scale,
+    element.specialSizeMeasurements.clientHeight * scale,
+  )
+
+  if (width > 80 && height > 80) {
     return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
   }
 
-  if (
-    Math.min(
-      element.specialSizeMeasurements.clientWidth,
-      element.specialSizeMeasurements.clientHeight,
-    ) < 40
-  ) {
+  if (Math.min(width, height) < 40) {
     return new Set<CanvasPropControl>([])
   }
 

@@ -90,6 +90,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     canvasState.projectContents,
     canvasState.openFile ?? null,
     element,
+    canvasState.scale,
   ).has('borderRadius')
   if (!canShowPadding) {
     return null
