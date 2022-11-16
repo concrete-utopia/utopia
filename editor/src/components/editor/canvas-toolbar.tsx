@@ -3,6 +3,7 @@ import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-p
 import {
   FlexColumn,
   FlexRow,
+  Icn,
   IcnSpacer,
   LargerIcons,
   SquareButton,
@@ -55,20 +56,22 @@ export const CanvasToolbar = React.memo(() => {
         <header style={{ paddingLeft: 4 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <SquareButton highlight onClick={insertDivCallback}>
-            D
-          </SquareButton>
-          <SquareButton highlight onClick={insertSpanCallback}>
-            S
+            <Icn category='element' type='view' color='main' width={18} height={18} />
           </SquareButton>
           <SquareButton highlight onClick={insertImgCallback}>
-            I
+            <Icn category='element' type='image' color='main' width={18} height={18} />
+          </SquareButton>
+          <SquareButton highlight onClick={insertSpanCallback}>
+            <Icn category='element' type='text' color='main' width={18} height={18} />
           </SquareButton>
           <SquareButton highlight onClick={insertButtonCallback}>
-            B
+            <Icn category='element' type='button' color='main' width={18} height={18} />
           </SquareButton>
           <IcnSpacer height={0} width={'100%'} />
-          <SquareButton highlight>X</SquareButton>
-          <SquareButton highlight>Y</SquareButton>
+          <SquareButton highlight>
+            <Icn category='element' type='componentinstance' color='main' width={18} height={18} />
+          </SquareButton>
+          <SquareButton highlight>…</SquareButton>
         </FlexRow>
       </FlexColumn>
     </FlexColumn>
