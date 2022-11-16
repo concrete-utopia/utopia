@@ -1,16 +1,18 @@
-import { UtopiColor } from './utopi-color-helpers'
 // TODO: pass in colorTheme to updateCssVars from a hook and remove the dependency here:
 import {
   colorThemeCssVariables,
   useColorTheme,
+  useColorThemeVariables,
   UtopiaTheme,
   // utopiaThemeCssValues
 } from './theme'
 import React from 'react'
 
 export const ColorThemeStyleComponent = React.memo(() => {
-  const colorTheme = useColorTheme(),
+  const colorTheme = useColorThemeVariables(),
     { inverted, ...currentTheme } = colorTheme
+
+  // console.log(colorTheme)
 
   return (
     <style>

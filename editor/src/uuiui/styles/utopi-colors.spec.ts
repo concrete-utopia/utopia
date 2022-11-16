@@ -1,4 +1,6 @@
-import { createUtopiColor } from './utopi-color-helpers'
+import { UtopiColor } from './utopi-color-helpers'
+
+const { createUtopiColor } = UtopiColor
 
 describe('UtopiColors', () => {
   it('createUtopiColor consumes any color formats Chroma eats', () => {

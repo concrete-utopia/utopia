@@ -1,6 +1,8 @@
-import { createUtopiColor } from '../utopi-color-helpers'
+import { UtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { light } from './light'
+
+const { createUtopiColor } = UtopiColor
 
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
@@ -16,26 +18,26 @@ const darkBase = {
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
 
-  bg0: createUtopiColor('#000000'),
-  bg1: createUtopiColor('#181C20'),
-  bg2: createUtopiColor('#373C4A'),
+  bg0: createUtopiColor('rgb(45,45,45)'),
+  bg1: createUtopiColor('rgb(33,33,34)'),
+  bg2: createUtopiColor('rgb(28,28,28)'),
   bg3: createUtopiColor('#55575F'),
   bg4: createUtopiColor('#4C4D5B'),
   bg5: createUtopiColor('#848998'),
-  fg0: createUtopiColor('#ffffff'),
-  fg1: createUtopiColor('#D9DCE3'),
-  fg2: createUtopiColor('#c9cCc3'),
-  fg3: createUtopiColor('b9bCb3'),
-  fg4: createUtopiColor('a9aCa3'),
+  fg0: createUtopiColor('rgb(197,197,197)'),
+  fg1: createUtopiColor('rgb(179,179,179)'),
+  fg2: createUtopiColor('rgb(176,177,177)'),
+  fg3: createUtopiColor('#b9bCb3'),
+  fg4: createUtopiColor('#a9aCa3'),
   fg5: createUtopiColor('#8B91A0'),
   fg6: createUtopiColor('#6F778B'),
   fg7: createUtopiColor('#525B72'),
   fg8: createUtopiColor('#2F374A'),
   fg9: createUtopiColor('#151A27'),
-  border0: createUtopiColor('#181C20'),
-  border1: createUtopiColor('#181C20'),
-  border2: createUtopiColor('#181C20'),
-  border3: createUtopiColor('#181C20'),
+  border0: createUtopiColor('rgb(71,71,71)'),
+  border1: createUtopiColor('rgb(71,71,71)'),
+  border2: createUtopiColor('rgb(71,71,71)'),
+  border3: createUtopiColor('rgb(71,71,71)'),
 }
 
 const darkPrimitives = {

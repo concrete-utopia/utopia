@@ -171,7 +171,7 @@ export const NavigatorComponent = React.memo(() => {
           ref={itemListRef}
           width={'100%'}
           height={size.height}
-          itemSize={UtopiaTheme.layout.rowHeight.smaller as number}
+          itemSize={UtopiaTheme.layout.rowHeight.smaller}
           itemCount={visibleNavigatorTargets.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}

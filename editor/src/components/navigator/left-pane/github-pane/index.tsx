@@ -19,6 +19,7 @@ import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
+  colorTheme,
   FlexColumn,
   FlexRow,
   Section,
@@ -322,7 +323,7 @@ export const GithubPane = React.memo(() => {
         <SectionTitleRow minimised={false}>
           <Title style={{ flexGrow: 1 }}>Github</Title>
           {githubWorking && (
-            <FlexRow style={{ gap: 4 }}>
+            <FlexRow style={{ gap: 4, color: colorTheme.fg1.value }}>
               <GithubSpinner />
               <span>{githubOperationPrettyName(githubOperations[0])}…</span>
             </FlexRow>
@@ -342,6 +343,7 @@ export const GithubPane = React.memo(() => {
               letterSpacing: 0.1,
               lineHeight: '17px',
               fontSize: '11px',
+              color: colorTheme.fg2.value,
             }}
           >
             {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
@@ -352,6 +354,10 @@ export const GithubPane = React.memo(() => {
               highlight
               disabled={githubAuthenticated}
               onMouseUp={triggerAuthentication}
+              style={{
+                color: colorTheme.fg1.value,
+                background: colorTheme.bg4.value,
+              }}
             >
               Authenticate With Github
             </Button>
@@ -369,6 +375,7 @@ export const GithubPane = React.memo(() => {
               letterSpacing: 0.1,
               lineHeight: '17px',
               fontSize: '11px',
+              color: colorTheme.fg2.value,
             }}
           >
             You can import a new project from Github. It might take a few minutes, and will show up
@@ -399,6 +406,7 @@ export const GithubPane = React.memo(() => {
               letterSpacing: 0.1,
               lineHeight: '17px',
               fontSize: '11px',
+              color: colorTheme.fg2.value,
             }}
           >
             Connect this project to a Github repository. You can then import and export to the repo

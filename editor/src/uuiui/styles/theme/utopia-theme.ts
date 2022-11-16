@@ -1,6 +1,12 @@
+import { UtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
+import {
+  generateCssVariablesFromThemeObject,
+  ThemeObject,
+  ThemeVariableObject,
+} from './theme-helpers'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
@@ -8,41 +14,74 @@ const inspectorSmallWidth = 255
 const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 
-export const colorTheme = { ...light, inverted: dark }
-export const darkColorTheme = { ...dark, inverted: light }
+const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
+const [lightThemeAsInverted, lightThemeAsInvertedCssVariables] =
+  generateCssVariablesFromThemeObject(light, '--inverted')
 
-export type ColorTheme = typeof colorTheme
+const [darkTheme, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
+const [darkThemeAsInverted, darkThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
+  dark,
+  '--inverted',
+)
 
-// export interface UtopiaTheme {
-//   layout: {
-//     rowHorizontalPadding: number | string
-//     rowButtonSpacing: number | string
-//     rowHeight: {
-//       smaller: number | string
-//       normal: number | string
-//       large: number | string
-//       max: number | string
-//     }
-//     inputHeight: {
-//       small: number | string
-//       default: number | string
-//       tall: number | string
-//     }
-//     inspectorXPadding: number | string
-//     inspectorSmallPaddedWidth: number | string
-//     inspectorSmallWidth: number | string
-//     inspectorLargeWidth: number | string
-//     canvasMenuWidth: number | string
-//     inspectorModalBaseOffset: number | string
-//   }
-//   inputBorderRadius: number | string
-//   styles: {
-//     inspectorSetSelectedOpacity: number | string
-//     inspectorUnsetSelectedOpacity: number | string
-//     inspectorSetUnselectedOpacity: number | string
-//     inspectorUnsetUnselectedOpacity: number | string
-//   }
-// }
+export interface ColorTheme extends ThemeObject {
+  inverted: ThemeObject
+}
+
+export interface ThemeVariables extends ThemeVariableObject {
+  inverted: ThemeVariableObject
+}
+
+export const colorTheme: ColorTheme = {
+  ...lightTheme,
+  inverted: { ...darkThemeAsInverted },
+}
+
+export const colorThemeCssVariables: ThemeVariables = {
+  ...lightThemeCssVariables,
+  inverted: darkThemeAsInvertedCssVariables,
+}
+
+export const darkColorTheme: ColorTheme = {
+  ...darkTheme,
+  inverted: lightThemeAsInverted,
+}
+
+export const darkColorThemeCssVariables: ThemeVariables = {
+  ...darkThemeCssVariables,
+  inverted: lightThemeAsInvertedCssVariables,
+}
+
+export interface UtopiaTheme {
+  layout: {
+    rowHorizontalPadding: number
+    rowButtonSpacing: number
+    rowHeight: {
+      smaller: number
+      normal: number
+      large: number
+      max: number
+    }
+    inputHeight: {
+      small: number
+      default: number
+      tall: number
+    }
+    inspectorXPadding: number
+    inspectorSmallPaddedWidth: number
+    inspectorSmallWidth: number
+    inspectorLargeWidth: number
+    canvasMenuWidth: number
+    inspectorModalBaseOffset: number
+  }
+  inputBorderRadius: number
+  styles: {
+    inspectorSetSelectedOpacity: number
+    inspectorUnsetSelectedOpacity: number
+    inspectorSetUnselectedOpacity: number
+    inspectorUnsetUnselectedOpacity: number
+  }
+}
 
 export const UtopiaTheme = {
   layout: {
@@ -141,7 +180,7 @@ const noticeStyles: { [styleName: string]: React.CSSProperties } = {
   },
   info: {
     backgroundColor: '#f1f1f1',
-    color: colorTheme.darkPrimary.value,
+    color: colorTheme.darkPrimary.value as string,
   },
   primary: {
     backgroundColor: base.blue.value,
@@ -208,7 +247,7 @@ const checkerboardBackground: Pick<
     linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
     linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
     linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
-  background: `repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px`,
+  background: `repeating-conic-gradient(#e7e7e7 0% 25%, transparent 0% 50%) 50% / 20px 20px`,
   backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
   backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
 }

@@ -1,5 +1,7 @@
-import { createUtopiColor } from '../utopi-color-helpers'
+import { UtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
+
+const { createUtopiColor } = UtopiColor
 
 const lightBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
