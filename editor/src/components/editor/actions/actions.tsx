@@ -343,6 +343,7 @@ import {
   EditorState,
   getAllBuildErrors,
   getAllLintErrors,
+  getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
   getJSXComponentsAndImportsForPathFromState,
@@ -4479,7 +4480,7 @@ export const UPDATE_FNS = {
     // Side effects.
     void sendCodeEditorDecorations(editor)
     void sendSelectedElement(editor)
-    void sendSetVSCodeTheme(userState.themeConfig)
+    void sendSetVSCodeTheme(getCurrentTheme(userState))
     return {
       ...editor,
       vscodeReady: true,

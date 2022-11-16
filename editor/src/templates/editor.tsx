@@ -53,6 +53,7 @@ import {
   EditorStorePatched,
   patchedStoreFromFullStore,
   ElementsToRerender,
+  getCurrentTheme,
 } from '../components/editor/store/editor-state'
 import {
   CanvasStateContext,
@@ -299,13 +300,14 @@ export class Editor {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
       void getUserConfiguration(loginState).then((shortcutConfiguration) => {
-        this.storedState.userState = {
+        const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
         }
+        this.storedState.userState = userState
 
         // Ensure we have the correct theme set in VS Code
-        void sendSetVSCodeTheme(shortcutConfiguration.themeConfig)
+        void sendSetVSCodeTheme(getCurrentTheme(userState))
 
         void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
           this.storedState.userState = {
