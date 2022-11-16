@@ -93,7 +93,7 @@ export const CanvasToolbar = React.memo(() => {
     >
       <FlexColumn>
         {/* TODO is there a component for this subheading? */}
-        <header style={{ paddingLeft: 4, fontSize: 9, fontWeight: 600 }}>Insert</header>
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
           <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
@@ -113,6 +113,7 @@ export const CanvasToolbar = React.memo(() => {
             primary={insertMenuSelected}
             highlight
             style={{
+              borderRadius: 4,
               color: insertMenuSelected ? theme.neutralInvertedForeground.value : theme.fg0.value,
             }}
             onClick={selectInsertMenuPane}
@@ -132,7 +133,12 @@ interface InsertModeButtonProps {
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
-    <SquareButton primary={props.primary} highlight onClick={props.onClick}>
+    <SquareButton
+      style={{ borderRadius: 4 }}
+      primary={props.primary}
+      highlight
+      onClick={props.onClick}
+    >
       <Icn
         category='element'
         type={props.iconType}
