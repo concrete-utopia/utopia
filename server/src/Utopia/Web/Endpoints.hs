@@ -691,6 +691,10 @@ saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = re
   let splitPath = drop 1 $ T.splitOn "/" fullPath
   saveGithubAsset (view (field @"_id") sessionUser) owner repository assetSha projectId splitPath
 
+getGithubBranchPullRequestEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchPullRequestResponse
+getGithubBranchPullRequestEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
+  getPullRequestForBranch (view (field @"_id") sessionUser) owner repository branchName
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -716,6 +720,7 @@ protected authCookie = logoutPage authCookie
                   :<|> githubSaveEndpoint authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> getGithubBranchPullRequestEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
 

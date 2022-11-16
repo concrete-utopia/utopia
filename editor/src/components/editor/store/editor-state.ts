@@ -255,12 +255,41 @@ export interface UserState extends UserConfiguration {
   githubState: GithubState
 }
 
+export interface GithubCommish {
+  name: 'commish'
+}
+
+export interface GithubListBranches {
+  name: 'listBranches'
+}
+
+export interface GithubLoadBranch {
+  name: 'loadBranch'
+  githubRepo: GithubRepo
+  branchName: string
+}
+
+export interface GithubLoadRepositories {
+  name: 'loadRepositories'
+}
+
+export interface GithubUpdateAgainstBranch {
+  name: 'updateAgainstBranch'
+}
+
+export interface GithubListPullRequestsForBranch {
+  name: 'listPullRequestsForBranch'
+  githubRepo: GithubRepo
+  branchName: string
+}
+
 export type GithubOperation =
-  | { name: 'commish' }
-  | { name: 'listBranches' }
-  | { name: 'loadBranch'; branchName: string; githubRepo: GithubRepo }
-  | { name: 'loadRepositories' }
-  | { name: 'updateAgainstBranch' }
+  | GithubCommish
+  | GithubListBranches
+  | GithubLoadBranch
+  | GithubLoadRepositories
+  | GithubUpdateAgainstBranch
+  | GithubListPullRequestsForBranch
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
@@ -274,6 +303,8 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Loading Repositories'
     case 'updateAgainstBranch':
       return 'Updating'
+    case 'listPullRequestsForBranch':
+      return 'Listing pull requests'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
@@ -284,6 +315,7 @@ export function githubOperationLocksEditor(op: GithubOperation): boolean {
   switch (op.name) {
     case 'listBranches':
     case 'loadRepositories':
+    case 'listPullRequestsForBranch':
       return false
     default:
       return true
@@ -313,6 +345,20 @@ export function isGithubLoadingRepositories(operations: Array<GithubOperation>):
 
 export function isGithubUpdating(operations: Array<GithubOperation>): boolean {
   return operations.some((operation) => operation.name === 'updateAgainstBranch')
+}
+
+export function isGithubListingPullRequestsForBranch(
+  operations: Array<GithubOperation>,
+  repo: GithubRepo,
+  branchName: string,
+): boolean {
+  return operations.some((operation) => {
+    return (
+      operation.name === 'listPullRequestsForBranch' &&
+      githubRepoEquals(operation.githubRepo, repo) &&
+      operation.branchName === branchName
+    )
+  })
 }
 
 export const defaultUserState: UserState = {
@@ -1049,6 +1095,11 @@ export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): bo
   return a?.owner === b?.owner && a?.repository === b?.repository
 }
 
+export interface PullRequest {
+  title: string
+  htmlURL: string
+}
+
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
@@ -1085,6 +1136,7 @@ export interface GithubData {
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
   upstreamChanges: GithubFileChanges | null
+  currentBranchPullRequests: Array<PullRequest> | null
 }
 
 export function emptyGithubData(): GithubData {
@@ -1094,6 +1146,7 @@ export function emptyGithubData(): GithubData {
     treeConflicts: {},
     lastUpdatedAt: null,
     upstreamChanges: null,
+    currentBranchPullRequests: null,
   }
 }
 
