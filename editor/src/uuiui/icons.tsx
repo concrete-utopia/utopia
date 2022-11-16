@@ -190,7 +190,8 @@ export const Icons = {
   SmallCross: makeIcon({ type: 'cross-small', color: 'main' }),
   Smiangle: makeIcon({ type: 'smiangle', color: 'primary' }),
   WarningTriangle: makeIcon({ type: 'warningtriangle', color: 'main' }),
-
+  DotDotDot: makeIcon({ type: 'dotdotdot', color: 'main' }),
+  ConvertObject: makeIcon({ type: 'convertobject', color: 'main' }),
   NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
@@ -245,6 +246,44 @@ export const FunctionIcons = {
   Refresh: Icons.Refresh,
   Reset: Icons.Refresh,
   RefreshingAnimated: Icons.Refresh,
+}
+
+export const ModalityIcons = {
+  MoveAbsolute: makeIcon({
+    category: 'modalities',
+    type: 'moveabs-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Reorder: makeIcon({
+    category: 'modalities',
+    type: 'reorder-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Reparent: makeIcon({
+    category: 'modalities',
+    type: 'reparent-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Replant: makeIcon({
+    category: 'modalities',
+    type: 'replant-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Magic: makeIcon({
+    category: 'modalities',
+    type: 'magic-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
 }
 
 export const MenuIcons = {

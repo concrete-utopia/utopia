@@ -282,6 +282,18 @@ getGitCommit accessToken owner repository commitSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits/" <> commitSha
   callGithub getFromGithub [] getGitCommitErrorCases accessToken repoUrl ()
 
+listPullRequestsErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+listPullRequestsErrorCases status | status == notModified304          = throwE "Not modified."
+                                  | status == unprocessableEntity422  = liftIO $ fail "Validation failed or endpoint has been spammed."
+                                  | otherwise                         = throwE "Unexpected error."
+
+listPullRequests :: (MonadIO m) => AccessToken -> Text -> Text -> Int -> Maybe Text -> ExceptT Text m ListPullRequestsResult
+listPullRequests accessToken owner repository page possibleHead = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/pulls"
+  let headParameter = maybe [] (\h -> [("head", h)]) possibleHead
+  let queryParameters = [("page", show page)] <> headParameter
+  callGithub getFromGithub queryParameters listPullRequestsErrorCases accessToken repoUrl ()
+
 makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
 makeProjectTextFileFromEntry gitEntry _ decodedContent = do
   let path = view (field @"path") gitEntry
