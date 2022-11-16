@@ -226,11 +226,7 @@ export const GithubFileChangesList: React.FC<{
               </UIGridRow>
               {when(
                 revertable && !isTreeConflict,
-                <RevertButton
-                  disabled={githubWorking}
-                  text='Revert'
-                  onMouseUp={handleClickRevertFile(i)}
-                />,
+                <RevertButton disabled={githubWorking} onMouseUp={handleClickRevertFile(i)} />,
               )}
               {when(
                 isTreeConflict,
