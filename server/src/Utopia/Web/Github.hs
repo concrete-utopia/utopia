@@ -25,6 +25,7 @@ import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import qualified Data.ByteString.Lazy.Base64     as BLB64
+import           Data.ByteString.Lens
 import           Data.Data
 import           Data.Foldable
 import           Data.Generics.Product
@@ -40,6 +41,7 @@ import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
 import qualified Network.Wreq                    as WR
 import qualified Network.Wreq.Types              as WR (Postable)
+import           Numeric.Lens
 import           Prelude                         (String)
 import           Protolude
 import           Utopia.ClientModel
@@ -129,11 +131,19 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
               & WR.header "Authorization" .~ ["Bearer " <> (encodeUtf8 $ atoken accessToken)]
               & WR.checkResponse .~ (Just $ \_ _ -> return ())
               & WR.params .~ queryParameters
+  -- Make the request.
   result <- liftIO $ makeRequest options (toS restURL) request
   -- Uncomment the next line if you want to see the headers.
   -- liftIO $ print $ view WR.responseHeaders result
   let status = view WR.responseStatus result
-  unless (statusIsSuccessful status) $ handleErrorCases status
+  -- Check the rate limiting.
+  let rateLimitRemaining = firstOf (WR.responseHeader "X-RateLimit-Remaining" . unpackedChars . decimal) result :: Maybe Int
+  when (rateLimitRemaining == Just 0 || status == tooManyRequests429) $ do
+    throwE "Too many requests to the Github API."
+  -- Check for other error cases.
+  unless (statusIsSuccessful status) $ do
+    handleErrorCases status
+  -- Parse the response contents.
   except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
 
 createTreeHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
