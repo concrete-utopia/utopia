@@ -92,7 +92,8 @@ export const CanvasToolbar = React.memo(() => {
       }}
     >
       <FlexColumn>
-        <header style={{ paddingLeft: 4 }}>Insert</header>
+        {/* TODO is there a component for this subheading? */}
+        <header style={{ paddingLeft: 4, fontSize: 9, fontWeight: 600 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
           <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
