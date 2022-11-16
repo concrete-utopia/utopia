@@ -1,4 +1,5 @@
 import React from 'react'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-with-pub-sub'
 import {
   FlexColumn,
   FlexRow,
@@ -7,7 +8,12 @@ import {
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
-import { DragToMoveIndicatorFlags, EditorStorePatched } from '../../../editor/store/editor-state'
+import {
+  DragToMoveIndicatorFlags,
+  EditorStorePatched,
+  NavigatorWidthAtom,
+} from '../../../editor/store/editor-state'
+import { useEditorState } from '../../../editor/store/store-hook'
 import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 const useDelayedDragToMoveIndicatorFlags = () => {
@@ -23,6 +29,12 @@ export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const indicatorFlags = useDelayedDragToMoveIndicatorFlags()
 
+  const isNavigatorOpen = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'StrategyIndicator navigator status',
+  )
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
+
   if (indicatorFlags == null || !indicatorFlags.showIndicator) {
     return null
   }
@@ -33,7 +45,9 @@ export const StrategyIndicator = React.memo(() => {
         pointerEvents: 'none',
         position: 'absolute',
         top: 4,
-        left: `calc(50% - ${StrategyIndicatorWidth / 2}px)`,
+        left: `calc(50% - ${StrategyIndicatorWidth / 2}px + ${
+          isNavigatorOpen ? navigatorWidth / 2 : 0
+        }px)`,
         width: StrategyIndicatorWidth,
         height: 57,
         borderRadius: 24,
