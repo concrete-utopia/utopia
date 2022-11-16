@@ -18,14 +18,17 @@ import {
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
-  const mode = useEditorState((store) => store.editor.mode, 'useCheckInsertModeForElementType mode')
-  return (
-    mode.type === 'insert' &&
-    mode.subjects.some(
-      (subject) =>
-        subject.element.type === 'JSX_ELEMENT' && subject.element.name.baseVariable === elementName,
+  return useEditorState((store) => {
+    const mode = store.editor.mode
+    return (
+      mode.type === 'insert' &&
+      mode.subjects.some(
+        (subject) =>
+          subject.element.type === 'JSX_ELEMENT' &&
+          subject.element.name.baseVariable === elementName,
+      )
     )
-  )
+  }, 'useCheckInsertModeForElementType mode')
 }
 
 export function useEnterDrawToInsertForDiv(): (event: React.MouseEvent<Element>) => void {
