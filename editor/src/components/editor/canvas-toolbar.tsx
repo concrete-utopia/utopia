@@ -5,13 +5,17 @@ import {
   FlexRow,
   Icn,
   IcnSpacer,
-  LargerIcons,
   SquareButton,
   useColorTheme,
   UtopiaStyles,
   UtopiaTheme,
 } from '../../uuiui'
-import { openFloatingInsertMenu } from './actions/action-creators'
+import { EditorAction } from './action-types'
+import {
+  openFloatingInsertMenu,
+  setPanelVisibility,
+  setRightMenuTab,
+} from './actions/action-creators'
 import {
   useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
@@ -19,7 +23,7 @@ import {
   useEnterDrawToInsertForImage,
   useEnterDrawToInsertForSpan,
 } from './insert-callbacks'
-import { NavigatorWidthAtom } from './store/editor-state'
+import { NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
 
 export const CanvasToolbar = React.memo(() => {
@@ -58,6 +62,20 @@ export const CanvasToolbar = React.memo(() => {
     ])
   }, [dispatch])
 
+  const insertMenuSelected = useEditorState(
+    (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
+    'CanvasToolbar insertMenuSelected',
+  )
+
+  const selectInsertMenuPane = React.useCallback(() => {
+    let actions: Array<EditorAction> = []
+    if (!insertMenuSelected) {
+      actions.push(setPanelVisibility('rightmenu', true))
+    }
+    actions.push(setRightMenuTab(RightMenuTab.Insert))
+    dispatch(actions)
+  }, [dispatch, insertMenuSelected])
+
   return (
     <FlexColumn
       style={{
@@ -90,7 +108,16 @@ export const CanvasToolbar = React.memo(() => {
             primary={floatingInsertMenuOpen}
             onClick={openFloatingInsertMenuCallback}
           />
-          <SquareButton highlight>…</SquareButton>
+          <SquareButton
+            primary={insertMenuSelected}
+            highlight
+            style={{
+              color: insertMenuSelected ? theme.neutralInvertedForeground.value : theme.fg0.value,
+            }}
+            onClick={selectInsertMenuPane}
+          >
+            …
+          </SquareButton>
         </FlexRow>
       </FlexColumn>
     </FlexColumn>
