@@ -11,6 +11,7 @@ import { showToast } from '../../../../components/editor/actions/action-creators
 import {
   GithubRepo,
   githubRepoEquals,
+  githubRepoFullName,
   isGithubLoadingBranch,
 } from '../../../../components/editor/store/editor-state'
 import {
@@ -215,7 +216,7 @@ export const RepositoryListing = React.memo(
         if (parsedRepo == null) {
           return filteredRepositories
         } else {
-          const ownerRepo = `${parsedRepo.owner}/${parsedRepo.repository}`
+          const ownerRepo = githubRepoFullName(parsedRepo)
           const alreadyIncludesEntry =
             filteredRepositories?.some((repo) => repo.fullName === ownerRepo) ?? false
           if (alreadyIncludesEntry) {

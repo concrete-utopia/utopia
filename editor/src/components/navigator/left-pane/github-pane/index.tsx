@@ -17,6 +17,7 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { Button, FlexColumn, FlexRow, StringInput, useColorTheme } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
+  githubRepoFullName,
   isGithubCommishing,
   isGithubLoadingBranch,
   isGithubUpdating,
@@ -251,10 +252,7 @@ const RepositoryBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
-  const repoName = React.useMemo(
-    () => (repo != null ? `${repo.owner}/${repo.repository}` : undefined),
-    [repo],
-  )
+  const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
   const [expanded, setExpanded] = React.useState(false)
   useEffect(() => {
@@ -431,8 +429,8 @@ const BranchBlock = () => {
                     onClick={loadContentForBranch}
                   >
                     <Ellipsis>
+                      {when(isCurrent, <span>&rarr; </span>)}
                       {branch.name}
-                      {when(isCurrent, <span>(current) </span>)}
                     </Ellipsis>
                     {when(loadingThisBranch, <GithubSpinner />)}
                   </UIGridRow>
@@ -690,6 +688,45 @@ const LocalChangesBlock = () => {
   )
 }
 
+const PullRequestButton = () => {
+  const { repo, branch } = useEditorState(
+    (store) => ({
+      repo:
+        store.editor.githubData.publicRepositories.find(
+          (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
+        ) || null,
+      branch: store.editor.githubSettings.branchName,
+    }),
+    '',
+  )
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const changesCount = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges),
+    [githubFileChanges],
+  )
+  const hasLocalChanges = React.useMemo(() => changesCount > 0, [changesCount])
+
+  const openPR = React.useCallback(() => {
+    if (repo != null && branch != null) {
+      window.open(`https://github.com/${repo.fullName}/compare/${branch}?expand=1`, '_blank')
+    }
+  }, [repo, branch])
+
+  if (repo == null || branch == null) {
+    return null
+  }
+  if (hasLocalChanges || repo.defaultBranch === branch) {
+    return null
+  }
+  return (
+    <UIGridRow padded variant='<-------------1fr------------->'>
+      <Button spotlight highlight onClick={openPR}>
+        Open a Pull Request
+      </Button>
+    </UIGridRow>
+  )
+}
+
 export const GithubPane = React.memo(() => {
   return (
     <FlexColumn style={{ padding: 10, gap: 0 }}>
@@ -698,6 +735,7 @@ export const GithubPane = React.memo(() => {
       <BranchBlock />
       <RemoteChangesBlock />
       <LocalChangesBlock />
+      <PullRequestButton />
     </FlexColumn>
   )
 })
