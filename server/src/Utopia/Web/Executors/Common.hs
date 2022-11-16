@@ -495,3 +495,16 @@ saveGithubAssetToProject githubResources awsResource logger metrics pool userID 
     liftIO $ saveAsset awsResource projectID path assetBytes
   pure $ either getGithubSaveAssetFailureFromReason getGithubSaveAssetSuccessFromResult result
 
+pullRequestFromListPullRequestResult :: ListPullRequestResult -> PullRequest
+pullRequestFromListPullRequestResult result = PullRequest
+                                            { title = view (field @"title") result
+                                            , htmlURL = view (field @"html_url") result
+                                            }
+
+getBranchPullRequest :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchPullRequestResponse
+getBranchPullRequest githubResources logger metrics pool userID owner repository branchName = do
+  result <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      pullRequests <- listPullRequests accessToken owner repository 1 (Just branchName)
+      pure $ fmap pullRequestFromListPullRequestResult pullRequests
+  pure $ either getBranchPullRequestFailureFromReason getBranchPullRequestSuccessFromContent result
