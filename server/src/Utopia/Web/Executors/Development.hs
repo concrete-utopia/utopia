@@ -400,6 +400,16 @@ innerServerExecutor (GetPullRequestForBranch user owner repository branchName ac
     Just githubResources -> do
       result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
       pure $ action result
+innerServerExecutor (GetGithubUserDetails user action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getDetailsOfGithubUser githubResources logger metrics pool user
+      pure $ action result
 
 {-|
   Invokes a service call using the supplied resources.

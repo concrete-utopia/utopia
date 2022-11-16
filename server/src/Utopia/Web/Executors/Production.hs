@@ -308,6 +308,13 @@ innerServerExecutor (GetPullRequestForBranch user owner repository branchName ac
   pool <- fmap _projectPool ask
   result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
   pure $ action result
+innerServerExecutor (GetGithubUserDetails user action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getDetailsOfGithubUser githubResources logger metrics pool user
+  pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do

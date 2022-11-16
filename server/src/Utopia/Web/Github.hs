@@ -294,6 +294,17 @@ listPullRequests accessToken owner repository page possibleHead = do
   let queryParameters = [("page", show page)] <> headParameter
   callGithub getFromGithub queryParameters listPullRequestsErrorCases accessToken repoUrl ()
 
+getGithubUserErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+getGithubUserErrorCases status | status == notModified304                   = liftIO $ fail "Not modified returned for Github user."
+                               | status == unauthorized401                  = liftIO $ fail "Requires authentication for Github user."
+                               | status == forbidden403                     = throwE "Forbidden from accessing user."
+                               | otherwise                                  = throwE "Unexpected error."
+
+getGithubUser :: (MonadIO m) => AccessToken -> ExceptT Text m GetGithubUserResult
+getGithubUser accessToken = do
+  let repoUrl = "https://api.github.com/user"
+  callGithub getFromGithub [] getGithubUserErrorCases accessToken repoUrl ()
+
 makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
 makeProjectTextFileFromEntry gitEntry _ decodedContent = do
   let path = view (field @"path") gitEntry

@@ -508,3 +508,20 @@ getBranchPullRequest githubResources logger metrics pool userID owner repository
       pullRequests <- listPullRequests accessToken owner repository 1 (Just branchName)
       pure $ fmap pullRequestFromListPullRequestResult pullRequests
   pure $ either getBranchPullRequestFailureFromReason getBranchPullRequestSuccessFromContent result
+
+githubUserFromGithubUserResult :: GetGithubUserResult -> GithubUser
+githubUserFromGithubUserResult result = GithubUser
+                                      { login = view (field @"login") result
+                                      , avatarURL = view (field @"avatar_url") result
+                                      , htmlURL = view (field @"html_url") result
+                                      , name = view (field @"name") result
+                                      }
+
+getDetailsOfGithubUser :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetGithubUserResponse
+getDetailsOfGithubUser githubResources logger metrics pool userID = do
+  result <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      userResult <- getGithubUser accessToken 
+      pure $ githubUserFromGithubUserResult userResult
+  pure $ either getGithubUserResponseFailureFromReason getGithubUserResponseSuccessFromContent result
+
