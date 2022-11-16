@@ -230,10 +230,14 @@ export const GithubFileChangesList: React.FC<{
                 padded
                 variant='|--16px--|<--------auto-------->'
                 onClick={openFile(i.filename)}
-                css={{}}
               >
                 <GithubFileStatusLetter status={i.status} />
-                <FlexRow style={{ gap: 2 }}>
+                <FlexRow
+                  style={{
+                    gap: 2,
+                    textDecoration: i.status === 'deleted' ? 'line-through' : 'none',
+                  }}
+                >
                   <Ellipsis>{i.filename}</Ellipsis>
                   {when(conflicting, <WarningIcon color='error' />)}
                 </FlexRow>
