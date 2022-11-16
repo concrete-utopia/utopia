@@ -14,7 +14,16 @@ import {
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
-import { Button, FlexColumn, FlexRow, StringInput, useColorTheme } from '../../../../uuiui'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  Section,
+  SectionTitleRow,
+  StringInput,
+  Title,
+  useColorTheme,
+} from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
   githubRepoFullName,
@@ -647,13 +656,20 @@ const PullRequestButton = () => {
 
 export const GithubPane = React.memo(() => {
   return (
-    <FlexColumn style={{ padding: 10, gap: 0 }}>
-      <AccountBlock />
-      <RepositoryBlock />
-      <BranchBlock />
-      <RemoteChangesBlock />
-      <LocalChangesBlock />
-      <PullRequestButton />
-    </FlexColumn>
+    <>
+      <Section>
+        <SectionTitleRow minimised={false} hideButton>
+          <Title style={{ flexGrow: 1 }}>Github</Title>
+        </SectionTitleRow>
+      </Section>
+      <Section style={{ padding: '10px' }}>
+        <AccountBlock />
+        <RepositoryBlock />
+        <BranchBlock />
+        <RemoteChangesBlock />
+        <LocalChangesBlock />
+        <PullRequestButton />
+      </Section>
+    </>
   )
 })
