@@ -53,6 +53,7 @@ import {
   EditorStorePatched,
   patchedStoreFromFullStore,
   ElementsToRerender,
+  getCurrentTheme,
 } from '../components/editor/store/editor-state'
 import {
   CanvasStateContext,
@@ -110,6 +111,7 @@ import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
+import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -298,10 +300,14 @@ export class Editor {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
       void getUserConfiguration(loginState).then((shortcutConfiguration) => {
-        this.storedState.userState = {
+        const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
         }
+        this.storedState.userState = userState
+
+        // Ensure we have the correct theme set in VS Code
+        void sendSetVSCodeTheme(getCurrentTheme(userState))
 
         void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
           this.storedState.userState = {

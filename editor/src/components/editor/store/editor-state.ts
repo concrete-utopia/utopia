@@ -236,13 +236,13 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
-  themeConfig: Theme
+  themeConfig: Theme | null
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
   return {
     shortcutConfig: null,
-    themeConfig: 'light',
+    themeConfig: DefaultTheme,
   }
 }
 
@@ -509,6 +509,7 @@ export function designerFile(filename: string): DesignerFile {
 }
 
 export type Theme = 'light' | 'dark'
+export const DefaultTheme: Theme = 'light'
 
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
@@ -3073,7 +3074,7 @@ export function getElementFromProjectContents(
 }
 
 export function getCurrentTheme(userState: UserState): Theme {
-  return userState.themeConfig
+  return userState.themeConfig ?? DefaultTheme
 }
 
 export function getNewSceneName(editor: EditorState): string {
