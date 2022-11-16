@@ -180,6 +180,13 @@ export const GithubFileChangesList: React.FC<{
     [dispatch, revertable],
   )
 
+  const openFile = React.useCallback(
+    (filename: string) => () => {
+      dispatch([EditorActions.openCodeEditorFile(filename, true)], 'everyone')
+    },
+    [dispatch],
+  )
+
   if (count === 0) {
     return null
   }
@@ -198,8 +205,6 @@ export const GithubFileChangesList: React.FC<{
         style={{
           border: '1px solid #2D2E33',
           borderRadius: 2,
-          paddingTop: 4,
-          paddingBottom: 4,
         }}
       >
         {list.map((i) => {
@@ -211,13 +216,22 @@ export const GithubFileChangesList: React.FC<{
               padded={false}
               variant='<----------1fr---------><-auto->'
               title={conflicting ? 'Potential conflicts' : i.filename}
-              style={{
+              css={{
                 paddingRight: 6,
                 color: conflicting ? '#f00' : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
+                '&:hover': {
+                  cursor: !conflicting ? 'pointer' : undefined,
+                  background: '#eee',
+                },
               }}
             >
-              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+              <UIGridRow
+                padded
+                variant='|--16px--|<--------auto-------->'
+                onClick={openFile(i.filename)}
+                css={{}}
+              >
                 <GithubFileStatusLetter status={i.status} />
                 <FlexRow style={{ gap: 2 }}>
                   <Ellipsis>{i.filename}</Ellipsis>
