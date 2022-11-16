@@ -12,6 +12,7 @@ import {
   UtopiaTheme,
 } from '../../uuiui'
 import {
+  useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
@@ -32,9 +33,13 @@ export const CanvasToolbar = React.memo(() => {
 
   const topMenuHeight = UtopiaTheme.layout.rowHeight.normal
 
+  const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
-  const insertSpanCallback = useEnterDrawToInsertForSpan()
+  const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
+  const spanInsertion = useCheckInsertModeForElementType('span')
+  const insertSpanCallback = useEnterDrawToInsertForSpan()
+  const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
   return (
@@ -55,18 +60,14 @@ export const CanvasToolbar = React.memo(() => {
       <FlexColumn>
         <header style={{ paddingLeft: 4 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <SquareButton highlight onClick={insertDivCallback}>
-            <Icn category='element' type='view' color='main' width={18} height={18} />
-          </SquareButton>
-          <SquareButton highlight onClick={insertImgCallback}>
-            <Icn category='element' type='image' color='main' width={18} height={18} />
-          </SquareButton>
-          <SquareButton highlight onClick={insertSpanCallback}>
-            <Icn category='element' type='text' color='main' width={18} height={18} />
-          </SquareButton>
-          <SquareButton highlight onClick={insertButtonCallback}>
-            <Icn category='element' type='button' color='main' width={18} height={18} />
-          </SquareButton>
+          <InsertModeButton iconName='view' primary={divInsertion} onClick={insertDivCallback} />
+          <InsertModeButton iconName='image' primary={imgInsertion} onClick={insertImgCallback} />
+          <InsertModeButton iconName='text' primary={spanInsertion} onClick={insertSpanCallback} />
+          <InsertModeButton
+            iconName='button'
+            primary={buttonInsertion}
+            onClick={insertButtonCallback}
+          />
           <IcnSpacer height={0} width={'100%'} />
           <SquareButton highlight>
             <Icn category='element' type='componentinstance' color='main' width={18} height={18} />
@@ -75,5 +76,24 @@ export const CanvasToolbar = React.memo(() => {
         </FlexRow>
       </FlexColumn>
     </FlexColumn>
+  )
+})
+
+interface InsertModeButtonProps {
+  iconName: string
+  primary: boolean
+  onClick: (event: React.MouseEvent<Element>) => void
+}
+const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+  return (
+    <SquareButton primary={props.primary} highlight onClick={props.onClick}>
+      <Icn
+        category='element'
+        type={props.iconName}
+        color={props.primary ? 'on-highlight-main' : 'main'}
+        width={18}
+        height={18}
+      />
+    </SquareButton>
   )
 })
