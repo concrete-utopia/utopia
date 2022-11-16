@@ -177,13 +177,18 @@ export interface GetBranchPullRequestSuccess {
 
 export type GetBranchPullRequestResponse = GetBranchPullRequestSuccess | GithubFailure
 
+export interface SaveProjectToGithubOptions {
+  branchName: string | null
+  commitMessage: string | null
+}
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
-  branchName: string | null,
-  commitMessage: string | null,
+  options: SaveProjectToGithubOptions,
 ): Promise<void> {
+  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
