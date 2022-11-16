@@ -6,6 +6,8 @@ import {
   Icn,
   IcnSpacer,
   SquareButton,
+  Tooltip as TooltipWithoutSpanFixme,
+  TooltipProps,
   useColorTheme,
   UtopiaStyles,
   UtopiaTheme,
@@ -95,31 +97,47 @@ export const CanvasToolbar = React.memo(() => {
         {/* TODO is there a component for this subheading? */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
-          <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
-          <InsertModeButton iconType='text' primary={spanInsertion} onClick={insertSpanCallback} />
-          <InsertModeButton
-            iconType='button'
-            primary={buttonInsertion}
-            onClick={insertButtonCallback}
-          />
+          <Tooltip title='Insert div' placement='bottom'>
+            <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
+          </Tooltip>
+          <Tooltip title='Insert image' placement='bottom'>
+            <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
+          </Tooltip>
+          <Tooltip title='Insert text' placement='bottom'>
+            <InsertModeButton
+              iconType='text'
+              primary={spanInsertion}
+              onClick={insertSpanCallback}
+            />
+          </Tooltip>
+          <Tooltip title='Insert button' placement='bottom'>
+            <InsertModeButton
+              iconType='button'
+              primary={buttonInsertion}
+              onClick={insertButtonCallback}
+            />
+          </Tooltip>
           <IcnSpacer height={0} width={'100%'} />
-          <InsertModeButton
-            iconType='componentinstance'
-            primary={floatingInsertMenuOpen}
-            onClick={openFloatingInsertMenuCallback}
-          />
-          <SquareButton
-            primary={insertMenuSelected}
-            highlight
-            style={{
-              borderRadius: 4,
-              color: insertMenuSelected ? theme.neutralInvertedForeground.value : theme.fg0.value,
-            }}
-            onClick={selectInsertMenuPane}
-          >
-            …
-          </SquareButton>
+          <Tooltip title='Insert component...' placement='bottom'>
+            <InsertModeButton
+              iconType='componentinstance'
+              primary={floatingInsertMenuOpen}
+              onClick={openFloatingInsertMenuCallback}
+            />
+          </Tooltip>
+          <Tooltip title='Open insert menu...' placement='bottom'>
+            <SquareButton
+              primary={insertMenuSelected}
+              highlight
+              style={{
+                borderRadius: 4,
+                color: insertMenuSelected ? theme.neutralInvertedForeground.value : theme.fg0.value,
+              }}
+              onClick={selectInsertMenuPane}
+            >
+              …
+            </SquareButton>
+          </Tooltip>
         </FlexRow>
       </FlexColumn>
     </FlexColumn>
@@ -149,3 +167,12 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     </SquareButton>
   )
 })
+
+const Tooltip = (props: TooltipProps) => {
+  return (
+    <TooltipWithoutSpanFixme {...props}>
+      {/* TODO why do we need to wrap the children in a span? */}
+      <span>{props.children}</span>
+    </TooltipWithoutSpanFixme>
+  )
+}
