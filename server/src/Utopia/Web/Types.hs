@@ -129,15 +129,19 @@ type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "sta
 
 type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
 
-type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
+type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> QueryParam "branch_name" Text :> QueryParam "commit_message" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
 
 type GithubSaveAssetAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "asset" :> Capture "asset_sha" Text :> QueryParam' '[Required, Strict] "project_id" Text :> QueryParam' '[Required, Strict] "path" Text :> Post '[JSON] GithubSaveAssetResponse
 
-type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> Get '[JSON] GetBranchContentResponse
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> Get '[JSON] GetBranchContentResponse
+
+type GithubBranchPullRequestAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> "pullrequest" :> Get '[JSON] GetBranchPullRequestResponse
 
 type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
+
+type GithubUserAPI = "v1" :> "github" :> "user" :> Get '[JSON] GetGithubUserResponse
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
@@ -194,8 +198,10 @@ type Protected = LogoutAPI
             :<|> GithubSaveAPI
             :<|> GithubBranchesAPI
             :<|> GithubBranchLoadAPI
+            :<|> GithubBranchPullRequestAPI
             :<|> GithubUsersRepositoriesAPI
             :<|> GithubSaveAssetAPI
+            :<|> GithubUserAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

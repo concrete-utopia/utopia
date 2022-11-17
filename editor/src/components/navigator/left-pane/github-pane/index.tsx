@@ -45,6 +45,7 @@ import { RepositoryListing } from './repository-listing'
 import TimeAgo from 'react-timeago'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
+import { PullRequestPane } from './pull-request-pane'
 
 const GitBranchIcon = () => {
   return (
@@ -251,6 +252,7 @@ export const GithubPane = React.memo(() => {
             })}
           </div>,
         )}
+        <PullRequestPane />
       </>
     )
   }, [

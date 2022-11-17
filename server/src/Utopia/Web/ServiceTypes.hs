@@ -135,11 +135,13 @@ data ServiceCallsF a = NotFound
                      | GetGithubAuthorizationURI (URI -> a)
                      | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
                      | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
-                     | SaveToGithubRepo Text Text PersistentModel (SaveToGithubResponse -> a)
+                     | SaveToGithubRepo Text Text (Maybe Text) (Maybe Text) PersistentModel (SaveToGithubResponse -> a)
                      | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
                      | GetBranchContent Text Text Text Text (Maybe Text) (GetBranchContentResponse -> a)
                      | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)
                      | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
+                     | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
+                     | GetGithubUserDetails Text (GetGithubUserResponse -> a)
                      deriving Functor
 
 {-
@@ -218,8 +220,8 @@ loggedIn :: Text
 loggedIn = "LOGGED_IN"
 
 instance ToJSON UserResponse where
-  toJSON NotLoggedIn         = object ["type" .= notLoggedIn]
-  toJSON (LoggedInUser user) = object ["type" .= loggedIn, "user" .= user]
+  toJSON NotLoggedIn                  = object ["type" .= notLoggedIn]
+  toJSON (LoggedInUser loggedInUser)  = object ["type" .= loggedIn, "user" .= loggedInUser]
 
 data UserConfigurationResponse = UserConfigurationResponse
                                { _shortcutConfig :: Maybe Value,

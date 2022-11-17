@@ -670,9 +670,9 @@ githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
   possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
   pure $ isJust possibleAuthDetails
 
-githubSaveEndpoint :: Maybe Text -> Text -> PersistentModel -> ServerMonad SaveToGithubResponse
-githubSaveEndpoint cookie projectID persistentModel = requireUser cookie $ \sessionUser -> do
-  saveToGithubRepo (view (field @"_id") sessionUser) projectID persistentModel
+githubSaveEndpoint :: Maybe Text -> Text -> Maybe Text -> Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
+githubSaveEndpoint cookie projectID possibleBranchName possibleCommitMessage persistentModel = requireUser cookie $ \sessionUser -> do
+  saveToGithubRepo (view (field @"_id") sessionUser) projectID possibleBranchName possibleCommitMessage persistentModel
 
 getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
 getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
@@ -690,6 +690,14 @@ saveGithubAssetEndpoint :: Maybe Text -> Text -> Text -> Text -> Text -> Text ->
 saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = requireUser cookie $ \sessionUser -> do
   let splitPath = drop 1 $ T.splitOn "/" fullPath
   saveGithubAsset (view (field @"_id") sessionUser) owner repository assetSha projectId splitPath
+
+getGithubBranchPullRequestEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchPullRequestResponse
+getGithubBranchPullRequestEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
+  getPullRequestForBranch (view (field @"_id") sessionUser) owner repository branchName
+
+getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
+getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  getGithubUserDetails (view (field @"_id") sessionUser)
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
@@ -716,8 +724,10 @@ protected authCookie = logoutPage authCookie
                   :<|> githubSaveEndpoint authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> getGithubBranchPullRequestEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
+                  :<|> getGithubUserEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

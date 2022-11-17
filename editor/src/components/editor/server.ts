@@ -18,8 +18,16 @@ import { addFileToProjectContents, AssetFileWithFileName, walkContentsTree } fro
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
-import { setLoginState, showToast, removeToast } from './actions/action-creators'
+import {
+  setLoginState,
+  showToast,
+  removeToast,
+  setUserConfiguration,
+  setGithubState,
+} from './actions/action-creators'
 import { getFileExtension } from '../../core/shared/file-utils'
+import { isAuthenticatedWithGithub } from '../../utils/github-auth'
+import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -377,7 +385,32 @@ export function startPollingLoginState(
   setInterval(async () => {
     const loginState = await getLoginState('no-cache')
     if (previousLoginState.type !== loginState.type) {
+      if (isLoggedIn(loginState)) {
+        // Fetch the user configuration
+        void getUserConfiguration(loginState).then((userConfig) =>
+          dispatch([setUserConfiguration(userConfig)]),
+        )
+
+        // Fetch the github auth status
+        void updateUserDetailsWhenAuthenticated(
+          dispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) =>
+          dispatch([
+            setGithubState({
+              authenticated: authenticatedWithGithub,
+            }),
+          ]),
+        )
+
+        if (isLoginLost(previousLoginState)) {
+          // Login was lost and subsequently regained so remove the persistent toast.
+          dispatch([removeToast(loginLostNoticeID)])
+        }
+      }
+
       dispatch([setLoginState(loginState)])
+
       if (isLoginLost(loginState)) {
         dispatch([
           showToast(
@@ -389,13 +422,6 @@ export function startPollingLoginState(
             ),
           ),
         ])
-      }
-
-      if (isLoggedIn(loginState)) {
-        if (isLoginLost(previousLoginState)) {
-          // Login was lost and subsequently regained so remove the persistent toast.
-          dispatch([removeToast(loginLostNoticeID)])
-        }
       }
     }
     previousLoginState = loginState

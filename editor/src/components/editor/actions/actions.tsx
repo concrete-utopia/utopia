@@ -313,6 +313,7 @@ import {
   UpdateGithubData,
   RemoveFileConflict,
   SetRefreshingDependencies,
+  SetUserConfiguration,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -344,6 +345,7 @@ import {
   EditorState,
   getAllBuildErrors,
   getAllLintErrors,
+  getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
   getJSXComponentsAndImportsForPathFromState,
@@ -411,6 +413,7 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
+  sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
@@ -4421,10 +4424,12 @@ export const UPDATE_FNS = {
   SEND_CODE_EDITOR_INITIALISATION: (
     action: SendCodeEditorInitialisation,
     editor: EditorModel,
+    userState: UserState,
   ): EditorModel => {
     // Side effects.
     void sendCodeEditorDecorations(editor)
     void sendSelectedElement(editor)
+    void sendSetVSCodeTheme(getCurrentTheme(userState))
     return {
       ...editor,
       vscodeReady: true,
@@ -4560,6 +4565,15 @@ export const UPDATE_FNS = {
       githubState: action.githubState,
     }
   },
+  SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {
+    // Side effect - update the theme setting in VS Code
+    void sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
+
+    return {
+      ...userState,
+      ...action.userConfiguration,
+    }
+  },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -4596,8 +4610,13 @@ export const UPDATE_FNS = {
       shortcutConfig: userState.shortcutConfig,
       themeConfig: action.theme,
     }
-    // Side effect.
+
+    // Side effect - update the setting in VS Code
+    void sendSetVSCodeTheme(action.theme)
+
+    // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
+
     return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
@@ -4988,6 +5007,7 @@ export const UPDATE_FNS = {
       forceNotNull('Should have a project ID at this point.', editor.id),
       persistentModel,
       dispatch,
+      { branchName: null, commitMessage: null },
     )
 
     return editor

@@ -186,17 +186,17 @@ createCommitHandleErrorCases status | status == notFound404             = throwE
                                     | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
                                     | otherwise                         = throwE "Unexpected error."
 
-createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> [Text] -> ExceptT Text m CreateGitCommitResult
-createGitCommit accessToken GithubRepo{..} treeSha parentCommits = do
+createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> Maybe Text -> [Text] -> ExceptT Text m CreateGitCommitResult
+createGitCommit accessToken GithubRepo{..} treeSha possibleCommitMessage parentCommits = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits"
-  let request = CreateGitCommit "Committed automatically." treeSha parentCommits
+  let request = CreateGitCommit (fromMaybe "Committed automatically." possibleCommitMessage) treeSha parentCommits
   callGithub postToGithub [] createCommitHandleErrorCases accessToken repoUrl request
 
-createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> [Text] -> ExceptT Text m CreateGitCommitResult
-createGitCommitForTree accessToken PersistentModel{..} treeSha parentCommits = do
+createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> Maybe Text -> [Text] -> ExceptT Text m CreateGitCommitResult
+createGitCommitForTree accessToken PersistentModel{..} treeSha possibleCommitMessage parentCommits = do
   let possibleGithubRepo = targetRepository githubSettings
   case possibleGithubRepo of
-    Just repo -> createGitCommit accessToken repo treeSha parentCommits
+    Just repo -> createGitCommit accessToken repo treeSha possibleCommitMessage parentCommits
     Nothing   -> throwE "No repository set on project."
 
 createBranchHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
@@ -281,6 +281,29 @@ getGitCommit :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Te
 getGitCommit accessToken owner repository commitSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits/" <> commitSha
   callGithub getFromGithub [] getGitCommitErrorCases accessToken repoUrl ()
+
+listPullRequestsErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+listPullRequestsErrorCases status | status == notModified304          = throwE "Not modified."
+                                  | status == unprocessableEntity422  = liftIO $ fail "Validation failed or endpoint has been spammed."
+                                  | otherwise                         = throwE "Unexpected error."
+
+listPullRequests :: (MonadIO m) => AccessToken -> Text -> Text -> Int -> Maybe Text -> ExceptT Text m ListPullRequestsResult
+listPullRequests accessToken owner repository page possibleHead = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/pulls"
+  let headParameter = maybe [] (\h -> [("head", owner <> ":" <> h)]) possibleHead
+  let queryParameters = [("page", show page)] <> headParameter
+  callGithub getFromGithub queryParameters listPullRequestsErrorCases accessToken repoUrl ()
+
+getGithubUserErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+getGithubUserErrorCases status | status == notModified304                   = liftIO $ fail "Not modified returned for Github user."
+                               | status == unauthorized401                  = liftIO $ fail "Requires authentication for Github user."
+                               | status == forbidden403                     = throwE "Forbidden from accessing user."
+                               | otherwise                                  = throwE "Unexpected error."
+
+getGithubUser :: (MonadIO m) => AccessToken -> ExceptT Text m GetGithubUserResult
+getGithubUser accessToken = do
+  let repoUrl = "https://api.github.com/user"
+  callGithub getFromGithub [] getGithubUserErrorCases accessToken repoUrl ()
 
 makeProjectTextFileFromEntry :: (MonadBaseControl IO m, MonadIO m) => ReferenceGitTreeEntry -> GetBlobResult -> BL.ByteString -> ExceptT Text m (ProjectContentsTree, [Text])
 makeProjectTextFileFromEntry gitEntry _ decodedContent = do

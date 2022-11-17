@@ -111,6 +111,18 @@ export function setFollowSelectionConfig(enabled: boolean): SetFollowSelectionCo
   }
 }
 
+export interface SetVSCodeTheme {
+  type: 'SET_VSCODE_THEME'
+  theme: string
+}
+
+export function setVSCodeTheme(theme: string): SetVSCodeTheme {
+  return {
+    type: 'SET_VSCODE_THEME',
+    theme: theme,
+  }
+}
+
 export interface UtopiaReady {
   type: 'UTOPIA_READY'
 }
@@ -127,6 +139,7 @@ export type ToVSCodeMessageNoAccumulated =
   | SelectedElementChanged
   | GetUtopiaVSCodeConfig
   | SetFollowSelectionConfig
+  | SetVSCodeTheme
   | UtopiaReady
 
 export interface AccumulatedToVSCodeMessage {
@@ -185,6 +198,14 @@ export function isSetFollowSelectionConfig(message: unknown): message is SetFoll
   )
 }
 
+export function isSetVSCodeTheme(message: unknown): message is SetVSCodeTheme {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as SetVSCodeTheme).type === 'SET_VSCODE_THEME'
+  )
+}
+
 export function isUtopiaReadyMessage(message: unknown): message is UtopiaReady {
   return (
     typeof message === 'object' &&
@@ -211,6 +232,7 @@ export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
     isSelectedElementChanged(message) ||
     isGetUtopiaVSCodeConfig(message) ||
     isSetFollowSelectionConfig(message) ||
+    isSetVSCodeTheme(message) ||
     isUtopiaReadyMessage(message) ||
     isAccumulatedToVSCodeMessage(message)
   ) {
