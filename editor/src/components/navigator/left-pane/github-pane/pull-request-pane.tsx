@@ -5,11 +5,16 @@ import { useEditorState } from '../../../../components/editor/store/store-hook'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
-import { updatePullRequestsForBranch } from '../../../../core/shared/github'
+import {
+  getGithubFileChangesCount,
+  githubFileChangesSelector,
+  updatePullRequestsForBranch,
+} from '../../../../core/shared/github'
 import {
   isGithubListingPullRequestsForBranch,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
+import { when } from '../../../../utils/react-conditionals'
 
 export const PullRequestPane = () => {
   const dispatch = useEditorState((store) => store.dispatch, 'PullRequestPane dispatch')
@@ -42,6 +47,16 @@ export const PullRequestPane = () => {
       return false
     }
   }, [githubOperations, githubRepo, branchName])
+
+  const githubFileChanges = useEditorState(
+    githubFileChangesSelector,
+    'PullRequestPane githubFileChanges',
+  )
+
+  const localFilesHaveBeenChanged = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges) > 0,
+    [githubFileChanges],
+  )
 
   const refreshPullRequests = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
@@ -118,6 +133,13 @@ export const PullRequestPane = () => {
             })}
           </div>
         </UIGridRow>
+        {when(
+          localFilesHaveBeenChanged,
+          <UIGridRow padded variant='<----------1fr---------><-auto->'>
+            You have local changes. To open a pull request, you can revert them, or commit and push
+            them.
+          </UIGridRow>,
+        )}
       </>
     )
   }
