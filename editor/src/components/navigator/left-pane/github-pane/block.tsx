@@ -2,20 +2,11 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import { use } from 'matter-js'
 import React, { useCallback } from 'react'
-import {
-  Button,
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  StringInput,
-  useColorTheme,
-  UtopiaTheme,
-} from '../../../../uuiui'
+import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 
-export const IndicatorLight = (props: { status: BlockStatus }) => (
+export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
   <div
     style={{
       zIndex: 99999,
@@ -26,7 +17,7 @@ export const IndicatorLight = (props: { status: BlockStatus }) => (
       background: getIndicatorColor(props.status),
     }}
   />
-)
+))
 
 function getIndicatorColor(status: BlockStatus): string {
   switch (status) {
@@ -55,7 +46,7 @@ export type BlockProps = {
   children: any
 }
 
-export const Block = (props: BlockProps) => {
+export const Block = React.memo((props: BlockProps) => {
   const [expanded, expand] = React.useState(true)
   const toggleExpand = useCallback(() => expand((exp) => !exp), [])
 
@@ -142,4 +133,4 @@ export const Block = (props: BlockProps) => {
       </FlexColumn>
     </UIGridRow>
   )
-}
+})

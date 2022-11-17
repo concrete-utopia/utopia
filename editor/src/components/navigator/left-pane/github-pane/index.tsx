@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
   getBranchesForGithubRepository,
   getGithubFileChangesCount,
@@ -14,16 +15,7 @@ import {
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  Section,
-  SectionTitleRow,
-  StringInput,
-  Title,
-  useColorTheme,
-} from '../../../../uuiui'
+import { Button, FlexColumn, Section, SectionTitleRow, StringInput, Title } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
   githubRepoFullName,
@@ -33,119 +25,17 @@ import {
 } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
-import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
-import { Block } from './block'
-import { PullRequestPane } from './pull-request-pane'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
 }
 
 type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
-
-function getIndicatorColor(state: IndicatorState): string {
-  switch (state) {
-    case 'incomplete':
-      return '#FFFFFF00'
-    case 'successful':
-      return '#1FCCB7'
-    case 'failed':
-      return '#FF7759'
-    case 'pending':
-      return 'conic-gradient(from 180deg at 50% 50%, #2D2E33 0deg, #FFFFFF 181.87deg, #FFFFFF 360deg)'
-    default:
-      const _exhaustiveCheck: never = state
-      throw new Error(`invalid state ${state}`)
-  }
-}
-
-const IndicatorLight = ({
-  state,
-  hasBlockBefore,
-}: {
-  state: IndicatorState
-  hasBlockBefore: boolean
-}) => {
-  const color = getIndicatorColor(state)
-  return (
-    <FlexColumn
-      style={{
-        height: 13,
-        position: 'relative',
-        justifyContent: 'flex-end',
-      }}
-    >
-      {when(hasBlockBefore, <IndicatorLightConnector up />)}
-      <svg
-        style={{ zIndex: 1 }}
-        width='9px'
-        height='9px'
-        viewBox='0 0 11 11'
-        fill='none'
-        xmlns='http://www.w3.org/2000/svg'
-      >
-        <rect x='1' y='1' width='9' height='9' rx='4.5' fill={color} />
-        <rect x='1' y='1' width='9' height='9' rx='4.5' stroke='#2D2E33' />
-      </svg>
-    </FlexColumn>
-  )
-}
-
-const IndicatorLightConnector = ({ up, down }: { up?: boolean; down?: boolean }) => {
-  return (
-    <div
-      style={{
-        flex: 1,
-        width: 1,
-        background: '#2D2E33',
-        left: 4,
-        position: 'absolute',
-        top: down ? 6 : 0,
-        bottom: up ? 1 : 0,
-      }}
-    />
-  )
-}
-
-const ChevronDownIcon = () => {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='11px'
-      height='11px'
-      viewBox='11 0 2 22'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <polyline points='6 9 12 15 18 9'></polyline>
-    </svg>
-  )
-}
-
-const ChevronUpIcon = () => {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='11px'
-      height='11px'
-      viewBox='11 0 2 22'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <polyline points='18 15 12 9 6 15'></polyline>
-    </svg>
-  )
-}
 
 const AccountBlock = () => {
   const authenticated = useEditorState(
