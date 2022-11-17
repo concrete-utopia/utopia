@@ -316,7 +316,7 @@ const DesignPanelRootInner = React.memo(() => {
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
-                    backgroundColor: colorTheme.bg090.value,
+                    backgroundColor: colorTheme.bg0Opacity90.value,
                     backdropFilter: 'blur(7px)',
                   }}
                   onResizeStop={onNavigatorResizeStop}
