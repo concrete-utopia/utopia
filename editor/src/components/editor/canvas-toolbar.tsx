@@ -41,15 +41,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
-  const navigatorVisible = useEditorState(
-    (store) => !store.editor.navigator.minimised,
-    'CanvasToolbar navigatorVisible',
-  )
-  const effectiveNavigatorWidth = navigatorVisible ? navigatorWidth : 0
-
-  const topMenuHeight = UtopiaTheme.layout.rowHeight.normal
-
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
   const imgInsertion = useCheckInsertModeForElementType('img')
@@ -146,8 +137,8 @@ export const CanvasToolbar = React.memo(() => {
     <FlexColumn
       style={{
         position: 'absolute',
-        top: topMenuHeight + 8,
-        left: effectiveNavigatorWidth + 8,
+        top: 8,
+        left: 8,
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
