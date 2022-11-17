@@ -174,6 +174,14 @@ const BranchBlock = () => {
     'Built-in dependencies',
   )
 
+  const repo = useEditorState(
+    (store) =>
+      store.editor.githubData.publicRepositories.find(
+        (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
+      ) || null,
+    'GH repo',
+  )
+
   const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const loadBranchesUI = React.useMemo(() => {
@@ -246,6 +254,10 @@ const BranchBlock = () => {
                 <Ellipsis>
                   {when(isCurrent, <span>&rarr; </span>)}
                   {branch.name}
+                  {when(
+                    repo?.defaultBranch === branch.name,
+                    <span style={{ color: '#999' }}> (default)</span>,
+                  )}
                 </Ellipsis>
                 {when(loadingThisBranch, <GithubSpinner />)}
               </UIGridRow>
@@ -268,6 +280,7 @@ const BranchBlock = () => {
     filteredBranches,
     builtInDependencies,
     currentDependencies,
+    repo,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -575,7 +588,7 @@ const PullRequestButton = () => {
         ) || null,
       branch: store.editor.githubSettings.branchName,
     }),
-    '',
+    'GH repo and branch',
   )
   const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
   const changesCount = React.useMemo(
@@ -631,6 +644,11 @@ export const GithubPane = React.memo(() => {
     (store) => store.editor.githubData.githubUserDetails,
     'Github user details',
   )
+  const openGithubProfile = React.useCallback(() => {
+    if (githubUser != null) {
+      window.open(githubUser.htmlURL, '_blank')
+    }
+  }, [githubUser])
   return (
     <>
       <Section>
@@ -640,10 +658,10 @@ export const GithubPane = React.memo(() => {
           </FlexRow>
           {when(
             githubUser != null,
-            <FlexRow style={{ gap: 4 }}>
-              <span>@{githubUser?.login}</span>
+            <Button style={{ gap: 4 }} onClick={openGithubProfile}>
+              @{githubUser?.login}
               {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
-            </FlexRow>,
+            </Button>,
           )}
         </SectionTitleRow>
       </Section>
