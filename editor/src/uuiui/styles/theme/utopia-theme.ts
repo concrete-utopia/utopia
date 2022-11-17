@@ -127,7 +127,7 @@ const backgroundURLs = {
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
   success: {
-    backgroundColor: base.neongreen.value,
+    backgroundColor: base.neongreen.cssValue,
     backgroundImage: backgroundURLs.green,
     color: 'white',
   },
@@ -136,27 +136,27 @@ const noticeStyles: { [styleName: string]: React.CSSProperties } = {
     color: colorTheme.darkPrimary.value,
   },
   primary: {
-    backgroundColor: base.blue.value,
+    backgroundColor: base.blue.cssValue,
     backgroundImage: backgroundURLs.blue,
     color: 'white',
   },
   notice: {
-    backgroundColor: base.blue.value,
+    backgroundColor: base.blue.cssValue,
     backgroundImage: backgroundURLs.paleblue,
     color: 'white',
   },
   warning: {
-    backgroundColor: base.red.value,
+    backgroundColor: base.red.cssValue,
     backgroundImage: backgroundURLs.red,
     color: 'white',
   },
   error: {
-    backgroundColor: base.almostBlack.value,
+    backgroundColor: base.almostBlack.cssValue,
     backgroundImage: backgroundURLs.almostBlack,
     color: 'white',
   },
   disconnected: {
-    backgroundColor: base.almostBlack.value,
+    backgroundColor: base.almostBlack.cssValue,
     backgroundImage: backgroundURLs.noise,
     color: 'white',
   },
@@ -164,11 +164,11 @@ const noticeStyles: { [styleName: string]: React.CSSProperties } = {
 
 const textNoticeStyles = {
   info: {},
-  success: { color: base.neongreen.value },
-  primary: { color: base.blue.value },
-  notice: { color: base.darkgray.value },
-  warning: { color: base.red.value },
-  error: { color: base.red.value },
+  success: { color: base.neongreen.cssValue },
+  primary: { color: base.blue.cssValue },
+  notice: { color: base.darkgray.cssValue },
+  warning: { color: base.red.cssValue },
+  error: { color: base.red.cssValue },
   disconnected: { background: backgroundURLs.noise, color: 'white' },
 }
 
@@ -182,7 +182,7 @@ const shadowStyles = {
 }
 
 const popup: React.CSSProperties = {
-  background: light.neutralBackground.value,
+  background: colorTheme.neutralBackground.value,
   boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${colorTheme.fg6Opacity50.value}`,
   paddingTop: 4,
   paddingBottom: 4,
