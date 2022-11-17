@@ -181,14 +181,14 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
           {/* TODO I have to find a better spacer */}
           <IcnSpacer height={0} width={'100%'} />
-          <Tooltip title='Insert component...' placement='bottom'>
+          <Tooltip title='Choose and insert a component' placement='bottom'>
             <InsertModeButton
               iconType='componentinstance'
               primary={insertMenuMode === 'insert'}
               onClick={openFloatingInsertMenuCallback}
             />
           </Tooltip>
-          <Tooltip title='Open insert menu...' placement='bottom'>
+          <Tooltip title='Open insert menu' placement='bottom'>
             <InsertModeButton
               iconType='dotdotdot'
               iconCategory='semantic'
@@ -203,7 +203,7 @@ export const CanvasToolbar = React.memo(() => {
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Convert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Convert component...' placement='bottom'>
+          <Tooltip title='Converts an element or component into another' placement='bottom'>
             <InsertModeButton
               iconType='convertobject'
               iconCategory='semantic'
@@ -218,10 +218,10 @@ export const CanvasToolbar = React.memo(() => {
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Wrap in div' placement='bottom'>
+          <Tooltip title='Wrap selection in div' placement='bottom'>
             <InsertModeButton iconType='group-open' onClick={wrapInDivCallback} />
           </Tooltip>
-          <Tooltip title='Wrap in...' placement='bottom'>
+          <Tooltip title='Wrap selection in an element' placement='bottom'>
             <InsertModeButton
               iconType='designtool-larger'
               iconCategory='semantic'
