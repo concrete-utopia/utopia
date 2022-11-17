@@ -14,8 +14,16 @@ import {
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
-import { when } from '../../../../utils/react-conditionals'
-import { Button, FlexColumn, Section, SectionTitleRow, StringInput, Title } from '../../../../uuiui'
+import { unless, when } from '../../../../utils/react-conditionals'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  Section,
+  SectionTitleRow,
+  StringInput,
+  Title,
+} from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
   githubRepoFullName,
@@ -441,19 +449,55 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
+
   const githubWorking = React.useMemo(() => {
     return githubOperations.length > 0
   }, [githubOperations])
-  const triggerSaveToGithub = React.useCallback(() => {
-    if (repo != null) {
-      dispatch([EditorActions.saveToGithub(repo)], 'everyone')
+
+  const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
+
+  const [pushToNewBranch, setPushToNewBranch] = React.useState(false)
+  React.useEffect(() => {
+    setPushToNewBranch(false)
+  }, [branch])
+
+  const togglePushToNewBranch = React.useCallback(() => {
+    setPushToNewBranch(!pushToNewBranch)
+  }, [pushToNewBranch])
+
+  React.useEffect(() => {
+    if (!pushToNewBranch) {
+      setCommitBranchName(branch)
+    } else {
+      setCommitBranchName(null)
     }
-  }, [dispatch, repo])
+  }, [pushToNewBranch, branch])
+
+  const [commitBranchName, setCommitBranchName] = React.useState<string | null>(null)
+  const updateCommitBranchName = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCommitBranchName(e.target.value),
+    [],
+  )
+
+  const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
+  React.useEffect(() => {
+    setCommitMessage(null)
+  }, [branch])
+  const updateCommitMessage = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCommitMessage(e.target.value),
+    [],
+  )
+
+  const triggerSaveToGithub = React.useCallback(() => {
+    if (repo != null && commitBranchName != null && commitMessage != null) {
+      dispatch([EditorActions.saveToGithub(repo, commitBranchName, commitMessage)], 'everyone')
+    }
+  }, [dispatch, repo, commitMessage, commitBranchName])
+
   const githubAuthenticated = useEditorState(
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
-  const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
   const pullRequests = useEditorState(
     (store) => store.editor.githubData.currentBranchPullRequests,
     'Branch PRs',
@@ -480,6 +524,21 @@ const LocalChangesBlock = () => {
             changes={githubFileChanges}
             githubWorking={githubWorking}
           />
+          <StringInput
+            testId='commit-message-input'
+            placeholder='Commit message'
+            value={commitMessage || ''}
+            onChange={updateCommitMessage}
+          />
+          {when(
+            pushToNewBranch,
+            <StringInput
+              testId='commit-branch-input'
+              placeholder='New branch name'
+              value={commitBranchName || ''}
+              onChange={updateCommitBranchName}
+            />,
+          )}
           <Button
             disabled={githubWorking}
             spotlight
@@ -495,6 +554,10 @@ const LocalChangesBlock = () => {
                 Commit and Push
               </>
             )}
+          </Button>
+          <Button onClick={togglePushToNewBranch}>
+            {when(pushToNewBranch, <span>Or Push To Current Branch</span>)}
+            {unless(pushToNewBranch, <span>Or Push To New Branch</span>)}
           </Button>
         </FlexColumn>,
       )}
