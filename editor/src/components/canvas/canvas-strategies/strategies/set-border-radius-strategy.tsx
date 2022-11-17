@@ -13,7 +13,6 @@ import {
   canvasVector,
   CanvasVector,
   clamp,
-  magnitude,
   product,
   Size,
   size,
@@ -160,13 +159,13 @@ function borderRadiusAdjustDataFromInteractionSession(
 function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
   switch (corner) {
     case 'tl':
-      return Math.floor(product(drag, canvasVector({ x: 1, y: 1 })))
+      return Math.floor(product(drag, canvasVector({ x: 1, y: 1 })) / 2)
     case 'tr':
-      return Math.floor(product(drag, canvasVector({ x: -1, y: 1 })) / Math.SQRT2)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: 1 })) / 2)
     case 'bl':
-      return Math.floor(product(drag, canvasVector({ x: 1, y: -1 })) / Math.SQRT2)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: -1 })) / 2)
     case 'br':
-      return Math.floor(product(drag, canvasVector({ x: -1, y: -1 })) / Math.SQRT2)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: -1 })) / 2)
     default:
       assertNever(corner)
   }
