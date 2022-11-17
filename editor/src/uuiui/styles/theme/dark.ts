@@ -182,4 +182,15 @@ export const dark: typeof light = {
   inspectorFocusedColor: darkBase.primary,
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
+
+  // Github pane
+  githubBoxesBorder: createUtopiColor('#282a2d'),
+  gitubIndicatorConnectorLine: createUtopiColor('#686a6d'),
+  githubIndicatorSuccessful: createUtopiColor('#1FCCB7'),
+  githubIndicatorFailed: createUtopiColor('#FF7759'),
+  githubIndicatorIncomplete: createUtopiColor('#FFFFFF00'),
+  githubMUDUntracked: createUtopiColor('#09f'),
+  githubMUDModified: createUtopiColor('#f90'),
+  githubMUDDeleted: createUtopiColor('#f22'),
+  githubMUDDefault: createUtopiColor('#ccc'),
 }

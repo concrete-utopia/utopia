@@ -5007,7 +5007,10 @@ export const UPDATE_FNS = {
       forceNotNull('Should have a project ID at this point.', editor.id),
       persistentModel,
       dispatch,
-      { branchName: null, commitMessage: null },
+      {
+        branchName: action.branchName,
+        commitMessage: action.commitMessage,
+      },
     )
 
     return editor

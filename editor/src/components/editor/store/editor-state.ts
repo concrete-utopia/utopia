@@ -1084,6 +1084,13 @@ export interface GithubRepo {
   repository: string
 }
 
+export function githubRepoFullName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return `${repo.owner}/${repo.repository}`
+}
+
 export function githubRepo(owner: string, repository: string): GithubRepo {
   return {
     owner: owner,
@@ -1098,6 +1105,7 @@ export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): bo
 export interface PullRequest {
   title: string
   htmlURL: string
+  number: number
 }
 
 export interface ProjectGithubSettings {

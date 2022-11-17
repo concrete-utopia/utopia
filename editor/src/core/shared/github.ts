@@ -20,6 +20,7 @@ import { notice } from '../../components/common/notice'
 import { EditorAction, EditorDispatch } from '../../components/editor/action-types'
 import {
   deleteFile,
+  setGithubState,
   removeFileConflict,
   showToast,
   updateAgainstGithub,
@@ -136,7 +137,6 @@ export interface RepositoryEntry {
   avatarUrl: string | null
   private: boolean
   description: string | null
-  name: string | null
   updatedAt: string | null
   defaultBranch: string | null
   permissions: RepositoryEntryPermissions
@@ -147,7 +147,6 @@ export function repositoryEntry(
   priv: boolean,
   fullName: string,
   description: string | null,
-  name: string | null,
   updatedAt: string | null,
   defaultBranch: string | null,
   permissions: RepositoryEntryPermissions,
@@ -157,7 +156,6 @@ export function repositoryEntry(
     private: priv,
     fullName,
     description,
-    name,
     updatedAt,
     defaultBranch,
     permissions,
@@ -324,6 +322,16 @@ export async function getBranchesForGithubRepository(
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
+const RE_PULL_REQUEST_URL_NUMBER = /.+\/pull\/([0-9]+).*/
+
+export function getPullRequestNumberFromUrl(url: string): number {
+  try {
+    return parseInt(url.replace(RE_PULL_REQUEST_URL_NUMBER, '$1'))
+  } catch (err) {
+    return NaN
+  }
+}
+
 export async function updatePullRequestsForBranch(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
@@ -374,7 +382,14 @@ export async function updatePullRequestsForBranch(
         break
       case 'SUCCESS':
         dispatch(
-          [updateGithubData({ currentBranchPullRequests: responseBody.pullRequests })],
+          [
+            updateGithubData({
+              currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
+                ...pr,
+                number: getPullRequestNumberFromUrl(pr.htmlURL),
+              })),
+            }),
+          ],
           'everyone',
         )
         break
@@ -629,17 +644,21 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
     const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
     switch (responseBody.type) {
       case 'FAILURE':
-        dispatch(
-          [
-            showToast(
-              notice(
-                `Error when getting a user's repositories: ${responseBody.failureReason}`,
-                'ERROR',
-              ),
+        const actions: EditorAction[] = [
+          showToast(
+            notice(
+              `Error when getting a user's repositories: ${responseBody.failureReason}`,
+              'ERROR',
             ),
-          ],
-          'everyone',
-        )
+          ),
+        ]
+        if (responseBody.failureReason.includes('Authentication')) {
+          actions.push(
+            updateGithubSettings(emptyGithubSettings()),
+            setGithubState({ authenticated: false }),
+          )
+        }
+        dispatch(actions, 'everyone')
         break
       case 'SUCCESS':
         dispatch(
@@ -1106,8 +1125,14 @@ export async function refreshGithubData(
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchChecksums: GithubChecksums | null,
+  githubUserDetails: GithubUser | null,
 ): Promise<void> {
   if (githubAuthenticated) {
+    if (githubUserDetails === null) {
+      void getUserDetailsFromServer().then((r) =>
+        dispatch([updateGithubData({ githubUserDetails: r })]),
+      )
+    }
     void getUsersPublicGithubRepositories(dispatch)
     if (githubRepo != null) {
       let upstreamChangesSuccess = false
