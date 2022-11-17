@@ -30,7 +30,7 @@ function getIndicatorColor(status: BlockStatus): string {
     case 'failed':
       return '#FF7759'
     case 'pending':
-      return 'conic-gradient(from 180deg at 50% 50%, #2D2E33 0deg, #FFFFFF 181.87deg, #FFFFFF 360deg)'
+      return 'transparent' // TODO 'conic-gradient(from 180deg at 50% 50%, #2D2E33 0deg, #FFFFFF 181.87deg, #FFFFFF 360deg)'
     default:
       const _exhaustiveCheck: never = status
       throw new Error(`invalid state ${status}`)
