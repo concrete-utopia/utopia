@@ -41,6 +41,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import {
+  cssNumberEqual,
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
@@ -260,8 +261,11 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
   }
 
   if (simpleBorderRadius != null) {
+    const { tl, tr, bl, br } = simpleBorderRadius
+    const allSidesEqual = [tr, bl, br].every((c) => cssNumberEqual(tl, c))
+
     return {
-      type: 'borderRadius',
+      type: allSidesEqual ? 'borderRadius' : 'sides',
       sides: simpleBorderRadius,
     }
   }
