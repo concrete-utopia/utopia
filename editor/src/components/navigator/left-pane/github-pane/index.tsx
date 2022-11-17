@@ -659,7 +659,7 @@ export const GithubPane = React.memo(() => {
           </FlexRow>
           {when(
             githubUser != null,
-            <Button style={{ gap: 4 }} onClick={openGithubProfile}>
+            <Button highlight style={{ gap: 4, padding: '0 6px' }} onClick={openGithubProfile}>
               @{githubUser?.login}
               {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
             </Button>,
