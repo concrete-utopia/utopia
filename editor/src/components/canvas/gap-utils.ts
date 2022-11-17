@@ -9,7 +9,9 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { CSSNumber, FlexDirection, parseCSSLengthPercent } from '../inspector/common/css-utils'
+import { AllElementProps } from '../editor/store/editor-state'
+import { toString } from '../../core/shared/element-path'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -114,6 +116,7 @@ export function gapControlBoundsFromMetadata(
 }
 
 export interface FlexGapData {
+  source: 'props' | 'code'
   value: CSSNumberWithRenderedValue
   direction: FlexDirection
 }
@@ -121,6 +124,7 @@ export interface FlexGapData {
 export function maybeFlexGapFromElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
+  allElementProps: AllElementProps,
 ): FlexGapData | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (
@@ -138,17 +142,32 @@ export function maybeFlexGapFromElement(
   }
 
   const flexGap = children[0].specialSizeMeasurements.parentFlexGap
+  const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
     undefined,
     getLayoutProperty('gap', right(element.element.value.props), ['style']),
   )
+  const spiedGap = optionalMap(
+    (v) => defaultEither(null, parseCSSLengthPercent(v)),
+    allElementProps[toString(elementPath)]?.['style']?.['gap'],
+  )
 
-  if (gapFromProps == null) {
-    return null
+  if (gapFromProps != null) {
+    return {
+      source: 'props',
+      value: { renderedValuePx: flexGap, value: gapFromProps },
+      direction: flexDirection,
+    }
   }
 
-  const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
+  if (spiedGap != null) {
+    return {
+      source: 'code',
+      value: { renderedValuePx: flexGap, value: spiedGap },
+      direction: flexDirection,
+    }
+  }
 
-  return { value: { renderedValuePx: flexGap, value: gapFromProps }, direction: flexDirection }
+  return null
 }

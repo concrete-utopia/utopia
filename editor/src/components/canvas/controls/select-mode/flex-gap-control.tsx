@@ -36,13 +36,14 @@ interface FlexGapControlProps {
   selectedElement: ElementPath
   flexDirection: FlexDirection
   updatedGapValue: CSSNumberWithRenderedValue
+  disabled?: boolean
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
-  const { selectedElement, flexDirection, updatedGapValue } = props
+  const { selectedElement, flexDirection, updatedGapValue, disabled } = props
   const colorTheme = useColorTheme()
   const indicatorColor = colorTheme.brandNeonPink.o(StripeOpacity).value
 
@@ -87,9 +88,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      startInteraction(e, dispatch, canvasOffset.current, scale)
+      if (disabled !== true) {
+        startInteraction(e, dispatch, canvasOffset.current, scale)
+      }
     },
-    [canvasOffset, dispatch, scale],
+    [canvasOffset, disabled, dispatch, scale],
   )
 
   return (
@@ -114,6 +117,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               backgroundShown={backgroundShown}
               isDragging={isDragging}
               gapValue={updatedGapValue.value}
+              disabled={disabled === true}
             />
           )
         })}
@@ -161,6 +165,7 @@ interface GapControlSegmentProps {
   scale: number
   isDragging: boolean
   backgroundShown: boolean
+  disabled: boolean
 }
 
 const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
@@ -179,6 +184,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     scale,
     path,
     backgroundShown,
+    disabled,
   } = props
 
   const colorTheme = useColorTheme()
@@ -199,6 +205,10 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
   const shouldShowBackground = !isDragging && backgroundShown
 
+  const disabledColor = 'rgba(150, 150, 150, 0.5)'
+  const stripeColor = disabled ? disabledColor : indicatorColor
+  const handleColor = disabled ? disabledColor : colorTheme.brandNeonPink.value
+
   return (
     <div
       key={path}
@@ -214,7 +224,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         alignItems: 'center',
         justifyContent: 'center',
         border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
-        ...(shouldShowBackground ? StripedBackgroundCSS(indicatorColor, scale) : {}),
+        ...(shouldShowBackground ? StripedBackgroundCSS(stripeColor, scale) : {}),
       }}
     >
       <div
@@ -234,11 +244,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               pointerEvents: 'none',
             }}
           >
-            <CanvasLabel
-              value={printCSSNumber(gapValue, null)}
-              scale={scale}
-              color={colorTheme.brandNeonPink.value}
-            />
+            <CanvasLabel value={printCSSNumber(gapValue, null)} scale={scale} color={stripeColor} />
           </div>,
         )}
         {when(
@@ -246,7 +252,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           <PillHandle
             width={width}
             height={height}
-            pillColor={colorTheme.brandNeonPink.value}
+            pillColor={handleColor}
             borderWidth={borderWidth}
           />,
         )}

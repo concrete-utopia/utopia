@@ -44,6 +44,7 @@ import {
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
+import { toString } from '../../../../core/shared/element-path'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<CSSPaddingKey> = [

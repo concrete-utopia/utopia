@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { toString } from '../../../../core/shared/element-path'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
@@ -64,9 +65,35 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   const selectedElement = selectedElements[0]
   const children = MetadataUtils.getChildrenPaths(canvasState.startingMetadata, selectedElement)
 
-  const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
+  const flexGap = maybeFlexGapFromElement(
+    canvasState.startingMetadata,
+    selectedElements[0],
+    canvasState.startingAllElementProps,
+  )
   if (flexGap == null) {
     return null
+  }
+
+  if (flexGap.source === 'code') {
+    return {
+      id: SetFlexGapStrategyId,
+      name: 'Set flex gap',
+      controlsToRender: [
+        controlWithProps({
+          control: FlexGapControl,
+          props: {
+            selectedElement: selectedElement,
+            flexDirection: flexGap.direction,
+            updatedGapValue: flexGap.value,
+            disabled: true,
+          },
+          key: 'flex-gap-resize-control',
+          show: 'visible-except-when-other-strategy-is-active',
+        }),
+      ],
+      fitness: 1,
+      apply: () => emptyStrategyApplicationResult,
+    }
   }
 
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
