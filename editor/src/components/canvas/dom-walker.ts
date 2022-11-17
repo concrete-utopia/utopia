@@ -19,7 +19,13 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, eitherToMaybe, isRight, left } from '../../core/shared/either'
+import {
+  applicative4Either,
+  defaultEither,
+  isRight,
+  left,
+  eitherToMaybe,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -60,8 +66,7 @@ import {
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { MapLike } from 'typescript'
+import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
   EditorState,
@@ -922,6 +927,17 @@ function getSpecialMeasurements(
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
+  const borderRadius = defaultEither(
+    null,
+    applicative4Either(
+      applicativeSidesPxTransform,
+      parseCSSLength(elementStyle.borderTopLeftRadius),
+      parseCSSLength(elementStyle.borderTopRightRadius),
+      parseCSSLength(elementStyle.borderBottomLeftRadius),
+      parseCSSLength(elementStyle.borderBottomRightRadius),
+    ),
+  )
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -950,6 +966,7 @@ function getSpecialMeasurements(
     hasPositionOffset,
     parentTextDirection,
     hasTransform,
+    borderRadius,
   )
 }
 

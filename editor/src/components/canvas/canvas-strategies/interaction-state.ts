@@ -13,6 +13,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
+import { BorderRadiusCorner } from '../border-radius-control-utils'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -533,6 +534,18 @@ export function paddingResizeHandle(edgePosition: EdgePiece): PaddingResizeHandl
   }
 }
 
+export interface BorderRadiusResizeHandle {
+  type: 'BORDER_RADIUS_RESIZE_HANDLE'
+  corner: BorderRadiusCorner
+}
+
+export function borderRadiusResizeHandle(corner: BorderRadiusCorner): BorderRadiusResizeHandle {
+  return {
+    type: 'BORDER_RADIUS_RESIZE_HANDLE',
+    corner: corner,
+  }
+}
+
 export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
 }
@@ -559,3 +572,4 @@ export type CanvasControlType =
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider
+  | BorderRadiusResizeHandle

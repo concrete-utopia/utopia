@@ -39,6 +39,7 @@ import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import { Block } from './block'
+import { PullRequestPane } from './pull-request-pane'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`

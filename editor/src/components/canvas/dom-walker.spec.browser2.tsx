@@ -4,11 +4,10 @@ import {
 } from '../../core/shared/element-template'
 import { left } from '../../core/shared/either'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { mapValues, pick } from '../../core/shared/object-utils'
+import { mapValues } from '../../core/shared/object-utils'
 import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import * as EP from '../../core/shared/element-path'
 
 disableStoredStateforTests()
@@ -111,6 +110,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -196,6 +196,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -298,6 +304,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -407,6 +419,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -517,6 +535,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 124,
           "clientWidth": 266,
           "closestOffsetParentPath": Object {
@@ -632,6 +656,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -793,6 +823,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -878,6 +909,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -980,6 +1017,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1085,6 +1128,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1191,6 +1240,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 164,
           "clientWidth": 306,
           "closestOffsetParentPath": Object {
@@ -1297,6 +1352,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -1458,6 +1519,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -1543,6 +1605,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1645,6 +1713,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1750,6 +1824,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1856,6 +1936,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 164,
           "clientWidth": 306,
           "closestOffsetParentPath": Object {
@@ -1962,6 +2048,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -2111,6 +2203,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -2196,6 +2289,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2298,6 +2397,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2403,6 +2508,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2551,6 +2662,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -2636,6 +2748,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2738,6 +2856,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2843,6 +2967,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2949,6 +3079,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -3059,6 +3195,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -3169,6 +3311,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {

@@ -38,6 +38,7 @@ import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
+import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -81,6 +82,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       flexResizeBasicStrategy,
       setPaddingStrategy,
       setFlexGapStrategy,
+      setBorderRadiusStrategy,
     ],
   )
 }

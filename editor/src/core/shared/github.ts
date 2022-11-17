@@ -43,6 +43,7 @@ import {
   packageJsonFileFromProjectContents,
   PersistentModel,
   projectGithubSettings,
+  PullRequest,
 } from '../../components/editor/store/editor-state'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from './dependencies'
@@ -167,19 +168,46 @@ export interface GetUsersPublicRepositoriesSuccess {
 
 export type GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesSuccess | GithubFailure
 
+export interface GetBranchPullRequestSuccess {
+  type: 'SUCCESS'
+  pullRequests: Array<PullRequest>
+}
+
+export type GetBranchPullRequestResponse = GetBranchPullRequestSuccess | GithubFailure
+
+export interface SaveProjectToGithubOptions {
+  branchName: string | null
+  commitMessage: string | null
+}
+
 export async function saveProjectToGithub(
   projectID: string,
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
+  options: SaveProjectToGithubOptions,
 ): Promise<void> {
+  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
+  let includeQueryParams: boolean = false
+  let paramsRecord: Record<string, string> = {}
+  if (branchName != null) {
+    includeQueryParams = true
+    paramsRecord.branch_name = branchName
+  }
+  if (commitMessage != null) {
+    includeQueryParams = true
+    paramsRecord.commit_message = commitMessage
+  }
+  const searchParams = new URLSearchParams(paramsRecord)
+  const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+
   const postBody = JSON.stringify(persistentModel)
-  const response = await fetch(url, {
+  const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
     headers: HEADERS,
@@ -271,6 +299,74 @@ export async function getBranchesForGithubRepository(
         break
       case 'SUCCESS':
         dispatch([updateGithubData({ branches: responseBody.branches })], 'everyone')
+        break
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
+  }
+
+  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+}
+
+export async function updatePullRequestsForBranch(
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  branchName: string,
+): Promise<void> {
+  const operation: GithubOperation = {
+    name: 'listPullRequestsForBranch',
+    githubRepo: githubRepo,
+    branchName: branchName,
+  }
+
+  dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
+  const url = urljoin(
+    UTOPIA_BACKEND,
+    'github',
+    'branches',
+    githubRepo.owner,
+    githubRepo.repository,
+    'branch',
+    branchName,
+    'pullrequest',
+  )
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+
+  if (response.ok) {
+    const responseBody: GetBranchPullRequestResponse = await response.json()
+
+    switch (responseBody.type) {
+      case 'FAILURE':
+        dispatch(
+          [
+            showToast(
+              notice(
+                `Error when listing pull requests for branch: ${responseBody.failureReason}`,
+                'ERROR',
+              ),
+            ),
+          ],
+          'everyone',
+        )
+        break
+      case 'SUCCESS':
+        dispatch(
+          [updateGithubData({ currentBranchPullRequests: responseBody.pullRequests })],
+          'everyone',
+        )
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -445,6 +541,7 @@ async function getBranchContentFromServer(
     'branches',
     githubRepo.owner,
     githubRepo.repository,
+    'branch',
     branchName,
   )
   let includeQueryParams: boolean = false
@@ -969,6 +1066,7 @@ export async function refreshGithubData(
       let upstreamChangesSuccess = false
       void getBranchesForGithubRepository(dispatch, githubRepo)
       if (branchName != null && branchChecksums != null) {
+        void updatePullRequestsForBranch(dispatch, githubRepo, branchName)
         const branchContentResponse = await getBranchContentFromServer(githubRepo, branchName, null)
         if (branchContentResponse.ok) {
           const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()

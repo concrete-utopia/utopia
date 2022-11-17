@@ -264,13 +264,13 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
-innerServerExecutor (SaveToGithubRepo user projectID model action) = do
+innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
   githubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- createTreeAndSaveToGithub githubResources (Just awsResource) logger metrics pool user projectID model
+  result <- createTreeAndSaveToGithub githubResources (Just awsResource) logger metrics pool user projectID possibleBranchName possibleCommitMessage model
   pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
   githubResources <- fmap _githubResources ask
@@ -300,6 +300,13 @@ innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID as
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
   result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath
+  pure $ action result
+innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
   pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
