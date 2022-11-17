@@ -5,6 +5,8 @@ import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/com
 
 export const Emdash: string = '\u2014'
 
+export const DisabledColor = 'rgba(150, 150, 150, 0.5)'
+
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber
   renderedValuePx: number

@@ -26,6 +26,7 @@ import { isZeroSizedElement } from '../outline-utils'
 import {
   CanvasLabel,
   CSSNumberWithRenderedValue,
+  DisabledColor,
   PillHandle,
   StripedBackgroundCSS,
   StripeOpacity,
@@ -205,9 +206,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
   const shouldShowBackground = !isDragging && backgroundShown
 
-  const disabledColor = 'rgba(150, 150, 150, 0.5)'
-  const stripeColor = disabled ? disabledColor : indicatorColor
-  const handleColor = disabled ? disabledColor : colorTheme.brandNeonPink.value
+  const stripeColor = disabled ? DisabledColor : indicatorColor
+  const handleColor = disabled ? DisabledColor : colorTheme.brandNeonPink.value
 
   return (
     <div
