@@ -1,18 +1,7 @@
 import React from 'react'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-with-pub-sub'
-import {
-  FlexColumn,
-  FlexRow,
-  IcnColor,
-  ModalityIcons,
-  useColorTheme,
-  UtopiaStyles,
-} from '../../../../uuiui'
-import {
-  DragToMoveIndicatorFlags,
-  EditorStorePatched,
-  NavigatorWidthAtom,
-} from '../../../editor/store/editor-state'
+import { FlexColumn, FlexRow, ModalityIcons, useColorTheme, UtopiaStyles } from '../../../../uuiui'
+import { NavigatorWidthAtom } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 
 const StrategyIndicatorWidth = 240
