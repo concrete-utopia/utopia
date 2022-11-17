@@ -10,9 +10,11 @@ const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 
 const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
-const [lightThemeAsInverted, lightThemeAsInvertedCssVariables] =
-  generateCssVariablesFromThemeObject(light, '--inverted')
-const [darkTheme, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
+const [, lightThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
+  light,
+  '--inverted',
+)
+const [, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
 const [darkThemeAsInverted, darkThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
   dark,
   '--inverted',
@@ -30,11 +32,6 @@ export const colorTheme: ColorTheme = {
 export const colorThemeCssVariables = {
   ...lightThemeCssVariables,
   inverted: darkThemeAsInvertedCssVariables,
-}
-
-export const darkColorTheme: ColorTheme = {
-  ...darkTheme,
-  inverted: lightThemeAsInverted,
 }
 
 export const darkColorThemeCssVariables = {
