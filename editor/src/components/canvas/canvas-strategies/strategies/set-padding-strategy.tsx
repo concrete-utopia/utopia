@@ -42,7 +42,7 @@ import {
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
-  pureCSSNumberWithRenderedValue,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
 
@@ -153,7 +153,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const maxedDelta = Math.max(-currentPadding, rawDelta)
       const newPaddingEdge = offsetMeasurementByDelta(
-        padding[paddingPropInteractedWith] ?? pureCSSNumberWithRenderedValue(maxedDelta),
+        padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
         rawDelta,
         precision,
       )
@@ -295,7 +295,8 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-  const currentPadding = padding[paddingPropForEdge(edgePiece)] ?? pureCSSNumberWithRenderedValue(0)
+  const currentPadding =
+    padding[paddingPropForEdge(edgePiece)] ?? unitlessCSSNumberWithRenderedValue(0)
 
   const delta = deltaFromEdge(drag, edgePiece)
 

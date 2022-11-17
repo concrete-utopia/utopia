@@ -13,7 +13,7 @@ import {
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
   offsetMeasurementByDelta,
-  pureCSSNumberWithRenderedValue,
+  unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
 
 export type CSSPaddingKey = keyof CSSPadding
@@ -113,16 +113,17 @@ export function combinePaddings(
 ): CSSPaddingMappedValues<CSSNumberWithRenderedValue> {
   return {
     paddingTop:
-      paddingRenderedValues.paddingTop ?? pureCSSNumberWithRenderedValue(paddingNumber.paddingTop),
+      paddingRenderedValues.paddingTop ??
+      unitlessCSSNumberWithRenderedValue(paddingNumber.paddingTop),
     paddingRight:
       paddingRenderedValues.paddingRight ??
-      pureCSSNumberWithRenderedValue(paddingNumber.paddingRight),
+      unitlessCSSNumberWithRenderedValue(paddingNumber.paddingRight),
     paddingBottom:
       paddingRenderedValues.paddingBottom ??
-      pureCSSNumberWithRenderedValue(paddingNumber.paddingBottom),
+      unitlessCSSNumberWithRenderedValue(paddingNumber.paddingBottom),
     paddingLeft:
       paddingRenderedValues.paddingLeft ??
-      pureCSSNumberWithRenderedValue(paddingNumber.paddingLeft),
+      unitlessCSSNumberWithRenderedValue(paddingNumber.paddingLeft),
   }
 }
 
@@ -164,7 +165,7 @@ export function offsetPaddingByEdge(
   return {
     ...padding,
     [prop]: offsetMeasurementByDelta(
-      padding[prop] ?? pureCSSNumberWithRenderedValue(0),
+      padding[prop] ?? unitlessCSSNumberWithRenderedValue(0),
       delta,
       precision,
     ),

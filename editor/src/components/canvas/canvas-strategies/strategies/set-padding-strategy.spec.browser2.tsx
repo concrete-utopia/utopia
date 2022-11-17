@@ -5,7 +5,7 @@ import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   AdjustPrecision,
-  pureCSSNumberWithRenderedValue,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import {
   paddingControlHandleTestId,
@@ -122,10 +122,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: pureCSSNumberWithRenderedValue(22),
-          paddingBottom: pureCSSNumberWithRenderedValue(33),
-          paddingLeft: pureCSSNumberWithRenderedValue(44),
-          paddingRight: pureCSSNumberWithRenderedValue(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -167,10 +167,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: pureCSSNumberWithRenderedValue(22),
-          paddingBottom: pureCSSNumberWithRenderedValue(33),
-          paddingLeft: pureCSSNumberWithRenderedValue(44),
-          paddingRight: pureCSSNumberWithRenderedValue(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -198,10 +198,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: pureCSSNumberWithRenderedValue(22),
-          paddingBottom: pureCSSNumberWithRenderedValue(33),
-          paddingLeft: pureCSSNumberWithRenderedValue(44),
-          paddingRight: pureCSSNumberWithRenderedValue(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -470,10 +470,10 @@ describe('Padding resize strategy', () => {
 
 async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: AdjustPrecision) {
   const padding: CSSPaddingMeasurements = {
-    paddingTop: pureCSSNumberWithRenderedValue(22),
-    paddingBottom: pureCSSNumberWithRenderedValue(33),
-    paddingLeft: pureCSSNumberWithRenderedValue(44),
-    paddingRight: pureCSSNumberWithRenderedValue(55),
+    paddingTop: unitlessCSSNumberWithRenderedValue(22),
+    paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+    paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+    paddingRight: unitlessCSSNumberWithRenderedValue(55),
   }
   const dragDelta = 12
   const editor = await renderTestEditorWithCode(
