@@ -121,8 +121,8 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
-  preventOnRootElements(drawToInsertMetaStrategy),
-  preventOnRootElements(dragToInsertMetaStrategy),
+  drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
