@@ -14,20 +14,20 @@ import {
   NavigatorWidthAtom,
 } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
-
-const useDelayedDragToMoveIndicatorFlags = () => {
-  const selector = (store: EditorStorePatched) =>
-    !store.editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator
-      ? null
-      : store.editor.canvas.controls.dragToMoveIndicatorFlags
-  return useDelayedEditorState<DragToMoveIndicatorFlags | null>(selector)
-}
 
 const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlags = useDelayedDragToMoveIndicatorFlags()
+  const indicatorFlags = useEditorState((store) => {
+    if (
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
+    ) {
+      return store.editor.canvas.controls.dragToMoveIndicatorFlags
+    } else {
+      return null
+    }
+  }, 'StrategyIndicator')
 
   const isNavigatorOpen = useEditorState(
     (store) => !store.editor.navigator.minimised,
