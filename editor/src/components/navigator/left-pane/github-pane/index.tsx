@@ -168,81 +168,79 @@ const BranchBlock = () => {
 
   const loadBranchesUI = React.useMemo(() => {
     return (
-      <UIGridRow padded={false} variant='<-------------1fr------------->'>
-        <FlexColumn style={{ gap: 8 }}>
-          <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
-            <StringInput
-              testId='branches-input'
-              placeholder='Filter…'
-              value={branchFilter}
-              onChange={updateBranchFilter}
-            />
-            <Button
-              spotlight
-              highlight
-              style={{ padding: '0 6px' }}
-              onMouseUp={refreshBranches}
-              disabled={githubWorking}
-            >
-              {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-            </Button>
-          </UIGridRow>
-          <FlexColumn
-            style={{
-              height: 220,
-              overflowY: 'scroll',
-              border: '1px solid #2D2E33',
-              borderRadius: 2,
-            }}
+      <UIGridRow padded={false} variant='<-------------1fr------------->' style={{ width: '100%' }}>
+        <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
+          <StringInput
+            testId='branches-input'
+            placeholder='Filter…'
+            value={branchFilter}
+            onChange={updateBranchFilter}
+          />
+          <Button
+            spotlight
+            highlight
+            style={{ padding: '0 6px' }}
+            onMouseUp={refreshBranches}
+            disabled={githubWorking}
           >
-            {filteredBranches.map((branch, index) => {
-              function loadContentForBranch() {
-                if (githubWorking) {
-                  return
-                }
-                if (storedTargetGithubRepo != null) {
-                  void updateProjectWithBranchContent(
-                    dispatch,
-                    storedTargetGithubRepo,
-                    branch.name,
-                    false,
-                    currentDependencies,
-                    builtInDependencies,
-                  ).then(() => setExpanded(false))
-                }
+            {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
+          </Button>
+        </UIGridRow>
+        <FlexColumn
+          style={{
+            height: 220,
+            overflowY: 'scroll',
+            border: '1px solid #2D2E33',
+            borderRadius: 2,
+          }}
+        >
+          {filteredBranches.map((branch, index) => {
+            function loadContentForBranch() {
+              if (githubWorking) {
+                return
               }
-              const loadingThisBranch = isGithubLoadingBranch(
-                githubOperations,
-                branch.name,
-                storedTargetGithubRepo,
-              )
-              const isCurrent = currentBranch === branch.name
-              return (
-                <UIGridRow
-                  key={index}
-                  padded
-                  variant='<----------1fr---------><-auto->'
-                  css={{
-                    cursor: loadingThisBranch ? 'wait' : githubWorking ? 'not-allowed' : 'pointer',
-                    opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
-                    '&:hover': {
-                      background: '#09f',
-                      color: '#fff',
-                      svg: { stroke: '#fff' },
-                    },
-                    fontWeight: isCurrent ? 'bold' : 'normal',
-                  }}
-                  onClick={loadContentForBranch}
-                >
-                  <Ellipsis>
-                    {when(isCurrent, <span>&rarr; </span>)}
-                    {branch.name}
-                  </Ellipsis>
-                  {when(loadingThisBranch, <GithubSpinner />)}
-                </UIGridRow>
-              )
-            })}
-          </FlexColumn>
+              if (storedTargetGithubRepo != null) {
+                void updateProjectWithBranchContent(
+                  dispatch,
+                  storedTargetGithubRepo,
+                  branch.name,
+                  false,
+                  currentDependencies,
+                  builtInDependencies,
+                ).then(() => setExpanded(false))
+              }
+            }
+            const loadingThisBranch = isGithubLoadingBranch(
+              githubOperations,
+              branch.name,
+              storedTargetGithubRepo,
+            )
+            const isCurrent = currentBranch === branch.name
+            return (
+              <UIGridRow
+                key={index}
+                padded
+                variant='<----------1fr---------><-auto->'
+                css={{
+                  cursor: loadingThisBranch ? 'wait' : githubWorking ? 'not-allowed' : 'pointer',
+                  opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
+                  '&:hover': {
+                    background: '#09f',
+                    color: '#fff',
+                    svg: { stroke: '#fff' },
+                  },
+                  fontWeight: isCurrent ? 'bold' : 'normal',
+                }}
+                onClick={loadContentForBranch}
+              >
+                <Ellipsis>
+                  {when(isCurrent, <span>&rarr; </span>)}
+                  {branch.name}
+                </Ellipsis>
+                {when(loadingThisBranch, <GithubSpinner />)}
+              </UIGridRow>
+            )
+          })}
         </FlexColumn>
       </UIGridRow>
     )
@@ -376,6 +374,7 @@ const RemoteChangesBlock = () => {
           <GithubFileChangesList
             conflicts={bothModified}
             revertable={false}
+            clickable={false}
             changes={upstreamChanges}
             showHeader={true}
             githubWorking={githubWorking}
@@ -466,6 +465,7 @@ const LocalChangesBlock = () => {
           <GithubFileChangesList
             showHeader={true}
             revertable={true}
+            clickable={true}
             changes={githubFileChanges}
             githubWorking={githubWorking}
           />

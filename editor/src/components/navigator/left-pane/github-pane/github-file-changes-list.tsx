@@ -138,9 +138,10 @@ export const GithubFileChangesList: React.FC<{
   changes: GithubFileChanges | null
   githubWorking: boolean
   revertable: boolean
+  clickable: boolean
   showHeader: boolean
   conflicts?: string[]
-}> = ({ changes, githubWorking, revertable, showHeader, conflicts }) => {
+}> = ({ changes, githubWorking, revertable, showHeader, conflicts, clickable }) => {
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
@@ -192,14 +193,15 @@ export const GithubFileChangesList: React.FC<{
   }
 
   return (
-    <FlexColumn style={{ gap: 4 }}>
-      {showHeader && (
+    <FlexColumn style={{ gap: 10 }}>
+      {when(
+        showHeader,
         <Header
           count={count}
           revertable={revertable}
           githubWorking={githubWorking}
           onClickRevertAll={handleClickRevertAllFiles}
-        />
+        />,
       )}
       <FlexColumn
         style={{
@@ -221,15 +223,15 @@ export const GithubFileChangesList: React.FC<{
                 color: conflicting ? '#f00' : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
                 '&:hover': {
-                  cursor: !conflicting ? 'pointer' : undefined,
-                  background: '#eee',
+                  cursor: !conflicting && clickable ? 'pointer' : undefined,
+                  background: clickable ? '#eee' : undefined,
                 },
               }}
             >
               <UIGridRow
                 padded
                 variant='|--16px--|<--------auto-------->'
-                onClick={openFile(i.filename)}
+                onClick={clickable ? openFile(i.filename) : undefined}
               >
                 <GithubFileStatusLetter status={i.status} />
                 <FlexRow
@@ -269,8 +271,8 @@ const Header: React.FC<{
   onClickRevertAll: (e: React.MouseEvent) => void
 }> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
   return (
-    <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
-      <div style={{ flex: 1 }}>
+    <UIGridRow padded={false} variant='<----------1fr---------><-auto->' style={{ minHeight: 0 }}>
+      <div>
         {count} file{count !== 1 ? 's' : ''} changed
       </div>
       {when(
