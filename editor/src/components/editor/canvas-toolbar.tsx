@@ -32,6 +32,11 @@ export const CanvasToolbar = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasToolbar dispatch')
   const theme = useColorTheme()
 
+  const canvasInLiveMode = useEditorState(
+    (store) => store.editor.mode.type === 'live',
+    'CanvasToolbar canvasInLiveMode',
+  )
+
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const navigatorVisible = useEditorState(
     (store) => !store.editor.navigator.minimised,
@@ -134,6 +139,7 @@ export const CanvasToolbar = React.memo(() => {
                 borderRadius: 4,
                 color: insertMenuSelected ? theme.neutralInvertedForeground.value : theme.fg0.value,
               }}
+              disabled={canvasInLiveMode}
               onClick={selectInsertMenuPane}
             >
               …
@@ -148,15 +154,23 @@ export const CanvasToolbar = React.memo(() => {
 interface InsertModeButtonProps {
   iconType: string
   primary: boolean
+  keepActiveInLiveMode?: boolean
   onClick: (event: React.MouseEvent<Element>) => void
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+  const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
+  const canvasInLiveMode = useEditorState(
+    (store) => store.editor.mode.type === 'live',
+    'CanvasToolbar canvasInLiveMode',
+  )
+
   return (
     <SquareButton
       style={{ borderRadius: 4 }}
       primary={props.primary}
       highlight
       onClick={props.onClick}
+      disabled={canvasInLiveMode && !keepActiveInLiveMode}
     >
       <Icn
         category='element'
