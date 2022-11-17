@@ -266,7 +266,11 @@ const BranchBlock = () => {
     'Github authenticated',
   )
 
-  if (!expanded && (!githubAuthenticated || storedTargetGithubRepo == null)) {
+  if (!githubAuthenticated) {
+    return null
+  }
+
+  if (storedTargetGithubRepo == null) {
     return null
   }
 
