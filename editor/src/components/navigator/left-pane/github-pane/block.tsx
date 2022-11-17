@@ -2,7 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React, { useCallback } from 'react'
+import React from 'react'
 import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 
@@ -42,20 +42,20 @@ export type BlockProps = {
   subtitle?: string | JSX.Element
   status: BlockStatus
   first?: boolean
+  expanded: boolean
   last?: boolean
   children: any
+  onClick?: (e: React.MouseEvent) => void
 }
 
 export const Block = React.memo((props: BlockProps) => {
-  const [expanded, expand] = React.useState(true)
-  const toggleExpand = useCallback(() => expand((exp) => !exp), [])
-
-  const preventExpand = useCallback((e: { stopPropagation: () => any }) => e.stopPropagation(), [])
-
+  const preventExpand = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+  }, [])
   return (
     <UIGridRow
       variant='<-auto-><----------1fr--------->'
-      onClick={toggleExpand}
+      onClick={props.onClick}
       style={{
         minHeight: UtopiaTheme.layout.rowHeight.normal,
         gridColumnGap: 0,
@@ -117,7 +117,7 @@ export const Block = React.memo((props: BlockProps) => {
           <div>{props.subtitle}</div>
         </FlexRow>
 
-        {expanded ? (
+        {props.expanded ? (
           <div>
             <FlexColumn
               style={{

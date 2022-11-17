@@ -2,7 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React, { useEffect } from 'react'
+import React from 'react'
 import TimeAgo from 'react-timeago'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
@@ -53,7 +53,7 @@ const AccountBlock = () => {
   }
 
   return (
-    <Block title='Account' status={state} first={true} last={true}>
+    <Block title='Account' status={state} first={true} last={true} expanded={true}>
       <Button spotlight highlight style={{ padding: '0 6px' }} onMouseUp={triggerAuthentication}>
         Authenticate with Github
       </Button>
@@ -77,12 +77,10 @@ const RepositoryBlock = () => {
   const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
   const [expanded, setExpanded] = React.useState(false)
-  useEffect(() => {
-    setExpanded(false)
+  const toggleExpanded = React.useCallback(() => setExpanded(!expanded), [expanded])
+  React.useEffect(() => {
+    setExpanded(repo == null)
   }, [repo])
-  const expand = React.useCallback(() => {
-    setExpanded((v) => !v)
-  }, [setExpanded])
 
   if (!githubAuthenticated) {
     return null
@@ -92,9 +90,11 @@ const RepositoryBlock = () => {
     <Block
       title={hasRepo ? 'Repository' : 'Select Repository'}
       subtitle={repoName}
-      status={!expanded && hasRepo != null ? 'successful' : 'pending'}
+      status={hasRepo ? 'successful' : 'pending'}
       first={true}
       last={!hasRepo}
+      expanded={expanded}
+      onClick={toggleExpanded}
     >
       <FlexColumn style={{ gap: 4 }}>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
@@ -142,12 +142,10 @@ const BranchBlock = () => {
   }, [dispatch, storedTargetGithubRepo])
 
   const [expanded, setExpanded] = React.useState(false)
-  useEffect(() => {
-    setExpanded(false)
+  const toggleExpanded = React.useCallback(() => setExpanded(!expanded), [expanded])
+  React.useEffect(() => {
+    setExpanded(currentBranch == null)
   }, [currentBranch])
-  const expand = React.useCallback(() => {
-    setExpanded((v) => !v)
-  }, [setExpanded])
 
   const [branchFilter, setBranchFilter] = React.useState('')
   const updateBranchFilter = React.useCallback(
@@ -279,6 +277,8 @@ const BranchBlock = () => {
 
   return (
     <Block
+      expanded={expanded}
+      onClick={toggleExpanded}
       title={currentBranch != null ? 'Branch' : 'Select Branch'}
       subtitle={currentBranch || undefined}
       status={!expanded && currentBranch != null ? 'successful' : 'incomplete'}
@@ -363,6 +363,7 @@ const RemoteChangesBlock = () => {
   }
   return (
     <Block
+      expanded={hasUpstreamChanges}
       title={hasUpstreamChanges ? 'Remote Changes' : 'No Remote Changes'}
       subtitle={
         <TimeAgo
@@ -458,6 +459,7 @@ const LocalChangesBlock = () => {
   }
   return (
     <Block
+      expanded={hasLocalChanges}
       title={hasLocalChanges ? 'Local Changes' : 'No Local Changes'}
       status={state}
       last={true}
