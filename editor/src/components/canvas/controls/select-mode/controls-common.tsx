@@ -10,7 +10,7 @@ export interface CSSNumberWithRenderedValue {
   renderedValuePx: number
 }
 
-export const pureCSSNumberWithRenderedValue = (
+export const unitlessCSSNumberWithRenderedValue = (
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({
   value: { value: renderedValuePx, unit: null },
