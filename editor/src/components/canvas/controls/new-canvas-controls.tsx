@@ -55,7 +55,6 @@ import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canva
 import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
-import { StrategyIndicator } from './select-mode/strategy-indicator'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -454,7 +453,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           )}
         </>,
       )}
-      <StrategyIndicator />
       <CursorComponent />
     </div>
   )
