@@ -58,6 +58,7 @@ import {
   GithubOperation,
   GithubChecksums,
   GithubData,
+  UserConfiguration,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -913,6 +914,11 @@ export interface SetGithubState {
   githubState: GithubState
 }
 
+export interface SetUserConfiguration {
+  action: 'SET_USER_CONFIGURATION'
+  userConfiguration: UserConfiguration
+}
+
 export interface UpdateGithubOperations {
   action: 'UPDATE_GITHUB_OPERATIONS'
   operation: GithubOperation
@@ -1190,6 +1196,7 @@ export type EditorAction =
   | UpdateConfigFromVSCode
   | SetLoginState
   | SetGithubState
+  | SetUserConfiguration
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme

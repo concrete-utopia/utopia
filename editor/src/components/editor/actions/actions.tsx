@@ -313,6 +313,7 @@ import {
   UpdateGithubData,
   RemoveFileConflict,
   SetRefreshingDependencies,
+  SetUserConfiguration,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -4562,6 +4563,15 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       githubState: action.githubState,
+    }
+  },
+  SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {
+    // Side effect - update the theme setting in VS Code
+    void sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
+
+    return {
+      ...userState,
+      ...action.userConfiguration,
     }
   },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
