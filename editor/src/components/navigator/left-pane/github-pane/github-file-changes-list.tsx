@@ -210,7 +210,7 @@ export const GithubFileChangesList: React.FC<{
         }}
       >
         {list.map((i) => {
-          const conflicting = conflicts?.includes(i.filename) || false
+          const conflicting = conflicts?.includes(i.filename) ?? false
           const isTreeConflict = i.filename in treeConflicts
           return (
             <UIGridRow

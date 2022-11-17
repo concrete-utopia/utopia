@@ -23,7 +23,7 @@ export const GithubSpinner: React.FC<{ stroke?: string }> = ({ stroke }) => {
         height='12'
         viewBox='0 0 24 24'
         fill='none'
-        stroke={stroke || '#999'}
+        stroke={stroke ?? '#999'}
         strokeWidth='2'
         strokeLinecap='round'
         strokeLinejoin='round'
