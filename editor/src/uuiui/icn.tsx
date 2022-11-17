@@ -186,7 +186,7 @@ export const Icn = React.memo(
 Icn.displayName = 'Icon'
 
 export const IcnSpacer = React.memo(
-  ({ width = 16, height = 16 }: { width?: number; height?: number }) => {
+  ({ width = 16, height = 16 }: { width?: number | string; height?: number | string }) => {
     return <div style={{ width, height }} />
   },
 )

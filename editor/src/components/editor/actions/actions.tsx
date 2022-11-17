@@ -313,6 +313,7 @@ import {
   UpdateGithubData,
   RemoveFileConflict,
   SetRefreshingDependencies,
+  SetUserConfiguration,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -4564,6 +4565,15 @@ export const UPDATE_FNS = {
       githubState: action.githubState,
     }
   },
+  SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {
+    // Side effect - update the theme setting in VS Code
+    void sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
+
+    return {
+      ...userState,
+      ...action.userConfiguration,
+    }
+  },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -4997,6 +5007,7 @@ export const UPDATE_FNS = {
       forceNotNull('Should have a project ID at this point.', editor.id),
       persistentModel,
       dispatch,
+      { branchName: null, commitMessage: null },
     )
 
     return editor

@@ -39,6 +39,7 @@ import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-ins
 import { getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
+import { CanvasToolbar } from '../editor/canvas-toolbar'
 
 interface NumberSize {
   width: number
@@ -316,7 +317,7 @@ const DesignPanelRootInner = React.memo(() => {
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
-                    backgroundColor: UtopiaTheme.color.bg0.o(90).value,
+                    backgroundColor: colorTheme.bg0Opacity90.value,
                     backdropFilter: 'blur(7px)',
                   }}
                   onResizeStop={onNavigatorResizeStop}
@@ -330,6 +331,7 @@ const DesignPanelRootInner = React.memo(() => {
               </div>
             ) : null}
             <CanvasWrapperComponent />
+            <CanvasToolbar />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}

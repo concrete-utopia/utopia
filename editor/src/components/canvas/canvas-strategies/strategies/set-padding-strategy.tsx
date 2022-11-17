@@ -19,8 +19,8 @@ import {
 import {
   CSSPaddingKey,
   deltaFromEdge,
+  maybeFullPadding,
   offsetPaddingByEdge,
-  paddingForEdge,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
@@ -42,6 +42,7 @@ import {
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
 
@@ -53,7 +54,7 @@ const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingRight',
 ]
 
-const PaddingTearThreshold: number = -25
+export const PaddingTearThreshold: number = -25
 
 export const SetPaddingStrategyName = 'Set Padding'
 
@@ -144,22 +145,26 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const selectedElement = filteredSelectedElements[0]
 
+      const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
+      const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
+
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
-      const currentPadding = paddingForEdge(edgePiece, padding)
+      const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
-      const delta = Math.max(-currentPadding, rawDelta)
-      const newPadding = offsetPaddingByEdge(
-        edgePiece,
+      const maxedDelta = Math.max(-currentPadding, rawDelta)
+      const newPaddingEdge = offsetMeasurementByDelta(
+        padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
         rawDelta,
-        padding,
-        precisionFromModifiers(interactionSession.interactionData.modifiers),
+        precision,
       )
 
+      const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
+
       const newPaddingMaxed = offsetPaddingByEdge(
-        edgePiece,
+        paddingPropInteractedWith,
         delta,
         padding,
-        precisionFromModifiers(interactionSession.interactionData.modifiers),
+        precision,
       )
 
       const basicCommands: CanvasCommand[] = [
@@ -168,34 +173,33 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         setElementsToRerenderCommand(selectedElements),
       ]
 
-      if (rawDelta < PaddingTearThreshold) {
-        const paddingPropToBeRemoved = paddingPropForEdge(edgePiece)
-        const nonZeroPropsToAdd = IndividualPaddingProps.filter(
-          (p) => p !== paddingPropToBeRemoved && newPaddingMaxed[p].renderedValuePx > 0,
-        )
+      const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
+        (p): Array<[CSSPaddingKey, string | number]> => {
+          const value = newPaddingMaxed[p]
+          if (value == null || value.renderedValuePx < 0) {
+            return []
+          }
+          return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
+        },
+      )
+
+      if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
         return strategyApplicationResult([
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
-            stylePropPathMappingFn(paddingPropToBeRemoved, ['style']),
+            stylePropPathMappingFn(paddingPropInteractedWith, ['style']),
           ]),
-          ...nonZeroPropsToAdd.map((p) =>
-            setProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(p, ['style']),
-              printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
-            ),
+          ...nonZeroPropsToAdd.map(([p, value]) =>
+            setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
           ),
         ])
       }
 
-      const allPaddingPropsHigherThanZero = IndividualPaddingProps.every(
-        (p) => newPadding[p].renderedValuePx > 0,
-      )
+      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
 
-      if (allPaddingPropsHigherThanZero) {
-        const paddingString = paddingToPaddingString(newPaddingMaxed)
+      if (allPaddingPropsDefined != null) {
+        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
         return strategyApplicationResult([
           ...basicCommands,
           ...IndividualPaddingProps.map((p) =>
@@ -211,13 +215,8 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, ['style'])),
         ]),
-        ...IndividualPaddingProps.filter((p) => newPaddingMaxed[p].renderedValuePx > 0).map((p) =>
-          setProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(p, ['style']),
-            printCssNumberWithDefaultUnit(newPaddingMaxed[p].value, 'px'),
-          ),
+        ...nonZeroPropsToAdd.map(([p, value]) =>
+          setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
         ),
       ])
     },
@@ -296,7 +295,8 @@ function paddingValueIndicatorProps(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
-  const currentPadding = padding[paddingPropForEdge(edgePiece)]
+  const currentPadding =
+    padding[paddingPropForEdge(edgePiece)] ?? unitlessCSSNumberWithRenderedValue(0)
 
   const delta = deltaFromEdge(drag, edgePiece)
 

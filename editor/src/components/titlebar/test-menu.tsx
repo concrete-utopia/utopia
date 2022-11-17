@@ -15,11 +15,11 @@ import {
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { UtopiaTheme } from '../../uuiui'
+
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
 interface TileProps {
-  size: keyof typeof UtopiaTheme.layout.rowHeight
+  size: 'smaller' | 'normal' | 'large' | 'max'
 }
 
 const Tile = styled.div<TileProps>((props) => ({

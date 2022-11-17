@@ -233,6 +233,15 @@ function makeHTMLDescriptor(
   }
 }
 
+export const defaultImageAttributes: JSXAttributes = [
+  simpleAttribute('style', {
+    width: '64px',
+    height: '64px',
+    position: 'absolute',
+  }),
+  simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
+]
+
 const basicHTMLElementsDescriptors = {
   div: makeHTMLDescriptor(
     'div',
@@ -288,14 +297,7 @@ const basicHTMLElementsDescriptors = {
         control: 'style-controls',
       },
     },
-    [
-      simpleAttribute('style', {
-        width: '64px',
-        height: '64px',
-        position: 'absolute',
-      }),
-      simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
-    ],
+    defaultImageAttributes,
   ),
 }
 

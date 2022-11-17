@@ -16,7 +16,12 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { PaddingIndictorOffset, simplePaddingFromMetadata } from '../../padding-utils'
+import {
+  combinePaddings,
+  paddingFromSpecialSizeMeasurements,
+  PaddingIndictorOffset,
+  simplePaddingFromMetadata,
+} from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -139,7 +144,7 @@ const PaddingResizeControlI = React.memo(
       PaddingResizeDragBorder,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink.o(StripeOpacity).value
+    const stripeColor = colorTheme.brandNeonPink30.value
     const color = colorTheme.brandNeonPink.value
 
     return (
@@ -214,36 +219,39 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   })
 
-  const currentPadding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const currentPadding = combinePaddings(
+    paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElements[0]),
+    simplePaddingFromMetadata(elementMetadata.current, selectedElements[0]),
+  )
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingLeft.renderedValuePx)
+    ref.current.style.width = numberToPxValue(padding.paddingLeft?.renderedValuePx ?? 0)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingTop.renderedValuePx)
+    ref.current.style.height = numberToPxValue(padding.paddingTop?.renderedValuePx ?? 0)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.left = numberToPxValue(
-      boundingBox.width - padding.paddingRight.renderedValuePx,
+      boundingBox.width - (padding.paddingRight?.renderedValuePx ?? 0),
     )
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingRight.renderedValuePx)
+    ref.current.style.width = numberToPxValue(padding.paddingRight?.renderedValuePx ?? 0)
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.top = numberToPxValue(
-      boundingBox.height - padding.paddingBottom.renderedValuePx,
+      boundingBox.height - (padding.paddingBottom?.renderedValuePx ?? 0),
     )
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingBottom.renderedValuePx)
+    ref.current.style.height = numberToPxValue(padding.paddingBottom?.renderedValuePx ?? 0)
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)

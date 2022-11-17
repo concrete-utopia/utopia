@@ -17,6 +17,7 @@ import {
   ResizableFlexColumn,
   SimpleFlexColumn,
   SimpleFlexRow,
+  ColorThemeStyleComponent,
   TabComponent,
   useColorTheme,
   UtopiaTheme,
@@ -296,6 +297,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   return (
     <>
+      <ColorThemeStyleComponent />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{

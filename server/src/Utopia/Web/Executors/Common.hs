@@ -375,16 +375,16 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> PersistentModel -> m SaveToGithubResponse
-createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID model = do
+createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> (Maybe Text) -> (Maybe Text) -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID possibleBranchName possibleCommitMessage model = do
   let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
   result <- runExceptT $ do
     treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
     commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
+      createGitCommitForTree accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
     now <- liftIO getCurrentTime
-    let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
+    let branchName = fromMaybe (toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now) possibleBranchName
     let commitSha = view (field @"sha") commitResult
     branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitBranchForCommit accessToken model commitSha branchName
@@ -494,4 +494,34 @@ saveGithubAssetToProject githubResources awsResource logger metrics pool userID 
       pure $ BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") blobResult
     liftIO $ saveAsset awsResource projectID path assetBytes
   pure $ either getGithubSaveAssetFailureFromReason getGithubSaveAssetSuccessFromResult result
+
+pullRequestFromListPullRequestResult :: ListPullRequestResult -> PullRequest
+pullRequestFromListPullRequestResult result = PullRequest
+                                            { title = view (field @"title") result
+                                            , htmlURL = view (field @"html_url") result
+                                            }
+
+getBranchPullRequest :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchPullRequestResponse
+getBranchPullRequest githubResources logger metrics pool userID owner repository branchName = do
+  result <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      pullRequests <- listPullRequests accessToken owner repository 1 (Just branchName)
+      pure $ fmap pullRequestFromListPullRequestResult pullRequests
+  pure $ either getBranchPullRequestFailureFromReason getBranchPullRequestSuccessFromContent result
+
+githubUserFromGithubUserResult :: GetGithubUserResult -> GithubUser
+githubUserFromGithubUserResult result = GithubUser
+                                      { login = view (field @"login") result
+                                      , avatarURL = view (field @"avatar_url") result
+                                      , htmlURL = view (field @"html_url") result
+                                      , name = view (field @"name") result
+                                      }
+
+getDetailsOfGithubUser :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetGithubUserResponse
+getDetailsOfGithubUser githubResources logger metrics pool userID = do
+  result <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      userResult <- getGithubUser accessToken 
+      pure $ githubUserFromGithubUserResult userResult
+  pure $ either getGithubUserResponseFailureFromReason getGithubUserResponseSuccessFromContent result
 

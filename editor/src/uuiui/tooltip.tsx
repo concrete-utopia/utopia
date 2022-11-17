@@ -8,7 +8,7 @@ import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from './styles/theme'
 
-interface TooltipProps {
+export interface TooltipProps {
   children?: React.ReactElement<any>
   title: React.ReactElement<any> | string
   placement?: Placement

@@ -88,7 +88,7 @@ import {
 } from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
-import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
@@ -112,6 +112,7 @@ import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
+import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -171,7 +172,6 @@ export class Editor {
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
@@ -309,7 +309,10 @@ export class Editor {
         // Ensure we have the correct theme set in VS Code
         void sendSetVSCodeTheme(getCurrentTheme(userState))
 
-        void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
+        void updateUserDetailsWhenAuthenticated(
+          this.boundDispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
             githubState: {
