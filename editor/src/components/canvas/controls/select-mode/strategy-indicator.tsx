@@ -114,8 +114,14 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 2 }}>
-        <ModalityIcons.Magic color={props.enabled ? 'primary' : 'subdued'} />
+      <div
+        style={{
+          padding: 4,
+          borderRadius: 10,
+          backgroundColor: props.enabled ? colorTheme.primary.value : 'transparent',
+        }}
+      >
+        <ModalityIcons.Magic color={props.enabled ? 'on-highlight-main' : 'subdued'} />
       </div>
       <div
         style={{
@@ -133,21 +139,21 @@ interface ReparentIndicatorItemProps {
 }
 const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }) => {
   const colorTheme = useColorTheme()
-  const iconColorFromStatus: IcnColor = React.useMemo(() => {
+  const iconBackgroundColorFromStatus: string = React.useMemo(() => {
     switch (status) {
       case 'same-component':
-        return 'primary'
+        return colorTheme.primary.value
       case 'different-component':
-        return 'component'
+        return colorTheme.component.value
       case 'none':
       default:
-        return 'subdued'
+        return 'transparent'
     }
-  }, [status])
+  }, [status, colorTheme])
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 2 }}>
-        <ModalityIcons.Reparent color={iconColorFromStatus} />
+      <div style={{ padding: 4, borderRadius: 10, backgroundColor: iconBackgroundColorFromStatus }}>
+        <ModalityIcons.Reparent color={status !== 'none' ? 'on-highlight-main' : 'subdued'} />
       </div>
       <div
         style={{
