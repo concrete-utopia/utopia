@@ -22,7 +22,7 @@ export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): MoveStrategy | null | null {
+): MoveStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const element = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
