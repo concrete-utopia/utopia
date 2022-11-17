@@ -6,6 +6,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  MoveStrategy,
 } from '../canvas-strategy-types'
 import {
   DragOutlineControl,
@@ -21,7 +22,7 @@ export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): CanvasStrategy | null {
+): MoveStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const element = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
@@ -46,44 +47,47 @@ export function flexReorderStrategy(
   const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
   const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {
-    id: 'FLEX_REORDER',
-    name: 'Reorder (Flex)',
-    controlsToRender: [
-      controlWithProps({
-        control: DragOutlineControl,
-        props: dragTargetsElementPaths(selectedElements),
-        key: 'ghost-outline-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: selectedElements },
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentBounds,
-        props: { targets: selectedElements },
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-    ],
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 1
-        : 0,
-    apply: () => {
-      return interactionSession == null
-        ? emptyStrategyApplicationResult
-        : applyReorderCommon(
-            canvasState,
-            interactionSession,
-            customStrategyState,
-            reorderDirection,
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
-          )
+    strategy: {
+      id: 'FLEX_REORDER',
+      name: 'Reorder (Flex)',
+      controlsToRender: [
+        controlWithProps({
+          control: DragOutlineControl,
+          props: dragTargetsElementPaths(selectedElements),
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentOutlines,
+          props: { targets: selectedElements },
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentBounds,
+          props: { targets: selectedElements },
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+      ],
+      fitness:
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'BOUNDING_AREA'
+          ? 1
+          : 0,
+      apply: () => {
+        return interactionSession == null
+          ? emptyStrategyApplicationResult
+          : applyReorderCommon(
+              canvasState,
+              interactionSession,
+              customStrategyState,
+              reorderDirection,
+              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
+            )
+      },
     },
+    dragType: 'static',
   }
 }

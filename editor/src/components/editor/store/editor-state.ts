@@ -783,6 +783,33 @@ export function editorStateCanvasTransientProperty(
   }
 }
 
+export function dragToMoveIndicatorFlags(
+  showIndicator: boolean,
+  dragType: 'absolute' | 'static',
+  reparent: 'same-component' | 'different-component' | 'none',
+  ancestor: boolean,
+): DragToMoveIndicatorFlags {
+  return {
+    showIndicator,
+    dragType,
+    reparent,
+    ancestor,
+  }
+}
+
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(
+  false,
+  'static',
+  'none',
+  false,
+)
+export interface DragToMoveIndicatorFlags {
+  showIndicator: boolean
+  dragType: 'absolute' | 'static'
+  reparent: 'same-component' | 'different-component' | 'none'
+  ancestor: boolean
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -791,6 +818,7 @@ export interface EditorStateCanvasControls {
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
+  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
 }
 
 export function editorStateCanvasControls(
@@ -800,6 +828,7 @@ export function editorStateCanvasControls(
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
+  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -808,6 +837,7 @@ export function editorStateCanvasControls(
     flexReparentTargetLines: flexReparentTargetLines,
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
+    dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
   }
 }
 
@@ -2126,6 +2156,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
@@ -2432,6 +2463,7 @@ export function editorModelFromPersistentModel(
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {

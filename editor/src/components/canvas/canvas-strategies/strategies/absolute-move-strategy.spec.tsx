@@ -141,7 +141,7 @@ function dragByPixels(
       metadata ?? defaultMetadata,
     ),
     interactionSession,
-  )!.apply('end-interaction')
+  )!.strategy.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
