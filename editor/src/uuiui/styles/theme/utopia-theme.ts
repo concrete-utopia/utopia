@@ -136,7 +136,7 @@ const noticeStyles: { [styleName: string]: React.CSSProperties } = {
   },
   info: {
     backgroundColor: '#f1f1f1',
-    color: colorTheme.darkPrimary.value as string,
+    color: colorTheme.darkPrimary.value,
   },
   primary: {
     backgroundColor: base.blue.value,

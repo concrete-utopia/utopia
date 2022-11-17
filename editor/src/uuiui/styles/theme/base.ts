@@ -1,5 +1,4 @@
-import { UtopiColor } from '../utopi-color-helpers'
-const { createUtopiColor } = UtopiColor
+import { createUtopiColor } from '../utopi-color-helpers'
 
 export const base = {
   blue: createUtopiColor('#007AFF'),

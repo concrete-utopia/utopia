@@ -1,4 +1,4 @@
-import { UtopiColor } from '../utopi-color-helpers'
+import { createUtopiColor } from '../utopi-color-helpers'
 import { light } from './light'
 
 export type ThemeObject = typeof light
@@ -16,7 +16,7 @@ export function generateCssVariablesFromThemeObject(
     const [key, value] = entry
     const finalPath = basePath + '-' + key
 
-    const newValue = new UtopiColor(value.cssValue, finalPath)
+    const newValue = createUtopiColor(value.cssValue, finalPath)
     valuesObject[key as keyof typeof light] = newValue
     variablesObject[finalPath] = value.cssValue
   })

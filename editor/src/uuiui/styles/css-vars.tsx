@@ -8,10 +8,9 @@ export const ColorThemeStyleComponent = React.memo(() => {
   return (
     <style>
       {':root {'}
-      {Object.entries({ ...inverted, ...currentTheme }).map((entry) => {
-        const [variable, value] = entry
-        return `${variable}:${value};`
-      })}
+      {Object.entries({ ...inverted, ...currentTheme }).map(
+        ([variable, value]) => `${variable}:${value};`,
+      )}
       {'}'}
     </style>
   )
