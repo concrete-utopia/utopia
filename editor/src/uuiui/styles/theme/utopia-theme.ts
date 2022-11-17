@@ -1,17 +1,43 @@
 import { base } from './base'
 import { dark } from './dark'
-import { light, lightPrimitives } from './light'
-
-export type ColorTheme = typeof colorTheme
-
-export const colorTheme = { ...light, inverted: dark }
-export const darkColorTheme = { ...dark, inverted: light }
+import { light } from './light'
+import { generateCssVariablesFromThemeObject, ThemeObject } from './theme-helpers'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
 const inspectorSmallWidth = 255
 const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
+
+const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
+const [, lightThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
+  light,
+  '--inverted',
+)
+const [, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
+const [darkThemeAsInverted, darkThemeAsInvertedCssVariables] = generateCssVariablesFromThemeObject(
+  dark,
+  '--inverted',
+)
+
+export interface ColorTheme extends ThemeObject {
+  inverted: ThemeObject
+}
+
+export const colorTheme: ColorTheme = {
+  ...lightTheme,
+  inverted: darkThemeAsInverted,
+}
+
+export const colorThemeCssVariables = {
+  ...lightThemeCssVariables,
+  inverted: darkThemeAsInvertedCssVariables,
+}
+
+export const darkColorThemeCssVariables = {
+  ...darkThemeCssVariables,
+  inverted: lightThemeAsInvertedCssVariables,
+}
 
 export const UtopiaTheme = {
   layout: {
@@ -36,7 +62,6 @@ export const UtopiaTheme = {
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
   inputBorderRadius: 2,
-  color: colorTheme,
   styles: {
     inspectorSetSelectedOpacity: 1,
     inspectorUnsetSelectedOpacity: 0.3,
@@ -80,10 +105,10 @@ const canvas = {
 
 const scene = {
   live: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(20).value}`,
+    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground20.value}`,
   },
   editing: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(30).value}`,
+    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground30.value}`,
   },
 }
 
@@ -160,10 +185,8 @@ const shadowStyles = {
 }
 
 const popup: React.CSSProperties = {
-  background: lightPrimitives.neutralBackground.value,
-  boxShadow: `inset 0px 0px 0px .5px ${UtopiaTheme.color.border3.value} , 0px 2px 4px 0px ${
-    UtopiaTheme.color.fg6.o(50).value
-  }`,
+  background: light.neutralBackground.value,
+  boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${colorTheme.fg6Opacity50.value}`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,

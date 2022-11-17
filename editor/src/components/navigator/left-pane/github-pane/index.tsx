@@ -17,6 +17,7 @@ import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
+  colorTheme,
   FlexColumn,
   FlexRow,
   MenuIcons,

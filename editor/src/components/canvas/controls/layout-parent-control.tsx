@@ -156,9 +156,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           flexDirection: 'column',
           alignItems: 'stretch',
           justifyContent: 'flex-start',
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(20).value} 0px 0px 1px, ${
-            colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
-          } 0px 1px 2px 1px`,
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 1px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px 1px 2px 1px`,
           backgroundColor: colorTheme.inspectorBackground.value,
           textTransform: 'capitalize',
         }}

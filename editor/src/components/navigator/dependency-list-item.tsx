@@ -39,11 +39,11 @@ export const DependencyListItem: React.FunctionComponent<
     () =>
       keyframes({
         from: {
-          backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
+          backgroundColor: colorTheme.listNewItemFlashBackground.value,
           color: colorTheme.subduedForeground.value,
         },
         to: {
-          backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
+          backgroundColor: colorTheme.listNewItemFlashBackground0.value,
           color: colorTheme.neutralForeground.value,
         },
       }),
