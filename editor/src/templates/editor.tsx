@@ -112,6 +112,7 @@ import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
+import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -309,7 +310,10 @@ export class Editor {
         // Ensure we have the correct theme set in VS Code
         void sendSetVSCodeTheme(getCurrentTheme(userState))
 
-        void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
+        void updateUserDetailsWhenAuthenticated(
+          this.boundDispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
             githubState: {

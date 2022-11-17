@@ -1130,6 +1130,13 @@ export function emptyGithubSettings(): ProjectGithubSettings {
   }
 }
 
+export interface GithubUser {
+  login: string
+  avatarURL: string
+  htmlURL: string
+  name: string | null
+}
+
 export interface GithubData {
   branches: Array<GithubBranch>
   publicRepositories: Array<RepositoryEntry>
@@ -1137,6 +1144,7 @@ export interface GithubData {
   lastUpdatedAt: number | null
   upstreamChanges: GithubFileChanges | null
   currentBranchPullRequests: Array<PullRequest> | null
+  githubUserDetails: GithubUser | null
 }
 
 export function emptyGithubData(): GithubData {
@@ -1147,6 +1155,7 @@ export function emptyGithubData(): GithubData {
     lastUpdatedAt: null,
     upstreamChanges: null,
     currentBranchPullRequests: null,
+    githubUserDetails: null,
   }
 }
 

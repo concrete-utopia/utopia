@@ -141,6 +141,8 @@ type GithubBranchPullRequestAPI = "v1" :> "github" :> "branches" :> Capture "own
 
 type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
 
+type GithubUserAPI = "v1" :> "github" :> "user" :> Get '[JSON] GetGithubUserResponse
+
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
@@ -199,6 +201,7 @@ type Protected = LogoutAPI
             :<|> GithubBranchPullRequestAPI
             :<|> GithubUsersRepositoriesAPI
             :<|> GithubSaveAssetAPI
+            :<|> GithubUserAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI
