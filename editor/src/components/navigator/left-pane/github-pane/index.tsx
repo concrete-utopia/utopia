@@ -546,7 +546,13 @@ const PullRequestBlock = () => {
     return null
   }
   return (
-    <Block title='Pull Requests' status={'pending'} expanded={true}>
+    <Block
+      title='Pull Requests'
+      subtitle={`${pullRequests.length} open`}
+      status={'pending'}
+      expanded={true}
+      last={true}
+    >
       <PullRequestPane />
     </Block>
   )
