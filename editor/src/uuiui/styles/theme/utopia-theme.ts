@@ -1,11 +1,7 @@
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
-import {
-  generateCssVariablesFromThemeObject,
-  ThemeObject,
-  ThemeVariableObject,
-} from './theme-helpers'
+import { generateCssVariablesFromThemeObject, ThemeObject } from './theme-helpers'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
@@ -26,16 +22,12 @@ export interface ColorTheme extends ThemeObject {
   inverted: ThemeObject
 }
 
-export interface ThemeVariables extends ThemeVariableObject {
-  inverted: ThemeVariableObject
-}
-
 export const colorTheme: ColorTheme = {
   ...lightTheme,
   inverted: darkThemeAsInverted,
 }
 
-export const colorThemeCssVariables: ThemeVariables = {
+export const colorThemeCssVariables = {
   ...lightThemeCssVariables,
   inverted: darkThemeAsInvertedCssVariables,
 }
@@ -45,39 +37,9 @@ export const darkColorTheme: ColorTheme = {
   inverted: lightThemeAsInverted,
 }
 
-export const darkColorThemeCssVariables: ThemeVariables = {
+export const darkColorThemeCssVariables = {
   ...darkThemeCssVariables,
   inverted: lightThemeAsInvertedCssVariables,
-}
-export interface UtopiaTheme {
-  layout: {
-    rowHorizontalPadding: number
-    rowButtonSpacing: number
-    rowHeight: {
-      smaller: number
-      normal: number
-      large: number
-      max: number
-    }
-    inputHeight: {
-      small: number
-      default: number
-      tall: number
-    }
-    inspectorXPadding: number
-    inspectorSmallPaddedWidth: number
-    inspectorSmallWidth: number
-    inspectorLargeWidth: number
-    canvasMenuWidth: number
-    inspectorModalBaseOffset: number
-  }
-  inputBorderRadius: number
-  styles: {
-    inspectorSetSelectedOpacity: number
-    inspectorUnsetSelectedOpacity: number
-    inspectorSetUnselectedOpacity: number
-    inspectorUnsetUnselectedOpacity: number
-  }
 }
 
 export const UtopiaTheme = {

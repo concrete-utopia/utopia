@@ -1,35 +1,25 @@
 import { UtopiColor } from '../utopi-color-helpers'
 import { light } from './light'
 
-export type ThemeObject = {
-  [key in keyof typeof light]: UtopiColor
-}
+export type ThemeObject = typeof light
 
-export type ThemeVariableObject = {
-  [key in keyof typeof light]: string
-}
+export type ThemeVariableObject = Record<string, string>
 
 export function generateCssVariablesFromThemeObject(
   themeObject: ThemeObject,
   basePath: string = '-',
 ): [ThemeObject, ThemeVariableObject] {
-  const valuesObject = {}
-  const variablesObject: Record<string, string> = {}
+  const valuesObject = { ...themeObject }
+  const variablesObject: ThemeVariableObject = {}
 
-  traverseObjectAndShadow({ ...themeObject }, valuesObject as ThemeObject, basePath)
+  Object.entries(themeObject).forEach((entry) => {
+    const [key, value] = entry
+    const finalPath = basePath + '-' + key
 
-  return [valuesObject as ThemeObject, variablesObject as ThemeVariableObject]
+    const newValue = new UtopiColor(value.cssValue, finalPath)
+    valuesObject[key as keyof typeof light] = newValue
+    variablesObject[finalPath] = value.cssValue
+  })
 
-  function traverseObjectAndShadow(o: ThemeObject, shadowObject: ThemeObject, path: string = '-') {
-    Object.entries(o).forEach((entry) => {
-      const [key, value] = entry
-      const finalPath = path + '-' + key
-
-      const newValue = new UtopiColor(value.cssValue, finalPath)
-      shadowObject[key as keyof typeof light] = newValue
-      variablesObject[finalPath] = value.cssValue
-    })
-
-    return o
-  }
+  return [valuesObject, variablesObject]
 }
