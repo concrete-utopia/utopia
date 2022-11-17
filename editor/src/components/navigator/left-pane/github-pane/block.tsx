@@ -3,6 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { when } from '../../../../utils/react-conditionals'
 import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 
@@ -10,8 +11,8 @@ export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
   <div
     style={{
       zIndex: 99999,
-      width: 10,
-      height: 10,
+      width: 11,
+      height: 11,
       border: '1px solid black',
       borderRadius: 20,
       background: getIndicatorColor(props.status),
@@ -53,83 +54,117 @@ export const Block = React.memo((props: BlockProps) => {
     e.stopPropagation()
   }, [])
   return (
-    <UIGridRow
-      variant='<-auto-><----------1fr--------->'
-      onClick={props.onClick}
-      style={{
-        minHeight: UtopiaTheme.layout.rowHeight.normal,
-        gridColumnGap: 0,
-        borderRadius: 3,
-      }}
-      css={{
-        '&:hover': {
-          background: colorTheme.bg2.value,
-        },
-        '&:active': {
-          background: colorTheme.bg4.value,
-        },
-      }}
-      padded={false}
-    >
-      <div
+    <>
+      <UIGridRow
+        variant='<-auto-><----------1fr--------->'
+        onClick={props.onClick}
         style={{
-          padding: '0 8px',
-          justifyContent: 'flex-start',
-          height: '100%',
-          display: 'grid',
-          gridTemplateRows: '12px 10px 1fr',
-          alignItems: 'center',
-          justifyItems: 'center',
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+          gridColumnGap: 0,
+          borderRadius: 3,
         }}
+        css={{
+          '&:hover': {
+            background: props.onClick != null ? colorTheme.bg2.value : 'none',
+          },
+        }}
+        padded={false}
       >
         <div
           style={{
-            width: 1,
+            padding: '0 8px',
+            justifyContent: 'flex-start',
             height: '100%',
-            background: 'black',
-            opacity: props.first ? 0 : 1,
-          }}
-        />
-        <IndicatorLight status={props.status} />
-        <div
-          style={{
-            width: 1,
-            height: '100%',
-            background: 'black',
-            opacity: props.last ? 0 : 1,
-          }}
-        />
-      </div>
-      <FlexColumn
-        style={{
-          padding: '2px 10px 2px 0px',
-        }}
-      >
-        <FlexRow
-          style={{
-            height: UtopiaTheme.layout.rowHeight.normal,
-            display: 'flex',
+            display: 'grid',
+            gridTemplateRows: '12px 10px 1fr',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyItems: 'center',
           }}
         >
-          <div style={{ fontWeight: 700 }}>{props.title}</div>
-          <div>{props.subtitle}</div>
-        </FlexRow>
-
-        {props.expanded ? (
+          <div
+            style={{
+              width: 1,
+              height: '100%',
+              background: 'black',
+              opacity: props.first ? 0 : 1,
+            }}
+          />
+          <IndicatorLight status={props.status} />
+          <div
+            style={{
+              width: 1,
+              height: '100%',
+              background: 'black',
+              opacity: props.last ? 0 : 1,
+            }}
+          />
+        </div>
+        <FlexColumn
+          style={{
+            padding: '2px 10px 2px 0px',
+          }}
+        >
+          <FlexRow
+            style={{
+              height: UtopiaTheme.layout.rowHeight.normal,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ fontWeight: 700 }}>{props.title}</div>
+            <div>{props.subtitle}</div>
+          </FlexRow>
+        </FlexColumn>
+      </UIGridRow>
+      {when(
+        props.expanded,
+        <UIGridRow
+          variant='<-auto-><----------1fr--------->'
+          onClick={props.onClick}
+          style={{
+            minHeight: UtopiaTheme.layout.rowHeight.normal,
+            gridColumnGap: 0,
+            borderRadius: 3,
+          }}
+          padded={false}
+        >
+          <div
+            style={{
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 27,
+            }}
+          >
+            <div
+              style={{
+                width: 1,
+                height: '100%',
+                background: 'black',
+                opacity: props.last ? 0 : 1,
+              }}
+            />
+          </div>
           <FlexColumn
             style={{
-              gap: UtopiaTheme.layout.rowHorizontalPadding,
-              alignItems: 'flex-start',
-              paddingBottom: '10px',
+              padding: '2px 10px 2px 0px',
             }}
-            onClick={preventExpand}
           >
-            {props.children}
+            <FlexColumn
+              style={{
+                gap: UtopiaTheme.layout.rowHorizontalPadding,
+                alignItems: 'flex-start',
+                paddingBottom: '10px',
+              }}
+              onClick={preventExpand}
+            >
+              {props.children}
+            </FlexColumn>
           </FlexColumn>
-        ) : null}
-      </FlexColumn>
-    </UIGridRow>
+        </UIGridRow>,
+      )}
+    </>
   )
 })
