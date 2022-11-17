@@ -262,7 +262,7 @@ export const RepositoryListing = React.memo(
     }
 
     return (
-      <FlexColumn style={{ gap: 4, paddingBottom: 10 }}>
+      <FlexColumn style={{ gap: 4 }}>
         <UIGridRow padded={false} variant={'<----------1fr---------><-auto->'}>
           <StringInput
             placeholder={

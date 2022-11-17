@@ -168,11 +168,7 @@ const BranchBlock = () => {
 
   const loadBranchesUI = React.useMemo(() => {
     return (
-      <UIGridRow
-        padded={false}
-        variant='<-------------1fr------------->'
-        style={{ paddingBottom: 20 }}
-      >
+      <UIGridRow padded={false} variant='<-------------1fr------------->'>
         <FlexColumn style={{ gap: 8 }}>
           <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
             <StringInput
@@ -376,7 +372,7 @@ const RemoteChangesBlock = () => {
     >
       {when(
         hasUpstreamChanges,
-        <FlexColumn style={{ gap: 10, paddingBottom: 20 }}>
+        <FlexColumn style={{ gap: 10, width: '100%' }}>
           <GithubFileChangesList
             conflicts={bothModified}
             revertable={false}
@@ -466,7 +462,7 @@ const LocalChangesBlock = () => {
     >
       {when(
         hasLocalChanges,
-        <FlexColumn style={{ gap: 10 }}>
+        <FlexColumn style={{ gap: 10, width: '100%' }}>
           <GithubFileChangesList
             showHeader={true}
             revertable={true}

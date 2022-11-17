@@ -113,22 +113,21 @@ export const Block = React.memo((props: BlockProps) => {
             justifyContent: 'space-between',
           }}
         >
-          <b>{props.title}</b>
+          <div style={{ fontWeight: 700 }}>{props.title}</div>
           <div>{props.subtitle}</div>
         </FlexRow>
 
         {props.expanded ? (
-          <div>
-            <FlexColumn
-              style={{
-                gap: UtopiaTheme.layout.rowHorizontalPadding,
-                alignItems: 'flex-start',
-              }}
-              onClick={preventExpand}
-            >
-              {props.children}
-            </FlexColumn>
-          </div>
+          <FlexColumn
+            style={{
+              gap: UtopiaTheme.layout.rowHorizontalPadding,
+              alignItems: 'flex-start',
+              paddingBottom: '10px',
+            }}
+            onClick={preventExpand}
+          >
+            {props.children}
+          </FlexColumn>
         ) : null}
       </FlexColumn>
     </UIGridRow>
