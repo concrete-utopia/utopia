@@ -13,6 +13,8 @@ import {
   canvasVector,
   CanvasVector,
   clamp,
+  magnitude,
+  product,
   Size,
   size,
 } from '../../../../core/shared/math-utils'
@@ -155,18 +157,16 @@ function borderRadiusAdjustDataFromInteractionSession(
   }
 }
 
-const maginitudeMax = (a: number, b: number): number => (Math.abs(a) < Math.abs(b) ? b : a)
-
 function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
   switch (corner) {
     case 'tl':
-      return maginitudeMax(drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: 1 })))
     case 'tr':
-      return maginitudeMax(-drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: 1 })) / Math.SQRT2)
     case 'bl':
-      return maginitudeMax(drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: -1 })) / Math.SQRT2)
     case 'br':
-      return maginitudeMax(-drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: -1 })) / Math.SQRT2)
     default:
       assertNever(corner)
   }
