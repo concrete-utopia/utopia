@@ -1388,7 +1388,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              
               background-color: var(--emphasizedBackground);
               box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
               background-image: linear-gradient(
@@ -2276,7 +2275,6 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              
               background-color: var(--emphasizedBackground);
               box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
               background-image: linear-gradient(
