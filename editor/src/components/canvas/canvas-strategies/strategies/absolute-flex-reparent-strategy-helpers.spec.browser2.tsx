@@ -840,8 +840,8 @@ describe('Unified Reparent Fitness Function Tests', () => {
           position: 'absolute',
           width: '100%',
           height: '100%',
-          left: 75,
-          top: 75,
+          left: 150,
+          top: 150,
           backgroundColor: '#d3d3d3',
         }}
         data-uid='aaa'
