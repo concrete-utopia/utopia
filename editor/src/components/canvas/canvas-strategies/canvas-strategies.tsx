@@ -60,14 +60,6 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
-  const selectedElements = getDragTargets(
-    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-  )
-
-  if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
-    return []
-  }
-
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
@@ -85,14 +77,6 @@ const resizeStrategies: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
-  const selectedElements = getDragTargets(
-    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-  )
-
-  if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
-    return []
-  }
-
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
@@ -106,16 +90,39 @@ const resizeStrategies: MetaCanvasStrategy = (
   )
 }
 
-const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStrategy = (
+  metaStrategy: MetaCanvasStrategy,
+) => {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ): Array<CanvasStrategy> => {
+    const selectedElements = getDragTargets(
+      getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+    )
+
+    if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
+      return []
+    }
+
+    return metaStrategy(canvasState, interactionSession, customStrategyState)
+  }
+}
+
+const preventAllOnRootElements = (metaStrategies: Array<MetaCanvasStrategy>) =>
+  metaStrategies.map(preventOnRootElements)
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRootElements([
   moveOrReorderStrategies,
   dragToMoveMetaStrategy,
-]
+])
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
-  resizeStrategies,
-  drawToInsertMetaStrategy,
-  dragToInsertMetaStrategy,
+  preventOnRootElements(resizeStrategies),
+  preventOnRootElements(drawToInsertMetaStrategy),
+  preventOnRootElements(dragToInsertMetaStrategy),
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
