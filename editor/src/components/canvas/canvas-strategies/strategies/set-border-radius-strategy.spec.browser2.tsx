@@ -25,6 +25,8 @@ import {
   getPrintedUiJsCode,
 } from '../../ui-jsx.test-utils'
 
+const MyDiv = 'mydiv'
+
 describe('set border radius strategy', () => {
   it('border radius controls show up for elements that have border radius set', async () => {
     const editor = await renderTestEditorWithCode(
@@ -43,14 +45,17 @@ describe('set border radius strategy', () => {
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = BorderRadiusCorners.flatMap((corner) =>
-      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
     )
 
     expect(paddingControls.length).toEqual(4)
   })
 
-  it("border radius controls don't show up for elements that have don't border radius set", async () => {
-    const editor = await renderTestEditorWithCode(codeForDragTest(``), 'await-first-dom-report')
+  it('border radius controls show up disabled for elements that have border radius set from code', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithBorderRadiusFromCode,
+      'await-first-dom-report',
+    )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId('mydiv')
@@ -63,7 +68,27 @@ describe('set border radius strategy', () => {
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = BorderRadiusCorners.flatMap((corner) =>
-      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, true)),
+    )
+
+    expect(paddingControls.length).toEqual(4)
+  })
+
+  it("border radius controls don't show up for elements that have don't border radius set", async () => {
+    const editor = await renderTestEditorWithCode(codeForDragTest(``), 'await-first-dom-report')
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(MyDiv)
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
     )
 
     expect(paddingControls).toEqual([])
@@ -93,6 +118,15 @@ describe('set border radius strategy', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '0px'`),
     )
+  })
+
+  it('cannot only adjust border radius with disabled controls', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithBorderRadiusFromCode,
+      'await-first-dom-report',
+    )
+    await doDragTest(editor, 'tl', -10, emptyModifiers, true)
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithBorderRadiusFromCode)
   })
 
   it('can resize border radius on element that has larger than 50% border radius', async () => {
@@ -262,11 +296,37 @@ function codeForDragTest(borderRadius: string): string {
   />`)
 }
 
+const projectWithBorderRadiusFromCode = `import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    
+    const styles = { borderRadius: '10px' }
+    
+    export var storyboard = (
+      <Storyboard data-uid='0cd'>
+        <div
+          data-testid='${MyDiv}'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 167,
+            top: 180,
+            width: 557,
+            height: 359,
+            display: 'flex',
+            borderRadius: styles.borderRadius,
+          }}
+          data-uid='fac'
+        />
+      </Storyboard>
+    )
+    `
+
 async function doDragTest(
   editor: EditorRenderResult,
   corner: BorderRadiusCorner,
   offset: number,
   modifiers: Modifiers,
+  useDisabledControl: boolean = false,
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -278,7 +338,9 @@ async function doDragTest(
 
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-  const borderRadiusControl = editor.renderedDOM.getByTestId(CircularHandleTestId(corner))
+  const borderRadiusControl = editor.renderedDOM.getByTestId(
+    CircularHandleTestId(corner, useDisabledControl),
+  )
   const borderRadiusControlBounds = borderRadiusControl.getBoundingClientRect()
 
   const center = {

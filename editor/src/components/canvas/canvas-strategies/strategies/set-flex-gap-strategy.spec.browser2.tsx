@@ -53,8 +53,8 @@ export var storyboard = (
     })
 
     const gapControls = [
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId(false)),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(false)),
     ]
 
     expect(gapControls).toEqual([])
@@ -113,8 +113,8 @@ export var storyboard = (
     })
 
     const gapControls = [
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId(false)),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(false)),
     ]
 
     expect(gapControls).toEqual([])
@@ -173,11 +173,152 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId)
-    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)
+    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId(false))
+    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(false))
 
     expect(gapControlContainer).toBeTruthy()
     expect(gapControlHandles.length).toEqual(1)
+  })
+
+  it('gap controls are present in a disabled state when flex gap is defined in code', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const styles = { gap: '10px' }
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='${DivTestId}'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 167,
+        top: 180,
+        width: 557,
+        height: 359,
+        display: 'flex',
+        gap: styles.gap,
+      }}
+      data-uid='fac'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 102,
+          height: 80,
+          contain: 'layout',
+        }}
+        data-uid='fed'
+      />
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 187,
+          height: 150,
+          contain: 'layout',
+        }}
+        data-uid='a39'
+      />
+    </div>
+  </Storyboard>
+)
+`,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId(true))
+    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true))
+
+    expect(gapControlContainer).toBeTruthy()
+    expect(gapControlHandles.length).toEqual(1)
+  })
+
+  it('cannot adjust gap with disabled handle', async () => {
+    const initialGap = 42
+    const dragDelta = 11
+
+    const projectWithGapFromCode = `import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    
+    const styles = { gap: '10px' }
+    
+    export var storyboard = (
+      <Storyboard data-uid='0cd'>
+        <div
+          data-testid='${DivTestId}'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 167,
+            top: 180,
+            width: 557,
+            height: 359,
+            display: 'flex',
+            gap: styles.gap,
+          }}
+          data-uid='fac'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 102,
+              height: 80,
+              contain: 'layout',
+            }}
+            data-uid='fed'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 187,
+              height: 150,
+              contain: 'layout',
+            }}
+            data-uid='a39'
+          />
+        </div>
+      </Storyboard>
+    )
+    `
+
+    const editor = await renderTestEditorWithCode(projectWithGapFromCode, 'await-first-dom-report')
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(true))
+    const gapControlBounds = gapControlHandle.getBoundingClientRect()
+
+    const center = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2),
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    const endPoint = {
+      x: Math.floor(gapControlBounds.x + gapControlBounds.width / 2) + dragDelta,
+      y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
+    }
+
+    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithGapFromCode)
   })
 
   it('adjusts gap by dragging the handle', async () => {
@@ -198,7 +339,7 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -239,7 +380,7 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -275,7 +416,7 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -314,7 +455,7 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -350,7 +491,7 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -530,7 +671,7 @@ async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
     y: divBounds.y + 5,
   })
 
-  const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+  const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId(false))
   const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
   const center = {

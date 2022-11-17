@@ -35,8 +35,8 @@ import {
   useHoverWithDelay,
 } from './controls-common'
 
-export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
-  `circular-handle-${corner}`
+export const CircularHandleTestId = (corner: BorderRadiusCorner, disabled: boolean): string =>
+  `circular-handle-${disabled ? 'disabled-' : ''}${corner}`
 
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
@@ -98,7 +98,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
       >
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
-            key={CircularHandleTestId(corner)}
+            key={CircularHandleTestId(corner, disabled === true)}
             borderRadius={borderRadius[corner]}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
@@ -170,7 +170,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
 
   return (
     <div
-      data-testid={CircularHandleTestId(corner)}
+      data-testid={CircularHandleTestId(corner, disabled)}
       style={{
         position: 'absolute',
         left: position.x,

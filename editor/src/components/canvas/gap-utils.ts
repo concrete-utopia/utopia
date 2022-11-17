@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { isLeft } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { canvasRectangle, CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -13,6 +13,7 @@ import {
 } from './controls/select-mode/controls-common'
 import { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import { AllElementProps } from '../editor/store/editor-state'
+import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -145,7 +146,11 @@ export function maybeFlexGapFromElement(
   const flexGap = children[0].specialSizeMeasurements.parentFlexGap
   const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
 
-  const gapFromProps: CSSNumber | null = getPropertyFromStyle(allElementProps, elementPath, 'gap')
+  const gapFromProps: CSSNumber | null = foldEither(
+    () => null,
+    (v) => v ?? null,
+    getLayoutProperty('gap', right(element.element.value.props), ['style']),
+  )
 
   const spiedGap = getPropertyFromStyle(allElementProps, elementPath, 'gap')
 

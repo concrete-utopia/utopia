@@ -40,8 +40,11 @@ interface FlexGapControlProps {
   disabled?: boolean
 }
 
-export const FlexGapControlTestId = 'FlexGapControlTestId'
-export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
+export const FlexGapControlTestId = (disabled: boolean): string =>
+  'FlexGapControlTestId' + (disabled ? 'Disabled' : '')
+
+export const FlexGapControlHandleTestId = (disabled: boolean): string =>
+  'FlexGapControlHandleTestId' + (disabled ? 'Disabled' : '')
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue, disabled } = props
@@ -98,7 +101,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={FlexGapControlTestId} ref={controlRef}>
+      <div data-testid={FlexGapControlTestId(disabled === true)} ref={controlRef}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
           return (
@@ -228,7 +231,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
       }}
     >
       <div
-        data-testid={FlexGapControlHandleTestId}
+        data-testid={FlexGapControlHandleTestId(disabled)}
         style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
         onMouseDown={onMouseDown}
         onMouseEnter={handleHoverStartInner}
