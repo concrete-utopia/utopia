@@ -217,6 +217,7 @@ import type {
   UpdateGithubData,
   RemoveFileConflict,
   SetRefreshingDependencies,
+  SetUserConfiguration,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -235,6 +236,7 @@ import type {
   GithubOperation,
   GithubChecksums,
   GithubData,
+  UserConfiguration,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1458,6 +1460,13 @@ export function setGithubState(githubState: GithubState): SetGithubState {
   return {
     action: 'SET_GITHUB_STATE',
     githubState: githubState,
+  }
+}
+
+export function setUserConfiguration(userConfiguration: UserConfiguration): SetUserConfiguration {
+  return {
+    action: 'SET_USER_CONFIGURATION',
+    userConfiguration: userConfiguration,
   }
 }
 
