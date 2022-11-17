@@ -638,10 +638,13 @@ export const GithubPane = React.memo(() => {
           <FlexRow flexGrow={1}>
             <Title style={{ flexGrow: 1 }}>Github</Title>
           </FlexRow>
-          <FlexRow style={{ gap: 4 }}>
-            <span>@{githubUser?.login}</span>
-            {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
-          </FlexRow>
+          {when(
+            githubUser != null,
+            <FlexRow style={{ gap: 4 }}>
+              <span>@{githubUser?.login}</span>
+              {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
+            </FlexRow>,
+          )}
         </SectionTitleRow>
       </Section>
       <Section style={{ padding: '10px' }}>
