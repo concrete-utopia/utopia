@@ -40,7 +40,6 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
       },
       cursor: 'pointer',
       flexGrow: 1,
-      height: '100%',
       justifyContent: 'center',
     }
 
