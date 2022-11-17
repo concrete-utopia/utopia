@@ -4,8 +4,6 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
-import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
-import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
@@ -14,18 +12,20 @@ import {
   githubRepoFullName,
   isGithubLoadingBranch,
 } from '../../../../components/editor/store/editor-state'
+import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
+import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
   getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
-import { FlexColumn, Button, StringInput, FlexRow } from '../../../../uuiui'
+import { when } from '../../../../utils/react-conditionals'
+import { Button, colorTheme, FlexColumn, StringInput } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
-import { when } from '../../../../utils/react-conditionals'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -126,9 +126,9 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           : 'pointer',
         opacity: githubWorking || !props.importPermitted ? 0.5 : 1,
         '&:hover': {
-          background: '#09f',
-          color: '#fff',
-          svg: { stroke: '#fff' },
+          background: colorTheme.primarySubdued.value,
+          color: colorTheme.white.value,
+          svg: { stroke: colorTheme.white.value },
         },
       }}
       onClick={importRepository}
@@ -291,7 +291,7 @@ export const RepositoryListing = React.memo(
           style={{
             height: 220,
             overflowY: 'scroll',
-            border: '1px solid #2D2E33',
+            border: `1px solid ${colorTheme.githubBoxesBorder.value}`,
             borderRadius: 2,
           }}
         >

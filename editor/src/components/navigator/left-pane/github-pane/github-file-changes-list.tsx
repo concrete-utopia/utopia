@@ -11,7 +11,7 @@ import {
   GithubFileChangesListItem,
   githubFileChangesToList,
 } from '../../../../core/shared/github'
-import { Button, FlexColumn, FlexRow } from '../../../../uuiui'
+import { Button, colorTheme, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
@@ -70,7 +70,7 @@ const RevertIcon = () => {
     <svg width='9' height='7' viewBox='0 0 9 7' fill='none' xmlns='http://www.w3.org/2000/svg'>
       <path
         d='M7.93601 6.35693V2.72081H0.845703M0.845703 2.72081L2.90299 4.77809M0.845703 2.72081L2.90299 0.643075'
-        stroke='#2D2E33'
+        stroke={colorTheme.fg1.value}
         strokeWidth='0.7'
       />
     </svg>
@@ -205,7 +205,7 @@ export const GithubFileChangesList: React.FC<{
       )}
       <FlexColumn
         style={{
-          border: '1px solid #2D2E33',
+          border: `1px solid ${colorTheme.githubBoxesBorder.value}`,
           borderRadius: 2,
         }}
       >
@@ -220,11 +220,11 @@ export const GithubFileChangesList: React.FC<{
               title={conflicting ? 'Potential conflicts' : i.filename}
               css={{
                 paddingRight: 6,
-                color: conflicting ? '#f00' : 'inherit',
+                color: conflicting ? colorTheme.errorForegroundSubdued.value : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
                 '&:hover': {
                   cursor: !conflicting && clickable ? 'pointer' : undefined,
-                  background: clickable ? '#eee' : undefined,
+                  background: clickable ? colorTheme.bg2.value : undefined,
                 },
               }}
             >

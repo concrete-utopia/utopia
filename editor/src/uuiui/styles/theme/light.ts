@@ -181,4 +181,15 @@ export const light = {
   inspectorFocusedColor: lightBase.primary,
   inspectorSetBorderColor: lightPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
+
+  // Github pane
+  githubBoxesBorder: createUtopiColor('#2D2E33'),
+  gitubIndicatorConnectorLine: lightBase.black,
+  githubIndicatorSuccessful: createUtopiColor('#1FCCB7'),
+  githubIndicatorFailed: createUtopiColor('#FF7759'),
+  githubIndicatorIncomplete: createUtopiColor('#FFFFFF00'),
+  githubMUDUntracked: createUtopiColor('#09f'),
+  githubMUDModified: createUtopiColor('#f90'),
+  githubMUDDeleted: createUtopiColor('#f22'),
+  githubMUDDefault: createUtopiColor('#ccc'),
 }

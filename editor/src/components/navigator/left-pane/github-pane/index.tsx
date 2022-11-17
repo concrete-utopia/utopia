@@ -209,7 +209,7 @@ const BranchBlock = () => {
           style={{
             height: 220,
             overflowY: 'scroll',
-            border: '1px solid #2D2E33',
+            border: `1px solid ${colorTheme.githubBoxesBorder.value}`,
             borderRadius: 2,
           }}
         >
@@ -244,9 +244,9 @@ const BranchBlock = () => {
                   cursor: loadingThisBranch ? 'wait' : githubWorking ? 'not-allowed' : 'pointer',
                   opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
                   '&:hover': {
-                    background: '#09f',
-                    color: '#fff',
-                    svg: { stroke: '#fff' },
+                    background: colorTheme.primarySubdued.value,
+                    color: colorTheme.white.value,
+                    svg: { stroke: colorTheme.white.value },
                   },
                   fontWeight: isCurrent ? 'bold' : 'normal',
                 }}
@@ -257,7 +257,7 @@ const BranchBlock = () => {
                   {branch.name}
                   {when(
                     repo?.defaultBranch === branch.name,
-                    <span style={{ color: '#999' }}> (default)</span>,
+                    <span style={{ color: colorTheme.fg7.value }}> (default)</span>,
                   )}
                 </Ellipsis>
                 {when(loadingThisBranch, <GithubSpinner />)}
@@ -389,7 +389,7 @@ const RemoteChangesBlock = () => {
       title={hasUpstreamChanges ? 'Remote Changes' : 'No Remote Changes'}
       subtitle={
         <TimeAgo
-          style={{ color: '#aaa' }}
+          style={{ color: colorTheme.fg7.value }}
           date={githubLastUpdatedAt || 0}
           formatter={compactTimeagoFormatter}
         />

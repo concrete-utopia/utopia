@@ -14,7 +14,7 @@ export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
       zIndex: 99999,
       width: 11,
       height: 11,
-      border: '1px solid black',
+      border: `1px solid ${colorTheme.gitubIndicatorConnectorLine.value}`,
       borderRadius: 20,
       background: getIndicatorColor(props.status),
     }}
@@ -24,11 +24,11 @@ export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
 function getIndicatorColor(status: BlockStatus): string {
   switch (status) {
     case 'incomplete':
-      return '#FFFFFF00'
+      return colorTheme.githubIndicatorIncomplete.value
     case 'successful':
-      return '#1FCCB7'
+      return colorTheme.githubIndicatorSuccessful.value
     case 'failed':
-      return '#FF7759'
+      return colorTheme.githubIndicatorFailed.value
     case 'pending':
       return 'transparent' // TODO 'conic-gradient(from 180deg at 50% 50%, #2D2E33 0deg, #FFFFFF 181.87deg, #FFFFFF 360deg)'
     default:
@@ -63,6 +63,7 @@ export const Block = React.memo((props: BlockProps) => {
           minHeight: UtopiaTheme.layout.rowHeight.normal,
           gridColumnGap: 0,
           borderRadius: 3,
+          color: colorTheme.fg1.value,
         }}
         css={{
           '&:hover': {
@@ -78,7 +79,7 @@ export const Block = React.memo((props: BlockProps) => {
             justifyContent: 'flex-start',
             height: '100%',
             display: 'grid',
-            gridTemplateRows: '12px 10px 1fr',
+            gridTemplateRows: '13px 10px 1fr',
             alignItems: 'center',
             justifyItems: 'center',
           }}
@@ -87,7 +88,7 @@ export const Block = React.memo((props: BlockProps) => {
             style={{
               width: 1,
               height: '100%',
-              background: 'black',
+              background: colorTheme.gitubIndicatorConnectorLine.value,
               opacity: props.first ? 0 : 1,
             }}
           />
@@ -96,7 +97,7 @@ export const Block = React.memo((props: BlockProps) => {
             style={{
               width: 1,
               height: '100%',
-              background: 'black',
+              background: colorTheme.gitubIndicatorConnectorLine.value,
               opacity: props.last ? 0 : 1,
             }}
           />
@@ -114,7 +115,7 @@ export const Block = React.memo((props: BlockProps) => {
               justifyContent: 'space-between',
             }}
           >
-            <div style={{ fontWeight: 700 }}>{props.title}</div>
+            <div style={{ fontWeight: 700, color: colorTheme.fg0.value }}>{props.title}</div>
             <Ellipsis style={{ maxWidth: 120 }}>{props.subtitle}</Ellipsis>
           </FlexRow>
         </FlexColumn>
@@ -128,6 +129,7 @@ export const Block = React.memo((props: BlockProps) => {
             minHeight: UtopiaTheme.layout.rowHeight.normal,
             gridColumnGap: 0,
             borderRadius: 3,
+            color: colorTheme.fg1.value,
           }}
           padded={false}
         >
@@ -144,7 +146,7 @@ export const Block = React.memo((props: BlockProps) => {
               style={{
                 width: 1,
                 height: '100%',
-                background: 'black',
+                background: colorTheme.gitubIndicatorConnectorLine.value,
                 opacity: props.last ? 0 : 1,
               }}
             />
