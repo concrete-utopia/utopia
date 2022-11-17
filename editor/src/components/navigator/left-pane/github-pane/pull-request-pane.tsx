@@ -39,6 +39,7 @@ export const PullRequestPane = React.memo(() => {
               padded={true}
               variant='|--16px--|<--------auto-------->'
               css={{
+                borderRadius: 3,
                 '&:hover': {
                   backgroundColor: '#eee',
                   cursor: 'pointer',
