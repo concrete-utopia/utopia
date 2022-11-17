@@ -84,6 +84,7 @@ export const uiInsertMetaStrategy: MetaCanvasStrategy = (
   if (parent == null) {
     return []
   }
+  const positionIndex = insertionSubjects[0].positionIndex
 
   const reparentStrategy = reparentStrategyForPaste(canvasState.startingMetadata, parent)
   const applicableReparentFactories = getApplicableReparentFactories2(
@@ -91,6 +92,7 @@ export const uiInsertMetaStrategy: MetaCanvasStrategy = (
     reparentStrategy.strategy,
     reparentStrategy.isFallback,
     parent,
+    positionIndex,
   )
 
   return mapDropNulls(

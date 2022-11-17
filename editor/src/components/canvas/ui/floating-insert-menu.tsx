@@ -580,6 +580,9 @@ export var FloatingMenu = React.memo(() => {
                     elementToInsert.importsToAdd,
                     elementToInsert.defaultSize,
                     insertionParent(targetParent, EP.dynamicPathToStaticPath(targetParent)),
+                    floatingMenuState.indexPosition?.type === 'absolute'
+                      ? floatingMenuState.indexPosition.index
+                      : null,
                   ),
                   CanvasActions.createInteractionSession(createInteractionViaUI(boundingArea())),
                 ]

@@ -471,9 +471,12 @@ export function enableInsertModeForJSXElement(
   importsToAdd: Imports,
   size: Size | null,
   parent: InsertionParent | null,
+  positionIndex: number | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, parent)]),
+    EditorModes.insertMode([
+      insertionSubject(uid, element, size, importsToAdd, parent, positionIndex),
+    ]),
   )
 }
 

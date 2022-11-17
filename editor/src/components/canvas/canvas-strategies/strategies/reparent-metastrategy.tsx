@@ -110,12 +110,13 @@ export function getApplicableReparentFactories2(
   reparentStrategy: ReparentStrategy,
   isFallback: boolean,
   targetParent: ElementPath,
+  positionIndex: number | null,
 ): ReparentFactoryAndDetails {
   const reparentTarget: ReparentTarget = {
     shouldReparent: true,
     newParent: targetParent,
-    shouldReorder: false,
-    newIndex: 0,
+    shouldReorder: positionIndex != null,
+    newIndex: positionIndex ?? 0,
     shouldConvertToInline: 'do-not-convert',
     defaultReparentType: 'REPARENT_AS_ABSOLUTE',
   }

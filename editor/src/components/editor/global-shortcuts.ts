@@ -603,6 +603,7 @@ export function handleKeyDown(
               },
               null,
               null,
+              null,
             ),
             modifiers,
           )
@@ -618,6 +619,7 @@ export function handleKeyDown(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+              null,
               null,
               null,
             ),
@@ -648,6 +650,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
               null,
+              null,
             ),
             modifiers,
           )
@@ -666,6 +669,7 @@ export function handleKeyDown(
             defaultDivElement(newUID),
             newUID,
             {},
+            null,
             null,
             null,
           ),

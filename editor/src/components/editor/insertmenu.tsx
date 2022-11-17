@@ -237,6 +237,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                       component.importsToAdd,
                       component.defaultSize,
                       null,
+                      null,
                     ),
                     CanvasActions.createInteractionSession(
                       createInteractionViaMouse(

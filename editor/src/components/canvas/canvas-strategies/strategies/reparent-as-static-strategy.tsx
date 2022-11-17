@@ -131,8 +131,9 @@ function applyStaticReparent(
     filteredSelectedElements,
     () => {
       if (
-        interactionSession.interactionData.type == 'DRAG' &&
-        interactionSession.interactionData.drag != null
+        (interactionSession.interactionData.type == 'DRAG' &&
+          interactionSession.interactionData.drag != null) ||
+        interactionSession.interactionData.type !== 'UI'
       ) {
         if (reparentResult.shouldReparent && filteredSelectedElements.length === 1) {
           const target = filteredSelectedElements[0]

@@ -15,6 +15,7 @@ export interface InsertionSubject {
   defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
+  positionIndex: number | null
 }
 
 export function insertionSubject(
@@ -23,6 +24,7 @@ export function insertionSubject(
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
+  positionIndex: number | null,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -30,6 +32,7 @@ export function insertionSubject(
     defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
+    positionIndex: positionIndex,
   }
 }
 
