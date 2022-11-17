@@ -349,7 +349,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     case 'SEND_CODE_EDITOR_INITIALISATION':
-      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state)
+      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state, userState)
     case 'HIDE_VSCODE_LOADING_SCREEN':
       return UPDATE_FNS.HIDE_VSCODE_LOADING_SCREEN(action, state)
     case 'SET_INDEXED_DB_FAILED':

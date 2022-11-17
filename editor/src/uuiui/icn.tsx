@@ -3,7 +3,7 @@ import React from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { useEditorState } from '../components/editor/store/store-hook'
-import { Theme } from '../components/editor/store/editor-state'
+import { getCurrentTheme, Theme } from '../components/editor/store/editor-state'
 
 export type IcnColor =
   | 'main'
@@ -29,7 +29,10 @@ export type IcnResultingColor =
   | 'colourful'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
+  const currentTheme: Theme = useEditorState(
+    (store) => getCurrentTheme(store.userState),
+    'currentTheme',
+  )
   if (currentTheme === 'light') {
     switch (intent) {
       case 'main':

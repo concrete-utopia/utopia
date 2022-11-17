@@ -55,6 +55,7 @@ import {
   UpdateDecorationsMessage,
   SelectedElementChanged,
   utopiaReady,
+  setVSCodeTheme,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -62,6 +63,7 @@ import {
   EditorState,
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
+  Theme,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
 
@@ -334,4 +336,21 @@ export async function sendSelectedElement(newEditorState: EditorState): Promise<
   } else {
     await sendMessage(selectedElementChangedMessage)
   }
+}
+
+function vsCodeThemeForTheme(theme: Theme): string {
+  switch (theme) {
+    case 'dark':
+      return 'Default Dark+'
+    case 'light':
+      return 'Default Light+'
+    default:
+      const _exhaustiveCheck: never = theme
+      throw new Error(`Unhandled theme ${theme}`)
+  }
+}
+
+export async function sendSetVSCodeTheme(theme: Theme): Promise<void> {
+  const vsCodeTheme = vsCodeThemeForTheme(theme)
+  await sendMessage(setVSCodeTheme(vsCodeTheme))
 }
