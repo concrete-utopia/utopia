@@ -1,4 +1,5 @@
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -199,18 +200,6 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
 
   const numberToPxValue = (n: number) => n + 'px'
 
-  const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
-      ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
-
   const currentPadding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
@@ -244,33 +233,24 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   })
 
   return (
-    <CanvasOffsetWrapper>
-      <div
-        data-testid={PaddingResizeControlContainerTestId}
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-          pointerEvents: 'none',
-        }}
-      >
-        <PaddingResizeControlI
-          ref={rightRef}
-          edge={'right'}
-          paddingValue={currentPadding.paddingRight}
-        />
-        <PaddingResizeControlI
-          ref={bottomRef}
-          edge={'bottom'}
-          paddingValue={currentPadding.paddingBottom}
-        />
-        <PaddingResizeControlI
-          ref={leftRef}
-          edge={'left'}
-          paddingValue={currentPadding.paddingLeft}
-        />
-        <PaddingResizeControlI ref={topRef} edge={'top'} paddingValue={currentPadding.paddingTop} />
-      </div>
-    </CanvasOffsetWrapper>
+    <>
+      <PaddingResizeControlI
+        ref={rightRef}
+        edge={'right'}
+        paddingValue={currentPadding.paddingRight}
+      />
+      <PaddingResizeControlI
+        ref={bottomRef}
+        edge={'bottom'}
+        paddingValue={currentPadding.paddingBottom}
+      />
+      <PaddingResizeControlI
+        ref={leftRef}
+        edge={'left'}
+        paddingValue={currentPadding.paddingLeft}
+      />
+      <PaddingResizeControlI ref={topRef} edge={'top'} paddingValue={currentPadding.paddingTop} />
+    </>
   )
 })
 

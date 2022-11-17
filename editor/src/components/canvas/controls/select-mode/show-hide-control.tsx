@@ -9,8 +9,8 @@ import { useHoverWithDelay } from './controls-common'
 type ShowHideControlProps = React.PropsWithChildren<{ selectedElements: ElementPath[] }>
 
 export const ShowHideControl = controlForStrategyMemoized<ShowHideControlProps>((props) => {
-  const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => {
+  const [hoverHidden, setHoverHidden] = React.useState<boolean>(false)
+  const [hoverStart, hoverEnd] = useHoverWithDelay(0, (h) => {
     setHoverHidden(!h)
   })
 
@@ -29,8 +29,12 @@ export const ShowHideControl = controlForStrategyMemoized<ShowHideControlProps>(
   return (
     <CanvasOffsetWrapper>
       <div
+        data-testId='show-hide-control'
         ref={controlRef}
-        style={{ position: 'absolute', visibility: hoverHidden ? 'hidden' : 'visible' }}
+        style={{
+          position: 'absolute',
+          visibility: hoverHidden ? 'hidden' : 'visible',
+        }}
         onMouseEnter={(e) => {
           hoverStart(e)
         }}

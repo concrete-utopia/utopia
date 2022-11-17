@@ -42,13 +42,7 @@ export interface BorderRadiusControlProps {
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const {
-    selectedElement,
-    borderRadius,
-    elementSize,
-    showIndicatorOnCorner: showIndicatorOnEdge,
-    mode,
-  } = props
+  const { borderRadius, elementSize, showIndicatorOnCorner: showIndicatorOnEdge, mode } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const { dispatch, scale, isDragging } = useEditorState(
@@ -65,38 +59,24 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const colorTheme = useColorTheme()
 
-  const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
-      ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
-
   return (
-    <CanvasOffsetWrapper>
-      <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
-        {BorderRadiusCorners.map((corner) => (
-          <CircularHandle
-            key={CircularHandleTestId(corner)}
-            borderRadius={borderRadius[corner]}
-            isDragging={isDragging}
-            scale={scale}
-            color={colorTheme.brandNeonPink.value}
-            canvasOffsetRef={canvasOffset}
-            dispatch={dispatch}
-            corner={corner}
-            elementSize={elementSize}
-            showIndicatorFromParent={showIndicatorOnEdge === corner}
-            showDot={mode === 'individual'}
-          />
-        ))}
-      </div>
-    </CanvasOffsetWrapper>
+    <>
+      {BorderRadiusCorners.map((corner) => (
+        <CircularHandle
+          key={CircularHandleTestId(corner)}
+          borderRadius={borderRadius[corner]}
+          isDragging={isDragging}
+          scale={scale}
+          color={colorTheme.brandNeonPink.value}
+          canvasOffsetRef={canvasOffset}
+          dispatch={dispatch}
+          corner={corner}
+          elementSize={elementSize}
+          showIndicatorFromParent={showIndicatorOnEdge === corner}
+          showDot={mode === 'individual'}
+        />
+      ))}
+    </>
   )
 })
 
