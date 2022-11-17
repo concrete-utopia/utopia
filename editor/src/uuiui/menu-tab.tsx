@@ -32,9 +32,7 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
     const label = defaultIfNull<React.ReactElement | string>('', props.label)
 
     const baseStyle = {
-      paddingLeft: 4,
-      paddingRight: 4,
-      paddingBottom: 6,
+      padding: '4px 6px',
       transition: 'all .05s ease-in-out',
       '&:hover': {
         backgroundColor: colorTheme.tabHoveredBackground.value,
@@ -42,6 +40,7 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
       },
       cursor: 'pointer',
       flexGrow: 1,
+      height: '100%',
       justifyContent: 'center',
     }
 
