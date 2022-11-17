@@ -57,7 +57,9 @@ export function ancestorMetaStrategy(
       )
     )
 
-    if (!isStaticLayout) {
+    const shouldCheckAncestor = isStaticLayout || EP.isRootElementOfInstance(target)
+
+    if (!shouldCheckAncestor) {
       return []
     }
 
