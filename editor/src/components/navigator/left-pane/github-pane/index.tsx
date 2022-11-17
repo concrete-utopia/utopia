@@ -14,7 +14,7 @@ import {
   updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
-import { unless, when } from '../../../../utils/react-conditionals'
+import { when } from '../../../../utils/react-conditionals'
 import { Button, FlexColumn, Section, SectionTitleRow, StringInput, Title } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
@@ -42,34 +42,21 @@ const AccountBlock = () => {
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
-  const email = useEditorState(
-    (store) =>
-      (store.userState.loginState.type === 'LOGGED_IN' && store.userState.loginState.user.email) ||
-      undefined,
-    'User email',
-  )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const triggerAuthentication = React.useCallback(() => {
     void startGithubAuthentication(dispatch)
   }, [dispatch])
 
+  if (authenticated) {
+    return null
+  }
+
   return (
-    <Block
-      title='Account'
-      subtitle={authenticated ? email : undefined}
-      status={state}
-      first={true}
-      last={!authenticated}
-    >
-      {unless(
-        authenticated,
-        <div>
-          <Button spotlight highlight onMouseUp={triggerAuthentication}>
-            Authenticate with Github
-          </Button>
-        </div>,
-      )}
+    <Block title='Account' status={state} first={true} last={true}>
+      <Button spotlight highlight style={{ padding: '0 6px' }} onMouseUp={triggerAuthentication}>
+        Authenticate with Github
+      </Button>
     </Block>
   )
 }
@@ -106,7 +93,7 @@ const RepositoryBlock = () => {
       title={hasRepo ? 'Repository' : 'Select Repository'}
       subtitle={repoName}
       status={!expanded && hasRepo != null ? 'successful' : 'pending'}
-      first={false}
+      first={true}
       last={!hasRepo}
     >
       <FlexColumn style={{ gap: 4 }}>
