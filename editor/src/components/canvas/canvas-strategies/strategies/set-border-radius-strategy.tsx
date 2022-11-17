@@ -155,16 +155,18 @@ function borderRadiusAdjustDataFromInteractionSession(
   }
 }
 
+const maginitudeMax = (a: number, b: number): number => (Math.abs(a) < Math.abs(b) ? b : a)
+
 function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
   switch (corner) {
     case 'tl':
-      return Math.max(drag.x, drag.y)
+      return maginitudeMax(drag.x, drag.y)
     case 'tr':
-      return Math.max(-drag.x, drag.y)
+      return maginitudeMax(-drag.x, drag.y)
     case 'bl':
-      return Math.max(drag.x, -drag.y)
+      return maginitudeMax(drag.x, -drag.y)
     case 'br':
-      return Math.max(-drag.x, -drag.y)
+      return maginitudeMax(-drag.x, -drag.y)
     default:
       assertNever(corner)
   }
@@ -407,7 +409,7 @@ function updateBorderRadiusFn(
     const dragDelta = clamp(
       -borderRadius.renderedValuePx,
       maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
-      optionalMap(({ drag, corner: ep }) => deltaFromDrag(drag, ep), borderRadiusAdjustData) ?? 0,
+      optionalMap(({ drag, corner }) => deltaFromDrag(drag, corner), borderRadiusAdjustData) ?? 0,
     )
 
     const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta
