@@ -30,7 +30,7 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
-  positioning: 'keep-global-position' | 'reset-position',
+  positioning: 'keep-global-position' | 'keep-local-position',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,

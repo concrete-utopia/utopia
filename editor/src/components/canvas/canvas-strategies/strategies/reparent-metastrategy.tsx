@@ -128,7 +128,7 @@ export function getApplicableReparentFactories2(
         strategyType: reparentStrategy,
         targetParentDisplayType: 'flow',
         fitness: fitness,
-        factory: baseAbsoluteReparentStrategy(reparentTarget, fitness, 'reset-position'),
+        factory: baseAbsoluteReparentStrategy(reparentTarget, fitness, 'keep-local-position'),
       }
     }
     case 'REPARENT_AS_STATIC': {
