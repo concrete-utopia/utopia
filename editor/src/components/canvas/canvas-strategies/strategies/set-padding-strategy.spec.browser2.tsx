@@ -3,7 +3,10 @@ import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { AdjustPrecision } from '../../controls/select-mode/controls-common'
+import {
+  AdjustPrecision,
+  unitlessCSSNumberWithRenderedValue,
+} from '../../controls/select-mode/controls-common'
 import {
   paddingControlHandleTestId,
   paddingControlTestId,
@@ -18,11 +21,12 @@ import {
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import {
-  defaultPaddingMeasurement,
   offsetPaddingByEdge,
   paddingToPaddingString,
   CSSPaddingMeasurements,
   CSSPaddingMappedValues,
+  combinePaddings,
+  paddingPropForEdge,
 } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -30,7 +34,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { SetPaddingStrategyName } from './set-padding-strategy'
+import { PaddingTearThreshold, SetPaddingStrategyName } from './set-padding-strategy'
 
 const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -118,10 +122,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: defaultPaddingMeasurement(22),
-          paddingBottom: defaultPaddingMeasurement(33),
-          paddingLeft: defaultPaddingMeasurement(44),
-          paddingRight: defaultPaddingMeasurement(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -163,10 +167,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: defaultPaddingMeasurement(22),
-          paddingBottom: defaultPaddingMeasurement(33),
-          paddingLeft: defaultPaddingMeasurement(44),
-          paddingRight: defaultPaddingMeasurement(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -194,10 +198,10 @@ describe('Padding resize strategy', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(
         paddingToPaddingString({
-          paddingTop: defaultPaddingMeasurement(22),
-          paddingBottom: defaultPaddingMeasurement(33),
-          paddingLeft: defaultPaddingMeasurement(44),
-          paddingRight: defaultPaddingMeasurement(55),
+          paddingTop: unitlessCSSNumberWithRenderedValue(22),
+          paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+          paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+          paddingRight: unitlessCSSNumberWithRenderedValue(55),
         }),
       ),
       'await-first-dom-report',
@@ -256,6 +260,37 @@ describe('Padding resize strategy', () => {
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithStringPaddingValues(`${dragDeltaFromZero}px 1em 3em 2em`),
+    )
+  })
+
+  it('padding can be set to zero without removing the property', async () => {
+    const dragDeltaToZero = -11
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues('11px 11px 11px 11px'),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDeltaToZero, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues(`0px 11px 11px 11px`),
+    )
+  })
+
+  it('padding can be set below zero, but above the remove threshold without removing the property', async () => {
+    const originalPadding = 11
+    const dragDelta = -originalPadding - Math.abs(PaddingTearThreshold) / 2
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStringPaddingValues(`${originalPadding}px 11px 11px 11px`),
+      'await-first-dom-report',
+    )
+
+    await testPaddingResizeForEdge(editor, dragDelta, 'top', 'precise')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStringPaddingValues(`0px 11px 11px 11px`),
     )
   })
 
@@ -435,10 +470,10 @@ describe('Padding resize strategy', () => {
 
 async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: AdjustPrecision) {
   const padding: CSSPaddingMeasurements = {
-    paddingTop: defaultPaddingMeasurement(22),
-    paddingBottom: defaultPaddingMeasurement(33),
-    paddingLeft: defaultPaddingMeasurement(44),
-    paddingRight: defaultPaddingMeasurement(55),
+    paddingTop: unitlessCSSNumberWithRenderedValue(22),
+    paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+    paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+    paddingRight: unitlessCSSNumberWithRenderedValue(55),
   }
   const dragDelta = 12
   const editor = await renderTestEditorWithCode(
@@ -446,11 +481,23 @@ async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: Adju
     'await-first-dom-report',
   )
 
+  const defaultPadding: CSSPaddingMappedValues<number> = {
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+  }
+
   await testPaddingResizeForEdge(editor, dragDelta, edge, precision)
   await editor.getDispatchFollowUpActionsFinished()
   expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
     makeTestProjectCodeWithStringPaddingValues(
-      paddingToPaddingString(offsetPaddingByEdge(edge, dragDelta, padding, precision)),
+      paddingToPaddingString(
+        combinePaddings(
+          defaultPadding,
+          offsetPaddingByEdge(paddingPropForEdge(edge), dragDelta, padding, precision),
+        ),
+      ),
     ),
   )
 }

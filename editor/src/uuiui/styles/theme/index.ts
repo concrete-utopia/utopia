@@ -1,16 +1,23 @@
-import { colorTheme, ColorTheme, darkColorTheme } from './utopia-theme'
 import { Theme } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
+import {
+  ColorTheme,
+  colorTheme,
+  colorThemeCssVariables,
+  darkColorThemeCssVariables,
+} from './utopia-theme'
 
-// TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
-// prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
 export const useColorTheme = (): ColorTheme => {
+  return colorTheme
+}
+
+export const useColorThemeVariables = (): any => {
   const currentTheme: Theme = useEditorState(
     (store) => store.userState.themeConfig ?? 'light',
     'currentTheme',
   )
-  return currentTheme === 'dark' ? darkColorTheme : colorTheme
+  return currentTheme === 'dark' ? darkColorThemeCssVariables : colorThemeCssVariables
 }
 
-export { colorTheme, UtopiaTheme, UtopiaStyles } from './utopia-theme'
+export { colorTheme, UtopiaStyles, UtopiaTheme } from './utopia-theme'
 export type { ColorTheme } from './utopia-theme'

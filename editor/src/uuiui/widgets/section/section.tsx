@@ -40,6 +40,7 @@ export const SectionTitleRow: React.FunctionComponent<
         paddingLeft: 8,
         paddingRight: 8,
         minHeight: UtopiaTheme.layout.rowHeight.normal,
+        color: colorTheme.fg0.value,
         cursor: 'pointer',
       }}
       css={{
