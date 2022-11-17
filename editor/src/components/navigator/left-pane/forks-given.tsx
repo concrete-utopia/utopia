@@ -46,7 +46,7 @@ export const ForksGiven = React.memo(() => {
               width: 28,
               height: 28,
               borderRadius: '50%',
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.subduedForeground.o(50).value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.subduedForeground.value}`,
               background: colorTheme.subtleBackground.value,
             }}
           >

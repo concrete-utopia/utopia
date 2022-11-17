@@ -44,7 +44,7 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.brandNeonPink.o(StripeOpacity).value
+  const indicatorColor = colorTheme.brandNeonPink30.value
 
   const [indicatorShown, setIndicatorShown] = useState<string | null>(null)
   const [backgroundShown, setBackgroundShown] = useState<boolean>(false)

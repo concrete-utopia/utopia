@@ -16,7 +16,6 @@ import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import {
-  UtopiaTheme,
   Section,
   SectionTitleRow,
   FlexRow,
@@ -26,6 +25,7 @@ import {
   InspectorSectionHeader,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
+import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 
 interface ItemProps extends ListChildComponentProps {}
 

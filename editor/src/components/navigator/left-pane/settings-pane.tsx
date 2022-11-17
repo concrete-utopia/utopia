@@ -5,6 +5,7 @@ import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import { NO_OP } from '../../../core/shared/utils'
 import {
+  colorTheme,
   FlexColumn,
   FlexRow,
   H2,
@@ -128,14 +129,18 @@ export const SettingsPane = React.memo(() => {
         <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
           <Title style={{ flexGrow: 1 }}>Settings</Title>
         </SectionTitleRow>
-        <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+        <UIGridRow
+          style={{ marginTop: 16, color: colorTheme.fg1.value }}
+          padded
+          variant='<---1fr--->|------172px-------|'
+        >
           <H2> Project </H2>
         </UIGridRow>
 
         {isMyProject === 'yes' ? null : <ForksGiven />}
 
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span>Name</span>
+          <span style={{ color: colorTheme.fg2.value }}>Name</span>
           {userState.loginState.type !== 'LOGGED_IN' ? (
             <span>{name}</span>
           ) : (
@@ -150,7 +155,7 @@ export const SettingsPane = React.memo(() => {
           )}
         </UIGridRow>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span> Description </span>
+          <span style={{ color: colorTheme.fg2.value }}> Description </span>
           {userState.loginState.type !== 'LOGGED_IN' ? (
             <span>{description}</span>
           ) : (
@@ -166,11 +171,15 @@ export const SettingsPane = React.memo(() => {
         </UIGridRow>
         <SectionBodyArea minimised={false}>
           {/** Theme Toggle: */}
-          <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            style={{ color: colorTheme.fg1.value, marginTop: 16 }}
+            padded
+            variant='<---1fr--->|------172px-------|'
+          >
             <H2> Theme </H2>
           </UIGridRow>
           <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span>Application </span>
+            <span style={{ color: colorTheme.fg2.value }}>Application </span>
             <PopupList
               value={theme}
               options={themeOptions}
@@ -179,10 +188,14 @@ export const SettingsPane = React.memo(() => {
             />
           </UIGridRow>
           <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span>VSCode </span>
+            <span style={{ color: colorTheme.fg2.value }}>VSCode </span>
             <Subdued>Change from code editor.</Subdued>
           </UIGridRow>
-          <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            style={{ color: colorTheme.fg1.value, marginTop: 16 }}
+            padded
+            variant='<---1fr--->|------172px-------|'
+          >
             <H2>VSCode </H2>
           </UIGridRow>
 

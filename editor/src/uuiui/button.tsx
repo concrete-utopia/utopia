@@ -47,7 +47,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   background: props.primary
     ? UtopiaStyles.backgrounds.blue
     : props.spotlight
-    ? UtopiaTheme.color.buttonBackground.value
+    ? colorTheme.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
@@ -74,9 +74,9 @@ export const SquareButton = styled(Button)({
 export const ToggleButton = styled(SquareButton)<{
   value: boolean
 }>((props) => ({
-  background: props.value ? UtopiaTheme.color.buttonBackground.value : 'transparent',
+  background: props.value ? colorTheme.buttonBackground.value : 'transparent',
   '&:hover': {
-    background: UtopiaTheme.color.buttonHoverBackground.value,
+    background: colorTheme.buttonHoverBackground.value,
   },
 }))
 
@@ -127,10 +127,10 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     //  solid subdued outline in focused state
     boxShadow: `0px 0px 0px 2px ${
       props.danger
-        ? colorTheme.errorForeground.o(20).value
+        ? colorTheme.errorForeground20.value
         : props.primary
-        ? colorTheme.primary.o(30).value
-        : colorTheme.subduedBorder.o(80).value
+        ? colorTheme.primary30.value
+        : colorTheme.subduedBorder80.value
     }`,
   },
   '&:active': {

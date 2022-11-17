@@ -2,7 +2,6 @@ import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { light } from './light'
 
-/** DARK **/
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
@@ -39,7 +38,7 @@ const darkBase = {
   border3: createUtopiColor('#181C20'),
 }
 
-export const darkPrimitives = {
+const darkPrimitives = {
   // backgrounds
   emphasizedBackground: darkBase.bg0,
   emphasizedBackgroundPop: createUtopiColor('rgba(0,0,0,1)'),
@@ -66,10 +65,32 @@ const darkErrorStates = {
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
   errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
-  warningBgTranslucent: base.orange.o(20),
+  warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
+
+// TEMP colors with preset opacity pulled from within the app
+const colorsWithOpacity = {
+  bg0Opacity90: createUtopiColor('rgba(45,45,45,0.9)'),
+  fg6Opacity50: createUtopiColor('rgba(111, 119, 139, 0.5)'),
+  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
+  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
+  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
+  canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
+  brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
+  neutralForeground40: createUtopiColor('rgba(217, 220, 227, 0.4)'),
+  neutralInvertedBackground10: createUtopiColor('rgba(217, 220, 227, 0.1)'),
+  neutralInvertedBackground20: createUtopiColor('rgba(217, 220, 227, 0.2)'),
+  neutralInvertedBackground30: createUtopiColor('rgba(217, 220, 227, 0.3)'),
+  listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
+  brandPurple70: createUtopiColor('rgba(87, 75, 226,0.7)'),
+  errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
+  primary30: createUtopiColor('rgba(0, 122, 255, 0.3)'),
+  subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
+}
+
 export const dark: typeof light = {
+  ...colorsWithOpacity,
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
@@ -96,7 +117,7 @@ export const dark: typeof light = {
   canvasControlsSizeBoxShadowColor: createUtopiColor('black'),
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
-  canvasControlsImmediateParentMarks: base.black.o(25),
+  canvasControlsImmediateParentMarks: createUtopiColor('rgba(0,0,0,0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
@@ -109,9 +130,9 @@ export const dark: typeof light = {
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
-  canvasSelectionSecondaryOutline: base.almostBlack.o(50),
+  canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
   canvasSelectionNotFocusable: base.darkgray,
-  canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+  canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
   canvasDragOutlineBlock: darkBase.primary,
   canvasDragOutlineInline: base.red,
 
@@ -149,14 +170,14 @@ export const dark: typeof light = {
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)'),
   navigatorResizeHintBorder: darkBase.primary,
   navigatorComponentName: darkBase.primary,
-  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentSelected: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   navigatorComponentIconBorder: base.orange,
 
   contextMenuBackground: darkPrimitives.secondaryBackground,
   contextMenuForeground: darkPrimitives.neutralForeground,
   contextMenuHighlightForeground: base.white,
   contextMenuHighlightBackground: darkBase.primary,
-  contextMenuSeparator: base.black.o(10),
+  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
   inspectorFocusedColor: darkBase.primary,
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
