@@ -1125,11 +1125,14 @@ export async function refreshGithubData(
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchChecksums: GithubChecksums | null,
+  githubUserDetails: GithubUser | null,
 ): Promise<void> {
   if (githubAuthenticated) {
-    void getUserDetailsFromServer().then((r) =>
-      dispatch([updateGithubData({ githubUserDetails: r })]),
-    )
+    if (githubUserDetails === null) {
+      void getUserDetailsFromServer().then((r) =>
+        dispatch([updateGithubData({ githubUserDetails: r })]),
+      )
+    }
     void getUsersPublicGithubRepositories(dispatch)
     if (githubRepo != null) {
       let upstreamChangesSuccess = false
