@@ -145,6 +145,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                   const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
                     reparentTarget,
                     0,
+                    'keep-global-position',
                   )
                   const reparentCommands =
                     absoluteReparentStrategyToUse(

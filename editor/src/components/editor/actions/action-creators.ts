@@ -219,7 +219,7 @@ import type {
   SetRefreshingDependencies,
   SetUserConfiguration,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, InsertionParent, insertionSubject, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -470,9 +470,10 @@ export function enableInsertModeForJSXElement(
   uid: string,
   importsToAdd: Imports,
   size: Size | null,
+  parent: InsertionParent | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
+    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, parent)]),
   )
 }
 

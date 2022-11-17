@@ -36,6 +36,8 @@ import {
   updateJSXElementName,
   wrapInView,
   wrapInElement,
+  enableInsertModeForJSXElement,
+  switchEditorMode,
 } from '../../editor/actions/action-creators'
 import {
   elementOnlyHasSingleTextChild,
@@ -58,9 +60,23 @@ import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { when } from '../../../utils/react-conditionals'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
+import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import {
+  boundingArea,
+  createInteractionViaKeyboard,
+  createInteractionViaUI,
+  keyboardCatcherControl,
+} from '../canvas-strategies/interaction-state'
+import { EditorModes, insertionParent, insertionSubject } from '../../editor/editor-modes'
+import CanvasActions from '../canvas-actions'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
+import { forceRight } from '../../../core/shared/either'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -428,6 +444,9 @@ export var FloatingMenu = React.memo(() => {
       activelySelectedInsertOptionRef.current = null
     }
   }, [])
+  const editorStoreRef = useRefEditorState((store) => store)
+
+  const scheduleClearUiInteraction = useClearUIInteraction(editorStoreRef)
 
   const floatingMenuState = useEditorState(
     (store) => store.editor.floatingInsertMenu,
@@ -527,15 +546,46 @@ export var FloatingMenu = React.memo(() => {
               floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
             if (targetParent != null) {
               // TODO multiselect?
-              actionsToDispatch = [
-                insertInsertable(
-                  targetParent,
-                  elementToInsert,
-                  fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-                  wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
-                  floatingMenuState.indexPosition,
-                ),
-              ]
+              if (wrapContentForInsertion) {
+                actionsToDispatch = [
+                  insertInsertable(
+                    targetParent,
+                    elementToInsert,
+                    fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+                    wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
+                    floatingMenuState.indexPosition,
+                  ),
+                ]
+              } else {
+                const uid = generateUidWithExistingComponents(projectContentsRef.current)
+
+                const propsWithUid = forceRight(
+                  setJSXValueAtPath(
+                    elementToInsert.element.props,
+                    PP.create([UTOPIA_UID_KEY]),
+                    jsxAttributeValue(uid, emptyComments),
+                  ),
+                  `Could not set data-uid on props of insertable element ${elementToInsert.element.name}`,
+                )
+
+                actionsToDispatch = [
+                  enableInsertModeForJSXElement(
+                    jsxElement(
+                      elementToInsert.element.name,
+                      uid,
+                      propsWithUid,
+                      elementToInsert.element.children,
+                    ),
+                    uid,
+                    elementToInsert.importsToAdd,
+                    elementToInsert.defaultSize,
+                    insertionParent(targetParent, EP.dynamicPathToStaticPath(targetParent)),
+                  ),
+                  CanvasActions.createInteractionSession(createInteractionViaUI(boundingArea())),
+                ]
+
+                scheduleClearUiInteraction()
+              }
             }
             break
           }
@@ -569,6 +619,7 @@ export var FloatingMenu = React.memo(() => {
       addContentForInsertion,
       wrapContentForInsertion,
       preserveVisualPositionForWrap,
+      scheduleClearUiInteraction,
     ],
   )
 
@@ -725,3 +776,19 @@ export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) =>
     </OnClickOutsideHOC>
   ) : null
 })
+
+export function useClearUIInteraction(editorStoreRef: { readonly current: EditorStorePatched }) {
+  return React.useCallback(() => {
+    const clearUiInteraction = () => {
+      window.removeEventListener('mousedown', clearUiInteraction)
+
+      if (editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'UI') {
+        editorStoreRef.current.dispatch(
+          [CanvasActions.clearInteractionSession(true), switchEditorMode(EditorModes.selectMode())],
+          'everyone',
+        )
+      }
+    }
+    window.addEventListener('mousedown', clearUiInteraction, { once: true, capture: true })
+  }, [editorStoreRef])
+}

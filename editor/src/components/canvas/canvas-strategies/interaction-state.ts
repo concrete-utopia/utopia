@@ -12,8 +12,8 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { BorderRadiusCorner } from '../border-radius-control-utils'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -23,7 +23,6 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
-import type { ReparentTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -53,7 +52,11 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type InputData = KeyboardInteractionData | MouseInteractionData
+export interface UIInteractionData {
+  type: 'UI'
+}
+
+export type InputData = KeyboardInteractionData | MouseInteractionData | UIInteractionData
 
 export type MouseInteractionData = DragInteractionData | HoverInteractionData
 
@@ -352,6 +355,22 @@ export function createInteractionViaKeyboard(
   }
 }
 
+export function createInteractionViaUI(
+  activeControl: CanvasControlType,
+): InteractionSessionWithoutMetadata {
+  return {
+    interactionData: {
+      type: 'UI',
+    },
+    activeControl: activeControl,
+    lastInteractionTime: Date.now(),
+    userPreferredStrategy: null,
+    startedAt: Date.now(),
+    updatedTargetPaths: {},
+    aspectRatioLock: null,
+  }
+}
+
 export function updateInteractionViaKeyboard(
   currentState: InteractionSession,
   addedKeysPressed: Array<KeyCharacter>,
@@ -427,6 +446,16 @@ export function updateInteractionViaKeyboard(
         aspectRatioLock: currentState.aspectRatioLock,
       }
     }
+    case 'UI':
+      return {
+        interactionData: currentState.interactionData,
+        activeControl: currentState.activeControl,
+        lastInteractionTime: Date.now(),
+        userPreferredStrategy: currentState.userPreferredStrategy,
+        startedAt: currentState.startedAt,
+        updatedTargetPaths: currentState.updatedTargetPaths,
+        aspectRatioLock: currentState.aspectRatioLock,
+      }
     default:
       const _exhaustiveCheck: never = currentState.interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(currentState.interactionData)}`)
@@ -450,14 +479,15 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
           ),
         }
       }
-    case 'HOVER':
-      return interactionData
     case 'KEYBOARD':
       const lastKeyState = last(interactionData.keyStates)
       return {
         ...interactionData,
         keyStates: lastKeyState == null ? [] : [lastKeyState],
       }
+    case 'HOVER':
+    case 'UI':
+      return interactionData
     default:
       const _exhaustiveCheck: never = interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
@@ -474,7 +504,7 @@ export function interactionSessionHardReset(
   }
 }
 
-export const KeyboardInteractionTimeout = 600
+export const KeyboardInteractionTimeout = 10000
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,

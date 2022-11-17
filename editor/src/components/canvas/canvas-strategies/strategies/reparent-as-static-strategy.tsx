@@ -49,8 +49,8 @@ export function baseReparentAsStaticStrategy(
     const filteredSelectedElements = getDragTargets(selectedElements)
     if (
       filteredSelectedElements.length !== 1 ||
-      interactionSession == null ||
-      interactionSession.interactionData.type !== 'DRAG'
+      interactionSession == null
+      // interactionSession.interactionData.type !== 'DRAG'
     ) {
       return null
     }

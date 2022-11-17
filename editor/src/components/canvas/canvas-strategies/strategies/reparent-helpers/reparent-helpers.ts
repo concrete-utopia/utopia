@@ -57,17 +57,18 @@ export function ifAllowedToReparent(
   targets: Array<ElementPath>,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
-  const allowed = targets.every((target) => {
-    return isAllowedToReparent(
-      canvasState.projectContents,
-      canvasState.openFile,
-      startingMetadata,
-      target,
-    )
-  })
-  if (allowed) {
-    return ifAllowed()
-  } else {
-    return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
-  }
+  return ifAllowed() // TODO: revert real code
+  // const allowed = targets.every((target) => {
+  //   return isAllowedToReparent(
+  //     canvasState.projectContents,
+  //     canvasState.openFile,
+  //     startingMetadata,
+  //     target,
+  //   )
+  // })
+  // if (allowed) {
+  //   return ifAllowed()
+  // } else {
+  //   return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
+  // }
 }

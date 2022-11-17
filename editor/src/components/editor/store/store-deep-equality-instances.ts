@@ -341,6 +341,7 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  UIInteractionData,
   ReorderSlider,
   reorderSlider,
   HoverInteractionData,
@@ -1711,6 +1712,13 @@ export const KeyboardInteractionDataKeepDeepEquality: KeepDeepEqualityCall<Keybo
     },
   )
 
+export const UIInteractionDataKeepDeepEquality: KeepDeepEqualityCall<UIInteractionData> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'DRAG':
@@ -1726,6 +1734,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'HOVER':
       if (newValue.type === oldValue.type) {
         return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'UI':
+      if (newValue.type === oldValue.type) {
+        return UIInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

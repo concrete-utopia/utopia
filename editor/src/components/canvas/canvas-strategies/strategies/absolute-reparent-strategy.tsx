@@ -30,6 +30,7 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
+  positioning: 'keep-global-position' | 'reset-position',
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -37,9 +38,8 @@ export function baseAbsoluteReparentStrategy(
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      selectedElements.length === 0 ||
       interactionSession == null ||
-      interactionSession.interactionData.type !== 'DRAG'
+      (interactionSession?.interactionData.type === 'DRAG' && selectedElements.length === 0)
     ) {
       return null
     }
@@ -91,7 +91,10 @@ export function baseAbsoluteReparentStrategy(
           canvasState.startingMetadata,
           filteredSelectedElements,
           () => {
-            if (dragInteractionData.drag == null) {
+            if (
+              (dragInteractionData.type !== 'DRAG' || dragInteractionData.drag == null) &&
+              dragInteractionData.type !== 'UI'
+            ) {
               return emptyStrategyApplicationResult
             }
 
@@ -120,14 +123,17 @@ export function baseAbsoluteReparentStrategy(
                 if (reparentResult == null) {
                   return null
                 } else {
-                  const offsetCommands = getAbsoluteReparentPropertyChanges(
-                    selectedElement,
-                    newParent,
-                    canvasState.startingMetadata,
-                    canvasState.startingMetadata,
-                    canvasState.projectContents,
-                    canvasState.openFile,
-                  )
+                  const offsetCommands =
+                    positioning === 'keep-global-position'
+                      ? getAbsoluteReparentPropertyChanges(
+                          selectedElement,
+                          newParent,
+                          canvasState.startingMetadata,
+                          canvasState.startingMetadata,
+                          canvasState.projectContents,
+                          canvasState.openFile,
+                        )
+                      : []
 
                   const { commands: reparentCommands, newPath } = reparentResult
                   return {
@@ -147,10 +153,12 @@ export function baseAbsoluteReparentStrategy(
               })
 
               const moveCommands =
-                absoluteMoveStrategy(canvasState, {
-                  ...interactionSession,
-                  updatedTargetPaths: updatedTargetPaths,
-                })?.apply(strategyLifecycle).commands ?? []
+                positioning === 'keep-global-position'
+                  ? absoluteMoveStrategy(canvasState, {
+                      ...interactionSession,
+                      updatedTargetPaths: updatedTargetPaths,
+                    })?.apply(strategyLifecycle).commands ?? []
+                  : []
 
               return strategyApplicationResult([
                 ...moveCommands,

@@ -39,6 +39,7 @@ import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
+import { uiInsertMetaStrategy } from './strategies/ui-insert-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -97,6 +98,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   resizeStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
+  uiInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
@@ -415,6 +417,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
       case 'DRAG':
       case 'KEYBOARD':
       case 'HOVER':
+      case 'UI':
         return true
       default:
         const _exhaustiveCheck: never = interactionSession.interactionData

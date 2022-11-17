@@ -3314,7 +3314,7 @@ export const UPDATE_FNS = {
             [],
           )
           const size = width != null && height != null ? { width: width, height: height } : null
-          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
+          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size, null)
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
             switchMode,
             editorWithToast,
@@ -3413,7 +3413,7 @@ export const UPDATE_FNS = {
         [],
       )
       const size = width != null && height != null ? { width: width, height: height } : null
-      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
+      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size, null)
       return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
     } else {
       return editor

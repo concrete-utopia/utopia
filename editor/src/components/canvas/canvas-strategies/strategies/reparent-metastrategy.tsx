@@ -64,7 +64,7 @@ export function getApplicableReparentFactories(
             strategyType: result.strategy,
             targetParentDisplayType: 'flow',
             fitness: fitness,
-            factory: baseAbsoluteReparentStrategy(result.target, fitness),
+            factory: baseAbsoluteReparentStrategy(result.target, fitness, 'keep-global-position'),
           }
         } else {
           return {
@@ -103,6 +103,55 @@ export function getApplicableReparentFactories(
   })
 
   return factories
+}
+
+export function getApplicableReparentFactories2(
+  canvasState: InteractionCanvasState,
+  reparentStrategy: ReparentStrategy,
+  isFallback: boolean,
+  targetParent: ElementPath,
+): ReparentFactoryAndDetails {
+  const reparentTarget: ReparentTarget = {
+    shouldReparent: true,
+    newParent: targetParent,
+    shouldReorder: false,
+    newIndex: 0,
+    shouldConvertToInline: 'do-not-convert',
+    defaultReparentType: 'REPARENT_AS_ABSOLUTE',
+  }
+  switch (reparentStrategy) {
+    case 'REPARENT_AS_ABSOLUTE': {
+      const fitness = isFallback ? 2 : 3
+      return {
+        targetParent: targetParent,
+        targetIndex: null,
+        strategyType: reparentStrategy,
+        targetParentDisplayType: 'flow',
+        fitness: fitness,
+        factory: baseAbsoluteReparentStrategy(reparentTarget, fitness, 'reset-position'),
+      }
+    }
+    case 'REPARENT_AS_STATIC': {
+      const fitness = isFallback ? 2 : 3
+
+      const targetParentDisplayType =
+        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetParent)
+          ?.specialSizeMeasurements.display === 'flex'
+          ? 'flex'
+          : 'flow'
+
+      return {
+        targetParent: targetParent,
+        targetIndex: null,
+        strategyType: reparentStrategy,
+        targetParentDisplayType: targetParentDisplayType,
+        fitness: fitness,
+        factory: baseReparentAsStaticStrategy(reparentTarget, fitness, targetParentDisplayType),
+      }
+    }
+    default:
+      assertNever(reparentStrategy)
+  }
 }
 
 function getStartingTargetParentsToFilterOutInner(

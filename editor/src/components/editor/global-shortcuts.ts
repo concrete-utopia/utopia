@@ -602,6 +602,7 @@ export function handleKeyDown(
                 'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
               },
               null,
+              null,
             ),
             modifiers,
           )
@@ -617,6 +618,7 @@ export function handleKeyDown(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+              null,
               null,
             ),
             modifiers,
@@ -645,6 +647,7 @@ export function handleKeyDown(
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
+              null,
             ),
             modifiers,
           )
@@ -659,7 +662,13 @@ export function handleKeyDown(
 
         const newUID = generateUidWithExistingComponents(editor.projectContents)
         return addCreateHoverInteractionActionToSwitchModeAction(
-          EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null),
+          EditorActions.enableInsertModeForJSXElement(
+            defaultDivElement(newUID),
+            newUID,
+            {},
+            null,
+            null,
+          ),
           modifiers,
         )
       },

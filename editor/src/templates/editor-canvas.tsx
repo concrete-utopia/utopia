@@ -914,6 +914,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             newUID,
             {},
             elementSize,
+            null,
           )
 
           switch (this.props.editor.imageDragSessionState.type) {
@@ -970,7 +971,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             const newElement = createJsxImage(uid, imageParams)
 
             this.props.dispatch([
-              EditorActions.enableInsertModeForJSXElement(newElement, uid, {}, elementSize),
+              EditorActions.enableInsertModeForJSXElement(newElement, uid, {}, elementSize, null),
               EditorActions.setImageDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
               EditorActions.switchEditorMode(EditorModes.selectMode()),
