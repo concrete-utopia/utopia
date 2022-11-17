@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { useColorTheme } from '../../../uuiui'
+import { colorTheme } from '../../../uuiui'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
 import { useIsMyProject } from '../../common/server-hooks'
@@ -47,8 +47,6 @@ export const LeftPaneComponent = React.memo(() => {
     'LeftPaneComponent loggedIn',
   )
 
-  const colorTheme = useColorTheme()
-
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
@@ -78,6 +76,7 @@ export const LeftPaneComponent = React.memo(() => {
         height: '100%',
         position: 'relative',
         backgroundColor: colorTheme.leftPaneBackground.value,
+        color: colorTheme.fg1.value,
         paddingLeft: 4,
         width: LeftPaneDefaultWidth,
       }}

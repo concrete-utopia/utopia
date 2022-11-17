@@ -15,6 +15,7 @@ const darkBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
+  jsYellow: base.jsYellow,
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
@@ -72,6 +73,7 @@ const darkErrorStates = {
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
   bg0Opacity90: createUtopiColor('rgba(45,45,45,0.9)'),
+  bg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg6Opacity50: createUtopiColor('rgba(111, 119, 139, 0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
@@ -164,6 +166,8 @@ export const dark: typeof light = {
   inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: darkBase.bg2,
   buttonHoverBackground: darkBase.bg3,
+  buttonShadow: darkBase.fg9,
+  buttonShadowActive: darkBase.fg8,
 
   // application utilities:
   resizingDisplayBackground: darkBase.fg3,
@@ -179,6 +183,7 @@ export const dark: typeof light = {
   contextMenuHighlightBackground: darkBase.primary,
   contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
+  inspectorHoverColor: darkBase.fg8,
   inspectorFocusedColor: darkBase.primary,
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
@@ -193,4 +198,15 @@ export const dark: typeof light = {
   githubMUDModified: createUtopiColor('#f90'),
   githubMUDDeleted: createUtopiColor('#f22'),
   githubMUDDefault: createUtopiColor('#ccc'),
+
+  // Code editor
+  codeEditorShimmerPrimary: darkBase.bg4,
+  codeEditorShimmerSecondary: darkBase.bg5,
+  codeEditorTabRowBg: darkBase.bg2,
+  codeEditorTabSelectedBG: darkBase.bg1,
+  codeEditorTabSelectedFG: darkBase.fg0,
+  codeEditorTabSelectedBorder: darkBase.bg2,
+  codeEditorBreadcrumbs: darkBase.fg5,
+  codeEditorTabRowFg: darkBase.fg5,
+  codeEditorGrid: createUtopiColor('#6d705b'),
 }
