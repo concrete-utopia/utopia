@@ -67,6 +67,7 @@ export const Block = React.memo((props: BlockProps) => {
         css={{
           '&:hover': {
             background: props.onClick != null ? colorTheme.bg2.value : 'none',
+            cursor: props.onClick != null ? 'pointer' : 'default',
           },
         }}
         padded={false}
