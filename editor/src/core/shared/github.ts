@@ -1127,6 +1127,9 @@ export async function refreshGithubData(
   branchChecksums: GithubChecksums | null,
 ): Promise<void> {
   if (githubAuthenticated) {
+    void getUserDetailsFromServer().then((r) =>
+      dispatch([updateGithubData({ githubUserDetails: r })]),
+    )
     void getUsersPublicGithubRepositories(dispatch)
     if (githubRepo != null) {
       let upstreamChangesSuccess = false

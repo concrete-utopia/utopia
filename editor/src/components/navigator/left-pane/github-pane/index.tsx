@@ -19,6 +19,7 @@ import {
   Button,
   FlexColumn,
   FlexRow,
+  MenuIcons,
   Section,
   SectionTitleRow,
   StringInput,
@@ -626,11 +627,21 @@ const PullRequestBlock = () => {
 }
 
 export const GithubPane = React.memo(() => {
+  const githubUser = useEditorState(
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github user details',
+  )
   return (
     <>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
-          <Title style={{ flexGrow: 1 }}>Github</Title>
+          <FlexRow flexGrow={1}>
+            <Title style={{ flexGrow: 1 }}>Github</Title>
+          </FlexRow>
+          <FlexRow style={{ gap: 4 }}>
+            <span>@{githubUser?.login}</span>
+            {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
+          </FlexRow>
         </SectionTitleRow>
       </Section>
       <Section style={{ padding: '10px' }}>
