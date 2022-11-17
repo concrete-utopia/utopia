@@ -290,7 +290,7 @@ listPullRequestsErrorCases status | status == notModified304          = throwE "
 listPullRequests :: (MonadIO m) => AccessToken -> Text -> Text -> Int -> Maybe Text -> ExceptT Text m ListPullRequestsResult
 listPullRequests accessToken owner repository page possibleHead = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/pulls"
-  let headParameter = maybe [] (\h -> [("head", h)]) possibleHead
+  let headParameter = maybe [] (\h -> [("head", owner <> ":" <> h)]) possibleHead
   let queryParameters = [("page", show page)] <> headParameter
   callGithub getFromGithub queryParameters listPullRequestsErrorCases accessToken repoUrl ()
 

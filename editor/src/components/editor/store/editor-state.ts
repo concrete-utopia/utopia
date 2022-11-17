@@ -3135,8 +3135,8 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(userState: UserState): Theme {
-  return userState.themeConfig ?? DefaultTheme
+export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
+  return userConfiguration.themeConfig ?? DefaultTheme
 }
 
 export function getNewSceneName(editor: EditorState): string {
