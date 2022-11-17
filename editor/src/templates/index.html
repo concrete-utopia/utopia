@@ -53,11 +53,28 @@
         }
       }
 
+      @keyframes animate-pyramid {
+        0% {
+          transform: translateY(10px);
+        }
+        100% {
+          transform: translateY(-10px);
+        }
+      }
+
       .animation-progress {
         animation-name: animation-keyframes;
         animation-duration: 10s;
         animation-iteration-count: infinite;
         animation-direction: alternate;
+      }
+
+      .utopia-logo-pyramid {
+        animation-name: animate-pyramid;
+        animation-duration: 1.5s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        animation-timing-function: ease-in-out;
       }
     </style>
   </head>
@@ -104,6 +121,7 @@
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
             height="128px"
             alt="Utopia Logo"
+            class="utopia-logo-pyramid"
           />
 
           <div
