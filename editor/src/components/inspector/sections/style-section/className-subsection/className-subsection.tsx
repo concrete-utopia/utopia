@@ -26,6 +26,7 @@ import {
 } from '../../../../../core/tailwind/tailwind-options'
 import { when } from '../../../../../utils/react-conditionals'
 import {
+  colorTheme,
   FlexColumn,
   FlexRow,
   InspectorSubsectionHeader,
@@ -71,7 +72,8 @@ const container: styleFn = (base) => ({
 const control: styleFn = () => ({
   label: 'control',
   alignItems: 'center',
-  backgroundColor: 'rgb(245, 245, 245)',
+  backgroundColor: colorTheme.bg5.value,
+  color: colorTheme.fg2.value,
   boxSizing: 'border-box',
   cursor: 'default',
   display: 'flex',
