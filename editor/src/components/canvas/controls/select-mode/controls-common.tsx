@@ -1,7 +1,19 @@
 import React from 'react'
+import { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
+import { defaultEither, Either } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import { roundTo } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifiers } from '../../../../utils/modifiers'
-import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+import { AllElementProps } from '../../../editor/store/editor-state'
+import {
+  CSSNumber,
+  CSSNumberUnit,
+  cssParsers,
+  ParsedCSSProperties,
+  printCSSNumber,
+} from '../../../inspector/common/css-utils'
 
 export const Emdash: string = '\u2014'
 
@@ -164,5 +176,17 @@ export function indicatorMessage(
     return printCSSNumber(value.value, null)
   }
 
-  return Emdash // emdash
+  return Emdash
+}
+
+export function getPropertyFromStyle<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  prop: P,
+): T | null {
+  const parser = cssParsers[prop] as (value: unknown) => Either<string, T>
+  return optionalMap(
+    (v) => defaultEither(null, parser(v)),
+    allElementProps[EP.toString(elementPath)]?.['style']?.[prop],
+  )
 }

@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { toString } from '../../../../core/shared/element-path'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
@@ -70,6 +69,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     selectedElements[0],
     canvasState.startingAllElementProps,
   )
+
   if (flexGap == null) {
     return null
   }
