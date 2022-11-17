@@ -26,7 +26,7 @@ function getChainedBoxShadow(
   hovered: boolean,
 ) {
   const controlStatusEdges = getChainSegmentEdge(controlStyles)
-  const hoveredBoxShadow = `0 0 0 1px hsl(0,0%,83%) inset`
+  const hoveredBoxShadow = `0 0 0 1px ${colorTheme.inspectorHoverColor.value} inset`
   const focusedBoxShadow = `0 0 0 1px ${colorTheme.inspectorFocusedColor.value} inset`
 
   const standardBoxShadow = {

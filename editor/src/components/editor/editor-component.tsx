@@ -304,6 +304,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           height: '100%',
           width: '100%',
           overscrollBehaviorX: 'contain',
+          color: colorTheme.fg1.value,
         }}
         onDragEnter={startDragInsertion}
       >

@@ -41,7 +41,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   height: UtopiaTheme.layout.inputHeight.default,
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
-  boxShadow: props.outline ? 'inset 0px 0px 0px 1px hsl(0,0%,90%)' : undefined,
+  boxShadow: props.outline ? `inset 0px 0px 0px 1px ${colorTheme.buttonShadow.value}` : undefined,
   color: props.primary ? 'white' : 'inherit',
   //TODO Nested ternaries
   background: props.primary
@@ -60,7 +60,9 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   '&:active': {
     outline: 'none',
     border: 'none',
-    boxShadow: props.outline ? 'inset 0px 0px 0px 1px  hsl(0,0%,80%)' : undefined,
+    boxShadow: props.outline
+      ? `inset 0px 0px 0px 1px  ${colorTheme.buttonShadowActive.value}`
+      : undefined,
     filter: props.highlight ? 'brightness(98%)' : undefined,
   },
 }))

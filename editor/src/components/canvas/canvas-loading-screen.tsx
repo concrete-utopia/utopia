@@ -25,8 +25,13 @@ export const CanvasLoadingScreen = React.memo(() => {
             animation-fill-mode: forwards;
             animation-iteration-count: infinite;
             animation-timing-function: linear;
-            background: #f6f6f6;
-            background: linear-gradient(to right, #f6f6f6 8%, #f0f0f0 18%, #f6f6f6 33%);
+            background: ${colorTheme.codeEditorShimmerPrimary.value};
+            background: linear-gradient(
+              to right,
+              ${colorTheme.codeEditorShimmerPrimary.value} 8%,
+              ${colorTheme.codeEditorShimmerSecondary.value} 18%,
+              ${colorTheme.codeEditorShimmerPrimary.value} 33%
+            );
             background-size: 800px 104px;
             position: relative;
           }
