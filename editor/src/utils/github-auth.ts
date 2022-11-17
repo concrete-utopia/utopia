@@ -4,6 +4,7 @@ import urljoin from 'url-join'
 import { LoginState } from '../common/user'
 import { EditorDispatch } from '../components/editor/action-types'
 import { setGithubState } from '../components/editor/actions/action-creators'
+import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
   const url = urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status')
@@ -35,7 +36,10 @@ export async function startGithubAuthentication(dispatch: EditorDispatch): Promi
   window.open(url)
 
   async function checkAuthenticatedPeriodically(timeLeftMS: number): Promise<void> {
-    const currentStatus = await checkIfAuthenticatedWithGithub()
+    const currentStatus = await updateUserDetailsWhenAuthenticated(
+      dispatch,
+      checkIfAuthenticatedWithGithub(),
+    )
     if (currentStatus) {
       dispatch([setGithubState({ authenticated: true })], 'everyone')
     } else {

@@ -40,6 +40,7 @@ import {
   GithubData,
   GithubOperation,
   GithubRepo,
+  GithubUser,
   packageJsonFileFromProjectContents,
   PersistentModel,
   projectGithubSettings,
@@ -174,6 +175,13 @@ export interface GetBranchPullRequestSuccess {
 }
 
 export type GetBranchPullRequestResponse = GetBranchPullRequestSuccess | GithubFailure
+
+export interface GetGithubUserSuccess {
+  type: 'SUCCESS'
+  user: GithubUser
+}
+
+export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
 export interface SaveProjectToGithubOptions {
   branchName: string | null
@@ -576,6 +584,47 @@ async function getBranchContentFromServer(
     headers: HEADERS,
     mode: MODE,
   })
+}
+
+export async function getUserDetailsFromServer(): Promise<GithubUser> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'user')
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+
+  if (response.ok) {
+    const responseBody: GetGithubUserResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        throw new Error(
+          `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
+        )
+      case 'SUCCESS':
+        return responseBody.user
+      default:
+        const _exhaustiveCheck: never = responseBody
+        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    }
+  } else {
+    throw new Error(`Unexpected status returned from user details endpoint: ${response.status}`)
+  }
+}
+
+// Designed to wrap around a function that checks for a valid Github authentication.
+export async function updateUserDetailsWhenAuthenticated(
+  dispatch: EditorDispatch,
+  authenticationCheck: Promise<boolean>,
+): Promise<boolean> {
+  const authenticationResult = await authenticationCheck
+  if (authenticationResult) {
+    const userDetails = await getUserDetailsFromServer()
+    dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
+  }
+  return authenticationResult
 }
 
 export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch): Promise<void> {

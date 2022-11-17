@@ -695,6 +695,10 @@ getGithubBranchPullRequestEndpoint :: Maybe Text -> Text -> Text -> Text -> Serv
 getGithubBranchPullRequestEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
   getPullRequestForBranch (view (field @"_id") sessionUser) owner repository branchName
 
+getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
+getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  getGithubUserDetails (view (field @"_id") sessionUser)
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -723,6 +727,7 @@ protected authCookie = logoutPage authCookie
                   :<|> getGithubBranchPullRequestEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
+                  :<|> getGithubUserEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

@@ -27,6 +27,7 @@ import {
 } from './actions/action-creators'
 import { getFileExtension } from '../../core/shared/file-utils'
 import { isAuthenticatedWithGithub } from '../../utils/github-auth'
+import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -391,7 +392,10 @@ export function startPollingLoginState(
         )
 
         // Fetch the github auth status
-        void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) =>
+        void updateUserDetailsWhenAuthenticated(
+          dispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) =>
           dispatch([
             setGithubState({
               authenticated: authenticatedWithGithub,
