@@ -1105,6 +1105,7 @@ export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): bo
 export interface PullRequest {
   title: string
   htmlURL: string
+  number: number
 }
 
 export interface ProjectGithubSettings {

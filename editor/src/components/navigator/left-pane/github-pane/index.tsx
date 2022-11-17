@@ -28,6 +28,7 @@ import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
+import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 
@@ -449,15 +450,21 @@ const LocalChangesBlock = () => {
     'Github authenticated',
   )
   const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
+  const pullRequests = useEditorState(
+    (store) => store.editor.githubData.currentBranchPullRequests,
+    'Branch PRs',
+  )
+
   if (!githubAuthenticated || branch == null) {
     return null
   }
+
   return (
     <Block
       expanded={hasLocalChanges}
       title={hasLocalChanges ? 'Local Changes' : 'No Local Changes'}
       status={state}
-      last={true}
+      last={pullRequests == null || pullRequests.length === 0}
     >
       {when(
         hasLocalChanges,
@@ -530,6 +537,21 @@ const PullRequestButton = () => {
   )
 }
 
+const PullRequestBlock = () => {
+  const pullRequests = useEditorState(
+    (store) => store.editor.githubData.currentBranchPullRequests,
+    'Branch PRs',
+  )
+  if (pullRequests == null || pullRequests.length === 0) {
+    return null
+  }
+  return (
+    <Block title='Pull Requests' status={'pending'} expanded={true}>
+      <PullRequestPane />
+    </Block>
+  )
+}
+
 export const GithubPane = React.memo(() => {
   return (
     <>
@@ -544,6 +566,7 @@ export const GithubPane = React.memo(() => {
         <BranchBlock />
         <RemoteChangesBlock />
         <LocalChangesBlock />
+        <PullRequestBlock />
         <PullRequestButton />
       </Section>
     </>

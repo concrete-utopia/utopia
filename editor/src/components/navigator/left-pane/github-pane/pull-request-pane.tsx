@@ -1,17 +1,18 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+import { jsx } from '@emotion/react'
 import React from 'react'
-import { Button } from '../../../../uuiui/button'
-import urljoin from 'url-join'
+import { isGithubListingPullRequestsForBranch } from '../../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../../components/editor/store/store-hook'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
+import { updatePullRequestsForBranch } from '../../../../core/shared/github'
+import { FlexColumn } from '../../../../uuiui'
+import { Button } from '../../../../uuiui/button'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
-import { updatePullRequestsForBranch } from '../../../../core/shared/github'
-import {
-  isGithubListingPullRequestsForBranch,
-  PullRequest,
-} from '../../../../components/editor/store/editor-state'
 
-export const PullRequestPane = () => {
+export const PullRequestPane = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'PullRequestPane dispatch')
 
   const githubRepo = useEditorState((store) => {
@@ -49,76 +50,57 @@ export const PullRequestPane = () => {
     }
   }, [dispatch, githubRepo, branchName])
 
-  const pullRequestsWithCreateNew: Array<PullRequest> | null = React.useMemo(() => {
-    if (githubRepo != null && branchName != null) {
-      const createPullRequestURL = urljoin(
-        'https://github.com',
-        githubRepo.owner,
-        githubRepo.repository,
-        'compare',
-        branchName,
-      )
-      const createPullRequestURLWithParams = `${createPullRequestURL}?expand=1`
-      return [
-        ...(pullRequests ?? []),
-        {
-          title: 'Create PR on Github.',
-          htmlURL: createPullRequestURLWithParams,
-        },
-      ]
-    } else {
-      return null
-    }
-  }, [pullRequests, githubRepo, branchName])
+  const openBlank = React.useCallback(
+    (url: string) => () => {
+      window.open(url, '_blank')
+    },
+    [],
+  )
 
-  if (pullRequestsWithCreateNew == null) {
+  if (pullRequests == null) {
     return null
-  } else {
-    return (
-      <>
-        <UIGridRow padded variant='<----------1fr---------><-auto->'>
-          <span style={{ fontWeight: 500 }}>Pull Requests</span>
-          <Button
-            spotlight
-            highlight
-            style={{ padding: '0 6px' }}
-            disabled={githubWorking}
-            onMouseDown={refreshPullRequests}
-          >
-            {isUpdatingPullRequests ? <GithubSpinner /> : <RefreshIcon />}
-          </Button>
-        </UIGridRow>
-        <UIGridRow padded variant='<----------1fr---------><-auto->'>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {pullRequestsWithCreateNew.map((pr, index) => {
-              return (
-                <div
-                  key={`pull-request-${index}`}
-                  style={{
-                    gap: 8,
-                    paddingLeft: 8,
-                    paddingRight: 8,
-                    paddingBottom: 8,
-                    paddingTop: 8,
-                    width: '100%',
-                    maxHeight: 220,
-                    overflowY: 'scroll',
-                  }}
-                >
-                  <a href={pr.htmlURL} target='_blank' rel='noopener noreferrer'>
-                    {pr.title}
-                  </a>
-                </div>
-              )
-            })}
-          </div>
-        </UIGridRow>
-      </>
-    )
   }
-}
+
+  return (
+    <UIGridRow padded={false} variant='<-------------1fr------------->' style={{ width: '100%' }}>
+      <UIGridRow padded={false} variant='<-------------1fr------------->'>
+        <Button
+          spotlight
+          highlight
+          style={{ padding: '0 6px' }}
+          disabled={githubWorking}
+          onMouseDown={refreshPullRequests}
+        >
+          {isUpdatingPullRequests ? <GithubSpinner /> : <RefreshIcon />}
+        </Button>
+      </UIGridRow>
+      <FlexColumn
+        style={{
+          border: '1px solid #2D2E33',
+          borderRadius: 3,
+          gap: 4,
+        }}
+      >
+        {pullRequests.map((pr, index) => {
+          return (
+            <UIGridRow
+              key={`pull-request-${index}`}
+              padded={true}
+              variant='|--16px--|<--------auto-------->'
+              css={{
+                '&:hover': {
+                  backgroundColor: '#eee',
+                  cursor: 'pointer',
+                },
+              }}
+              onClick={openBlank(pr.htmlURL)}
+            >
+              <span>#{pr.number}</span>
+              <span>{pr.title}</span>
+            </UIGridRow>
+          )
+        })}
+      </FlexColumn>
+    </UIGridRow>
+  )
+})

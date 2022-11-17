@@ -314,6 +314,16 @@ export async function getBranchesForGithubRepository(
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
+const RE_PULL_REQUEST_URL_NUMBER = /.+\/pull\/([0-9]+).*/
+
+export function getPullRequestNumberFromUrl(url: string): number {
+  try {
+    return parseInt(url.replace(RE_PULL_REQUEST_URL_NUMBER, '$1'))
+  } catch (err) {
+    return NaN
+  }
+}
+
 export async function updatePullRequestsForBranch(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
@@ -364,7 +374,14 @@ export async function updatePullRequestsForBranch(
         break
       case 'SUCCESS':
         dispatch(
-          [updateGithubData({ currentBranchPullRequests: responseBody.pullRequests })],
+          [
+            updateGithubData({
+              currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
+                ...pr,
+                number: getPullRequestNumberFromUrl(pr.htmlURL),
+              })),
+            }),
+          ],
           'everyone',
         )
         break
