@@ -1739,7 +1739,8 @@ export const UPDATE_FNS = {
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
-            return EP.parentPath(view)
+            const parentPath = EP.parentPath(view)
+            return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, editor.selectedViews),
           EP.pathsEqual,
         )
@@ -1759,10 +1760,11 @@ export const UPDATE_FNS = {
       false,
       (e) => {
         const updatedEditor = deleteElements([action.target], e)
-        const newSelection = EP.parentPath(action.target)
+        const parentPath = EP.parentPath(action.target)
+        const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
           ...updatedEditor,
-          selectedViews: [newSelection],
+          selectedViews: newSelection,
         }
       },
       dispatch,
