@@ -10,12 +10,7 @@ import {
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import {
-  CSSNumber,
-  parseCSSPercent,
-  parseCSSPx,
-  printCSSNumber,
-} from '../../inspector/common/css-utils'
+import { CSSNumber, parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -24,6 +19,7 @@ export interface SetCssLengthProperty extends BaseCommand {
   target: ElementPath
   property: PropertyPath
   valuePx: number
+  forcePx: 'force-pixel' | 'keep-percent'
   parentDimensionPx: number | undefined
 }
 
@@ -32,6 +28,7 @@ export function setCssLengthProperty(
   target: ElementPath,
   property: PropertyPath,
   valuePx: number,
+  forcePx: 'force-pixel' | 'keep-percent',
   parentDimensionPx: number | undefined,
 ): SetCssLengthProperty {
   return {
@@ -40,6 +37,7 @@ export function setCssLengthProperty(
     target: target,
     property: property,
     valuePx: valuePx,
+    forcePx: forcePx,
     parentDimensionPx: parentDimensionPx,
   }
 }
@@ -86,7 +84,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     const valueInPercent = (command.valuePx / command.parentDimensionPx) * 100
     const newValueCssNumber: CSSNumber = {
       value: valueInPercent,
-      unit: currentValuePercent.unit,
+      unit: command.forcePx === 'keep-percent' ? currentValuePercent.unit : 'px',
     }
     const newValue = printCSSNumber(newValueCssNumber, null)
 

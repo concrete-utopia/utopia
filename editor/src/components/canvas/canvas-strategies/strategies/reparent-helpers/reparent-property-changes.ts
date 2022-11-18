@@ -13,12 +13,13 @@ import {
   canvasPoint,
   pointDifference,
   roundPointToNearestHalf,
+  zeroLocalRect,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
 import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
+import { CSSNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -26,6 +27,10 @@ import {
 } from '../../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../../commands/commands'
 import { deleteProperties } from '../../../commands/delete-properties-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+} from '../../../commands/set-css-length-command'
 import { setProperty } from '../../../commands/set-property-command'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
@@ -47,7 +52,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
-): Array<AdjustCssLengthProperty> {
+): Array<AdjustCssLengthProperty | SetCssLengthProperty> {
   const element: JSXElement | null = getElementFromProjectContents(
     target,
     projectContents,
@@ -66,6 +71,10 @@ export function getAbsoluteReparentPropertyChanges(
     newParent,
     newParentStartingMetadata,
   )
+
+  const currentBounds =
+    MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(target, targetStartingMetadata) ??
+    zeroLocalRect
 
   const offsetTL = roundPointToNearestHalf(
     pointDifference(newParentContentBox, currentParentContentBox),
@@ -104,6 +113,26 @@ export function getAbsoluteReparentPropertyChanges(
     }
   }
 
+  const createSetCssLengthProperty = (
+    pin: LayoutPinnedProp,
+    newValue: number,
+    condition: (value: CSSNumber) => boolean,
+  ): SetCssLengthProperty | null => {
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    if (isRight(value) && value.value != null && condition(value.value)) {
+      return setCssLengthProperty(
+        'always',
+        target,
+        stylePropPathMappingFn(pin, ['style']),
+        newValue,
+        'force-pixel',
+        undefined,
+      )
+    } else {
+      return null
+    }
+  }
+
   const newParentFrame = MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata)
 
   return [
@@ -128,6 +157,16 @@ export function getAbsoluteReparentPropertyChanges(
         )
       },
       ['bottom', 'right'] as const,
+    ),
+    ...mapDropNulls(
+      (pin) => {
+        if (currentBounds[pin] > 0) {
+          return createSetCssLengthProperty(pin, currentBounds[pin], (value) => value.unit === '%')
+        } else {
+          return null
+        }
+      },
+      ['width', 'height'] as const,
     ),
   ]
 }

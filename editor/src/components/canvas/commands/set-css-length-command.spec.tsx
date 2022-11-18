@@ -27,6 +27,7 @@ describe('setCssLengthProperty', () => {
       cardInstancePath,
       stylePropPathMappingFn('height', ['style']),
       valueToSet,
+      'keep-percent',
       400,
     )
 
