@@ -16,6 +16,7 @@ const lightBase = {
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
   jsYellow: base.jsYellow,
+  transparent: base.transparent,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('#FDFDFD'),
@@ -58,6 +59,9 @@ const lightPrimitives = {
   neutralBorder: lightBase.border3,
   secondaryBorder: lightBase.border2,
   subduedBorder: lightBase.border1,
+
+  checkerboardLight: base.white,
+  checkerboardDark: createUtopiColor('rgb(191,191,191)'),
 }
 
 const lightErrorStates = {
@@ -127,6 +131,9 @@ export const light = {
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
   canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
   canvasControlsInlineToggleActiveBackground: createUtopiColor('rgba(230,242,255,1)'),
+
+  canvasControlsCornerOutline: createUtopiColor('rgba(103, 142, 255, 1)'),
+  canvasControlsDimensionableControlShadow: createUtopiColor('rgba(140,140,140,.9)'),
 
   canvasSelectionPrimaryOutline: lightBase.primary,
   canvasSelectionInstanceOutline: base.purple,

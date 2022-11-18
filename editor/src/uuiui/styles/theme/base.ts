@@ -14,4 +14,5 @@ export const base = {
   black: createUtopiColor('black'),
   darkgray: createUtopiColor('hsl(0, 0%, 50%)'),
   darkorange: createUtopiColor('#D05300'),
+  transparent: createUtopiColor('transparent'),
 }

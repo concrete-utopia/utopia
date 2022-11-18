@@ -4,6 +4,7 @@ import { ElementInstanceMetadata } from '../../../../core/shared/element-templat
 import { roundTo, size } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
+import { colorTheme } from '../../../../uuiui'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export const Emdash: string = '\u2014'
@@ -127,20 +128,10 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
         width: width,
         height: height,
         backgroundColor: pillColor,
-        border: `${borderWidth}px solid rgba(255, 255, 255)`,
+        border: `${borderWidth}px solid ${colorTheme.bg0.value}`,
       }}
     />
   )
-})
-
-export const StripeOpacity: number = 30
-
-export const StripedBackgroundCSS = (
-  stripeColor: string,
-  scale: number,
-): { backgroundImage: string; backgroundSize: string } => ({
-  backgroundImage: `linear-gradient(135deg, ${stripeColor} 24.5%, rgba(255,255,255,0) 24.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 74%, rgba(255,255,255,0) 74%, rgba(255,255,255,0) 100%)`,
-  backgroundSize: `${4 / scale}px ${4 / scale}px`,
 })
 
 export type Timeout = ReturnType<typeof setTimeout>
