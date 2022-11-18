@@ -104,12 +104,22 @@ export function defaultTextElementStyle(): JSXAttribute {
   )
 }
 
+export function defaultRectangleElementStyle(): JSXAttribute {
+  return jsxAttributeValue(
+    {
+      backgroundColor: '#FF69B4AB',
+      position: 'absolute',
+    },
+    emptyComments,
+  )
+}
+
 export function defaultRectangleElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Rectangle', []),
     uid,
     jsxAttributesFromMap({
-      style: defaultViewElementStyle(),
+      style: defaultRectangleElementStyle(),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
     [],
