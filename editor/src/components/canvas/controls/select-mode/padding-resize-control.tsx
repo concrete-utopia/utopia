@@ -30,10 +30,8 @@ import {
   CSSNumberWithRenderedValue,
   PillHandle,
   StripedBackgroundCSS,
-  StripeOpacity,
   useHoverWithDelay,
 } from './controls-common'
-import { useMaybeHighlightElement } from './select-mode-hooks'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -88,7 +86,6 @@ const PaddingResizeControlI = React.memo(
     )
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
 
     const colorTheme = useColorTheme()
@@ -121,14 +118,6 @@ const PaddingResizeControlI = React.memo(
 
     const onMouseUp = React.useCallback(() => setHidden(false), [])
 
-    const onMouseMove = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        maybeClearHighlightsOnHoverEnd()
-        event.stopPropagation()
-      },
-      [maybeClearHighlightsOnHoverEnd],
-    )
-
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
     const shown = !(props.hiddenByParent && hidden)
@@ -144,7 +133,7 @@ const PaddingResizeControlI = React.memo(
       PaddingResizeDragBorder,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink30.value
+    const stripeColor = colorTheme.brandNeonPink.value
     const color = colorTheme.brandNeonPink.value
 
     return (
@@ -153,10 +142,12 @@ const PaddingResizeControlI = React.memo(
         ref={ref}
         data-testid={paddingControlTestId(props.edge)}
         style={{
+          pointerEvents: 'all',
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          zIndex: 0,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
           ...(hidden ? {} : StripedBackgroundCSS(stripeColor, scale)),
         }}
@@ -164,7 +155,6 @@ const PaddingResizeControlI = React.memo(
         <div
           data-testid={paddingControlHandleTestId(props.edge)}
           onMouseDown={onEdgeMouseDown}
-          onMouseMove={onMouseMove}
           onMouseEnter={hoverStart}
           onMouseLeave={hoverEnd}
           onMouseUp={onMouseUp}
@@ -173,6 +163,7 @@ const PaddingResizeControlI = React.memo(
             position: 'absolute',
             padding: hitAreaWidth,
             cursor: cursor,
+            zIndex: 1,
           }}
         >
           {!isDragging && indicatorShown && (
@@ -204,6 +195,11 @@ interface PaddingControlProps {
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
   const selectedElements = props.targets
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const hoveredViews = useEditorState(
+    (store) => store.editor.hoveredViews,
+    'PaddingResizeControl hoveredViews',
+  )
 
   const numberToPxValue = (n: number) => n + 'px'
 
@@ -254,20 +250,15 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     ref.current.style.height = numberToPxValue(padding.paddingBottom?.renderedValuePx ?? 0)
   })
 
-  const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
-    setHoverHidden(!h),
-  )
-
+  const hoverHidden = !hoveredViews.includes(selectedElements[0])
   return (
     <CanvasOffsetWrapper>
       <div
         data-testid={PaddingResizeControlContainerTestId}
-        onMouseEnter={hoverStart}
-        onMouseLeave={hoverEnd}
         ref={controlRef}
         style={{
           position: 'absolute',
+          pointerEvents: 'none',
         }}
       >
         <PaddingResizeControlI

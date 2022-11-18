@@ -314,6 +314,8 @@ import {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -1541,6 +1543,16 @@ export const UPDATE_FNS = {
       }
     }
   },
+  SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
+      return editor
+    } else {
+      return {
+        ...editor,
+        hoveredViews: [action.target],
+      }
+    }
+  },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {
     if (editor.highlightedViews.length === 0) {
       return editor
@@ -1548,6 +1560,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       highlightedViews: [],
+    }
+  },
+  CLEAR_HOVERED_VIEWS: (action: ClearHoveredViews, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length === 0) {
+      return editor
+    }
+    return {
+      ...editor,
+      hoveredViews: [],
     }
   },
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
