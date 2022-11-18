@@ -95,6 +95,7 @@ export type SaveToGithubResponse = SaveToGithubSuccess | GithubFailure
 
 export interface GithubBranch {
   name: string
+  new?: boolean
 }
 
 export type GetBranchesResult = Array<GithubBranch>
@@ -471,6 +472,24 @@ export async function updateProjectAgainstGithub(
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
+export function connectRepo(
+  resetBranches: boolean,
+  githubRepo: GithubRepo,
+  originCommit: string | null,
+  branchName: string | null,
+): Array<EditorAction> {
+  const newGithubData: Partial<GithubData> = {
+    upstreamChanges: null,
+  }
+  if (resetBranches) {
+    newGithubData.branches = []
+  }
+  return [
+    updateGithubSettings(projectGithubSettings(githubRepo, originCommit, branchName, originCommit)),
+    updateGithubData(newGithubData),
+  ]
+}
+
 export async function updateProjectWithBranchContent(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
@@ -504,13 +523,6 @@ export async function updateProjectWithBranchContent(
         )
         break
       case 'SUCCESS':
-        const newGithubData: Partial<GithubData> = {
-          upstreamChanges: null,
-        }
-        if (resetBranches) {
-          newGithubData.branches = []
-        }
-
         const packageJson = packageJsonFileFromProjectContents(responseBody.content)
         if (packageJson != null && isTextFile(packageJson)) {
           await refreshDependencies(
@@ -524,18 +536,10 @@ export async function updateProjectWithBranchContent(
 
         dispatch(
           [
+            ...connectRepo(resetBranches, githubRepo, responseBody.originCommit, branchName),
             updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
             updateProjectContents(responseBody.content),
             updateBranchContents(responseBody.content),
-            updateGithubSettings(
-              projectGithubSettings(
-                githubRepo,
-                responseBody.originCommit,
-                branchName,
-                responseBody.originCommit,
-              ),
-            ),
-            updateGithubData(newGithubData),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',
