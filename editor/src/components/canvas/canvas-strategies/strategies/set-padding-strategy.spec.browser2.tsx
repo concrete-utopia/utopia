@@ -150,7 +150,9 @@ describe('Padding resize strategy', () => {
       y: paddingResizeControlContainerBounds.y + 4,
     }
 
-    mouseEnterAtPoint(paddingResizeControlContainer, paddingResizeControlContainerCorner)
+    mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
+
+    // mouseEnterAtPoint(paddingResizeControlContainer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
 
