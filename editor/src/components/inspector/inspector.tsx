@@ -42,7 +42,7 @@ import {
 } from '../editor/store/editor-state'
 import {
   EditorStateContext,
-  InspectorStateContext,
+  LowPriorityStateContext,
   useEditorState,
 } from '../editor/store/store-hook'
 import {
@@ -383,10 +383,12 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
-    const inspectorStore = React.useContext(InspectorStateContext)?.useStore
+    const lowPriorityStore = React.useContext(LowPriorityStateContext)?.useStore
     return (
       <EditorStateContext.Provider
-        value={inspectorStore == null ? null : { api: inspectorStore, useStore: inspectorStore }}
+        value={
+          lowPriorityStore == null ? null : { api: lowPriorityStore, useStore: lowPriorityStore }
+        }
       >
         <MultiselectInspector />
       </EditorStateContext.Provider>
