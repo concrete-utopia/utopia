@@ -7,12 +7,12 @@ import { useEditorState } from '../../../editor/store/store-hook'
 const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlags = useEditorState((store) => {
-    if (
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-    ) {
-      return store.editor.canvas.controls.dragToMoveIndicatorFlags
+  const indicatorFlagsInfo = useEditorState((store) => {
+    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+      return {
+        indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
+        dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+      }
     } else {
       return null
     }
@@ -24,7 +24,7 @@ export const StrategyIndicator = React.memo(() => {
   )
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
 
-  if (indicatorFlags == null || !indicatorFlags.showIndicator) {
+  if (indicatorFlagsInfo == null) {
     return null
   }
 
@@ -45,14 +45,16 @@ export const StrategyIndicator = React.memo(() => {
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
         boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        opacity:
+          indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}
       data-testid='drag-strategy-indicator'
     >
-      <MoveIndicatorItem dragType={indicatorFlags.dragType} />
+      <MoveIndicatorItem dragType={indicatorFlagsInfo.indicatorFlags.dragType} />
       <Divider />
-      <ReparentIndicatorItem status={indicatorFlags.reparent} />
+      <ReparentIndicatorItem status={indicatorFlagsInfo.indicatorFlags.reparent} />
       <Divider />
-      <AncestorIndicatorItem enabled={indicatorFlags.ancestor} />
+      <AncestorIndicatorItem enabled={indicatorFlagsInfo.indicatorFlags.ancestor} />
     </FlexRow>
   )
 })
