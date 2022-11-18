@@ -43,6 +43,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEW':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
+    case 'SET_HOVERED_VIEW':
+    case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':

@@ -9,7 +9,8 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { Sides, sides } from 'utopia-api/core'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -82,13 +83,34 @@ function paddingControlContainerBoundsFromChildBounds(
   }))
 }
 
+function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
+  const { left, top, bottom, r } = {
+    left: sidess.left ?? 0,
+    top: sidess.top ?? 0,
+    bottom: sidess.bottom ?? 0,
+    r: sidess.right ?? 0,
+  }
+  return canvasRectangle({
+    x: rect.x + left,
+    y: rect.y + top,
+    width: rect.width - (left + r),
+    height: rect.height - (bottom + top),
+  })
+}
+
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
   gap: number,
   flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
+  const elementPadding =
+    MetadataUtils.findElementByElementPath(elementMetadata, selectedElement)
+      ?.specialSizeMeasurements.padding ?? sides(0, 0, 0, 0)
+  const parentBounds = optionalMap(
+    (b) => inset(elementPadding, b),
+    MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata),
+  )
   if (parentBounds == null) {
     return []
   }

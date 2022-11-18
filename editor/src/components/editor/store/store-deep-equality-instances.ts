@@ -471,10 +471,12 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
 }
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.hoveredViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
@@ -3383,6 +3385,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.highlightedViews,
     newValue.highlightedViews,
   )
+  const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.highlightedViews,
+    newValue.highlightedViews,
+  )
   const hiddenInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.hiddenInstances,
     newValue.hiddenInstances,
@@ -3591,6 +3597,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     nodeModulesResult.areEqual &&
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
+    hoveredViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
     displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
@@ -3667,6 +3674,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       nodeModulesResult.value,
       selectedViewsResult.value,
       highlightedViewsResult.value,
+      hoveredViewsResult.value,
       hiddenInstancesResult.value,
       displayNoneInstancesResult.value,
       warnedInstancesResult.value,

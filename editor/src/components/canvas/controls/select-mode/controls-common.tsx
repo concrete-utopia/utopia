@@ -1,6 +1,9 @@
 import React from 'react'
-import { roundTo } from '../../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import { roundTo, size } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
+import { ProjectContentTreeRoot } from '../../../assets'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 
 export const Emdash: string = '\u2014'
@@ -81,6 +84,7 @@ export function measurementBasedOnOtherMeasurement(
 
 const FontSize = 12
 const Padding = 4
+const BorderRadius = 2
 
 interface CanvasLabelProps {
   scale: number
@@ -92,6 +96,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
+  const borderRadius = BorderRadius / scale
   return (
     <div
       style={{
@@ -99,7 +104,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         padding: padding,
         backgroundColor: color,
         color: 'white',
-        borderRadius: 2,
+        borderRadius: borderRadius,
       }}
     >
       {value}
@@ -174,4 +179,32 @@ export function indicatorMessage(
 
 export function cssNumberEqual(left: CSSNumber, right: CSSNumber): boolean {
   return left.unit === right.unit && left.value === right.value
+}
+
+type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
+
+export function canShowCanvasPropControl(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
+  element: ElementInstanceMetadata,
+  scale: number,
+): Set<CanvasPropControl> {
+  const { width, height } = size(
+    element.specialSizeMeasurements.clientWidth * scale,
+    element.specialSizeMeasurements.clientHeight * scale,
+  )
+
+  if (width > 80 && height > 80) {
+    return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
+  }
+
+  if (Math.min(width, height) < 40) {
+    return new Set<CanvasPropControl>([])
+  }
+
+  if (!MetadataUtils.targetElementSupportsChildren(projectContents, openFile, element)) {
+    return new Set<CanvasPropControl>(['borderRadius', 'gap'])
+  }
+
+  return new Set<CanvasPropControl>(['padding', 'gap'])
 }

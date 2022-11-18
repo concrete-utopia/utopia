@@ -58,6 +58,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
   const oldValue: TransientCanvasState = transientCanvasState(
     [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     [EP.elementPath([['scene'], ['aaa', 'ccc']])],
+    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
     {
       ['/utopia/app.js']: transientFileState(
         [
@@ -82,6 +83,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
   const newSameValue: TransientCanvasState = transientCanvasState(
     [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     [EP.elementPath([['scene'], ['aaa', 'ccc']])],
+    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
     {
       ['/utopia/app.js']: transientFileState(
         [
@@ -105,6 +107,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
   )
   const newDifferentValue: TransientCanvasState = transientCanvasState(
     [EP.elementPath([['scene'], ['aaa', 'ddd']])],
+    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
     [EP.elementPath([['scene'], ['aaa', 'ccc']])],
     {
       ['/utopia/app.js']: transientFileState(
@@ -156,6 +159,7 @@ describe('DerivedStateKeepDeepEquality', () => {
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       [EP.elementPath([['scene'], ['aaa', 'ccc']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -191,6 +195,7 @@ describe('DerivedStateKeepDeepEquality', () => {
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       [EP.elementPath([['scene'], ['aaa', 'ccc']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -225,6 +230,7 @@ describe('DerivedStateKeepDeepEquality', () => {
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
