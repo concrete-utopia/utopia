@@ -61,6 +61,12 @@ export function isDragInteractionData(inputData: InputData): inputData is DragIn
   return inputData.type === 'DRAG'
 }
 
+export function isNotYetStartedDragInteraction(
+  inputData: InputData,
+): inputData is DragInteractionData {
+  return isDragInteractionData(inputData) && inputData.drag == null
+}
+
 export function isKeyboardInteractionData(
   inputData: InputData,
 ): inputData is KeyboardInteractionData {
