@@ -10,14 +10,12 @@ import {
 import {
   paddingControlHandleTestId,
   paddingControlTestId,
-  PaddingResizeControlContainerTestId,
   PaddingResizeControlHoverTimeout,
 } from '../../controls/select-mode/padding-resize-control'
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
-  mouseEnterAtPoint,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import {
@@ -141,9 +139,6 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingResizeControlContainer = editor.renderedDOM.getByTestId(
-      PaddingResizeControlContainerTestId,
-    )
     const paddingResizeControlContainerBounds = div.getBoundingClientRect()
     const paddingResizeControlContainerCorner = {
       x: paddingResizeControlContainerBounds.x + 5,
@@ -151,8 +146,6 @@ describe('Padding resize strategy', () => {
     }
 
     mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
-
-    // mouseEnterAtPoint(paddingResizeControlContainer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
 
