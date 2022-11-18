@@ -7,12 +7,12 @@ import { useEditorState } from '../../../editor/store/store-hook'
 const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlags = useEditorState((store) => {
-    if (
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-    ) {
-      return store.editor.canvas.controls.dragToMoveIndicatorFlags
+  const indicatorFlagsInfo = useEditorState((store) => {
+    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+      return {
+        indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
+        dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+      }
     } else {
       return null
     }
@@ -24,7 +24,7 @@ export const StrategyIndicator = React.memo(() => {
   )
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
 
-  if (indicatorFlags == null || !indicatorFlags.showIndicator) {
+  if (indicatorFlagsInfo == null) {
     return null
   }
 
@@ -45,14 +45,16 @@ export const StrategyIndicator = React.memo(() => {
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
         boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        opacity:
+          indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}
       data-testid='drag-strategy-indicator'
     >
-      <MoveIndicatorItem dragType={indicatorFlags.dragType} />
+      <MoveIndicatorItem dragType={indicatorFlagsInfo.indicatorFlags.dragType} />
       <Divider />
-      <ReparentIndicatorItem status={indicatorFlags.reparent} />
+      <ReparentIndicatorItem status={indicatorFlagsInfo.indicatorFlags.reparent} />
       <Divider />
-      <AncestorIndicatorItem enabled={indicatorFlags.ancestor} />
+      <AncestorIndicatorItem enabled={indicatorFlagsInfo.indicatorFlags.ancestor} />
     </FlexRow>
   )
 })
@@ -74,9 +76,12 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             borderRadius: 10,
           }}
         >
-          <ModalityIcons.MoveAbsolute
-            color={props.dragType === 'absolute' ? 'on-highlight-main' : 'main'}
-          />
+          <VisibilityWrapper visible={props.dragType === 'absolute'}>
+            <ModalityIcons.MoveAbsolute color={'on-highlight-main'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType !== 'absolute'}>
+            <ModalityIcons.MoveAbsolute color={'main'} />
+          </VisibilityWrapper>
         </div>
         <div
           style={{
@@ -86,9 +91,12 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             borderRadius: 10,
           }}
         >
-          <ModalityIcons.Reorder
-            color={props.dragType === 'static' ? 'on-highlight-main' : 'main'}
-          />
+          <VisibilityWrapper visible={props.dragType === 'static'}>
+            <ModalityIcons.Reorder color={'on-highlight-main'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType !== 'static'}>
+            <ModalityIcons.Reorder color={'main'} />
+          </VisibilityWrapper>
         </div>
       </FlexRow>
       <div style={{}}>{props.dragType === 'absolute' ? 'Move' : 'Reorder'}</div>
@@ -110,7 +118,12 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
           backgroundColor: props.enabled ? colorTheme.primary.value : 'transparent',
         }}
       >
-        <ModalityIcons.Magic color={props.enabled ? 'on-highlight-main' : 'subdued'} />
+        <VisibilityWrapper visible={props.enabled}>
+          <ModalityIcons.Magic color={'on-highlight-main'} />
+        </VisibilityWrapper>
+        <VisibilityWrapper visible={!props.enabled}>
+          <ModalityIcons.Magic color={'subdued'} />
+        </VisibilityWrapper>
       </div>
       <div
         style={{
@@ -142,7 +155,12 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
       <div style={{ padding: 4, borderRadius: 10, backgroundColor: iconBackgroundColorFromStatus }}>
-        <ModalityIcons.Reparent color={status !== 'none' ? 'on-highlight-main' : 'subdued'} />
+        <VisibilityWrapper visible={status !== 'none'}>
+          <ModalityIcons.Reparent color={'on-highlight-main'} />
+        </VisibilityWrapper>
+        <VisibilityWrapper visible={status === 'none'}>
+          <ModalityIcons.Reparent color={'subdued'} />
+        </VisibilityWrapper>
       </div>
       <div
         style={{
@@ -158,4 +176,15 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
 const Divider = React.memo(() => {
   const colorTheme = useColorTheme()
   return <div style={{ height: '100%', width: 1, backgroundColor: colorTheme.fg8.value }} />
+})
+
+interface VisibilityWrapperProps {
+  visible: boolean
+}
+const VisibilityWrapper = React.memo<React.PropsWithChildren<VisibilityWrapperProps>>((props) => {
+  return (
+    <div style={{ opacity: props.visible ? 1 : 0, height: props.visible ? undefined : 0 }}>
+      {props.children}
+    </div>
+  )
 })

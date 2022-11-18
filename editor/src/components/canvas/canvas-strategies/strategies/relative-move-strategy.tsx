@@ -64,7 +64,6 @@ export function relativeMoveStrategy(
       fitness:
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.interactionData.drag != null &&
         interactionSession.activeControl.type === 'BOUNDING_AREA'
           ? hasOffsets
             ? 4 // +1 than reorder flow
