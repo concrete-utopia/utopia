@@ -16,6 +16,8 @@ const lightBase = {
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
   jsYellow: base.jsYellow,
+  secondaryBlue: base.blue,
+  secondaryOrange: base.orange,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('#FDFDFD'),
