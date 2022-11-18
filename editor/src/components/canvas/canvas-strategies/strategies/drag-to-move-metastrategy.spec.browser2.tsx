@@ -248,11 +248,13 @@ describe('Drag To Move Strategy Indicator', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='aaa'>
-        <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
-          data-uid='child-1'
-          data-testid='child-1'
-        />
+        <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='bbb'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
+            data-uid='child-1'
+            data-testid='child-1'
+          />
+        </div>
       </div>
       `),
       'await-first-dom-report',

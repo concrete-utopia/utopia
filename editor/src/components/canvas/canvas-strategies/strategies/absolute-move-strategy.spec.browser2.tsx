@@ -106,10 +106,17 @@ export const App2 = (props) => {
 
 export var App = (props) => {
   return (
-    <App2
-      data-uid='app2'
-      style={{ left: ${left}, top: ${top}, width: 300, height: 400 }}
-    />
+    <div data-uid='app-root'>
+      <App2
+        data-uid='app2'
+        style={{
+          left: ${left},
+          top: ${top},
+          width: 300,
+          height: 400,
+        }}
+      />
+    </div>
   )
 }
 

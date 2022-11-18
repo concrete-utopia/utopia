@@ -41,18 +41,22 @@ const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 describe('Padding resize strategy', () => {
   it('Padding resize handle is not present for elements that have no padding set', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-      }}
-      data-uid='24a'
-    />`),
+      makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div
+            data-uid='mydiv'
+            data-testid='mydiv'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 28,
+              top: 28,
+              width: 612,
+              height: 461,
+            }}
+          />
+        </div>
+      `),
       'await-first-dom-report',
     )
 
@@ -76,27 +80,30 @@ describe('Padding resize strategy', () => {
 
   it('Padding resize handle is present for elements that are dimensioned and have children', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-      }}
-      data-uid='24a'
-    >
-      <div
-        style={{
-          backgroundColor: '#0091FFAA',
-          width: 22,
-          height: 22,
-        }}
-        data-uid='002'
-      />
-    </div>`),
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div
+          data-uid='mydiv'
+          data-testid='mydiv'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 28,
+            top: 28,
+            width: 612,
+            height: 461,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 22,
+              height: 22,
+            }}
+            data-uid='002'
+          />
+        </div>
+      </div>`),
       'await-first-dom-report',
     )
 
@@ -554,54 +561,60 @@ function offsetPointByEdge(edge: EdgePiece, delta: number, point: Point): Point 
 }
 
 function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
-  return makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-        padding: '${padding}',
-      }}
-      data-uid='24a'
-    >
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
       <div
+        data-uid='mydiv'
+        data-testid='mydiv'
         style={{
           backgroundColor: '#0091FFAA',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 612,
+          height: 461,
+          padding: '${padding}',
         }}
-        data-uid='002'
-      />
+      >
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='002'
+        />
+      </div>
     </div>`)
 }
 
 function makeTestProjectCodeWithLongHandPaddingValues(
   padding: Partial<CSSPaddingMappedValues<string>>,
 ): string {
-  return makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-        ${formatPaddingLonghandValues(padding)}
-      }}
-      data-uid='24a'
-    >
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
       <div
+        data-uid='mydiv'
+        data-testid='mydiv'
         style={{
           backgroundColor: '#0091FFAA',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 612,
+          height: 461,
+          ${formatPaddingLonghandValues(padding)}
         }}
-        data-uid='002'
-      />
+      >
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='002'
+        />
+      </div>
     </div>`)
 }
 

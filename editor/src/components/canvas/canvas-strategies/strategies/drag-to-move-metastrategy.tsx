@@ -25,6 +25,7 @@ import { flowReorderStrategy } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
+import * as EP from '../../../../core/shared/element-path'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -50,6 +51,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
 
   if (
     selectedElements.length === 0 ||
+    selectedElements.some(EP.isRootElementOfInstance) ||
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
