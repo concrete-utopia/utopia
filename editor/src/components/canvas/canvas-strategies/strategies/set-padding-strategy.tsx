@@ -87,7 +87,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const resizeControl = controlWithProps({
     control: PaddingResizeControl,
-    props: { targets: selectedElements },
+    props: { target: selectedElements[0] },
     key: 'padding-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
   })

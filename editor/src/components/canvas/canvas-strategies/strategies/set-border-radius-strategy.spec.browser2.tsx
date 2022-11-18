@@ -69,6 +69,30 @@ describe('set border radius strategy', () => {
     expect(paddingControls).toEqual([])
   })
 
+  it('only explicitely defined border controls show up for component instances', async () => {
+    const editor = await renderTestEditorWithCode(
+      codeWithComponentInstance(`borderTopLeftRadius: '30px',
+                                 borderTopRightRadius: '30px',`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+    )
+
+    expect(paddingControls.length).toEqual(2)
+  })
+
   it('can only adjust border radius to 50% at most', async () => {
     const { width, height } = size(600, 400)
     const editor = await renderTestEditorWithCode(
@@ -248,6 +272,22 @@ describe('set border radius strategy', () => {
 
 function codeForDragTest(borderRadius: string): string {
   return makeTestProjectCodeWithSnippet(`<div
+    data-testid='mydiv'
+    style={{
+      backgroundColor: '#0091FFAA',
+      position: 'absolute',
+      left: 28,
+      top: 28,
+      width: 600,
+      height: 400,
+      ${borderRadius}
+    }}
+    data-uid='24a'
+  />`)
+}
+
+function codeWithComponentInstance(borderRadius: string): string {
+  return makeTestProjectCodeWithSnippet(`<View
     data-testid='mydiv'
     style={{
       backgroundColor: '#0091FFAA',

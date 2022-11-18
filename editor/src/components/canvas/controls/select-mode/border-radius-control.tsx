@@ -36,7 +36,7 @@ export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
-  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
+  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue | undefined>
   showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
 }
@@ -89,10 +89,13 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
         ref={controlRef}
         style={{ position: 'absolute' }}
       >
-        {BorderRadiusCorners.map((corner) => (
+        {BorderRadiusCorners.flatMap(
+          (corner): Array<[BorderRadiusCorner, CSSNumberWithRenderedValue]> =>
+            borderRadius[corner] == null ? [] : [[corner, borderRadius[corner]!]],
+        ).map(([corner, borderRadiusForCorner]) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
-            borderRadius={borderRadius[corner]}
+            borderRadius={borderRadiusForCorner}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}

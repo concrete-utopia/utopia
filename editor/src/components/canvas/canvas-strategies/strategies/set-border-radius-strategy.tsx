@@ -4,6 +4,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
   JSXElement,
@@ -22,7 +23,6 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import {
-  CSSBorderRadiusIndividual,
   cssNumber,
   CSSNumber,
   ParsedCSSProperties,
@@ -45,6 +45,7 @@ import {
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -125,7 +126,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     ],
     apply: () =>
       strategyApplicationResult([
-        commands(selectedElement),
+        ...commands(selectedElement),
         setElementsToRerenderCommand(selectedElements),
       ]),
   }
@@ -178,7 +179,7 @@ interface BorderRadiusData<T> {
 
 function borderRadiusFromElement(
   element: ElementInstanceMetadata,
-): BorderRadiusData<CSSNumberWithRenderedValue> | null {
+): BorderRadiusData<CSSNumberWithRenderedValue | undefined> | null {
   const jsxElement: JSXElement | null = foldEither(
     () => null,
     (e) => (isJSXElement(e) ? e : null),
@@ -194,15 +195,22 @@ function borderRadiusFromElement(
     return null
   }
 
-  const fromProps = borderRadiusFromProps(jsxElement.props)
-  const borderRadius = optionalMap(
+  const fromProps = borderRadiusFromProps(jsxElement.props, isIntrinsicElement(jsxElement.name))
+  const borderRadiusWithOptionals = optionalMap(
     (radius) => measurementFromBorderRadius(renderedValueSides, radius),
     fromProps,
   )
 
-  if (borderRadius == null) {
+  if (borderRadiusWithOptionals == null) {
     return null
   }
+
+  const borderRadius = isIntrinsicElement(jsxElement.name)
+    ? mapBorderRadiusSides(
+        (s) => s ?? unitlessCSSNumberWithRenderedValue(0),
+        borderRadiusWithOptionals,
+      )
+    : borderRadiusWithOptionals
 
   const borderRadiusUpperLimit = maxBorderRadius(
     size(element.specialSizeMeasurements.clientWidth, element.specialSizeMeasurements.clientHeight),
@@ -211,7 +219,9 @@ function borderRadiusFromElement(
   return {
     mode: fromProps?.type === 'sides' ? 'individual' : 'all',
     borderRadius: mapBorderRadiusSides(
-      (n) => adjustBorderRadius({ min: 0, max: borderRadiusUpperLimit }, n),
+      (side) =>
+        optionalMap((s) => adjustBorderRadius({ min: 0, max: borderRadiusUpperLimit }, s), side) ??
+        undefined,
       borderRadius,
     ),
   }
@@ -219,10 +229,13 @@ function borderRadiusFromElement(
 
 interface BorderRadiusFromProps {
   type: 'sides' | 'borderRadius'
-  sides: BorderRadiusSides<CSSNumber>
+  sides: BorderRadiusSides<CSSNumber | undefined>
 }
 
-function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | null {
+function borderRadiusFromProps(
+  props: JSXAttributes,
+  isElementIntrinsicElement: boolean,
+): BorderRadiusFromProps | null {
   const simpleBorderRadius = simpleBorderRadiusFromProps(props)
 
   const borderTopLeftRadius = defaultEither(
@@ -242,6 +255,8 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
     getLayoutProperty('borderBottomRightRadius', right(props), ['style']),
   )
 
+  const defaultNumber: CSSNumber | undefined = isElementIntrinsicElement ? cssNumber(0) : undefined
+
   if (
     borderTopLeftRadius != null ||
     borderTopRightRadius != null ||
@@ -251,10 +266,10 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
     return {
       type: 'sides',
       sides: {
-        tl: borderTopLeftRadius ?? simpleBorderRadius?.tl ?? cssNumber(0),
-        tr: borderTopRightRadius ?? simpleBorderRadius?.tr ?? cssNumber(0),
-        bl: borderBottomLeftRadius ?? simpleBorderRadius?.bl ?? cssNumber(0),
-        br: borderBottomRightRadius ?? simpleBorderRadius?.br ?? cssNumber(0),
+        tl: borderTopLeftRadius ?? simpleBorderRadius?.tl ?? defaultNumber,
+        tr: borderTopRightRadius ?? simpleBorderRadius?.tr ?? defaultNumber,
+        bl: borderBottomLeftRadius ?? simpleBorderRadius?.bl ?? defaultNumber,
+        br: borderBottomRightRadius ?? simpleBorderRadius?.br ?? defaultNumber,
       },
     }
   }
@@ -289,12 +304,24 @@ function sizeFromElement(element: ElementInstanceMetadata): Size {
 function measurementFromBorderRadius(
   sides: Sides,
   borderRadius: BorderRadiusFromProps,
-): BorderRadiusSides<CSSNumberWithRenderedValue> | null {
+): BorderRadiusSides<CSSNumberWithRenderedValue | undefined> {
   return {
-    tl: cssNumberWithRenderedValue(borderRadius.sides.tl, sides.top ?? 0),
-    tr: cssNumberWithRenderedValue(borderRadius.sides.tr, sides.right ?? 0),
-    bl: cssNumberWithRenderedValue(borderRadius.sides.bl, sides.bottom ?? 0),
-    br: cssNumberWithRenderedValue(borderRadius.sides.br, sides.left ?? 0),
+    tl:
+      optionalMap((tl) => cssNumberWithRenderedValue(tl, sides.top ?? 0), borderRadius.sides.tl) ??
+      undefined,
+    tr:
+      optionalMap(
+        (tr) => cssNumberWithRenderedValue(tr, sides.right ?? 0),
+        borderRadius.sides.tr,
+      ) ?? undefined,
+    bl:
+      optionalMap(
+        (bl) => cssNumberWithRenderedValue(bl, sides.bottom ?? 0),
+        borderRadius.sides.bl,
+      ) ?? undefined,
+    br:
+      optionalMap((br) => cssNumberWithRenderedValue(br, sides.left ?? 0), borderRadius.sides.br) ??
+      undefined,
   }
 }
 
@@ -336,47 +363,15 @@ function adjustBorderRadius(
 }
 
 interface SetBorderRadiusStrategyRunResult {
-  commands: (target: ElementPath) => CanvasCommand
-  updatedBorderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
-}
-
-interface BoderRadiusCorner {
-  borderRadius: CSSNumberWithRenderedValue
-  key: keyof CSSBorderRadiusIndividual
+  commands: (target: ElementPath) => Array<CanvasCommand>
+  updatedBorderRadius: BorderRadiusSides<CSSNumberWithRenderedValue | undefined>
 }
 
 function borderRadiusFromData(
-  data: BorderRadiusData<CSSNumberWithRenderedValue>,
+  data: BorderRadiusData<CSSNumberWithRenderedValue | undefined>,
   corner: BorderRadiusCorner,
-): BoderRadiusCorner {
-  if (data.mode === 'all') {
-    return { borderRadius: data.borderRadius[corner], key: corner }
-  }
-
-  switch (corner) {
-    case 'tl':
-      return {
-        borderRadius: data.borderRadius.tl,
-        key: 'tl',
-      }
-    case 'tr':
-      return {
-        borderRadius: data.borderRadius.tr,
-        key: 'tr',
-      }
-    case 'bl':
-      return {
-        borderRadius: data.borderRadius.bl,
-        key: 'bl',
-      }
-    case 'br':
-      return {
-        borderRadius: data.borderRadius.br,
-        key: 'br',
-      }
-    default:
-      assertNever(corner)
-  }
+): CSSNumberWithRenderedValue | undefined {
+  return data.borderRadius[corner]
 }
 
 function longhandFromEdgePosition(
@@ -404,7 +399,13 @@ function updateBorderRadiusFn(
   elementSize: Size,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
 ) {
-  return (borderRadius: CSSNumberWithRenderedValue) => {
+  return (
+    borderRadius: CSSNumberWithRenderedValue | undefined,
+  ): CSSNumberWithRenderedValue | undefined => {
+    if (borderRadius == null) {
+      return borderRadius
+    }
+
     const dragDelta = clamp(
       -borderRadius.renderedValuePx,
       maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
@@ -428,7 +429,7 @@ function updateBorderRadiusFn(
 }
 
 function setBorderRadiusStrategyRunResult(
-  data: BorderRadiusData<CSSNumberWithRenderedValue>,
+  data: BorderRadiusData<CSSNumberWithRenderedValue | undefined>,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
   elementSize: Size,
 ): SetBorderRadiusStrategyRunResult {
@@ -439,12 +440,27 @@ function setBorderRadiusStrategyRunResult(
       ? 'individual'
       : 'all'
 
+  const borderRadius = borderRadiusFromData(data, edgePosition)
+
+  if (borderRadius == null) {
+    return {
+      commands: () => [],
+      updatedBorderRadius: data.borderRadius,
+    }
+  }
+
   if (mode === 'individual') {
-    const { borderRadius, key } = borderRadiusFromData(data, edgePosition)
     const updatedBorderRadius = updateBorderRadiusFn(
       elementSize,
       borderRadiusAdjustData,
     )(borderRadius)
+
+    if (updatedBorderRadius == null) {
+      return {
+        commands: () => [],
+        updatedBorderRadius: data.borderRadius,
+      }
+    }
 
     return {
       commands: setStylePropertyCommand(
@@ -453,7 +469,7 @@ function setBorderRadiusStrategyRunResult(
       ),
       updatedBorderRadius: {
         ...data.borderRadius,
-        [key]: updatedBorderRadius,
+        [edgePosition]: updatedBorderRadius,
       },
     }
   }
@@ -464,7 +480,7 @@ function setBorderRadiusStrategyRunResult(
   )
 
   return {
-    commands: setStylePropertyCommand('borderRadius', printCSSNumber(allUpdated.tl.value, null)),
+    commands: setStylePropertyCommand('borderRadius', printCSSNumber(allUpdated.tl!.value, null)),
     updatedBorderRadius: allUpdated,
   }
 }
@@ -474,5 +490,5 @@ const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
 
 const setStylePropertyCommand =
   <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>
-  (target: ElementPath): CanvasCommand =>
-    setProperty('always', target, StylePaddingProp(prop), value)
+  (target: ElementPath): Array<CanvasCommand> =>
+    [setProperty('always', target, StylePaddingProp(prop), value)]

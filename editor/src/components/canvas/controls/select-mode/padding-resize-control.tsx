@@ -144,7 +144,7 @@ const PaddingResizeControlI = React.memo(
       PaddingResizeDragBorder,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink30.value
+    const stripeColor = colorTheme.brandNeonPink.value
     const color = colorTheme.brandNeonPink.value
 
     return (
@@ -198,16 +198,16 @@ const PaddingResizeControlI = React.memo(
 )
 
 interface PaddingControlProps {
-  targets: Array<ElementPath>
+  target: ElementPath
 }
 
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
-  const selectedElements = props.targets
+  const selectedElement = props.target
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const numberToPxValue = (n: number) => n + 'px'
 
-  const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
+  const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
       ref.current.style.display = 'none'
     } else {
@@ -220,24 +220,24 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   })
 
   const currentPadding = combinePaddings(
-    paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElements[0]),
-    simplePaddingFromMetadata(elementMetadata.current, selectedElements[0]),
+    paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElement),
+    simplePaddingFromMetadata(elementMetadata.current, selectedElement),
   )
 
-  const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const leftRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElement)
     ref.current.style.height = numberToPxValue(boundingBox.height)
     ref.current.style.width = numberToPxValue(padding.paddingLeft?.renderedValuePx ?? 0)
   })
 
-  const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const topRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElement)
     ref.current.style.width = numberToPxValue(boundingBox.width)
     ref.current.style.height = numberToPxValue(padding.paddingTop?.renderedValuePx ?? 0)
   })
 
-  const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const rightRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElement)
     ref.current.style.left = numberToPxValue(
       boundingBox.width - (padding.paddingRight?.renderedValuePx ?? 0),
     )
@@ -245,8 +245,8 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     ref.current.style.width = numberToPxValue(padding.paddingRight?.renderedValuePx ?? 0)
   })
 
-  const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const bottomRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElement)
     ref.current.style.top = numberToPxValue(
       boundingBox.height - (padding.paddingBottom?.renderedValuePx ?? 0),
     )
