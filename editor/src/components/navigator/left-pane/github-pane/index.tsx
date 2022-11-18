@@ -494,11 +494,11 @@ const LocalChangesBlock = () => {
       return null
     }
     return rawCommitBranchName
-      .split(/[^0-9a-zA-Z\/_]+/)
+      .toLowerCase()
+      .split(/[^0-9a-z\/_]+/)
       .join('-')
       .replace(/-+$/, '')
       .replace(/^-+/, '')
-      .toLowerCase()
   }, [rawCommitBranchName])
 
   const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
