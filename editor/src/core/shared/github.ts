@@ -106,10 +106,14 @@ export interface GetBranchesSuccess {
 
 export type GetBranchesResponse = GetBranchesSuccess | GithubFailure
 
-export interface GetBranchContentSuccess {
-  type: 'SUCCESS'
+export interface BranchContent {
   content: ProjectContentTreeRoot
   originCommit: string
+}
+
+export interface GetBranchContentSuccess {
+  type: 'SUCCESS'
+  branch: BranchContent | null
 }
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
@@ -138,7 +142,7 @@ export interface RepositoryEntry {
   private: boolean
   description: string | null
   updatedAt: string | null
-  defaultBranch: string | null
+  defaultBranch: string
   permissions: RepositoryEntryPermissions
 }
 
@@ -148,7 +152,7 @@ export function repositoryEntry(
   fullName: string,
   description: string | null,
   updatedAt: string | null,
-  defaultBranch: string | null,
+  defaultBranch: string,
   permissions: RepositoryEntryPermissions,
 ): RepositoryEntry {
   return {
@@ -437,23 +441,35 @@ export async function updateProjectAgainstGithub(
     }
 
     if (branchLatestContent.type === 'SUCCESS') {
-      if (specificCommitContent.type === 'SUCCESS') {
-        dispatch(
-          [
-            updateGithubChecksums(getProjectContentsChecksums(branchLatestContent.content)),
-            updateBranchContents(branchLatestContent.content),
-            updateAgainstGithub(
-              branchLatestContent.content,
-              specificCommitContent.content,
-              branchLatestContent.originCommit,
-            ),
-            updateGithubData({ upstreamChanges: null }),
-            showToast(notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS')),
-          ],
-          'everyone',
-        )
+      if (branchLatestContent.branch == null) {
+        failWithReason(`Could not find latest code for branch ${branchName}`)
       } else {
-        failWithReason(specificCommitContent.failureReason)
+        if (specificCommitContent.type === 'SUCCESS') {
+          if (specificCommitContent.branch == null) {
+            failWithReason(`Could not find commit ${commitSha} for branch ${branchName}`)
+          } else {
+            dispatch(
+              [
+                updateGithubChecksums(
+                  getProjectContentsChecksums(branchLatestContent.branch.content),
+                ),
+                updateBranchContents(branchLatestContent.branch.content),
+                updateAgainstGithub(
+                  branchLatestContent.branch.content,
+                  specificCommitContent.branch.content,
+                  branchLatestContent.branch.originCommit,
+                ),
+                updateGithubData({ upstreamChanges: null }),
+                showToast(
+                  notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS'),
+                ),
+              ],
+              'everyone',
+            )
+          }
+        } else {
+          failWithReason(specificCommitContent.failureReason)
+        }
       }
     } else {
       failWithReason(branchLatestContent.failureReason)
@@ -504,42 +520,48 @@ export async function updateProjectWithBranchContent(
         )
         break
       case 'SUCCESS':
-        const newGithubData: Partial<GithubData> = {
-          upstreamChanges: null,
-        }
-        if (resetBranches) {
-          newGithubData.branches = []
-        }
+        if (responseBody.branch == null) {
+          dispatch([showToast(notice(`Could not find branch ${branchName}.`, 'ERROR'))], 'everyone')
+        } else {
+          const newGithubData: Partial<GithubData> = {
+            upstreamChanges: null,
+          }
+          if (resetBranches) {
+            newGithubData.branches = null
+          }
 
-        const packageJson = packageJsonFileFromProjectContents(responseBody.content)
-        if (packageJson != null && isTextFile(packageJson)) {
-          await refreshDependencies(
-            dispatch,
-            packageJson.fileContents.code,
-            currentDeps,
-            builtInDependencies,
-            {},
+          const packageJson = packageJsonFileFromProjectContents(responseBody.branch.content)
+          if (packageJson != null && isTextFile(packageJson)) {
+            await refreshDependencies(
+              dispatch,
+              packageJson.fileContents.code,
+              currentDeps,
+              builtInDependencies,
+              {},
+            )
+          }
+
+          dispatch(
+            [
+              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
+              updateProjectContents(responseBody.branch.content),
+              updateBranchContents(responseBody.branch.content),
+              updateGithubSettings(
+                projectGithubSettings(
+                  githubRepo,
+                  responseBody.branch.originCommit,
+                  branchName,
+                  responseBody.branch.originCommit,
+                ),
+              ),
+              updateGithubData(newGithubData),
+              showToast(
+                notice(`Updated the project with the content from ${branchName}`, 'SUCCESS'),
+              ),
+            ],
+            'everyone',
           )
         }
-
-        dispatch(
-          [
-            updateGithubChecksums(getProjectContentsChecksums(responseBody.content)),
-            updateProjectContents(responseBody.content),
-            updateBranchContents(responseBody.content),
-            updateGithubSettings(
-              projectGithubSettings(
-                githubRepo,
-                responseBody.originCommit,
-                branchName,
-                responseBody.originCommit,
-              ),
-            ),
-            updateGithubData(newGithubData),
-            showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
-          ],
-          'everyone',
-        )
         break
       default:
         const _exhaustiveCheck: never = responseBody
@@ -1142,9 +1164,11 @@ export async function refreshGithubData(
         const branchContentResponse = await getBranchContentFromServer(githubRepo, branchName, null)
         if (branchContentResponse.ok) {
           const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
-          if (branchLatestContent.type === 'SUCCESS') {
+          if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
             upstreamChangesSuccess = true
-            const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.content)
+            const upstreamChecksums = getProjectContentsChecksums(
+              branchLatestContent.branch.content,
+            )
             const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
             dispatch([updateGithubData({ upstreamChanges: upstreamChanges })], 'everyone')
           }
@@ -1154,7 +1178,7 @@ export async function refreshGithubData(
         dispatch([updateGithubData({ upstreamChanges: null })], 'everyone')
       }
     } else {
-      dispatch([updateGithubData({ branches: [] })], 'everyone')
+      dispatch([updateGithubData({ branches: null })], 'everyone')
     }
   } else {
     dispatch([updateGithubData(emptyGithubData())], 'everyone')

@@ -1176,7 +1176,7 @@ export interface GithubUser {
 }
 
 export interface GithubData {
-  branches: Array<GithubBranch>
+  branches: Array<GithubBranch> | null
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
@@ -1187,7 +1187,7 @@ export interface GithubData {
 
 export function emptyGithubData(): GithubData {
   return {
-    branches: [],
+    branches: null,
     publicRepositories: [],
     treeConflicts: {},
     lastUpdatedAt: null,
