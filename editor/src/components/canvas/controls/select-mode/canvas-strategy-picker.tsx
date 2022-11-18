@@ -1,14 +1,13 @@
 import * as React from 'react'
 import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
+import { FlexRow, FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
 import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
-  const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyPicker dispatch')
   const { allApplicableStrategies } = useEditorState(
     (store) => ({
@@ -146,7 +145,7 @@ const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
         width: width,
         height: height,
         marginRight: 5,
-        border: '1px solid rgb(0, 0, 0, 0.4)',
+        border: `1px solid ${colorTheme.fg4.value}`,
         borderRadius: 3,
         display: 'flex',
         flexDirection: 'row',
@@ -157,7 +156,7 @@ const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
       <span
         style={{
           fontWeight: 700,
-          color: 'rgb(0, 0, 0, 0.4)',
+          color: colorTheme.fg4.value,
           fontSize: '8px',
         }}
       >

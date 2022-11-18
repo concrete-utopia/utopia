@@ -8,6 +8,7 @@ export const base = {
   neonpink: createUtopiColor('#FF00FF'),
   neongreen: createUtopiColor('hsl(120, 100%, 37%)'),
   neonyellow: createUtopiColor('#FCFF42'),
+  jsYellow: createUtopiColor('#b7b73b'),
   almostBlack: createUtopiColor('hsl(0,0%,10%)'),
   white: createUtopiColor('white'),
   black: createUtopiColor('black'),

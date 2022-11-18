@@ -1,3 +1,4 @@
+import { rgb } from 'chroma-js'
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 
@@ -14,6 +15,7 @@ const lightBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
+  jsYellow: base.jsYellow,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('#FDFDFD'),
@@ -71,6 +73,7 @@ const lightErrorStates = {
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
   bg0Opacity90: createUtopiColor('hsla(0,0%,100%,0.9)'),
+  bg0Opacity10: createUtopiColor('hsla(0,0%,100%,0.1)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
@@ -115,6 +118,8 @@ export const light = {
   canvasControlsSizeBoxBackground: createUtopiColor('white'),
   canvasControlsSizeBoxShadowColor: createUtopiColor('black'),
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
+  canvasControlReorderSliderBoxShadowPrimary: createUtopiColor('rgba(52,52,52,0.35)'),
+  canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('rgba(166,166,166,0.82)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
   canvasControlsImmediateParentMarks: createUtopiColor('rgba(0, 0, 0, 0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
@@ -163,6 +168,8 @@ export const light = {
   inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: lightBase.bg2,
   buttonHoverBackground: lightBase.bg3,
+  buttonShadow: lightBase.fg9,
+  buttonShadowActive: lightBase.fg8,
 
   // application utilities:
   resizingDisplayBackground: lightBase.fg3,
@@ -178,6 +185,7 @@ export const light = {
   contextMenuHighlightBackground: lightBase.primary,
   contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
+  inspectorHoverColor: lightBase.fg8,
   inspectorFocusedColor: lightBase.primary,
   inspectorSetBorderColor: lightPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
@@ -192,4 +200,15 @@ export const light = {
   githubMUDModified: createUtopiColor('#f90'),
   githubMUDDeleted: createUtopiColor('#f22'),
   githubMUDDefault: createUtopiColor('#ccc'),
+
+  // Code editor
+  codeEditorShimmerPrimary: createUtopiColor('#f6f6f6'),
+  codeEditorShimmerSecondary: createUtopiColor('#f0f0f0'),
+  codeEditorTabRowBg: createUtopiColor('#f3f3f3'),
+  codeEditorTabSelectedBG: createUtopiColor('#fafafa'),
+  codeEditorTabSelectedFG: lightBase.fg2,
+  codeEditorTabSelectedBorder: createUtopiColor('rgb(243,243,243)'),
+  codeEditorBreadcrumbs: lightBase.fg5,
+  codeEditorTabRowFg: createUtopiColor('rgba(97, 97, 97, 0.8)'),
+  codeEditorGrid: createUtopiColor('#6d705b'),
 }

@@ -38,6 +38,7 @@ import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
+import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
@@ -481,18 +482,20 @@ const LocalChangesBlock = () => {
   }, [pushToNewBranch])
 
   React.useEffect(() => {
-    if (!pushToNewBranch) {
-      setCommitBranchName(branch)
-    } else {
-      setCommitBranchName(null)
-    }
+    setRawCommitBranchName(pushToNewBranch ? null : branch)
   }, [pushToNewBranch, branch])
 
-  const [commitBranchName, setCommitBranchName] = React.useState<string | null>(null)
+  const [rawCommitBranchName, setRawCommitBranchName] = React.useState<string | null>(null)
   const updateCommitBranchName = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setCommitBranchName(e.target.value),
+    (e: React.ChangeEvent<HTMLInputElement>) => setRawCommitBranchName(e.target.value),
     [],
   )
+  const cleanedCommitBranchName = React.useMemo(() => {
+    if (rawCommitBranchName == null) {
+      return null
+    }
+    return cleanupBranchName(rawCommitBranchName)
+  }, [rawCommitBranchName])
 
   const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
   React.useEffect(() => {
@@ -504,10 +507,13 @@ const LocalChangesBlock = () => {
   )
 
   const triggerSaveToGithub = React.useCallback(() => {
-    if (repo != null && commitBranchName != null && commitMessage != null) {
-      dispatch([EditorActions.saveToGithub(repo, commitBranchName, commitMessage)], 'everyone')
+    if (repo != null && cleanedCommitBranchName != null && commitMessage != null) {
+      dispatch(
+        [EditorActions.saveToGithub(repo, cleanedCommitBranchName, commitMessage)],
+        'everyone',
+      )
     }
-  }, [dispatch, repo, commitMessage, commitBranchName])
+  }, [dispatch, repo, commitMessage, cleanedCommitBranchName])
 
   const githubAuthenticated = useEditorState(
     (store) => store.userState.githubState.authenticated,
@@ -531,7 +537,7 @@ const LocalChangesBlock = () => {
     >
       {when(
         hasLocalChanges,
-        <FlexColumn style={{ gap: 10, width: '100%' }}>
+        <FlexColumn style={{ gap: 10, width: '100%', whiteSpace: 'pre-wrap' }}>
           <GithubFileChangesList
             showHeader={true}
             revertable={true}
@@ -547,12 +553,27 @@ const LocalChangesBlock = () => {
           />
           {when(
             pushToNewBranch,
-            <StringInput
-              testId='commit-branch-input'
-              placeholder='New branch name'
-              value={commitBranchName || ''}
-              onChange={updateCommitBranchName}
-            />,
+            <div>
+              <StringInput
+                testId='commit-branch-input'
+                placeholder='New branch name'
+                value={rawCommitBranchName || ''}
+                onChange={updateCommitBranchName}
+              />
+              {when(
+                rawCommitBranchName !== cleanedCommitBranchName,
+                <div
+                  style={{
+                    fontSize: 10,
+                    background: colorTheme.bg1.value,
+                    padding: '2px 6px',
+                    color: colorTheme.fg4.value,
+                  }}
+                >
+                  {cleanedCommitBranchName}
+                </div>,
+              )}
+            </div>,
           )}
           <Button
             disabled={githubWorking}

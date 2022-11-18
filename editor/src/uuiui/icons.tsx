@@ -123,7 +123,7 @@ export const InspectorSectionIcons = {
   }),
   Transforms: makeIcon({
     category: 'inspector',
-    type: 'transforms',
+    type: 'transform',
     color: 'main',
     width: 16,
     height: 16,
@@ -138,6 +138,13 @@ export const InspectorSectionIcons = {
   Image: makeIcon({
     category: 'inspector',
     type: 'image',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Interactions: makeIcon({
+    category: 'inspector',
+    type: 'interactions',
     color: 'main',
     width: 16,
     height: 16,

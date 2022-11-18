@@ -1279,8 +1279,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -1388,8 +1389,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -1906,8 +1908,9 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -2001,8 +2004,9 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -2098,8 +2102,9 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -2180,8 +2185,9 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,
@@ -2275,8 +2281,9 @@ describe('UiJsxCanvas render multifile projects', () => {
             style=\\"
               overflow: hidden;
               position: absolute;
-              background-color: var(--emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px var(--neutralInvertedBackground30);
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
               background-image: linear-gradient(
                   to bottom left,
                   #e7e7e7 25%,

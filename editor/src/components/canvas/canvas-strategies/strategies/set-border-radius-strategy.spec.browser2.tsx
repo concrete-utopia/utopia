@@ -93,6 +93,19 @@ describe('set border radius strategy', () => {
     expect(paddingControls.length).toEqual(2)
   })
 
+  it('can handle 4-value syntax', async () => {
+    const editor = await renderTestEditorWithCode(
+      codeForDragTest(`borderRadius: '4px 5px 6px 7px'`),
+      'await-first-dom-report',
+    )
+
+    await doDragTest(editor, 'tl', 10, emptyModifiers)
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      codeForDragTest(`borderRadius: '4px 5px 6px 7px',
+                       borderTopLeftRadius: '14px',`),
+    )
+  })
+
   it('can only adjust border radius to 50% at most', async () => {
     const { width, height } = size(600, 400)
     const editor = await renderTestEditorWithCode(
