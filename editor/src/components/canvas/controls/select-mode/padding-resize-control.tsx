@@ -147,7 +147,6 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 0,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
           ...(hidden ? {} : StripedBackgroundCSS(stripeColor, scale)),
         }}
@@ -159,6 +158,7 @@ const PaddingResizeControlI = React.memo(
           onMouseLeave={hoverEnd}
           onMouseUp={onMouseUp}
           style={{
+            pointerEvents: 'all',
             visibility: shown ? 'visible' : 'hidden',
             position: 'absolute',
             padding: hitAreaWidth,

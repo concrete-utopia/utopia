@@ -186,14 +186,23 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   } = props
 
   const colorTheme = useColorTheme()
+  const [stripesShown, setStripesShown] = React.useState<boolean>(false)
 
   const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
   const { width, height } = handleDimensions(flexDirection, scale)
 
-  const handleHoverStartInner = React.useCallback(
-    () => handleHoverStart(path),
-    [handleHoverStart, path],
+  const handleHoverStartInner = React.useCallback(() => {
+    handleHoverStart(path)
+    setStripesShown(true)
+  }, [handleHoverStart, path])
+
+  const handleHoverEndInner = React.useCallback(
+    (e: React.MouseEvent) => {
+      hoverEnd(e)
+      setStripesShown(false)
+    },
+    [hoverEnd],
   )
 
   const shouldShowIndicator = React.useCallback(
@@ -201,13 +210,13 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     [indicatorShown, isDragging],
   )
 
-  const shouldShowBackground = !isDragging && backgroundShown
+  const shouldShowBackground = !isDragging && backgroundShown && stripesShown
 
   return (
     <div
       key={path}
       onMouseEnter={hoverStart}
-      onMouseLeave={hoverEnd}
+      onMouseLeave={handleHoverEndInner}
       style={{
         pointerEvents: 'all',
         position: 'absolute',
