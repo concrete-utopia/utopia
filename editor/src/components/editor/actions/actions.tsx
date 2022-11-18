@@ -875,6 +875,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     propertyControlsInfo: currentEditor.propertyControlsInfo,
     selectedViews: currentEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
+    hoveredViews: currentEditor.hoveredViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     displayNoneInstances: poppedEditor.displayNoneInstances,
     warnedInstances: poppedEditor.warnedInstances,
