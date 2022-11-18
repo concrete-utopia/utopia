@@ -6,7 +6,7 @@ import styled from '@emotion/styled'
 
 import { layout, FlexRow, FlexColumn, FlexWrappingList } from './layout'
 import { H2 } from './style'
-import { colors } from './theme'
+import { colors, darkColors } from './theme'
 
 import { Global } from '@emotion/react'
 import { fetchProjectList, fetchShowcaseProjects } from '../common/server'
@@ -320,13 +320,16 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
         color: '#00000005',
         transition: 'all .1s ease-in-out',
         '&:hover': {
-          color: 'black',
+          color: colors.default,
         },
         '&:active': {
           transform: 'scale(.99)',
         },
         borderRadius: '5px',
         overflow: 'hidden',
+        ['@media (prefers-color-scheme: dark)']: {
+          border: `1px solid ${darkColors.default}`,
+        },
         ...cardLayoutStyle,
       }}
       onMouseUp={this.createNewProject}
@@ -405,6 +408,12 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               color: colors.default,
               overflowX: 'hidden',
             },
+            ['@media (prefers-color-scheme: dark)']: {
+              body: {
+                color: darkColors.default,
+                backgroundColor: darkColors.background,
+              },
+            },
           }}
         />
 
@@ -431,9 +440,9 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             }}
           >
             <img
-              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_@2x.png?raw=true'
               alt='Utopia logo'
-              style={{ height: '35px' }}
+              css={{ height: '35px' }}
             ></img>
             Utopia
           </div>
@@ -477,12 +486,15 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               }}
             >
               <div
-                style={{
+                css={{
                   padding: 10,
                   background: '#ececec',
                   borderRadius: '5px',
                   width: '310px',
                   color: 'grey',
+                  ['@media (prefers-color-scheme: dark)']: {
+                    background: '#535353',
+                  },
                 }}
               >
                 <input

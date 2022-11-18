@@ -2,7 +2,7 @@ import * as React from 'react'
 import styled from '@emotion/styled'
 
 import { layout } from './layout'
-import { colors } from './theme'
+import { colors, darkColors } from './theme'
 
 export const cardLayout = {
   width: 310,
@@ -26,4 +26,10 @@ export const Card = styled('div')<CardProps>({ ...cardLayoutStyle }, (props) => 
   boxShadow: props.selected ? `0px 0px 0px 2px  ${colors.primary}` : '0px 0px 0px 1px  black',
   borderRadius: '5px',
   overflow: 'hidden',
+  ['@media (prefers-color-scheme: dark)']: {
+    backgroundColor: darkColors.background,
+    boxShadow: props.selected
+      ? `0px 0px 0px 2px  ${colors.primary}`
+      : `0px 0px 0px 1px ${darkColors.default}`,
+  },
 }))
