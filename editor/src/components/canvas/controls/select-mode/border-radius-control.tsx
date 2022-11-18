@@ -65,7 +65,20 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const colorTheme = useColorTheme()
 
-  const backgroundShown = hoveredViews.includes(props.selectedElement)
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
+  React.useEffect(() => {
+    const timeoutHandle = timeoutRef.current
+    if (timeoutHandle != null) {
+      clearTimeout(timeoutHandle)
+    }
+
+    if (hoveredViews.includes(selectedElement)) {
+      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
+    } else {
+      setBackgroundShown(false)
+    }
+  }, [hoveredViews, selectedElement])
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {

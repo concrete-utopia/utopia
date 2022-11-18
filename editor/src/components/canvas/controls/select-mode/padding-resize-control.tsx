@@ -120,7 +120,7 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = !(props.hiddenByParent && hidden)
+    const shown = !isDragging && !(props.hiddenByParent && hidden)
 
     const { width, height } = sizeFromOrientation(
       orientation,
@@ -215,6 +215,22 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   })
 
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const [hoverHidden, setHoverHidden] = React.useState<boolean>(false)
+  React.useEffect(() => {
+    const timeoutHandle = timeoutRef.current
+    const shouldBeShown = hoveredViews.includes(selectedElements[0])
+    if (timeoutHandle != null) {
+      clearTimeout(timeoutHandle)
+    }
+    if (shouldBeShown) {
+      timeoutRef.current = setTimeout(() => setHoverHidden(false), PaddingResizeControlHoverTimeout)
+    } else {
+      setHoverHidden(true)
+    }
+  }, [hoveredViews, selectedElements])
+
   const currentPadding = combinePaddings(
     paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElements[0]),
     simplePaddingFromMetadata(elementMetadata.current, selectedElements[0]),
@@ -250,7 +266,6 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     ref.current.style.height = numberToPxValue(padding.paddingBottom?.renderedValuePx ?? 0)
   })
 
-  const hoverHidden = !hoveredViews.includes(selectedElements[0])
   return (
     <CanvasOffsetWrapper>
       <div
