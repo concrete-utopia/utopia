@@ -377,17 +377,12 @@ projectChangedSince projectID lastChangedDate = do
 
 downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad DownloadProjectResponse
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
-  possibleContent <- runMaybeT $ do
-    project <- MaybeT $ loadProject projectID
-    projectContents <- MaybeT $ pure $ firstOf (field @"content" . key "projectContents") project
-    decodedProjectContents <- MaybeT $ pure $ case fromJSON projectContents of
-                                Error _        -> Nothing
-                                Success result -> Just result
-    contentAsJSON <- if null pathIntoContent
-                     then pure projectContents
-                     else MaybeT $ pure $ fmap toJSON $ getProjectContentsTreeFile decodedProjectContents pathIntoContent
-    pure $ pure $ addHeader "*" contentAsJSON
-  fromMaybe notFound possibleContent
+  possibleProject <- loadProject projectID
+  let contentLookup = foldl' (\ lensSoFar pathPart -> lensSoFar . key pathPart) (field @"content") pathIntoContent
+  fromMaybe notFound $ do
+    project <- possibleProject
+    contentFromLookup <- firstOf contentLookup project
+    pure $ pure $ addHeader "*" contentFromLookup
 
 loadProjectEndpoint :: ProjectIdWithSuffix -> Maybe UTCTime -> ServerMonad LoadProjectResponse
 loadProjectEndpoint projectID Nothing = actuallyLoadProject projectID
