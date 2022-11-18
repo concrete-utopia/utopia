@@ -38,6 +38,7 @@ import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
+import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
@@ -493,12 +494,7 @@ const LocalChangesBlock = () => {
     if (rawCommitBranchName == null) {
       return null
     }
-    return rawCommitBranchName
-      .toLowerCase()
-      .split(/[^0-9a-z\/_]+/)
-      .join('-')
-      .replace(/-+$/, '')
-      .replace(/^-+/, '')
+    return cleanupBranchName(rawCommitBranchName)
   }, [rawCommitBranchName])
 
   const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
