@@ -102,6 +102,7 @@ export const LeftPaneComponent = React.memo(() => {
             variant='<--1fr--><--1fr--><--1fr-->'
             padded={false}
             css={{ gridColumnGap: 0 }}
+            style={{ alignItems: 'stretch' }}
           >
             <MenuTab
               label={'Project'}

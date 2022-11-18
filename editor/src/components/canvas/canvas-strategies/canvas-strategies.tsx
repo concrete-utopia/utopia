@@ -18,6 +18,7 @@ import {
   InteractionLifecycle,
   CustomStrategyState,
   controlWithProps,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
@@ -39,6 +40,8 @@ import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
+import { getDragTargets } from './strategies/shared-move-strategies-helpers'
+import * as EP from '../../../core/shared/element-path'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -87,14 +90,37 @@ const resizeStrategies: MetaCanvasStrategy = (
   )
 }
 
-const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStrategy = (
+  metaStrategy: MetaCanvasStrategy,
+) => {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ): Array<CanvasStrategy> => {
+    const selectedElements = getDragTargets(
+      getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+    )
+
+    if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
+      return []
+    }
+
+    return metaStrategy(canvasState, interactionSession, customStrategyState)
+  }
+}
+
+const preventAllOnRootElements = (metaStrategies: Array<MetaCanvasStrategy>) =>
+  metaStrategies.map(preventOnRootElements)
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRootElements([
   moveOrReorderStrategies,
   dragToMoveMetaStrategy,
-]
+])
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
-  resizeStrategies,
+  preventOnRootElements(resizeStrategies),
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),

@@ -110,21 +110,22 @@ describe('set border radius strategy', () => {
 
   it('can resize border radius on element that has larger than 50% border radius', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(
-        `<div
-    data-testid='mydiv'
-    style={{
-      backgroundColor: '#0091FFAA',
-      position: 'absolute',
-      left: 28,
-      top: 28,
-      width: 600,
-      height: 400,
-      borderRadius: '4px',
-    }}
-    data-uid='24a'
-  />`,
-      ),
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div
+          data-uid='mydiv'
+          data-testid='mydiv'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 28,
+            top: 28,
+            width: 600,
+            height: 400,
+            borderRadius: '4px',
+          }}
+        />
+      </div>`),
       'await-first-dom-report',
     )
     await doDragTest(editor, 'tl', 400, emptyModifiers)
@@ -144,21 +145,22 @@ describe('set border radius strategy', () => {
     await doDragTest(editor, 'tl', -5, emptyModifiers)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<div
-    data-testid='mydiv'
-    style={{
-      backgroundColor: '#0091FFAA',
-      position: 'absolute',
-      left: 28,
-      top: 28,
-      width: 300,
-      height: 100,
-      borderRadius: '40px',
-    }}
-    data-uid='24a'
-  />`,
-      ),
+      makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div
+            data-uid='mydiv'
+            data-testid='mydiv'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 28,
+              top: 28,
+              width: 300,
+              height: 100,
+              borderRadius: '40px',
+            }}
+          />
+        </div>`),
     )
   })
 
@@ -260,19 +262,22 @@ describe('set border radius strategy', () => {
 })
 
 function codeForDragTest(borderRadius: string): string {
-  return makeTestProjectCodeWithSnippet(`<div
-    data-testid='mydiv'
-    style={{
-      backgroundColor: '#0091FFAA',
-      position: 'absolute',
-      left: 28,
-      top: 28,
-      width: 600,
-      height: 400,
-      ${borderRadius}
-    }}
-    data-uid='24a'
-  />`)
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
+      <div
+        data-uid='mydiv'
+        data-testid='mydiv'
+        style={{
+          backgroundColor: '#0091FFAA',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 600,
+          height: 400,
+          ${borderRadius}
+        }}
+      />
+    </div>`)
 }
 
 async function doDragTest(
