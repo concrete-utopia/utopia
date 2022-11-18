@@ -40,11 +40,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import {
-  EditorStateContext,
-  LowPriorityStateContext,
-  useEditorState,
-} from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -88,6 +84,7 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
+import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 
 export interface ElementPathElement {
   name?: string
@@ -380,19 +377,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
-
-export const LowPriorityStoreProvider = React.memo<React.PropsWithChildren<unknown>>((props) => {
-  const lowPriorityStore = React.useContext(LowPriorityStateContext)?.useStore
-  return (
-    <EditorStateContext.Provider
-      value={
-        lowPriorityStore == null ? null : { api: lowPriorityStore, useStore: lowPriorityStore }
-      }
-    >
-      {props.children}
-    </EditorStateContext.Provider>
-  )
-})
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
