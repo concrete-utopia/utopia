@@ -37,4 +37,7 @@ describe('cleanupBranchName', () => {
       'to-be-or-not_to_be-th-t-is-THE-question-test-yes',
     )
   })
+  it('removes backslashes', async () => {
+    expect(cleanupBranchName('hey\\this')).toEqual('hey-this')
+  })
 })
