@@ -13,6 +13,7 @@ import {
   canvasVector,
   CanvasVector,
   clamp,
+  product,
   Size,
   size,
 } from '../../../../core/shared/math-utils'
@@ -40,6 +41,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import {
+  cssNumberEqual,
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
@@ -158,13 +160,13 @@ function borderRadiusAdjustDataFromInteractionSession(
 function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
   switch (corner) {
     case 'tl':
-      return Math.max(drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: 1 })) / 2)
     case 'tr':
-      return Math.max(-drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: 1 })) / 2)
     case 'bl':
-      return Math.max(drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: -1 })) / 2)
     case 'br':
-      return Math.max(-drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: -1 })) / 2)
     default:
       assertNever(corner)
   }
@@ -259,8 +261,11 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
   }
 
   if (simpleBorderRadius != null) {
+    const { tl, tr, bl, br } = simpleBorderRadius
+    const allSidesEqual = [tr, bl, br].every((c) => cssNumberEqual(tl, c))
+
     return {
-      type: 'borderRadius',
+      type: allSidesEqual ? 'borderRadius' : 'sides',
       sides: simpleBorderRadius,
     }
   }
@@ -407,7 +412,7 @@ function updateBorderRadiusFn(
     const dragDelta = clamp(
       -borderRadius.renderedValuePx,
       maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
-      optionalMap(({ drag, corner: ep }) => deltaFromDrag(drag, ep), borderRadiusAdjustData) ?? 0,
+      optionalMap(({ drag, corner }) => deltaFromDrag(drag, corner), borderRadiusAdjustData) ?? 0,
     )
 
     const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta

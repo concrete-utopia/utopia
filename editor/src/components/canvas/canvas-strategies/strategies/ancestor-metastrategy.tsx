@@ -5,6 +5,7 @@ import { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -98,6 +99,13 @@ export function ancestorMetaStrategy(
             appendElementsToRerenderCommand([target]),
             highlightElementsCommand([parentPath]),
             setCursorCommand(CSSCursor.MovingMagic),
+            wildcardPatch('mid-interaction', {
+              canvas: {
+                controls: {
+                  dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+                },
+              },
+            }),
           ]),
         })),
       )
@@ -106,7 +114,7 @@ export function ancestorMetaStrategy(
 }
 
 type ApplyFn = CanvasStrategy['apply']
-function appendCommandsToApplyResult(
+export function appendCommandsToApplyResult(
   applyFn: ApplyFn,
   commandsToAppend: Array<CanvasCommand>,
 ): ApplyFn {

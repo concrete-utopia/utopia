@@ -171,3 +171,7 @@ export function indicatorMessage(
 
   return Emdash // emdash
 }
+
+export function cssNumberEqual(left: CSSNumber, right: CSSNumber): boolean {
+  return left.unit === right.unit && left.value === right.value
+}

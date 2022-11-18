@@ -4,7 +4,7 @@
   opacity: 0;
   user-select: none;
   border-radius: 1px;
-  background-color: var(--context-menu-background);
+  background-color: var(--utopitheme-contextMenuBackground);
   box-sizing: border-box;
   box-shadow: rgb(218 218 218 / 30%) -1px 3px 4px 0px, inset 0px 0px 0px 1px hsl(0deg 0% 90%);
   padding: 4px 0px;
@@ -29,7 +29,7 @@
   height: 1px;
   cursor: default;
   padding: 0px;
-  background-color: var(--context-menu-separator);
+  background-color: var(--utopitheme-contextMenuSeparator);
 }
 
 /* this contains dividers, too - so not giving it a height */
@@ -38,11 +38,11 @@
   position: relative;
   margin-left: 8px;
   margin-right: 8px;
-  color: var(--context-menu-foreground);
+  color: var(--utopitheme-contextMenuForeground);
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover {
-  color: var(--context-menu-highlight-foreground);
-  background-color: var(--context-menu-highlight-background);
+  color: var(--utopitheme-contextMenuHighlightForeground);
+  background-color: var(--utopitheme-contextMenuHighlightBackground);
   border-radius: 2px;
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover > .react-contexify__submenu {

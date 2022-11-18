@@ -1628,10 +1628,16 @@ export function toggleSelectionLock(
   }
 }
 
-export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
+export function saveToGithub(
+  targetRepository: GithubRepo,
+  branchName: string,
+  commitMessage: string,
+): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+    branchName: branchName,
+    commitMessage: commitMessage,
   }
 }
 

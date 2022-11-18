@@ -331,7 +331,6 @@ const DesignPanelRootInner = React.memo(() => {
               </div>
             ) : null}
             <CanvasWrapperComponent />
-            <CanvasToolbar />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}

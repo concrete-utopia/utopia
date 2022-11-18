@@ -304,6 +304,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           height: '100%',
           width: '100%',
           overscrollBehaviorX: 'contain',
+          color: colorTheme.fg1.value,
         }}
         onDragEnter={startDragInsertion}
       >
@@ -405,21 +406,35 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const useGithubData = (): void => {
   const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
-  const { githubAuthenticated, githubRepo, githubOperations, branchName, githubChecksums } =
-    useEditorState(
-      (store) => ({
-        githubAuthenticated: store.userState.githubState.authenticated,
-        githubRepo: store.editor.githubSettings.targetRepository,
-        githubOperations: store.editor.githubOperations,
-        branchName: store.editor.githubSettings.branchName,
-        githubChecksums: store.editor.githubChecksums,
-      }),
-      'Github data',
-    )
+  const {
+    githubAuthenticated,
+    githubRepo,
+    githubOperations,
+    branchName,
+    githubChecksums,
+    githubUserDetails,
+  } = useEditorState(
+    (store) => ({
+      githubAuthenticated: store.userState.githubState.authenticated,
+      githubRepo: store.editor.githubSettings.targetRepository,
+      githubOperations: store.editor.githubOperations,
+      branchName: store.editor.githubSettings.branchName,
+      githubChecksums: store.editor.githubChecksums,
+      githubUserDetails: store.editor.githubData.githubUserDetails,
+    }),
+    'Github data',
+  )
 
   const refresh = React.useCallback(() => {
-    void refreshGithubData(dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums)
-  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums])
+    void refreshGithubData(
+      dispatch,
+      githubAuthenticated,
+      githubRepo,
+      branchName,
+      githubChecksums,
+      githubUserDetails,
+    )
+  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums, githubUserDetails])
 
   // perform a straight refresh then the repo or the auth change
   React.useEffect(() => refresh(), [refresh])

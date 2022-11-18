@@ -1038,6 +1038,8 @@ export type ToggleSelectionLock = {
 export interface SaveToGithub {
   action: 'SAVE_TO_GITHUB'
   targetRepository: GithubRepo
+  commitMessage: string
+  branchName: string
 }
 
 export interface UpdateAgainstGithub {

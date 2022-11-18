@@ -322,6 +322,8 @@ import {
   GithubData,
   emptyGithubData,
   projectGithubSettings,
+  DragToMoveIndicatorFlags,
+  dragToMoveIndicatorFlags,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1593,8 +1595,21 @@ export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: Ke
     guidelineWithSnappingVectorAndPointsOfRelevance,
   )
 
+export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<DragToMoveIndicatorFlags> =
+  combine4EqualityCalls(
+    (indicatorFlag) => indicatorFlag.showIndicator,
+    BooleanKeepDeepEquality,
+    (indicatorFlag) => indicatorFlag.dragType,
+    createCallWithTripleEquals<'absolute' | 'static'>(),
+    (indicatorFlag) => indicatorFlag.reparent,
+    createCallWithTripleEquals<'same-component' | 'different-component' | 'none'>(),
+    (indicatorFlag) => indicatorFlag.ancestor,
+    BooleanKeepDeepEquality,
+    dragToMoveIndicatorFlags,
+  )
+
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1607,6 +1622,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
+    (controls) => controls.dragToMoveIndicatorFlags,
+    DragToMoveIndicatorFlagsKeepDeepEquality,
     editorStateCanvasControls,
   )
 
@@ -3235,7 +3252,7 @@ export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<Re
   )
 
 export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
-  combine8EqualityCalls(
+  combine7EqualityCalls(
     (r) => r.avatarUrl,
     NullableStringKeepDeepEquality,
     (r) => r.private,
@@ -3243,8 +3260,6 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
     (r) => r.fullName,
     StringKeepDeepEquality,
     (r) => r.description,
-    NullableStringKeepDeepEquality,
-    (r) => r.name,
     NullableStringKeepDeepEquality,
     (r) => r.updatedAt,
     NullableStringKeepDeepEquality,
