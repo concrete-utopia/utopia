@@ -40,11 +40,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import {
-  EditorStateContext,
-  InspectorStateContext,
-  useEditorState,
-} from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -88,6 +84,7 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
+import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 
 export interface ElementPathElement {
   name?: string
@@ -383,13 +380,10 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
-    const inspectorStore = React.useContext(InspectorStateContext)?.useStore
     return (
-      <EditorStateContext.Provider
-        value={inspectorStore == null ? null : { api: inspectorStore, useStore: inspectorStore }}
-      >
+      <LowPriorityStoreProvider>
         <MultiselectInspector />
-      </EditorStateContext.Provider>
+      </LowPriorityStoreProvider>
     )
   })
 

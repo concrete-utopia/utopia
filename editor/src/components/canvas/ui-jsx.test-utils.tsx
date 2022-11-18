@@ -282,7 +282,7 @@ export async function renderTestEditorWithModel(
     flushSync(() => {
       storeHook.setState(patchedStoreFromFullStore(workingEditorState))
       if (shouldInspectorUpdate(workingEditorState.strategyState)) {
-        inspectorStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+        lowPriorityStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
       }
     })
   }
@@ -328,7 +328,7 @@ export async function renderTestEditorWithModel(
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
-  const inspectorStoreHook = create<
+  const lowPriorityStoreHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
@@ -361,7 +361,7 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
-        inspectorStore={inspectorStoreHook}
+        lowPriorityStore={lowPriorityStoreHook}
         domWalkerMutableState={domWalkerMutableState}
       />
     </React.Profiler>,
