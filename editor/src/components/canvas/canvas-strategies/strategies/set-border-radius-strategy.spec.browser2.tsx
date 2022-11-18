@@ -1,6 +1,7 @@
 import {
   canvasVector,
   CanvasVector,
+  Size,
   size,
   windowPoint,
   WindowPoint,
@@ -51,6 +52,29 @@ describe('set border radius strategy', () => {
 
   it("border radius controls don't show up for elements that have don't border radius set", async () => {
     const editor = await renderTestEditorWithCode(codeForDragTest(``), 'await-first-dom-report')
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+    )
+
+    expect(paddingControls).toEqual([])
+  })
+
+  it("border radius controls don't show up for elements that are smaller than 40px", async () => {
+    const editor = await renderTestEditorWithCode(
+      divWithDimensions({ width: 20, height: 20 }),
+      'await-first-dom-report',
+    )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId('mydiv')
@@ -270,6 +294,22 @@ function codeForDragTest(borderRadius: string): string {
       width: 600,
       height: 400,
       ${borderRadius}
+    }}
+    data-uid='24a'
+  />`)
+}
+
+function divWithDimensions(sizee: Size): string {
+  return makeTestProjectCodeWithSnippet(`<div
+    data-testid='mydiv'
+    style={{
+      backgroundColor: '#0091FFAA',
+      position: 'absolute',
+      left: 28,
+      top: 28,
+      width: '${sizee.width}px',
+      height: '${sizee.height}px',
+      borderRadius: '5px',
     }}
     data-uid='24a'
   />`)

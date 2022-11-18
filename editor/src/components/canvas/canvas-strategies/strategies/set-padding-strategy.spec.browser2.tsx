@@ -116,6 +116,41 @@ describe('Padding resize strategy', () => {
     })
   })
 
+  it("padding controls don't show up for elements that are smaller than 40px", async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 28,
+        top: 28,
+        width: 39,
+        height: 39,
+      }}
+      data-uid='24a'
+    />`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = EdgePieces.flatMap((edge) => [
+      ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+      ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+    ])
+
+    expect(paddingControls).toEqual([])
+  })
+
   it('Padding resize handles are present and visible after the timeout', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStringPaddingValues(

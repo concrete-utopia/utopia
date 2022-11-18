@@ -41,6 +41,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import {
+  canShowCanvasPropControl,
   cssNumberEqual,
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
@@ -84,6 +85,16 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     selectedElement,
   )
   if (element == null) {
+    return null
+  }
+
+  const canShowBorderRadiusControls = canShowCanvasPropControl(
+    canvasState.projectContents,
+    canvasState.openFile ?? null,
+    element,
+    canvasState.scale,
+  ).has('borderRadius')
+  if (!canShowBorderRadiusControls) {
     return null
   }
 
