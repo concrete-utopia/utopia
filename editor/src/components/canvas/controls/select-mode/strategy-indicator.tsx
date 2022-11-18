@@ -76,10 +76,10 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             borderRadius: 10,
           }}
         >
-          <VisibilityWrapper condition={props.dragType === 'absolute'}>
+          <VisibilityWrapper visible={props.dragType === 'absolute'}>
             <ModalityIcons.MoveAbsolute color={'on-highlight-main'} />
           </VisibilityWrapper>
-          <VisibilityWrapper condition={props.dragType !== 'absolute'}>
+          <VisibilityWrapper visible={props.dragType !== 'absolute'}>
             <ModalityIcons.MoveAbsolute color={'main'} />
           </VisibilityWrapper>
         </div>
@@ -91,10 +91,10 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             borderRadius: 10,
           }}
         >
-          <VisibilityWrapper condition={props.dragType === 'static'}>
+          <VisibilityWrapper visible={props.dragType === 'static'}>
             <ModalityIcons.Reorder color={'on-highlight-main'} />
           </VisibilityWrapper>
-          <VisibilityWrapper condition={props.dragType !== 'static'}>
+          <VisibilityWrapper visible={props.dragType !== 'static'}>
             <ModalityIcons.Reorder color={'main'} />
           </VisibilityWrapper>
         </div>
@@ -118,10 +118,10 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
           backgroundColor: props.enabled ? colorTheme.primary.value : 'transparent',
         }}
       >
-        <VisibilityWrapper condition={props.enabled}>
+        <VisibilityWrapper visible={props.enabled}>
           <ModalityIcons.Magic color={'on-highlight-main'} />
         </VisibilityWrapper>
-        <VisibilityWrapper condition={!props.enabled}>
+        <VisibilityWrapper visible={!props.enabled}>
           <ModalityIcons.Magic color={'subdued'} />
         </VisibilityWrapper>
       </div>
@@ -155,10 +155,10 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
       <div style={{ padding: 4, borderRadius: 10, backgroundColor: iconBackgroundColorFromStatus }}>
-        <VisibilityWrapper condition={status !== 'none'}>
+        <VisibilityWrapper visible={status !== 'none'}>
           <ModalityIcons.Reparent color={'on-highlight-main'} />
         </VisibilityWrapper>
-        <VisibilityWrapper condition={status === 'none'}>
+        <VisibilityWrapper visible={status === 'none'}>
           <ModalityIcons.Reparent color={'subdued'} />
         </VisibilityWrapper>
       </div>
@@ -179,11 +179,11 @@ const Divider = React.memo(() => {
 })
 
 interface VisibilityWrapperProps {
-  condition: boolean
+  visible: boolean
 }
 const VisibilityWrapper = React.memo<React.PropsWithChildren<VisibilityWrapperProps>>((props) => {
   return (
-    <div style={{ opacity: props.condition ? 1 : 0, height: props.condition ? undefined : 0 }}>
+    <div style={{ opacity: props.visible ? 1 : 0, height: props.visible ? undefined : 0 }}>
       {props.children}
     </div>
   )
