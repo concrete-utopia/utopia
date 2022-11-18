@@ -93,6 +93,30 @@ describe('set border radius strategy', () => {
     expect(paddingControls.length).toEqual(2)
   })
 
+  it('all border controls show up for intrinsic HTML elements', async () => {
+    const editor = await renderTestEditorWithCode(
+      codeForDragTest(`borderTopLeftRadius: '30px',
+                       borderTopRightRadius: '30px',`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+    )
+
+    expect(paddingControls.length).toEqual(4)
+  })
+
   it('can handle 4-value syntax', async () => {
     const editor = await renderTestEditorWithCode(
       codeForDragTest(`borderRadius: '4px 5px 6px 7px'`),
