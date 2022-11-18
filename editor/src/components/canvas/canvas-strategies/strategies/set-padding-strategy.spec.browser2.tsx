@@ -480,6 +480,20 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  xdescribe('Padding controls on compoenent instances', () => {
+    xit('controls are shown if padding is specified on the component instance', () => {
+      expect(0).toEqual(0)
+    })
+
+    xit("controls are shown if padding is NOT specified on the component instance and instance doesn't have computed padding", () => {
+      expect(0).toEqual(0)
+    })
+
+    xit('controls are NOT shown if padding is NOT specified on the component instance and instance has computed padding', () => {
+      expect(0).toEqual(0)
+    })
+  })
+
   describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -657,4 +671,8 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
   ]
     .filter((s) => s != null)
     .join('\n')
+}
+
+function projectWithComponentThatDefinesPaddingInternally(): string {
+  return ''
 }
