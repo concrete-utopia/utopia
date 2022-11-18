@@ -47,6 +47,7 @@ import {
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
+  shouldShowControls,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -58,6 +59,8 @@ import {
 import { InteractionSession } from '../interaction-state'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
+
+const AllSides: Array<keyof Sides> = []
 
 export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -207,6 +210,23 @@ function borderRadiusFromElement(
   }
 
   const fromProps = borderRadiusFromProps(jsxElement.props)
+  const measurementsNonZero = AllSides.some((c) => {
+    const valueForSide = renderedValueSides[c]
+    if (valueForSide == null) {
+      return false
+    }
+    return valueForSide > 0
+  })
+
+  if (
+    !shouldShowControls({
+      propAvailableFromStyle: fromProps != null,
+      measurementsNonZero: measurementsNonZero,
+    })
+  ) {
+    return null
+  }
+
   const borderRadius = optionalMap(
     (radius) => measurementFromBorderRadius(renderedValueSides, radius),
     fromProps,

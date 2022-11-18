@@ -208,3 +208,25 @@ export function canShowCanvasPropControl(
 
   return new Set<CanvasPropControl>(['padding', 'gap'])
 }
+
+interface ShouldShowControlsParams {
+  propAvailableFromStyle: boolean
+  measurementsNonZero: boolean
+}
+
+export function shouldShowControls(params: ShouldShowControlsParams): boolean {
+  const { propAvailableFromStyle, measurementsNonZero } = params
+  if (propAvailableFromStyle) {
+    return true
+  }
+
+  if (!propAvailableFromStyle && !measurementsNonZero) {
+    return true
+  }
+
+  if (!propAvailableFromStyle && measurementsNonZero) {
+    return false
+  }
+
+  return true
+}

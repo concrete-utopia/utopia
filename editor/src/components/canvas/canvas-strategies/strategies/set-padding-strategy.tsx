@@ -43,6 +43,7 @@ import {
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
+  shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
@@ -265,10 +266,20 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
+  const padding = simplePaddingFromMetadata(metadata, path)
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
-  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
-  if (elementHasNonzeroPadding) {
-    return true
+  const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
+    (s) => s != null && s > 0,
+  )
+  const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
+
+  if (
+    !shouldShowControls({
+      propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
+      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
+    })
+  ) {
+    return false
   }
 
   const children = MetadataUtils.getChildren(metadata, path)
