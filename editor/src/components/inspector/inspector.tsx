@@ -381,17 +381,25 @@ Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
+export const LowPriorityStoreProvider = React.memo<React.PropsWithChildren<unknown>>((props) => {
+  const lowPriorityStore = React.useContext(LowPriorityStateContext)?.useStore
+  return (
+    <EditorStateContext.Provider
+      value={
+        lowPriorityStore == null ? null : { api: lowPriorityStore, useStore: lowPriorityStore }
+      }
+    >
+      {props.children}
+    </EditorStateContext.Provider>
+  )
+})
+
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
-    const lowPriorityStore = React.useContext(LowPriorityStateContext)?.useStore
     return (
-      <EditorStateContext.Provider
-        value={
-          lowPriorityStore == null ? null : { api: lowPriorityStore, useStore: lowPriorityStore }
-        }
-      >
+      <LowPriorityStoreProvider>
         <MultiselectInspector />
-      </EditorStateContext.Provider>
+      </LowPriorityStoreProvider>
     )
   })
 
