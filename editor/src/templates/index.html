@@ -85,6 +85,13 @@
         background-color: black;
       }
 
+      .utopia-logo-pyramid.light {
+        display: block;
+      }
+      .utopia-logo-pyramid.dark {
+        display: none;
+      }
+
       @media (prefers-color-scheme: dark) {
         body {
           background-color: #1a1a1a;
@@ -96,6 +103,13 @@
 
         .progress-bar-progress {
           background-color: white;
+        }
+
+        .utopia-logo-pyramid.light {
+          display: none;
+        }
+        .utopia-logo-pyramid.dark {
+          display: block;
         }
       }
     </style>
@@ -143,7 +157,13 @@
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_@2x.png?hash=<%- UTOPIA_SHA %>"
             height="74px"
             alt="Utopia Logo"
-            class="utopia-logo-pyramid"
+            class="utopia-logo-pyramid dark"
+          />
+          <img
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
+            height="128px"
+            alt="Utopia Logo"
+            class="utopia-logo-pyramid light"
           />
 
           <div
