@@ -64,10 +64,7 @@ export function interactionFinished(
     result.builtInDependencies,
   )
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
-  if (
-    interactionSession == null ||
-    isNotYetStartedDragInteraction(interactionSession.interactionData)
-  ) {
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
