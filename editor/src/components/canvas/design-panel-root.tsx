@@ -27,7 +27,7 @@ import {
   LargerIcons,
   ResizableFlexColumn,
 } from '../../uuiui'
-import { TopMenu } from '../editor/top-menu'
+
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
 import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
@@ -289,29 +289,17 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            <SimpleFlexRow
-              className='topMenu'
-              style={{
-                minHeight: TopMenuHeight,
-                height: TopMenuHeight,
-                borderBottom: `1px solid ${colorTheme.border0.value}`,
-                alignItems: 'stretch',
-                justifyContent: 'stretch',
-                backgroundColor: 'transparent',
-              }}
-            >
-              <TopMenu />
-            </SimpleFlexRow>
-
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
-                  height: `calc(100% - ${TopMenuHeight}px)`,
+                  height: '100%',
                   position: 'absolute',
-                  top: TopMenuHeight,
+                  top: 0,
                   left: 0,
                   zIndex: 20,
                   overflow: 'hidden',
+                  borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+                  borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
                 }}
               >
                 <ResizableFlexColumn
@@ -330,6 +318,7 @@ const DesignPanelRootInner = React.memo(() => {
                 </ResizableFlexColumn>
               </div>
             ) : null}
+
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
