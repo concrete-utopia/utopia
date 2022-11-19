@@ -48,6 +48,7 @@ import {
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
   shouldShowControls,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -60,7 +61,7 @@ import { InteractionSession } from '../interaction-state'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
-const AllSides: Array<keyof Sides> = []
+const AllSides: Array<keyof Sides> = ['bottom', 'left', 'right', 'top']
 
 export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -210,13 +211,7 @@ function borderRadiusFromElement(
   }
 
   const fromProps = borderRadiusFromProps(jsxElement.props)
-  const measurementsNonZero = AllSides.some((c) => {
-    const valueForSide = renderedValueSides[c]
-    if (valueForSide == null) {
-      return false
-    }
-    return valueForSide > 0
-  })
+  const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
   if (
     !shouldShowControls({
@@ -233,7 +228,10 @@ function borderRadiusFromElement(
   )
 
   if (borderRadius == null) {
-    return null
+    return {
+      mode: 'all',
+      borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+    }
   }
 
   const borderRadiusUpperLimit = maxBorderRadius(

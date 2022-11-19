@@ -715,11 +715,6 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
     .join('\n')
 }
 
-interface HorribleComponentProps {
-  internalPadding?: string
-  externalPadding?: string
-}
-
 function clickOnMyDiv(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -730,6 +725,10 @@ function clickOnMyDiv(editor: EditorRenderResult) {
   }
 
   mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+}
+interface HorribleComponentProps {
+  internalPadding?: string
+  externalPadding?: string
 }
 
 function projectWithComponentThatDefinesPaddingInternally(props: HorribleComponentProps): string {
