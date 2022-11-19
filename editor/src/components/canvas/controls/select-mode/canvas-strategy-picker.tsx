@@ -118,7 +118,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               style={{
                 alignSelf: 'center',
                 marginTop: 'auto',
-                color: colorTheme.fg8.value,
+                color: colorTheme.fg5.value,
               }}
             >
               Press{' '}

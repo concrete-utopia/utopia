@@ -193,19 +193,29 @@ const checkerboardBackground: Pick<
   React.CSSProperties,
   'backgroundImage' | 'backgroundSize' | 'backgroundPosition'
 > = {
-  backgroundImage: `
-    linear-gradient(to bottom left,   #e7e7e7 25%,  transparent 25%),
-    linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
-    linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
-    linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
+  backgroundImage: `conic-gradient(
+    ${colorTheme.checkerboardLight.value} 0.25turn,
+    ${colorTheme.checkerboardDark.value} 0.25turn 0.5turn,
+    ${colorTheme.checkerboardLight.value} 0.5turn 0.75turn,
+    ${colorTheme.checkerboardDark.value} 0.75turn
+    )`,
   backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
   backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
 }
+
+const stripedBackground = (
+  stripeColor: string,
+  scale: number,
+): { backgroundImage: string; backgroundSize: string } => ({
+  backgroundImage: `linear-gradient(135deg, ${stripeColor} 24.5%, ${colorTheme.transparent.value} 24.5%, ${colorTheme.transparent.value} 50%, ${stripeColor} 50%, ${stripeColor} 74%, ${colorTheme.transparent.value} 74%, ${colorTheme.transparent.value} 100%)`,
+  backgroundSize: `${4 / scale}px ${4 / scale}px`,
+})
 
 export const UtopiaStyles = {
   backgrounds: {
     ...backgroundURLs,
     checkerboardBackground,
+    stripedBackground,
   },
   noticeStyles,
   textNoticeStyles,

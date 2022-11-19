@@ -89,7 +89,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
         })
         return {
           ...strategy.strategy,
-          apply: appendCommandsToApplyResult(strategy.strategy.apply, [indicatorCommand]),
+          apply: appendCommandsToApplyResult(strategy.strategy.apply, [], [indicatorCommand]),
         }
       }),
     ]

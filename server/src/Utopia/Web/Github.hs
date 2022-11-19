@@ -123,7 +123,7 @@ postToGithub options url content = WR.postWith options url (toJSON content)
 getFromGithub :: MakeGithubRequest ()
 getFromGithub options url _ = WR.getWith options url
 
-callGithub :: (ToJSON request, FromJSON response, MonadIO m) => MakeGithubRequest request -> [(Text, Text)] -> (Status -> ExceptT Text m ()) -> AccessToken -> Text -> request -> ExceptT Text m response
+callGithub :: (ToJSON request, FromJSON response, MonadIO m) => MakeGithubRequest request -> [(Text, Text)] -> (Status -> ExceptT Text m response) -> AccessToken -> Text -> request -> ExceptT Text m response
 callGithub makeRequest queryParameters handleErrorCases accessToken restURL request = do
   let options = WR.defaults
               & WR.header "User-Agent" .~ ["concrete-utopia/utopia"]
@@ -141,10 +141,11 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
   when (rateLimitRemaining == Just 0 || status == tooManyRequests429) $ do
     throwE "Too many requests to the Github API."
   -- Check for other error cases.
-  unless (statusIsSuccessful status) $ do
-    handleErrorCases status
+  if statusIsSuccessful status
   -- Parse the response contents.
-  except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
+  then except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
+  else handleErrorCases status
+  
 
 createTreeHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 createTreeHandleErrorCases status | status == forbidden403            = throwE "Forbidden from creating tree."
@@ -228,12 +229,12 @@ getGitBranches accessToken owner repository page = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches"
   callGithub getFromGithub [("per_page", show branchesPerPage), ("page", show page)] getGitBranchesErrorCases accessToken repoUrl ()
 
-getGitBranchErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
-getGitBranchErrorCases status | status == notFound404           = throwE "Could not find branch."
+getGitBranchErrorCases :: (MonadIO m) => Status -> ExceptT Text m (Maybe GetBranchResult)
+getGitBranchErrorCases status | status == notFound404           = pure Nothing
                               | status == movedPermanently301   = throwE "Repository moved elsewhere."
                               | otherwise                       = throwE "Unexpected error."
 
-getGitBranch :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m GetBranchResult
+getGitBranch :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m (Maybe GetBranchResult)
 getGitBranch accessToken owner repository branchName = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches/" <> branchName
   callGithub getFromGithub [] getGitBranchErrorCases accessToken repoUrl ()

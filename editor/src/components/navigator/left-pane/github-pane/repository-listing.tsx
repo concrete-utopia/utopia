@@ -206,7 +206,7 @@ export const RepositoryListing = React.memo(
               private: true,
               description: null,
               updatedAt: null,
-              defaultBranch: null,
+              defaultBranch: 'main',
               importPermitted: false,
               permissions: {
                 admin: false,

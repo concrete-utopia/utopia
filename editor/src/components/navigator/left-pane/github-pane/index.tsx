@@ -76,15 +76,11 @@ const AccountBlock = () => {
 const RepositoryBlock = () => {
   const repo = useEditorState(
     (store) => store.editor.githubSettings.targetRepository,
-    'Github repo',
+    'RepositoryBlock repo',
   )
   const githubAuthenticated = useEditorState(
     (store) => store.userState.githubState.authenticated,
-    'Github authenticated',
-  )
-  const storedTargetGithubRepo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Github repo',
+    'RepositoryBlock authenticated',
   )
   const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
@@ -116,7 +112,7 @@ const RepositoryBlock = () => {
         </UIGridRow>
         <RepositoryListing
           githubAuthenticated={githubAuthenticated}
-          storedTargetGithubRepo={storedTargetGithubRepo}
+          storedTargetGithubRepo={repo}
         />
       </FlexColumn>
     </Block>
@@ -141,7 +137,7 @@ const BranchBlock = () => {
   }, 'GithubPane storedTargetGithubRepo')
   const branchesForRepository = useEditorState(
     (store) => store.editor.githubData.branches,
-    'Github repo branches',
+    'BranchBlock branchesForRepository',
   )
   const isLoadingBranches = React.useMemo(
     () => githubOperations.some((op) => op.name === 'listBranches'),
@@ -153,10 +149,13 @@ const BranchBlock = () => {
     }
   }, [dispatch, storedTargetGithubRepo])
 
-  const [expanded, setExpanded] = React.useState(false)
-  const toggleExpanded = React.useCallback(() => setExpanded(!expanded), [expanded])
+  const [expandedFlag, setExpandedFlag] = React.useState(false)
+  const expanded = React.useMemo(() => {
+    return expandedFlag && branchesForRepository != null
+  }, [expandedFlag, branchesForRepository])
+  const toggleExpanded = React.useCallback(() => setExpandedFlag(!expanded), [expanded])
   React.useEffect(() => {
-    setExpanded(currentBranch == null)
+    setExpandedFlag(currentBranch == null)
   }, [currentBranch])
 
   const [branchFilter, setBranchFilter] = React.useState('')
@@ -176,7 +175,7 @@ const BranchBlock = () => {
   )
 
   const filteredBranches = React.useMemo(() => {
-    if (repo == null) {
+    if (branchesForRepository == null || repo == null) {
       return []
     }
 
@@ -186,7 +185,7 @@ const BranchBlock = () => {
 
     if (branchesForRepository.length === 0) {
       filtered.push({
-        name: repo.defaultBranch ?? 'main',
+        name: repo.defaultBranch,
         new: true,
       })
     } else {
@@ -262,7 +261,7 @@ const BranchBlock = () => {
                     false,
                     currentDependencies,
                     builtInDependencies,
-                  ).then(() => setExpanded(false))
+                  ).then(() => setExpandedFlag(false))
                 }
               }
             }
@@ -316,7 +315,7 @@ const BranchBlock = () => {
     refreshBranches,
     branchFilter,
     updateBranchFilter,
-    setExpanded,
+    setExpandedFlag,
     filteredBranches,
     builtInDependencies,
     currentDependencies,

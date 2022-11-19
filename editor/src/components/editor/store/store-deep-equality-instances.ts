@@ -471,10 +471,12 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
 }
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.hoveredViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
@@ -3264,7 +3266,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
     (r) => r.updatedAt,
     NullableStringKeepDeepEquality,
     (r) => r.defaultBranch,
-    NullableStringKeepDeepEquality,
+    StringKeepDeepEquality,
     (r) => r.permissions,
     RepositoryEntryPermissionsKeepDeepEquality,
     repositoryEntry,
@@ -3296,7 +3298,7 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
 
 export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
   (data) => data.branches,
-  arrayDeepEquality(GithubBranchKeepDeepEquality),
+  nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.lastUpdatedAt,
@@ -3380,6 +3382,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.selectedViews,
   )
   const highlightedViewsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.highlightedViews,
+    newValue.highlightedViews,
+  )
+  const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
     oldValue.highlightedViews,
     newValue.highlightedViews,
   )
@@ -3591,6 +3597,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     nodeModulesResult.areEqual &&
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
+    hoveredViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
     displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
@@ -3667,6 +3674,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       nodeModulesResult.value,
       selectedViewsResult.value,
       highlightedViewsResult.value,
+      hoveredViewsResult.value,
       hiddenInstancesResult.value,
       displayNoneInstancesResult.value,
       warnedInstancesResult.value,

@@ -447,7 +447,7 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
         // These just about work. I can clean them up afterwards
         boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${
           1 / props.scale
-        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        }px ${3 / props.scale}px ${colorTheme.canvasControlsDimensionableControlShadow.value}`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX - 1,
@@ -472,9 +472,10 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
         backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${
-          1 / props.scale
-        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 
+        0px ${1 / props.scale}px ${3 / props.scale}px ${
+          colorTheme.canvasControlsDimensionableControlShadow.value
+        }`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX + scaledControlOffsetLeft,

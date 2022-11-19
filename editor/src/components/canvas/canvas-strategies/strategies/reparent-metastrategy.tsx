@@ -262,7 +262,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     })
     return {
       ...strategy,
-      apply: appendCommandsToApplyResult(strategy.apply, [indicatorCommand]),
+      apply: appendCommandsToApplyResult(strategy.apply, [], [indicatorCommand]),
     }
   }, filteredReparentFactories)
 }

@@ -892,6 +892,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragOver: (event) => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
+
           event.preventDefault()
 
           if (this.props.editor.canvas.interactionSession != null) {
@@ -958,6 +962,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: () => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
             EditorActions.switchEditorMode(EditorModes.selectMode(null)),
