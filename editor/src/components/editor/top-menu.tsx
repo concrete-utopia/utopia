@@ -118,6 +118,7 @@ export const TopMenu = React.memo(() => {
         paddingLeft: 8,
         paddingRight: 4,
         height: UtopiaTheme.layout.rowHeight.normal,
+        background: colorTheme.bg1.value,
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
       }}
     >
