@@ -3,19 +3,10 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
+import { useColorTheme, SimpleFlexRow, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isRight } from '../../../core/shared/either'
-import {
-  isJSXArbitraryBlock,
-  isJSXElement,
-  isJSXTextBlock,
-} from '../../../core/shared/element-template'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { ModeToggleButton } from './mode-toggle-button'
-import { ClassNameSelect } from './classname-select'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+
 import {
   applyShortcutConfigurationToDefaults,
   handleShortcuts,
@@ -145,15 +136,15 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
         paddingRight: 4,
         gap: 4,
         borderRadius: 4,
-        backgroundColor: colorTheme.inverted.bg2.value,
-        color: colorTheme.inverted.fg1.value,
+        backgroundColor: colorTheme.bg1.value,
+        color: colorTheme.border1.value,
         cursor: 'pointer',
         border: '1px solid transparent',
         '&:hover': {
           outline: 'none',
         },
         '&:focus-within': {
-          background: colorTheme.inverted.bg1.value,
+          background: colorTheme.bg1.value,
         },
       }}
       onKeyDown={onKeyDown}
@@ -162,7 +153,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
         <HeadlessStringInput
           ref={inputRef}
           type='text'
-          placeholder={disabled ? '(Unavailable)' : '(empty)'}
+          placeholder=''
           css={{
             paddingLeft: 4,
             paddingRight: 4,
