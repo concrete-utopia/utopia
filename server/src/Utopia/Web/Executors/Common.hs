@@ -412,7 +412,10 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       -- Simple function that just takes the branch name.
       let getBranch = getGitBranch accessToken owner repository
       -- Concurrently pull the details of the branches.
-      branches <- mapConcurrently (\branch -> getBranch (view (field @"name") branch)) branchListing
+      branches <- do
+        possibleBranches <- mapConcurrently (\branch -> getBranch (view (field @"name") branch)) branchListing
+        -- Handle not getting some of the maybes.
+        pure $ catMaybes possibleBranches
       -- Sort the branches in reverse order of their latest commit date.
       let sortedBranches = reverse $ sortOn (view (field @"commit" . field @"commit" . field @"author" . field @"date")) branches
       -- Transform the result to match the response type
@@ -424,21 +427,27 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
   result <- runExceptT $ do
     -- Fallback to get the latest tree for this branch.
     let getLatestTreeSha = do
-              branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+              possibleBranch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
                 getGitBranch accessToken owner repository branchName
-              let commitSha = view (field @"commit" . field @"sha") branch
-              let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
-              pure (commitSha, treeSha)
+              pure $ do
+                branch <- possibleBranch
+                let commitSha = view (field @"commit" . field @"sha") branch
+                let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+                pure (commitSha, treeSha)
     -- Get a specific commit from this repository.
     let getTreeShaFromCommit commitSha = do
               commitDetails <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
                 getGitCommit accessToken owner repository commitSha
               let treeSha = view (field @"tree" . field @"sha") commitDetails
-              pure (commitSha, treeSha)
-    (commitSha, treeSha) <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
-    projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getRecursiveGitTreeAsContent accessToken owner repository treeSha
-    pure (projectContent, commitSha)
+              pure $ Just (commitSha, treeSha)
+    possibleCommitAndTree <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
+    -- Handle the potential lack of a value.
+    case possibleCommitAndTree of
+      (Just (commitSha, treeSha)) -> do
+        projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+          getRecursiveGitTreeAsContent accessToken owner repository treeSha
+        pure $ Just (projectContent, commitSha)
+      Nothing -> pure Nothing
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
 
 convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)
@@ -455,7 +464,7 @@ publicRepoToRepositoryEntry publicRepository = RepositoryEntry
                                              , description = view (field @"description") publicRepository
                                              , name = view (field @"name") publicRepository
                                              , updatedAt = Just $ view (field @"updated_at") publicRepository
-                                             , defaultBranch = Just $ view (field @"default_branch") publicRepository
+                                             , defaultBranch = view (field @"default_branch") publicRepository
                                              , permissions = view (field @"permissions") publicRepository
                                              }
 

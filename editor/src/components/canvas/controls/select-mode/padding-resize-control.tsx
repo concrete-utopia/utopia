@@ -3,7 +3,7 @@ import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/m
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -29,7 +29,6 @@ import {
   CanvasLabel,
   CSSNumberWithRenderedValue,
   PillHandle,
-  StripedBackgroundCSS,
   useHoverWithDelay,
 } from './controls-common'
 
@@ -148,7 +147,7 @@ const PaddingResizeControlI = React.memo(
           alignItems: 'center',
           justifyContent: 'center',
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
-          ...(hidden ? {} : StripedBackgroundCSS(stripeColor, scale)),
+          ...(hidden ? {} : UtopiaStyles.backgrounds.stripedBackground(stripeColor, scale)),
         }}
       >
         <div

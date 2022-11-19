@@ -11,7 +11,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
@@ -25,7 +25,6 @@ import {
   CanvasLabel,
   CSSNumberWithRenderedValue,
   PillHandle,
-  StripedBackgroundCSS,
   useHoverWithDelay,
 } from './controls-common'
 
@@ -228,7 +227,9 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         alignItems: 'center',
         justifyContent: 'center',
         border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
-        ...(shouldShowBackground ? StripedBackgroundCSS(indicatorColor, scale) : {}),
+        ...(shouldShowBackground
+          ? UtopiaStyles.backgrounds.stripedBackground(indicatorColor, scale)
+          : {}),
       }}
     >
       <div

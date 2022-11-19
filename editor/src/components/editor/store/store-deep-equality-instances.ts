@@ -3266,7 +3266,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
     (r) => r.updatedAt,
     NullableStringKeepDeepEquality,
     (r) => r.defaultBranch,
-    NullableStringKeepDeepEquality,
+    StringKeepDeepEquality,
     (r) => r.permissions,
     RepositoryEntryPermissionsKeepDeepEquality,
     repositoryEntry,
@@ -3298,7 +3298,7 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
 
 export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
   (data) => data.branches,
-  arrayDeepEquality(GithubBranchKeepDeepEquality),
+  nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.lastUpdatedAt,

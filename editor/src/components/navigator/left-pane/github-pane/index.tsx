@@ -76,15 +76,11 @@ const AccountBlock = () => {
 const RepositoryBlock = () => {
   const repo = useEditorState(
     (store) => store.editor.githubSettings.targetRepository,
-    'Github repo',
+    'RepositoryBlock repo',
   )
   const githubAuthenticated = useEditorState(
     (store) => store.userState.githubState.authenticated,
-    'Github authenticated',
-  )
-  const storedTargetGithubRepo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Github repo',
+    'RepositoryBlock authenticated',
   )
   const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
@@ -116,7 +112,7 @@ const RepositoryBlock = () => {
         </UIGridRow>
         <RepositoryListing
           githubAuthenticated={githubAuthenticated}
-          storedTargetGithubRepo={storedTargetGithubRepo}
+          storedTargetGithubRepo={repo}
         />
       </FlexColumn>
     </Block>
@@ -141,7 +137,7 @@ const BranchBlock = () => {
   }, 'GithubPane storedTargetGithubRepo')
   const branchesForRepository = useEditorState(
     (store) => store.editor.githubData.branches,
-    'Github repo branches',
+    'BranchBlock branchesForRepository',
   )
   const isLoadingBranches = React.useMemo(
     () => githubOperations.some((op) => op.name === 'listBranches'),
@@ -153,10 +149,13 @@ const BranchBlock = () => {
     }
   }, [dispatch, storedTargetGithubRepo])
 
-  const [expanded, setExpanded] = React.useState(false)
-  const toggleExpanded = React.useCallback(() => setExpanded(!expanded), [expanded])
+  const [expandedFlag, setExpandedFlag] = React.useState(false)
+  const expanded = React.useMemo(() => {
+    return expandedFlag && branchesForRepository != null
+  }, [expandedFlag, branchesForRepository])
+  const toggleExpanded = React.useCallback(() => setExpandedFlag(!expanded), [expanded])
   React.useEffect(() => {
-    setExpanded(currentBranch == null)
+    setExpandedFlag(currentBranch == null)
   }, [currentBranch])
 
   const [branchFilter, setBranchFilter] = React.useState('')
@@ -166,15 +165,6 @@ const BranchBlock = () => {
     },
     [setBranchFilter],
   )
-  const filteredBranches = React.useMemo(() => {
-    return branchesForRepository.filter(
-      (b) => branchFilter.length === 0 || b.name.includes(branchFilter),
-    )
-  }, [branchesForRepository, branchFilter])
-  const builtInDependencies = useEditorState(
-    (store) => store.builtInDependencies,
-    'Built-in dependencies',
-  )
 
   const repo = useEditorState(
     (store) =>
@@ -182,6 +172,38 @@ const BranchBlock = () => {
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) || null,
     'GH repo',
+  )
+
+  const filteredBranches = React.useMemo(() => {
+    if (branchesForRepository == null || repo == null) {
+      return []
+    }
+
+    let filtered = branchesForRepository.filter(
+      (b) => branchFilter.length === 0 || b.name.includes(branchFilter),
+    )
+
+    if (branchesForRepository.length === 0) {
+      filtered.push({
+        name: repo.defaultBranch,
+        new: true,
+      })
+    } else {
+      const newBranchName = cleanupBranchName(branchFilter)
+      if (newBranchName.length > 1) {
+        filtered.push({
+          name: newBranchName,
+          new: true,
+        })
+      }
+    }
+
+    return filtered
+  }, [branchesForRepository, repo, branchFilter])
+
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
   )
 
   const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
@@ -220,14 +242,27 @@ const BranchBlock = () => {
                 return
               }
               if (storedTargetGithubRepo != null) {
-                void updateProjectWithBranchContent(
-                  dispatch,
-                  storedTargetGithubRepo,
-                  branch.name,
-                  false,
-                  currentDependencies,
-                  builtInDependencies,
-                ).then(() => setExpanded(false))
+                if (branch.new) {
+                  dispatch(
+                    [
+                      EditorActions.saveToGithub(
+                        storedTargetGithubRepo,
+                        branch.name,
+                        'First commit',
+                      ),
+                    ],
+                    'everyone',
+                  )
+                } else {
+                  void updateProjectWithBranchContent(
+                    dispatch,
+                    storedTargetGithubRepo,
+                    branch.name,
+                    false,
+                    currentDependencies,
+                    builtInDependencies,
+                  ).then(() => setExpandedFlag(false))
+                }
               }
             }
             const loadingThisBranch = isGithubLoadingBranch(
@@ -250,6 +285,7 @@ const BranchBlock = () => {
                     svg: { stroke: colorTheme.white.value },
                   },
                   fontWeight: isCurrent ? 'bold' : 'normal',
+                  color: branch.new === true ? colorTheme.primary.value : 'inherit',
                 }}
                 onClick={loadContentForBranch}
               >
@@ -261,6 +297,7 @@ const BranchBlock = () => {
                     <span style={{ color: colorTheme.fg7.value }}> (default)</span>,
                   )}
                 </Ellipsis>
+                {when(branch.new === true, <span>Create new</span>)}
                 {when(loadingThisBranch, <GithubSpinner />)}
               </UIGridRow>
             )
@@ -278,7 +315,7 @@ const BranchBlock = () => {
     refreshBranches,
     branchFilter,
     updateBranchFilter,
-    setExpanded,
+    setExpandedFlag,
     filteredBranches,
     builtInDependencies,
     currentDependencies,
@@ -305,7 +342,7 @@ const BranchBlock = () => {
       title={currentBranch != null ? 'Branch' : 'Select Branch'}
       subtitle={currentBranch || undefined}
       status={!expanded && currentBranch != null ? 'successful' : 'incomplete'}
-      first={false}
+      last={currentBranch == null}
     >
       {loadBranchesUI}
     </Block>

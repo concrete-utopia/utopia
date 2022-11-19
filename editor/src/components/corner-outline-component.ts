@@ -1,6 +1,7 @@
 import { createElement, ReactElement } from 'react'
 import RU from '../utils/react-utils'
 import { LocalRectangle } from '../core/shared/math-utils'
+import { colorTheme } from '../uuiui/styles/theme/utopia-theme'
 
 const CornerOutlines = {
   render(
@@ -9,7 +10,7 @@ const CornerOutlines = {
     cornerLength: number,
     strokeWidth: number,
   ): ReactElement<any> {
-    const stroke = 'rgba(103, 142, 255, 1)'
+    const stroke = colorTheme.canvasControlsCornerOutline.value
     const none = 'none'
     const minX = 0
     const minY = 0
