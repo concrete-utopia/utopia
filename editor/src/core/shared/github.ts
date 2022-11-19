@@ -95,6 +95,7 @@ export type SaveToGithubResponse = SaveToGithubSuccess | GithubFailure
 
 export interface GithubBranch {
   name: string
+  new?: boolean
 }
 
 export type GetBranchesResult = Array<GithubBranch>
@@ -487,6 +488,24 @@ export async function updateProjectAgainstGithub(
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
+export function connectRepo(
+  resetBranches: boolean,
+  githubRepo: GithubRepo,
+  originCommit: string | null,
+  branchName: string | null,
+): Array<EditorAction> {
+  const newGithubData: Partial<GithubData> = {
+    upstreamChanges: null,
+  }
+  if (resetBranches) {
+    newGithubData.branches = []
+  }
+  return [
+    updateGithubSettings(projectGithubSettings(githubRepo, originCommit, branchName, originCommit)),
+    updateGithubData(newGithubData),
+  ]
+}
+
 export async function updateProjectWithBranchContent(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
@@ -543,18 +562,15 @@ export async function updateProjectWithBranchContent(
 
           dispatch(
             [
+              ...connectRepo(
+                resetBranches,
+                githubRepo,
+                responseBody.branch.originCommit,
+                branchName,
+              ),
               updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
-              updateGithubSettings(
-                projectGithubSettings(
-                  githubRepo,
-                  responseBody.branch.originCommit,
-                  branchName,
-                  responseBody.branch.originCommit,
-                ),
-              ),
-              updateGithubData(newGithubData),
               showToast(
                 notice(`Updated the project with the content from ${branchName}`, 'SUCCESS'),
               ),

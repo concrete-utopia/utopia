@@ -13,12 +13,11 @@ import {
   isGithubLoadingBranch,
 } from '../../../../components/editor/store/editor-state'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
-import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
+  connectRepo,
   getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
-  updateProjectWithBranchContent,
 } from '../../../../core/shared/github'
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, StringInput } from '../../../../uuiui'
@@ -68,11 +67,6 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
-  const builtInDependencies = useEditorState(
-    (store) => store.builtInDependencies,
-    'Built-in dependencies',
-  )
-  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const importRepository = React.useCallback(() => {
     if (githubWorking) {
@@ -93,25 +87,9 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       )
     } else {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
-      void updateProjectWithBranchContent(
-        dispatch,
-        parsedTargetRepository,
-        props.defaultBranch,
-        isAnotherRepo,
-        currentDependencies,
-        builtInDependencies,
-      )
-      setImporting(true)
+      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null))
     }
-  }, [
-    dispatch,
-    props.fullName,
-    props.defaultBranch,
-    currentRepo,
-    builtInDependencies,
-    currentDependencies,
-    githubWorking,
-  ])
+  }, [dispatch, props.fullName, props.defaultBranch, currentRepo, githubWorking])
 
   return (
     <UIGridRow
