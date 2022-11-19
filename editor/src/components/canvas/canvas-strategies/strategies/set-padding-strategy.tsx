@@ -39,7 +39,6 @@ import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-h
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canShowCanvasPropControl,
-  Emdash,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -274,12 +273,12 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
 
   if (
-    !shouldShowControls({
+    shouldShowControls({
       propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
       measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
     })
   ) {
-    return false
+    return true
   }
 
   const children = MetadataUtils.getChildren(metadata, path)
