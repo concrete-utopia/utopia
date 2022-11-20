@@ -1,6 +1,10 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
 import { Button } from '../../uuiui'
+import { colorTheme } from '../../uuiui'
 
 interface TitleButtonProps {
   onClick: () => void
@@ -14,7 +18,7 @@ export const FullHeightButton: React.FC<React.PropsWithChildren<TitleButtonProps
   children,
 }) => {
   const ButtonEl = styled(TitleButton)((props) => ({
-    padding: '1em 1.5em',
+    padding: '1em',
     height: '100%',
     borderRadius: 0,
   }))
@@ -59,6 +63,36 @@ export const RoundedButton: React.FC<React.PropsWithChildren<TitleButtonProps>> 
 
   return (
     <ButtonEl highlight={true} onClick={onClick}>
+      {children}
+    </ButtonEl>
+  )
+}
+
+export const LozengeButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = ({
+  onClick,
+  color,
+  children,
+}) => {
+  const bgColor = color == null ? {} : { backgroundColor: color }
+  const ButtonEl = styled(TitleButton)((props) => ({
+    padding: '3px 12px',
+    margin: '0px 3px',
+    height: 22,
+    borderRadius: 18,
+    color: colorTheme.fg9.value,
+    ...bgColor,
+  }))
+
+  return (
+    <ButtonEl
+      onClick={onClick}
+      css={{
+        '&:hover': {
+          background: color,
+          opacity: 0.7,
+        },
+      }}
+    >
       {children}
     </ButtonEl>
   )
