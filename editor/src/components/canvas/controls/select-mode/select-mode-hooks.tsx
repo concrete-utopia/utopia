@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { last, uniqBy } from '../../../../core/shared/array-utils'
+import { uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -12,8 +12,8 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
+import { fastForEach } from '../../../../core/shared/utils'
+import { KeysPressed } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -21,14 +21,11 @@ import {
   setFocusedElement,
   setHighlightedView,
   selectComponents,
+  setHoveredView,
+  clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import {
-  AllElementProps,
-  EditorState,
-  EditorStorePatched,
-  LockedElements,
-} from '../../../editor/store/editor-state'
+import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { moveDragState } from '../../canvas-types'
@@ -45,11 +42,9 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
-  reorderSlider,
   KeyboardInteractionTimeout,
-  updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
-import { Modifier, Modifiers } from '../../../../utils/modifiers'
+import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
 import { isInsertMode } from '../../../editor/editor-modes'
@@ -97,6 +92,8 @@ export function pickSelectionEnabled(
 export function useMaybeHighlightElement(): {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
+  maybeHoverOnHover: (target: ElementPath) => void
+  maybeClearHoveredViewsOnHoverEnd: () => void
 } {
   const stateRef = useRefEditorState((store) => {
     return {
@@ -106,6 +103,7 @@ export function useMaybeHighlightElement(): {
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
       inserting: isInserting(store.editor),
       highlightedViews: store.editor.highlightedViews,
+      hoveredViews: store.editor.hoveredViews,
     }
   })
 
@@ -132,9 +130,32 @@ export function useMaybeHighlightElement(): {
     }
   }, [stateRef])
 
+  const maybeHoverOnHover = React.useCallback(
+    (target: ElementPath): void => {
+      const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+
+      const alreadyHovered = pathsEqual(target, hoveredViews?.[0])
+
+      if (!dragging && !resizing && !inserting && !alreadyHovered) {
+        dispatch([setHoveredView(target)], 'canvas')
+      }
+    },
+    [stateRef],
+  )
+
+  const maybeClearHoveredViewsOnHoverEnd = React.useCallback((): void => {
+    const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+
+    if (!dragging && !resizing && !inserting && hoveredViews.length > 0) {
+      dispatch([clearHoveredViews()], 'canvas')
+    }
+  }, [stateRef])
+
   return {
     maybeHighlightOnHover: maybeHighlightOnHover,
     maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
+    maybeHoverOnHover: maybeHoverOnHover,
+    maybeClearHoveredViewsOnHoverEnd: maybeClearHoveredViewsOnHoverEnd,
   }
 }
 
@@ -451,12 +472,29 @@ export function useCalculateHighlightedViews(
     childrenSelectable: boolean,
   ) => ElementPath[],
 ): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const {
+    maybeHighlightOnHover,
+    maybeClearHighlightsOnHoverEnd,
+    maybeHoverOnHover,
+    maybeClearHoveredViewsOnHoverEnd,
+  } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(selectableViews, targetPoint, 'dont-prefer-selected')
+      const validElementPathForHover = findValidTarget(
+        selectableViews,
+        targetPoint,
+        'prefer-selected',
+      )
+
+      if (validElementPathForHover == null) {
+        maybeClearHoveredViewsOnHoverEnd()
+      } else {
+        maybeHoverOnHover(validElementPathForHover.elementPath)
+      }
+
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
@@ -467,11 +505,13 @@ export function useCalculateHighlightedViews(
       }
     },
     [
-      allowHoverOnSelectedView,
-      maybeClearHighlightsOnHoverEnd,
-      maybeHighlightOnHover,
       getHighlightableViews,
       findValidTarget,
+      allowHoverOnSelectedView,
+      maybeClearHighlightsOnHoverEnd,
+      maybeClearHoveredViewsOnHoverEnd,
+      maybeHighlightOnHover,
+      maybeHoverOnHover,
     ],
   )
 }

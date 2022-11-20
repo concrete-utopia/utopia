@@ -3,6 +3,7 @@ import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
 import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
 import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
@@ -82,6 +83,9 @@ export const CanvasStrategyPicker = React.memo(() => {
             right: 4,
             fontSize: 9,
           }}
+          onMouseDown={stopPropagation}
+          onMouseUp={stopPropagation}
+          onClick={stopPropagation}
         >
           <FlexColumn
             style={{
@@ -118,7 +122,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               style={{
                 alignSelf: 'center',
                 marginTop: 'auto',
-                color: colorTheme.fg8.value,
+                color: colorTheme.fg5.value,
               }}
             >
               Press{' '}

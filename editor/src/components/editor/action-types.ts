@@ -405,8 +405,16 @@ export interface SetHighlightedView {
   target: ElementPath
 }
 
+export interface SetHoveredView {
+  action: 'SET_HOVERED_VIEW'
+  target: ElementPath
+}
+
 export interface ClearHighlightedViews {
   action: 'CLEAR_HIGHLIGHTED_VIEWS'
+}
+export interface ClearHoveredViews {
+  action: 'CLEAR_HOVERED_VIEWS'
 }
 
 export type UpdateKeysPressed = {
@@ -1104,6 +1112,8 @@ export type EditorAction =
   | RemoveToast
   | SetHighlightedView
   | ClearHighlightedViews
+  | SetHoveredView
+  | ClearHoveredViews
   | UpdateKeysPressed
   | UpdateMouseButtonsPressed
   | HideModal

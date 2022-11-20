@@ -15,6 +15,7 @@ import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
 } from '../../editor/store/editor-state'
+import { LowPriorityStoreProvider } from '../../editor/store/low-priority-store'
 import { useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ContentsPane } from './contents-pane'
@@ -69,61 +70,63 @@ export const LeftPaneComponent = React.memo(() => {
   }, [onClickTab])
 
   return (
-    <div
-      id={LeftPaneComponentId}
-      className='leftPane'
-      style={{
-        height: '100%',
-        position: 'relative',
-        backgroundColor: colorTheme.leftPaneBackground.value,
-        color: colorTheme.fg1.value,
-        paddingLeft: 4,
-        width: LeftPaneDefaultWidth,
-      }}
-    >
+    <LowPriorityStoreProvider>
       <div
-        id={LeftPaneOverflowScrollId}
-        className='overflow-y-scroll'
+        id={LeftPaneComponentId}
+        className='leftPane'
         style={{
           height: '100%',
-          flexGrow: 1,
-        }}
-        onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
-          if (mouseEvent.target instanceof HTMLDivElement) {
-            if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
-              dispatch([clearSelection()])
-            }
-          }
+          position: 'relative',
+          backgroundColor: colorTheme.leftPaneBackground.value,
+          color: colorTheme.fg1.value,
+          paddingLeft: 4,
+          width: LeftPaneDefaultWidth,
         }}
       >
-        <UIGridRow
-          variant='<--1fr--><--1fr--><--1fr-->'
-          padded={false}
-          css={{ gridColumnGap: 0 }}
-          style={{ alignItems: 'stretch' }}
+        <div
+          id={LeftPaneOverflowScrollId}
+          className='overflow-y-scroll'
+          style={{
+            height: '100%',
+            flexGrow: 1,
+          }}
+          onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
+            if (mouseEvent.target instanceof HTMLDivElement) {
+              if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
+                dispatch([clearSelection()])
+              }
+            }
+          }}
         >
-          <MenuTab
-            label={'Project'}
-            selected={selectedTab === LeftMenuTab.Project}
-            onClick={onClickProjectTab}
-          />
-          <MenuTab
-            label={'Settings'}
-            selected={selectedTab === LeftMenuTab.Settings}
-            onClick={onClickSettingsTab}
-          />
-          <MenuTab
-            label={'Github'}
-            selected={selectedTab === LeftMenuTab.Github}
-            onClick={onClickGithubTab}
-          />
-        </UIGridRow>
+          <UIGridRow
+            variant='<--1fr--><--1fr--><--1fr-->'
+            padded={false}
+            css={{ gridColumnGap: 0 }}
+            style={{ alignItems: 'stretch' }}
+          >
+            <MenuTab
+              label={'Project'}
+              selected={selectedTab === LeftMenuTab.Project}
+              onClick={onClickProjectTab}
+            />
+            <MenuTab
+              label={'Settings'}
+              selected={selectedTab === LeftMenuTab.Settings}
+              onClick={onClickSettingsTab}
+            />
+            <MenuTab
+              label={'Github'}
+              selected={selectedTab === LeftMenuTab.Github}
+              onClick={onClickGithubTab}
+            />
+          </UIGridRow>
 
-        {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-        {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
-        {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-        {loggedIn ? null : <LoggedOutPane />}
+          {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
+          {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
+          {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+          {loggedIn ? null : <LoggedOutPane />}
+        </div>
       </div>
-    </div>
+    </LowPriorityStoreProvider>
   )
 })

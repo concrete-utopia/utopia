@@ -1176,7 +1176,7 @@ export interface GithubUser {
 }
 
 export interface GithubData {
-  branches: Array<GithubBranch>
+  branches: Array<GithubBranch> | null
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
@@ -1187,7 +1187,7 @@ export interface GithubData {
 
 export function emptyGithubData(): GithubData {
   return {
-    branches: [],
+    branches: null,
     publicRepositories: [],
     treeConflicts: {},
     lastUpdatedAt: null,
@@ -1219,6 +1219,7 @@ export interface EditorState {
   nodeModules: EditorStateNodeModules
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
@@ -1292,6 +1293,7 @@ export function editorState(
   nodeModules: EditorStateNodeModules,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
@@ -1366,6 +1368,7 @@ export function editorState(
     nodeModules: nodeModules,
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     warnedInstances: warnedInstances,
@@ -1910,6 +1913,7 @@ export type EditorStatePatch = Spec<EditorState>
 export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
 }
@@ -1917,12 +1921,14 @@ export interface TransientCanvasState {
 export function transientCanvasState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
   }
@@ -2090,6 +2096,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: [],
     displayNoneInstances: [],
     warnedInstances: [],
@@ -2397,6 +2404,7 @@ export function editorModelFromPersistentModel(
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
     displayNoneInstances: [],
     warnedInstances: [],

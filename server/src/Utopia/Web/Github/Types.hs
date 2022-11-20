@@ -425,11 +425,22 @@ instance ToJSON GetBranchPullRequestResponse where
   toJSON (GetBranchPullRequestResponseSuccess success) = over _Object (M.insert "type" "SUCCESS") $ toJSON success
   toJSON (GetBranchPullRequestResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
+data BranchContent = BranchContent
+                   { content      :: ProjectContentTreeRoot
+                   , originCommit :: Text
+                   }
+                   deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON BranchContent where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON BranchContent where
+  toJSON = genericToJSON defaultOptions
+
 data GetBranchContentSuccess = GetBranchContentSuccess
-                         { content      :: ProjectContentTreeRoot
-                         , originCommit :: Text
-                         }
-                         deriving (Eq, Show, Generic, Data, Typeable)
+                             { branch  :: Maybe BranchContent
+                             }
+                             deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON GetBranchContentSuccess where
   parseJSON = genericParseJSON defaultOptions
@@ -444,8 +455,9 @@ data GetBranchContentResponse = GetBranchContentResponseSuccess GetBranchContent
 getBranchContentFailureFromReason :: Text -> GetBranchContentResponse
 getBranchContentFailureFromReason failureReason = GetBranchContentResponseFailure GithubFailure{..}
 
-getBranchContentSuccessFromContent :: (ProjectContentTreeRoot, Text) -> GetBranchContentResponse
-getBranchContentSuccessFromContent (content, originCommit) = GetBranchContentResponseSuccess GetBranchContentSuccess{..}
+getBranchContentSuccessFromContent :: Maybe (ProjectContentTreeRoot, Text) -> GetBranchContentResponse
+getBranchContentSuccessFromContent (Just (content, originCommit)) = GetBranchContentResponseSuccess (GetBranchContentSuccess (Just BranchContent{..}))
+getBranchContentSuccessFromContent Nothing                        = GetBranchContentResponseSuccess (GetBranchContentSuccess Nothing)
 
 instance FromJSON GetBranchContentResponse where
   parseJSON value =
@@ -511,7 +523,7 @@ data RepositoryEntry = RepositoryEntry
                      , description   :: Maybe Text
                      , name          :: Maybe Text
                      , updatedAt     :: Maybe UTCTime
-                     , defaultBranch :: Maybe Text
+                     , defaultBranch :: Text
                      , permissions   :: UsersRepositoryPermissions
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)

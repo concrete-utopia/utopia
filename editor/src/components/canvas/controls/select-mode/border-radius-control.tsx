@@ -51,11 +51,11 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const { dispatch, scale, isDragging } = useEditorState(
+  const { dispatch, scale, hoveredViews, isDragging } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
-
+      hoveredViews: store.editor.hoveredViews,
       isDragging:
         store.editor.canvas.interactionSession?.activeControl.type ===
         'BORDER_RADIUS_RESIZE_HANDLE',
@@ -65,9 +65,20 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const colorTheme = useColorTheme()
 
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
+  React.useEffect(() => {
+    const timeoutHandle = timeoutRef.current
+    if (timeoutHandle != null) {
+      clearTimeout(timeoutHandle)
+    }
 
-  const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(200, setBackgroundShown)
+    if (hoveredViews.includes(selectedElement)) {
+      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
+    } else {
+      setBackgroundShown(false)
+    }
+  }, [hoveredViews, selectedElement])
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
@@ -83,12 +94,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   return (
     <CanvasOffsetWrapper>
-      <div
-        onMouseEnter={controlHoverStart}
-        onMouseLeave={controlHoverEnd}
-        ref={controlRef}
-        style={{ position: 'absolute' }}
-      >
+      <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
@@ -188,6 +194,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         )}
         <div
           style={{
+            pointerEvents: 'all',
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             width: size,
             height: size,
