@@ -5,7 +5,7 @@ import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
 import { MenuTile } from './menu-tile'
-import { FullHeightButton, RoundedButton, TextButton } from './buttons'
+import { FullHeightButton, LozengeButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
@@ -98,6 +98,12 @@ const TitleBar = React.memo(() => {
                 size='large'
               />
             </span>
+            <LozengeButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+              <>Remote Changes</>
+            </LozengeButton>
+            <LozengeButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+              Local Changes
+            </LozengeButton>
           </>
         ) : null}
         {/* <FullHeightButton onClick={exportToGithub}>Export to Github</FullHeightButton> */}
