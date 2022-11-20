@@ -7,6 +7,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { MenuTile } from './menu-tile'
 import { FullHeightButton, LozengeButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
+import { getGithubFileChangesCount } from '../../core/shared/github'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
@@ -31,17 +32,34 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, isCodeEditorVisible, isPreviewPaneVisible } =
-    useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        loginState: store.userState.loginState,
-        projectName: store.editor.projectName,
-        isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-        isPreviewPaneVisible: store.editor.preview.visible,
-      }),
-      'TitleBar',
-    )
+  const {
+    dispatch,
+    loginState,
+    projectName,
+    isCodeEditorVisible,
+    isPreviewPaneVisible,
+    upstreamChanges,
+  } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      loginState: store.userState.loginState,
+      projectName: store.editor.projectName,
+      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+      isPreviewPaneVisible: store.editor.preview.visible,
+      upstreamChanges: store.editor.githubData.upstreamChanges,
+    }),
+    'TitleBar',
+  )
+
+  const hasUpstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(upstreamChanges) > 0,
+    [upstreamChanges],
+  )
+
+  const numberOfUpstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(upstreamChanges),
+    [upstreamChanges],
+  )
 
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
@@ -99,7 +117,7 @@ const TitleBar = React.memo(() => {
               />
             </span>
             <LozengeButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-              <>Remote Changes</>
+              <>Remote Changes</>${numberOfUpstreamChanges}
             </LozengeButton>
             <LozengeButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
               Local Changes
