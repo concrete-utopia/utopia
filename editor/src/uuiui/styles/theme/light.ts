@@ -61,7 +61,7 @@ const lightPrimitives = {
   subduedBorder: lightBase.border1,
 
   checkerboardLight: base.white,
-  checkerboardDark: createUtopiColor('rgb(191,191,191)'),
+  checkerboardDark: createUtopiColor('rgb(247 247 247)'),
 }
 
 const lightErrorStates = {
