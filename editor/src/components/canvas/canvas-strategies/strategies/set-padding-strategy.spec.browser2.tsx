@@ -144,8 +144,8 @@ describe('Padding resize strategy', () => {
     const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
-      x: divBounds.x + 50,
-      y: divBounds.y + 40,
+      x: divBounds.x + 1,
+      y: divBounds.y + 1,
     }
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
@@ -480,6 +480,62 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  describe('Padding controls on compoenent instances', () => {
+    it('controls are shown if padding is specified on the component instance', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({
+          internalPadding: '10px',
+          externalPadding: '20px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      EdgePieces.forEach((edge) => {
+        const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+        expect(paddingControlOuter).toBeTruthy()
+        const paddingControlHandle = editor.renderedDOM.getByTestId(
+          paddingControlHandleTestId(edge),
+        )
+        expect(paddingControlHandle).toBeTruthy()
+      })
+    })
+
+    it("controls are shown if padding is NOT specified on the component instance and instance doesn't have computed padding", async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({}),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      EdgePieces.forEach((edge) => {
+        const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+        expect(paddingControlOuter).toBeTruthy()
+        const paddingControlHandle = editor.renderedDOM.getByTestId(
+          paddingControlHandleTestId(edge),
+        )
+        expect(paddingControlHandle).toBeTruthy()
+      })
+    })
+
+    it('controls are NOT shown if padding is NOT specified on the component instance and instance has computed padding', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({
+          internalPadding: '5px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      const paddingControls = EdgePieces.flatMap((edge) => [
+        ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+        ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+      ])
+
+      expect(paddingControls).toEqual([])
+    })
+  })
+
   describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -657,4 +713,56 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
   ]
     .filter((s) => s != null)
     .join('\n')
+}
+
+function clickOnMyDiv(editor: EditorRenderResult) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId('mydiv')
+  const divBounds = div.getBoundingClientRect()
+  const divCorner = {
+    x: divBounds.x + 25,
+    y: divBounds.y + 24,
+  }
+
+  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+}
+interface HorribleComponentProps {
+  internalPadding?: string
+  externalPadding?: string
+}
+
+function projectWithComponentThatDefinesPaddingInternally(props: HorribleComponentProps): string {
+  return `import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  
+  const HorribleComponent = (props) => {
+    return (
+      <div
+        data-testid='mydiv'
+        style={{
+          width: '300px',
+          height: '400px',
+          backgroundColor: 'green',
+          ${props.internalPadding ? `padding: '${props.internalPadding}',` : ''}
+          ...props.style,
+        }}
+        data-uid='8bc'
+      />
+    )
+  }
+  
+  export var storyboard = (
+    <Storyboard data-uid='0cd'>
+      <HorribleComponent
+        style={{
+          position: 'absolute',
+          left: 420,
+          top: 420,
+          ${props.externalPadding ? `padding: '${props.externalPadding}',` : ''}
+        }}
+        data-uid='ca3'
+      />
+    </Storyboard>
+  )
+  `
 }
