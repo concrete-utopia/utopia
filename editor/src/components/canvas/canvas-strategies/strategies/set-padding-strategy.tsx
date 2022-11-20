@@ -1,5 +1,9 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isIntrinsicElement,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -46,6 +50,7 @@ import {
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
+import { foldEither } from '../../../../core/shared/either'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -272,7 +277,14 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   )
   const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
 
+  const elementIsIntrinsicElement = foldEither(
+    () => false,
+    (e) => isJSXElement(e) && isIntrinsicElement(e.name),
+    element.element,
+  )
+
   if (
+    !elementIsIntrinsicElement &&
     shouldShowControls({
       propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
       measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,

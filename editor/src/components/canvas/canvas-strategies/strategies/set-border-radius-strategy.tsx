@@ -4,6 +4,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
   JSXElement,
@@ -213,7 +214,14 @@ function borderRadiusFromElement(
   const fromProps = borderRadiusFromProps(jsxElement.props)
   const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
+  const elementIsIntrinsicElement = foldEither(
+    () => false,
+    (e) => isJSXElement(e) && isIntrinsicElement(e.name),
+    element.element,
+  )
+
   if (
+    !elementIsIntrinsicElement &&
     !shouldShowControls({
       propAvailableFromStyle: fromProps != null,
       measurementsNonZero: measurementsNonZero,
@@ -228,10 +236,13 @@ function borderRadiusFromElement(
   )
 
   if (borderRadius == null) {
-    return {
-      mode: 'all',
-      borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+    if (!elementIsIntrinsicElement) {
+      return {
+        mode: 'all',
+        borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+      }
     }
+    return null
   }
 
   const borderRadiusUpperLimit = maxBorderRadius(

@@ -190,8 +190,8 @@ export function canShowCanvasPropControl(
   scale: number,
 ): Set<CanvasPropControl> {
   const { width, height } = size(
-    element.specialSizeMeasurements.clientWidth * scale,
-    element.specialSizeMeasurements.clientHeight * scale,
+    (element.globalFrame?.width ?? 0) * scale,
+    (element.globalFrame?.height ?? 0) * scale,
   )
 
   if (width > 80 && height > 80) {

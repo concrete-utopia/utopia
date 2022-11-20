@@ -80,8 +80,8 @@ describe('set border radius strategy', () => {
     const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
-      x: divBounds.x + 50,
-      y: divBounds.y + 40,
+      x: divBounds.x + 1,
+      y: divBounds.y + 1,
     }
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
