@@ -178,6 +178,62 @@ describe('Absolute Reparent Strategy', () => {
       ),
     )
   })
+  it('reparents to the canvas root and converts width in percent to px', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: '30%', height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: -1000, y: -1000 })
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+      <div style={{width: '100%', height: '100%'}} data-uid='aaa' />
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 120, height: 120 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      ),
+    )
+  })
   it('reparents to the canvas root when target parent on the canvas is small', async () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
