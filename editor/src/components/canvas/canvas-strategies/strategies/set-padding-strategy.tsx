@@ -3,6 +3,8 @@ import {
   ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -277,9 +279,21 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   )
   const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
 
+  const elementIsScene = foldEither(
+    () => false,
+    (e) => isJSXElement(e) && jsxElementNameEquals(e.name, jsxElementName('Scene', [])),
+    element.element,
+  )
+
+  if (elementIsScene) {
+    return false
+  }
+
   const elementIsIntrinsicElement = foldEither(
     () => false,
-    (e) => isJSXElement(e) && isIntrinsicElement(e.name),
+    (e) =>
+      isJSXElement(e) &&
+      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
     element.element,
   )
 

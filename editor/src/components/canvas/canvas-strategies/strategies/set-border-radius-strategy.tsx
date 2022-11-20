@@ -8,6 +8,8 @@ import {
   isJSXElement,
   JSXAttributes,
   JSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -214,14 +216,16 @@ function borderRadiusFromElement(
   const fromProps = borderRadiusFromProps(jsxElement.props)
   const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
-  const elementIsIntrinsicElement = foldEither(
+  const elementIsIntrinsicElementOrScene = foldEither(
     () => false,
-    (e) => isJSXElement(e) && isIntrinsicElement(e.name),
+    (e) =>
+      isJSXElement(e) &&
+      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
     element.element,
   )
 
   if (
-    !elementIsIntrinsicElement &&
+    !elementIsIntrinsicElementOrScene &&
     !shouldShowControls({
       propAvailableFromStyle: fromProps != null,
       measurementsNonZero: measurementsNonZero,
@@ -236,7 +240,7 @@ function borderRadiusFromElement(
   )
 
   if (borderRadius == null) {
-    if (!elementIsIntrinsicElement) {
+    if (!elementIsIntrinsicElementOrScene) {
       return {
         mode: 'all',
         borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
