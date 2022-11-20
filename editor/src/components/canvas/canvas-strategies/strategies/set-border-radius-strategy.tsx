@@ -225,11 +225,13 @@ function borderRadiusFromElement(
   )
 
   if (
-    !elementIsIntrinsicElementOrScene &&
-    !shouldShowControls({
-      propAvailableFromStyle: fromProps != null,
-      measurementsNonZero: measurementsNonZero,
-    })
+    !(
+      elementIsIntrinsicElementOrScene ||
+      shouldShowControls({
+        propAvailableFromStyle: fromProps != null,
+        measurementsNonZero: measurementsNonZero,
+      })
+    )
   ) {
     return null
   }
