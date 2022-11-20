@@ -123,7 +123,7 @@ export const light = {
   canvasControlsSizeBoxShadowColor: createUtopiColor('black'),
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlReorderSliderBoxShadowPrimary: createUtopiColor('rgba(52,52,52,0.35)'),
-  canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('rgba(166,166,166,0.82)'),
+  canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('hsl(0,0%,0%,0.5)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
   canvasControlsImmediateParentMarks: createUtopiColor('rgba(0, 0, 0, 0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
