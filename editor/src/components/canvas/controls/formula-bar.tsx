@@ -138,7 +138,6 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
         borderRadius: 4,
         backgroundColor: colorTheme.bg1.value,
         color: colorTheme.border1.value,
-        cursor: 'pointer',
         border: '1px solid transparent',
         '&:hover': {
           outline: 'none',

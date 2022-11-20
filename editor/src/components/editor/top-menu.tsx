@@ -20,6 +20,7 @@ import { RightMenuTab, NavigatorWidthAtom } from './store/editor-state'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { toString } from '../../core/shared/element-path'
+import { stopPropagation } from '../inspector/common/inspector-utils'
 
 const TopMenuLeftControls = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
@@ -120,7 +121,11 @@ export const TopMenu = React.memo(() => {
         height: UtopiaTheme.layout.rowHeight.normal,
         background: colorTheme.bg1.value,
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+        pointerEvents: 'initial',
       }}
+      onMouseDown={stopPropagation}
+      onMouseUp={stopPropagation}
+      onClick={stopPropagation}
     >
       <TopMenuLeftControls />
       <FlexRow style={{ border: 1, flexGrow: 1 }}>
