@@ -13,7 +13,6 @@ import {
   canvasPoint,
   pointDifference,
   roundPointToNearestHalf,
-  zeroLocalRect,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
