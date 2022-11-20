@@ -425,7 +425,6 @@ function createUpdatePinsCommands(
         path,
         stylePropPathMappingFn(framePin, ['style']),
         pinValue,
-        'keep-percent',
         isHorizontalPoint(framePointForPinnedProp(framePin))
           ? parentFrame?.width
           : parentFrame?.height,

@@ -245,7 +245,6 @@ function createResizeCommandsFromFrame(
           selectedElement,
           stylePropPathMappingFn(pin, ['style']),
           roundTo(valueToSet, 0),
-          'keep-percent',
           horizontal ? elementParentBounds?.width : elementParentBounds?.height,
         )
       }

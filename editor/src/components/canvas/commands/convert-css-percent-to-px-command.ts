@@ -10,43 +10,35 @@ import {
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import {
-  CSSNumber,
-  parseCSSPercent,
-  parseCSSPx,
-  printCSSNumber,
-} from '../../inspector/common/css-utils'
+import { CSSNumber, parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
-export interface SetCssLengthProperty extends BaseCommand {
-  type: 'SET_CSS_LENGTH_PROPERTY'
+export interface ConvertCssPercentToPx extends BaseCommand {
+  type: 'CONVERT_CSS_PERCENT_TO_PX'
   target: ElementPath
   property: PropertyPath
-  valuePx: number
-  parentDimensionPx: number | undefined
+  parentDimensionPx: number
 }
 
-export function setCssLengthProperty(
+export function convertCssPercentToPx(
   whenToRun: WhenToRun,
   target: ElementPath,
   property: PropertyPath,
-  valuePx: number,
-  parentDimensionPx: number | undefined,
-): SetCssLengthProperty {
+  parentDimensionPx: number,
+): ConvertCssPercentToPx {
   return {
-    type: 'SET_CSS_LENGTH_PROPERTY',
+    type: 'CONVERT_CSS_PERCENT_TO_PX',
     whenToRun: whenToRun,
     target: target,
     property: property,
-    valuePx: valuePx,
     parentDimensionPx: parentDimensionPx,
   }
 }
 
-export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
+export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = (
   editorState: EditorState,
-  command: SetCssLengthProperty,
+  command: ConvertCssPercentToPx,
 ) => {
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
@@ -60,7 +52,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   if (isLeft(currentValue)) {
     return {
       editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+      commandDescription: `Convert CSS percent: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as value is not writeable.`,
     }
@@ -72,7 +64,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     // TODO add option to override expressions!!!
     return {
       editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+      commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property is an expression we did not want to override.`,
     }
@@ -81,23 +73,27 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   let propsToUpdate: Array<ValueAtPath> = []
 
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
-  if (isRight(parsePercentResult) && command.parentDimensionPx != null) {
+  if (isLeft(parsePercentResult)) {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
+        command.property,
+      )} not applied as the property is not in percents.`,
+    }
+  }
+  if (isRight(parsePercentResult)) {
     const currentValuePercent = parsePercentResult.value
-    const valueInPercent = (command.valuePx / command.parentDimensionPx) * 100
+    const currentValueInPxs = currentValuePercent.value * (command.parentDimensionPx / 100)
+
     const newValueCssNumber: CSSNumber = {
-      value: valueInPercent,
-      unit: currentValuePercent.unit,
+      value: currentValueInPxs,
+      unit: null,
     }
     const newValue = printCSSNumber(newValueCssNumber, null)
 
     propsToUpdate.push({
       path: command.property,
       value: jsxAttributeValue(newValue, emptyComments),
-    })
-  } else {
-    propsToUpdate.push({
-      path: command.property,
-      value: jsxAttributeValue(command.valuePx, emptyComments),
     })
   }
 
@@ -110,8 +106,8 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+    commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
-    )} by ${command.valuePx}`,
+    )}`,
   }
 }
