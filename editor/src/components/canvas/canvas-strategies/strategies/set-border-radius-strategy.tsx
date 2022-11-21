@@ -118,6 +118,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     borderRadius,
     borderRadiusAdjustData,
     elementSize,
+    canvasState.scale,
   )
 
   const mode: BorderRadiusAdjustMode =
@@ -450,12 +451,13 @@ function longhandFromEdgePosition(
 
 function updateBorderRadiusFn(
   elementSize: Size,
+  scale: number,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
 ) {
   return (borderRadius: CSSNumberWithRenderedValue) => {
     const borderRadiusMaxed = Math.max(
       borderRadius.renderedValuePx,
-      BorderRadiusControlMinimumForDisplay,
+      BorderRadiusControlMinimumForDisplay(scale),
     )
     const borderRadiusValue =
       borderRadiusAdjustData == null ? borderRadius.renderedValuePx : borderRadiusMaxed
@@ -486,6 +488,7 @@ function setBorderRadiusStrategyRunResult(
   data: BorderRadiusData<CSSNumberWithRenderedValue>,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
   elementSize: Size,
+  scale: number,
 ): SetBorderRadiusStrategyRunResult {
   const edgePosition = borderRadiusAdjustData?.corner ?? 'br'
 
@@ -498,6 +501,7 @@ function setBorderRadiusStrategyRunResult(
     const { borderRadius, key } = borderRadiusFromData(data, edgePosition)
     const updatedBorderRadius = updateBorderRadiusFn(
       elementSize,
+      scale,
       borderRadiusAdjustData,
     )(borderRadius)
 
@@ -514,7 +518,7 @@ function setBorderRadiusStrategyRunResult(
   }
 
   const allUpdated = mapBorderRadiusSides(
-    updateBorderRadiusFn(elementSize, borderRadiusAdjustData),
+    updateBorderRadiusFn(elementSize, scale, borderRadiusAdjustData),
     data.borderRadius,
   )
 

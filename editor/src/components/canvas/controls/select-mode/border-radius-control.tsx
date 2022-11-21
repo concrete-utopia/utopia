@@ -164,7 +164,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const position = handlePosition(
     isDragging
       ? borderRadius.renderedValuePx
-      : Math.max(borderRadius.renderedValuePx, BorderRadiusControlMinimumForDisplay),
+      : Math.max(borderRadius.renderedValuePx, BorderRadiusControlMinimumForDisplay(scale)),
     elementSize,
     corner,
     scale,

@@ -237,14 +237,14 @@ describe('set border radius strategy', () => {
     )
   })
 
-  it('when resize starts from below 10px, delta is applied as if border radius was 10px', async () => {
+  it('when resize starts from below 12px, delta is applied as if border radius was 12px', async () => {
     const editor = await renderTestEditorWithCode(
       codeForDragTest(`borderRadius: '4px'`),
       'await-first-dom-report',
     )
     await doDragTest(editor, 'tl', 10, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '20px'`),
+      codeForDragTest(`borderRadius: '22px'`),
     )
   })
 
