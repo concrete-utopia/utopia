@@ -858,7 +858,7 @@ const BranchNotLoadedBlock = () => {
                 <StringInput
                   testId='commit-message-input'
                   placeholder='Commit message'
-                  value={commitMessage || ''}
+                  value={commitMessage ?? ''}
                   onChange={updateCommitMessage}
                 />
                 <Button
