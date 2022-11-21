@@ -1,25 +1,24 @@
 import React, { useCallback } from 'react'
+import { jsx, css } from '@emotion/react'
 import { auth0Url } from '../../common/env-vars'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
+import {
+  Avatar,
+  Button,
+  colorTheme,
+  LargerIcons,
+  MenuIcons,
+  SimpleFlexRow,
+  UtopiaTheme,
+} from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton, SquareButton } from './buttons'
 import { MenuTile } from './menu-tile'
 import { TestMenu } from './test-menu'
-
-const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      cursor: 'pointer',
-    }}
-  >
-    <MenuIcons.Smiangle />
-  </div>
-)
+import { useGetProjectMetadata } from '../common/server-hooks'
 
 interface ProjectTitleProps {}
 
@@ -40,6 +39,7 @@ const TitleBar = React.memo(() => {
     isPreviewPaneVisible,
     upstreamChanges,
     targetRepository,
+    id,
   } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
@@ -49,10 +49,11 @@ const TitleBar = React.memo(() => {
       isPreviewPaneVisible: store.editor.preview.visible,
       upstreamChanges: store.editor.githubData.upstreamChanges,
       targetRepository: store.editor.githubSettings.targetRepository,
+      id: store.editor.id,
     }),
     'TitleBar',
   )
-
+  const projectOwnerMetadata = useGetProjectMetadata(id)
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
@@ -100,45 +101,28 @@ const TitleBar = React.memo(() => {
         backgroundColor: colorTheme.bg0.value,
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
         padding: 0,
-        flexGrow: 0,
-        height: 40,
+        flex: '0 0 40px',
         fontWeight: 600,
         letterSpacing: 0.2,
-        alignItems: 'center',
         justifyContent: 'space-between',
       }}
     >
-      <div
+      <SimpleFlexRow
         style={{
           display: 'flex',
           height: '100%',
           alignItems: 'center',
           flex: '1 1 0px',
           gap: 10,
+          paddingLeft: 8,
         }}
       >
-        <AppLogo onClick={toggleLeftPanel} />
+        <RoundButton onClick={toggleLeftPanel}>
+          <img src='/editor/pyramid_dark@2x.png' width='24' alt='Main Menu' />
+        </RoundButton>
         {when(
           loggedIn,
           <>
-            <MenuTile
-              selected={isCodeEditorVisible}
-              icon={<LargerIcons.Code />}
-              onClick={toggleCodeEditorVisible}
-              size='large'
-            />
-            <MenuTile
-              selected={isPreviewPaneVisible}
-              icon={<LargerIcons.PreviewPane />}
-              onClick={togglePreviewPaneVisible}
-              size='large'
-            />
-            {when(
-              targetRepository == null,
-              <SquareButton color={colorTheme.fg2.value} onClick={toggleLeftPanel}>
-                <>Connect To GitHub</>
-              </SquareButton>,
-            )}
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
@@ -155,20 +139,32 @@ const TitleBar = React.memo(() => {
             )}
           </>,
         )}
-      </div>
+      </SimpleFlexRow>
 
-      <div>
+      <SimpleFlexRow
+        style={{
+          paddingLeft: 20,
+          paddingRight: 20,
+          borderRadius: 10,
+          background: '#fafafa',
+          height: 31,
+        }}
+      >
         <ProjectTitle>{projectName}</ProjectTitle>
-      </div>
-      <div style={{ display: 'flex', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
-          <TestMenu />
-        </div>
+      </SimpleFlexRow>
+      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1 }}>
+        <TestMenu />
+      </SimpleFlexRow>
+      <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
-          <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
+          <Button primary style={{ paddingLeft: 8, paddingRight: 8 }} onClick={onClickLoginNewTab}>
             Sign In To Save
-          </SquareButton>,
+          </Button>,
+        )}
+        {when(
+          loggedIn,
+          <Avatar userPicture={projectOwnerMetadata?.ownerPicture ?? null} isLoggedIn={loggedIn} />,
         )}
       </div>
     </SimpleFlexRow>
