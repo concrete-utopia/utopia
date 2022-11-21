@@ -187,6 +187,7 @@ function elementsOrTheirChildTextsFromPoint(x: number, y: number) {
     const nodes = el?.childNodes ?? []
     for (const node of nodes) {
       if (node.nodeType === 3) {
+        // text nodes
         const range = document.createRange()
         range.selectNode(node)
         const rangeBounding = range.getBoundingClientRect()
