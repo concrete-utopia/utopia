@@ -8,6 +8,7 @@ import { MenuTile } from './menu-tile'
 import { SquareButton, RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
+import { unless, when } from 'src/utils/react-conditionals'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
@@ -91,7 +92,7 @@ const TitleBar = React.memo(() => {
     [dispatch, isPreviewPaneVisible],
   )
 
-  const loggedIn = loginState.type === 'LOGGED_IN'
+  const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
   return (
     <SimpleFlexRow
@@ -117,7 +118,8 @@ const TitleBar = React.memo(() => {
         }}
       >
         <AppLogo onClick={toggleLeftPanel} />
-        {loggedIn ? (
+        {when(
+          loggedIn,
           <>
             <MenuTile
               selected={isCodeEditorVisible}
@@ -131,25 +133,28 @@ const TitleBar = React.memo(() => {
               onClick={togglePreviewPaneVisible}
               size='large'
             />
-            {targetRepository ? null : (
+            {when(
+              targetRepository == null,
               <SquareButton color={colorTheme.fg2.value} onClick={toggleLeftPanel}>
                 <>Connect To GitHub</>
-              </SquareButton>
+              </SquareButton>,
             )}
-            {hasUpstreamChanges ? (
+            {when(
+              hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
                 {numberOfUpstreamChanges}
                 <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
-              </RoundButton>
-            ) : null}
-            {hasDownstreamChanges ? (
+              </RoundButton>,
+            )}
+            {when(
+              hasDownstreamChanges,
               <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
                 {numberOfDownstreamChanges}
                 <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
-              </RoundButton>
-            ) : null}
-          </>
-        ) : null}
+              </RoundButton>,
+            )}
+          </>,
+        )}
       </div>
 
       <div>
@@ -159,10 +164,11 @@ const TitleBar = React.memo(() => {
         <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
-        {loggedIn ? null : (
+        {unless(
+          loggedIn,
           <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
             Sign In To Save
-          </SquareButton>
+          </SquareButton>,
         )}
       </div>
     </SimpleFlexRow>
