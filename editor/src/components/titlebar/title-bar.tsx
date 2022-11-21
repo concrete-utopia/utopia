@@ -1,27 +1,17 @@
 import React, { useCallback } from 'react'
-import { jsx, css } from '@emotion/react'
+import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
+import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import {
-  Avatar,
-  Button,
-  colorTheme,
-  LargerIcons,
-  MenuIcons,
-  SimpleFlexRow,
-  UtopiaTheme,
-} from '../../uuiui'
-import { EditorAction } from '../editor/action-types'
-import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { useEditorState } from '../editor/store/store-hook'
-import { RoundButton, SquareButton } from './buttons'
-import { MenuTile } from './menu-tile'
-import { TestMenu } from './test-menu'
-import { getUserPicture } from '../../common/user'
-import { createSelector } from 'reselect'
-import { EditorStorePatched } from '../editor/store/editor-state'
+import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
+import { EditorAction } from '../editor/action-types'
+import { togglePanel } from '../editor/actions/action-creators'
+import { EditorStorePatched } from '../editor/store/editor-state'
+import { useEditorState } from '../editor/store/store-hook'
+import { RoundButton } from './buttons'
+import { TestMenu } from './test-menu'
 
 interface ProjectTitleProps {}
 
@@ -34,25 +24,12 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const {
-    dispatch,
-    loginState,
-    projectName,
-    isCodeEditorVisible,
-    isPreviewPaneVisible,
-    upstreamChanges,
-    targetRepository,
-    id,
-  } = useEditorState(
+  const { dispatch, loginState, projectName, upstreamChanges } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       loginState: store.userState.loginState,
       projectName: store.editor.projectName,
-      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-      isPreviewPaneVisible: store.editor.preview.visible,
       upstreamChanges: store.editor.githubData.upstreamChanges,
-      targetRepository: store.editor.githubSettings.targetRepository,
-      id: store.editor.id,
     }),
     'TitleBar',
   )
@@ -87,16 +64,6 @@ const TitleBar = React.memo(() => {
     actions.push(togglePanel('leftmenu'))
     dispatch(actions)
   }, [dispatch])
-
-  const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
-    [dispatch, isCodeEditorVisible],
-  )
-
-  const togglePreviewPaneVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
-    [dispatch, isPreviewPaneVisible],
-  )
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
