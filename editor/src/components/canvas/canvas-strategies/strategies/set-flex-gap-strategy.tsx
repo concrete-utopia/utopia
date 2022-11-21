@@ -34,6 +34,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
@@ -52,6 +53,14 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const selectedElement = selectedElements[0]
   const children = MetadataUtils.getChildrenPaths(canvasState.startingMetadata, selectedElement)
+
+  if (children.length < 2) {
+    return null
+  }
+
+  if (!areAllSiblingsInOneDimensionFlexOrFlow(children[0], canvasState.startingMetadata)) {
+    return null
+  }
 
   const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
   if (flexGap == null) {
