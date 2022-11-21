@@ -330,10 +330,7 @@ function simpleBorderRadiusFromProps(props: JSXAttributes): BorderRadiusSides<CS
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
-  return size(
-    element.specialSizeMeasurements.clientWidth,
-    element.specialSizeMeasurements.clientHeight,
-  )
+  return size(element.globalFrame?.width ?? 0, element.globalFrame?.height ?? 0)
 }
 
 function measurementFromBorderRadius(
