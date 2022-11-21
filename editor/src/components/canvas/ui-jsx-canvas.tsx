@@ -358,7 +358,9 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   const cssImports = useKeepReferenceEqualityIfPossible(
     normalizedCssImportsFromImports(uiFilePath, imports),
   )
-  unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
+  if (props.elementsToRerender === 'rerender-all-elements') {
+    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
+  }
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 

@@ -43,11 +43,11 @@ describe('set border radius strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+    const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
       editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
     )
 
-    expect(paddingControls.length).toEqual(4)
+    expect(borderRadiusControls.length).toEqual(4)
   })
 
   it("border radius controls don't show up for elements that have don't border radius set", async () => {
@@ -80,8 +80,8 @@ describe('set border radius strategy', () => {
     const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
-      x: divBounds.x + 50,
-      y: divBounds.y + 40,
+      x: divBounds.x + 1,
+      y: divBounds.y + 1,
     }
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
@@ -91,6 +91,55 @@ describe('set border radius strategy', () => {
     )
 
     expect(paddingControls).toEqual([])
+  })
+
+  describe('Border radius controls on compoenent instances', () => {
+    it('controls are shown if border radius is specified on the component instance', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesBorderRadiusInternally({
+          internalBorderRadius: '10px',
+          externalBorderRadius: '20px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls.length).toEqual(4)
+    })
+
+    it("controls are shown if border radius is NOT specified on the component instance and instance doesn't have computed border radius", async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesBorderRadiusInternally({}),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls.length).toEqual(4)
+    })
+
+    it('controls are NOT shown if border radius is NOT specified on the component instance and instance has computed border radius', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesBorderRadiusInternally({
+          internalBorderRadius: '5px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls).toEqual([])
+    })
   })
 
   it('can handle 4-value syntax', async () => {
@@ -392,4 +441,58 @@ function resizeElement(
   })
 
   mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
+}
+
+function clickOnMyDiv(editor: EditorRenderResult) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId('mydiv')
+  const divBounds = div.getBoundingClientRect()
+  const divCorner = {
+    x: divBounds.x + 25,
+    y: divBounds.y + 24,
+  }
+
+  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+}
+interface HorribleComponentProps {
+  internalBorderRadius?: string
+  externalBorderRadius?: string
+}
+
+function projectWithComponentThatDefinesBorderRadiusInternally(
+  props: HorribleComponentProps,
+): string {
+  return `import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    
+    const HorribleComponent = (props) => {
+      return (
+        <div
+          data-testid='mydiv'
+          style={{
+            width: '300px',
+            height: '400px',
+            backgroundColor: 'green',
+            ${props.internalBorderRadius ? `borderRadius: '${props.internalBorderRadius}',` : ''}
+            ...props.style,
+          }}
+          data-uid='8bc'
+        />
+      )
+    }
+    
+    export var storyboard = (
+      <Storyboard data-uid='0cd'>
+        <HorribleComponent
+          style={{
+            position: 'absolute',
+            left: 420,
+            top: 420,
+            ${props.externalBorderRadius ? `borderRadius: '${props.externalBorderRadius}',` : ''}
+          }}
+          data-uid='ca3'
+        />
+      </Storyboard>
+    )
+    `
 }

@@ -15,6 +15,7 @@ import {
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
+import { stopPropagation } from '../inspector/common/inspector-utils'
 import { EditorAction } from './action-types'
 import {
   openFloatingInsertMenu,
@@ -137,14 +138,18 @@ export const CanvasToolbar = React.memo(() => {
     <FlexColumn
       style={{
         position: 'absolute',
-        top: 8,
-        left: 8,
+        top: 48,
+        left: 12,
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
         backgroundColor: theme.bg0.value,
         boxShadow: UtopiaStyles.popup.boxShadow,
+        pointerEvents: 'initial',
       }}
+      onMouseDown={stopPropagation}
+      onMouseUp={stopPropagation}
+      onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
         {/* TODO is there a component for this subheading? */}
