@@ -54,7 +54,7 @@ import {
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
-import { CanvasStrategyFactory } from '../canvas-strategies'
+import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import {
   controlWithProps,
   getTargetPathsFromInteractionTarget,
@@ -71,17 +71,6 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
-  if (
-    interactionSession != null &&
-    !(
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BORDER_RADIUS_RESIZE_HANDLE'
-    )
-  ) {
-    // We don't want to include this in the strategy picker if any other interaction is active
-    return null
-  }
-
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -129,7 +118,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   return {
     id: SetBorderRadiusStrategyId,
     name: 'Set border radius',
-    fitness: 1,
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'BORDER_RADIUS_RESIZE_HANDLE', 1),
     controlsToRender: [
       controlWithProps({
         control: BorderRadiusControl,
