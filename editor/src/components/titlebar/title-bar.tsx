@@ -107,6 +107,7 @@ const TitleBar = React.memo(() => {
             src={UNSAFE_getIconURL('utopia-logo', 'black', 'special', 60, 47)}
           />
         </RoundButton>
+        <TestMenu />
         {when(
           loggedIn,
           <>
@@ -127,21 +128,18 @@ const TitleBar = React.memo(() => {
           </>,
         )}
       </SimpleFlexRow>
-
       <SimpleFlexRow
         style={{
-          paddingLeft: 20,
-          paddingRight: 20,
-          borderRadius: 10,
-          background: '#fafafa',
-          height: 31,
+          paddingLeft: 16,
+          paddingRight: 16,
+          borderRadius: 16,
+          background: colorTheme.bg1.value,
+          height: 27,
         }}
       >
         <ProjectTitle>{projectName}</ProjectTitle>
       </SimpleFlexRow>
-      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1 }}>
-        <TestMenu />
-      </SimpleFlexRow>
+      <div style={{ flexGrow: 1 }} />
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
