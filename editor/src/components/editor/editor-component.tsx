@@ -146,16 +146,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (key === 'space') {
-          if (existingInteractionSession != null) {
-            editorStoreRef.current.dispatch(
-              [CanvasActions.clearInteractionSession(false)],
-              'everyone',
-            )
-          }
-          event.preventDefault()
-          event.stopPropagation()
-        } else if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
+        if (
+          (Keyboard.keyIsModifier(key) || key === 'space') &&
+          existingInteractionSession != null
+        ) {
           editorStoreRef.current.dispatch(
             [
               CanvasActions.createInteractionSession(

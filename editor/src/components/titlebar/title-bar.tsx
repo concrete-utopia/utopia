@@ -1,18 +1,19 @@
 import React, { useCallback } from 'react'
 import { auth0Url } from '../../common/env-vars'
+import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
+import { unless, when } from '../../utils/react-conditionals'
 import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
+import { RoundButton, SquareButton } from './buttons'
 import { MenuTile } from './menu-tile'
-import { FullHeightButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
     onClick={onClick}
     style={{
-      margin: '0 20px 0 0',
       cursor: 'pointer',
     }}
   >
@@ -31,17 +32,45 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, isCodeEditorVisible, isPreviewPaneVisible } =
-    useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        loginState: store.userState.loginState,
-        projectName: store.editor.projectName,
-        isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-        isPreviewPaneVisible: store.editor.preview.visible,
-      }),
-      'TitleBar',
-    )
+  const {
+    dispatch,
+    loginState,
+    projectName,
+    isCodeEditorVisible,
+    isPreviewPaneVisible,
+    upstreamChanges,
+    targetRepository,
+  } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      loginState: store.userState.loginState,
+      projectName: store.editor.projectName,
+      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+      isPreviewPaneVisible: store.editor.preview.visible,
+      upstreamChanges: store.editor.githubData.upstreamChanges,
+      targetRepository: store.editor.githubSettings.targetRepository,
+    }),
+    'TitleBar',
+  )
+
+  const hasUpstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(upstreamChanges) > 0,
+    [upstreamChanges],
+  )
+  const numberOfUpstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(upstreamChanges),
+    [upstreamChanges],
+  )
+
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const hasDownstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges) > 0,
+    [githubFileChanges],
+  )
+  const numberOfDownstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges),
+    [githubFileChanges],
+  )
 
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
@@ -63,7 +92,7 @@ const TitleBar = React.memo(() => {
     [dispatch, isPreviewPaneVisible],
   )
 
-  const loggedIn = loginState.type === 'LOGGED_IN'
+  const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
   return (
     <SimpleFlexRow
@@ -79,42 +108,67 @@ const TitleBar = React.memo(() => {
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center', paddingLeft: 10 }}>
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          alignItems: 'center',
+          flex: '1 1 0px',
+          gap: 10,
+        }}
+      >
         <AppLogo onClick={toggleLeftPanel} />
-        {loggedIn ? (
+        {when(
+          loggedIn,
           <>
-            <span>
-              <MenuTile
-                selected={isCodeEditorVisible}
-                icon={<LargerIcons.Code />}
-                onClick={toggleCodeEditorVisible}
-                size='large'
-              />
-            </span>
-            <span>
-              <MenuTile
-                selected={isPreviewPaneVisible}
-                icon={<LargerIcons.PreviewPane />}
-                onClick={togglePreviewPaneVisible}
-                size='large'
-              />
-            </span>
-          </>
-        ) : null}
-        {/* <FullHeightButton onClick={exportToGithub}>Export to Github</FullHeightButton> */}
+            <MenuTile
+              selected={isCodeEditorVisible}
+              icon={<LargerIcons.Code />}
+              onClick={toggleCodeEditorVisible}
+              size='large'
+            />
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              icon={<LargerIcons.PreviewPane />}
+              onClick={togglePreviewPaneVisible}
+              size='large'
+            />
+            {when(
+              targetRepository == null,
+              <SquareButton color={colorTheme.fg2.value} onClick={toggleLeftPanel}>
+                <>Connect To GitHub</>
+              </SquareButton>,
+            )}
+            {when(
+              hasUpstreamChanges,
+              <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+                {numberOfUpstreamChanges}
+                <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
+              </RoundButton>,
+            )}
+            {when(
+              hasDownstreamChanges,
+              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+                {numberOfDownstreamChanges}
+                <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
+              </RoundButton>,
+            )}
+          </>,
+        )}
       </div>
 
       <div>
         <ProjectTitle>{projectName}</ProjectTitle>
       </div>
-
       <div style={{ display: 'flex', height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
-        {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}
-        {loggedIn ? null : (
-          <FullHeightButton onClick={onClickLoginNewTab}>Sign in to Save</FullHeightButton>
+        {unless(
+          loggedIn,
+          <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
+            Sign In To Save
+          </SquareButton>,
         )}
       </div>
     </SimpleFlexRow>

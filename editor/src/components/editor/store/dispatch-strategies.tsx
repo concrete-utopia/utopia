@@ -12,6 +12,7 @@ import {
   InteractionSession,
   interactionSessionHardReset,
   isKeyboardInteractionData,
+  isNotYetStartedDragInteraction,
   KeyboardInteractionData,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -130,7 +131,10 @@ export function interactionHardReset(
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -209,7 +213,10 @@ export function interactionUpdate(
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -285,7 +292,10 @@ export function interactionStart(
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,

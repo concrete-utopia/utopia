@@ -29,6 +29,7 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
+import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -94,12 +95,7 @@ export function absoluteResizeBoundingBoxStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE'
-        ? 1
-        : 0,
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'RESIZE_HANDLE', 1),
     apply: () => {
       if (
         interactionSession != null &&
