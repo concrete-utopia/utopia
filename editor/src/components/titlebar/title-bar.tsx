@@ -17,7 +17,14 @@ interface ProjectTitleProps {}
 
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
   return (
-    <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px', color: colorTheme.fg0.value }}>
+    <div
+      style={{
+        fontWeight: 400,
+        fontSize: 12,
+        padding: '0 10px',
+        color: colorTheme.fg0.value,
+      }}
+    >
       {children}
     </div>
   )
@@ -98,15 +105,17 @@ const TitleBar = React.memo(() => {
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-                {numberOfUpstreamChanges}
-                <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
+                {/* {numberOfUpstreamChanges} */}
+                {/* {numberOfUpstreamChanges !== 1 ? 's' : ''} */}
+                <>Remote Changes</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
               <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
-                {numberOfDownstreamChanges}
-                <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
+                {/* {numberOfDownstreamChanges} */}
+                {/* {numberOfDownstreamChanges !== 1 ? 's' : ''} */}
+                <>Local Changes</>
               </RoundButton>,
             )}
           </>,
@@ -118,13 +127,13 @@ const TitleBar = React.memo(() => {
           paddingLeft: 20,
           paddingRight: 20,
           borderRadius: 10,
-          background: '#fafafa',
-          height: 31,
+          height: 30,
+          background: colorTheme.fg9.value,
         }}
       >
         <ProjectTitle>{projectName}</ProjectTitle>
       </SimpleFlexRow>
-      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1 }}>
+      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1, marginLeft: 10 }}>
         <TestMenu />
       </SimpleFlexRow>
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
