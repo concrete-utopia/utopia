@@ -18,6 +18,10 @@ import {
   getDragTargets,
 } from './shared-move-strategies-helpers'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -63,6 +67,12 @@ export function absoluteMoveStrategy(
           key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
+        {
+          control: DragOutlineControl,
+          props: dragTargetsElementPaths(selectedElements),
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        },
       ], // Uses existing hooks in select-mode-hooks.tsx
       fitness:
         interactionSession?.interactionData.type === 'DRAG' &&
