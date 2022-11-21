@@ -32,7 +32,7 @@ import {
   printCssNumberWithDefaultUnit,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
-import { CanvasStrategyFactory } from '../canvas-strategies'
+import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -67,17 +67,6 @@ export const PaddingTearThreshold: number = -25
 export const SetPaddingStrategyName = 'Set Padding'
 
 export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
-  if (
-    interactionSession != null &&
-    !(
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'PADDING_RESIZE_HANDLE'
-    )
-  ) {
-    // We don't want to include this in the strategy picker if any other interaction is active
-    return null
-  }
-
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -135,7 +124,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     id: 'SET_PADDING_STRATEGY',
     name: SetPaddingStrategyName,
     controlsToRender: controlsToRender,
-    fitness: 1,
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'PADDING_RESIZE_HANDLE', 1),
     apply: () => {
       if (
         interactionSession == null ||
