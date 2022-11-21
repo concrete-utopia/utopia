@@ -300,7 +300,6 @@ import {
   EditorStateCodeEditorErrors,
   ErrorMessages,
   editorStateCodeEditorErrors,
-  Theme,
   editorState,
   AllElementProps,
   LockedElements,
@@ -321,9 +320,9 @@ import {
   fileRevertModal,
   GithubData,
   emptyGithubData,
-  projectGithubSettings,
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -356,8 +355,6 @@ import {
   PaddingResizeHandle,
   resizeHandle,
   ResizeHandle,
-  paddingResizeHandle,
-  borderRadiusResizeHandle,
   BorderRadiusResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
@@ -3279,7 +3276,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
@@ -3288,6 +3285,8 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.pendingCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchLoaded,
+    BooleanKeepDeepEquality,
     projectGithubSettings,
   )
 

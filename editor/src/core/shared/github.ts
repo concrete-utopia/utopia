@@ -253,6 +253,7 @@ export async function saveProjectToGithub(
                 responseBody.newCommit,
                 responseBody.branchName,
                 responseBody.newCommit,
+                true,
               ),
             ),
             updateBranchContents(persistentModel.projectContents),
@@ -504,7 +505,9 @@ export function connectRepo(
     newGithubData.branches = []
   }
   return [
-    updateGithubSettings(projectGithubSettings(githubRepo, originCommit, branchName, originCommit)),
+    updateGithubSettings(
+      projectGithubSettings(githubRepo, originCommit, branchName, originCommit, false),
+    ),
     updateGithubData(newGithubData),
   ]
 }
