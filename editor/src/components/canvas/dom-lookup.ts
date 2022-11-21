@@ -173,12 +173,13 @@ export function getAllTargetsAtPoint(
 
 function elementsOrTheirChildTextsFromPoint(x: number, y: number) {
   // TODO: find a better way than tho check all the elements
-  const elements = document.querySelectorAll('*')
+  const elementsUnderPoint = document.elementsFromPoint(x, y)
 
-  const elementsWithGoodChildNodes = [...elements].reverse().flatMap((el) => {
+  const allElements = document.querySelectorAll('*')
+
+  const elementsWithGoodChildNodes = [...allElements].reverse().flatMap((el) => {
     // maybe the element itself contains the point
-    const bounding = el.getBoundingClientRect()
-    if (x > bounding.left && x < bounding.right && y > bounding.top && y < bounding.bottom) {
+    if (elementsUnderPoint.indexOf(el) > -1) {
       return [el]
     }
 
