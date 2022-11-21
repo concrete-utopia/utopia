@@ -756,6 +756,10 @@ const githubFileChangesSelector = createSelector(
 )
 
 export function useGithubFileChanges(): GithubFileChanges | null {
+  const storeType = useEditorState((store) => store.storeName, 'useGithubFileChanges storeName')
+  if (storeType !== 'low-priority-store') {
+    throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
+  }
   return useEditorState(githubFileChangesSelector, 'useGithubFileChanges')
 }
 
