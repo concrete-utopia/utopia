@@ -112,7 +112,7 @@ describe('set border radius strategy', () => {
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = BorderRadiusCorners.flatMap((corner) =>
-      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
     )
 
     expect(paddingControls).toEqual([])
@@ -130,7 +130,7 @@ describe('set border radius strategy', () => {
 
       clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
-        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
       )
 
       expect(borderRadiusControls.length).toEqual(4)
@@ -144,7 +144,7 @@ describe('set border radius strategy', () => {
 
       clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
-        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
       )
 
       expect(borderRadiusControls.length).toEqual(4)
@@ -160,7 +160,7 @@ describe('set border radius strategy', () => {
 
       clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
-        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
       )
 
       expect(borderRadiusControls).toEqual([])
