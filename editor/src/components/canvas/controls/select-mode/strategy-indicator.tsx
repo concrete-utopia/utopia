@@ -1,7 +1,5 @@
 import React from 'react'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-with-pub-sub'
 import { FlexColumn, FlexRow, ModalityIcons, useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { NavigatorWidthAtom } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 
 const StrategyIndicatorWidth = 240
@@ -18,12 +16,6 @@ export const StrategyIndicator = React.memo(() => {
     }
   }, 'StrategyIndicator')
 
-  const isNavigatorOpen = useEditorState(
-    (store) => !store.editor.navigator.minimised,
-    'StrategyIndicator navigator status',
-  )
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
-
   if (indicatorFlagsInfo == null) {
     return null
   }
@@ -34,9 +26,7 @@ export const StrategyIndicator = React.memo(() => {
         pointerEvents: 'none',
         position: 'absolute',
         top: 4,
-        left: `calc(50% - ${StrategyIndicatorWidth / 2}px + ${
-          isNavigatorOpen ? navigatorWidth / 2 : 0
-        }px)`,
+        left: `calc(50% - ${StrategyIndicatorWidth / 2}px)`,
         width: StrategyIndicatorWidth,
         height: 57,
         borderRadius: 24,
