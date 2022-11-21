@@ -9,6 +9,7 @@ import { useEditorState, useRefEditorState } from '../../../editor/store/store-h
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
+  BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusCorners,
   BorderRadiusHandleBorderWidth,
@@ -160,7 +161,14 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowHandle = isDragging || backgroundShown
 
   const size = BorderRadiusHandleSize(scale)
-  const position = handlePosition(borderRadius.renderedValuePx, elementSize, corner, scale)
+  const position = handlePosition(
+    isDragging
+      ? borderRadius.renderedValuePx
+      : Math.max(borderRadius.renderedValuePx, BorderRadiusControlMinimumForDisplay(scale)),
+    elementSize,
+    corner,
+    scale,
+  )
 
   return (
     <div
