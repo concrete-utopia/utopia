@@ -375,20 +375,46 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
+createInitialCommitIfNecessary :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> ExceptT Text m (Maybe Text)
+createInitialCommitIfNecessary accessToken owner repository = do
+  possibleRepo <- getRepository accessToken owner repository
+  usersRepository <- maybe (throwE ("Repository " <> repository <> " not found.")) pure possibleRepo
+  let defaultBranch = view (field @"default_branch") usersRepository
+  possibleBranch <- getGitBranch accessToken owner repository defaultBranch
+  let createTheCommit = do
+        -- Create this dummy file which is needed to create the default branch.
+        updateGitFileResult <- updateGitFile accessToken owner repository defaultBranch "/README.md" "Basic README added to initialise the repo." "This space intentionally left blank."
+        let commitSha = view (field @"commit" . field @"sha") updateGitFileResult
+        pure $ Just commitSha
+  if isNothing possibleBranch then createTheCommit else pure Nothing
+
 createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> (Maybe Text) -> (Maybe Text) -> PersistentModel -> m SaveToGithubResponse
 createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID possibleBranchName possibleCommitMessage model = do
-  let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
+  let possibleParentCommit = firstOf (field @"githubSettings" . field @"originCommit" . _Just) model
+  let possibleTargetRepository = firstOf (field @"githubSettings" . field @"targetRepository" . _Just) model
   result <- runExceptT $ do
-    treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
-    commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitCommitForTree accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
-    now <- liftIO getCurrentTime
-    let branchName = fromMaybe (toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now) possibleBranchName
-    let commitSha = view (field @"sha") commitResult
-    branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitBranchForCommit accessToken model commitSha branchName
-    pure (branchName, view (field @"url") branchResult, commitSha)
+    -- Resolve the repository in the project model.
+    GithubRepo{..} <- maybe (throwE "No repository set on project.") pure possibleTargetRepository
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      -- This should handle empty repositories, as weirdly it's impossible to create a reference for one.
+      initialCommitSha <- createInitialCommitIfNecessary accessToken owner repository
+      let parentCommits = maybeToList (possibleParentCommit <|> initialCommitSha)
+      treeResult <- createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
+      commitResult <- createGitCommitForTree accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
+      now <- liftIO getCurrentTime
+      let branchName = fromMaybe (toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now) possibleBranchName
+      let commitSha = view (field @"sha") commitResult
+      let updateBranch = do
+            branchResult <- updateGitBranchForCommit accessToken model commitSha branchName
+            pure $ view (field @"url") branchResult
+      let createBranch = do
+            branchResult <- createGitBranchForCommit accessToken model commitSha branchName
+            pure $ view (field @"url") branchResult
+      referenceResult <- getReference accessToken owner repository ("heads/" <> branchName)
+      liftIO $ print referenceResult
+      let doesBranchExist = isJust referenceResult
+      treeURL <- if doesBranchExist then updateBranch else createBranch
+      pure (branchName, treeURL, commitSha)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
 
 convertBranchesResultToUnfold :: Int -> GetBranchesResult -> Maybe (GetBranchesResult, Maybe Int)
@@ -460,10 +486,10 @@ publicRepoToRepositoryEntry :: UsersRepository -> RepositoryEntry
 publicRepoToRepositoryEntry publicRepository = RepositoryEntry
                                              { fullName = view (field @"full_name") publicRepository
                                              , avatarUrl = Just $ view (field @"owner" . field @"avatar_url") publicRepository
-                                             , private = view (field @"private") publicRepository
+                                             , isPrivate = view (field @"private") publicRepository
                                              , description = view (field @"description") publicRepository
                                              , name = view (field @"name") publicRepository
-                                             , updatedAt = Just $ view (field @"updated_at") publicRepository
+                                             , updatedAt = view (field @"updated_at") publicRepository
                                              , defaultBranch = view (field @"default_branch") publicRepository
                                              , permissions = view (field @"permissions") publicRepository
                                              }

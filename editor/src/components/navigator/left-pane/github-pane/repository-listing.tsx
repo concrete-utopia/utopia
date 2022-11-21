@@ -114,7 +114,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       <div>
         <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
-          {props.private ? 'private' : 'public'}
+          {props.isPrivate ? 'private' : 'public'}
           {props.updatedAt == null ? null : (
             <>
               {' '}
@@ -202,8 +202,9 @@ export const RepositoryListing = React.memo(
           } else {
             const additionalEntry: RepositoryRowProps = {
               fullName: parsedRepo.repository,
+              name: parsedRepo.repository,
               avatarUrl: null,
-              private: true,
+              isPrivate: true,
               description: null,
               updatedAt: null,
               defaultBranch: 'main',
