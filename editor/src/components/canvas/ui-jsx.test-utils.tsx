@@ -244,7 +244,7 @@ export async function renderTestEditorWithModel(
     }
 
     flushSync(() => {
-      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
     })
 
     // run dom walker
@@ -280,9 +280,11 @@ export async function renderTestEditorWithModel(
     // update state with new metadata
 
     flushSync(() => {
-      storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+      storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
       if (shouldInspectorUpdate(workingEditorState.strategyState)) {
-        lowPriorityStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+        lowPriorityStoreHook.setState(
+          patchedStoreFromFullStore(workingEditorState, 'low-priority-store'),
+        )
       }
     })
   }
@@ -324,7 +326,7 @@ export async function renderTestEditorWithModel(
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'canvas-store')))
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
@@ -333,14 +335,18 @@ export async function renderTestEditorWithModel(
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(
+    subscribeWithSelector((set) =>
+      patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
+    ),
+  )
 
   const storeHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'editor-store')))
 
   // initializing the local editor state
   workingEditorState = initialEditorStore

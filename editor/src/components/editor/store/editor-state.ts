@@ -388,16 +388,23 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
+type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+
 export type EditorStorePatched = EditorStoreShared & {
+  storeName: StoreName
   editor: EditorState
   derived: DerivedState
 }
 
 export type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
-export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+export function patchedStoreFromFullStore(
+  store: EditorStoreFull,
+  name: StoreName,
+): EditorStorePatched {
   return {
     ...store,
+    storeName: name,
     editor: store.patchedEditor,
     derived: store.patchedDerived,
   }
