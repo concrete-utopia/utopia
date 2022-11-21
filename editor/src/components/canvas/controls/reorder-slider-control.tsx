@@ -263,7 +263,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
           boxShadow: `0px ${1 / scale}px ${2 / scale}px 0px ${
             colorTheme.canvasControlReorderSliderBoxShadowPrimary.value
           }, 0px 0px 0px ${0.5 / scale}px ${
-            colorTheme.canvasControlReorderSliderBoxShadowSecondary
+            colorTheme.canvasControlReorderSliderBoxShadowSecondary.value
           }`,
         }}
       ></div>

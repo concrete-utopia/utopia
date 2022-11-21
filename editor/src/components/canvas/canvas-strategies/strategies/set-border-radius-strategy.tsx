@@ -4,9 +4,12 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
   JSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -47,6 +50,8 @@ import {
   CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
+  shouldShowControls,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -58,6 +63,8 @@ import {
 import { InteractionSession } from '../interaction-state'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
+
+const AllSides: Array<keyof Sides> = ['bottom', 'left', 'right', 'top']
 
 export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -207,12 +214,40 @@ function borderRadiusFromElement(
   }
 
   const fromProps = borderRadiusFromProps(jsxElement.props)
+  const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
+
+  const elementIsIntrinsicElementOrScene = foldEither(
+    () => false,
+    (e) =>
+      isJSXElement(e) &&
+      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
+    element.element,
+  )
+
+  if (
+    !(
+      elementIsIntrinsicElementOrScene ||
+      shouldShowControls({
+        propAvailableFromStyle: fromProps != null,
+        measurementsNonZero: measurementsNonZero,
+      })
+    )
+  ) {
+    return null
+  }
+
   const borderRadius = optionalMap(
     (radius) => measurementFromBorderRadius(renderedValueSides, radius),
     fromProps,
   )
 
   if (borderRadius == null) {
+    if (!elementIsIntrinsicElementOrScene) {
+      return {
+        mode: 'all',
+        borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+      }
+    }
     return null
   }
 
@@ -295,10 +330,7 @@ function simpleBorderRadiusFromProps(props: JSXAttributes): BorderRadiusSides<CS
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
-  return size(
-    element.specialSizeMeasurements.clientWidth,
-    element.specialSizeMeasurements.clientHeight,
-  )
+  return size(element.globalFrame?.width ?? 0, element.globalFrame?.height ?? 0)
 }
 
 function measurementFromBorderRadius(

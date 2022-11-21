@@ -25,6 +25,10 @@ import {
   adjustCssLengthProperty,
 } from '../../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../../commands/commands'
+import {
+  ConvertCssPercentToPx,
+  convertCssPercentToPx,
+} from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import { setProperty } from '../../../commands/set-property-command'
 import {
@@ -47,7 +51,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
-): Array<AdjustCssLengthProperty> {
+): Array<AdjustCssLengthProperty | ConvertCssPercentToPx> {
   const element: JSXElement | null = getElementFromProjectContents(
     target,
     projectContents,
@@ -104,6 +108,22 @@ export function getAbsoluteReparentPropertyChanges(
     }
   }
 
+  const createConvertCssPercentToPx = (pin: LayoutPinnedProp): ConvertCssPercentToPx | null => {
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    if (isRight(value) && value.value != null && value.value.unit === '%') {
+      return convertCssPercentToPx(
+        'always',
+        target,
+        stylePropPathMappingFn(pin, ['style']),
+        isHorizontalPoint(framePointForPinnedProp(pin))
+          ? currentParentContentBox.width
+          : currentParentContentBox.height,
+      )
+    } else {
+      return null
+    }
+  }
+
   const newParentFrame = MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata)
 
   return [
@@ -129,6 +149,7 @@ export function getAbsoluteReparentPropertyChanges(
       },
       ['bottom', 'right'] as const,
     ),
+    ...mapDropNulls((pin) => createConvertCssPercentToPx(pin), ['width', 'height'] as const),
   ]
 }
 

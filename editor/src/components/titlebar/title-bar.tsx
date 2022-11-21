@@ -97,7 +97,8 @@ const TitleBar = React.memo(() => {
     <SimpleFlexRow
       style={{
         backgroundColor: colorTheme.bg0.value,
-        padding: '0 10px 0 10px',
+        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+        padding: 0,
         flexGrow: 0,
         height: 40,
         fontWeight: 600,
@@ -154,18 +155,8 @@ const TitleBar = React.memo(() => {
       <div>
         <ProjectTitle>{projectName}</ProjectTitle>
       </div>
-
-      <div
-        style={{
-          display: 'flex',
-          height: '100%',
-          flex: '1 1 0px',
-          justifyContent: 'right',
-          alignItems: 'center',
-          gap: 10,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', height: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
         {/* <SquareButton onClick={}>Fork</SquareButton> */}

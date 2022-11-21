@@ -138,8 +138,8 @@ export const CanvasToolbar = React.memo(() => {
     <FlexColumn
       style={{
         position: 'absolute',
-        top: 8,
-        left: 8,
+        top: 48,
+        left: 12,
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
