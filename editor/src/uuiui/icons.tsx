@@ -243,14 +243,14 @@ export const Icons = {
     type: 'download',
     width: 18,
     height: 18,
-    color: 'black',
+    color: 'main',
   }),
   Upload: makeIcon({
     category: 'semantic',
     type: 'upload',
     width: 18,
     height: 18,
-    color: 'black',
+    color: 'main',
   }),
 }
 

@@ -106,20 +106,19 @@ const TitleBar = React.memo(() => {
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-                {
-                  <Icons.Download
-                    style={{ width: 19, height: 19 }}
-                    // color={secondary as IcnColor}
-                  />
-                }
-                <>Remote Changes</>
+                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
-                {<Icons.Upload style={{ width: 19, height: 19 }} />}
-                <>Local Changes</>
+              <RoundButton
+                color={colorTheme.secondaryBlue.value}
+                // color={'#49B6FF'}
+                onClick={toggleLeftPanel}
+              >
+                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                <>Push Local</>
               </RoundButton>,
             )}
           </>,

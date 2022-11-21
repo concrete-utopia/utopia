@@ -53,7 +53,7 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
     gap: 5,
     height: 24,
     borderRadius: 18,
-    color: colorTheme.fg9.value,
+    color: colorTheme.bg0.value,
     ...bgColor,
   }))
 
