@@ -35,6 +35,7 @@ export interface DragInteractionData {
   globalTime: number
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
+  spacePressed: boolean
 }
 
 export interface HoverInteractionData {
@@ -176,6 +177,7 @@ export function createInteractionViaMouse(
       globalTime: Date.now(),
       hasMouseMoved: false,
       _accumulatedMovement: zeroCanvasPoint,
+      spacePressed: false,
     },
     activeControl: activeControl,
     lastInteractionTime: Date.now(),
@@ -235,6 +237,7 @@ export function updateInteractionViaDragDelta(
         globalTime: Date.now(),
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
+        spacePressed: currentState.interactionData.spacePressed,
       },
       activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
@@ -306,6 +309,7 @@ function updateInteractionDataViaMouse(
             globalTime: Date.now(),
             hasMouseMoved: true,
             _accumulatedMovement: currentData._accumulatedMovement,
+            spacePressed: currentData.spacePressed,
           }
         case 'HOVER':
           return {
@@ -318,6 +322,7 @@ function updateInteractionDataViaMouse(
             globalTime: Date.now(),
             hasMouseMoved: false,
             _accumulatedMovement: zeroCanvasPoint,
+            spacePressed: false,
           }
         default:
           assertNever(currentData)
@@ -392,6 +397,11 @@ export function updateInteractionViaKeyboard(
       }
     }
     case 'DRAG': {
+      const isSpacePressed =
+        (currentState.interactionData.spacePressed ||
+          addedKeysPressed.some((key) => key === 'space')) &&
+        !keysReleased.some((key) => key === 'space')
+
       return {
         interactionData: {
           type: 'DRAG',
@@ -403,6 +413,7 @@ export function updateInteractionViaKeyboard(
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
+          spacePressed: isSpacePressed,
         },
         activeControl: currentState.activeControl,
         lastInteractionTime: Date.now(),
@@ -573,3 +584,10 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+
+export function isDragToPan(
+  interaction: InteractionSession | null,
+  spacePressed: boolean | undefined,
+): boolean {
+  return spacePressed === true && interaction == null
+}
