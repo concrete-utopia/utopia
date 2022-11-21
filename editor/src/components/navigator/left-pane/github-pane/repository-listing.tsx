@@ -1,22 +1,28 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
-import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import { notice } from '../../../../components/common/notice'
 import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
   GithubRepo,
   githubRepoEquals,
+  githubRepoFullName,
   isGithubLoadingBranch,
 } from '../../../../components/editor/store/editor-state'
+import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import {
-  updateProjectWithBranchContent,
+  connectRepo,
   getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
 } from '../../../../core/shared/github'
-import { useColorTheme, Button, StringInput } from '../../../../uuiui'
+import { when } from '../../../../utils/react-conditionals'
+import { Button, colorTheme, FlexColumn, StringInput } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
+import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 
@@ -25,11 +31,7 @@ interface RepositoryRowProps extends RepositoryEntry {
 }
 
 const RepositoryRow = (props: RepositoryRowProps) => {
-  const colorTheme = useColorTheme()
-
   const dispatch = useEditorState((store) => store.dispatch, 'RepositoryRow dispatch')
-
-  const projectID = useEditorState((store) => store.editor.id, 'RepositoryRow projectID')
 
   const githubWorking = useEditorState(
     (store) => store.editor.githubOperations.length > 0,
@@ -65,13 +67,11 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
-  const builtInDependencies = useEditorState(
-    (store) => store.builtInDependencies,
-    'Built-in dependencies',
-  )
-  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const importRepository = React.useCallback(() => {
+    if (githubWorking) {
+      return
+    }
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
     if (parsedTargetRepository == null || props.defaultBranch == null) {
       dispatch(
@@ -87,88 +87,44 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       )
     } else {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
-      void updateProjectWithBranchContent(
-        dispatch,
-        parsedTargetRepository,
-        props.defaultBranch,
-        isAnotherRepo,
-        currentDependencies,
-        builtInDependencies,
-      )
-      setImporting(true)
+      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null))
     }
-  }, [
-    dispatch,
-    props.fullName,
-    props.defaultBranch,
-    currentRepo,
-    builtInDependencies,
-    currentDependencies,
-  ])
+  }, [dispatch, props.fullName, props.defaultBranch, currentRepo, githubWorking])
 
   return (
-    <div
-      style={{
-        minHeight: 40,
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 8,
-        alignItems: 'center',
-        paddingLeft: 8,
-        paddingRight: 8,
-        paddingBottom: 8,
-        paddingTop: 8,
-        borderBottom: '1px solid #ccc',
+    <UIGridRow
+      padded
+      variant='<----------1fr---------><-auto->'
+      tall={true}
+      css={{
+        cursor: importing
+          ? 'wait'
+          : githubWorking || !props.importPermitted
+          ? 'not-allowed'
+          : 'pointer',
+        opacity: githubWorking || !props.importPermitted ? 0.5 : 1,
+        '&:hover': {
+          background: colorTheme.primarySubdued.value,
+          color: colorTheme.white.value,
+          svg: { stroke: colorTheme.white.value },
+        },
       }}
+      onClick={importRepository}
     >
-      <div
-        style={{
-          borderRadius: '50%',
-          width: 20,
-          height: 20,
-          border: '1px solid #ccc',
-          backgroundImage: `url(${props.avatarUrl})`,
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
-      <div style={{ flexGrow: 1 }}>
-        <span style={{ fontWeight: 600, textOverflow: 'ellipsis' }}>
-          {props.name ?? props.fullName}
-        </span>{' '}
-        <br />
-        <span style={{ opacity: 0.5 }}>
+      <div>
+        <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
+        <span style={{ fontSize: 10, opacity: 0.5 }}>
           {props.private ? 'private' : 'public'}
           {props.updatedAt == null ? null : (
             <>
-              {' · '}
-              <TimeAgo date={props.updatedAt} />
+              {' '}
+              &middot; <TimeAgo date={props.updatedAt} />
             </>
           )}
         </span>
       </div>
-      <Button
-        style={{
-          fontSize: 11,
-          background: colorTheme.buttonBackground.value,
-          boxShadow: 'none',
-          border: 'none',
-          height: 22,
-          color:
-            props.importPermitted && !githubWorking
-              ? colorTheme.inlineButtonColor.value
-              : colorTheme.inlineButtonColorDisabled.value,
-          borderRadius: 2,
-          cursor: 'pointer',
-          minWidth: '44px',
-        }}
-        disabled={!props.importPermitted || githubWorking}
-        onMouseUp={importRepository}
-      >
-        {importing ? <GithubSpinner /> : 'Import'}
-      </Button>
-    </div>
+      {when(importing, <GithubSpinner />)}
+    </UIGridRow>
   )
 }
 
@@ -223,10 +179,7 @@ export const RepositoryListing = React.memo(
       }
       if (targetRepository != null) {
         filteredResult = filteredResult.filter((repository) => {
-          return (
-            repository.fullName.includes(targetRepository) ||
-            repository.name?.includes(targetRepository)
-          )
+          return repository.fullName.includes(targetRepository)
         })
       }
       return filteredResult
@@ -241,7 +194,7 @@ export const RepositoryListing = React.memo(
         if (parsedRepo == null) {
           return filteredRepositories
         } else {
-          const ownerRepo = `${parsedRepo.owner}/${parsedRepo.repository}`
+          const ownerRepo = githubRepoFullName(parsedRepo)
           const alreadyIncludesEntry =
             filteredRepositories?.some((repo) => repo.fullName === ownerRepo) ?? false
           if (alreadyIncludesEntry) {
@@ -252,9 +205,8 @@ export const RepositoryListing = React.memo(
               avatarUrl: null,
               private: true,
               description: null,
-              name: null,
               updatedAt: null,
-              defaultBranch: null,
+              defaultBranch: 'main',
               importPermitted: false,
               permissions: {
                 admin: false,
@@ -288,8 +240,8 @@ export const RepositoryListing = React.memo(
     }
 
     return (
-      <>
-        <UIGridRow padded variant={'<----------1fr---------><-auto->'}>
+      <FlexColumn style={{ gap: 4 }}>
+        <UIGridRow padded={false} variant={'<----------1fr---------><-auto->'}>
           <StringInput
             placeholder={
               filteredRepositoriesWithSpecialCases == null
@@ -313,34 +265,32 @@ export const RepositoryListing = React.memo(
             {isLoadingRepositories ? <GithubSpinner /> : <RefreshIcon />}
           </Button>
         </UIGridRow>
-
-        <UIGridRow padded variant='<-------------1fr------------->'>
-          <div
-            style={{
-              border: '1px solid #ccc',
-              height: 220,
-              overflowY: 'scroll',
-            }}
-          >
-            {filteredRepositoriesWithSpecialCases == null ? (
-              <div style={{ display: 'flex', height: '100%' }}>
-                <div style={{ margin: 'auto', position: 'relative' }}>
-                  <GithubSpinner />
-                </div>
+        <FlexColumn
+          style={{
+            height: 220,
+            overflowY: 'scroll',
+            border: `1px solid ${colorTheme.githubBoxesBorder.value}`,
+            borderRadius: 2,
+          }}
+        >
+          {filteredRepositoriesWithSpecialCases == null ? (
+            <div style={{ display: 'flex', height: '100%' }}>
+              <div style={{ margin: 'auto', position: 'relative' }}>
+                <GithubSpinner />
               </div>
-            ) : (
-              filteredRepositoriesWithSpecialCases.map((repository, index) => {
-                return <RepositoryRow key={`repo-${index}`} {...repository} />
-              })
-            )}
-          </div>
-        </UIGridRow>
-        <UIGridRow padded variant='<-------------1fr------------->'>
+            </div>
+          ) : (
+            filteredRepositoriesWithSpecialCases.map((repository, index) => {
+              return <RepositoryRow key={`repo-${index}`} {...repository} />
+            })
+          )}
+        </FlexColumn>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
             Create new repository on Github.
           </a>
         </UIGridRow>
-      </>
+      </FlexColumn>
     )
   },
 )

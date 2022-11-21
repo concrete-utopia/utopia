@@ -27,7 +27,7 @@ import {
   LargerIcons,
   ResizableFlexColumn,
 } from '../../uuiui'
-import { TopMenu } from '../editor/top-menu'
+
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
 import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
@@ -39,6 +39,7 @@ import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-ins
 import { getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
+import { CanvasToolbar } from '../editor/canvas-toolbar'
 
 interface NumberSize {
   width: number
@@ -288,35 +289,23 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            <SimpleFlexRow
-              className='topMenu'
-              style={{
-                minHeight: TopMenuHeight,
-                height: TopMenuHeight,
-                borderBottom: `1px solid ${colorTheme.border0.value}`,
-                alignItems: 'stretch',
-                justifyContent: 'stretch',
-                backgroundColor: 'transparent',
-              }}
-            >
-              <TopMenu />
-            </SimpleFlexRow>
-
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
-                  height: `calc(100% - ${TopMenuHeight}px)`,
+                  height: '100%',
                   position: 'absolute',
-                  top: TopMenuHeight,
+                  top: 0,
                   left: 0,
                   zIndex: 20,
                   overflow: 'hidden',
+                  borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+                  borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
                 }}
               >
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
-                    backgroundColor: UtopiaTheme.color.bg0.o(90).value,
+                    backgroundColor: colorTheme.bg0Opacity90.value,
                     backdropFilter: 'blur(7px)',
                   }}
                   onResizeStop={onNavigatorResizeStop}
@@ -329,6 +318,7 @@ const DesignPanelRootInner = React.memo(() => {
                 </ResizableFlexColumn>
               </div>
             ) : null}
+
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
           </SimpleFlexColumn>

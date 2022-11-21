@@ -10,14 +10,12 @@ import {
 import {
   paddingControlHandleTestId,
   paddingControlTestId,
-  PaddingResizeControlContainerTestId,
   PaddingResizeControlHoverTimeout,
 } from '../../controls/select-mode/padding-resize-control'
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
-  mouseEnterAtPoint,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import {
@@ -41,18 +39,22 @@ const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 describe('Padding resize strategy', () => {
   it('Padding resize handle is not present for elements that have no padding set', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-      }}
-      data-uid='24a'
-    />`),
+      makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div
+            data-uid='mydiv'
+            data-testid='mydiv'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 28,
+              top: 28,
+              width: 612,
+              height: 461,
+            }}
+          />
+        </div>
+      `),
       'await-first-dom-report',
     )
 
@@ -76,27 +78,30 @@ describe('Padding resize strategy', () => {
 
   it('Padding resize handle is present for elements that are dimensioned and have children', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-      }}
-      data-uid='24a'
-    >
-      <div
-        style={{
-          backgroundColor: '#0091FFAA',
-          width: 22,
-          height: 22,
-        }}
-        data-uid='002'
-      />
-    </div>`),
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div
+          data-uid='mydiv'
+          data-testid='mydiv'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 28,
+            top: 28,
+            width: 612,
+            height: 461,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 22,
+              height: 22,
+            }}
+            data-uid='002'
+          />
+        </div>
+      </div>`),
       'await-first-dom-report',
     )
 
@@ -116,6 +121,41 @@ describe('Padding resize strategy', () => {
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
       expect(paddingControlHandle).toBeTruthy()
     })
+  })
+
+  it("padding controls don't show up for elements that are smaller than 40px", async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 28,
+        top: 28,
+        width: 39,
+        height: 39,
+      }}
+      data-uid='24a'
+    />`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 1,
+      y: divBounds.y + 1,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    const paddingControls = EdgePieces.flatMap((edge) => [
+      ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+      ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+    ])
+
+    expect(paddingControls).toEqual([])
   })
 
   it('Padding resize handles are present and visible after the timeout', async () => {
@@ -141,16 +181,13 @@ describe('Padding resize strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingResizeControlContainer = editor.renderedDOM.getByTestId(
-      PaddingResizeControlContainerTestId,
-    )
     const paddingResizeControlContainerBounds = div.getBoundingClientRect()
     const paddingResizeControlContainerCorner = {
       x: paddingResizeControlContainerBounds.x + 5,
       y: paddingResizeControlContainerBounds.y + 4,
     }
 
-    mouseEnterAtPoint(paddingResizeControlContainer, paddingResizeControlContainerCorner)
+    mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
 
@@ -443,6 +480,62 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  describe('Padding controls on compoenent instances', () => {
+    it('controls are shown if padding is specified on the component instance', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({
+          internalPadding: '10px',
+          externalPadding: '20px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      EdgePieces.forEach((edge) => {
+        const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+        expect(paddingControlOuter).toBeTruthy()
+        const paddingControlHandle = editor.renderedDOM.getByTestId(
+          paddingControlHandleTestId(edge),
+        )
+        expect(paddingControlHandle).toBeTruthy()
+      })
+    })
+
+    it("controls are shown if padding is NOT specified on the component instance and instance doesn't have computed padding", async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({}),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      EdgePieces.forEach((edge) => {
+        const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+        expect(paddingControlOuter).toBeTruthy()
+        const paddingControlHandle = editor.renderedDOM.getByTestId(
+          paddingControlHandleTestId(edge),
+        )
+        expect(paddingControlHandle).toBeTruthy()
+      })
+    })
+
+    it('controls are NOT shown if padding is NOT specified on the component instance and instance has computed padding', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesPaddingInternally({
+          internalPadding: '5px',
+        }),
+        'await-first-dom-report',
+      )
+
+      clickOnMyDiv(editor)
+      const paddingControls = EdgePieces.flatMap((edge) => [
+        ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+        ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+      ])
+
+      expect(paddingControls).toEqual([])
+    })
+  })
+
   describe('Adjusting individual padding values, precise', () => {
     // the expect is in `testAdjustIndividualPaddingValue`
     // eslint-disable-next-line jest/expect-expect
@@ -554,54 +647,60 @@ function offsetPointByEdge(edge: EdgePiece, delta: number, point: Point): Point 
 }
 
 function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
-  return makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-        padding: '${padding}',
-      }}
-      data-uid='24a'
-    >
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
       <div
+        data-uid='mydiv'
+        data-testid='mydiv'
         style={{
           backgroundColor: '#0091FFAA',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 612,
+          height: 461,
+          padding: '${padding}',
         }}
-        data-uid='002'
-      />
+      >
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='002'
+        />
+      </div>
     </div>`)
 }
 
 function makeTestProjectCodeWithLongHandPaddingValues(
   padding: Partial<CSSPaddingMappedValues<string>>,
 ): string {
-  return makeTestProjectCodeWithSnippet(`<div
-      data-testid='mydiv'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 28,
-        top: 28,
-        width: 612,
-        height: 461,
-        ${formatPaddingLonghandValues(padding)}
-      }}
-      data-uid='24a'
-    >
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
       <div
+        data-uid='mydiv'
+        data-testid='mydiv'
         style={{
           backgroundColor: '#0091FFAA',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 612,
+          height: 461,
+          ${formatPaddingLonghandValues(padding)}
         }}
-        data-uid='002'
-      />
+      >
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='002'
+        />
+      </div>
     </div>`)
 }
 
@@ -614,4 +713,56 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
   ]
     .filter((s) => s != null)
     .join('\n')
+}
+
+function clickOnMyDiv(editor: EditorRenderResult) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId('mydiv')
+  const divBounds = div.getBoundingClientRect()
+  const divCorner = {
+    x: divBounds.x + 25,
+    y: divBounds.y + 24,
+  }
+
+  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+}
+interface HorribleComponentProps {
+  internalPadding?: string
+  externalPadding?: string
+}
+
+function projectWithComponentThatDefinesPaddingInternally(props: HorribleComponentProps): string {
+  return `import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  
+  const HorribleComponent = (props) => {
+    return (
+      <div
+        data-testid='mydiv'
+        style={{
+          width: '300px',
+          height: '400px',
+          backgroundColor: 'green',
+          ${props.internalPadding ? `padding: '${props.internalPadding}',` : ''}
+          ...props.style,
+        }}
+        data-uid='8bc'
+      />
+    )
+  }
+  
+  export var storyboard = (
+    <Storyboard data-uid='0cd'>
+      <HorribleComponent
+        style={{
+          position: 'absolute',
+          left: 420,
+          top: 420,
+          ${props.externalPadding ? `padding: '${props.externalPadding}',` : ''}
+        }}
+        data-uid='ca3'
+      />
+    </Storyboard>
+  )
+  `
 }

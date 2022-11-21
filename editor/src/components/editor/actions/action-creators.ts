@@ -218,6 +218,8 @@ import type {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -541,9 +543,22 @@ export function setHighlightedView(target: ElementPath): SetHighlightedView {
   }
 }
 
+export function setHoveredView(target: ElementPath): SetHoveredView {
+  return {
+    action: 'SET_HOVERED_VIEW',
+    target: target,
+  }
+}
+
 export function clearHighlightedViews(): ClearHighlightedViews {
   return {
     action: 'CLEAR_HIGHLIGHTED_VIEWS',
+  }
+}
+
+export function clearHoveredViews(): ClearHoveredViews {
+  return {
+    action: 'CLEAR_HOVERED_VIEWS',
   }
 }
 
@@ -1628,10 +1643,16 @@ export function toggleSelectionLock(
   }
 }
 
-export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
+export function saveToGithub(
+  targetRepository: GithubRepo,
+  branchName: string,
+  commitMessage: string,
+): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+    branchName: branchName,
+    commitMessage: commitMessage,
   }
 }
 

@@ -14,16 +14,15 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -1025,16 +1024,15 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -1566,16 +1564,15 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -2020,16 +2017,15 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -3102,16 +3098,15 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -6133,16 +6128,15 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -6868,16 +6862,15 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -7394,16 +7387,15 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -8516,16 +8508,15 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -9638,16 +9629,15 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -10373,16 +10363,15 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -11141,16 +11130,15 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -12041,16 +12029,15 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -12940,16 +12927,15 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -13936,16 +13922,15 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -14932,16 +14917,15 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -15385,16 +15369,15 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -20829,16 +20812,15 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -21628,16 +21610,15 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -22147,16 +22128,15 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -22730,16 +22710,15 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -23521,16 +23500,15 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -24457,16 +24435,15 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -25242,16 +25219,15 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -26172,16 +26148,15 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 600px;
@@ -29515,16 +29490,15 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -30637,16 +30611,15 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -31763,16 +31736,15 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -32892,16 +32864,15 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -33635,16 +33606,15 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 406px;
@@ -34185,16 +34155,15 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -34836,16 +34805,15 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -35246,16 +35214,15 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 200px;
@@ -35875,16 +35842,15 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -36447,16 +36413,15 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -36869,16 +36834,15 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         height: 812px;
@@ -38132,16 +38096,15 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -38763,16 +38726,15 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -39219,16 +39181,15 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -40937,16 +40898,15 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;
@@ -41393,16 +41353,15 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       style=\\"
         overflow: hidden;
         position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-        background-image: linear-gradient(
-            to bottom left,
-            #e7e7e7 25%,
-            transparent 25%
-          ),
-          linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
-          linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
-          linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
         background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
         background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
         left: 0;

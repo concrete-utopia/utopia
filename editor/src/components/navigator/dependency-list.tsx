@@ -38,6 +38,7 @@ import {
   Section,
   FlexColumn,
   Button,
+  colorTheme,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -431,7 +432,12 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           {!this.props.minimised ? (
             <FlexColumn
               role='listContainer'
-              style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}
+              style={{
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingTop: 4,
+                paddingBottom: 4,
+              }}
             >
               <AddTailwindButton packagesWithStatus={packagesWithStatus} />
               <DependencyListItems

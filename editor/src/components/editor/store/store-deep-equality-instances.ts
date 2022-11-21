@@ -322,6 +322,8 @@ import {
   GithubData,
   emptyGithubData,
   projectGithubSettings,
+  DragToMoveIndicatorFlags,
+  dragToMoveIndicatorFlags,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -469,10 +471,12 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
 }
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.hoveredViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
@@ -1593,8 +1597,21 @@ export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: Ke
     guidelineWithSnappingVectorAndPointsOfRelevance,
   )
 
+export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<DragToMoveIndicatorFlags> =
+  combine4EqualityCalls(
+    (indicatorFlag) => indicatorFlag.showIndicator,
+    BooleanKeepDeepEquality,
+    (indicatorFlag) => indicatorFlag.dragType,
+    createCallWithTripleEquals<'absolute' | 'static'>(),
+    (indicatorFlag) => indicatorFlag.reparent,
+    createCallWithTripleEquals<'same-component' | 'different-component' | 'none'>(),
+    (indicatorFlag) => indicatorFlag.ancestor,
+    BooleanKeepDeepEquality,
+    dragToMoveIndicatorFlags,
+  )
+
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1607,6 +1624,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
+    (controls) => controls.dragToMoveIndicatorFlags,
+    DragToMoveIndicatorFlagsKeepDeepEquality,
     editorStateCanvasControls,
   )
 
@@ -3235,7 +3254,7 @@ export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<Re
   )
 
 export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
-  combine8EqualityCalls(
+  combine7EqualityCalls(
     (r) => r.avatarUrl,
     NullableStringKeepDeepEquality,
     (r) => r.private,
@@ -3244,12 +3263,10 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
     StringKeepDeepEquality,
     (r) => r.description,
     NullableStringKeepDeepEquality,
-    (r) => r.name,
-    NullableStringKeepDeepEquality,
     (r) => r.updatedAt,
     NullableStringKeepDeepEquality,
     (r) => r.defaultBranch,
-    NullableStringKeepDeepEquality,
+    StringKeepDeepEquality,
     (r) => r.permissions,
     RepositoryEntryPermissionsKeepDeepEquality,
     repositoryEntry,
@@ -3281,7 +3298,7 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
 
 export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
   (data) => data.branches,
-  arrayDeepEquality(GithubBranchKeepDeepEquality),
+  nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.lastUpdatedAt,
@@ -3365,6 +3382,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.selectedViews,
   )
   const highlightedViewsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.highlightedViews,
+    newValue.highlightedViews,
+  )
+  const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
     oldValue.highlightedViews,
     newValue.highlightedViews,
   )
@@ -3576,6 +3597,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     nodeModulesResult.areEqual &&
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
+    hoveredViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
     displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
@@ -3652,6 +3674,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       nodeModulesResult.value,
       selectedViewsResult.value,
       highlightedViewsResult.value,
+      hoveredViewsResult.value,
       hiddenInstancesResult.value,
       displayNoneInstancesResult.value,
       warnedInstancesResult.value,

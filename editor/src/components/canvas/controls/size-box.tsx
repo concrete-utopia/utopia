@@ -447,7 +447,7 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
         // These just about work. I can clean them up afterwards
         boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${
           1 / props.scale
-        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        }px ${3 / props.scale}px ${colorTheme.canvasControlsDimensionableControlShadow.value}`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX - 1,
@@ -472,9 +472,10 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
         backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 0px ${
-          1 / props.scale
-        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.primary.value}, 
+        0px ${1 / props.scale}px ${3 / props.scale}px ${
+          colorTheme.canvasControlsDimensionableControlShadow.value
+        }`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX + scaledControlOffsetLeft,
@@ -544,9 +545,9 @@ class ResizePoint extends React.Component<ResizePointProps> {
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
-            boxShadow: `${fixmeColorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
+            boxShadow: `${fixmeColorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px ${
               1 / this.props.scale
-            }px, ${fixmeColorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+            }px, ${fixmeColorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
               1 / this.props.scale
             }px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
             ...this.props.extraStyle,

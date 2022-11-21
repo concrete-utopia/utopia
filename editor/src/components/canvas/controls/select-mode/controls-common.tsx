@@ -5,7 +5,6 @@ import * as EP from '../../../../core/shared/element-path'
 import { roundTo } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifiers } from '../../../../utils/modifiers'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
   CSSNumber,
@@ -14,6 +13,11 @@ import {
   ParsedCSSProperties,
   printCSSNumber,
 } from '../../../inspector/common/css-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import { Modifiers } from '../../../../utils/modifiers'
+import { ProjectContentTreeRoot } from '../../../assets'
+import { colorTheme } from '../../../../uuiui'
 
 export const Emdash: string = '\u2014'
 
@@ -95,6 +99,7 @@ export function measurementBasedOnOtherMeasurement(
 
 const FontSize = 12
 const Padding = 4
+const BorderRadius = 2
 
 interface CanvasLabelProps {
   scale: number
@@ -106,6 +111,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
   const { scale, color, value } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
+  const borderRadius = BorderRadius / scale
   return (
     <div
       style={{
@@ -113,7 +119,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         padding: padding,
         backgroundColor: color,
         color: 'white',
-        borderRadius: 2,
+        borderRadius: borderRadius,
       }}
     >
       {value}
@@ -136,20 +142,10 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
         width: width,
         height: height,
         backgroundColor: pillColor,
-        border: `${borderWidth}px solid rgba(255, 255, 255)`,
+        border: `${borderWidth}px solid ${colorTheme.bg0.value}`,
       }}
     />
   )
-})
-
-export const StripeOpacity: number = 30
-
-export const StripedBackgroundCSS = (
-  stripeColor: string,
-  scale: number,
-): { backgroundImage: string; backgroundSize: string } => ({
-  backgroundImage: `linear-gradient(135deg, ${stripeColor} 24.5%, rgba(255,255,255,0) 24.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 74%, rgba(255,255,255,0) 74%, rgba(255,255,255,0) 100%)`,
-  backgroundSize: `${4 / scale}px ${4 / scale}px`,
 })
 
 export type Timeout = ReturnType<typeof setTimeout>
@@ -196,4 +192,58 @@ export function getPropertyFromStyle<P extends StyleLayoutProp, T = ParsedCSSPro
     (v) => defaultEither(null, parser(v)),
     allElementProps[EP.toString(elementPath)]?.['style']?.[prop],
   )
+}
+
+export function cssNumberEqual(left: CSSNumber, right: CSSNumber): boolean {
+  return left.unit === right.unit && left.value === right.value
+}
+
+type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
+
+export function canShowCanvasPropControl(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
+  element: ElementInstanceMetadata,
+  scale: number,
+): Set<CanvasPropControl> {
+  const { width, height } = size(
+    (element.globalFrame?.width ?? 0) * scale,
+    (element.globalFrame?.height ?? 0) * scale,
+  )
+
+  if (width > 80 && height > 80) {
+    return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
+  }
+
+  if (Math.min(width, height) < 40) {
+    return new Set<CanvasPropControl>([])
+  }
+
+  if (!MetadataUtils.targetElementSupportsChildren(projectContents, openFile, element)) {
+    return new Set<CanvasPropControl>(['borderRadius', 'gap'])
+  }
+
+  return new Set<CanvasPropControl>(['padding', 'gap'])
+}
+
+interface ShouldShowControlsParams {
+  propAvailableFromStyle: boolean
+  measurementsNonZero: boolean
+}
+
+export function shouldShowControls(params: ShouldShowControlsParams): boolean {
+  const { propAvailableFromStyle, measurementsNonZero } = params
+  if (propAvailableFromStyle) {
+    return true
+  }
+
+  if (!propAvailableFromStyle && !measurementsNonZero) {
+    return true
+  }
+
+  if (!propAvailableFromStyle && measurementsNonZero) {
+    return false
+  }
+
+  return true
 }

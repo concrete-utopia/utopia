@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
+import { foldEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { canvasRectangle, CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -14,6 +14,7 @@ import {
 import { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import { AllElementProps } from '../editor/store/editor-state'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
+import { Sides, sides } from 'utopia-api/core'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -86,13 +87,34 @@ function paddingControlContainerBoundsFromChildBounds(
   }))
 }
 
+function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
+  const { left, top, bottom, r } = {
+    left: sidess.left ?? 0,
+    top: sidess.top ?? 0,
+    bottom: sidess.bottom ?? 0,
+    r: sidess.right ?? 0,
+  }
+  return canvasRectangle({
+    x: rect.x + left,
+    y: rect.y + top,
+    width: rect.width - (left + r),
+    height: rect.height - (bottom + top),
+  })
+}
+
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
   gap: number,
   flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
+  const elementPadding =
+    MetadataUtils.findElementByElementPath(elementMetadata, selectedElement)
+      ?.specialSizeMeasurements.padding ?? sides(0, 0, 0, 0)
+  const parentBounds = optionalMap(
+    (b) => inset(elementPadding, b),
+    MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata),
+  )
   if (parentBounds == null) {
     return []
   }

@@ -1,5 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isIntrinsicElement,
+  isJSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -38,14 +44,15 @@ import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  Emdash,
+  canShowCanvasPropControl,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
+  shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
-import { toString } from '../../../../core/shared/element-path'
+import { foldEither } from '../../../../core/shared/either'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -73,6 +80,24 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
+    return null
+  }
+
+  const element = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  if (element == null) {
+    return null
+  }
+
+  const canShowPadding = canShowCanvasPropControl(
+    canvasState.projectContents,
+    canvasState.openFile ?? null,
+    element,
+    canvasState.scale,
+  ).has('padding')
+  if (!canShowPadding) {
     return null
   }
 
@@ -247,9 +272,38 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
+  const padding = simplePaddingFromMetadata(metadata, path)
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
-  const elementHasNonzeroPadding = [top, right, bottom, left].some((s) => s != null && s > 0)
-  if (elementHasNonzeroPadding) {
+  const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
+    (s) => s != null && s > 0,
+  )
+  const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
+
+  const elementIsScene = foldEither(
+    () => false,
+    (e) => isJSXElement(e) && jsxElementNameEquals(e.name, jsxElementName('Scene', [])),
+    element.element,
+  )
+
+  if (elementIsScene) {
+    return false
+  }
+
+  const elementIsIntrinsicElement = foldEither(
+    () => false,
+    (e) =>
+      isJSXElement(e) &&
+      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
+    element.element,
+  )
+
+  if (
+    !elementIsIntrinsicElement &&
+    shouldShowControls({
+      propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
+      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
+    })
+  ) {
     return true
   }
 

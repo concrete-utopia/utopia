@@ -11,7 +11,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
@@ -20,16 +20,12 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
-import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isZeroSizedElement } from '../outline-utils'
 import {
   CanvasLabel,
   CSSNumberWithRenderedValue,
   DisabledColor,
   PillHandle,
-  StripedBackgroundCSS,
-  StripeOpacity,
   useHoverWithDelay,
 } from './controls-common'
 
@@ -49,12 +45,31 @@ export const FlexGapControlHandleTestId = (disabled: boolean): string =>
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue, disabled } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.brandNeonPink.o(StripeOpacity).value
+  const indicatorColor = colorTheme.brandNeonPink.value
+
+  const hoveredViews = useEditorState(
+    (store) => store.editor.hoveredViews,
+    'FlexGapControl hoveredViews',
+  )
 
   const [indicatorShown, setIndicatorShown] = useState<string | null>(null)
-  const [backgroundShown, setBackgroundShown] = useState<boolean>(false)
 
+  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
   const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
+
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  React.useEffect(() => {
+    const timeoutHandle = timeoutRef.current
+    if (timeoutHandle != null) {
+      clearTimeout(timeoutHandle)
+    }
+
+    if (hoveredViews.includes(selectedElement)) {
+      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
+    } else {
+      setBackgroundShown(false)
+    }
+  }, [hoveredViews, selectedElement])
 
   const handleHoverStart = React.useCallback((id: string) => setIndicatorShown(id), [])
   const handleHoverEnd = React.useCallback(() => setIndicatorShown(null), [])
@@ -70,18 +85,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-
-  const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
-      ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
@@ -101,7 +104,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={FlexGapControlTestId(disabled === true)} ref={controlRef}>
+      <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
           return (
@@ -192,14 +195,23 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   } = props
 
   const colorTheme = useColorTheme()
+  const [stripesShown, setStripesShown] = React.useState<boolean>(false)
 
   const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
   const { width, height } = handleDimensions(flexDirection, scale)
 
-  const handleHoverStartInner = React.useCallback(
-    () => handleHoverStart(path),
-    [handleHoverStart, path],
+  const handleHoverStartInner = React.useCallback(() => {
+    handleHoverStart(path)
+    setStripesShown(true)
+  }, [handleHoverStart, path])
+
+  const handleHoverEndInner = React.useCallback(
+    (e: React.MouseEvent) => {
+      hoverEnd(e)
+      setStripesShown(false)
+    },
+    [hoverEnd],
   )
 
   const shouldShowIndicator = React.useCallback(
@@ -207,7 +219,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     [indicatorShown, isDragging],
   )
 
-  const shouldShowBackground = !isDragging && backgroundShown
+  const shouldShowBackground = !isDragging && backgroundShown && stripesShown
 
   const stripeColor = disabled ? DisabledColor : indicatorColor
   const handleColor = disabled ? DisabledColor : colorTheme.brandNeonPink.value
@@ -216,8 +228,9 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     <div
       key={path}
       onMouseEnter={hoverStart}
-      onMouseLeave={hoverEnd}
+      onMouseLeave={handleHoverEndInner}
       style={{
+        pointerEvents: 'all',
         position: 'absolute',
         left: bounds.x,
         top: bounds.y,
@@ -227,7 +240,9 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         alignItems: 'center',
         justifyContent: 'center',
         border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
-        ...(shouldShowBackground ? StripedBackgroundCSS(stripeColor, scale) : {}),
+        ...(shouldShowBackground
+          ? UtopiaStyles.backgrounds.stripedBackground(indicatorColor, scale)
+          : {}),
       }}
     >
       <div

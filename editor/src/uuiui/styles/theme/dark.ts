@@ -2,7 +2,6 @@ import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import { light } from './light'
 
-/** DARK **/
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
@@ -16,6 +15,8 @@ const darkBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
+  jsYellow: base.jsYellow,
+  transparent: base.transparent,
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
@@ -39,7 +40,7 @@ const darkBase = {
   border3: createUtopiColor('#181C20'),
 }
 
-export const darkPrimitives = {
+const darkPrimitives = {
   // backgrounds
   emphasizedBackground: darkBase.bg0,
   emphasizedBackgroundPop: createUtopiColor('rgba(0,0,0,1)'),
@@ -58,6 +59,9 @@ export const darkPrimitives = {
   neutralBorder: darkBase.border1,
   secondaryBorder: darkBase.border2,
   subduedBorder: darkBase.border3,
+
+  checkerboardLight: createUtopiColor('rgb(67,67,67)'),
+  checkerboardDark: createUtopiColor('rgb(44, 45, 48)'),
 }
 
 const darkErrorStates = {
@@ -66,10 +70,33 @@ const darkErrorStates = {
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
   errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
-  warningBgTranslucent: base.orange.o(20),
+  warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
+
+// TEMP colors with preset opacity pulled from within the app
+const colorsWithOpacity = {
+  bg0Opacity90: createUtopiColor('rgba(45,45,45,0.9)'),
+  bg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
+  fg6Opacity50: createUtopiColor('rgba(111, 119, 139, 0.5)'),
+  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
+  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
+  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
+  canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
+  brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
+  neutralForeground40: createUtopiColor('rgba(217, 220, 227, 0.4)'),
+  neutralInvertedBackground10: createUtopiColor('rgba(217, 220, 227, 0.1)'),
+  neutralInvertedBackground20: createUtopiColor('rgba(217, 220, 227, 0.2)'),
+  neutralInvertedBackground30: createUtopiColor('rgba(217, 220, 227, 0.3)'),
+  listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
+  brandPurple70: createUtopiColor('rgba(87, 75, 226,0.7)'),
+  errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
+  primary30: createUtopiColor('rgba(0, 122, 255, 0.3)'),
+  subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
+}
+
 export const dark: typeof light = {
+  ...colorsWithOpacity,
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
@@ -95,13 +122,18 @@ export const dark: typeof light = {
   canvasControlsSizeBoxBackground: createUtopiColor('white'),
   canvasControlsSizeBoxShadowColor: createUtopiColor('black'),
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
+  canvasControlReorderSliderBoxShadowPrimary: createUtopiColor('rgba(52,52,52,0.35)'),
+  canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('rgba(166,166,166,0.82)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
-  canvasControlsImmediateParentMarks: base.black.o(25),
+  canvasControlsImmediateParentMarks: createUtopiColor('rgba(0,0,0,0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
   canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
   canvasControlsInlineToggleActiveBackground: createUtopiColor('rgba(230,242,255,1)'),
+
+  canvasControlsCornerOutline: createUtopiColor('rgba(103, 142, 255, 1)'),
+  canvasControlsDimensionableControlShadow: createUtopiColor('rgba(140,140,140,.9)'),
 
   canvasSelectionPrimaryOutline: darkBase.primary,
   canvasSelectionInstanceOutline: base.purple,
@@ -109,9 +141,9 @@ export const dark: typeof light = {
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
-  canvasSelectionSecondaryOutline: base.almostBlack.o(50),
+  canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
   canvasSelectionNotFocusable: base.darkgray,
-  canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+  canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
   canvasDragOutlineBlock: darkBase.primary,
   canvasDragOutlineInline: base.red,
 
@@ -143,22 +175,47 @@ export const dark: typeof light = {
   inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: darkBase.bg2,
   buttonHoverBackground: darkBase.bg3,
+  buttonShadow: darkBase.fg9,
+  buttonShadowActive: darkBase.fg8,
 
   // application utilities:
   resizingDisplayBackground: darkBase.fg3,
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)'),
   navigatorResizeHintBorder: darkBase.primary,
   navigatorComponentName: darkBase.primary,
-  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentSelected: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   navigatorComponentIconBorder: base.orange,
 
   contextMenuBackground: darkPrimitives.secondaryBackground,
   contextMenuForeground: darkPrimitives.neutralForeground,
   contextMenuHighlightForeground: base.white,
   contextMenuHighlightBackground: darkBase.primary,
-  contextMenuSeparator: base.black.o(10),
+  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
+  inspectorHoverColor: darkBase.fg8,
   inspectorFocusedColor: darkBase.primary,
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
+
+  // Github pane
+  githubBoxesBorder: createUtopiColor('#282a2d'),
+  gitubIndicatorConnectorLine: createUtopiColor('#686a6d'),
+  githubIndicatorSuccessful: createUtopiColor('#1FCCB7'),
+  githubIndicatorFailed: createUtopiColor('#FF7759'),
+  githubIndicatorIncomplete: createUtopiColor('#FFFFFF00'),
+  githubMUDUntracked: createUtopiColor('#09f'),
+  githubMUDModified: createUtopiColor('#f90'),
+  githubMUDDeleted: createUtopiColor('#f22'),
+  githubMUDDefault: createUtopiColor('#ccc'),
+
+  // Code editor
+  codeEditorShimmerPrimary: darkBase.bg4,
+  codeEditorShimmerSecondary: darkBase.bg5,
+  codeEditorTabRowBg: darkBase.bg2,
+  codeEditorTabSelectedBG: darkBase.bg1,
+  codeEditorTabSelectedFG: darkBase.fg0,
+  codeEditorTabSelectedBorder: darkBase.bg2,
+  codeEditorBreadcrumbs: darkBase.fg5,
+  codeEditorTabRowFg: darkBase.fg5,
+  codeEditorGrid: createUtopiColor('#6d705b'),
 }

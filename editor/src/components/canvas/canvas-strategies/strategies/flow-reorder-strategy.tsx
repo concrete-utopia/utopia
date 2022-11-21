@@ -9,6 +9,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  MoveStrategy,
 } from '../canvas-strategy-types'
 import {
   areAllSiblingsInOneDimensionFlexOrFlow,
@@ -22,7 +23,7 @@ export function flowReorderStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): CanvasStrategy | null {
+): MoveStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -41,46 +42,49 @@ export function flowReorderStrategy(
   }
 
   return {
-    id: 'FLOW_REORDER',
-    name: 'Reorder (Flow)',
-    controlsToRender: [
-      controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: selectedElements },
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentBounds,
-        props: { targets: selectedElements },
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: FlowReorderDragOutline,
-        props: {
-          targets: selectedElements, // should this be a single target element?
-        },
-        key: 'flow-reorder-drag-outline',
-        show: 'visible-only-while-active',
-      }),
-    ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 1
-        : 0,
-    apply: () => {
-      return interactionSession == null
-        ? emptyStrategyApplicationResult
-        : applyReorderCommon(
-            canvasState,
-            interactionSession,
-            customStrategyState,
-            getElementDirection(elementMetadata),
-            isValidFlowReorderTarget,
-          )
+    strategy: {
+      id: 'FLOW_REORDER',
+      name: 'Reorder (Flow)',
+      controlsToRender: [
+        controlWithProps({
+          control: ImmediateParentOutlines,
+          props: { targets: selectedElements },
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentBounds,
+          props: { targets: selectedElements },
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: FlowReorderDragOutline,
+          props: {
+            targets: selectedElements, // should this be a single target element?
+          },
+          key: 'flow-reorder-drag-outline',
+          show: 'visible-only-while-active',
+        }),
+      ], // Uses existing hooks in select-mode-hooks.tsx
+      fitness:
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'BOUNDING_AREA'
+          ? 1
+          : 0,
+      apply: () => {
+        return interactionSession == null
+          ? emptyStrategyApplicationResult
+          : applyReorderCommon(
+              canvasState,
+              interactionSession,
+              customStrategyState,
+              getElementDirection(elementMetadata),
+              isValidFlowReorderTarget,
+            )
+      },
     },
+    dragType: 'static',
   }
 }

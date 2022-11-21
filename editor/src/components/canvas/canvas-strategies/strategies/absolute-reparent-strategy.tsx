@@ -150,7 +150,7 @@ export function baseAbsoluteReparentStrategy(
                 absoluteMoveStrategy(canvasState, {
                   ...interactionSession,
                   updatedTargetPaths: updatedTargetPaths,
-                })?.apply(strategyLifecycle).commands ?? []
+                })?.strategy.apply(strategyLifecycle).commands ?? []
 
               return strategyApplicationResult([
                 ...moveCommands,
@@ -161,8 +161,9 @@ export function baseAbsoluteReparentStrategy(
               ])
             } else {
               const moveCommands =
-                absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle)
-                  .commands ?? []
+                absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(
+                  strategyLifecycle,
+                ).commands ?? []
 
               return strategyApplicationResult(moveCommands)
             }

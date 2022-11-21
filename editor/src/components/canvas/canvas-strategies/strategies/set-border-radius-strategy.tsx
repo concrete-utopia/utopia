@@ -5,15 +5,19 @@ import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../c
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
   JSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
   canvasVector,
   CanvasVector,
   clamp,
+  product,
   Size,
   size,
 } from '../../../../core/shared/math-utils'
@@ -43,11 +47,15 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import {
+  canShowCanvasPropControl,
+  cssNumberEqual,
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
   getPropertyFromStyle,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
+  shouldShowControls,
+  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -60,6 +68,8 @@ import {
 import { InteractionSession } from '../interaction-state'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
+
+const AllSides: Array<keyof Sides> = ['bottom', 'left', 'right', 'top']
 
 export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -91,6 +101,16 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   }
 
   const elementSize = sizeFromElement(element)
+
+  const canShowBorderRadiusControls = canShowCanvasPropControl(
+    canvasState.projectContents,
+    canvasState.openFile ?? null,
+    element,
+    canvasState.scale,
+  ).has('borderRadius')
+  if (!canShowBorderRadiusControls) {
+    return null
+  }
 
   const borderRadius = borderRadiusFromElementProps(
     canvasState.startingMetadata,
@@ -193,13 +213,13 @@ function borderRadiusAdjustDataFromInteractionSession(
 function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
   switch (corner) {
     case 'tl':
-      return Math.max(drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: 1 })) / 2)
     case 'tr':
-      return Math.max(-drag.x, drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: 1 })) / 2)
     case 'bl':
-      return Math.max(drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: 1, y: -1 })) / 2)
     case 'br':
-      return Math.max(-drag.x, -drag.y)
+      return Math.floor(product(drag, canvasVector({ x: -1, y: -1 })) / 2)
     default:
       assertNever(corner)
   }
@@ -251,14 +271,37 @@ function borderRadiusFromElementProps(
     }),
     borderRadiusFromAllElementProps(allElementProps, elementPath),
   )
+  const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
+
+  const elementIsIntrinsicElementOrScene =
+    isIntrinsicElement(jsxElement.name) ||
+    jsxElementNameEquals(jsxElement.name, jsxElementName('Scene', []))
+
+  if (
+    !(
+      elementIsIntrinsicElementOrScene ||
+      shouldShowControls({
+        propAvailableFromStyle: radiusFromProps != null,
+        measurementsNonZero: measurementsNonZero,
+      })
+    )
+  ) {
+    return null
+  }
+
+  if (radiusFromProps == null) {
+    if (!elementIsIntrinsicElementOrScene) {
+      return {
+        mode: 'all',
+        source: 'props',
+        borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+      }
+    }
+    return null
+  }
 
   if (radiusFromProps != null) {
-    const borderRadiusUpperLimit = maxBorderRadius(
-      size(
-        element.specialSizeMeasurements.clientWidth,
-        element.specialSizeMeasurements.clientHeight,
-      ),
-    )
+    const borderRadiusUpperLimit = maxBorderRadius(sizeFromElement(element))
 
     return {
       mode: radiusFromProps?.type === 'sides' ? 'individual' : 'all',
@@ -386,8 +429,11 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
   }
 
   if (simpleBorderRadius != null) {
+    const { tl, tr, bl, br } = simpleBorderRadius
+    const allSidesEqual = [tr, bl, br].every((c) => cssNumberEqual(tl, c))
+
     return {
-      type: 'borderRadius',
+      type: allSidesEqual ? 'borderRadius' : 'sides',
       sides: simpleBorderRadius,
     }
   }
@@ -406,10 +452,7 @@ function simpleBorderRadiusFromProps(props: JSXAttributes): BorderRadiusSides<CS
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
-  return size(
-    element.specialSizeMeasurements.clientWidth,
-    element.specialSizeMeasurements.clientHeight,
-  )
+  return size(element.globalFrame?.width ?? 0, element.globalFrame?.height ?? 0)
 }
 
 function measurementFromBorderRadius(
@@ -534,7 +577,7 @@ function updateBorderRadiusFn(
     const dragDelta = clamp(
       -borderRadius.renderedValuePx,
       maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
-      optionalMap(({ drag, corner: ep }) => deltaFromDrag(drag, ep), borderRadiusAdjustData) ?? 0,
+      optionalMap(({ drag, corner }) => deltaFromDrag(drag, corner), borderRadiusAdjustData) ?? 0,
     )
 
     const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta

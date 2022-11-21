@@ -239,18 +239,18 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     frameResultSuccess,
     EmptyResult,
   )
-  const absoluteMoveLargeResult = await retryPageCalls(
-    url,
-    testAbsoluteMovePerformanceLarge,
-    frameObjectSuccess,
-    { interaction: EmptyResult, move: EmptyResult },
-  )
-  const absoluteMoveSmallResult = await retryPageCalls(
-    url,
-    testAbsoluteMovePerformanceSmall,
-    frameObjectSuccess,
-    { interaction: EmptyResult, move: EmptyResult },
-  )
+  // const absoluteMoveLargeResult = await retryPageCalls(
+  //   url,
+  //   testAbsoluteMovePerformanceLarge,
+  //   frameObjectSuccess,
+  //   { interaction: EmptyResult, move: EmptyResult },
+  // )
+  // const absoluteMoveSmallResult = await retryPageCalls(
+  //   url,
+  //   testAbsoluteMovePerformanceSmall,
+  //   frameObjectSuccess,
+  //   { interaction: EmptyResult, move: EmptyResult },
+  // )
 
   return {
     frameTests: {
@@ -261,12 +261,12 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
       selectionChangeResult: selectionChangeResult,
       scrollResult: scrollResult,
       resizeResult: resizeResult,
-      absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
-      absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
+      // absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
+      // absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
     },
     interactionTests: {
-      absoluteMoveLargeInteractionResult: absoluteMoveLargeResult.interaction,
-      absoluteMoveSmallInteractionResult: absoluteMoveSmallResult.interaction,
+      // absoluteMoveLargeInteractionResult: absoluteMoveLargeResult.interaction,
+      // absoluteMoveSmallInteractionResult: absoluteMoveSmallResult.interaction,
     },
   }
 }

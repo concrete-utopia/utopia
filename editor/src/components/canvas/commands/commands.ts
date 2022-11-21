@@ -54,6 +54,10 @@ import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exis
 import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { runShowReorderIndicator, ShowReorderIndicator } from './show-reorder-indicator-command'
+import {
+  ConvertCssPercentToPx,
+  runConvertCssPercentToPx,
+} from './convert-css-percent-to-px-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -96,6 +100,7 @@ export type CanvasCommand =
   | InsertElementInsertionSubject
   | AddElement
   | HighlightElementsCommand
+  | ConvertCssPercentToPx
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -157,6 +162,8 @@ export const runCanvasCommand = (
       return runAddElement(editorState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
+    case 'CONVERT_CSS_PERCENT_TO_PX':
+      return runConvertCssPercentToPx(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

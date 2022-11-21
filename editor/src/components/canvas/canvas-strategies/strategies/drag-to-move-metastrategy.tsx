@@ -1,4 +1,5 @@
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -13,16 +14,26 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   controlWithProps,
+  MoveStrategy,
+  strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flowReorderStrategy } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
+import * as EP from '../../../../core/shared/element-path'
 
-const baseMoveStrategyFactories: Array<CanvasStrategyFactory> = [
+type MoveStrategyFactory = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => MoveStrategy | null
+
+const baseMoveStrategyFactories: Array<MoveStrategyFactory> = [
   absoluteMoveStrategy,
   flexReorderStrategy,
   flowReorderStrategy,
@@ -40,6 +51,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
 
   if (
     selectedElements.length === 0 ||
+    selectedElements.some(EP.isRootElementOfInstance) ||
     interactionSession == null ||
     interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
     interactionSession.interactionData.type !== 'DRAG' ||
@@ -57,9 +69,30 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     (factory) => factory(canvasState, interactionSession, customStrategyState),
     baseMoveStrategyFactories,
   )
-  const foundStrategies = [...reparentStrategies, ...dragStrategies]
-  if (foundStrategies.length > 0) {
-    return foundStrategies
+  if (reparentStrategies.length > 0 || dragStrategies.length > 0) {
+    return [
+      ...reparentStrategies,
+      ...dragStrategies.map((strategy) => {
+        const indicatorCommand = wildcardPatch('mid-interaction', {
+          canvas: {
+            controls: {
+              dragToMoveIndicatorFlags: {
+                $set: {
+                  showIndicator: true,
+                  dragType: strategy.dragType,
+                  reparent: 'none',
+                  ancestor: false,
+                },
+              },
+            },
+          },
+        })
+        return {
+          ...strategy.strategy,
+          apply: appendCommandsToApplyResult(strategy.strategy.apply, [], [indicatorCommand]),
+        }
+      }),
+    ]
   } else {
     return [doNothingStrategy(canvasState, interactionSession, customStrategyState)]
   }
@@ -96,7 +129,22 @@ export function doNothingStrategy(
     ],
     fitness: 1.5,
     apply: () => {
-      return emptyStrategyApplicationResult
+      return strategyApplicationResult([
+        wildcardPatch('mid-interaction', {
+          canvas: {
+            controls: {
+              dragToMoveIndicatorFlags: {
+                $set: {
+                  showIndicator: true,
+                  dragType: 'static',
+                  reparent: 'none',
+                  ancestor: false,
+                },
+              },
+            },
+          },
+        }),
+      ])
     },
   }
 }

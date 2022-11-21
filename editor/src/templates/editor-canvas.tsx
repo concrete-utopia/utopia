@@ -52,6 +52,7 @@ import {
   draggingFromFS,
   EditorState,
   editorStateCanvasControls,
+  emptyDragToMoveIndicatorFlags,
   isOpenFileUiJs,
   notDragging,
   UserState,
@@ -480,7 +481,15 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
-          controls: editorStateCanvasControls([], [], [], [], null, []),
+          controls: editorStateCanvasControls(
+            [],
+            [],
+            [],
+            [],
+            null,
+            [],
+            emptyDragToMoveIndicatorFlags,
+          ),
         },
       }
     case 'UPDATE_INTERACTION_SESSION':
@@ -883,6 +892,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragOver: (event) => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
+
           event.preventDefault()
 
           if (this.props.editor.canvas.interactionSession != null) {
@@ -949,6 +962,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: () => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
             EditorActions.switchEditorMode(EditorModes.selectMode(null)),

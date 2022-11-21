@@ -156,7 +156,7 @@ const computeResultingStyle = (
   if (isHighlightedForInteraction) {
     result = {
       style: {
-        background: colorTheme.brandPurple.o(70).value,
+        background: colorTheme.brandPurple70.value,
         color: colorTheme.white.value,
       },
       iconColor: 'main',

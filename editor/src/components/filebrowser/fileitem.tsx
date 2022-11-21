@@ -25,7 +25,6 @@ import {
   flexRowStyle,
   OnClickOutsideHOC,
   StringInput,
-  //TODO: switch to functional component and make use of 'useColorTheme':
   colorTheme,
   UtopiaTheme,
   SimpleFlexRow,
@@ -211,13 +210,13 @@ export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
   // NOTE: these are placeholder colors, we should update them once we finalize the design
   switch (type) {
     case 'untracked':
-      return '#09f' // blue
+      return colorTheme.githubMUDUntracked.value
     case 'modified':
-      return '#f90' // orange
+      return colorTheme.githubMUDModified.value
     case 'deleted':
-      return '#f22' // red
+      return colorTheme.githubMUDDeleted.value
     default:
-      return '#ccc' // gray
+      return colorTheme.githubMUDDefault.value
   }
 }
 

@@ -58,7 +58,7 @@ import {
 import {
   CanvasStateContext,
   EditorStateContext,
-  InspectorStateContext,
+  LowPriorityStateContext,
   UtopiaStoreAPI,
   UtopiaStoreHook,
 } from '../components/editor/store/store-hook'
@@ -88,7 +88,7 @@ import {
 } from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
-import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
@@ -106,7 +106,7 @@ import {
   runDomWalker,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
-import { shouldInspectorUpdate } from '../components/inspector/inspector'
+import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
@@ -166,13 +166,12 @@ export class Editor {
   updateStore: (partialState: EditorStorePatched) => void
   canvasStore: UtopiaStoreHook & UtopiaStoreAPI
   updateCanvasStore: (partialState: EditorStorePatched) => void
-  inspectorStore: UtopiaStoreHook & UtopiaStoreAPI
-  updateInspectorStore: (partialState: EditorStorePatched) => void
+  lowPriorityStore: UtopiaStoreHook & UtopiaStoreAPI
+  updateLowPriorityStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
@@ -193,7 +192,7 @@ export class Editor {
         this.utopiaStoreHook,
         this.utopiaStoreApi,
         this.canvasStore,
-        this.inspectorStore,
+        this.lowPriorityStore,
         this.spyCollector,
         this.domWalkerMutableState,
       )
@@ -245,7 +244,7 @@ export class Editor {
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
     >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
 
-    const inspectorStoreHook = create<
+    const lowPriorityStoreHook = create<
       EditorStorePatched,
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
@@ -259,8 +258,8 @@ export class Editor {
     this.canvasStore = canvasStoreHook
     this.updateCanvasStore = canvasStoreHook.setState
 
-    this.inspectorStore = inspectorStoreHook
-    this.updateInspectorStore = inspectorStoreHook.setState
+    this.lowPriorityStore = lowPriorityStoreHook
+    this.updateLowPriorityStore = lowPriorityStoreHook.setState
 
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
@@ -491,8 +490,8 @@ export class Editor {
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateStore(patchedStoreFromFullStore(this.storedState))
-            if (shouldInspectorUpdate(this.storedState.strategyState)) {
-              this.updateInspectorStore(patchedStoreFromFullStore(this.storedState))
+            if (shouldUpdateLowPriorityUI(this.storedState.strategyState)) {
+              this.updateLowPriorityStore(patchedStoreFromFullStore(this.storedState))
             }
           })
         })
@@ -572,19 +571,21 @@ export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = ({ api, useStore, canvasStore, inspectorStore, spyCollector, domWalkerMutableState }) => {
+}> = ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
         <CanvasStateContext.Provider value={{ api: canvasStore, useStore: canvasStore }}>
-          <InspectorStateContext.Provider value={{ api: inspectorStore, useStore: inspectorStore }}>
+          <LowPriorityStateContext.Provider
+            value={{ api: lowPriorityStore, useStore: lowPriorityStore }}
+          >
             <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
               <EditorComponent />
             </UiJsxCanvasCtxAtom.Provider>
-          </InspectorStateContext.Provider>
+          </LowPriorityStateContext.Provider>
         </CanvasStateContext.Provider>
       </DomWalkerMutableStateCtx.Provider>
     </EditorStateContext.Provider>
@@ -597,28 +598,30 @@ export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = hot(({ api, useStore, canvasStore, inspectorStore, spyCollector, domWalkerMutableState }) => {
-  return (
-    <EditorRoot
-      api={api}
-      useStore={useStore}
-      spyCollector={spyCollector}
-      canvasStore={canvasStore}
-      inspectorStore={inspectorStore}
-      domWalkerMutableState={domWalkerMutableState}
-    />
-  )
-})
+}> = hot(
+  ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+    return (
+      <EditorRoot
+        api={api}
+        useStore={useStore}
+        spyCollector={spyCollector}
+        canvasStore={canvasStore}
+        lowPriorityStore={lowPriorityStore}
+        domWalkerMutableState={domWalkerMutableState}
+      />
+    )
+  },
+)
 HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook,
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook,
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
 ): Promise<void> {
@@ -634,7 +637,7 @@ async function renderRootComponent(
             useStore={useStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
-            inspectorStore={inspectorStore}
+            lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
           rootElement,
@@ -646,7 +649,7 @@ async function renderRootComponent(
             useStore={useStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
-            inspectorStore={inspectorStore}
+            lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
           rootElement,

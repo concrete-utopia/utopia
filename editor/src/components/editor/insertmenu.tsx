@@ -345,7 +345,9 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
             />
           </div>
         </UIRow>
-        <div style={{ padding: 8 }}>{props.children}</div>
+        <div style={{ padding: 8, color: colorTheme.subduedForeground.value }}>
+          {props.children}
+        </div>
       </div>
     )
   })
@@ -381,8 +383,8 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     <UIRow
       rowHeight={'normal'}
       css={{
-        background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
-        color: props.selected ? colorTheme.white.value : 'initial',
+        background: props.selected ? UtopiaStyles.backgrounds.blue : undefined,
+        color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,
         '&:hover': {

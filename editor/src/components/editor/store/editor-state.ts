@@ -783,6 +783,33 @@ export function editorStateCanvasTransientProperty(
   }
 }
 
+export function dragToMoveIndicatorFlags(
+  showIndicator: boolean,
+  dragType: 'absolute' | 'static',
+  reparent: 'same-component' | 'different-component' | 'none',
+  ancestor: boolean,
+): DragToMoveIndicatorFlags {
+  return {
+    showIndicator,
+    dragType,
+    reparent,
+    ancestor,
+  }
+}
+
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(
+  false,
+  'static',
+  'none',
+  false,
+)
+export interface DragToMoveIndicatorFlags {
+  showIndicator: boolean
+  dragType: 'absolute' | 'static'
+  reparent: 'same-component' | 'different-component' | 'none'
+  ancestor: boolean
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -791,6 +818,7 @@ export interface EditorStateCanvasControls {
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
+  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
 }
 
 export function editorStateCanvasControls(
@@ -800,6 +828,7 @@ export function editorStateCanvasControls(
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
+  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -808,6 +837,7 @@ export function editorStateCanvasControls(
     flexReparentTargetLines: flexReparentTargetLines,
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
+    dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
   }
 }
 
@@ -1084,6 +1114,13 @@ export interface GithubRepo {
   repository: string
 }
 
+export function githubRepoFullName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return `${repo.owner}/${repo.repository}`
+}
+
 export function githubRepo(owner: string, repository: string): GithubRepo {
   return {
     owner: owner,
@@ -1098,6 +1135,7 @@ export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): bo
 export interface PullRequest {
   title: string
   htmlURL: string
+  number: number
 }
 
 export interface ProjectGithubSettings {
@@ -1138,7 +1176,7 @@ export interface GithubUser {
 }
 
 export interface GithubData {
-  branches: Array<GithubBranch>
+  branches: Array<GithubBranch> | null
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
@@ -1149,7 +1187,7 @@ export interface GithubData {
 
 export function emptyGithubData(): GithubData {
   return {
-    branches: [],
+    branches: null,
     publicRepositories: [],
     treeConflicts: {},
     lastUpdatedAt: null,
@@ -1181,6 +1219,7 @@ export interface EditorState {
   nodeModules: EditorStateNodeModules
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
@@ -1254,6 +1293,7 @@ export function editorState(
   nodeModules: EditorStateNodeModules,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
@@ -1328,6 +1368,7 @@ export function editorState(
     nodeModules: nodeModules,
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     warnedInstances: warnedInstances,
@@ -1872,6 +1913,7 @@ export type EditorStatePatch = Spec<EditorState>
 export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
 }
@@ -1879,12 +1921,14 @@ export interface TransientCanvasState {
 export function transientCanvasState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
   }
@@ -2052,6 +2096,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: [],
     displayNoneInstances: [],
     warnedInstances: [],
@@ -2118,6 +2163,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
@@ -2358,6 +2404,7 @@ export function editorModelFromPersistentModel(
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
     displayNoneInstances: [],
     warnedInstances: [],
@@ -2424,6 +2471,7 @@ export function editorModelFromPersistentModel(
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {

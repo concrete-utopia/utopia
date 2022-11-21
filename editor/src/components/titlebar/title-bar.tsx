@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { auth0Url } from '../../common/env-vars'
-import { LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
+import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
@@ -23,7 +23,11 @@ const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 interface ProjectTitleProps {}
 
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
-  return <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px' }}>{children}</div>
+  return (
+    <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px', color: colorTheme.fg0.value }}>
+      {children}
+    </div>
+  )
 }
 
 const TitleBar = React.memo(() => {
@@ -64,7 +68,9 @@ const TitleBar = React.memo(() => {
   return (
     <SimpleFlexRow
       style={{
-        padding: '0 10px 0 10px',
+        backgroundColor: colorTheme.bg0.value,
+        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+        padding: 0,
         flexGrow: 0,
         height: 40,
         fontWeight: 600,
@@ -73,7 +79,7 @@ const TitleBar = React.memo(() => {
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', paddingLeft: 10 }}>
         <AppLogo onClick={toggleLeftPanel} />
         {loggedIn ? (
           <>
@@ -103,7 +109,7 @@ const TitleBar = React.memo(() => {
       </div>
 
       <div style={{ display: 'flex', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
         {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}

@@ -11,16 +11,16 @@ import {
   GithubFileChangesListItem,
   githubFileChangesToList,
 } from '../../../../core/shared/github'
-import { Button, FlexRow } from '../../../../uuiui'
+import { Button, colorTheme, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
-import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { when } from '../../../../utils/react-conditionals'
 import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
+import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -48,19 +48,32 @@ const RevertButton = ({
   onMouseUp,
 }: {
   disabled: boolean
-  text: string
+  text?: string
   onMouseUp: (e: React.MouseEvent) => void
 }) => {
   return (
     <Button
-      style={{ padding: '0 6px' }}
+      style={{ padding: '0 6px', gap: 4 }}
       spotlight
       highlight
       disabled={disabled}
       onMouseUp={onMouseUp}
     >
+      <RevertIcon />
       {text}
     </Button>
+  )
+}
+
+const RevertIcon = () => {
+  return (
+    <svg width='9' height='7' viewBox='0 0 9 7' fill='none' xmlns='http://www.w3.org/2000/svg'>
+      <path
+        d='M7.93601 6.35693V2.72081H0.845703M0.845703 2.72081L2.90299 4.77809M0.845703 2.72081L2.90299 0.643075'
+        stroke={colorTheme.fg1.value}
+        strokeWidth='0.7'
+      />
+    </svg>
   )
 }
 
@@ -125,9 +138,10 @@ export const GithubFileChangesList: React.FC<{
   changes: GithubFileChanges | null
   githubWorking: boolean
   revertable: boolean
+  clickable: boolean
   showHeader: boolean
   conflicts?: string[]
-}> = ({ changes, githubWorking, revertable, showHeader, conflicts }) => {
+}> = ({ changes, githubWorking, revertable, showHeader, conflicts, clickable }) => {
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
@@ -167,52 +181,72 @@ export const GithubFileChangesList: React.FC<{
     [dispatch, revertable],
   )
 
+  const openFile = React.useCallback(
+    (filename: string) => () => {
+      dispatch([EditorActions.openCodeEditorFile(filename, true)], 'everyone')
+    },
+    [dispatch],
+  )
+
   if (count === 0) {
     return null
   }
 
   return (
-    <>
-      {showHeader && (
+    <FlexColumn style={{ gap: 10 }}>
+      {when(
+        showHeader,
         <Header
           count={count}
           revertable={revertable}
           githubWorking={githubWorking}
           onClickRevertAll={handleClickRevertAllFiles}
-        />
+        />,
       )}
-      {list.map((i) => {
-        const conflicting = conflicts?.includes(i.filename) ?? false
-        const isTreeConflict = i.filename in treeConflicts
-        return (
-          <UIGridRow
-            key={i.filename}
-            padded
-            variant='<----------1fr---------><-auto->'
-            title={conflicting ? 'Potential conflicts' : i.filename}
-            style={{
-              gap: 2,
-              color: conflicting ? '#f00' : 'inherit',
-              cursor: conflicting ? 'help' : 'default',
-            }}
-          >
-            <>
-              <UIGridRow padded variant='|--16px--|<--------auto-------->'>
+      <FlexColumn
+        style={{
+          border: `1px solid ${colorTheme.githubBoxesBorder.value}`,
+          borderRadius: 2,
+        }}
+      >
+        {list.map((i) => {
+          const conflicting = conflicts?.includes(i.filename) ?? false
+          const isTreeConflict = i.filename in treeConflicts
+          return (
+            <UIGridRow
+              key={i.filename}
+              padded={false}
+              variant='<----------1fr---------><-auto->'
+              title={conflicting ? 'Potential conflicts' : i.filename}
+              css={{
+                paddingRight: 6,
+                color: conflicting ? colorTheme.errorForegroundSubdued.value : 'inherit',
+                cursor: conflicting ? 'help' : 'default',
+                '&:hover': {
+                  cursor: !conflicting && clickable ? 'pointer' : undefined,
+                  background: clickable ? colorTheme.bg2.value : undefined,
+                },
+              }}
+            >
+              <UIGridRow
+                padded
+                variant='|--16px--|<--------auto-------->'
+                onClick={clickable ? openFile(i.filename) : undefined}
+              >
                 <GithubFileStatusLetter status={i.status} />
-                <FlexRow style={{ gap: 2 }}>
-                  <>
-                    <Ellipsis>{i.filename}</Ellipsis>
-                    {when(conflicting, <WarningIcon color='error' />)}
-                  </>
+                <FlexRow
+                  style={{
+                    gap: 2,
+                    textDecoration: i.status === 'deleted' ? 'line-through' : 'none',
+                  }}
+                >
+                  <Ellipsis>{i.filename}</Ellipsis>
+                  {when(conflicting, <WarningIcon color='error' />)}
                 </FlexRow>
               </UIGridRow>
               {when(
                 revertable && !isTreeConflict,
-                <RevertButton
-                  disabled={githubWorking}
-                  text='Revert'
-                  onMouseUp={handleClickRevertFile(i)}
-                />,
+                <RevertButton disabled={githubWorking} onMouseUp={handleClickRevertFile(i)} />,
               )}
               {when(
                 isTreeConflict,
@@ -222,11 +256,11 @@ export const GithubFileChangesList: React.FC<{
                   disabled={githubWorking}
                 />,
               )}
-            </>
-          </UIGridRow>
-        )
-      })}
-    </>
+            </UIGridRow>
+          )
+        })}
+      </FlexColumn>
+    </FlexColumn>
   )
 }
 
@@ -237,16 +271,14 @@ const Header: React.FC<{
   onClickRevertAll: (e: React.MouseEvent) => void
 }> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
   return (
-    <UIGridRow padded variant='<----------1fr---------><-auto->'>
-      <>
-        <div>
-          {count} file{count !== 1 ? 's' : ''} changed
-        </div>
-        {when(
-          revertable,
-          <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
-        )}
-      </>
+    <UIGridRow padded={false} variant='<----------1fr---------><-auto->' style={{ minHeight: 0 }}>
+      <div>
+        {count} file{count !== 1 ? 's' : ''} changed
+      </div>
+      {when(
+        revertable,
+        <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
+      )}
     </UIGridRow>
   )
 }

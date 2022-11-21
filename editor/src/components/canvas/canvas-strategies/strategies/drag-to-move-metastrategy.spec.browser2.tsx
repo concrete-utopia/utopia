@@ -124,3 +124,173 @@ describe('Drag To Move Metastrategy', () => {
     })
   })
 })
+
+describe('Drag To Move Strategy Indicator', () => {
+  it('when reparenting an element the Strategy Indicator is visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: -50, y: 0 }) // moving it to the empty canvas
+
+    const midDragCallback = () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+        'FLEX_REPARENT_TO_ABSOLUTE',
+      )
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
+      ).toEqual(true)
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
+      ).toEqual(false)
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
+      ).toEqual('different-component')
+      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
+      expect(indicator).toBeDefined()
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+  it('when reordering an element the Strategy Indicator is visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject2),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('FLOW_REORDER')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
+      ).toEqual(true)
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.dragType,
+      ).toEqual('static')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
+      ).toEqual('none')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
+      ).toEqual(false)
+      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
+      expect(indicator).toBeDefined()
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+  it('when absolute move strategy is active the Strategy Indicator is visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', width: 100, height: 100, position: 'absolute' }}
+          data-uid='child-1'
+          data-testid='child-1'
+        />
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('ABSOLUTE_MOVE')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
+      ).toEqual(true)
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.dragType,
+      ).toEqual('absolute')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
+      ).toEqual('none')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
+      ).toEqual(false)
+      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
+      expect(indicator).toBeDefined()
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+  it('when ancestor move strategy is active the Strategy Indicator is visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='aaa'>
+        <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='bbb'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
+            data-uid='child-1'
+            data-testid='child-1'
+          />
+        </div>
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+        'ABSOLUTE_MOVE_ANCESTOR_1',
+      )
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
+      ).toEqual(true)
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.dragType,
+      ).toEqual('absolute')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
+      ).toEqual('none')
+      expect(
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
+      ).toEqual(true)
+      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
+      expect(indicator).toBeDefined()
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+})

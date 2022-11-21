@@ -314,6 +314,8 @@ import {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -875,6 +877,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     propertyControlsInfo: currentEditor.propertyControlsInfo,
     selectedViews: currentEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
+    hoveredViews: currentEditor.hoveredViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     displayNoneInstances: poppedEditor.displayNoneInstances,
     warnedInstances: poppedEditor.warnedInstances,
@@ -1540,6 +1543,16 @@ export const UPDATE_FNS = {
       }
     }
   },
+  SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
+      return editor
+    } else {
+      return {
+        ...editor,
+        hoveredViews: [action.target],
+      }
+    }
+  },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {
     if (editor.highlightedViews.length === 0) {
       return editor
@@ -1547,6 +1560,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       highlightedViews: [],
+    }
+  },
+  CLEAR_HOVERED_VIEWS: (action: ClearHoveredViews, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length === 0) {
+      return editor
+    }
+    return {
+      ...editor,
+      hoveredViews: [],
     }
   },
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
@@ -1739,7 +1761,8 @@ export const UPDATE_FNS = {
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
-            return EP.parentPath(view)
+            const parentPath = EP.parentPath(view)
+            return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, editor.selectedViews),
           EP.pathsEqual,
         )
@@ -1759,10 +1782,11 @@ export const UPDATE_FNS = {
       false,
       (e) => {
         const updatedEditor = deleteElements([action.target], e)
-        const newSelection = EP.parentPath(action.target)
+        const parentPath = EP.parentPath(action.target)
+        const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
           ...updatedEditor,
-          selectedViews: [newSelection],
+          selectedViews: newSelection,
         }
       },
       dispatch,
@@ -5007,7 +5031,10 @@ export const UPDATE_FNS = {
       forceNotNull('Should have a project ID at this point.', editor.id),
       persistentModel,
       dispatch,
-      { branchName: null, commitMessage: null },
+      {
+        branchName: action.branchName,
+        commitMessage: action.commitMessage,
+      },
     )
 
     return editor

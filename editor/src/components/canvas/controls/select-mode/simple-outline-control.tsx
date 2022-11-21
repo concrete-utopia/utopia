@@ -19,7 +19,7 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
     'MultiSelectOutlineControl hiddenInstances',
   )
   const localSelectedElements = props.localSelectedElements.filter(
-    (sv) => !hiddenInstances.includes(sv),
+    (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
   )
   return (
     <CanvasOffsetWrapper>
