@@ -18,7 +18,10 @@ import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton, SquareButton } from './buttons'
 import { MenuTile } from './menu-tile'
 import { TestMenu } from './test-menu'
-import { useGetProjectMetadata } from '../common/server-hooks'
+import { getUserPicture } from '../../common/user'
+import { createSelector } from 'reselect'
+import { EditorStorePatched } from '../editor/store/editor-state'
+import { LoginState } from '../../uuiui-deps'
 
 interface ProjectTitleProps {}
 
@@ -53,7 +56,9 @@ const TitleBar = React.memo(() => {
     }),
     'TitleBar',
   )
-  const projectOwnerMetadata = useGetProjectMetadata(id)
+
+  const userPicture = useGetUserPicture()
+
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
@@ -162,13 +167,18 @@ const TitleBar = React.memo(() => {
             Sign In To Save
           </Button>,
         )}
-        {when(
-          loggedIn,
-          <Avatar userPicture={projectOwnerMetadata?.ownerPicture ?? null} isLoggedIn={loggedIn} />,
-        )}
+        {when(loggedIn, <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />)}
       </div>
     </SimpleFlexRow>
   )
 })
 
 export default TitleBar
+
+const loginStateSelector = createSelector(
+  (store: EditorStorePatched) => store.userState.loginState,
+  (loginState: LoginState) => getUserPicture(loginState),
+)
+function useGetUserPicture(): string | null {
+  return useEditorState(loginStateSelector, 'useGetUserPicture')
+}
