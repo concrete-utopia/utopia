@@ -576,6 +576,7 @@ const LocalChangesBlock = () => {
             changes={githubFileChanges}
             githubWorking={githubWorking}
           />
+          <div>Any unsaved files will be saved.</div>
           <StringInput
             testId='commit-message-input'
             placeholder='Commit message'
