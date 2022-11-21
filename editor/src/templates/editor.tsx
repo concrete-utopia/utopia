@@ -235,21 +235,25 @@ export class Editor {
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'editor-store')))
 
     const canvasStoreHook = create<
       EditorStorePatched,
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'canvas-store')))
 
     const lowPriorityStoreHook = create<
       EditorStorePatched,
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(
+      subscribeWithSelector((set) =>
+        patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+      ),
+    )
 
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
@@ -436,7 +440,7 @@ export class Editor {
         ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState))
+            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
           })
         })
         if (PerformanceMarks) {
@@ -489,9 +493,11 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateStore(patchedStoreFromFullStore(this.storedState))
+            this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
             if (shouldUpdateLowPriorityUI(this.storedState.strategyState)) {
-              this.updateLowPriorityStore(patchedStoreFromFullStore(this.storedState))
+              this.updateLowPriorityStore(
+                patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+              )
             }
           })
         })

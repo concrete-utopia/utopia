@@ -34,9 +34,9 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 import {
   Conflict,
   GithubFileChanges,
-  githubFileChangesSelector,
   GithubFileStatus,
   TreeConflicts,
+  useGithubFileChanges,
 } from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
@@ -303,7 +303,7 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
 
   const fileBrowserItems = React.useMemo(() => {
     return collectFileBrowserItems(
