@@ -83,15 +83,19 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
+  )
+}
+
+const propertyControlStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [
-      keyboardAbsoluteResizeStrategy,
-      absoluteResizeBoundingBoxStrategy,
-      flexResizeBasicStrategy,
-      setPaddingStrategy,
-      setFlexGapStrategy,
-      setBorderRadiusStrategy,
-    ],
+    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
   )
 }
 
@@ -126,6 +130,7 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
+  propertyControlStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
