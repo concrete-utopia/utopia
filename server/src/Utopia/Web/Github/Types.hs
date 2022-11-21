@@ -133,6 +133,41 @@ instance FromJSON CreateGitCommitResult where
 instance ToJSON CreateGitCommitResult where
   toJSON = genericToJSON defaultOptions
 
+data GetReferenceResult = GetReferenceResult
+                        { ref    :: Text
+                        }
+                        deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON GetReferenceResult where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON GetReferenceResult where
+  toJSON = genericToJSON defaultOptions
+
+data UpdateGitBranch = UpdateGitBranch
+                     { sha :: Text
+                     , force :: Bool
+                     }
+                     deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UpdateGitBranch where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UpdateGitBranch where
+  toJSON = genericToJSON defaultOptions
+
+data UpdateGitBranchResult = UpdateGitBranchResult
+                           { ref :: Text
+                           , url :: Text
+                           }
+                           deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UpdateGitBranchResult where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UpdateGitBranchResult where
+  toJSON = genericToJSON defaultOptions
+
 data CreateGitBranch = CreateGitBranch
                      { ref :: Text
                      , sha :: Text
@@ -155,6 +190,42 @@ instance FromJSON CreateGitBranchResult where
   parseJSON = genericParseJSON defaultOptions
 
 instance ToJSON CreateGitBranchResult where
+  toJSON = genericToJSON defaultOptions
+
+data UpdateGitFile = UpdateGitFile
+                     { message :: Text
+                     , branch  :: Text
+                     , content :: Text
+                     }
+                     deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UpdateGitFile where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UpdateGitFile where
+  toJSON = genericToJSON defaultOptions
+
+data UpdateGitFileResultCommit = UpdateGitFileResultCommit
+                               { sha   :: Text
+                               , url   :: Text
+                               }
+                               deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UpdateGitFileResultCommit where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UpdateGitFileResultCommit where
+  toJSON = genericToJSON defaultOptions
+
+data UpdateGitFileResult = UpdateGitFileResult
+                           { commit :: UpdateGitFileResultCommit
+                           }
+                           deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON UpdateGitFileResult where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON UpdateGitFileResult where
   toJSON = genericToJSON defaultOptions
 
 data SaveToGithubSuccess = SaveToGithubSuccess
@@ -474,6 +545,7 @@ instance ToJSON GetBranchContentResponse where
 
 data RepositoryOwner = RepositoryOwner
                      { avatar_url   :: Text
+                     , login        :: Text
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -501,8 +573,9 @@ data UsersRepository = UsersRepository
                      , owner          :: RepositoryOwner
                      , private        :: Bool
                      , description    :: Maybe Text
-                     , name           :: Maybe Text
-                     , updated_at     :: UTCTime
+                     , name           :: Text
+                     , updated_at     :: Maybe UTCTime
+                     , pushed_at      :: Maybe UTCTime
                      , default_branch :: Text
                      , permissions    :: UsersRepositoryPermissions
                      }
@@ -519,9 +592,9 @@ type GetUsersPublicRepositoriesResult = [UsersRepository]
 data RepositoryEntry = RepositoryEntry
                      { fullName      :: Text
                      , avatarUrl     :: Maybe Text
-                     , private       :: Bool
+                     , isPrivate     :: Bool
                      , description   :: Maybe Text
-                     , name          :: Maybe Text
+                     , name          :: Text
                      , updatedAt     :: Maybe UTCTime
                      , defaultBranch :: Text
                      , permissions   :: UsersRepositoryPermissions

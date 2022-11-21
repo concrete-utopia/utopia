@@ -3258,12 +3258,14 @@ export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<Re
   )
 
 export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (r) => r.avatarUrl,
     NullableStringKeepDeepEquality,
-    (r) => r.private,
+    (r) => r.isPrivate,
     BooleanKeepDeepEquality,
     (r) => r.fullName,
+    StringKeepDeepEquality,
+    (r) => r.name,
     StringKeepDeepEquality,
     (r) => r.description,
     NullableStringKeepDeepEquality,
