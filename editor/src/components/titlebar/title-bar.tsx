@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
-import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
+import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
 import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
@@ -45,7 +45,7 @@ const TitleBar = React.memo(() => {
     [upstreamChanges],
   )
 
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const hasDownstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges) > 0,
     [githubFileChanges],
