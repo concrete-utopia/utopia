@@ -411,7 +411,6 @@ createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID
             branchResult <- createGitBranchForCommit accessToken model commitSha branchName
             pure $ view (field @"url") branchResult
       referenceResult <- getReference accessToken owner repository ("heads/" <> branchName)
-      liftIO $ print referenceResult
       let doesBranchExist = isJust referenceResult
       treeURL <- if doesBranchExist then updateBranch else createBranch
       pure (branchName, treeURL, commitSha)
@@ -448,32 +447,32 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       pure $ fmap (\branch -> GetBranchesBranch (view (field @"name") branch)) sortedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
-getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Maybe Text -> m GetBranchContentResponse
-getGithubBranch githubResources logger metrics pool userID owner repository branchName possibleCommitSha = do
+getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> m GetBranchContentResponse
+getGithubBranch githubResources logger metrics pool userID owner repository branchName possibleCommitSha possiblePreviousCommitSha = do
   result <- runExceptT $ do
-    -- Fallback to get the latest tree for this branch.
-    let getLatestTreeSha = do
-              possibleBranch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-                getGitBranch accessToken owner repository branchName
-              pure $ do
-                branch <- possibleBranch
-                let commitSha = view (field @"commit" . field @"sha") branch
-                let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
-                pure (commitSha, treeSha)
-    -- Get a specific commit from this repository.
-    let getTreeShaFromCommit commitSha = do
-              commitDetails <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-                getGitCommit accessToken owner repository commitSha
-              let treeSha = view (field @"tree" . field @"sha") commitDetails
-              pure $ Just (commitSha, treeSha)
-    possibleCommitAndTree <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
-    -- Handle the potential lack of a value.
-    case possibleCommitAndTree of
-      (Just (commitSha, treeSha)) -> do
-        projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-          getRecursiveGitTreeAsContent accessToken owner repository treeSha
-        pure $ Just (projectContent, commitSha)
-      Nothing -> pure Nothing
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      -- Fallback to get the latest tree for this branch.
+      let getLatestTreeSha = do
+                possibleBranch <- getGitBranch accessToken owner repository branchName
+                pure $ do
+                  branch <- possibleBranch
+                  let commitSha = view (field @"commit" . field @"sha") branch
+                  let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
+                  pure (commitSha, treeSha)
+      -- Get a specific commit from this repository.
+      let getTreeShaFromCommit commitSha = do
+                commitDetails <- getGitCommit accessToken owner repository commitSha
+                let treeSha = view (field @"tree" . field @"sha") commitDetails
+                pure $ Just (commitSha, treeSha)
+      possibleCommitAndTree <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
+      -- Handle the potential lack of a value.
+      case possibleCommitAndTree of
+        (Just (commitSha, treeSha)) -> do
+          let getContentFromGit = getRecursiveGitTreeAsContent accessToken owner repository treeSha
+          let fallbackForSameCommit = pure mempty
+          projectContent <- if Just commitSha == possiblePreviousCommitSha then fallbackForSameCommit else getContentFromGit
+          pure $ Just (projectContent, commitSha)
+        Nothing -> pure Nothing
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
 
 convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)

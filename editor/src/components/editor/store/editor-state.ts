@@ -1187,6 +1187,7 @@ export interface GithubData {
   upstreamChanges: GithubFileChanges | null
   currentBranchPullRequests: Array<PullRequest> | null
   githubUserDetails: GithubUser | null
+  lastRefreshedCommit: string | null
 }
 
 export function emptyGithubData(): GithubData {
@@ -1198,6 +1199,7 @@ export function emptyGithubData(): GithubData {
     upstreamChanges: null,
     currentBranchPullRequests: null,
     githubUserDetails: null,
+    lastRefreshedCommit: null,
   }
 }
 

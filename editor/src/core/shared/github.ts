@@ -428,8 +428,8 @@ export async function updateProjectAgainstGithub(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null)
-  const specificCommitRequest = getBranchContentFromServer(githubRepo, branchName, commitSha)
+  const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null, null)
+  const specificCommitRequest = getBranchContentFromServer(githubRepo, branchName, commitSha, null)
 
   const branchLatestResponse = await branchLatestRequest
   const specificCommitResponse = await specificCommitRequest
@@ -528,7 +528,7 @@ export async function updateProjectWithBranchContent(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const response = await getBranchContentFromServer(githubRepo, branchName, null)
+  const response = await getBranchContentFromServer(githubRepo, branchName, null, null)
 
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
@@ -603,6 +603,7 @@ async function getBranchContentFromServer(
   githubRepo: GithubRepo,
   branchName: string,
   commitSha: string | null,
+  previousCommitSha: string | null,
 ): Promise<Response> {
   const url = urljoin(
     UTOPIA_BACKEND,
@@ -618,6 +619,10 @@ async function getBranchContentFromServer(
   if (commitSha != null) {
     includeQueryParams = true
     paramsRecord.commit_sha = commitSha
+  }
+  if (previousCommitSha != null) {
+    includeQueryParams = true
+    paramsRecord.previous_commit_sha = previousCommitSha
   }
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
@@ -1175,6 +1180,7 @@ export async function refreshGithubData(
   branchName: string | null,
   branchChecksums: GithubChecksums | null,
   githubUserDetails: GithubUser | null,
+  previousCommitSha: string | null,
 ): Promise<void> {
   if (githubAuthenticated) {
     if (githubUserDetails === null) {
@@ -1188,16 +1194,36 @@ export async function refreshGithubData(
       void getBranchesForGithubRepository(dispatch, githubRepo)
       if (branchName != null && branchChecksums != null) {
         void updatePullRequestsForBranch(dispatch, githubRepo, branchName)
-        const branchContentResponse = await getBranchContentFromServer(githubRepo, branchName, null)
+        const branchContentResponse = await getBranchContentFromServer(
+          githubRepo,
+          branchName,
+          null,
+          previousCommitSha,
+        )
         if (branchContentResponse.ok) {
           const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
           if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
             upstreamChangesSuccess = true
-            const upstreamChecksums = getProjectContentsChecksums(
-              branchLatestContent.branch.content,
-            )
-            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
-            dispatch([updateGithubData({ upstreamChanges: upstreamChanges })], 'everyone')
+            // It was a successful call, but we got the same commit as last time.
+            if (previousCommitSha !== branchLatestContent.branch.originCommit) {
+              const upstreamChecksums = getProjectContentsChecksums(
+                branchLatestContent.branch.content,
+              )
+              const upstreamChanges = deriveGithubFileChanges(
+                branchChecksums,
+                upstreamChecksums,
+                {},
+              )
+              dispatch(
+                [
+                  updateGithubData({
+                    upstreamChanges: upstreamChanges,
+                    lastRefreshedCommit: branchLatestContent.branch.originCommit,
+                  }),
+                ],
+                'everyone',
+              )
+            }
           }
         }
       }

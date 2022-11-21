@@ -135,7 +135,7 @@ type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text 
 
 type GithubSaveAssetAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "asset" :> Capture "asset_sha" Text :> QueryParam' '[Required, Strict] "project_id" Text :> QueryParam' '[Required, Strict] "path" Text :> Post '[JSON] GithubSaveAssetResponse
 
-type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> Get '[JSON] GetBranchContentResponse
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> QueryParam "previous_commit_sha" Text :> Get '[JSON] GetBranchContentResponse
 
 type GithubBranchPullRequestAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> "pullrequest" :> Get '[JSON] GetBranchPullRequestResponse
 
