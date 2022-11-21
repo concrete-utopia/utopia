@@ -43,6 +43,7 @@ import {
   GithubUser,
   packageJsonFileFromProjectContents,
   PersistentModel,
+  projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
@@ -246,14 +247,15 @@ export async function saveProjectToGithub(
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
-            updateGithubSettings({
-              ...emptyGithubSettings(),
-              targetRepository: persistentModel.githubSettings.targetRepository,
-              originCommit: responseBody.newCommit,
-              branchName: responseBody.branchName,
-              pendingCommit: responseBody.newCommit,
-              branchLoaded: true,
-            }),
+            updateGithubSettings(
+              projectGithubSettings(
+                persistentModel.githubSettings.targetRepository,
+                responseBody.newCommit,
+                responseBody.branchName,
+                responseBody.newCommit,
+                true,
+              ),
+            ),
             updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
@@ -503,14 +505,9 @@ export function connectRepo(
     newGithubData.branches = []
   }
   return [
-    updateGithubSettings({
-      ...emptyGithubSettings(),
-      targetRepository: githubRepo,
-      originCommit: originCommit,
-      branchName: branchName,
-      pendingCommit: originCommit,
-      branchLoaded: false,
-    }),
+    updateGithubSettings(
+      projectGithubSettings(githubRepo, originCommit, branchName, originCommit, false),
+    ),
     updateGithubData(newGithubData),
   ]
 }

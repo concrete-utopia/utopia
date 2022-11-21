@@ -300,7 +300,6 @@ import {
   EditorStateCodeEditorErrors,
   ErrorMessages,
   editorStateCodeEditorErrors,
-  Theme,
   editorState,
   AllElementProps,
   LockedElements,
@@ -323,7 +322,7 @@ import {
   emptyGithubData,
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
-  emptyGithubSettings,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -356,8 +355,6 @@ import {
   PaddingResizeHandle,
   resizeHandle,
   ResizeHandle,
-  paddingResizeHandle,
-  borderRadiusResizeHandle,
   BorderRadiusResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
@@ -3290,19 +3287,7 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.branchLoaded,
     BooleanKeepDeepEquality,
-    (
-      targetRepository: GithubRepo | null,
-      originCommit: string | null,
-      branchName: string | null,
-      pendingCommit: string | null,
-      branchLoaded: boolean,
-    ): ProjectGithubSettings => ({
-      targetRepository,
-      originCommit,
-      branchName,
-      pendingCommit,
-      branchLoaded,
-    }),
+    projectGithubSettings,
   )
 
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
