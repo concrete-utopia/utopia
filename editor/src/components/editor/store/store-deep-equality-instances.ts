@@ -3392,8 +3392,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.highlightedViews,
   )
   const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
-    oldValue.highlightedViews,
-    newValue.highlightedViews,
+    oldValue.hoveredViews,
+    newValue.hoveredViews,
   )
   const hiddenInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.hiddenInstances,
