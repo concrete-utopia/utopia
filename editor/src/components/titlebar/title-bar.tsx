@@ -7,7 +7,11 @@ import { useEditorState } from '../editor/store/store-hook'
 import { MenuTile } from './menu-tile'
 import { FullHeightButton, LozengeButton, RoundedButton, TextButton } from './buttons'
 import { TestMenu } from './test-menu'
-import { getGithubFileChangesCount } from '../../core/shared/github'
+import {
+  getGithubFileChangesCount,
+  githubFileChangesEquals,
+  githubFileChangesSelector,
+} from '../../core/shared/github'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
@@ -59,6 +63,16 @@ const TitleBar = React.memo(() => {
   const numberOfUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges),
     [upstreamChanges],
+  )
+
+  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const hasDownstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges) > 0,
+    [githubFileChanges],
+  )
+  const numberOfDownstreamChanges = React.useMemo(
+    () => getGithubFileChangesCount(githubFileChanges),
+    [githubFileChanges],
   )
 
   const onClickLoginNewTab = useCallback(() => {
@@ -116,12 +130,18 @@ const TitleBar = React.memo(() => {
                 size='large'
               />
             </span>
-            <LozengeButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-              <>Remote Changes</>${numberOfUpstreamChanges}
-            </LozengeButton>
-            <LozengeButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
-              Local Changes
-            </LozengeButton>
+            {hasUpstreamChanges ? (
+              <LozengeButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+                {numberOfUpstreamChanges}
+                <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
+              </LozengeButton>
+            ) : null}
+            {hasDownstreamChanges ? (
+              <LozengeButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+                {numberOfDownstreamChanges}
+                <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
+              </LozengeButton>
+            ) : null}
           </>
         ) : null}
         {/* <FullHeightButton onClick={exportToGithub}>Export to Github</FullHeightButton> */}
