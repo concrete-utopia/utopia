@@ -1,3 +1,4 @@
+import { appendNewElementPath, elementPath, fromString } from '../../../../core/shared/element-path'
 import {
   canvasVector,
   CanvasVector,
@@ -9,12 +10,14 @@ import {
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/action-creators'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
 import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
@@ -139,6 +142,34 @@ describe('set border radius strategy', () => {
       )
 
       expect(borderRadiusControls).toEqual([])
+    })
+
+    it('controls are shown if the root element is selected', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesBorderRadiusInternally({
+          internalBorderRadius: '5px',
+        }),
+        'await-first-dom-report',
+      )
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      const divBounds = div.getBoundingClientRect()
+      const divCorner = {
+        x: divBounds.x + Math.floor(divBounds.width / 2),
+        y: divBounds.y + Math.floor(divBounds.height / 2),
+      }
+
+      const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
+      await editor.dispatch([selectComponents(selectedViews, false)], true)
+
+      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls.length).toEqual(4)
     })
   })
 
@@ -487,13 +518,13 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             ${props.internalBorderRadius ? `borderRadius: '${props.internalBorderRadius}',` : ''}
             ...props.style,
           }}
-          data-uid='8bc'
+          data-uid='RootDiv'
         />
       )
     }
     
     export var storyboard = (
-      <Storyboard data-uid='0cd'>
+      <Storyboard data-uid='Storyboard'>
         <HorribleComponent
           style={{
             position: 'absolute',
@@ -501,7 +532,7 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             top: 420,
             ${props.externalBorderRadius ? `borderRadius: '${props.externalBorderRadius}',` : ''}
           }}
-          data-uid='ca3'
+          data-uid='Horrible'
         />
       </Storyboard>
     )
