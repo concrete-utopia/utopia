@@ -321,9 +321,9 @@ import {
   fileRevertModal,
   GithubData,
   emptyGithubData,
-  projectGithubSettings,
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
+  emptyGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3273,7 +3273,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
@@ -3282,7 +3282,21 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.pendingCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
-    projectGithubSettings,
+    (settings) => settings.branchLoaded,
+    BooleanKeepDeepEquality,
+    (
+      targetRepository: GithubRepo | null,
+      originCommit: string | null,
+      branchName: string | null,
+      pendingCommit: string | null,
+      branchLoaded: boolean,
+    ): ProjectGithubSettings => ({
+      targetRepository,
+      originCommit,
+      branchName,
+      pendingCommit,
+      branchLoaded,
+    }),
   )
 
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =

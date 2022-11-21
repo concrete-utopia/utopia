@@ -1143,20 +1143,7 @@ export interface ProjectGithubSettings {
   originCommit: string | null
   branchName: string | null
   pendingCommit: string | null
-}
-
-export function projectGithubSettings(
-  targetRepository: GithubRepo | null,
-  originCommit: string | null,
-  branchName: string | null,
-  pendingCommit: string | null,
-): ProjectGithubSettings {
-  return {
-    targetRepository: targetRepository,
-    originCommit: originCommit,
-    branchName: branchName,
-    pendingCommit: pendingCommit,
-  }
+  branchLoaded: boolean
 }
 
 export function emptyGithubSettings(): ProjectGithubSettings {
@@ -1165,6 +1152,7 @@ export function emptyGithubSettings(): ProjectGithubSettings {
     originCommit: null,
     branchName: null,
     pendingCommit: null,
+    branchLoaded: false,
   }
 }
 

@@ -43,7 +43,6 @@ import {
   GithubUser,
   packageJsonFileFromProjectContents,
   PersistentModel,
-  projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
@@ -244,14 +243,13 @@ export async function saveProjectToGithub(
         dispatch(
           [
             updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
-            updateGithubSettings(
-              projectGithubSettings(
-                persistentModel.githubSettings.targetRepository,
-                responseBody.newCommit,
-                responseBody.branchName,
-                responseBody.newCommit,
-              ),
-            ),
+            updateGithubSettings({
+              ...emptyGithubSettings(),
+              targetRepository: persistentModel.githubSettings.targetRepository,
+              originCommit: responseBody.newCommit,
+              branchName: responseBody.branchName,
+              pendingCommit: responseBody.newCommit,
+            }),
             updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
           ],
@@ -501,7 +499,13 @@ export function connectRepo(
     newGithubData.branches = []
   }
   return [
-    updateGithubSettings(projectGithubSettings(githubRepo, originCommit, branchName, originCommit)),
+    updateGithubSettings({
+      ...emptyGithubSettings(),
+      targetRepository: githubRepo,
+      originCommit: originCommit,
+      branchName: branchName,
+      pendingCommit: originCommit,
+    }),
     updateGithubData(newGithubData),
   ]
 }
@@ -568,6 +572,7 @@ export async function updateProjectWithBranchContent(
                 responseBody.branch.originCommit,
                 branchName,
               ),
+              updateGithubSettings({ branchLoaded: true }),
               updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),

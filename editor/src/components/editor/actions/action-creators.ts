@@ -1010,7 +1010,9 @@ export function updateBranchContents(
   }
 }
 
-export function updateGithubSettings(settings: ProjectGithubSettings): UpdateGithubSettings {
+export function updateGithubSettings(
+  settings: Partial<ProjectGithubSettings>,
+): UpdateGithubSettings {
   return {
     action: 'UPDATE_GITHUB_SETTINGS',
     settings: settings,
