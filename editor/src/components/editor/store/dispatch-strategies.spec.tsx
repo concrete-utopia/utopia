@@ -223,6 +223,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "prevDrag": null,
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -364,6 +365,7 @@ describe('interactionUpdate', () => {
           "y": 200,
         },
         "prevDrag": null,
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -503,6 +505,7 @@ describe('interactionHardReset', () => {
           "x": 30,
           "y": 120,
         },
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -655,6 +658,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 30,
           "y": 120,
         },
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
