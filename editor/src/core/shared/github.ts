@@ -509,6 +509,7 @@ export function connectRepo(
       originCommit: originCommit,
       branchName: branchName,
       pendingCommit: originCommit,
+      branchLoaded: false,
     }),
     updateGithubData(newGithubData),
   ]
@@ -576,7 +577,6 @@ export async function updateProjectWithBranchContent(
                 responseBody.branch.originCommit,
                 branchName,
               ),
-              updateGithubSettings({ branchLoaded: true }),
               updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
