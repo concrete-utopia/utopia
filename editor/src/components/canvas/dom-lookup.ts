@@ -148,13 +148,14 @@ export function getAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = elementsOrTheirChildTextsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
       ? 'no-filter'
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
+
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
       const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
@@ -168,6 +169,41 @@ export function getAllTargetsAtPoint(
 
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
   return elementsFromDOM
+}
+
+function elementsOrTheirChildTextsFromPoint(x: number, y: number) {
+  // TODO: find a better way than tho check all the elements
+  const elements = document.querySelectorAll('*')
+
+  const elementsWithGoodChildNodes = [...elements].reverse().flatMap((el) => {
+    // maybe the element itself contains the point
+    const bounding = el.getBoundingClientRect()
+    if (x > bounding.left && x < bounding.right && y > bounding.top && y < bounding.bottom) {
+      return [el]
+    }
+
+    // if not, let's search for a text child node which contains the point
+    const nodes = el?.childNodes ?? []
+    for (const node of nodes) {
+      if (node.nodeType === 3) {
+        const range = document.createRange()
+        range.selectNode(node)
+        const rangeBounding = range.getBoundingClientRect()
+        if (
+          x > rangeBounding.left &&
+          x < rangeBounding.right &&
+          y > rangeBounding.top &&
+          y < rangeBounding.bottom
+        ) {
+          return [el]
+        }
+      }
+    }
+
+    return []
+  })
+
+  return elementsWithGoodChildNodes
 }
 
 export function getSelectionOrValidTargetAtPoint(
@@ -213,7 +249,7 @@ export function getSelectionOrAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = elementsOrTheirChildTextsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
       ? 'no-filter'
