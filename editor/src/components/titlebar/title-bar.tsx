@@ -4,7 +4,15 @@ import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
+import {
+  Avatar,
+  Button,
+  colorTheme,
+  Icons,
+  LargerIcons,
+  SimpleFlexRow,
+  UNSAFE_getIconURL,
+} from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { togglePanel } from '../editor/actions/action-creators'
@@ -90,7 +98,14 @@ const TitleBar = React.memo(() => {
         }}
       >
         <RoundButton onClick={toggleLeftPanel}>
-          <img src='/editor/pyramid_dark@2x.png' width='24' alt='Main Menu' />
+          <img
+            style={{
+              userSelect: 'none',
+              display: 'block',
+            }}
+            width={30}
+            src={UNSAFE_getIconURL('utopia-logo', 'black', 'special', 60, 47)}
+          />
         </RoundButton>
         {when(
           loggedIn,
