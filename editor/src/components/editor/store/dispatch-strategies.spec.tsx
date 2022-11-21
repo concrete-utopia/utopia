@@ -796,6 +796,9 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
     await renderResult.dispatch([selectComponents([targetElement], false)], true)
 
+    // FIXME We need a working setup here where the TEST_STRATEGY isn't active at first, but then later becomes active,
+    // however for some reason triggering multiple `updateInteractionViaMouse` calls here was resulting in `latestMetadata`
+    // becoming undefined for the target element
     await renderResult.dispatch(
       [
         CanvasActions.createInteractionSession(
