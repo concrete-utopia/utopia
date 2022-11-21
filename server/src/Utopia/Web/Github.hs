@@ -140,7 +140,6 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
   -- Make the request.
   result <- liftIO $ makeRequest options (toS restURL) request
   let status = view WR.responseStatus result
-  -- Uncomment the next line if you want to see the headers.
   let logStuffForErrors = liftIO $ print (restURL, status, view WR.responseHeaders result, view WR.responseBody result)
   -- Check the rate limiting.
   let rateLimitRemaining = firstOf (WR.responseHeader "X-RateLimit-Remaining" . unpackedChars . decimal) result :: Maybe Int
