@@ -1,25 +1,17 @@
 import React, { useCallback } from 'react'
+import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
+import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
+import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
+import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import { togglePanel } from '../editor/actions/action-creators'
+import { EditorStorePatched } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { RoundButton, SquareButton } from './buttons'
-import { MenuTile } from './menu-tile'
+import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
-
-const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      cursor: 'pointer',
-    }}
-  >
-    <MenuIcons.Smiangle />
-  </div>
-)
 
 interface ProjectTitleProps {}
 
@@ -32,26 +24,17 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const {
-    dispatch,
-    loginState,
-    projectName,
-    isCodeEditorVisible,
-    isPreviewPaneVisible,
-    upstreamChanges,
-    targetRepository,
-  } = useEditorState(
+  const { dispatch, loginState, projectName, upstreamChanges } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       loginState: store.userState.loginState,
       projectName: store.editor.projectName,
-      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-      isPreviewPaneVisible: store.editor.preview.visible,
       upstreamChanges: store.editor.githubData.upstreamChanges,
-      targetRepository: store.editor.githubSettings.targetRepository,
     }),
     'TitleBar',
   )
+
+  const userPicture = useGetUserPicture()
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
@@ -82,16 +65,6 @@ const TitleBar = React.memo(() => {
     dispatch(actions)
   }, [dispatch])
 
-  const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
-    [dispatch, isCodeEditorVisible],
-  )
-
-  const togglePreviewPaneVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
-    [dispatch, isPreviewPaneVisible],
-  )
-
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
   return (
@@ -100,45 +73,28 @@ const TitleBar = React.memo(() => {
         backgroundColor: colorTheme.bg0.value,
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
         padding: 0,
-        flexGrow: 0,
-        height: 40,
+        flex: '0 0 40px',
         fontWeight: 600,
         letterSpacing: 0.2,
-        alignItems: 'center',
         justifyContent: 'space-between',
       }}
     >
-      <div
+      <SimpleFlexRow
         style={{
           display: 'flex',
           height: '100%',
           alignItems: 'center',
           flex: '1 1 0px',
           gap: 10,
+          paddingLeft: 8,
         }}
       >
-        <AppLogo onClick={toggleLeftPanel} />
+        <RoundButton onClick={toggleLeftPanel}>
+          <img src='/editor/pyramid_dark@2x.png' width='24' alt='Main Menu' />
+        </RoundButton>
         {when(
           loggedIn,
           <>
-            <MenuTile
-              selected={isCodeEditorVisible}
-              icon={<LargerIcons.Code />}
-              onClick={toggleCodeEditorVisible}
-              size='large'
-            />
-            <MenuTile
-              selected={isPreviewPaneVisible}
-              icon={<LargerIcons.PreviewPane />}
-              onClick={togglePreviewPaneVisible}
-              size='large'
-            />
-            {when(
-              targetRepository == null,
-              <SquareButton color={colorTheme.fg2.value} onClick={toggleLeftPanel}>
-                <>Connect To GitHub</>
-              </SquareButton>,
-            )}
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
@@ -155,24 +111,41 @@ const TitleBar = React.memo(() => {
             )}
           </>,
         )}
-      </div>
+      </SimpleFlexRow>
 
-      <div>
+      <SimpleFlexRow
+        style={{
+          paddingLeft: 20,
+          paddingRight: 20,
+          borderRadius: 10,
+          background: '#fafafa',
+          height: 31,
+        }}
+      >
         <ProjectTitle>{projectName}</ProjectTitle>
-      </div>
-      <div style={{ display: 'flex', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
-          <TestMenu />
-        </div>
+      </SimpleFlexRow>
+      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1 }}>
+        <TestMenu />
+      </SimpleFlexRow>
+      <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
-          <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
+          <Button primary style={{ paddingLeft: 8, paddingRight: 8 }} onClick={onClickLoginNewTab}>
             Sign In To Save
-          </SquareButton>,
+          </Button>,
         )}
+        {when(loggedIn, <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />)}
       </div>
     </SimpleFlexRow>
   )
 })
 
 export default TitleBar
+
+const loginStateSelector = createSelector(
+  (store: EditorStorePatched) => store.userState.loginState,
+  (loginState: LoginState) => getUserPicture(loginState),
+)
+function useGetUserPicture(): string | null {
+  return useEditorState(loginStateSelector, 'useGetUserPicture')
+}
