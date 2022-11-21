@@ -139,8 +139,9 @@ export function repositoryEntryPermissions(
 
 export interface RepositoryEntry {
   fullName: string
+  name: string
   avatarUrl: string | null
-  private: boolean
+  isPrivate: boolean
   description: string | null
   updatedAt: string | null
   defaultBranch: string
@@ -149,8 +150,9 @@ export interface RepositoryEntry {
 
 export function repositoryEntry(
   avatarUrl: string | null,
-  priv: boolean,
+  isPrivate: boolean,
   fullName: string,
+  name: string,
   description: string | null,
   updatedAt: string | null,
   defaultBranch: string,
@@ -158,8 +160,9 @@ export function repositoryEntry(
 ): RepositoryEntry {
   return {
     avatarUrl,
-    private: priv,
+    isPrivate,
     fullName,
+    name,
     description,
     updatedAt,
     defaultBranch,
@@ -702,7 +705,7 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
         dispatch(
           [
             updateGithubData({
-              publicRepositories: responseBody.repositories.filter((repo) => !repo.private),
+              publicRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
             }),
           ],
           'everyone',
