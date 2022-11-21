@@ -497,6 +497,7 @@ export function connectRepo(
   githubRepo: GithubRepo,
   originCommit: string | null,
   branchName: string | null,
+  branchLoaded: boolean,
 ): Array<EditorAction> {
   const newGithubData: Partial<GithubData> = {
     upstreamChanges: null,
@@ -506,7 +507,7 @@ export function connectRepo(
   }
   return [
     updateGithubSettings(
-      projectGithubSettings(githubRepo, originCommit, branchName, originCommit, false),
+      projectGithubSettings(githubRepo, originCommit, branchName, originCommit, branchLoaded),
     ),
     updateGithubData(newGithubData),
   ]
@@ -573,6 +574,7 @@ export async function updateProjectWithBranchContent(
                 githubRepo,
                 responseBody.branch.originCommit,
                 branchName,
+                true,
               ),
               updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
               updateProjectContents(responseBody.branch.content),

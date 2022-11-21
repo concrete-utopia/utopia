@@ -87,7 +87,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       )
     } else {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
-      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null))
+      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null, isAnotherRepo))
     }
   }, [dispatch, props.fullName, props.defaultBranch, currentRepo, githubWorking])
 
