@@ -383,7 +383,7 @@ createInitialCommitIfNecessary accessToken owner repository = do
   possibleBranch <- getGitBranch accessToken owner repository defaultBranch
   let createTheCommit = do
         -- Create this dummy file which is needed to create the default branch.
-        updateGitFileResult <- updateGitFile accessToken owner repository defaultBranch "/README" "Basic README added to initialise the repo." "This space intentionally left blank."
+        updateGitFileResult <- updateGitFile accessToken owner repository defaultBranch "/README.md" "Basic README added to initialise the repo." "This space intentionally left blank."
         let commitSha = view (field @"commit" . field @"sha") updateGitFileResult
         pure $ Just commitSha
   if isNothing possibleBranch then createTheCommit else pure Nothing
