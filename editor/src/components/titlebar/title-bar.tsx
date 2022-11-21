@@ -161,6 +161,8 @@ const TitleBar = React.memo(() => {
           height: '100%',
           flex: '1 1 0px',
           justifyContent: 'right',
+          alignItems: 'center',
+          gap: 10,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -168,7 +170,9 @@ const TitleBar = React.memo(() => {
         </div>
         {/* <SquareButton onClick={}>Fork</SquareButton> */}
         {loggedIn ? null : (
-          <SquareButton onClick={onClickLoginNewTab}>Sign in to Save</SquareButton>
+          <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
+            Sign in to Save
+          </SquareButton>
         )}
       </div>
     </SimpleFlexRow>
