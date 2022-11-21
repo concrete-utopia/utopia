@@ -15,6 +15,8 @@ export type IcnColor =
   | 'component'
   | 'on-highlight-main'
   | 'on-highlight-secondary'
+  | 'darkgray'
+  | 'black'
 
 export type IcnResultingColor =
   | 'white'
@@ -76,6 +78,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'white'
       case 'on-highlight-secondary':
         return 'lightgray'
+      case 'black':
+        return 'black'
       default:
         return 'white'
     }

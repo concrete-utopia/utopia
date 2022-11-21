@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
+import { secondaryErrorStyle } from 'src/third-party/react-error-overlay/styles'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
+import { Avatar, Button, colorTheme, Icons, SimpleFlexRow } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { togglePanel } from '../editor/actions/action-creators'
@@ -105,16 +106,19 @@ const TitleBar = React.memo(() => {
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-                {/* {numberOfUpstreamChanges} */}
-                {/* {numberOfUpstreamChanges !== 1 ? 's' : ''} */}
+                {
+                  <Icons.Download
+                    style={{ width: 19, height: 19 }}
+                    // color={secondary as IcnColor}
+                  />
+                }
                 <>Remote Changes</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
               <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
-                {/* {numberOfDownstreamChanges} */}
-                {/* {numberOfDownstreamChanges !== 1 ? 's' : ''} */}
+                {<Icons.Upload style={{ width: 19, height: 19 }} />}
                 <>Local Changes</>
               </RoundButton>,
             )}
