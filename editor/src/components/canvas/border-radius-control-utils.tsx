@@ -8,6 +8,8 @@ export const BorderRadiusCorners: BorderRadiusCorner[] = ['tl', 'tr', 'bl', 'br'
 
 export type BorderRadiusSides<T> = { [key in BorderRadiusCorner]: T }
 
+export const BorderRadiusControlMinimumForDisplay = 10
+
 export type BorderRadiusAdjustMode = 'individual' | 'all'
 
 export const BorderRadiusHandleSize = (scale: number): number => 12 / scale

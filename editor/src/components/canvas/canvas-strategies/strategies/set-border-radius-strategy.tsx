@@ -35,6 +35,7 @@ import {
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
   BorderRadiusAdjustMode,
+  BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusSides,
   maxBorderRadius,
@@ -452,13 +453,20 @@ function updateBorderRadiusFn(
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
 ) {
   return (borderRadius: CSSNumberWithRenderedValue) => {
+    const borderRadiusMaxed = Math.max(
+      borderRadius.renderedValuePx,
+      BorderRadiusControlMinimumForDisplay,
+    )
+    const borderRadiusValue =
+      borderRadiusAdjustData == null ? borderRadius.renderedValuePx : borderRadiusMaxed
+
     const dragDelta = clamp(
-      -borderRadius.renderedValuePx,
-      maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
+      -borderRadiusValue,
+      maxBorderRadius(elementSize) - borderRadiusValue,
       optionalMap(({ drag, corner }) => deltaFromDrag(drag, corner), borderRadiusAdjustData) ?? 0,
     )
 
-    const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta
+    const borderRadiusOffset = borderRadiusValue + dragDelta
 
     const precision =
       optionalMap(({ modifiers }) => precisionFromModifiers(modifiers), borderRadiusAdjustData) ??
