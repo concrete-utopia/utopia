@@ -172,7 +172,7 @@ export function getAllTargetsAtPoint(
 }
 
 function elementsOrTheirChildTextsFromPoint(x: number, y: number) {
-  // TODO: find a better way than tho check all the elements
+  // TODO: find a better way than to check all the elements, this is sloooooow
   const elementsUnderPoint = document.elementsFromPoint(x, y)
 
   const allElements = document.querySelectorAll('*')
