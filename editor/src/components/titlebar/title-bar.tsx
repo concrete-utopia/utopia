@@ -5,19 +5,14 @@ import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
 import { MenuTile } from './menu-tile'
-import { FullHeightButton, LozengeButton, RoundedButton, TextButton } from './buttons'
+import { SquareButton, RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
-import {
-  getGithubFileChangesCount,
-  githubFileChangesEquals,
-  githubFileChangesSelector,
-} from '../../core/shared/github'
+import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
     onClick={onClick}
     style={{
-      margin: '0 20px 0 0',
       cursor: 'pointer',
     }}
   >
@@ -43,6 +38,7 @@ const TitleBar = React.memo(() => {
     isCodeEditorVisible,
     isPreviewPaneVisible,
     upstreamChanges,
+    targetRepository,
   } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
@@ -51,6 +47,7 @@ const TitleBar = React.memo(() => {
       isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
       isPreviewPaneVisible: store.editor.preview.visible,
       upstreamChanges: store.editor.githubData.upstreamChanges,
+      targetRepository: store.editor.githubSettings.targetRepository,
     }),
     'TitleBar',
   )
@@ -59,7 +56,6 @@ const TitleBar = React.memo(() => {
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-
   const numberOfUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges),
     [upstreamChanges],
@@ -110,54 +106,69 @@ const TitleBar = React.memo(() => {
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          alignItems: 'center',
+          flex: '1 1 0px',
+          gap: 10,
+        }}
+      >
         <AppLogo onClick={toggleLeftPanel} />
         {loggedIn ? (
           <>
-            <span>
-              <MenuTile
-                selected={isCodeEditorVisible}
-                icon={<LargerIcons.Code />}
-                onClick={toggleCodeEditorVisible}
-                size='large'
-              />
-            </span>
-            <span>
-              <MenuTile
-                selected={isPreviewPaneVisible}
-                icon={<LargerIcons.PreviewPane />}
-                onClick={togglePreviewPaneVisible}
-                size='large'
-              />
-            </span>
+            <MenuTile
+              selected={isCodeEditorVisible}
+              icon={<LargerIcons.Code />}
+              onClick={toggleCodeEditorVisible}
+              size='large'
+            />
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              icon={<LargerIcons.PreviewPane />}
+              onClick={togglePreviewPaneVisible}
+              size='large'
+            />
+            {targetRepository ? null : (
+              <SquareButton color={colorTheme.fg2.value} onClick={toggleLeftPanel}>
+                <>Connect To GitHub</>
+              </SquareButton>
+            )}
             {hasUpstreamChanges ? (
-              <LozengeButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+              <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
                 {numberOfUpstreamChanges}
                 <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
-              </LozengeButton>
+              </RoundButton>
             ) : null}
             {hasDownstreamChanges ? (
-              <LozengeButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
                 {numberOfDownstreamChanges}
                 <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
-              </LozengeButton>
+              </RoundButton>
             ) : null}
           </>
         ) : null}
-        {/* <FullHeightButton onClick={exportToGithub}>Export to Github</FullHeightButton> */}
       </div>
 
       <div>
         <ProjectTitle>{projectName}</ProjectTitle>
       </div>
 
-      <div style={{ display: 'flex', height: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          flex: '1 1 0px',
+          justifyContent: 'right',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TestMenu />
         </div>
-        {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}
+        {/* <SquareButton onClick={}>Fork</SquareButton> */}
         {loggedIn ? null : (
-          <FullHeightButton onClick={onClickLoginNewTab}>Sign in to Save</FullHeightButton>
+          <SquareButton onClick={onClickLoginNewTab}>Sign in to Save</SquareButton>
         )}
       </div>
     </SimpleFlexRow>
