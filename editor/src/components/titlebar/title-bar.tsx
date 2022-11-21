@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react'
 import { auth0Url } from '../../common/env-vars'
+import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
+import { unless, when } from '../../utils/react-conditionals'
 import { colorTheme, LargerIcons, MenuIcons, SimpleFlexRow } from '../../uuiui'
 import { EditorAction } from '../editor/action-types'
 import { setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { useEditorState } from '../editor/store/store-hook'
+import { RoundButton, SquareButton } from './buttons'
 import { MenuTile } from './menu-tile'
-import { SquareButton, RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
-import { getGithubFileChangesCount, githubFileChangesSelector } from '../../core/shared/github'
-import { unless, when } from 'src/utils/react-conditionals'
 
 const AppLogo: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <div
