@@ -159,7 +159,6 @@ const TitleBar = React.memo(() => {
         <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
-        {/* <SquareButton onClick={}>Fork</SquareButton> */}
         {loggedIn ? null : (
           <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
             Sign In To Save
