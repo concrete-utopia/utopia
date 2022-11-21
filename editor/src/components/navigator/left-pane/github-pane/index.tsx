@@ -205,7 +205,7 @@ const BranchBlock = () => {
       })
     } else {
       const newBranchName = cleanupBranchName(branchFilter)
-      if (newBranchName.length > 1) {
+      if (newBranchName.length > 1 && !filtered.some((b) => b.name === newBranchName)) {
         filtered.push({
           name: newBranchName,
           new: true,
