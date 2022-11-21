@@ -252,6 +252,7 @@ export async function saveProjectToGithub(
               originCommit: responseBody.newCommit,
               branchName: responseBody.branchName,
               pendingCommit: responseBody.newCommit,
+              branchLoaded: true,
             }),
             updateBranchContents(persistentModel.projectContents),
             showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
