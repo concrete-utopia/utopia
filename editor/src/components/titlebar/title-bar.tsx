@@ -112,11 +112,7 @@ const TitleBar = React.memo(() => {
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryBlue.value}
-                // color={'#49B6FF'}
-                onClick={toggleLeftPanel}
-              >
+              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Push Local</>
               </RoundButton>,
