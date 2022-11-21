@@ -66,8 +66,23 @@ const AccountBlock = () => {
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <Button spotlight highlight style={{ padding: '0 6px' }} onMouseUp={triggerAuthentication}>
-        Authenticate with Github
+      <Button
+        spotlight
+        highlight
+        style={{
+          padding: '1em',
+          background: colorTheme.primary.value,
+          borderRadius: 3,
+          color: colorTheme.fg9.value,
+        }}
+        css={{
+          '&:hover': {
+            opacity: 0.7,
+          },
+        }}
+        onMouseUp={triggerAuthentication}
+      >
+        Authenticate With Github
       </Button>
     </Block>
   )

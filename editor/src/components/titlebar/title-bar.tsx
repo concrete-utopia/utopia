@@ -171,7 +171,7 @@ const TitleBar = React.memo(() => {
         {/* <SquareButton onClick={}>Fork</SquareButton> */}
         {loggedIn ? null : (
           <SquareButton color={colorTheme.primary.value} onClick={onClickLoginNewTab}>
-            Sign in to Save
+            Sign In To Save
           </SquareButton>
         )}
       </div>
