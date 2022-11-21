@@ -643,8 +643,13 @@ export async function updateUserDetailsWhenAuthenticated(
 ): Promise<boolean> {
   const authenticationResult = await authenticationCheck
   if (authenticationResult) {
-    const userDetails = await getUserDetailsFromServer()
-    dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
+    await getUserDetailsFromServer()
+      .then((userDetails) => {
+        dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
+      })
+      .catch((error) => {
+        console.error(`Error while attempting to retrieve Github user details: ${error}`)
+      })
   }
   return authenticationResult
 }
