@@ -69,7 +69,8 @@ const TitleBar = React.memo(() => {
     <SimpleFlexRow
       style={{
         backgroundColor: colorTheme.bg0.value,
-        padding: '0 10px 0 10px',
+        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+        padding: 0,
         flexGrow: 0,
         height: 40,
         fontWeight: 600,
@@ -78,7 +79,7 @@ const TitleBar = React.memo(() => {
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', paddingLeft: 10 }}>
         <AppLogo onClick={toggleLeftPanel} />
         {loggedIn ? (
           <>
@@ -108,7 +109,7 @@ const TitleBar = React.memo(() => {
       </div>
 
       <div style={{ display: 'flex', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', paddingRight: 24 }}>
           <TestMenu />
         </div>
         {/* <TextButton onClick={exportToGithub}>Fork</TextButton> */}

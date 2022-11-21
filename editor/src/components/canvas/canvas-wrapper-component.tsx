@@ -34,6 +34,7 @@ import { when } from '../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { TopMenu } from '../editor/top-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -124,8 +125,11 @@ export const CanvasWrapperComponent = React.memo(() => {
             alignSelf: 'stretch',
             flexGrow: 1,
             position: 'relative',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
           }}
         >
+          <TopMenu />
           {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyPicker />)}
           <StrategyIndicator />
           <CanvasToolbar />
