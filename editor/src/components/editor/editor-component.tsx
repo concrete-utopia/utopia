@@ -143,10 +143,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      if (
-        isFeatureEnabled('Canvas Strategies') &&
-        editorIsTarget(event, editorStoreRef.current.editor)
-      ) {
+      if (editorIsTarget(event, editorStoreRef.current.editor)) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
         const modifiers = Modifier.modifiersForKeyboardEvent(event)
 
@@ -199,22 +196,19 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyUp = React.useCallback(
     (event: KeyboardEvent) => {
-      if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (existingInteractionSession != null) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(
-              existingInteractionSession,
-              [],
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
-          editorStoreRef.current.dispatch([action], 'everyone')
-        }
+      const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+      if (existingInteractionSession != null) {
+        const action = CanvasActions.createInteractionSession(
+          updateInteractionViaKeyboard(
+            existingInteractionSession,
+            [],
+            [Keyboard.keyCharacterForCode(event.keyCode)],
+            Modifier.modifiersForKeyboardEvent(event),
+            { type: 'KEYBOARD_CATCHER_CONTROL' },
+          ),
+        )
+        editorStoreRef.current.dispatch([action], 'everyone')
       }
-
       handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
     },
     [editorStoreRef, namesByKey],

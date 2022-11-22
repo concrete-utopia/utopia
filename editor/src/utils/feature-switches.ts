@@ -8,7 +8,6 @@ export type FeatureName =
   | 'Dragging Reparents By Default'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
-  | 'Canvas Strategies'
   | 'Canvas Strategies Debug Panel'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -18,7 +17,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug mode – Performance Marks',
   'Re-parse Project Button',
   'Performance Test Triggers',
-  'Canvas Strategies',
   'Canvas Strategies Debug Panel',
 ]
 
@@ -28,7 +26,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Dragging Reparents By Default': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
-  'Canvas Strategies': true,
   'Canvas Strategies Debug Panel': false,
 }
 

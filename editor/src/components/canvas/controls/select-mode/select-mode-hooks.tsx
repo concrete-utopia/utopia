@@ -669,23 +669,15 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
-          if (isFeatureEnabled('Canvas Strategies')) {
-            const start = windowToCanvasCoordinates(
-              windowPoint(point(event.clientX, event.clientY)),
-            ).canvasPositionRounded
-            if (event.button !== 2 && event.type !== 'mouseup') {
-              editorActions.push(
-                CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(
-                    start,
-                    Modifier.modifiersForEvent(event),
-                    boundingArea(),
-                  ),
-                ),
-              )
-            }
-          } else {
-            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          const start = windowToCanvasCoordinates(
+            windowPoint(point(event.clientX, event.clientY)),
+          ).canvasPositionRounded
+          if (event.button !== 2 && event.type !== 'mouseup') {
+            editorActions.push(
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
+              ),
+            )
           }
         }
 
@@ -732,7 +724,6 @@ function useSelectOrLiveModeSelectAndHover(
       dispatch,
       selectedViewsRef,
       findValidTarget,
-      startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
       editorStoreRef,
