@@ -119,6 +119,7 @@ export var storyboard = (
 
     expect(gapControls).toEqual([])
   })
+
   it('gap controls are present when flex gap is set on element and element has children', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
@@ -242,88 +243,9 @@ export var storyboard = (
   })
 
   it('cannot adjust gap with disabled handle', async () => {
-    const initialGap = 42
     const dragDelta = 11
 
-    const projectWithGapFromCode = `import * as React from 'react'
-    import { Scene, Storyboard } from 'utopia-api'
-    
-    const styles = { gap: '10px' }
-    
-    export var storyboard = (
-      <Storyboard data-uid='0cd'>
-        <div
-          data-testid='${DivTestId}'
-          style={{
-            backgroundColor: '#0091FFAA',
-            position: 'absolute',
-            left: 167,
-            top: 180,
-            width: 557,
-            height: 359,
-            display: 'flex',
-            gap: styles.gap,
-          }}
-          data-uid='fac'
-        >
-          <div
-            style={{
-              backgroundColor: '#0091FFAA',
-              width: 102,
-              height: 80,
-              contain: 'layout',
-            }}
-            data-uid='fed'
-          />
-          <div
-            style={{
-              backgroundColor: '#0091FFAA',
-              width: 187,
-              height: 150,
-              contain: 'layout',
-            }}
-            data-uid='a39'
-          />
-        </div>
-      </Storyboard>
-    )
-    `
-
     const editor = await renderTestEditorWithCode(projectWithGapFromCode, 'await-first-dom-report')
-    const gapControls = [
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
-    ]
-
-    expect(gapControls).toEqual([])
-  })
-
-  it('gap controls are not present when elements are wrapped', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithWrappedLayout(true),
-      'await-first-dom-report',
-    )
-
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId(DivTestId)
-    const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
-      x: divBounds.x + 5,
-      y: divBounds.y + 5,
-    })
-
-    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId(true))
-    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true))
-
-    expect(gapControlContainer).toBeTruthy()
-    expect(gapControlHandles.length).toEqual(1)
-  })
-
-  it('gap controls are present when elements are not wrapped', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithWrappedLayout(false),
-      'await-first-dom-report',
-    )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
@@ -351,7 +273,49 @@ export var storyboard = (
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithGapFromCode)
-    const gapControls = [...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)]
+  })
+
+  it('gap controls are not present when elements are wrapped', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithWrappedLayout(true),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControls = [
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(false)),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true)),
+    ]
+
+    expect(gapControls.length).toEqual(0)
+  })
+
+  it('gap controls are present when elements are not wrapped', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithWrappedLayout(false),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControls = [
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(false)),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true)),
+    ]
 
     expect(gapControls.length).toEqual(3)
   })
@@ -785,3 +749,47 @@ function projectWithWrappedLayout(wrap: boolean): string {
   )
   `
 }
+
+const projectWithGapFromCode = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const styles = { gap: '10px' }
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='${DivTestId}'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 167,
+        top: 180,
+        width: 557,
+        height: 359,
+        display: 'flex',
+        gap: styles.gap,
+      }}
+      data-uid='fac'
+    >
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 102,
+          height: 80,
+          contain: 'layout',
+        }}
+        data-uid='fed'
+      />
+      <div
+        style={{
+          backgroundColor: '#0091FFAA',
+          width: 187,
+          height: 150,
+          contain: 'layout',
+        }}
+        data-uid='a39'
+      />
+    </div>
+  </Storyboard>
+)
+`

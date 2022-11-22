@@ -104,7 +104,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
+      <div data-testid={FlexGapControlTestId(disabled === true)} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
           return (

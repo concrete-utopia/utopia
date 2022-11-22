@@ -191,7 +191,7 @@ describe('set border radius strategy', () => {
       mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
-        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner, false)),
       )
 
       expect(borderRadiusControls.length).toEqual(4)
