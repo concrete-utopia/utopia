@@ -144,26 +144,23 @@ const RepositoryBlock = () => {
 }
 
 const BranchBlock = () => {
-  const {
-    currentBranch,
-    dispatch,
-    githubOperations,
-    targetRepository,
-    branchesForRepository,
-    repositoryData,
-  } = useEditorState(
-    (store) => ({
-      currentBranch: store.editor.githubSettings.branchName,
-      dispatch: store.dispatch,
-      githubOperations: store.editor.githubOperations,
-      targetRepository: store.editor.githubSettings.targetRepository,
-      branchesForRepository: store.editor.githubData.branches,
-      repositoryData:
-        store.editor.githubData.publicRepositories.find(
-          (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
-        ) ?? null,
-    }),
-    'Github branch',
+  const { currentBranch, dispatch, githubOperations, targetRepository, branchesForRepository } =
+    useEditorState(
+      (store) => ({
+        currentBranch: store.editor.githubSettings.branchName,
+        dispatch: store.dispatch,
+        githubOperations: store.editor.githubOperations,
+        targetRepository: store.editor.githubSettings.targetRepository,
+        branchesForRepository: store.editor.githubData.branches,
+      }),
+      'Github branch',
+    )
+  const repositoryData = useEditorState(
+    (store) =>
+      store.editor.githubData.publicRepositories.find(
+        (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
+      ) ?? null,
+    'BranchBlock Repository data',
   )
 
   const isListingBranches = React.useMemo(
@@ -680,16 +677,18 @@ const LocalChangesBlock = () => {
 }
 
 const PullRequestButton = () => {
-  const { repo, branch } = useEditorState(
-    (store) => ({
-      repo:
-        store.editor.githubData.publicRepositories.find(
-          (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
-        ) ?? null,
-      branch: store.editor.githubSettings.branchName,
-    }),
-    'GH repo and branch',
+  const branch = useEditorState(
+    (store) => store.editor.githubSettings.branchName,
+    'PullRequestButton branch',
   )
+  const repo = useEditorState(
+    (store) =>
+      store.editor.githubData.publicRepositories.find(
+        (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
+      ) ?? null,
+    'PullRequestButton repository',
+  )
+
   const githubFileChanges = useGithubFileChanges()
   const changesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),
