@@ -5,8 +5,12 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
 import { notice } from '../../../../components/common/notice'
-import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
+  showToast,
+  updateGithubSettings,
+} from '../../../../components/editor/actions/action-creators'
+import {
+  emptyGithubSettings,
   GithubRepo,
   githubRepoEquals,
   githubRepoFullName,
@@ -236,6 +240,10 @@ export const RepositoryListing = React.memo(
       void getUsersPublicGithubRepositories(dispatch)
     }, [dispatch])
 
+    const clearRepository = React.useCallback(() => {
+      dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')
+    }, [dispatch])
+
     if (!githubAuthenticated) {
       return null
     }
@@ -297,6 +305,17 @@ export const RepositoryListing = React.memo(
             Create new repository on Github.
           </a>
         </UIGridRow>
+        {when(
+          targetRepository != null,
+          <Button
+            spotlight
+            highlight
+            style={{ color: colorTheme.errorForeground.value }}
+            onClick={clearRepository}
+          >
+            Clear repository
+          </Button>,
+        )}
       </FlexColumn>
     )
   },

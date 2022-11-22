@@ -216,6 +216,13 @@ const BranchBlock = () => {
     return filtered
   }, [branchesForRepository, repo, branchFilter])
 
+  const clearBranch = React.useCallback(() => {
+    dispatch(
+      [EditorActions.updateGithubSettings({ branchName: null, branchLoaded: false })],
+      'everyone',
+    )
+  }, [dispatch])
+
   const listBranchesUI = React.useMemo(() => {
     return (
       <UIGridRow padded={false} variant='<-------------1fr------------->' style={{ width: '100%' }}>
@@ -300,21 +307,36 @@ const BranchBlock = () => {
             )
           })}
         </FlexColumn>
-        <Button
-          spotlight
-          highlight
-          style={{ padding: '0 6px', marginTop: 6 }}
-          onMouseUp={refreshBranches}
-          disabled={githubWorking}
-        >
-          {isLoadingBranches ? (
-            <GithubSpinner />
-          ) : (
-            <FlexRow style={{ gap: 4 }}>
-              <RefreshIcon /> Refresh list
-            </FlexRow>
-          )}
-        </Button>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
+          <Button
+            spotlight
+            highlight
+            style={{ padding: '0 6px', marginTop: 6 }}
+            onMouseUp={refreshBranches}
+            disabled={githubWorking}
+          >
+            {isLoadingBranches ? (
+              <GithubSpinner />
+            ) : (
+              <FlexRow style={{ gap: 4 }}>
+                <RefreshIcon /> Refresh list
+              </FlexRow>
+            )}
+          </Button>
+        </UIGridRow>
+        {when(
+          currentBranch != null,
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
+            <Button
+              spotlight
+              highlight
+              style={{ color: colorTheme.errorForeground.value }}
+              onClick={clearBranch}
+            >
+              Clear branch
+            </Button>
+          </UIGridRow>,
+        )}
       </UIGridRow>
     )
   }, [
@@ -328,6 +350,7 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     filteredBranches,
+    clearBranch,
     repo,
   ])
 
@@ -408,10 +431,7 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
   )
-  const repo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Github repo',
-  )
+  const repo = useEditorState((store) => store.editor.githubSettings.branch, 'Github repo')
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
   const branchLoaded = useEditorState(
