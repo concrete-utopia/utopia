@@ -12,8 +12,6 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies'
   | 'Canvas Strategies Debug Panel'
-  | 'Single child, contiguous parent: move parent'
-  | 'Single child, zero sized parent: move parent'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -25,8 +23,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies',
   'Canvas Strategies Debug Panel',
-  'Single child, contiguous parent: move parent',
-  'Single child, zero sized parent: move parent',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -39,8 +35,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies': true,
   'Canvas Strategies Debug Panel': false,
-  'Single child, contiguous parent: move parent': true,
-  'Single child, zero sized parent: move parent': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
