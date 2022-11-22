@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { FlowReorderDragOutline } from '../../controls/flow-reorder-indicators'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -18,6 +17,10 @@ import {
 } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 
 export function flowReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -59,10 +62,8 @@ export function flowReorderStrategy(
           show: 'visible-only-while-active',
         }),
         controlWithProps({
-          control: FlowReorderDragOutline,
-          props: {
-            targets: selectedElements, // should this be a single target element?
-          },
+          control: DragOutlineControl,
+          props: dragTargetsElementPaths(selectedElements),
           key: 'flow-reorder-drag-outline',
           show: 'visible-only-while-active',
         }),

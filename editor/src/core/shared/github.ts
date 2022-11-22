@@ -46,6 +46,7 @@ import {
   projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
+import { useEditorState } from '../../components/editor/store/store-hook'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from './dependencies'
 import { RequestedNpmDependency } from './npm-dependency-types'
@@ -139,8 +140,9 @@ export function repositoryEntryPermissions(
 
 export interface RepositoryEntry {
   fullName: string
+  name: string
   avatarUrl: string | null
-  private: boolean
+  isPrivate: boolean
   description: string | null
   updatedAt: string | null
   defaultBranch: string
@@ -149,8 +151,9 @@ export interface RepositoryEntry {
 
 export function repositoryEntry(
   avatarUrl: string | null,
-  priv: boolean,
+  isPrivate: boolean,
   fullName: string,
+  name: string,
   description: string | null,
   updatedAt: string | null,
   defaultBranch: string,
@@ -158,8 +161,9 @@ export function repositoryEntry(
 ): RepositoryEntry {
   return {
     avatarUrl,
-    private: priv,
+    isPrivate,
     fullName,
+    name,
     description,
     updatedAt,
     defaultBranch,
@@ -250,6 +254,7 @@ export async function saveProjectToGithub(
                 responseBody.newCommit,
                 responseBody.branchName,
                 responseBody.newCommit,
+                true,
               ),
             ),
             updateBranchContents(persistentModel.projectContents),
@@ -493,6 +498,7 @@ export function connectRepo(
   githubRepo: GithubRepo,
   originCommit: string | null,
   branchName: string | null,
+  branchLoaded: boolean,
 ): Array<EditorAction> {
   const newGithubData: Partial<GithubData> = {
     upstreamChanges: null,
@@ -501,7 +507,9 @@ export function connectRepo(
     newGithubData.branches = []
   }
   return [
-    updateGithubSettings(projectGithubSettings(githubRepo, originCommit, branchName, originCommit)),
+    updateGithubSettings(
+      projectGithubSettings(githubRepo, originCommit, branchName, originCommit, branchLoaded),
+    ),
     updateGithubData(newGithubData),
   ]
 }
@@ -567,6 +575,7 @@ export async function updateProjectWithBranchContent(
                 githubRepo,
                 responseBody.branch.originCommit,
                 branchName,
+                true,
               ),
               updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
               updateProjectContents(responseBody.branch.content),
@@ -659,8 +668,13 @@ export async function updateUserDetailsWhenAuthenticated(
 ): Promise<boolean> {
   const authenticationResult = await authenticationCheck
   if (authenticationResult) {
-    const userDetails = await getUserDetailsFromServer()
-    dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
+    await getUserDetailsFromServer()
+      .then((userDetails) => {
+        dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
+      })
+      .catch((error) => {
+        console.error(`Error while attempting to retrieve Github user details: ${error}`)
+      })
   }
   return authenticationResult
 }
@@ -702,7 +716,7 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
         dispatch(
           [
             updateGithubData({
-              publicRepositories: responseBody.repositories.filter((repo) => !repo.private),
+              publicRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
             }),
           ],
           'everyone',
@@ -722,7 +736,7 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
-export const githubFileChangesSelector = createSelector(
+const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
@@ -740,6 +754,14 @@ export const githubFileChangesSelector = createSelector(
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
+
+export function useGithubFileChanges(): GithubFileChanges | null {
+  const storeType = useEditorState((store) => store.storeName, 'useGithubFileChanges storeName')
+  if (storeType !== 'low-priority-store') {
+    throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
+  }
+  return useEditorState(githubFileChangesSelector, 'useGithubFileChanges')
+}
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'
 

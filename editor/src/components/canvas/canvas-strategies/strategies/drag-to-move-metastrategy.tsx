@@ -70,7 +70,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     baseMoveStrategyFactories,
   )
   if (reparentStrategies.length > 0 || dragStrategies.length > 0) {
-    return [
+    const dragToMoveStrategies = [
       ...reparentStrategies,
       ...dragStrategies.map((strategy) => {
         const indicatorCommand = wildcardPatch('mid-interaction', {
@@ -93,8 +93,25 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
         }
       }),
     ]
+    return filterStrategiesWhileSpacePressed(
+      interactionSession.interactionData.spacePressed,
+      dragToMoveStrategies,
+    )
   } else {
-    return [doNothingStrategy(canvasState, interactionSession, customStrategyState)]
+    return filterStrategiesWhileSpacePressed(interactionSession.interactionData.spacePressed, [
+      doNothingStrategy(canvasState, interactionSession, customStrategyState),
+    ])
+  }
+}
+
+export function filterStrategiesWhileSpacePressed(
+  spacePressed: boolean,
+  strategies: Array<CanvasStrategy>,
+): Array<CanvasStrategy> {
+  if (spacePressed) {
+    return strategies.filter((strat) => strat.id === 'ABSOLUTE_MOVE')
+  } else {
+    return strategies
   }
 }
 

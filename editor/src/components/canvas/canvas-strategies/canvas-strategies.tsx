@@ -20,7 +20,12 @@ import {
   controlWithProps,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import {
+  CanvasControlType,
+  InteractionSession,
+  isNotYetStartedDragInteraction,
+  StrategyState,
+} from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
@@ -78,15 +83,19 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
+  )
+}
+
+const propertyControlStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [
-      keyboardAbsoluteResizeStrategy,
-      absoluteResizeBoundingBoxStrategy,
-      flexResizeBasicStrategy,
-      setPaddingStrategy,
-      setFlexGapStrategy,
-      setBorderRadiusStrategy,
-    ],
+    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
   )
 }
 
@@ -121,6 +130,7 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
+  propertyControlStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
@@ -439,6 +449,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   } else {
     switch (interactionSession.interactionData.type) {
       case 'DRAG':
+        return !isNotYetStartedDragInteraction(interactionSession.interactionData)
       case 'KEYBOARD':
       case 'HOVER':
         return true
@@ -480,4 +491,20 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
   return strategyState.currentStrategyCommands.length > 0
+}
+
+export function onlyFitWhenDraggingThisControl(
+  interactionSession: InteractionSession | null,
+  controlType: CanvasControlType['type'],
+  fitnessWhenFit: number,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === controlType
+  ) {
+    return fitnessWhenFit
+  } else {
+    return 0
+  }
 }

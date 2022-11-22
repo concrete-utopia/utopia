@@ -47,6 +47,7 @@ import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
+import { LowPriorityStoreProvider } from './store/low-priority-store'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -146,16 +147,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (key === 'space') {
-          if (existingInteractionSession != null) {
-            editorStoreRef.current.dispatch(
-              [CanvasActions.clearInteractionSession(false)],
-              'everyone',
-            )
-          }
-          event.preventDefault()
-          event.stopPropagation()
-        } else if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
+        if (
+          (Keyboard.keyIsModifier(key) || key === 'space') &&
+          existingInteractionSession != null
+        ) {
           editorStoreRef.current.dispatch(
             [
               CanvasActions.createInteractionSession(
@@ -315,9 +310,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             width: '100%',
           }}
         >
-          {(isChrome as boolean) ? null : <BrowserInfoBar />}
-          <LoginStatusBar />
-          <TitleBar />
+          <LowPriorityStoreProvider>
+            {(isChrome as boolean) ? null : <BrowserInfoBar />}
+            <LoginStatusBar />
+            <TitleBar />
+          </LowPriorityStoreProvider>
 
           <SimpleFlexRow
             className='editor-main-horizontal'

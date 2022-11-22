@@ -46,6 +46,7 @@ export function getStoreHook(
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
   const defaultState: EditorStorePatched = {
+    storeName: 'editor-store',
     editor: editor.editor,
     derived: editor.derivedState,
     strategyState: editor.strategyState,

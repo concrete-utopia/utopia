@@ -112,13 +112,19 @@ gitTreeEntriesFromProjectContent loadAsset createBlob projectContents = do
   entries <- mapConcurrently (gitTreeEntriesFromProjectContentsTree loadAsset createBlob) $ M.elems projectContents
   pure $ join entries
 
-createGitTreeFromProjectContent :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> SimpleCreateBlob m -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTree
-createGitTreeFromProjectContent loadAsset createBlob projectContents = fmap (CreateGitTree Nothing) $ gitTreeEntriesFromProjectContent loadAsset createBlob projectContents
+gitTreeFromProjectContent :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> SimpleCreateBlob m -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTree
+gitTreeFromProjectContent loadAsset createBlob projectContents = fmap (CreateGitTree Nothing) $ gitTreeEntriesFromProjectContent loadAsset createBlob projectContents
 
 type MakeGithubRequest a = WR.Options -> String -> a -> IO (WR.Response BL.ByteString)
 
 postToGithub :: (ToJSON a) => MakeGithubRequest a
 postToGithub options url content = WR.postWith options url (toJSON content)
+
+putToGithub :: (ToJSON a) => MakeGithubRequest a
+putToGithub options url content = WR.putWith options url (toJSON content)
+
+patchToGithub :: (ToJSON a) => MakeGithubRequest a
+patchToGithub options url content = WR.customPayloadMethodWith "PATCH" options url (toJSON content)
 
 getFromGithub :: MakeGithubRequest ()
 getFromGithub options url _ = WR.getWith options url
@@ -133,9 +139,8 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
               & WR.params .~ queryParameters
   -- Make the request.
   result <- liftIO $ makeRequest options (toS restURL) request
-  -- Uncomment the next line if you want to see the headers.
-  -- liftIO $ print $ view WR.responseHeaders result
   let status = view WR.responseStatus result
+  let logStuffForErrors = liftIO $ print (restURL, status, view WR.responseHeaders result, view WR.responseBody result)
   -- Check the rate limiting.
   let rateLimitRemaining = firstOf (WR.responseHeader "X-RateLimit-Remaining" . unpackedChars . decimal) result :: Maybe Int
   when (rateLimitRemaining == Just 0 || status == tooManyRequests429) $ do
@@ -144,7 +149,7 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
   if statusIsSuccessful status
   -- Parse the response contents.
   then except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
-  else handleErrorCases status
+  else logStuffForErrors >> handleErrorCases status
   
 
 createTreeHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
@@ -153,20 +158,24 @@ createTreeHandleErrorCases status | status == forbidden403            = throwE "
                                   | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
                                   | otherwise                         = throwE "Unexpected error."
 
-createGitTree :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> AccessToken -> GithubRepo -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTreeResult
-createGitTree loadAsset accessToken repo@GithubRepo{..} projectContents = do
+createGitTree :: (MonadIO m, MonadBaseControl IO m) => AccessToken -> Text -> Text -> CreateGitTree -> ExceptT Text m CreateGitTreeResult
+createGitTree accessToken owner repository gitTree = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/trees"
+  callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl gitTree 
+
+createGitTreeFromProjectContents :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> AccessToken -> GithubRepo -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTreeResult
+createGitTreeFromProjectContents loadAsset accessToken repo@GithubRepo{..} projectContents = do
   -- Create a simpler function for creating a git blob.
   let createBlob = createGitBlob accessToken repo
-  request <- createGitTreeFromProjectContent loadAsset createBlob projectContents
-  callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl request
+  request <- gitTreeFromProjectContent loadAsset createBlob projectContents
+  createGitTree accessToken owner repository request 
 
 createGitTreeFromModel :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> Text -> AccessToken -> PersistentModel -> ExceptT Text m CreateGitTreeResult
 createGitTreeFromModel loadAsset projectID accessToken PersistentModel{..} = do
   let possibleGithubRepo = targetRepository githubSettings
   let loadAssetForProject projectPath possibleETag = loadAsset (projectID : projectPath) possibleETag
   case possibleGithubRepo of
-    Just repo -> createGitTree loadAssetForProject accessToken repo projectContents
+    Just repo -> createGitTreeFromProjectContents loadAssetForProject accessToken repo projectContents
     Nothing   -> throwE "No repository set on project."
 
 createBlobHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
@@ -187,8 +196,8 @@ createCommitHandleErrorCases status | status == notFound404             = throwE
                                     | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
                                     | otherwise                         = throwE "Unexpected error."
 
-createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> Maybe Text -> [Text] -> ExceptT Text m CreateGitCommitResult
-createGitCommit accessToken GithubRepo{..} treeSha possibleCommitMessage parentCommits = do
+createGitCommit :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> Maybe Text -> [Text] -> ExceptT Text m CreateGitCommitResult
+createGitCommit accessToken owner repository treeSha possibleCommitMessage parentCommits = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits"
   let request = CreateGitCommit (fromMaybe "Committed automatically." possibleCommitMessage) treeSha parentCommits
   callGithub postToGithub [] createCommitHandleErrorCases accessToken repoUrl request
@@ -197,7 +206,46 @@ createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text 
 createGitCommitForTree accessToken PersistentModel{..} treeSha possibleCommitMessage parentCommits = do
   let possibleGithubRepo = targetRepository githubSettings
   case possibleGithubRepo of
-    Just repo -> createGitCommit accessToken repo treeSha possibleCommitMessage parentCommits
+    Just GithubRepo{..} -> createGitCommit accessToken owner repository treeSha possibleCommitMessage parentCommits
+    Nothing   -> throwE "No repository set on project."
+
+updateGitFileHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+updateGitFileHandleErrorCases status | status == notFound404             = throwE "Repository or tree not found."
+                                     | status == conflict409             = throwE "Conflict when updating file."
+                                     | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
+                                     | otherwise                         = throwE "Unexpected error."
+
+updateGitFile :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> Text -> Text -> BL.ByteString -> ExceptT Text m UpdateGitFileResult
+updateGitFile accessToken owner repository branchName path commitMessage content = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/contents" <> path
+  let encodedContent = toS $ BLB64.encodeBase64 content
+  let request = UpdateGitFile commitMessage branchName encodedContent
+  callGithub putToGithub [] updateGitFileHandleErrorCases accessToken repoUrl request
+
+getReferenceHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m (Maybe GetReferenceResult)
+getReferenceHandleErrorCases status | status == notFound404       = pure Nothing
+                                    | otherwise                   = throwE "Unexpected error."
+
+getReference :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m (Maybe GetReferenceResult)
+getReference accessToken owner repository reference = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/ref/" <> reference
+  callGithub getFromGithub [] getReferenceHandleErrorCases accessToken repoUrl ()
+
+updateBranchHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
+updateBranchHandleErrorCases status | status == unprocessableEntity422  = liftIO $ fail "Unprocessable entity returned when creating tree."
+                                    | otherwise                         = throwE "Unexpected error."
+
+updateGitBranch :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> Text -> Bool -> ExceptT Text m UpdateGitBranchResult
+updateGitBranch accessToken owner repository commitSha branchName forceUpdate = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/refs/heads/" <> branchName
+  let request = UpdateGitBranch commitSha forceUpdate
+  callGithub patchToGithub [] updateBranchHandleErrorCases accessToken repoUrl request
+
+updateGitBranchForCommit :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> Text -> ExceptT Text m UpdateGitBranchResult
+updateGitBranchForCommit accessToken PersistentModel{..} commitSha branchName = do
+  let possibleGithubRepo = targetRepository githubSettings
+  case possibleGithubRepo of
+    Just GithubRepo{..} -> updateGitBranch accessToken owner repository commitSha branchName False
     Nothing   -> throwE "No repository set on project."
 
 createBranchHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
@@ -273,6 +321,17 @@ getUsersPublicRepositories :: (MonadIO m) => AccessToken -> Int -> ExceptT Text 
 getUsersPublicRepositories accessToken page = do
   let repoUrl = "https://api.github.com/user/repos"
   callGithub getFromGithub [("per_page", show userRepositoriesPerPage), ("page", show page), ("visibility", "public")] getUsersPublicRepositoriesErrorCases accessToken repoUrl ()
+
+getRepositoryErrorCases :: (MonadIO m) => Status -> ExceptT Text m (Maybe UsersRepository)
+getRepositoryErrorCases status | status == movedPermanently301      = throwE "Repository moved elsewhere."
+                               | status == forbidden403             = throwE "Forbidden from loading repository."
+                               | status == notFound404              = pure Nothing
+                               | otherwise                          = throwE "Unexpected error."
+
+getRepository :: (MonadIO m) => AccessToken -> Text -> Text -> ExceptT Text m (Maybe UsersRepository)
+getRepository accessToken owner repository = do
+  let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository
+  callGithub getFromGithub [] getRepositoryErrorCases accessToken repoUrl ()
 
 getGitCommitErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitCommitErrorCases status | status == notFound404          = throwE "Commit does not exist."

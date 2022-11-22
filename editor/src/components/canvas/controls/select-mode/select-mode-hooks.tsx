@@ -42,6 +42,7 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
+  isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
@@ -605,7 +606,10 @@ function useSelectOrLiveModeSelectAndHover(
     (event: React.MouseEvent<HTMLDivElement>) => {
       // Do not handle the mouse move in the regular style if 'space' is pressed.
       const isDragIntention =
-        editorStoreRef.current.editor.keysPressed['space'] || event.buttons === 4
+        isDragToPan(
+          editorStoreRef.current.editor.canvas.interactionSession,
+          editorStoreRef.current.editor.keysPressed['space'],
+        ) || event.buttons === 4
       if (isDragIntention) {
         return
       }

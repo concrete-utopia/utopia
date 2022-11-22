@@ -1,3 +1,4 @@
+import { appendNewElementPath, elementPath, fromString } from '../../../../core/shared/element-path'
 import {
   canvasVector,
   CanvasVector,
@@ -9,12 +10,14 @@ import {
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/action-creators'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
 import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
@@ -118,7 +121,7 @@ describe('set border radius strategy', () => {
     expect(paddingControls).toEqual([])
   })
 
-  describe('Border radius controls on compoenent instances', () => {
+  describe('Border radius controls on component instances', () => {
     it('controls are shown if border radius is specified on the component instance', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithComponentThatDefinesBorderRadiusInternally({
@@ -165,25 +168,53 @@ describe('set border radius strategy', () => {
 
       expect(borderRadiusControls).toEqual([])
     })
+
+    it('controls are shown if the root element is selected', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithComponentThatDefinesBorderRadiusInternally({
+          internalBorderRadius: '5px',
+        }),
+        'await-first-dom-report',
+      )
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      const divBounds = div.getBoundingClientRect()
+      const divCorner = {
+        x: divBounds.x + Math.floor(divBounds.width / 2),
+        y: divBounds.y + Math.floor(divBounds.height / 2),
+      }
+
+      const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
+      await editor.dispatch([selectComponents(selectedViews, false)], true)
+
+      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls.length).toEqual(4)
+    })
   })
 
   it('can handle 4-value syntax', async () => {
     const editor = await renderTestEditorWithCode(
-      codeForDragTest(`borderRadius: '4px 5px 6px 7px'`),
+      codeForDragTest(`borderRadius: '14px 15px 16px 17px'`),
       'await-first-dom-report',
     )
 
     await doDragTest(editor, 'tl', 10, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '4px 5px 6px 7px',
-                       borderTopLeftRadius: '14px',`),
+      codeForDragTest(`borderRadius: '14px 15px 16px 17px',
+                       borderTopLeftRadius: '24px',`),
     )
   })
 
   it('can only adjust border radius to 50% at most', async () => {
     const { width, height } = size(600, 400)
     const editor = await renderTestEditorWithCode(
-      codeForDragTest(`borderRadius: '4px'`),
+      codeForDragTest(`borderRadius: '24px'`),
       'await-first-dom-report',
     )
 
@@ -197,10 +228,10 @@ describe('set border radius strategy', () => {
 
   it('can only adjust border radius to 0 at min', async () => {
     const editor = await renderTestEditorWithCode(
-      codeForDragTest(`borderRadius: '4px'`),
+      codeForDragTest(`borderRadius: '14px'`),
       'await-first-dom-report',
     )
-    await doDragTest(editor, 'tl', -10, emptyModifiers)
+    await doDragTest(editor, 'tl', -20, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       codeForDragTest(`borderRadius: '0px'`),
     )
@@ -271,48 +302,59 @@ describe('set border radius strategy', () => {
     )
   })
 
+  it('when resize starts from below 12px, delta is applied as if border radius was 12px', async () => {
+    const editor = await renderTestEditorWithCode(
+      codeForDragTest(`borderRadius: '4px'`),
+      'await-first-dom-report',
+    )
+    await doDragTest(editor, 'tl', 10, emptyModifiers)
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      codeForDragTest(`borderRadius: '22px'`),
+    )
+  })
+
   describe('adjust border radius via handles', () => {
     it('top left', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'tl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px'`),
+        codeForDragTest(`borderRadius: '24px'`),
       )
     })
 
     it('top right', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'tr', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px'`),
+        codeForDragTest(`borderRadius: '24px'`),
       )
     })
 
     it('bottom left', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'bl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px'`),
+        codeForDragTest(`borderRadius: '24px'`),
       )
     })
 
     it('bottom right', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'br', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px'`),
+        codeForDragTest(`borderRadius: '24px'`),
       )
     })
   })
@@ -320,49 +362,49 @@ describe('set border radius strategy', () => {
   describe('adjust border radius via handles, individually', () => {
     it('top left', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px',`),
+        codeForDragTest(`borderRadius: '14px',`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'tl', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '4px',
-                         borderTopLeftRadius: '14px',`),
+        codeForDragTest(`borderRadius: '14px',
+                         borderTopLeftRadius: '24px',`),
       )
     })
 
     it('top right', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'tr', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '4px',
-                         borderTopRightRadius: '14px',`),
+        codeForDragTest(`borderRadius: '14px',
+                         borderTopRightRadius: '24px',`),
       )
     })
 
     it('bottom left', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'bl', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '4px',
-                         borderBottomLeftRadius: '14px',`),
+        codeForDragTest(`borderRadius: '14px',
+                         borderBottomLeftRadius: '24px',`),
       )
     })
 
     it('bottom right', async () => {
       const editor = await renderTestEditorWithCode(
-        codeForDragTest(`borderRadius: '4px'`),
+        codeForDragTest(`borderRadius: '14px'`),
         'await-first-dom-report',
       )
       await doDragTest(editor, 'br', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '4px',
-                         borderBottomRightRadius: '14px',`),
+        codeForDragTest(`borderRadius: '14px',
+                         borderBottomRightRadius: '24px',`),
       )
     })
   })
@@ -538,13 +580,13 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             ${props.internalBorderRadius ? `borderRadius: '${props.internalBorderRadius}',` : ''}
             ...props.style,
           }}
-          data-uid='8bc'
+          data-uid='RootDiv'
         />
       )
     }
     
     export var storyboard = (
-      <Storyboard data-uid='0cd'>
+      <Storyboard data-uid='Storyboard'>
         <HorribleComponent
           style={{
             position: 'absolute',
@@ -552,7 +594,7 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             top: 420,
             ${props.externalBorderRadius ? `borderRadius: '${props.externalBorderRadius}',` : ''}
           }}
-          data-uid='ca3'
+          data-uid='Horrible'
         />
       </Storyboard>
     )

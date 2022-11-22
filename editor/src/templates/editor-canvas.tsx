@@ -7,6 +7,7 @@ import { CanvasComponentEntry } from '../components/canvas/canvas-component-entr
 import {
   boundingArea,
   createInteractionViaMouse,
+  isDragToPan,
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
@@ -304,7 +305,7 @@ function on(
     ]
   }
 
-  if (canvas.keysPressed['space']) {
+  if (isDragToPan(canvas.editorState.canvas.interactionSession, canvas.keysPressed['space'])) {
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
@@ -1280,7 +1281,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (this.props.model.keysPressed['space'] || event.buttons === 4) {
+      if (
+        isDragToPan(
+          this.props.editor.canvas.interactionSession,
+          this.props.model.keysPressed['space'],
+        ) ||
+        event.buttons === 4
+      ) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',

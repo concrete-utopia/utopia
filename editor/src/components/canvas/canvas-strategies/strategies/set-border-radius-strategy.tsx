@@ -38,6 +38,7 @@ import {
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
   BorderRadiusAdjustMode,
+  BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusSides,
   maxBorderRadius,
@@ -57,7 +58,7 @@ import {
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
-import { CanvasStrategyFactory } from '../canvas-strategies'
+import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -75,17 +76,6 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
-  if (
-    interactionSession != null &&
-    !(
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BORDER_RADIUS_RESIZE_HANDLE'
-    )
-  ) {
-    // We don't want to include this in the strategy picker if any other interaction is active
-    return null
-  }
-
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -152,6 +142,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     borderRadius,
     borderRadiusAdjustData,
     elementSize,
+    canvasState.scale,
   )
 
   const mode: BorderRadiusAdjustMode =
@@ -162,7 +153,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   return {
     id: SetBorderRadiusStrategyId,
     name: 'Set border radius',
-    fitness: 1,
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'BORDER_RADIUS_RESIZE_HANDLE', 1),
     controlsToRender: [
       controlWithProps({
         control: BorderRadiusControl,
@@ -571,16 +562,24 @@ function longhandFromEdgePosition(
 
 function updateBorderRadiusFn(
   elementSize: Size,
+  scale: number,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
 ) {
   return (borderRadius: CSSNumberWithRenderedValue) => {
+    const borderRadiusMaxed = Math.max(
+      borderRadius.renderedValuePx,
+      BorderRadiusControlMinimumForDisplay(scale),
+    )
+    const borderRadiusValue =
+      borderRadiusAdjustData == null ? borderRadius.renderedValuePx : borderRadiusMaxed
+
     const dragDelta = clamp(
-      -borderRadius.renderedValuePx,
-      maxBorderRadius(elementSize) - borderRadius.renderedValuePx,
+      -borderRadiusValue,
+      maxBorderRadius(elementSize) - borderRadiusValue,
       optionalMap(({ drag, corner }) => deltaFromDrag(drag, corner), borderRadiusAdjustData) ?? 0,
     )
 
-    const borderRadiusOffset = borderRadius.renderedValuePx + dragDelta
+    const borderRadiusOffset = borderRadiusValue + dragDelta
 
     const precision =
       optionalMap(({ modifiers }) => precisionFromModifiers(modifiers), borderRadiusAdjustData) ??
@@ -600,6 +599,7 @@ function setBorderRadiusStrategyRunResult(
   data: BorderRadiusData<CSSNumberWithRenderedValue>,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
   elementSize: Size,
+  scale: number,
 ): SetBorderRadiusStrategyRunResult {
   const edgePosition = borderRadiusAdjustData?.corner ?? 'br'
 
@@ -612,6 +612,7 @@ function setBorderRadiusStrategyRunResult(
     const { borderRadius, key } = borderRadiusFromData(data, edgePosition)
     const updatedBorderRadius = updateBorderRadiusFn(
       elementSize,
+      scale,
       borderRadiusAdjustData,
     )(borderRadius)
 
@@ -628,7 +629,7 @@ function setBorderRadiusStrategyRunResult(
   }
 
   const allUpdated = mapBorderRadiusSides(
-    updateBorderRadiusFn(elementSize, borderRadiusAdjustData),
+    updateBorderRadiusFn(elementSize, scale, borderRadiusAdjustData),
     data.borderRadius,
   )
 

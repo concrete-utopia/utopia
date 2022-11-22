@@ -93,7 +93,9 @@ export function convertToAbsoluteAndMoveStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 0.5
+        ? interactionSession.interactionData.spacePressed
+          ? 5
+          : 0.5
         : 0,
     apply: () => {
       if (

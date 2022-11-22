@@ -962,7 +962,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
+    await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')

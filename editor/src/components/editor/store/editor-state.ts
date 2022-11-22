@@ -388,16 +388,23 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
+type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+
 export type EditorStorePatched = EditorStoreShared & {
+  storeName: StoreName
   editor: EditorState
   derived: DerivedState
 }
 
 export type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
-export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+export function patchedStoreFromFullStore(
+  store: EditorStoreFull,
+  name: StoreName,
+): EditorStorePatched {
   return {
     ...store,
+    storeName: name,
     editor: store.patchedEditor,
     derived: store.patchedDerived,
   }
@@ -1143,6 +1150,7 @@ export interface ProjectGithubSettings {
   originCommit: string | null
   branchName: string | null
   pendingCommit: string | null
+  branchLoaded: boolean
 }
 
 export function projectGithubSettings(
@@ -1150,12 +1158,14 @@ export function projectGithubSettings(
   originCommit: string | null,
   branchName: string | null,
   pendingCommit: string | null,
+  branchLoaded: boolean,
 ): ProjectGithubSettings {
   return {
     targetRepository: targetRepository,
     originCommit: originCommit,
     branchName: branchName,
     pendingCommit: pendingCommit,
+    branchLoaded: branchLoaded,
   }
 }
 
@@ -1165,6 +1175,7 @@ export function emptyGithubSettings(): ProjectGithubSettings {
     originCommit: null,
     branchName: null,
     pendingCommit: null,
+    branchLoaded: false,
   }
 }
 

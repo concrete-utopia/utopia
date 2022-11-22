@@ -179,7 +179,7 @@ export const Icons = {
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
-  Download: makeIcon({ type: 'download', color: 'main', width: 18, height: 18 }),
+
   Downloaded: makeIcon({ type: 'downloaded', color: 'main', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'main' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
@@ -238,6 +238,20 @@ export const Icons = {
   CircleSmall: makeIcon({ type: 'circle-small', color: 'secondary' }),
   CrossSmall: makeIcon({ type: 'cross-small', color: 'secondary' }),
   CrossInTranslucentCircle: makeIcon({ type: 'cross-in-translucent-circle', color: 'main' }),
+  Download: makeIcon({
+    category: 'semantic',
+    type: 'download',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
+  Upload: makeIcon({
+    category: 'semantic',
+    type: 'upload',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
 }
 
 export const FunctionIcons = {

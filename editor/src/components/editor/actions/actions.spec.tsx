@@ -938,6 +938,7 @@ describe('LOAD', () => {
         originCommit: null,
         branchName: null,
         pendingCommit: null,
+        branchLoaded: false,
       },
       githubChecksums: null,
       branchContents: null,

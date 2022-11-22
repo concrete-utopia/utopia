@@ -241,9 +241,9 @@ export const GithubFileChangesList: React.FC<{
                   }}
                 >
                   <Ellipsis>{i.filename}</Ellipsis>
-                  {when(conflicting, <WarningIcon color='error' />)}
                 </FlexRow>
               </UIGridRow>
+              {when(conflicting, <WarningIcon color='error' />)}
               {when(
                 revertable && !isTreeConflict,
                 <RevertButton disabled={githubWorking} onMouseUp={handleClickRevertFile(i)} />,

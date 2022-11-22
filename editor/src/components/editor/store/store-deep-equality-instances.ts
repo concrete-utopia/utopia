@@ -300,7 +300,6 @@ import {
   EditorStateCodeEditorErrors,
   ErrorMessages,
   editorStateCodeEditorErrors,
-  Theme,
   editorState,
   AllElementProps,
   LockedElements,
@@ -321,9 +320,9 @@ import {
   fileRevertModal,
   GithubData,
   emptyGithubData,
-  projectGithubSettings,
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -356,8 +355,6 @@ import {
   PaddingResizeHandle,
   resizeHandle,
   ResizeHandle,
-  paddingResizeHandle,
-  borderRadiusResizeHandle,
   BorderRadiusResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
@@ -1649,7 +1646,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine8EqualityCalls(
+  combine9EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1666,6 +1663,8 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     BooleanKeepDeepEquality,
     (data) => data._accumulatedMovement,
     CanvasPointKeepDeepEquality,
+    (data) => data.spacePressed,
+    BooleanKeepDeepEquality,
     (
       dragStart,
       drag,
@@ -1675,6 +1674,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       globalTime,
       hasMouseMoved,
       accumulatedMovement,
+      spacePressed,
     ) => {
       return {
         type: 'DRAG',
@@ -1686,6 +1686,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
         _accumulatedMovement: accumulatedMovement,
+        spacePressed: spacePressed,
       }
     },
   )
@@ -3254,12 +3255,14 @@ export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<Re
   )
 
 export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (r) => r.avatarUrl,
     NullableStringKeepDeepEquality,
-    (r) => r.private,
+    (r) => r.isPrivate,
     BooleanKeepDeepEquality,
     (r) => r.fullName,
+    StringKeepDeepEquality,
+    (r) => r.name,
     StringKeepDeepEquality,
     (r) => r.description,
     NullableStringKeepDeepEquality,
@@ -3273,7 +3276,7 @@ export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEnt
   )
 
 export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (settings) => settings.targetRepository,
     nullableDeepEquality(GithubRepoKeepDeepEquality),
     (settings) => settings.originCommit,
@@ -3282,6 +3285,8 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     nullableDeepEquality(createCallWithTripleEquals<string>()),
     (settings) => settings.pendingCommit,
     nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchLoaded,
+    BooleanKeepDeepEquality,
     projectGithubSettings,
   )
 
@@ -3386,8 +3391,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.highlightedViews,
   )
   const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
-    oldValue.highlightedViews,
-    newValue.highlightedViews,
+    oldValue.hoveredViews,
+    newValue.hoveredViews,
   )
   const hiddenInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.hiddenInstances,

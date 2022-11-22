@@ -2,16 +2,16 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
   getBranchesForGithubRepository,
   getGithubFileChangesCount,
-  githubFileChangesSelector,
   githubFileChangesToList,
   updateProjectAgainstGithub,
   updateProjectWithBranchContent,
+  useGithubFileChanges,
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -20,6 +20,7 @@ import {
   colorTheme,
   FlexColumn,
   FlexRow,
+  Icons,
   MenuIcons,
   Section,
   SectionTitleRow,
@@ -66,8 +67,23 @@ const AccountBlock = () => {
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <Button spotlight highlight style={{ padding: '0 6px' }} onMouseUp={triggerAuthentication}>
-        Authenticate with Github
+      <Button
+        spotlight
+        highlight
+        style={{
+          padding: '1em',
+          background: colorTheme.primary.value,
+          borderRadius: 3,
+          color: colorTheme.fg9.value,
+        }}
+        css={{
+          '&:hover': {
+            opacity: 0.7,
+          },
+        }}
+        onMouseUp={triggerAuthentication}
+      >
+        Authenticate With Github
       </Button>
     </Block>
   )
@@ -190,7 +206,7 @@ const BranchBlock = () => {
       })
     } else {
       const newBranchName = cleanupBranchName(branchFilter)
-      if (newBranchName.length > 1) {
+      if (newBranchName.length > 1 && !filtered.some((b) => b.name === newBranchName)) {
         filtered.push({
           name: newBranchName,
           new: true,
@@ -201,32 +217,28 @@ const BranchBlock = () => {
     return filtered
   }, [branchesForRepository, repo, branchFilter])
 
-  const builtInDependencies = useEditorState(
-    (store) => store.builtInDependencies,
-    'Built-in dependencies',
-  )
-
-  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
-
-  const loadBranchesUI = React.useMemo(() => {
+  const listBranchesUI = React.useMemo(() => {
     return (
       <UIGridRow padded={false} variant='<-------------1fr------------->' style={{ width: '100%' }}>
-        <UIGridRow padded={false} variant='<----------1fr---------><-auto->'>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <StringInput
             testId='branches-input'
             placeholder='Filter…'
             value={branchFilter}
             onChange={updateBranchFilter}
           />
-          <Button
-            spotlight
-            highlight
-            style={{ padding: '0 6px' }}
-            onMouseUp={refreshBranches}
-            disabled={githubWorking}
-          >
-            {isLoadingBranches ? <GithubSpinner /> : <RefreshIcon />}
-          </Button>
+        </UIGridRow>
+        <UIGridRow
+          padded={false}
+          variant='<-------------1fr------------->'
+          style={{
+            minHeight: 0,
+            marginBottom: 6,
+            color: colorTheme.fg4.value,
+            fontSize: 10,
+          }}
+        >
+          Or type in a new branch name.
         </UIGridRow>
         <FlexColumn
           style={{
@@ -237,33 +249,19 @@ const BranchBlock = () => {
           }}
         >
           {filteredBranches.map((branch, index) => {
-            function loadContentForBranch() {
+            function selectBranch() {
               if (githubWorking) {
                 return
               }
-              if (storedTargetGithubRepo != null) {
-                if (branch.new) {
-                  dispatch(
-                    [
-                      EditorActions.saveToGithub(
-                        storedTargetGithubRepo,
-                        branch.name,
-                        'First commit',
-                      ),
-                    ],
-                    'everyone',
-                  )
-                } else {
-                  void updateProjectWithBranchContent(
-                    dispatch,
-                    storedTargetGithubRepo,
-                    branch.name,
-                    false,
-                    currentDependencies,
-                    builtInDependencies,
-                  ).then(() => setExpandedFlag(false))
-                }
-              }
+              dispatch(
+                [
+                  EditorActions.updateGithubSettings({
+                    branchName: branch.name,
+                    branchLoaded: false,
+                  }),
+                ],
+                'everyone',
+              )
             }
             const loadingThisBranch = isGithubLoadingBranch(
               githubOperations,
@@ -287,7 +285,7 @@ const BranchBlock = () => {
                   fontWeight: isCurrent ? 'bold' : 'normal',
                   color: branch.new === true ? colorTheme.primary.value : 'inherit',
                 }}
-                onClick={loadContentForBranch}
+                onClick={selectBranch}
               >
                 <Ellipsis>
                   {when(isCurrent, <span>&rarr; </span>)}
@@ -303,6 +301,21 @@ const BranchBlock = () => {
             )
           })}
         </FlexColumn>
+        <Button
+          spotlight
+          highlight
+          style={{ padding: '0 6px', marginTop: 6 }}
+          onMouseUp={refreshBranches}
+          disabled={githubWorking}
+        >
+          {isLoadingBranches ? (
+            <GithubSpinner />
+          ) : (
+            <FlexRow style={{ gap: 4 }}>
+              <RefreshIcon /> Refresh list
+            </FlexRow>
+          )}
+        </Button>
       </UIGridRow>
     )
   }, [
@@ -315,10 +328,7 @@ const BranchBlock = () => {
     refreshBranches,
     branchFilter,
     updateBranchFilter,
-    setExpandedFlag,
     filteredBranches,
-    builtInDependencies,
-    currentDependencies,
     repo,
   ])
 
@@ -344,23 +354,8 @@ const BranchBlock = () => {
       status={!expanded && currentBranch != null ? 'successful' : 'incomplete'}
       last={currentBranch == null}
     >
-      {loadBranchesUI}
+      {listBranchesUI}
     </Block>
-  )
-}
-
-const PullIcon = () => {
-  return (
-    <svg width='16' height='13' viewBox='0 0 16 13' fill='none' xmlns='http://www.w3.org/2000/svg'>
-      <path
-        d='M6.91409 1.05206C5.22083 1.05206 3.84816 2.38249 3.84816 4.02365C3.84816 4.16836 3.85879 4.31037 3.87927 4.44905L3.96426 5.02454L3.36455 5.01442L3.33717 5.01419C2.49054 5.01419 1.8042 5.6794 1.8042 6.49998C1.8042 7.32057 2.49054 7.98578 3.33717 7.98578H5.89212V8.97632H3.33717C1.92611 8.97632 0.782227 7.86763 0.782227 6.49998C0.782227 5.30185 1.66014 4.30245 2.8265 4.07313C2.82629 4.05666 2.82618 4.04017 2.82618 4.02365C2.82618 1.83543 4.6564 0.0615234 6.91409 0.0615234C8.48363 0.0615234 9.84558 0.918668 10.5306 2.17511C10.8431 2.08876 11.1728 2.04259 11.513 2.04259C13.4885 2.04259 15.0899 3.59476 15.0899 5.50945C15.0899 7.42415 13.4885 8.97632 11.513 8.97632H9.98003V7.98578H11.513C12.9241 7.98578 14.0679 6.87709 14.0679 5.50945C14.0679 4.14181 12.9241 3.03312 11.513 3.03312C11.1402 3.03312 10.7874 3.11019 10.4694 3.24831L9.97454 3.46326L9.78253 2.97172C9.34396 1.84897 8.22441 1.05206 6.91409 1.05206Z'
-        fill='#2D2E33'
-      />
-      <path
-        d='M8.44706 6.00472C8.44706 5.73119 8.21828 5.50945 7.93607 5.50945C7.65386 5.50945 7.42508 5.73119 7.42508 6.00472V11.2475L6.25344 10.1119C6.05389 9.9185 5.73035 9.9185 5.53079 10.1119C5.33124 10.3053 5.33124 10.6189 5.53079 10.8123L7.57475 12.7934C7.67058 12.8863 7.80055 12.9384 7.93607 12.9384C8.0716 12.9384 8.20157 12.8863 8.2974 12.7934L10.3414 10.8123C10.5409 10.6189 10.5409 10.3053 10.3414 10.1119C10.1418 9.9185 9.81826 9.9185 9.6187 10.1119L8.44706 11.2475V6.00472Z'
-        fill='#2D2E33'
-      />
-    </svg>
   )
 }
 
@@ -373,7 +368,7 @@ const RemoteChangesBlock = () => {
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const bothModified = React.useMemo(() => {
     const upstreamList = githubFileChangesToList(upstreamChanges)
     const localList = githubFileChangesToList(githubFileChanges)
@@ -405,6 +400,10 @@ const RemoteChangesBlock = () => {
   )
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
+  const branchLoaded = useEditorState(
+    (store) => store.editor.githubSettings.branchLoaded,
+    'Github branchLoaded',
+  )
   const commit = useEditorState(
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
@@ -418,7 +417,7 @@ const RemoteChangesBlock = () => {
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
-  if (!githubAuthenticated || branch == null) {
+  if (!githubAuthenticated || !branchLoaded) {
     return null
   }
   return (
@@ -449,14 +448,19 @@ const RemoteChangesBlock = () => {
             disabled={githubWorking}
             spotlight
             highlight
-            style={{ gap: 4 }}
+            style={{
+              gap: 4,
+              background: colorTheme.secondaryOrange.value,
+              borderRadius: 3,
+              color: colorTheme.bg0.value,
+            }}
             onMouseUp={triggerUpdateAgainstGithub}
           >
             {isGithubUpdating(githubOperations) ? (
               <GithubSpinner />
             ) : (
               <>
-                <PullIcon />
+                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 Pull Remote Changes
               </>
             )}
@@ -467,23 +471,8 @@ const RemoteChangesBlock = () => {
   )
 }
 
-const PushIcon = () => {
-  return (
-    <svg width='15' height='11' viewBox='0 0 15 11' fill='none' xmlns='http://www.w3.org/2000/svg'>
-      <path
-        d='M6.41409 1.05206C4.72083 1.05206 3.34816 2.38249 3.34816 4.02365C3.34816 4.16836 3.35879 4.31037 3.37927 4.44905L3.46426 5.02454L2.86455 5.01442L2.83717 5.01419C1.99054 5.01419 1.3042 5.6794 1.3042 6.49998C1.3042 7.32057 1.99054 7.98578 2.83717 7.98578H5.39212V8.97632H2.83717C1.42611 8.97632 0.282227 7.86763 0.282227 6.49998C0.282227 5.30185 1.16014 4.30245 2.3265 4.07313C2.32629 4.05666 2.32618 4.04017 2.32618 4.02365C2.32618 1.83543 4.1564 0.0615234 6.41409 0.0615234C7.98363 0.0615234 9.34558 0.918668 10.0306 2.17511C10.3431 2.08876 10.6728 2.04259 11.013 2.04259C12.9885 2.04259 14.5899 3.59476 14.5899 5.50945C14.5899 7.42415 12.9885 8.97632 11.013 8.97632H9.48003V7.98578H11.013C12.4241 7.98578 13.5679 6.87709 13.5679 5.50945C13.5679 4.14181 12.4241 3.03312 11.013 3.03312C10.6402 3.03312 10.2874 3.11019 9.9694 3.24831L9.47454 3.46326L9.28253 2.97172C8.84396 1.84897 7.72441 1.05206 6.41409 1.05206Z'
-        fill='black'
-      />
-      <path
-        d='M7.94706 10.4432C7.94706 10.7167 7.71828 10.9384 7.43607 10.9384C7.15386 10.9384 6.92508 10.7167 6.92508 10.4432V7.82179V5.2004L5.75344 6.33599C5.55389 6.5294 5.23035 6.5294 5.03079 6.33599C4.83124 6.14258 4.83124 5.82899 5.03079 5.63558L7.07475 3.65451C7.17058 3.56163 7.30055 3.50945 7.43607 3.50945C7.5716 3.50945 7.70157 3.56163 7.7974 3.65451L9.84135 5.63558C10.0409 5.82899 10.0409 6.14258 9.84135 6.33599C9.6418 6.5294 9.31826 6.5294 9.1187 6.33599L7.94706 5.2004V10.4432Z'
-        fill='black'
-      />
-    </svg>
-  )
-}
-
 const LocalChangesBlock = () => {
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const changesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),
     [githubFileChanges],
@@ -561,7 +550,12 @@ const LocalChangesBlock = () => {
     'Branch PRs',
   )
 
-  if (!githubAuthenticated || branch == null) {
+  const branchLoaded = useEditorState(
+    (store) => store.editor.githubSettings.branchLoaded,
+    'Github branchLoaded',
+  )
+
+  if (!githubAuthenticated || !branchLoaded) {
     return null
   }
 
@@ -582,10 +576,11 @@ const LocalChangesBlock = () => {
             changes={githubFileChanges}
             githubWorking={githubWorking}
           />
+          <div>Any unsaved files will be saved.</div>
           <StringInput
             testId='commit-message-input'
             placeholder='Commit message'
-            value={commitMessage || ''}
+            value={commitMessage ?? ''}
             onChange={updateCommitMessage}
           />
           {when(
@@ -616,14 +611,19 @@ const LocalChangesBlock = () => {
             disabled={githubWorking}
             spotlight
             highlight
-            style={{ gap: 4 }}
+            style={{
+              gap: 4,
+              background: colorTheme.secondaryBlue.value,
+              borderRadius: 3,
+              color: colorTheme.bg0.value,
+            }}
             onMouseUp={triggerSaveToGithub}
           >
             {isGithubCommishing(githubOperations) ? (
               <GithubSpinner />
             ) : (
               <>
-                <PushIcon />
+                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 Commit and Push
               </>
             )}
@@ -649,7 +649,7 @@ const PullRequestButton = () => {
     }),
     'GH repo and branch',
   )
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const changesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),
     [githubFileChanges],
@@ -662,7 +662,12 @@ const PullRequestButton = () => {
     }
   }, [repo, branch])
 
-  if (repo == null || branch == null) {
+  const branchLoaded = useEditorState(
+    (store) => store.editor.githubSettings.branchLoaded,
+    'Github branch loaded',
+  )
+
+  if (repo == null || branch == null || !branchLoaded) {
     return null
   }
   if (hasLocalChanges || repo.defaultBranch === branch) {
@@ -674,6 +679,202 @@ const PullRequestButton = () => {
         Open a Pull Request
       </Button>
     </UIGridRow>
+  )
+}
+
+const BranchNotLoadedBlock = () => {
+  const { branchName, branches, branchLoaded, dispatch, githubOperations, githubRepo } =
+    useEditorState(
+      (store) => ({
+        branchName: store.editor.githubSettings.branchName,
+        branchLoaded: store.editor.githubSettings.branchLoaded,
+        dispatch: store.dispatch,
+        branches: store.editor.githubData.branches,
+        githubOperations: store.editor.githubOperations,
+        githubRepo: store.editor.githubSettings.targetRepository,
+      }),
+      'BranchNotLoadedBlock data',
+    )
+  const githubWorking = React.useMemo(() => githubOperations.length > 0, [githubOperations])
+
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'Built-in dependencies',
+  )
+
+  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
+
+  const loadFromBranch = React.useCallback(() => {
+    if (githubWorking) {
+      return
+    }
+    if (githubRepo != null && branchName != null) {
+      void updateProjectWithBranchContent(
+        dispatch,
+        githubRepo,
+        branchName,
+        false,
+        currentDependencies,
+        builtInDependencies,
+      )
+    }
+  }, [dispatch, githubRepo, branchName, githubWorking, currentDependencies, builtInDependencies])
+
+  const isANewBranch = React.useMemo(() => {
+    if (branches == null) {
+      return true
+    }
+    return !branches.some((b) => b.name === branchName)
+  }, [branches, branchName])
+
+  const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
+  React.useEffect(() => {
+    setCommitMessage(null)
+  }, [branchName])
+  const updateCommitMessage = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCommitMessage(e.target.value),
+    [],
+  )
+
+  const pushToBranch = React.useCallback(() => {
+    if (githubWorking) {
+      return
+    }
+    if (githubRepo == null || branchName == null) {
+      return
+    }
+    dispatch(
+      [
+        EditorActions.saveToGithub(
+          githubRepo,
+          branchName,
+          commitMessage ?? 'Committed automatically',
+        ),
+      ],
+      'everyone',
+    )
+  }, [dispatch, githubRepo, branchName, githubWorking, commitMessage])
+
+  type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
+
+  const [flow, setFlow] = React.useState<LoadFlow | null>(null)
+  const updateFlow = React.useCallback(
+    (f: LoadFlow | null) => () => {
+      setFlow(f)
+    },
+    [],
+  )
+  useEffect(() => {
+    setFlow(isANewBranch ? 'createBranch' : null)
+  }, [branchName, isANewBranch])
+
+  if (!branchName || branchLoaded) {
+    return null
+  }
+  return (
+    <Block title='Contents' status='pending' expanded={true} last={true}>
+      <FlexColumn style={{ gap: 8, width: '100%' }}>
+        {flow == null ? (
+          <>
+            <Button
+              spotlight
+              highlight
+              style={{ gap: 4, padding: '0 6px' }}
+              onClick={updateFlow('loadFromBranch')}
+            >
+              {<Icons.Download style={{ width: 19, height: 19 }} />}
+              Load from Branch
+            </Button>
+
+            <FlexColumn style={{ gap: 2 }}>
+              <Button
+                spotlight
+                highlight
+                style={{ gap: 4, padding: '0 6px' }}
+                onClick={updateFlow('pushToBranch')}
+              >
+                {<Icons.Upload style={{ width: 19, height: 19 }} />}
+                Or Push to {isANewBranch ? 'New ' : ''}Branch
+              </Button>
+            </FlexColumn>
+          </>
+        ) : (
+          <>
+            {when(
+              flow === 'loadFromBranch',
+              <UIGridRow padded={false} variant='<-------------1fr------------->'>
+                Loading from branch will replace your current project contents with the ones on
+                Github.
+                <Button
+                  disabled={githubWorking}
+                  spotlight
+                  highlight
+                  style={{
+                    marginTop: 6,
+                    gap: 4,
+                    padding: '0 6px',
+                    color: colorTheme.errorForeground.value,
+                  }}
+                  onClick={loadFromBranch}
+                >
+                  Yes, Load from this Branch.
+                </Button>
+              </UIGridRow>,
+            )}
+            {when(
+              flow === 'pushToBranch',
+              <UIGridRow padded={false} variant='<-------------1fr------------->'>
+                Pushing to the branch will store your project on Github, replacing the current
+                branch contents.
+                <StringInput
+                  testId='commit-message-input'
+                  placeholder='Commit message'
+                  value={commitMessage ?? ''}
+                  onChange={updateCommitMessage}
+                />
+                <Button
+                  disabled={githubWorking}
+                  spotlight
+                  highlight
+                  style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
+                  onClick={pushToBranch}
+                >
+                  {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                  Push to Branch
+                </Button>
+              </UIGridRow>,
+            )}
+            {when(
+              flow === 'createBranch',
+              <UIGridRow padded={false} variant='<-------------1fr------------->'>
+                <StringInput
+                  testId='commit-message-input'
+                  placeholder='Commit message'
+                  value={commitMessage ?? ''}
+                  onChange={updateCommitMessage}
+                />
+                <Button
+                  disabled={githubWorking}
+                  spotlight
+                  highlight
+                  style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
+                  onClick={pushToBranch}
+                >
+                  {<Icons.Upload style={{ width: 19, height: 19 }} />}
+                  Create Branch and Push
+                </Button>
+              </UIGridRow>,
+            )}
+            {when(
+              flow !== 'createBranch',
+              <Button spotlight highlight onClick={updateFlow(null)} style={{ marginTop: 6 }}>
+                Cancel
+              </Button>,
+            )}
+          </>
+        )}
+      </FlexColumn>
+    </Block>
   )
 }
 
@@ -717,7 +918,15 @@ export const GithubPane = React.memo(() => {
           </FlexRow>
           {when(
             githubUser != null,
-            <Button highlight style={{ gap: 4, padding: '0 6px' }} onClick={openGithubProfile}>
+            <Button
+              style={{ gap: 4, padding: '0 6px' }}
+              onClick={openGithubProfile}
+              css={{
+                '&:hover': {
+                  opacity: 0.6,
+                },
+              }}
+            >
               @{githubUser?.login}
               {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
             </Button>,
@@ -728,6 +937,7 @@ export const GithubPane = React.memo(() => {
         <AccountBlock />
         <RepositoryBlock />
         <BranchBlock />
+        <BranchNotLoadedBlock />
         <RemoteChangesBlock />
         <LocalChangesBlock />
         <PullRequestBlock />

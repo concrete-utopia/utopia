@@ -227,7 +227,6 @@ export var storyboard = (
 `,
       'await-first-dom-report',
     )
-
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
@@ -235,7 +234,6 @@ export var storyboard = (
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
-
     const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId(true))
     const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true))
 
@@ -292,6 +290,40 @@ export var storyboard = (
     `
 
     const editor = await renderTestEditorWithCode(projectWithGapFromCode, 'await-first-dom-report')
+    const gapControls = [
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
+      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+    ]
+
+    expect(gapControls).toEqual([])
+  })
+
+  it('gap controls are not present when elements are wrapped', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithWrappedLayout(true),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
+    const divBounds = div.getBoundingClientRect()
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: divBounds.x + 5,
+      y: divBounds.y + 5,
+    })
+
+    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId(true))
+    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId(true))
+
+    expect(gapControlContainer).toBeTruthy()
+    expect(gapControlHandles.length).toEqual(1)
+  })
+
+  it('gap controls are present when elements are not wrapped', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithWrappedLayout(false),
+      'await-first-dom-report',
+    )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
@@ -319,6 +351,9 @@ export var storyboard = (
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithGapFromCode)
+    const gapControls = [...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)]
+
+    expect(gapControls.length).toEqual(3)
   })
 
   it('adjusts gap by dragging the handle', async () => {
@@ -686,4 +721,67 @@ async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
 
   mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
   await editor.getDispatchFollowUpActionsFinished()
+}
+
+function projectWithWrappedLayout(wrap: boolean): string {
+  return `import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  
+  export var storyboard = (
+    <Storyboard data-uid='Storyboard'>
+      <div
+        data-testid='${DivTestId}'
+        style={{
+          backgroundColor: '#0091FFAA',
+          position: 'absolute',
+          width: 307,
+          height: 234,
+          display: 'flex',
+          flexWrap: '${wrap ? 'wrap' : 'nowrap'}',
+          gap: 41,
+          left: 43,
+          top: 201,
+        }}
+        data-uid='cca'
+      >
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: 77,
+            height: 51,
+            contain: 'layout',
+          }}
+          data-uid='a58'
+        />
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: 51,
+            height: 88,
+            contain: 'layout',
+          }}
+          data-uid='47c'
+        />
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: 40,
+            height: 59,
+            contain: 'layout',
+          }}
+          data-uid='121'
+        />
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            width: 36,
+            height: 52,
+            contain: 'layout',
+          }}
+          data-uid='e7f'
+        />
+      </div>
+    </Storyboard>
+  )
+  `
 }

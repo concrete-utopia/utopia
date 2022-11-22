@@ -20,7 +20,7 @@ import {
   RepositoryEntry,
 } from '../../../../core/shared/github'
 import { when } from '../../../../utils/react-conditionals'
-import { Button, colorTheme, FlexColumn, StringInput } from '../../../../uuiui'
+import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
@@ -87,7 +87,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       )
     } else {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
-      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null))
+      dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null, isAnotherRepo))
     }
   }, [dispatch, props.fullName, props.defaultBranch, currentRepo, githubWorking])
 
@@ -114,7 +114,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       <div>
         <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
-          {props.private ? 'private' : 'public'}
+          {props.isPrivate ? 'private' : 'public'}
           {props.updatedAt == null ? null : (
             <>
               {' '}
@@ -202,8 +202,9 @@ export const RepositoryListing = React.memo(
           } else {
             const additionalEntry: RepositoryRowProps = {
               fullName: parsedRepo.repository,
+              name: parsedRepo.repository,
               avatarUrl: null,
-              private: true,
+              isPrivate: true,
               description: null,
               updatedAt: null,
               defaultBranch: 'main',
@@ -241,7 +242,7 @@ export const RepositoryListing = React.memo(
 
     return (
       <FlexColumn style={{ gap: 4 }}>
-        <UIGridRow padded={false} variant={'<----------1fr---------><-auto->'}>
+        <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <StringInput
             placeholder={
               filteredRepositoriesWithSpecialCases == null
@@ -255,15 +256,6 @@ export const RepositoryListing = React.memo(
             name={'repositories-input'}
             value={targetRepository}
           />
-          <Button
-            spotlight
-            highlight
-            style={{ padding: '0 6px' }}
-            disabled={githubWorking}
-            onMouseDown={refreshRepos}
-          >
-            {isLoadingRepositories ? <GithubSpinner /> : <RefreshIcon />}
-          </Button>
         </UIGridRow>
         <FlexColumn
           style={{
@@ -285,6 +277,21 @@ export const RepositoryListing = React.memo(
             })
           )}
         </FlexColumn>
+        <Button
+          spotlight
+          highlight
+          style={{ padding: '0 6px' }}
+          disabled={githubWorking}
+          onMouseDown={refreshRepos}
+        >
+          {isLoadingRepositories ? (
+            <GithubSpinner />
+          ) : (
+            <FlexRow style={{ gap: 4 }}>
+              <RefreshIcon /> Refresh list
+            </FlexRow>
+          )}
+        </Button>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
             Create new repository on Github.

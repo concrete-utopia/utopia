@@ -813,7 +813,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     dragElement(
       canvasControlsLayer,
       startPoint,
-      windowPoint({ x: 0, y: 0 }),
+      windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
       () => {
         const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
