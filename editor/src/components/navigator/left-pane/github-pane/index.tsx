@@ -675,31 +675,34 @@ const LocalChangesBlock = () => {
               )}
             </div>,
           )}
-          <Button
-            disabled={isGithubCommishing(githubOperations)}
-            spotlight
-            highlight
-            style={{
-              gap: 4,
-              background: colorTheme.secondaryBlue.value,
-              borderRadius: 3,
-              color: colorTheme.fg9.value,
-            }}
-            onMouseUp={triggerSaveToGithub}
-          >
-            {isGithubCommishing(githubOperations) ? (
-              <GithubSpinner />
-            ) : (
-              <>
-                <PushIcon />
-                Commit and Push
-              </>
-            )}
-          </Button>
-          <Button onClick={togglePushToNewBranch}>
-            {when(pushToNewBranch, <span>Or Push To Current Branch</span>)}
-            {unless(pushToNewBranch, <span>Or Push To New Branch</span>)}
-          </Button>
+          <div>
+            <Button
+              disabled={isGithubCommishing(githubOperations)}
+              spotlight
+              highlight
+              style={{
+                gap: 4,
+                background: colorTheme.secondaryBlue.value,
+                borderRadius: 3,
+                color: colorTheme.fg9.value,
+              }}
+              onMouseUp={triggerSaveToGithub}
+            >
+              {isGithubCommishing(githubOperations) ? (
+                <GithubSpinner />
+              ) : (
+                <>
+                  <PushIcon />
+                  Commit and Push
+                </>
+              )}
+            </Button>
+            <div style={{ textAlign: 'center' }}>or</div>
+            <Button onClick={togglePushToNewBranch} spotlight highlight>
+              {when(pushToNewBranch, <span>Push To Current Branch</span>)}
+              {unless(pushToNewBranch, <span>Push To New Branch</span>)}
+            </Button>
+          </div>
         </FlexColumn>,
       )}
     </Block>
