@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
+import { secondaryErrorStyle } from 'src/third-party/react-error-overlay/styles'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
@@ -25,7 +26,14 @@ interface ProjectTitleProps {}
 
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
   return (
-    <div style={{ fontWeight: 400, fontSize: 12, padding: '0 10px', color: colorTheme.fg0.value }}>
+    <div
+      style={{
+        fontWeight: 400,
+        fontSize: 12,
+        padding: '0 10px',
+        color: colorTheme.fg0.value,
+      }}
+    >
       {children}
     </div>
   )
@@ -114,15 +122,15 @@ const TitleBar = React.memo(() => {
             {when(
               hasUpstreamChanges,
               <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
-                {numberOfUpstreamChanges}
-                <> Remote Change{numberOfUpstreamChanges !== 1 ? 's' : ''}</>
+                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
               <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
-                {numberOfDownstreamChanges}
-                <> Local Change{numberOfDownstreamChanges !== 1 ? 's' : ''}</>
+                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                <>Push Local</>
               </RoundButton>,
             )}
           </>,

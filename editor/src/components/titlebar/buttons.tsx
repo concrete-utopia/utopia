@@ -50,10 +50,10 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
   const bgColor = color == null ? {} : { backgroundColor: color }
   const ButtonEl = styled(TitleButton)((props) => ({
     padding: '3px 12px',
-    //margin: '0px 3px',
-    height: 22,
+    gap: 5,
+    height: 24,
     borderRadius: 18,
-    color: colorTheme.fg9.value,
+    color: colorTheme.bg0.value,
     ...bgColor,
   }))
 
