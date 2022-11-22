@@ -1006,6 +1006,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     branchContents: currentEditor.branchContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
+    projectChecksums: currentEditor.projectChecksums,
   }
 }
 
