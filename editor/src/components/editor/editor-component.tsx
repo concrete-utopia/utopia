@@ -415,6 +415,7 @@ const useGithubData = (): void => {
     branchName,
     githubChecksums,
     githubUserDetails,
+    lastRefreshedCommit,
   } = useEditorState(
     (store) => ({
       githubAuthenticated: store.userState.githubState.authenticated,
@@ -423,6 +424,7 @@ const useGithubData = (): void => {
       branchName: store.editor.githubSettings.branchName,
       githubChecksums: store.editor.githubChecksums,
       githubUserDetails: store.editor.githubData.githubUserDetails,
+      lastRefreshedCommit: store.editor.githubData.lastRefreshedCommit,
     }),
     'Github data',
   )
@@ -435,8 +437,17 @@ const useGithubData = (): void => {
       branchName,
       githubChecksums,
       githubUserDetails,
+      lastRefreshedCommit,
     )
-  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums, githubUserDetails])
+  }, [
+    dispatch,
+    githubAuthenticated,
+    githubRepo,
+    branchName,
+    githubChecksums,
+    githubUserDetails,
+    lastRefreshedCommit,
+  ])
 
   // perform a straight refresh then the repo or the auth change
   React.useEffect(() => refresh(), [refresh])
