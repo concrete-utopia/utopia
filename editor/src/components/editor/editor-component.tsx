@@ -427,22 +427,6 @@ const useGithubData = (): void => {
     'Github data',
   )
 
-  // normalize github data
-  React.useEffect(() => {
-    dispatch([
-      EditorActions.updateGithubSettings({
-        ...emptyGithubSettings(),
-        targetRepository: githubRepo,
-        branchName: githubRepo != null ? branchName : null,
-      }),
-      EditorActions.updateGithubChecksums(null),
-      EditorActions.updateGithubData({
-        upstreamChanges: null,
-        currentBranchPullRequests: null,
-      }),
-    ])
-  }, [dispatch, githubRepo, branchName])
-
   const refresh = React.useCallback(() => {
     void refreshGithubData(
       dispatch,
