@@ -8,10 +8,10 @@ import { projectDependenciesSelector } from '../../../../core/shared/dependencie
 import {
   getBranchesForGithubRepository,
   getGithubFileChangesCount,
-  githubFileChangesSelector,
   githubFileChangesToList,
   updateProjectAgainstGithub,
   updateProjectWithBranchContent,
+  useGithubFileChanges,
 } from '../../../../core/shared/github'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -368,7 +368,7 @@ const RemoteChangesBlock = () => {
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const bothModified = React.useMemo(() => {
     const upstreamList = githubFileChangesToList(upstreamChanges)
     const localList = githubFileChangesToList(githubFileChanges)
@@ -472,7 +472,7 @@ const RemoteChangesBlock = () => {
 }
 
 const LocalChangesBlock = () => {
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const changesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),
     [githubFileChanges],
@@ -649,7 +649,7 @@ const PullRequestButton = () => {
     }),
     'GH repo and branch',
   )
-  const githubFileChanges = useEditorState(githubFileChangesSelector, 'Github file changes')
+  const githubFileChanges = useGithubFileChanges()
   const changesCount = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges),
     [githubFileChanges],
