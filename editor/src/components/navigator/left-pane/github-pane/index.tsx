@@ -160,7 +160,7 @@ const BranchBlock = () => {
       repositoryData:
         store.editor.githubData.publicRepositories.find(
           (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
-        ) || null,
+        ) ?? null,
     }),
     'Github branch',
   )
@@ -715,7 +715,7 @@ const PullRequestButton = () => {
       repo:
         store.editor.githubData.publicRepositories.find(
           (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
-        ) || null,
+        ) ?? null,
       branch: store.editor.githubSettings.branchName,
     }),
     'GH repo and branch',
