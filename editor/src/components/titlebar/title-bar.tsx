@@ -17,7 +17,7 @@ import {
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { togglePanel } from '../editor/actions/action-creators'
-import { EditorStorePatched } from '../editor/store/editor-state'
+import { EditorStorePatched, githubRepoFullName } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
@@ -40,17 +40,24 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges } = useEditorState(
+  const { dispatch, loginState, projectName, upstreamChanges, currentBranch } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       loginState: store.userState.loginState,
       projectName: store.editor.projectName,
       upstreamChanges: store.editor.githubData.upstreamChanges,
+      currentBranch: store.editor.githubSettings.branchName,
     }),
     'TitleBar',
   )
 
   const userPicture = useGetUserPicture()
+
+  const repo = useEditorState(
+    (store) => store.editor.githubSettings.targetRepository,
+    'RepositoryBlock repo',
+  )
+  const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
@@ -145,7 +152,15 @@ const TitleBar = React.memo(() => {
           height: 27,
         }}
       >
-        <ProjectTitle>{projectName}</ProjectTitle>
+        {currentBranch ? (
+          <SimpleFlexRow style={{ gap: 5 }}>
+            {repoName}
+            {<Icons.Branch style={{ width: 19, height: 19 }} />}
+            {currentBranch}
+          </SimpleFlexRow>
+        ) : (
+          <ProjectTitle>{projectName}</ProjectTitle>
+        )}
       </SimpleFlexRow>
       <div style={{ flexGrow: 1 }} />
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
