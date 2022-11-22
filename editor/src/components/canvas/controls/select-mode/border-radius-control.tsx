@@ -1,4 +1,5 @@
 import React from 'react'
+import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifier } from '../../../../utils/modifiers'
@@ -66,7 +67,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const colorTheme = useColorTheme()
 
-  const backgroundShown = hoveredViews.includes(selectedElement)
+  const backgroundShown = hoveredViews.some((p) => EP.pathsEqual(p, selectedElement))
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
