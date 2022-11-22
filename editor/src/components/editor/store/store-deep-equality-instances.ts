@@ -315,7 +315,7 @@ import {
   FileUploadInfo,
   FileOverwriteModal,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   FileRevertModal,
   fileRevertModal,
   GithubData,
@@ -2456,7 +2456,7 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
+const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> = (
   oldAttribute,
   newAttribute,
 ) => {

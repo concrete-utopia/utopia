@@ -37,7 +37,7 @@ import {
   EditorStorePatched,
   emptyGithubData,
   emptyGithubSettings,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   GithubOperation,
   GithubRepo,
@@ -1203,7 +1203,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  branchChecksums: GithubChecksums | null,
+  branchChecksums: FileChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {

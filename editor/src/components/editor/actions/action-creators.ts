@@ -237,7 +237,7 @@ import type {
   RightMenuTab,
   Theme,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   UserConfiguration,
 } from '../store/editor-state'
@@ -1508,14 +1508,14 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: GithubChecksums | null): UpdateGithubChecksums {
+export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,
   }
 }
 
-export function updateProjectChecksums(checksums: GithubChecksums | null): UpdateProjectChecksums {
+export function updateProjectChecksums(checksums: FileChecksums | null): UpdateProjectChecksums {
   return {
     action: 'UPDATE_PROJECT_CHECKSUMS',
     checksums: checksums,

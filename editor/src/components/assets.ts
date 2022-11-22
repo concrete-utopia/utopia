@@ -18,7 +18,7 @@ import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
-import { GithubChecksums } from './editor/store/editor-state'
+import { FileChecksums } from './editor/store/editor-state'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -48,11 +48,11 @@ function getSHA1Checksum(contents: string): string {
 
 export function getProjectContentsChecksums(
   tree: ProjectContentTreeRoot,
-  currentChecksums: GithubChecksums | null,
-): { checksums: GithubChecksums; changed: boolean } {
+  currentChecksums: FileChecksums | null,
+): { checksums: FileChecksums; changed: boolean } {
   const contents = treeToContents(tree)
 
-  const checksums: GithubChecksums = currentChecksums ? { ...currentChecksums } : {}
+  const checksums: FileChecksums = currentChecksums ? { ...currentChecksums } : {}
 
   let changed = false
 
@@ -81,8 +81,8 @@ export function getProjectContentsChecksums(
 }
 
 export function deriveGithubFileChanges(
-  projectChecksums: GithubChecksums,
-  githubChecksums: GithubChecksums | null,
+  projectChecksums: FileChecksums,
+  githubChecksums: FileChecksums | null,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
   if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {

@@ -13,7 +13,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import {
   getAllCodeEditorErrors,
   getOpenFilename,
-  GithubChecksums,
+  FileChecksums,
   GithubRepo,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'

@@ -1224,9 +1224,9 @@ export interface FileChecksum {
   sha: string
 }
 
-export type GithubChecksums = {
+export type FileChecksums = {
   [filename: string]: FileChecksum
-} // key = filename, value = sha1 hash of the file
+}
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1299,8 +1299,8 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: GithubChecksums | null
-  projectChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
+  projectChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
 }
@@ -1374,11 +1374,11 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: GithubChecksums | null,
+  githubChecksums: FileChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
-  projectChecksums: GithubChecksums | null,
+  projectChecksums: FileChecksums | null,
 ): EditorState {
   return {
     id: id,
@@ -2042,7 +2042,7 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
 }
 
