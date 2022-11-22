@@ -7,7 +7,6 @@ export type FeatureName =
   | 'Debug mode – Performance Marks'
   | 'Dragging Reparents By Default'
   | 'Dragging Shows Overlay'
-  | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
   | 'Canvas Strategies'
@@ -18,7 +17,6 @@ export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Debug mode – Redux Devtools',
   'Debug mode – Performance Marks',
-  'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Canvas Strategies',
@@ -30,7 +28,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug mode – Performance Marks': false,
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
-  'Advanced Resize Box': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies': true,
