@@ -81,7 +81,7 @@ export const TestMenu = React.memo(() => {
     <div
       style={{
         borderRadius: '15px',
-        paddingLeft: 8,
+        paddingLeft: 11,
         paddingRight: 8,
         height: 25,
         width: 84,
@@ -92,7 +92,7 @@ export const TestMenu = React.memo(() => {
         color: '#95D4FF',
         fontSize: 8,
         fontWeight: 600,
-        gap: 8,
+        gap: 11,
       }}
     >
       <span style={{ fontWeight: 800 }}>DEVELOPMENT</span>
