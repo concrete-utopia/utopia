@@ -16,7 +16,6 @@ import {
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
-import { SelectModeControlContainer } from './select-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { useEditorState } from '../../editor/store/store-hook'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -45,7 +44,6 @@ import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-st
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
-import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
@@ -351,7 +349,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {unless(dragging, <LayoutParentControl />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
           <GuidelineControls />
-          <OutlineHighlightControl />
           <ZeroSizedElementControls.control showAllPossibleElements={false} />
           {when(
             isSelectOrInsertMode(props.editor.mode),
