@@ -431,7 +431,7 @@ const RemoteChangesBlock = () => {
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
-  if (!githubAuthenticated || !branchLoaded) {
+  if (!githubAuthenticated || branch == null || !branchLoaded) {
     return null
   }
   return (
@@ -584,7 +584,7 @@ const LocalChangesBlock = () => {
     'Github branchLoaded',
   )
 
-  if (!githubAuthenticated || !branchLoaded) {
+  if (!githubAuthenticated || branch == null || !branchLoaded) {
     return null
   }
 
