@@ -47,6 +47,7 @@ import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
+import { LowPriorityStoreProvider } from './store/low-priority-store'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -309,9 +310,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             width: '100%',
           }}
         >
-          {(isChrome as boolean) ? null : <BrowserInfoBar />}
-          <LoginStatusBar />
-          <TitleBar />
+          <LowPriorityStoreProvider>
+            {(isChrome as boolean) ? null : <BrowserInfoBar />}
+            <LoginStatusBar />
+            <TitleBar />
+          </LowPriorityStoreProvider>
 
           <SimpleFlexRow
             className='editor-main-horizontal'

@@ -193,6 +193,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     dispatch: null as any,
     alreadySaved: null as any,
     builtInDependencies: [],
+    storeName: 'editor-store',
   }
 
   const storeHook = create<

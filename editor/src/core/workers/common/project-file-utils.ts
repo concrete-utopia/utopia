@@ -61,7 +61,14 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
   let imports: Imports = {}
   allKeys.forEach((key) => {
     let existingKeyToUse = key
-    const absoluteKey = stripExtension(absolutePathFromRelativePath(fileUri, false, key))
+    const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, key)
+    if (fileUri === rawAbsolutePath) {
+      // Prevent accidentally importing the current file
+      return
+    }
+
+    const absoluteKey = stripExtension(rawAbsolutePath)
+
     if (absoluteKeysToRelativeKeys[absoluteKey] == null) {
       absoluteKeysToRelativeKeys[absoluteKey] = key
     } else {

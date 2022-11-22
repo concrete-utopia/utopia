@@ -46,6 +46,7 @@ import {
   projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
+import { useEditorState } from '../../components/editor/store/store-hook'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from './dependencies'
 import { RequestedNpmDependency } from './npm-dependency-types'
@@ -735,7 +736,7 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
   dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
-export const githubFileChangesSelector = createSelector(
+const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
@@ -753,6 +754,14 @@ export const githubFileChangesSelector = createSelector(
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
+
+export function useGithubFileChanges(): GithubFileChanges | null {
+  const storeType = useEditorState((store) => store.storeName, 'useGithubFileChanges storeName')
+  if (storeType !== 'low-priority-store') {
+    throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
+  }
+  return useEditorState(githubFileChangesSelector, 'useGithubFileChanges')
+}
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'
 

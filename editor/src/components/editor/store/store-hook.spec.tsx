@@ -23,6 +23,7 @@ function createEmptyEditorStoreHook() {
     dispatch: null as any,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
+    storeName: 'editor-store',
   }
 
   const storeHook = create<
