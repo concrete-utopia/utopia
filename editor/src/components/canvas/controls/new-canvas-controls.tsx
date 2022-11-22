@@ -344,7 +344,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         <>
           {when(isSelectMode(props.editor.mode) && !anyStrategyActive, <PinLines />)}
           {when(isSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
-          <InsertionControls />
+          {when(isSelectMode(props.editor.mode), <InsertionControls />)}
           {renderHighlightControls()}
           {unless(dragging, <LayoutParentControl />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
