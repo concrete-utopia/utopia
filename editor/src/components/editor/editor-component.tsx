@@ -42,7 +42,12 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
+import {
+  emptyGithubSettings,
+  githubOperationLocksEditor,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
+} from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { refreshGithubData } from '../../core/shared/github'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'

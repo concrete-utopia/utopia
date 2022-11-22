@@ -940,7 +940,7 @@ export interface SetRefreshingDependencies {
 
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: GithubChecksums
+  checksums: GithubChecksums | null
 }
 
 export interface ResetCanvas {

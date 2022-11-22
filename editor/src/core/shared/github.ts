@@ -1226,7 +1226,7 @@ export async function refreshGithubData(
 export function disconnectGithubProjectActions(): EditorAction[] {
   return [
     updateGithubData(emptyGithubData()),
-    updateGithubChecksums({}),
+    updateGithubChecksums(null),
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]
