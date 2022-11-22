@@ -12,7 +12,6 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies'
   | 'Canvas Strategies Debug Panel'
-  | 'Canvas Selective Rerender'
   | 'Single child, contiguous parent: move parent'
   | 'Single child, zero sized parent: move parent'
 
@@ -26,7 +25,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies',
   'Canvas Strategies Debug Panel',
-  'Canvas Selective Rerender',
   'Single child, contiguous parent: move parent',
   'Single child, zero sized parent: move parent',
 ]
@@ -41,7 +39,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies': true,
   'Canvas Strategies Debug Panel': false,
-  'Canvas Selective Rerender': true,
   'Single child, contiguous parent: move parent': true,
   'Single child, zero sized parent: move parent': true,
 }
