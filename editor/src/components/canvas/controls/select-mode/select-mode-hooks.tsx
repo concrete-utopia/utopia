@@ -720,14 +720,7 @@ function useSelectOrLiveModeSelectAndHover(
 
           // then we set the selected views for the editor state, 1 frame later
           if (updatedSelection.length === 0) {
-            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-              'Click on empty canvas unfocuses',
-            )
-              ? [setFocusedElement(null)]
-              : []
-
-            editorActions.push(clearSelection())
-            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
+            editorActions.push(clearSelection(), setFocusedElement(null))
           } else {
             editorActions.push(selectComponents(updatedSelection, event.shiftKey))
           }

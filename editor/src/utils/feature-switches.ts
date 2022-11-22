@@ -10,7 +10,6 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
-  | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
   | 'Canvas Strategies Debug Panel'
@@ -27,7 +26,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
-  'Click on empty canvas unfocuses',
   'Insertion Plus Button',
   'Canvas Strategies',
   'Canvas Strategies Debug Panel',
@@ -45,7 +43,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Advanced Resize Box': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
-  'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': true,
   'Canvas Strategies Debug Panel': false,
