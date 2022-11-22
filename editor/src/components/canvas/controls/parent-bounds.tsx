@@ -4,11 +4,11 @@ import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-uti
 import * as EP from '../../../core/shared/element-path'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { CenteredCrossSVG } from './outline-control'
 
 interface ImmediateParentBoundsProps {
   targets: Array<ElementPath>
@@ -91,3 +91,46 @@ function drawBounds(parentFrame: CanvasRectangle, scale: number) {
     </CanvasOffsetWrapper>
   )
 }
+
+interface CenteredCrossSVGProps {
+  id: string
+  scale: number
+  centerX: number
+  centerY: number
+}
+
+const CenteredCrossSVG = React.memo(({ id, centerX, centerY, scale }: CenteredCrossSVGProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <svg
+      id={id}
+      style={{
+        left: centerX,
+        top: centerY,
+        position: 'absolute',
+        width: 6,
+        height: 6,
+        transformOrigin: 'center center',
+        transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
+      }}
+      width='4px'
+      height='4px'
+      viewBox='0 0 4 4'
+      version='1.1'
+    >
+      <g
+        stroke='none'
+        strokeWidth='1'
+        fill='none'
+        fillRule='evenodd'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+      >
+        <g id='cross_svg' stroke={colorTheme.primary.value}>
+          <line x1='0.5' y1='0.5' x2='3.5' y2='3.5'></line>
+          <line x1='0.5' y1='3.5' x2='3.5' y2='0.5'></line>
+        </g>
+      </g>
+    </svg>
+  )
+})
