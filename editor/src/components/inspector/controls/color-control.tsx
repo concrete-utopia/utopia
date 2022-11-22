@@ -101,7 +101,11 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
     <div
       key={props.id}
       id={`trigger-${props.id}`}
-      className={` hexField ${Utils.pathOr('', ['controlClassName'], props)}`}
+      className={` hexField ${Utils.pathOr(
+        '',
+        ['controlClassName'],
+        props,
+      )} ignore-react-onclickoutside-${props.id}`}
       style={props.style}
     >
       {picker}
@@ -128,7 +132,6 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
             margin: 1,
           }}
           onMouseDown={(e) => {
-            e.stopPropagation()
             if (props.controlStyles.interactive) {
               setPopupOpen((value) => !value)
             }
