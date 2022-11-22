@@ -23,16 +23,9 @@ export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Debug mode – Redux Devtools',
   'Debug mode – Performance Marks',
-  'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
-  'Click on empty canvas unfocuses',
-  'Insertion Plus Button',
   'Canvas Strategies Debug Panel',
-  'Keyboard up clears interaction',
-  'Canvas Selective Rerender',
-  'Single child, contiguous parent: move parent',
-  'Single child, zero sized parent: move parent',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {

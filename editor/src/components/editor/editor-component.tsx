@@ -296,8 +296,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{
-          height: '100%',
-          width: '100%',
+          height: '100vh',
+          width: '100vw',
           overscrollBehaviorX: 'contain',
           color: colorTheme.fg1.value,
         }}

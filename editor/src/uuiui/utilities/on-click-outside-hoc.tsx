@@ -6,6 +6,7 @@ import onClickOutside from 'react-onclickoutside'
 
 export interface OnClickOutsideHOCProps {
   onClickOutside?: (e: MouseEvent) => void
+  outsideClickIgnoreClass?: string
 }
 
 class OnClickOutsideHOCUnenhanced extends React.Component<
