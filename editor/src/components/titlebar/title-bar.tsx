@@ -4,7 +4,15 @@ import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
-import { Avatar, Button, colorTheme, SimpleFlexRow } from '../../uuiui'
+import {
+  Avatar,
+  Button,
+  colorTheme,
+  Icons,
+  LargerIcons,
+  SimpleFlexRow,
+  UNSAFE_getIconURL,
+} from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { togglePanel } from '../editor/actions/action-creators'
@@ -90,8 +98,16 @@ const TitleBar = React.memo(() => {
         }}
       >
         <RoundButton onClick={toggleLeftPanel}>
-          <img src='/editor/pyramid_dark@2x.png' width='24' alt='Main Menu' />
+          <img
+            style={{
+              userSelect: 'none',
+              display: 'block',
+            }}
+            width={30}
+            src={UNSAFE_getIconURL('utopia-logo', 'black', 'special', 60, 47)}
+          />
         </RoundButton>
+        <TestMenu />
         {when(
           loggedIn,
           <>
@@ -112,21 +128,18 @@ const TitleBar = React.memo(() => {
           </>,
         )}
       </SimpleFlexRow>
-
       <SimpleFlexRow
         style={{
-          paddingLeft: 20,
-          paddingRight: 20,
-          borderRadius: 10,
-          background: '#fafafa',
-          height: 31,
+          paddingLeft: 16,
+          paddingRight: 16,
+          borderRadius: 16,
+          background: colorTheme.bg1.value,
+          height: 27,
         }}
       >
         <ProjectTitle>{projectName}</ProjectTitle>
       </SimpleFlexRow>
-      <SimpleFlexRow style={{ display: 'flex', height: '100%', flexGrow: 1 }}>
-        <TestMenu />
-      </SimpleFlexRow>
+      <div style={{ flexGrow: 1 }} />
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
