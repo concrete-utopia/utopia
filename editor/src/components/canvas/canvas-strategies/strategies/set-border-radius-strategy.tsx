@@ -262,6 +262,7 @@ function borderRadiusFromElementProps(
     }),
     borderRadiusFromAllElementProps(allElementProps, elementPath),
   )
+
   const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
   const elementIsIntrinsicElementOrScene =
@@ -288,7 +289,6 @@ function borderRadiusFromElementProps(
         borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
       }
     }
-    return null
   }
 
   if (radiusFromProps != null) {
