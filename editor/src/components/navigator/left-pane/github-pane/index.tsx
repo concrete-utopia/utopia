@@ -100,10 +100,16 @@ const RepositoryBlock = () => {
   const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
   const [expanded, setExpanded] = React.useState(false)
-  const toggleExpanded = React.useCallback(() => setExpanded(!expanded), [expanded])
   React.useEffect(() => {
     setExpanded(repo == null)
   }, [repo])
+
+  const toggleExpanded = React.useCallback(() => {
+    if (!hasRepo) {
+      return
+    }
+    setExpanded(!expanded)
+  }, [expanded, hasRepo])
 
   if (!githubAuthenticated) {
     return null
@@ -165,13 +171,20 @@ const BranchBlock = () => {
   }, [dispatch, storedTargetGithubRepo])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
+
   const expanded = React.useMemo(() => {
     return expandedFlag && branchesForRepository != null
   }, [expandedFlag, branchesForRepository])
-  const toggleExpanded = React.useCallback(() => setExpandedFlag(!expanded), [expanded])
   React.useEffect(() => {
     setExpandedFlag(currentBranch == null)
   }, [currentBranch])
+
+  const toggleExpanded = React.useCallback(() => {
+    if (currentBranch == null) {
+      return
+    }
+    setExpandedFlag(!expanded)
+  }, [expanded, currentBranch])
 
   const [branchFilter, setBranchFilter] = React.useState('')
   const updateBranchFilter = React.useCallback(
