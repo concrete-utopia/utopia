@@ -141,40 +141,48 @@ const RepositoryBlock = () => {
 }
 
 const BranchBlock = () => {
-  const currentBranch = useEditorState(
-    (store) => store.editor.githubSettings.branchName,
+  const {
+    currentBranch,
+    dispatch,
+    githubOperations,
+    targetRepository,
+    branchesForRepository,
+    repositoryData,
+  } = useEditorState(
+    (store) => ({
+      currentBranch: store.editor.githubSettings.branchName,
+      dispatch: store.dispatch,
+      githubOperations: store.editor.githubOperations,
+      targetRepository: store.editor.githubSettings.targetRepository,
+      branchesForRepository: store.editor.githubData.branches,
+      repositoryData:
+        store.editor.githubData.publicRepositories.find(
+          (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
+        ) || null,
+    }),
     'Github branch',
-  )
-  const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
-  const githubOperations = useEditorState(
-    (store) => store.editor.githubOperations,
-    'Github operations',
   )
   const githubWorking = React.useMemo(() => {
     return githubOperations.length > 0
   }, [githubOperations])
-  const storedTargetGithubRepo = useEditorState((store) => {
-    return store.editor.githubSettings.targetRepository
-  }, 'GithubPane storedTargetGithubRepo')
-  const branchesForRepository = useEditorState(
-    (store) => store.editor.githubData.branches,
-    'BranchBlock branchesForRepository',
-  )
+
   const isLoadingBranches = React.useMemo(
     () => githubOperations.some((op) => op.name === 'listBranches'),
     [githubOperations],
   )
+
   const refreshBranches = React.useCallback(() => {
-    if (storedTargetGithubRepo != null) {
-      void getBranchesForGithubRepository(dispatch, storedTargetGithubRepo)
+    if (targetRepository != null) {
+      void getBranchesForGithubRepository(dispatch, targetRepository)
     }
-  }, [dispatch, storedTargetGithubRepo])
+  }, [dispatch, targetRepository])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
   const expanded = React.useMemo(() => {
     return expandedFlag && branchesForRepository != null
   }, [expandedFlag, branchesForRepository])
+
   React.useEffect(() => {
     setExpandedFlag(currentBranch == null)
   }, [currentBranch])
@@ -187,6 +195,7 @@ const BranchBlock = () => {
   }, [expanded, currentBranch])
 
   const [branchFilter, setBranchFilter] = React.useState('')
+
   const updateBranchFilter = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setBranchFilter(event.currentTarget.value)
@@ -194,18 +203,20 @@ const BranchBlock = () => {
     [setBranchFilter],
   )
 
-  const repo = useEditorState(
-    (store) =>
-      store.editor.githubData.publicRepositories.find(
-        (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
-      ) || null,
-    'GH repo',
-  )
+  const [branchesWereLoaded, setBranchesWereLoaded] = React.useState(false)
+  React.useEffect(() => {
+    setBranchesWereLoaded(false)
+  }, [currentBranch, targetRepository])
 
   const filteredBranches = React.useMemo(() => {
-    if (branchesForRepository == null || repo == null) {
+    if (isLoadingBranches && !branchesWereLoaded) {
       return []
     }
+    if (branchesForRepository == null || repositoryData == null) {
+      return []
+    }
+
+    setBranchesWereLoaded(true)
 
     let filtered = branchesForRepository.filter(
       (b) => branchFilter.length === 0 || b.name.includes(branchFilter),
@@ -213,7 +224,7 @@ const BranchBlock = () => {
 
     if (branchesForRepository.length === 0) {
       filtered.push({
-        name: repo.defaultBranch,
+        name: repositoryData.defaultBranch,
         new: true,
       })
     } else {
@@ -227,7 +238,7 @@ const BranchBlock = () => {
     }
 
     return filtered
-  }, [branchesForRepository, repo, branchFilter])
+  }, [branchesForRepository, branchesWereLoaded, repositoryData, branchFilter, isLoadingBranches])
 
   const clearBranch = React.useCallback(() => {
     dispatch(
@@ -285,7 +296,7 @@ const BranchBlock = () => {
             const loadingThisBranch = isGithubLoadingBranch(
               githubOperations,
               branch.name,
-              storedTargetGithubRepo,
+              targetRepository,
             )
             const isCurrent = currentBranch === branch.name
             return (
@@ -310,7 +321,7 @@ const BranchBlock = () => {
                   {when(isCurrent, <span>&rarr; </span>)}
                   {branch.name}
                   {when(
-                    repo?.defaultBranch === branch.name,
+                    repositoryData?.defaultBranch === branch.name,
                     <span style={{ color: colorTheme.fg7.value }}> (default)</span>,
                   )}
                 </Ellipsis>
@@ -353,7 +364,7 @@ const BranchBlock = () => {
       </UIGridRow>
     )
   }, [
-    storedTargetGithubRepo,
+    targetRepository,
     dispatch,
     githubWorking,
     githubOperations,
@@ -364,7 +375,7 @@ const BranchBlock = () => {
     updateBranchFilter,
     filteredBranches,
     clearBranch,
-    repo,
+    repositoryData,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -376,7 +387,7 @@ const BranchBlock = () => {
     return null
   }
 
-  if (storedTargetGithubRepo == null) {
+  if (targetRepository == null) {
     return null
   }
 
