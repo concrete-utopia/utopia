@@ -424,12 +424,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <PinLines />,
           )}
           {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
-          {when(
-            isFeatureEnabled('Canvas Strategies') &&
-              isFeatureEnabled('Insertion Plus Button') &&
-              props.editor.mode.type === 'select',
-            <InsertionControls />,
-          )}
+          {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <InsertionControls />)}
           {renderHighlightControls()}
           {unless(dragging, <LayoutParentControl />)}
           {when(

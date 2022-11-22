@@ -498,7 +498,7 @@ export class SelectModeControlContainer extends React.Component<
             />
           </>
         ) : null}
-        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls />)}
+        <InsertionControls />
         {this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
