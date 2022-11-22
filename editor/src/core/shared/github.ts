@@ -1204,27 +1204,23 @@ export async function refreshGithubData(
           const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
           if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
             upstreamChangesSuccess = true
-            // It was a successful call, but we got the same commit as last time.
-            if (previousCommitSha !== branchLatestContent.branch.originCommit) {
-              const upstreamChecksums = getProjectContentsChecksums(
-                branchLatestContent.branch.content,
-              )
-              const upstreamChanges = deriveGithubFileChanges(
-                branchChecksums,
-                upstreamChecksums,
-                {},
-              )
-              dispatch(
-                [
-                  updateGithubData({
-                    upstreamChanges: upstreamChanges,
-                    lastRefreshedCommit: branchLatestContent.branch.originCommit,
-                  }),
-                ],
-                'everyone',
-              )
-            }
+            const upstreamChecksums = getProjectContentsChecksums(
+              branchLatestContent.branch.content,
+            )
+            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
+            dispatch(
+              [
+                updateGithubData({
+                  upstreamChanges: upstreamChanges,
+                  lastRefreshedCommit: branchLatestContent.branch.originCommit,
+                }),
+              ],
+              'everyone',
+            )
           }
+        } else if (branchContentResponse.status === 304) {
+          // Not modified status means that the branch has the same commit SHA.
+          upstreamChangesSuccess = true
         }
       }
       if (!upstreamChangesSuccess) {

@@ -555,7 +555,7 @@ getDetailsOfGithubUser :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => Gi
 getDetailsOfGithubUser githubResources logger metrics pool userID = do
   result <- runExceptT $ do
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      userResult <- getGithubUser accessToken 
+      userResult <- getGithubUser accessToken
       pure $ githubUserFromGithubUserResult userResult
   pure $ either getGithubUserResponseFailureFromReason getGithubUserResponseSuccessFromContent result
 
