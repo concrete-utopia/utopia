@@ -42,6 +42,7 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
       offsetX={props.offsetX - colorPickerWidth}
       offsetY={props.offsetY}
       closePopup={closePopup}
+      outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.id}`}
     >
       <div
         id={props.id}
