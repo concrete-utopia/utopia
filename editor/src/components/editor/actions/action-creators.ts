@@ -1507,7 +1507,7 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+export function updateGithubChecksums(checksums: GithubChecksums | null): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,

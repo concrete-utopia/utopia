@@ -67,7 +67,7 @@ export function deriveGithubFileChanges(
   githubChecksums: GithubChecksums | null,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
-  if (githubChecksums == null) {
+  if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {
     return null
   }
 
