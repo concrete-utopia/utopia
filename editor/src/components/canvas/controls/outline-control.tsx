@@ -139,44 +139,6 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     [getDragStateFrame, props.componentMetadata],
   )
 
-  const getOverlayControls = React.useCallback(
-    (targets: ElementPath[]): Array<JSX.Element> => {
-      if (
-        isFeatureEnabled('Dragging Shows Overlay') &&
-        props.dragState != null &&
-        props.dragState?.type === 'MOVE_DRAG_STATE' &&
-        props.dragState.drag != null
-      ) {
-        let result: Array<JSX.Element> = []
-        fastForEach(targets, (target) => {
-          const rect = MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
-          if (rect != null) {
-            result.push(
-              <div
-                key={`${EP.toComponentId(target)}-overlay`}
-                style={{
-                  position: 'absolute',
-                  boxSizing: 'border-box',
-                  left: props.canvasOffset.x + rect.x,
-                  top: props.canvasOffset.y + rect.y,
-                  width: rect.width,
-                  height: rect.height,
-                  pointerEvents: 'none',
-                  backgroundColor: '#FFADAD80',
-                }}
-              />,
-            )
-          }
-        })
-
-        return result
-      } else {
-        return []
-      }
-    },
-    [props.canvasOffset.x, props.canvasOffset.y, props.componentMetadata, props.dragState],
-  )
-
   const parentHighlights: React.ReactNode = React.useMemo(() => {
     if (props.keysPressed['cmd'] || layoutInspectorSectionHovered) {
       return props.selectedViews.map((view) => {
@@ -294,7 +256,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.selectedViews,
   ])
 
-  let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
+  let selectionOutlines: Array<JSX.Element> = []
   const targetPaths =
     props.dragState != null ? props.dragState.draggedElements : props.selectedViews
 
