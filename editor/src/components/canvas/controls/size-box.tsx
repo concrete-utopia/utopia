@@ -87,84 +87,23 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     if (event.buttons === 1) {
-      const beforeOrAfter =
-        this.props.position.y === 0.5 ? this.props.position.x : this.props.position.y
-      const edge = beforeOrAfter === 0 ? 'before' : 'after'
-      const centerBasedResize = event.altKey
-      const keepAspectRatio = event.shiftKey || this.props.elementAspectRatioLocked
-      const enableSnapping = !event.metaKey
-      const canvasPositions = this.props.windowToCanvasPosition(event.nativeEvent)
-      const start: CanvasPoint = canvasPositions.canvasPositionRaw
-      const originalFrames = this.props.getOriginalFrames()
-      const isMultiSelect = this.props.selectedViews.length !== 1
-      const enabledDirection = this.props.enabledDirection
-      let propertyTargetOptions: Array<LayoutTargetableProp> = []
-      const layoutSystem = layoutSystemForPositionOrFlex(
-        this.props.targetComponentMetadata?.specialSizeMeasurements.position,
-        this.props.flexDirection,
-      )
-      if (enabledDirection.x === 1 && enabledDirection.y === 0) {
-        // Left to right resize.
-        propertyTargetOptions = getResizeOptions(layoutSystem, 'vertical', edge)
-      } else if (enabledDirection.x === 0 && enabledDirection.y === 1) {
-        // Up to down resize.
-        propertyTargetOptions = getResizeOptions(layoutSystem, 'horizontal', edge)
-      } else {
-        // Diagonal resize of some kind.
-      }
-      const targetProperty = safeIndex(
-        propertyTargetOptions,
-        this.props.propertyTargetSelectedIndex,
-      )
-      if (isFeatureEnabled('Canvas Strategies')) {
-        const startPoint = windowToCanvasCoordinates(
-          this.props.scale,
-          this.props.canvasOffset,
-          windowPoint(point(event.clientX, event.clientY)),
-        ).canvasPositionRounded
+      const startPoint = windowToCanvasCoordinates(
+        this.props.scale,
+        this.props.canvasOffset,
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
 
-        if (event.button !== 2) {
-          this.props.dispatch(
-            [
-              CanvasActions.createInteractionSession(
-                createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
-                  type: 'RESIZE_HANDLE',
-                  edgePosition: this.props.position,
-                }),
-              ),
-            ],
-            'everyone',
-          )
-        }
-      } else {
-        const newDragState = updateResizeDragState(
-          resizeDragState(
-            this.props.measureSize,
-            originalFrames,
-            this.props.position,
-            this.props.enabledDirection,
-            this.props.metadata,
-            this.props.selectedViews,
-            isMultiSelect,
-            [],
-          ),
-          start,
-          null,
-          targetProperty,
-          enableSnapping,
-          centerBasedResize,
-          keepAspectRatio,
-        )
-
+      if (event.button !== 2) {
         this.props.dispatch(
           [
-            CanvasActions.createDragState(newDragState),
-            setResizeOptionsTargetOptions(
-              propertyTargetOptions,
-              this.props.propertyTargetSelectedIndex,
+            CanvasActions.createInteractionSession(
+              createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
+                type: 'RESIZE_HANDLE',
+                edgePosition: this.props.position,
+              }),
             ),
           ],
-          'canvas',
+          'everyone',
         )
       }
       this.props.onResizeStart(this.props.measureSize, this.props.position)

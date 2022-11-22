@@ -35,23 +35,6 @@ export const CYCLE_HIERACHY_TARGETS_SHORTCUT = 'cycle-hierachy-targets'
 export const CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT = 'cycle-forward-sibling-targets'
 export const CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT = 'cycle-backward-sibling-targets'
 
-export const RESIZE_ELEMENT_UP_SHORTCUT = 'resize-element-up'
-export const RESIZE_ELEMENT_UP_MORE_SHORTCUT = 'resize-element-up-more'
-export const MOVE_ELEMENT_UP_SHORTCUT = 'move-element-up'
-export const MOVE_ELEMENT_UP_MORE_SHORTCUT = 'move-element-up-more'
-export const RESIZE_ELEMENT_DOWN_SHORTCUT = 'resize-element-down'
-export const RESIZE_ELEMENT_DOWN_MORE_SHORTCUT = 'resize-element-down-more'
-export const MOVE_ELEMENT_DOWN_SHORTCUT = 'move-element-down'
-export const MOVE_ELEMENT_DOWN_MORE_SHORTCUT = 'move-element-down-more'
-export const RESIZE_ELEMENT_LEFT_SHORTCUT = 'resize-element-left'
-export const RESIZE_ELEMENT_LEFT_MORE_SHORTCUT = 'resize-element-left-more'
-export const MOVE_ELEMENT_LEFT_SHORTCUT = 'move-element-left'
-export const MOVE_ELEMENT_LEFT_MORE_SHORTCUT = 'move-element-left-more'
-export const RESIZE_ELEMENT_RIGHT_SHORTCUT = 'resize-element-right'
-export const RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT = 'resize-element-right-more'
-export const MOVE_ELEMENT_RIGHT_SHORTCUT = 'move-element-right'
-export const MOVE_ELEMENT_RIGHT_MORE_SHORTCUT = 'move-element-right-more'
-
 export const SELECT_ALL_SIBLINGS_SHORTCUT = 'select-all-siblings'
 export const TOGGLE_BORDER_SHORTCUT = 'toggle-border'
 export const COPY_SELECTION_SHORTCUT = 'copy-selection'
@@ -122,55 +105,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT]: shortcut(
     'Cycle backward between siblings of the currently selected element.',
     key('tab', 'shift'),
-  ),
-  [RESIZE_ELEMENT_UP_SHORTCUT]: shortcut('Resize top edge of selected elements.', key('up', 'cmd')),
-  [MOVE_ELEMENT_UP_SHORTCUT]: shortcut('Move element up in the y-axis.', key('up', [])),
-  [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: shortcut(
-    'Fast resize top edge of selected elements.',
-    key('up', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_UP_MORE_SHORTCUT]: shortcut(
-    'Fast move element up in the y-axis.',
-    key('up', ['shift']),
-  ),
-  [RESIZE_ELEMENT_DOWN_SHORTCUT]: shortcut(
-    'Resize bottom edge of selected elements.',
-    key('down', 'cmd'),
-  ),
-  [MOVE_ELEMENT_DOWN_SHORTCUT]: shortcut('Move element down in the y-axis.', key('down', [])),
-  [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: shortcut(
-    'Fast resize bottom edge of selected elements.',
-    key('down', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: shortcut(
-    'Fast move element down in the y-axis.',
-    key('down', ['shift']),
-  ),
-  [RESIZE_ELEMENT_LEFT_SHORTCUT]: shortcut(
-    'Resize left edge of selected elements.',
-    key('left', 'cmd'),
-  ),
-  [MOVE_ELEMENT_LEFT_SHORTCUT]: shortcut('Move element left in the x-axis.', key('left', [])),
-  [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: shortcut(
-    'Fast resize left edge of selected elements.',
-    key('left', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: shortcut(
-    'Fast move element left in the x-axis.',
-    key('left', ['shift']),
-  ),
-  [RESIZE_ELEMENT_RIGHT_SHORTCUT]: shortcut(
-    'Resize right edge of selected elements.',
-    key('right', 'cmd'),
-  ),
-  [MOVE_ELEMENT_RIGHT_SHORTCUT]: shortcut('Move element right in the x-axis.', key('right', [])),
-  [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: shortcut(
-    'Fast resize right edge of selected elements.',
-    key('right', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: shortcut(
-    'Fast move element right in the x-axis.',
-    key('right', ['shift']),
   ),
   [SELECT_ALL_SIBLINGS_SHORTCUT]: shortcut(
     'Select all siblings of currently selected element.',

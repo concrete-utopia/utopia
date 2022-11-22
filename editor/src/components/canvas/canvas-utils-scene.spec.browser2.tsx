@@ -17,16 +17,9 @@ import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { wait } from '../../utils/utils.test-utils'
 import { isFeatureEnabled, setFeatureEnabled } from '../../utils/feature-switches'
 import { resetMouseStatus } from '../mouse-move'
+import { SceneLabelTestID } from './controls/select-mode/scene-label'
 
 describe('moving a scene/rootview on the canvas', () => {
-  let originalValue = isFeatureEnabled('Canvas Strategies')
-  before(() => {
-    originalValue = isFeatureEnabled('Canvas Strategies')
-    setFeatureEnabled('Canvas Strategies', false)
-  })
-  after(() => {
-    setFeatureEnabled('Canvas Strategies', originalValue)
-  })
   // TODO Eni and Balazs look into why is this failing under Karma
   xit('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -165,9 +158,7 @@ describe('moving a scene/rootview on the canvas', () => {
     const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      `label-control-${EP.toString(targetPath)}`,
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
@@ -272,14 +263,6 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
-  let originalValue = isFeatureEnabled('Canvas Strategies')
-  before(() => {
-    originalValue = isFeatureEnabled('Canvas Strategies')
-    setFeatureEnabled('Canvas Strategies', false)
-  })
-  after(() => {
-    setFeatureEnabled('Canvas Strategies', originalValue)
-  })
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `
