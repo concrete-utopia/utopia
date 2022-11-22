@@ -258,7 +258,7 @@ export async function saveProjectToGithub(
               ),
             ),
             updateBranchContents(persistentModel.projectContents),
-            showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
+            showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'SUCCESS')),
           ],
           'everyone',
         )
