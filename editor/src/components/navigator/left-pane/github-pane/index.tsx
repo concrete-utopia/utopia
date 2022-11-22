@@ -431,7 +431,10 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
   )
-  const repo = useEditorState((store) => store.editor.githubSettings.branch, 'Github repo')
+  const repo = useEditorState(
+    (store) => store.editor.githubSettings.targetRepository,
+    'Github repo',
+  )
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
   const branchLoaded = useEditorState(
