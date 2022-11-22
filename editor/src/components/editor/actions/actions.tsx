@@ -1474,8 +1474,11 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
     ...editor,
 
     githubSettings: {
-      ...emptyGithubSettings(),
+      ...githubSettings,
       branchName: hasRepo ? githubSettings.branchName : null,
+      branchLoaded: hasRepo && hasBranch && githubSettings.branchLoaded,
+      originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
+      pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
     },
 
     githubChecksums:
