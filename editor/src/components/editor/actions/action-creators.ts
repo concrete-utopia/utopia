@@ -220,6 +220,7 @@ import type {
   SetUserConfiguration,
   SetHoveredView,
   ClearHoveredViews,
+  UpdateProjectChecksums,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1510,6 +1511,13 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
 export function updateGithubChecksums(checksums: GithubChecksums | null): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
+    checksums: checksums,
+  }
+}
+
+export function updateProjectChecksums(checksums: GithubChecksums | null): UpdateProjectChecksums {
+  return {
+    action: 'UPDATE_PROJECT_CHECKSUMS',
     checksums: checksums,
   }
 }

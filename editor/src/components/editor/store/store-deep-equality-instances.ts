@@ -323,6 +323,7 @@ import {
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
   projectGithubSettings,
+  FileChecksum,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2468,8 +2469,16 @@ const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | nu
   if (newAttribute == null) {
     return keepDeepEqualityResult(oldAttribute, false)
   }
-  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
+  return objectDeepEquality(FileChecksumKeepDeepEquality)(oldAttribute, newAttribute)
 }
+
+const FileChecksumKeepDeepEquality: KeepDeepEqualityCall<FileChecksum> = combine2EqualityCalls(
+  (f) => f.sha,
+  StringKeepDeepEquality,
+  (f) => f.timestamp,
+  nullableDeepEquality(NumberKeepDeepEquality),
+  (sha: string, timestamp: number | null): FileChecksum => ({ sha, timestamp }),
+)
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
@@ -3584,6 +3593,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.refreshingDependencies,
   )
 
+  const projectChecksumsResults = GithubChecksumsKeepDeepEquality(
+    oldValue.projectChecksums,
+    newValue.projectChecksums,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3656,7 +3670,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubChecksumsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
-    refreshingDependenciesResults.areEqual
+    refreshingDependenciesResults.areEqual &&
+    projectChecksumsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3734,6 +3749,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,
+      projectChecksumsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

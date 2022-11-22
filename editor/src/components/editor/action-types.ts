@@ -943,6 +943,11 @@ export interface UpdateGithubChecksums {
   checksums: GithubChecksums | null
 }
 
+export interface UpdateProjectChecksums {
+  action: 'UPDATE_PROJECT_CHECKSUMS'
+  checksums: GithubChecksums | null
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1234,6 +1239,7 @@ export type EditorAction =
   | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
+  | UpdateProjectChecksums
 
 export type DispatchPriority =
   | 'everyone'

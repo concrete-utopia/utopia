@@ -46,20 +46,38 @@ function getSHA1Checksum(contents: string): string {
   return new sha1().update(contents).digest('hex')
 }
 
-export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
+export function getProjectContentsChecksums(
+  tree: ProjectContentTreeRoot,
+  currentChecksums: GithubChecksums | null,
+): { checksums: GithubChecksums; changed: boolean } {
   const contents = treeToContents(tree)
 
-  const checksums: GithubChecksums = {}
+  const checksums: GithubChecksums = currentChecksums ? { ...currentChecksums } : {}
+
+  let changed = false
+
   Object.keys(contents).forEach((filename) => {
     const file = contents[filename]
+    const current = currentChecksums != null ? currentChecksums[filename] : null
     if (isTextFile(file)) {
-      checksums[filename] = getSHA1Checksum(file.fileContents.code)
+      const hasChanged =
+        !current || current.timestamp == undefined || current.timestamp < file.lastRevisedTime
+      if (hasChanged) {
+        changed = true
+        checksums[filename] = {
+          sha: getSHA1Checksum(file.fileContents.code),
+          timestamp: file.lastRevisedTime,
+        }
+      }
     } else if (isAssetFile(file) && file.base64 != undefined) {
-      checksums[filename] = getSHA1Checksum(file.base64)
+      checksums[filename] = {
+        sha: getSHA1Checksum(file.base64),
+        timestamp: Date.now(), // we should store the last revised time for assets as well.
+      }
     }
   })
 
-  return checksums
+  return { checksums, changed }
 }
 
 export function deriveGithubFileChanges(
@@ -84,7 +102,7 @@ export function deriveGithubFileChanges(
     if (!conflictedSet.has(f)) {
       if (!githubFiles.has(f)) {
         untracked.push(f)
-      } else if (githubChecksums[f] !== projectChecksums[f]) {
+      } else if (githubChecksums[f].sha !== projectChecksums[f].sha) {
         modified.push(f)
       }
     }

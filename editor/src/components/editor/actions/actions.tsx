@@ -316,6 +316,7 @@ import {
   SetUserConfiguration,
   SetHoveredView,
   ClearHoveredViews,
+  UpdateProjectChecksums,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -2011,6 +2012,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubChecksums: action.checksums,
+    }
+  },
+  UPDATE_PROJECT_CHECKSUMS: (action: UpdateProjectChecksums, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      projectChecksums: action.checksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {

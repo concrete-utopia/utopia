@@ -31,6 +31,7 @@ import {
   updateGithubOperations,
   updateGithubSettings,
   updateProjectContents,
+  updateProjectChecksums,
 } from '../../components/editor/actions/action-creators'
 import {
   EditorStorePatched,
@@ -247,7 +248,9 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
-            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
+            updateGithubChecksums(
+              getProjectContentsChecksums(persistentModel.projectContents, {}).checksums,
+            ),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -457,7 +460,7 @@ export async function updateProjectAgainstGithub(
             dispatch(
               [
                 updateGithubChecksums(
-                  getProjectContentsChecksums(branchLatestContent.branch.content),
+                  getProjectContentsChecksums(branchLatestContent.branch.content, {}).checksums,
                 ),
                 updateBranchContents(branchLatestContent.branch.content),
                 updateAgainstGithub(
@@ -577,7 +580,9 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
+              updateGithubChecksums(
+                getProjectContentsChecksums(responseBody.branch.content, {}).checksums,
+              ),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
@@ -744,18 +749,27 @@ export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch)
 const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store) => store.userState.githubState.authenticated,
+  (store) => store.editor.projectChecksums,
   (store) => store.editor.githubChecksums,
   (store) => store.editor.githubData.treeConflicts,
+  (store) => store.dispatch,
   (
     projectContents,
     githubAuthenticated,
+    projectChecksums,
     githubChecksums,
     treeConflicts,
+    dispatch,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents)
+
+    const { checksums, changed } = getProjectContentsChecksums(projectContents, projectChecksums)
+    if (changed) {
+      dispatch([updateProjectChecksums(checksums)], 'everyone')
+    }
+
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
@@ -1217,7 +1231,8 @@ export async function refreshGithubData(
             upstreamChangesSuccess = true
             const upstreamChecksums = getProjectContentsChecksums(
               branchLatestContent.branch.content,
-            )
+              {},
+            ).checksums
             const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
             dispatch(
               [
