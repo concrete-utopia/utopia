@@ -188,9 +188,12 @@ export class ColorPickerInner extends React.Component<
   }
 
   componentDidMount() {
-    if (this.RefFirstControl.current != null) {
-      this.RefFirstControl.current.focus()
-    }
+    setTimeout(() => {
+      // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+      if (this.RefFirstControl.current != null) {
+        this.RefFirstControl.current.focus()
+      }
+    }, 0)
   }
 
   componentWillUnmount() {
