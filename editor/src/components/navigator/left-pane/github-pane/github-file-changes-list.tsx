@@ -21,7 +21,10 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
-import { isGithubCommishing } from '../../../../components/editor/store/editor-state'
+import {
+  isGithubCommishing,
+  isGithubLoadingAnyBranch,
+} from '../../../../components/editor/store/editor-state'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -194,10 +197,7 @@ export const GithubFileChangesList: React.FC<{
   )
 
   const disableButtons = React.useMemo(() => {
-    return (
-      githubOperations.some((op) => op.name === 'loadBranch') ||
-      isGithubCommishing(githubOperations)
-    )
+    return isGithubLoadingAnyBranch(githubOperations) || isGithubCommishing(githubOperations)
   }, [githubOperations])
 
   if (count === 0) {
