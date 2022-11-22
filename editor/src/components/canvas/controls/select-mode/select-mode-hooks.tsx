@@ -805,32 +805,29 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }) {
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
-    if (!isFeatureEnabled('Keyboard up clears interaction')) {
+    if (keyboardTimeoutHandler.current != null) {
+      clearTimeout(keyboardTimeoutHandler.current)
+      keyboardTimeoutHandler.current = null
+    }
+
+    const clearKeyboardInteraction = () => {
+      window.removeEventListener('mousedown', clearKeyboardInteraction)
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
       }
-
-      const clearKeyboardInteraction = () => {
-        window.removeEventListener('mousedown', clearKeyboardInteraction)
-        if (keyboardTimeoutHandler.current != null) {
-          clearTimeout(keyboardTimeoutHandler.current)
-          keyboardTimeoutHandler.current = null
-        }
-        if (
-          editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-          'KEYBOARD'
-        ) {
-          editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-        }
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
+      ) {
+        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }
-
-      keyboardTimeoutHandler.current = setTimeout(
-        clearKeyboardInteraction,
-        KeyboardInteractionTimeout,
-      )
-
-      window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
     }
+
+    keyboardTimeoutHandler.current = setTimeout(
+      clearKeyboardInteraction,
+      KeyboardInteractionTimeout,
+    )
+
+    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [editorStoreRef])
 }

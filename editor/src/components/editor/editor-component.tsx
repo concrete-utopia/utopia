@@ -202,21 +202,16 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {
-          if (isFeatureEnabled('Keyboard up clears interaction')) {
-            const action = CanvasActions.clearInteractionSession(true)
-            editorStoreRef.current.dispatch([action], 'everyone')
-          } else {
-            const action = CanvasActions.createInteractionSession(
-              updateInteractionViaKeyboard(
-                existingInteractionSession,
-                [],
-                [Keyboard.keyCharacterForCode(event.keyCode)],
-                Modifier.modifiersForKeyboardEvent(event),
-                { type: 'KEYBOARD_CATCHER_CONTROL' },
-              ),
-            )
-            editorStoreRef.current.dispatch([action], 'everyone')
-          }
+          const action = CanvasActions.createInteractionSession(
+            updateInteractionViaKeyboard(
+              existingInteractionSession,
+              [],
+              [Keyboard.keyCharacterForCode(event.keyCode)],
+              Modifier.modifiersForKeyboardEvent(event),
+              { type: 'KEYBOARD_CATCHER_CONTROL' },
+            ),
+          )
+          editorStoreRef.current.dispatch([action], 'everyone')
         }
       }
 
