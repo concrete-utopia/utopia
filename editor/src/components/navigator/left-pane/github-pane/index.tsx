@@ -30,6 +30,8 @@ import * as EditorActions from '../../../editor/actions/action-creators'
 import {
   githubRepoFullName,
   isGithubCommishing,
+  isGithubListingBranches,
+  isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
 } from '../../../editor/store/editor-state'
@@ -162,12 +164,9 @@ const BranchBlock = () => {
     }),
     'Github branch',
   )
-  const githubWorking = React.useMemo(() => {
-    return githubOperations.length > 0
-  }, [githubOperations])
 
-  const isLoadingBranches = React.useMemo(
-    () => githubOperations.some((op) => op.name === 'listBranches'),
+  const isListingBranches = React.useMemo(
+    () => isGithubListingBranches(githubOperations),
     [githubOperations],
   )
 
@@ -209,7 +208,7 @@ const BranchBlock = () => {
   }, [currentBranch, targetRepository])
 
   const filteredBranches = React.useMemo(() => {
-    if (isLoadingBranches && !branchesWereLoaded) {
+    if (isListingBranches && !branchesWereLoaded) {
       return []
     }
     if (branchesForRepository == null || repositoryData == null) {
@@ -238,7 +237,7 @@ const BranchBlock = () => {
     }
 
     return filtered
-  }, [branchesForRepository, branchesWereLoaded, repositoryData, branchFilter, isLoadingBranches])
+  }, [branchesForRepository, branchesWereLoaded, repositoryData, branchFilter, isListingBranches])
 
   const clearBranch = React.useCallback(() => {
     dispatch(
@@ -280,7 +279,7 @@ const BranchBlock = () => {
         >
           {filteredBranches.map((branch, index) => {
             function selectBranch() {
-              if (githubWorking) {
+              if (isListingBranches) {
                 return
               }
               dispatch(
@@ -305,8 +304,12 @@ const BranchBlock = () => {
                 padded
                 variant='<----------1fr---------><-auto->'
                 css={{
-                  cursor: loadingThisBranch ? 'wait' : githubWorking ? 'not-allowed' : 'pointer',
-                  opacity: githubWorking && !loadingThisBranch ? 0.5 : 1,
+                  cursor: loadingThisBranch
+                    ? 'wait'
+                    : isListingBranches
+                    ? 'not-allowed'
+                    : 'pointer',
+                  opacity: isListingBranches && !loadingThisBranch ? 0.5 : 1,
                   '&:hover': {
                     background: colorTheme.primarySubdued.value,
                     color: colorTheme.white.value,
@@ -337,9 +340,9 @@ const BranchBlock = () => {
             highlight
             style={{ padding: '0 6px', marginTop: 6 }}
             onMouseUp={refreshBranches}
-            disabled={githubWorking}
+            disabled={isListingBranches}
           >
-            {isLoadingBranches ? (
+            {isListingBranches ? (
               <GithubSpinner />
             ) : (
               <FlexRow style={{ gap: 4 }}>
@@ -366,10 +369,9 @@ const BranchBlock = () => {
   }, [
     targetRepository,
     dispatch,
-    githubWorking,
     githubOperations,
     currentBranch,
-    isLoadingBranches,
+    isListingBranches,
     refreshBranches,
     branchFilter,
     updateBranchFilter,
@@ -448,9 +450,6 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubOperations,
     'Github operations',
   )
-  const githubWorking = React.useMemo(() => {
-    return githubOperations.length > 0
-  }, [githubOperations])
   const githubLastUpdatedAt = useEditorState(
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
@@ -503,10 +502,9 @@ const RemoteChangesBlock = () => {
             clickable={false}
             changes={upstreamChanges}
             showHeader={true}
-            githubWorking={githubWorking}
           />
           <Button
-            disabled={githubWorking}
+            disabled={isGithubUpdating(githubOperations)}
             spotlight
             highlight
             style={{
@@ -567,10 +565,6 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
-
-  const githubWorking = React.useMemo(() => {
-    return githubOperations.length > 0
-  }, [githubOperations])
 
   const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
 
@@ -650,7 +644,6 @@ const LocalChangesBlock = () => {
             revertable={true}
             clickable={true}
             changes={githubFileChanges}
-            githubWorking={githubWorking}
           />
           <StringInput
             testId='commit-message-input'
@@ -683,7 +676,7 @@ const LocalChangesBlock = () => {
             </div>,
           )}
           <Button
-            disabled={githubWorking}
+            disabled={isGithubCommishing(githubOperations)}
             spotlight
             highlight
             style={{
@@ -770,7 +763,6 @@ const BranchNotLoadedBlock = () => {
       }),
       'BranchNotLoadedBlock data',
     )
-  const githubWorking = React.useMemo(() => githubOperations.length > 0, [githubOperations])
 
   const builtInDependencies = useEditorState(
     (store) => store.builtInDependencies,
@@ -780,9 +772,6 @@ const BranchNotLoadedBlock = () => {
   const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
 
   const loadFromBranch = React.useCallback(() => {
-    if (githubWorking) {
-      return
-    }
     if (githubRepo != null && branchName != null) {
       void updateProjectWithBranchContent(
         dispatch,
@@ -793,7 +782,7 @@ const BranchNotLoadedBlock = () => {
         builtInDependencies,
       )
     }
-  }, [dispatch, githubRepo, branchName, githubWorking, currentDependencies, builtInDependencies])
+  }, [dispatch, githubRepo, branchName, currentDependencies, builtInDependencies])
 
   const isANewBranch = React.useMemo(() => {
     if (branches == null) {
@@ -812,9 +801,6 @@ const BranchNotLoadedBlock = () => {
   )
 
   const pushToBranch = React.useCallback(() => {
-    if (githubWorking) {
-      return
-    }
     if (githubRepo == null || branchName == null) {
       return
     }
@@ -828,7 +814,7 @@ const BranchNotLoadedBlock = () => {
       ],
       'everyone',
     )
-  }, [dispatch, githubRepo, branchName, githubWorking, commitMessage])
+  }, [dispatch, githubRepo, branchName, commitMessage])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
 
@@ -884,7 +870,7 @@ const BranchNotLoadedBlock = () => {
                 Loading from branch will replace your current project contents with the ones on
                 Github.
                 <Button
-                  disabled={githubWorking}
+                  disabled={isGithubLoadingAnyBranch(githubOperations)}
                   spotlight
                   highlight
                   style={{
@@ -895,8 +881,14 @@ const BranchNotLoadedBlock = () => {
                   }}
                   onClick={loadFromBranch}
                 >
-                  <PullIcon fill={colorTheme.errorForeground.value} />
-                  Yes, load from this branch
+                  {isGithubLoadingAnyBranch(githubOperations) ? (
+                    <GithubSpinner />
+                  ) : (
+                    <>
+                      <PullIcon fill={colorTheme.errorForeground.value} />
+                      Yes, load from this branch
+                    </>
+                  )}
                 </Button>
               </UIGridRow>,
             )}
@@ -912,14 +904,20 @@ const BranchNotLoadedBlock = () => {
                   onChange={updateCommitMessage}
                 />
                 <Button
-                  disabled={githubWorking}
+                  disabled={isGithubCommishing(githubOperations)}
                   spotlight
                   highlight
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
                   onClick={pushToBranch}
                 >
-                  <PushIcon fill={colorTheme.fg0.value} />
-                  Push to branch
+                  {isGithubCommishing(githubOperations) ? (
+                    <GithubSpinner />
+                  ) : (
+                    <>
+                      <PushIcon fill={colorTheme.fg0.value} />
+                      Push to branch
+                    </>
+                  )}
                 </Button>
               </UIGridRow>,
             )}
@@ -933,7 +931,7 @@ const BranchNotLoadedBlock = () => {
                   onChange={updateCommitMessage}
                 />
                 <Button
-                  disabled={githubWorking}
+                  disabled={isGithubCommishing(githubOperations)}
                   spotlight
                   highlight
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}

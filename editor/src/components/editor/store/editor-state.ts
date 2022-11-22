@@ -321,6 +321,7 @@ export function githubOperationLocksEditor(op: GithubOperation): boolean {
       return true
   }
 }
+
 export function isGithubLoadingBranch(
   operations: Array<GithubOperation>,
   branchName: string,
@@ -341,6 +342,14 @@ export function isGithubCommishing(operations: Array<GithubOperation>): boolean 
 
 export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {
   return operations.some((operation) => operation.name === 'loadRepositories')
+}
+
+export function isGithubListingBranches(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'listBranches')
+}
+
+export function isGithubLoadingAnyBranch(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'loadBranch')
 }
 
 export function isGithubUpdating(operations: Array<GithubOperation>): boolean {
