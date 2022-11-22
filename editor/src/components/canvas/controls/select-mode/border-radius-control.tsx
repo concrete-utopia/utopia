@@ -34,6 +34,8 @@ import { CanvasLabel, CSSNumberWithRenderedValue } from './controls-common'
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
 
+const BorderRadiusHandleAppearDelay: number = 0
+
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
@@ -75,7 +77,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     }
 
     if (hoveredViews.includes(selectedElement)) {
-      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
+      timeoutRef.current = setTimeout(() => setBackgroundShown(true), BorderRadiusHandleAppearDelay)
     } else {
       setBackgroundShown(false)
     }
