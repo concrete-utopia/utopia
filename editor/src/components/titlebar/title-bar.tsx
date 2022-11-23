@@ -16,8 +16,8 @@ import {
 } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { togglePanel } from '../editor/actions/action-creators'
-import { EditorStorePatched, githubRepoFullName } from '../editor/store/editor-state'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
@@ -87,6 +87,13 @@ const TitleBar = React.memo(() => {
     dispatch(actions)
   }, [dispatch])
 
+  const openLeftPanel = useCallback(() => {
+    let actions: Array<EditorAction> = []
+    actions.push(setPanelVisibility('leftmenu', true))
+    actions.push(setLeftMenuTab(LeftMenuTab.Github))
+    dispatch(actions)
+  }, [dispatch])
+
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
   return (
@@ -127,14 +134,14 @@ const TitleBar = React.memo(() => {
           <>
             {when(
               hasUpstreamChanges,
-              <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+              <RoundButton color={colorTheme.secondaryOrange.value} onClick={openLeftPanel}>
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+              <RoundButton color={colorTheme.secondaryBlue.value} onClick={openLeftPanel}>
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Push Local</>
               </RoundButton>,
