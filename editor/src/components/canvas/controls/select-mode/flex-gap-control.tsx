@@ -14,12 +14,21 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
+import {
+  cssNumber,
+  CSSNumber,
+  FlexDirection,
+  printCSSNumber,
+} from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
+import {
+  cursorFromFlexDirection,
+  gapControlBoundsFromMetadata,
+  maybeFlexGapFromElement,
+} from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import {
   CanvasLabel,
@@ -31,7 +40,7 @@ import {
 interface FlexGapControlProps {
   selectedElement: ElementPath
   flexDirection: FlexDirection
-  updatedGapValue: CSSNumberWithRenderedValue
+  updatedGapValue: CSSNumberWithRenderedValue | null
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
@@ -81,11 +90,17 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
-  const controlBounds = gapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    updatedGapValue.renderedValuePx,
-    flexDirection,
+  const flexGap = maybeFlexGapFromElement(metadata, selectedElement)
+
+  const flexGapCSSValue = updatedGapValue?.value ?? flexGap?.value?.value ?? cssNumber(0, null)
+
+  const flexGapRenderedValue =
+    updatedGapValue?.renderedValuePx ?? flexGap?.value.renderedValuePx ?? 0
+
+  const controlBounds = React.useMemo(
+    () =>
+      gapControlBoundsFromMetadata(metadata, selectedElement, flexGapRenderedValue, flexDirection),
+    [flexDirection, flexGapRenderedValue, metadata, selectedElement],
   )
 
   const onMouseDown = React.useCallback(
@@ -116,7 +131,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
-              gapValue={updatedGapValue.value}
+              gapValue={flexGapCSSValue}
             />
           )
         })}

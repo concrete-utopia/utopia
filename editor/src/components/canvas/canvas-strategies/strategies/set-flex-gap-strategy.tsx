@@ -96,7 +96,9 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     props: {
       selectedElement: selectedElement,
       flexDirection: flexGap.direction,
-      updatedGapValue: updatedFlexGapMeasurement,
+      updatedGapValue: !isFlexGapHandleActive(interactionSession)
+        ? updatedFlexGapMeasurement
+        : null,
     },
     key: 'flex-gap-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
@@ -227,4 +229,12 @@ function flexGapValueIndicatorProps(
     ),
     position: position,
   }
+}
+
+function isFlexGapHandleActive(interactionSession: InteractionSession | null): boolean {
+  return (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.activeControl.type !== 'FLEX_GAP_HANDLE'
+  )
 }
