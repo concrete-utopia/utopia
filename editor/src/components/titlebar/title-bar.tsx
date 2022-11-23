@@ -81,6 +81,11 @@ const TitleBar = React.memo(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
+  const isLeftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'LeftPanelRoot isLeftMenuExpanded',
+  )
+
   const toggleLeftPanel = useCallback(() => {
     let actions: Array<EditorAction> = []
     actions.push(togglePanel('leftmenu'))
@@ -88,6 +93,9 @@ const TitleBar = React.memo(() => {
   }, [dispatch])
 
   const openLeftPanel = useCallback(() => {
+    // {
+    //   isLeftMenuExpanded ? console.log('highlight the CTA') : null
+    // }
     let actions: Array<EditorAction> = []
     actions.push(setPanelVisibility('leftmenu', true))
     actions.push(setLeftMenuTab(LeftMenuTab.Github))
