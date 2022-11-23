@@ -178,6 +178,10 @@ const BranchBlock = () => {
     }
   }, [dispatch, targetRepository])
 
+  React.useEffect(() => {
+    refreshBranches()
+  }, [refreshBranches])
+
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
   const expanded = React.useMemo(() => {

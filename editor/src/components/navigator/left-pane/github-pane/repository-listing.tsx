@@ -242,6 +242,10 @@ export const RepositoryListing = React.memo(
       })
     }, [dispatch])
 
+    React.useEffect(() => {
+      refreshRepos()
+    }, [refreshRepos])
+
     const clearRepository = React.useCallback(() => {
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')
     }, [dispatch])
