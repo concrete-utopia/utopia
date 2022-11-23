@@ -61,6 +61,13 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     (sibling) => sibling.elementPath,
   )
 
+  if (siblings.length === 0) {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Show Reorder Indicator without children`,
+    }
+  }
+
   const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
     newParentDirection,
     forwardsOrBackwards,
@@ -69,84 +76,56 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     editor.jsxMetadata,
   )
 
-  if (siblings.length > 0) {
-    const closestPreviousSiblingPositionIndex = findLastIndex(
-      (siblingPosition) => siblingPosition.index <= command.index,
-      siblingPositions,
-    )
-    const closestPreviousSiblingPosition = forceNotNull(
-      'no sibling found for reorder indicator',
-      siblingPositions[closestPreviousSiblingPositionIndex],
-    )
-    const closestNextSiblingPosition = forceNotNull(
-      'no sibling found for reorder indicator',
-      siblingPositions.find((siblingPosition) => siblingPosition.index > command.index),
-    )
+  const closestPreviousSiblingPositionIndex = findLastIndex(
+    (siblingPosition) => siblingPosition.index <= command.index,
+    siblingPositions,
+  )
+  const closestPreviousSiblingPosition = forceNotNull(
+    'no sibling found for reorder indicator',
+    siblingPositions[closestPreviousSiblingPositionIndex],
+  )
+  const closestNextSiblingPosition = forceNotNull(
+    'no sibling found for reorder indicator',
+    siblingPositions.find((siblingPosition) => siblingPosition.index > command.index),
+  )
 
-    const precedingSiblingPosition: CanvasRectangle = closestPreviousSiblingPosition.frame
-    const succeedingSiblingPosition: CanvasRectangle = closestNextSiblingPosition.frame
+  const precedingSiblingPosition: CanvasRectangle = closestPreviousSiblingPosition.frame
+  const succeedingSiblingPosition: CanvasRectangle = closestNextSiblingPosition.frame
 
-    const targetLineBeforeSibling: CanvasRectangle =
-      newParentDirection === 'horizontal'
-        ? canvasRectangle({
-            x: getSiblingMidPointPosition(
-              precedingSiblingPosition,
-              succeedingSiblingPosition,
-              'horizontal',
-              forwardsOrBackwards,
-            ),
-            y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
-            height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
-            width: 0,
-          })
-        : canvasRectangle({
-            x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-            y: getSiblingMidPointPosition(
-              precedingSiblingPosition,
-              succeedingSiblingPosition,
-              'vertical',
-              forwardsOrBackwards,
-            ),
-            width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
-            height: 0,
-          })
+  const targetLineBeforeSibling: CanvasRectangle =
+    newParentDirection === 'horizontal'
+      ? canvasRectangle({
+          x: getSiblingMidPointPosition(
+            precedingSiblingPosition,
+            succeedingSiblingPosition,
+            'horizontal',
+            forwardsOrBackwards,
+          ),
+          y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
+          height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
+          width: 0,
+        })
+      : canvasRectangle({
+          x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
+          y: getSiblingMidPointPosition(
+            precedingSiblingPosition,
+            succeedingSiblingPosition,
+            'vertical',
+            forwardsOrBackwards,
+          ),
+          width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
+          height: 0,
+        })
 
-    const editorStatePatch: EditorStatePatch = {
-      canvas: {
-        controls: {
-          flexReparentTargetLines: { $set: [targetLineBeforeSibling] },
-        },
+  const editorStatePatch: EditorStatePatch = {
+    canvas: {
+      controls: {
+        flexReparentTargetLines: { $set: [targetLineBeforeSibling] },
       },
-    }
-    return {
-      editorStatePatches: [editorStatePatch],
-      commandDescription: `Show Reorder Indicator at index ${command.index}`,
-    }
-  } else {
-    const targetLineBeginningOfParent: CanvasRectangle =
-      newParentDirection === 'horizontal'
-        ? canvasRectangle({
-            x: parentFrame.x,
-            y: parentFrame.y,
-            height: parentFrame.height,
-            width: 0,
-          })
-        : canvasRectangle({
-            x: parentFrame.x,
-            y: parentFrame.y,
-            width: parentFrame.width,
-            height: 0,
-          })
-    const editorStatePatch: EditorStatePatch = {
-      canvas: {
-        controls: {
-          flexReparentTargetLines: { $set: [targetLineBeginningOfParent] },
-        },
-      },
-    }
-    return {
-      editorStatePatches: [editorStatePatch],
-      commandDescription: `Show Reorder Indicator at beginning of parent`,
-    }
+    },
+  }
+  return {
+    editorStatePatches: [editorStatePatch],
+    commandDescription: `Show Reorder Indicator at index ${command.index}`,
   }
 }
