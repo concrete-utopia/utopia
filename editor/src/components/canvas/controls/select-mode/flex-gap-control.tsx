@@ -9,6 +9,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
@@ -234,37 +235,38 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     >
       <div
         data-testid={FlexGapControlHandleTestId}
-        style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
+        style={{
+          padding: hitAreaPadding,
+          cursor: cursorFromFlexDirection(flexDirection),
+          border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
+        }}
         onMouseDown={onMouseDown}
         onMouseEnter={handleHoverStartInner}
         onMouseLeave={handleHoverEnd}
       >
-        {when(
-          shouldShowIndicator(path),
-          <div
-            style={{
-              position: 'absolute',
-              paddingTop: paddingIndicatorOffset,
-              paddingLeft: paddingIndicatorOffset,
-              pointerEvents: 'none',
-            }}
-          >
-            <CanvasLabel
-              value={printCSSNumber(gapValue, null)}
-              scale={scale}
-              color={colorTheme.brandNeonPink.value}
-            />
-          </div>,
-        )}
-        {when(
-          backgroundShown,
+        <div
+          style={{
+            visibility: shouldShowIndicator(path) ? 'visible' : 'hidden',
+            position: 'absolute',
+            paddingTop: paddingIndicatorOffset,
+            paddingLeft: paddingIndicatorOffset,
+            pointerEvents: 'none',
+          }}
+        >
+          <CanvasLabel
+            value={printCSSNumber(gapValue, null)}
+            scale={scale}
+            color={colorTheme.brandNeonPink.value}
+          />
+        </div>
+        <div style={{ visibility: backgroundShown ? 'visible' : 'hidden' }}>
           <PillHandle
             width={width}
             height={height}
             pillColor={colorTheme.brandNeonPink.value}
             borderWidth={borderWidth}
-          />,
-        )}
+          />
+        </div>
       </div>
     </div>
   )

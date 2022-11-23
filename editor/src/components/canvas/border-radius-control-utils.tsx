@@ -12,7 +12,10 @@ export const BorderRadiusControlMinimumForDisplay = (scale: number): number => 1
 
 export type BorderRadiusAdjustMode = 'individual' | 'all'
 
-export const BorderRadiusHandleSize = (scale: number): number => 8 / scale
+export const BorderRadiusHandleSize = (scale: number): { padding: number; size: number } => ({
+  padding: 4 / scale,
+  size: 8 / scale,
+})
 
 export const BorderRadiusHandleDotSize = (scale: number): number => 2 / scale
 
@@ -29,7 +32,8 @@ export function handlePosition(
   corner: BorderRadiusCorner,
   scale: number,
 ): CanvasPoint {
-  const handleSize = BorderRadiusHandleSize(scale) / 2
+  const { padding, size } = BorderRadiusHandleSize(scale)
+  const handleSize = padding + size / 2
   switch (corner) {
     case 'tl':
       return canvasPoint({ x: offset - handleSize, y: offset - handleSize })

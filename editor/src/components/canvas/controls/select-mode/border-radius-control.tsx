@@ -2,6 +2,7 @@ import React from 'react'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
@@ -148,7 +149,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
-  const size = BorderRadiusHandleSize(scale)
+  const { padding, size } = BorderRadiusHandleSize(scale)
   const position = handlePosition(
     isDragging
       ? borderRadius.renderedValuePx
@@ -165,6 +166,9 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         position: 'absolute',
         left: position.x,
         top: position.y,
+        padding: padding,
+        border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
+        pointerEvents: 'all',
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
@@ -190,7 +194,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         )}
         <div
           style={{
-            pointerEvents: 'all',
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             width: size,
             height: size,

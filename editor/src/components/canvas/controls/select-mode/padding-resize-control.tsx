@@ -2,6 +2,7 @@ import React from 'react'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
@@ -163,6 +164,7 @@ const PaddingResizeControlI = React.memo(
             padding: hitAreaWidth,
             cursor: cursor,
             zIndex: 1,
+            border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
           }}
         >
           {!isDragging && indicatorShown && (
