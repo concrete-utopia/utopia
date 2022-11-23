@@ -172,7 +172,7 @@ export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI): void {
       const githubUserDetails = currentState.editor.githubData.githubUserDetails
       const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
       const dispatch = currentState.dispatch
-      refreshGithubData(
+      void refreshGithubData(
         dispatch,
         githubAuthenticated,
         githubRepo,
