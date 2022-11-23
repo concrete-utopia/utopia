@@ -42,11 +42,18 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-function getSHA1Checksum(contents: string): string {
+export function getSHA1Checksum(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
 
-export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
+export function inferGitBlobChecksum(buf: Buffer): string {
+  return getSHA1Checksum(Buffer.concat([Buffer.from(`blob ${buf.byteLength.toString()}\0`), buf]))
+}
+
+export function getProjectContentsChecksums(
+  tree: ProjectContentTreeRoot,
+  assetChecksums: GithubChecksums,
+): GithubChecksums {
   const contents = treeToContents(tree)
 
   const checksums: GithubChecksums = {}
@@ -57,7 +64,12 @@ export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): Githu
     } else if (isAssetFile(file) && file.base64 != undefined) {
       checksums[filename] = getSHA1Checksum(file.base64)
     } else if (isImageFile(file)) {
-      checksums[filename] = getSHA1Checksum(file.base64 ?? file.gitBlobSha ?? filename)
+      if (file.gitBlobSha) {
+        // if this is not available, the file will have its own checksum inferred and set when the file is uploaded.
+        checksums[filename] = file.gitBlobSha
+      } else if (Object.keys(assetChecksums).includes(filename)) {
+        checksums[filename] = assetChecksums[filename]
+      }
     }
   })
 

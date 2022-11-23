@@ -247,7 +247,7 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
-            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
+            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents, {})),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -457,7 +457,7 @@ export async function updateProjectAgainstGithub(
             dispatch(
               [
                 updateGithubChecksums(
-                  getProjectContentsChecksums(branchLatestContent.branch.content),
+                  getProjectContentsChecksums(branchLatestContent.branch.content, {}),
                 ),
                 updateBranchContents(branchLatestContent.branch.content),
                 updateAgainstGithub(
@@ -577,7 +577,7 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
+              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content, {})),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
@@ -746,16 +746,18 @@ const githubFileChangesSelector = createSelector(
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
   (store) => store.editor.githubData.treeConflicts,
+  (store) => store.editor.assetChecksums,
   (
     projectContents,
     githubAuthenticated,
     githubChecksums,
     treeConflicts,
+    assetChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents)
+    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
@@ -1217,6 +1219,7 @@ export async function refreshGithubData(
             upstreamChangesSuccess = true
             const upstreamChecksums = getProjectContentsChecksums(
               branchLatestContent.branch.content,
+              {},
             )
             const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
             dispatch(
