@@ -247,3 +247,23 @@ export function printCssNumberWithDefaultUnit(
   }
   return printCSSNumber(value, null)
 }
+
+export function paddingIsDefined(
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): boolean {
+  return [
+    padding.paddingTop,
+    padding.paddingBottom,
+    padding.paddingRight,
+    padding.paddingLeft,
+  ].some((s) => s != null)
+}
+
+export function paddingFromSingleValue<T>(v: T): CSSPaddingMappedValues<T> {
+  return {
+    paddingTop: v,
+    paddingBottom: v,
+    paddingLeft: v,
+    paddingRight: v,
+  }
+}

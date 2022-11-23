@@ -24,12 +24,16 @@ import {
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   CSSPaddingKey,
+  CSSPaddingMappedValues,
   deltaFromEdge,
   maybeFullPadding,
   offsetPaddingByEdge,
+  paddingFromSingleValue,
+  paddingIsDefined,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
+  simplePaddingFromAllElementProps,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
 import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -45,6 +49,7 @@ import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-h
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canShowCanvasPropControl,
+  CSSNumberWithRenderedValue,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -94,6 +99,28 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
+  const paddingFromMetadata = simplePaddingFromMetadata(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+
+  const paddingFromAllElementProps = simplePaddingFromAllElementProps(
+    canvasState.startingAllElementProps,
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
+  const paddingData = paddingIsDefined(paddingFromMetadata)
+    ? { padding: paddingFromMetadata, source: 'props' }
+    : paddingIsDefined(paddingFromAllElementProps)
+    ? { padding: paddingFromAllElementProps, source: 'code' }
+    : { padding: paddingFromSingleValue(unitlessCSSNumberWithRenderedValue(0)), source: 'props' }
+
+  if (paddingData == null) {
+    return null
+  }
+
+  const { padding, source } = paddingData
+
   const maybePaddingValueProps = paddingValueIndicatorProps(
     canvasState,
     interactionSession,
@@ -102,7 +129,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const resizeControl = controlWithProps({
     control: PaddingResizeControl,
-    props: { targets: selectedElements },
+    props: { targets: selectedElements, currentPadding: padding, disabled: source === 'code' },
     key: 'padding-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
   })
@@ -141,10 +168,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const edgePiece = interactionSession.activeControl.edgePiece
 
-      if (interactionSession.interactionData.drag == null) {
-        return emptyStrategyApplicationResult
-      }
-
       const filteredSelectedElements = getDragTargets(selectedElements)
       const originalBoundingBox = getMultiselectBounds(
         canvasState.startingMetadata,
@@ -163,8 +186,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
       const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
 
-      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
-      const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
+      const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const maxedDelta = Math.max(-currentPadding, rawDelta)
       const newPaddingEdge = offsetMeasurementByDelta(
@@ -251,22 +273,32 @@ function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   }
 }
 
-function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+interface PaddingWithSource {
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>
+  source: 'props' | 'code'
+}
+
+function supportsPaddingControls(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
-    return false
+    return null
   }
 
   if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
-    return false
+    return null
   }
 
-  const padding = simplePaddingFromMetadata(metadata, path)
+  const paddingFromMetadata = simplePaddingFromMetadata(metadata, path)
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
   const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
     (s) => s != null && s > 0,
   )
-  const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some((s) => padding[s] != null)
+  const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some(
+    (s) => paddingFromMetadata[s] != null,
+  )
 
   const elementIsScene = foldEither(
     () => false,
@@ -275,7 +307,7 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
   )
 
   if (elementIsScene) {
-    return false
+    return null
   }
 
   const elementIsIntrinsicElement = foldEither(
@@ -293,12 +325,12 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
       measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
     })
   ) {
-    return true
+    return paddingFromMetadata
   }
 
   const children = MetadataUtils.getChildren(metadata, path)
   if (children.length === 0) {
-    return false
+    return null
   }
 
   const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
@@ -307,11 +339,11 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
       child.specialSizeMeasurements.position !== 'sticky',
   )
 
-  if (childrenNotPositionedAbsoluteOrSticky.length > 0) {
-    return true
+  if (childrenNotPositionedAbsoluteOrSticky.length === 0) {
+    return null
   }
 
-  return false
+  return paddingFromMetadata
 }
 
 function paddingValueIndicatorProps(

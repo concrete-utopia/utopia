@@ -241,7 +241,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         justifyContent: 'center',
         border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
         ...(shouldShowBackground
-          ? UtopiaStyles.backgrounds.stripedBackground(indicatorColor, scale)
+          ? UtopiaStyles.backgrounds.stripedBackground(stripeColor, scale)
           : {}),
       }}
     >
