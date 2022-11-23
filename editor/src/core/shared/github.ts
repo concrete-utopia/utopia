@@ -1218,17 +1218,22 @@ export async function refreshGithubData(
   }
 
   // Resolve all the promises.
-  await Promise.all(promises)
-    .then((collatedActions) => {
-      // Dispatch all the actions from all the polling functions.
-      dispatch(
-        collatedActions.flatMap((arr) => arr),
-        'everyone',
-      )
-    })
-    .catch((error) => {
-      console.error(`Error whie polling Github: ${error}`)
-    })
+  await Promise.allSettled(promises).then((results) => {
+    let actions: Array<EditorAction> = []
+    for (const result of results) {
+      switch (result.status) {
+        case 'rejected':
+          console.error(`Error whie polling Github: ${result.reason}`)
+          break
+        case 'fulfilled':
+          actions.push(...result.value)
+          break
+      }
+    }
+
+    // Dispatch all the actions from all the polling functions.
+    dispatch(actions, 'everyone')
+  })
 }
 
 async function updateUpstreamChanges(
