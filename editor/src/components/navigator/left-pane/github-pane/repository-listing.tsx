@@ -237,7 +237,9 @@ export const RepositoryListing = React.memo(
     const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
 
     const refreshRepos = React.useCallback(() => {
-      void getUsersPublicGithubRepositories(dispatch)
+      void getUsersPublicGithubRepositories(dispatch).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
     }, [dispatch])
 
     const clearRepository = React.useCallback(() => {

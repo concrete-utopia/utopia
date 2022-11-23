@@ -112,7 +112,7 @@ import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
-import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -157,6 +157,38 @@ function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): E
   }
   lastElementsToRerender = currentElementsToRerender
   return elementsToRerender
+}
+
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
+export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI): void {
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const githubChecksums = currentState.editor.githubChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const dispatch = currentState.dispatch
+      refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        githubChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      globalThis.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  pollGithub()
 }
 
 export class Editor {
@@ -268,6 +300,8 @@ export class Editor {
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
     void renderRootEditor()
+
+    startGithubPolling(this.utopiaStoreHook)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
