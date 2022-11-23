@@ -1,5 +1,10 @@
 import { render, renderHook } from '@testing-library/react'
 import React from 'react'
+
+jest.mock('../../editor/store/store-hook', () => ({
+  useRefEditorState: jest.fn(() => ({ current: jest.fn(() => {}) })),
+}))
+
 import { isRight } from '../../../core/shared/either'
 import {
   isJSXElement,
@@ -191,6 +196,8 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
   const callbackData = {
     onSubmitValue: utils.NO_OP,
     onUnsetValue: utils.NO_OP,
+    collectActionsToSubmitValue: () => [],
+    collectActionsToUnsetValue: () => [],
     selectedViewsRef: { current: [] },
   }
 

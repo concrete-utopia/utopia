@@ -207,6 +207,8 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     selectedViewsRef: { current: selectedViews },
     onSubmitValue: null as any,
     onUnsetValue: null as any,
+    collectActionsToSubmitValue: null as any,
+    collectActionsToUnsetValue: null as any,
   }
 
   const contextProvider = ({ children }: any) => (
