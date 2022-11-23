@@ -57,7 +57,7 @@ export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): Githu
     } else if (isAssetFile(file) && file.base64 != undefined) {
       checksums[filename] = getSHA1Checksum(file.base64)
     } else if (isImageFile(file)) {
-      checksums[filename] = getSHA1Checksum(filename)
+      checksums[filename] = getSHA1Checksum(file.base64 ?? file.gitBlobSha ?? filename)
     }
   })
 
