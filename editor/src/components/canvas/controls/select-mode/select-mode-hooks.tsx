@@ -584,10 +584,6 @@ function useSelectOrLiveModeSelectAndHover(
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const isZoomMode = useEditorState(
-    (store) => store.editor.keysPressed['z'] ?? false,
-    'useSelectAndHover isZoomMode',
-  )
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
@@ -652,8 +648,8 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved || isZoomMode) {
-        // Skip all of this handling if 'space' or 'z' is pressed or a mousemove happened in an interaction
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
 
@@ -732,7 +728,7 @@ function useSelectOrLiveModeSelectAndHover(
       editorStoreRef,
       draggingAllowed,
       windowToCanvasCoordinates,
-      isZoomMode,
+      active,
     ],
   )
 
