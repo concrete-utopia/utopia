@@ -666,9 +666,41 @@ export const InspectorContextProvider = React.memo<{
     [dispatch, refElementsToTargetForUpdates],
   )
 
+  const collectActionsToSubmitValue = React.useCallback(
+    (newValue: JSXAttribute, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+      const actionsArray = [
+        ...refElementsToTargetForUpdates.current.map((elem) => {
+          return setProp_UNSAFE(elem, path, newValue)
+        }),
+      ]
+      return transient ? [transientActions(actionsArray)] : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
+  const collectActionsToUnsetValue = React.useCallback(
+    (property: PropertyPath | Array<PropertyPath>, transient: boolean): Array<EditorAction> => {
+      let actionsArray: Array<EditorAction> = []
+      Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
+        if (Array.isArray(property)) {
+          Utils.fastForEach(property, (p) => {
+            actionsArray.push(unsetProperty(elem, p))
+          })
+        } else {
+          actionsArray.push(unsetProperty(elem, property))
+        }
+      })
+
+      return transient ? [transientActions(actionsArray)] : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
     onSubmitValue: onSubmitValueForHooks,
     onUnsetValue: onUnsetValue,
+    collectActionsToSubmitValue: collectActionsToSubmitValue,
+    collectActionsToUnsetValue: collectActionsToUnsetValue,
     selectedViewsRef: selectedViewsRef,
   })
 
