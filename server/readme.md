@@ -43,7 +43,7 @@ Once all of these environment variables are set then S3 will be used to store as
 
 ### Github
 
-First of all, you will need to create an OAuth app in Github by going to "Settings" -> "Developer settings" -> "OAuth Apps" and selecting "New OAuth App" and setting the following fields:
+First of all, you will need to create an OAuth app in Github by going to ["Settings" -> "Developer settings" -> "OAuth Apps"](https://github.com/settings/applications/new) and selecting "New OAuth App" and setting the following fields:
 
 - "Application name": Whatever name you want to see it referred to by.
 - "Homepage URL": Just put `http://localhost:8000`, this is mostly for the UI that Github presents.
