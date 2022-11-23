@@ -53,11 +53,10 @@ const TitleBar = React.memo(() => {
 
   const userPicture = useGetUserPicture()
 
-  const repo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
+  const repoName = useEditorState(
+    (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
     'RepositoryBlock repo',
   )
-  const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
