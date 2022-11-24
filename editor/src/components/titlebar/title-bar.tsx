@@ -93,9 +93,6 @@ const TitleBar = React.memo(() => {
   }, [dispatch])
 
   const openLeftPanel = useCallback(() => {
-    // {
-    //   isLeftMenuExpanded ? console.log('highlight the CTA') : null
-    // }
     let actions: Array<EditorAction> = []
     actions.push(setPanelVisibility('leftmenu', true))
     actions.push(setLeftMenuTab(LeftMenuTab.Github))
