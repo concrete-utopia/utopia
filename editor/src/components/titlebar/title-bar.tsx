@@ -139,14 +139,20 @@ const TitleBar = React.memo(() => {
           <>
             {when(
               hasUpstreamChanges,
-              <RoundButton color={colorTheme.secondaryOrange.value} onClick={openLeftPaneltoGithubTab}>
+              <RoundButton
+                color={colorTheme.secondaryOrange.value}
+                onClick={openLeftPaneltoGithubTab}
+              >
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton color={colorTheme.secondaryBlue.value} onClick={openLeftPaneltoGithubTab}>
+              <RoundButton
+                color={colorTheme.secondaryBlue.value}
+                onClick={openLeftPaneltoGithubTab}
+              >
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Push Local</>
               </RoundButton>,
