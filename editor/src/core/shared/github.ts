@@ -399,7 +399,6 @@ export async function updatePullRequestsForBranch(
               ),
             ),
           ]
-          break
         case 'SUCCESS':
           return [
             updateGithubData({
@@ -409,7 +408,6 @@ export async function updatePullRequestsForBranch(
               })),
             }),
           ]
-          break
         default:
           const _exhaustiveCheck: never = responseBody
           throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
