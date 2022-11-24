@@ -356,6 +356,8 @@ import {
   resizeHandle,
   ResizeHandle,
   BorderRadiusResizeHandle,
+  disabledHandle,
+  DisabledHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -1810,6 +1812,14 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+disabledHandle()
+export const DisabledHandleKeepDeepEquality: KeepDeepEqualityCall<DisabledHandle> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1848,6 +1858,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'DISABLED_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return DisabledHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

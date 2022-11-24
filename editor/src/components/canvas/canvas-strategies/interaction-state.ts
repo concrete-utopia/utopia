@@ -12,7 +12,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { BorderRadiusCorner } from '../border-radius-control-utils'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
@@ -23,7 +23,6 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
-import type { ReparentTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -582,6 +581,16 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface DisabledHandle {
+  type: 'DISABLED_HANDLE'
+}
+
+export function disabledHandle(): DisabledHandle {
+  return {
+    type: 'DISABLED_HANDLE',
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -590,6 +599,7 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | DisabledHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,
