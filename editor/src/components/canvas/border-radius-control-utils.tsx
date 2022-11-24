@@ -13,7 +13,7 @@ export const BorderRadiusControlMinimumForDisplay = (scale: number): number => 1
 export type BorderRadiusAdjustMode = 'individual' | 'all'
 
 export const BorderRadiusHandleSize = (scale: number): { padding: number; size: number } => ({
-  padding: 4 / scale,
+  padding: 2 / scale,
   size: 8 / scale,
 })
 
