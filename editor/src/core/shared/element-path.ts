@@ -1007,3 +1007,8 @@ export function emptyStaticElementPathPart(): StaticElementPathPart {
 export function getContainingComponent(path: ElementPath): ElementPath {
   return dropLastPathPart(path)
 }
+
+export function uniqueElementPaths(paths: Array<ElementPath>): Array<ElementPath> {
+  const pathSet = new Set(paths.map(toString))
+  return Array.from(pathSet).map(fromString)
+}
