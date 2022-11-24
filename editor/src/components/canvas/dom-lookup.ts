@@ -139,7 +139,8 @@ export function getValidTargetAtPoint(
   if (point == null) {
     return null
   }
-  return getAllTargetsAtPoint(validElementPathsForLookup, point)[0] ?? null
+  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  return findFirstValidParentForSingleElement(validElementPathsForLookup, elementsUnderPoint)
 }
 
 export function getAllTargetsAtPoint(
@@ -150,19 +151,38 @@ export function getAllTargetsAtPoint(
     return []
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  const elementsFromDOM = findFirstParentsWithValidElementPath(
-    validElementPathsForLookup,
-    elementsUnderPoint,
-  )
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
-  return elementsFromDOM
+  return findFirstValidParentsForAllElements(validElementPathsForLookup, elementsUnderPoint)
 }
 
-const findFirstParentsWithValidElementPath = memoize(findFirstParentsWithValidElementPathUncached, {
+const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSingleElementUncached, {
   maxSize: 30,
 })
 
-function findFirstParentsWithValidElementPathUncached(
+function findFirstValidParentForSingleElementUncached(
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  elementsUnderPoint: Array<Element>,
+) {
+  const validPathsSet =
+    validElementPathsForLookup == 'no-filter'
+      ? 'no-filter'
+      : new Set(
+          validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
+        )
+  for (const element of elementsUnderPoint) {
+    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    if (foundValidElementPath != null) {
+      return foundValidElementPath
+    }
+  }
+  return null
+}
+
+const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllElementsUncached, {
+  maxSize: 30,
+})
+
+function findFirstValidParentsForAllElementsUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
 ) {
@@ -174,9 +194,9 @@ function findFirstParentsWithValidElementPathUncached(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
-      if (foundValidelementPath != null) {
-        return foundValidelementPath
+      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      if (foundValidElementPath != null) {
+        return foundValidElementPath
       } else {
         return null
       }
