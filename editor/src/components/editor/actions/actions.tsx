@@ -316,6 +316,7 @@ import {
   SetUserConfiguration,
   SetHoveredView,
   ClearHoveredViews,
+  SetAssetChecksum,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -357,6 +358,7 @@ import {
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
+  GithubChecksums,
   insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
@@ -450,6 +452,7 @@ import {
   openCodeEditorFile,
   removeToast,
   selectComponents,
+  setAssetChecksum,
   setPackageStatus,
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
@@ -1005,6 +1008,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     branchContents: currentEditor.branchContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
+    assetChecksums: currentEditor.assetChecksums,
   }
 }
 
@@ -2008,9 +2012,36 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    const githubChecksums = action.checksums != null ? { ...action.checksums } : null
+    const assetChecksums = { ...editor.assetChecksums }
+    if (githubChecksums != null) {
+      // patch checksums
+      Object.keys(editor.assetChecksums).forEach((k) => {
+        if (githubChecksums[k] == undefined) {
+          githubChecksums[k] = editor.assetChecksums[k] // local, non-committed checksums win
+        } else {
+          assetChecksums[k] = githubChecksums[k] // remote sha checksums win
+        }
+      })
+    }
     return {
       ...editor,
-      githubChecksums: action.checksums,
+      githubChecksums: githubChecksums,
+      assetChecksums: assetChecksums,
+    }
+  },
+  SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
+    const assetChecksums: GithubChecksums =
+      editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
+    if (action.checksum == null) {
+      delete assetChecksums[action.filename]
+    } else {
+      assetChecksums[action.filename.replace(/^\.\//, '/')] = action.checksum
+    }
+
+    return {
+      ...editor,
+      assetChecksums: assetChecksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -3301,10 +3332,11 @@ export const UPDATE_FNS = {
     let editorWithToast = editor
     if (isLoggedIn(userState.loginState) && editor.id != null) {
       saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
-        .then(() => {
+        .then((checksum) => {
           dispatch(
             [
               ...actionsToRunAfterSave,
+              setAssetChecksum(assetFilename, checksum),
               showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
             ],
             'everyone',
@@ -5066,6 +5098,7 @@ export const UPDATE_FNS = {
       {
         branchName: action.branchName,
         commitMessage: action.commitMessage,
+        assetChecksums: editor.assetChecksums,
       },
     )
 

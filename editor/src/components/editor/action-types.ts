@@ -943,6 +943,12 @@ export interface UpdateGithubChecksums {
   checksums: GithubChecksums | null
 }
 
+export interface SetAssetChecksum {
+  action: 'SET_ASSET_CHECKSUM'
+  filename: string
+  checksum: string | null
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1234,6 +1240,7 @@ export type EditorAction =
   | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
+  | SetAssetChecksum
 
 export type DispatchPriority =
   | 'everyone'

@@ -202,6 +202,7 @@ export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
+  assetChecksums: GithubChecksums
 }
 
 export async function saveProjectToGithub(
@@ -254,7 +255,9 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
-            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
+            updateGithubChecksums(
+              getProjectContentsChecksums(persistentModel.projectContents, options.assetChecksums),
+            ),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -462,7 +465,7 @@ export async function updateProjectAgainstGithub(
             dispatch(
               [
                 updateGithubChecksums(
-                  getProjectContentsChecksums(branchLatestContent.branch.content),
+                  getProjectContentsChecksums(branchLatestContent.branch.content, {}),
                 ),
                 updateBranchContents(branchLatestContent.branch.content),
                 updateAgainstGithub(
@@ -582,7 +585,7 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
+              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content, {})),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
@@ -745,16 +748,18 @@ const githubFileChangesSelector = createSelector(
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
   (store) => store.editor.githubData.treeConflicts,
+  (store) => store.editor.assetChecksums,
   (
     projectContents,
     githubAuthenticated,
     githubChecksums,
     treeConflicts,
+    assetChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents)
+    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
@@ -1188,7 +1193,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  branchChecksums: GithubChecksums | null,
+  localChecksums: GithubChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {
@@ -1203,9 +1208,9 @@ export async function refreshGithubData(
     if (githubRepo != null) {
       promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, branchChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(branchName, localChecksums, githubRepo, previousCommitSha),
       )
-      if (branchName != null && branchChecksums != null) {
+      if (branchName != null && localChecksums != null) {
         promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
       }
     } else {
@@ -1236,13 +1241,13 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  branchChecksums: GithubChecksums | null,
+  localChecksums: GithubChecksums | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
-  if (branchName != null && branchChecksums != null) {
+  if (branchName != null && localChecksums != null) {
     const branchContentResponse = await getBranchContentFromServer(
       githubRepo,
       branchName,
@@ -1253,8 +1258,11 @@ async function updateUpstreamChanges(
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
       if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
         upstreamChangesSuccess = true
-        const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.branch.content)
-        const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
+        const upstreamChecksums = getProjectContentsChecksums(
+          branchLatestContent.branch.content,
+          {},
+        )
+        const upstreamChanges = deriveGithubFileChanges(localChecksums, upstreamChecksums, {})
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,
