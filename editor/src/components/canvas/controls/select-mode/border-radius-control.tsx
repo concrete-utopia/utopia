@@ -186,7 +186,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             }}
           >
             <CanvasLabel
-              value={`Radius ${printCSSNumber(borderRadius.value, null)}`}
+              value={`${printCSSNumber(borderRadius.value, null)}`}
               scale={scale}
               color={color}
             />
