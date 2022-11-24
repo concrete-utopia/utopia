@@ -41,7 +41,9 @@ import {
   BorderRadiusSides,
   maxBorderRadius,
 } from '../../border-radius-control-utils'
+import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
@@ -136,6 +138,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     ],
     apply: () =>
       strategyApplicationResult([
+        setCursorCommand(CSSCursor.Radius),
         commands(selectedElement),
         setElementsToRerenderCommand(selectedElements),
       ]),

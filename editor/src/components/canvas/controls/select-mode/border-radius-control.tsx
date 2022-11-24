@@ -27,6 +27,7 @@ import {
   borderRadiusResizeHandle,
   createInteractionViaMouse,
 } from '../../canvas-strategies/interaction-state'
+import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -169,6 +170,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         padding: padding,
         border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
         pointerEvents: 'all',
+        cursor: CSSCursor.Radius,
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
