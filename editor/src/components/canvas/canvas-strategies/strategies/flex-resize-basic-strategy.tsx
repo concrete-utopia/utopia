@@ -130,7 +130,7 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          if (metadata != null) {
+          if (metadata == null) {
             return emptyStrategyApplicationResult
           }
 
