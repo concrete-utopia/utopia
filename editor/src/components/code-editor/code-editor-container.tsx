@@ -6,6 +6,8 @@ import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
 import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
 
+export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
+
 const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   const projectID = props.projectID
   const baseIframeSrc = createIframeUrl(
@@ -28,7 +30,7 @@ const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
       {window.KarmaTestEnvironment ? null : (
         <iframe
           key={'vscode-editor'}
-          id={'vscode-editor'}
+          id={VSCODE_EDITOR_IFRAME_ID}
           src={url.toString()}
           allow='autoplay'
           style={{

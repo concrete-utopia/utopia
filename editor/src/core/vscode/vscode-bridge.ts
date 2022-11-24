@@ -66,6 +66,7 @@ import {
   Theme,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+import { VSCODE_EDITOR_IFRAME_ID } from '../../components/code-editor/code-editor-container'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -234,12 +235,6 @@ export async function sendUpdateDecorationsMessage(
   return sendMessage(updateDecorationsMessage(decorations))
 }
 
-export async function sendSelectedElementChangedMessage(
-  boundsForFile: BoundsInFile,
-): Promise<void> {
-  return sendMessage(selectedElementChanged(boundsForFile))
-}
-
 export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
   return sendMessage(setFollowSelectionConfig(enabled))
 }
@@ -317,15 +312,21 @@ export function getSelectedElementChangedMessage(
   if (highlightBounds == null) {
     return null
   } else {
-    return selectedElementChanged(
-      boundsInFile(
-        highlightBounds.filePath,
-        highlightBounds.startLine,
-        highlightBounds.startCol,
-        highlightBounds.endLine,
-        highlightBounds.endCol,
-      ),
-    )
+    if (document.activeElement?.id === VSCODE_EDITOR_IFRAME_ID) {
+      // If the code editor is active, we don't want to inform it of selection changes as that
+      // would then update the user's cursor in VS Code
+      return null
+    } else {
+      return selectedElementChanged(
+        boundsInFile(
+          highlightBounds.filePath,
+          highlightBounds.startLine,
+          highlightBounds.startCol,
+          highlightBounds.endLine,
+          highlightBounds.endCol,
+        ),
+      )
+    }
   }
 }
 
