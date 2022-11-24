@@ -129,7 +129,7 @@ function replaceLoadingMessage(newMessage: string) {
   }
 }
 
-function collectElementsToRerenderTransient(
+function collectElementsToRerenderForTransientActions(
   working: Array<ElementPath>,
   action: EditorAction,
 ): Array<ElementPath> {
@@ -137,7 +137,9 @@ function collectElementsToRerenderTransient(
     if (action.elementsToRerender != null) {
       working.push(...action.elementsToRerender)
     }
-    working.push(...action.transientActions.reduce(collectElementsToRerenderTransient, working))
+    working.push(
+      ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
+    )
     return working
   } else {
     return working
@@ -157,7 +159,10 @@ function fixElementsToRerender(
 ): ElementsToRerender {
   // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
-    dispatchedActions.reduce(collectElementsToRerenderTransient, [] as Array<ElementPath>),
+    dispatchedActions.reduce(
+      collectElementsToRerenderForTransientActions,
+      [] as Array<ElementPath>,
+    ),
     EP.pathsEqual,
   )
 
