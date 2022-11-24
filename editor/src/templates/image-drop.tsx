@@ -74,7 +74,7 @@ export async function insertImageFromClipboard(
 }
 
 export interface DropContext {
-  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<void>
+  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<string>
   mousePosition: CanvasPositions
   editor: () => EditorState
   dispatch: EditorDispatch
@@ -138,7 +138,7 @@ async function onDrop(
 
     await context
       .saveAssets(projectId, assetInfo)
-      .then(() => {
+      .then((checksums) => {
         const substitutionPaths = stripNulls(
           assetInfo.flatMap((i) =>
             i.projectPath == null ? [] : [{ uid: i.uid, path: i.projectPath }],
@@ -156,6 +156,9 @@ async function onDrop(
 
         context.dispatch([
           ...srcUpdateActions,
+          ...assetInfo.map((i, index) => {
+            return EditorActions.setAssetChecksum(i.fileName, checksums[index])
+          }),
           EditorActions.showToast(notice('Succesfully uploaded assets')),
           ...openFileActions,
         ])
