@@ -645,7 +645,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -664,7 +666,9 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -677,7 +681,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      return transient ? [transientActions(actionsArray)] : actionsArray
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
     },
     [refElementsToTargetForUpdates],
   )
@@ -695,7 +701,9 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      return transient ? [transientActions(actionsArray)] : actionsArray
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
     },
     [refElementsToTargetForUpdates],
   )

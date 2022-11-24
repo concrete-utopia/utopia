@@ -308,10 +308,14 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   }
 }
 
-export function transientActions(actions: Array<EditorAction>): TransientActions {
+export function transientActions(
+  actions: Array<EditorAction>,
+  elementsToRerender: Array<ElementPath> | null = null,
+): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
+    elementsToRerender: elementsToRerender,
   }
 }
 
