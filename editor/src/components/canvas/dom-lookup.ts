@@ -20,6 +20,7 @@ import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
+import { memoize } from '../../core/shared/memoize'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
@@ -149,6 +150,20 @@ export function getAllTargetsAtPoint(
     return []
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsFromDOM = findFirstParentsWithValidElementPath(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+  )
+  // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
+  return elementsFromDOM
+}
+
+const findFirstParentsWithValidElementPath = memoize(findFirstParentsWithValidElementPathUncached)
+
+function findFirstParentsWithValidElementPathUncached(
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  elementsUnderPoint: Array<Element>,
+) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
       ? 'no-filter'
@@ -165,8 +180,6 @@ export function getAllTargetsAtPoint(
       }
     }),
   )
-
-  // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
   return elementsFromDOM
 }
 
