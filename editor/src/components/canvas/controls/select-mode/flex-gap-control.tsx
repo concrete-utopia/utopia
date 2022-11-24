@@ -1,24 +1,14 @@
 import React, { useState } from 'react'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasRectangle,
-  CanvasVector,
-  size,
-  Size,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
+import { CanvasRectangle, size, Size } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
-import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
-import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
+import { disabledHandle, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import {
@@ -26,6 +16,7 @@ import {
   CSSNumberWithRenderedValue,
   DisabledColor,
   PillHandle,
+  startResizeInteraction,
   useHoverWithDelay,
 } from './controls-common'
 
@@ -95,11 +86,10 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (disabled !== true) {
-        startInteraction(e, dispatch, canvasOffset.current, scale)
-      }
+      const handle = props.disabled ? disabledHandle() : flexGapHandle()
+      startResizeInteraction(e, dispatch, handle, canvasOffset.current, scale)
     },
-    [canvasOffset, disabled, dispatch, scale],
+    [canvasOffset, dispatch, props.disabled, scale],
   )
 
   return (
@@ -287,29 +277,4 @@ function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
     return size(12 / scale, 4 / scale)
   }
   assertNever(flexDirection)
-}
-
-function startInteraction(
-  event: React.MouseEvent<HTMLDivElement>,
-  dispatch: EditorDispatch,
-  canvasOffset: CanvasVector,
-  scale: number,
-) {
-  if (event.buttons === 1 && event.button !== 2) {
-    event.stopPropagation()
-    const canvasPositions = windowToCanvasCoordinates(
-      scale,
-      canvasOffset,
-      windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-    )
-    dispatch([
-      CanvasActions.createInteractionSession(
-        createInteractionViaMouse(
-          canvasPositions.canvasPositionRaw,
-          Modifier.modifiersForEvent(event),
-          flexGapHandle(),
-        ),
-      ),
-    ])
-  }
 }

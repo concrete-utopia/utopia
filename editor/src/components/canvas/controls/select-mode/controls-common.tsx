@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { defaultEither, Either } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { roundTo, size } from '../../../../core/shared/math-utils'
+import { CanvasVector, roundTo, size, windowPoint } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
@@ -15,9 +15,16 @@ import {
 } from '../../../inspector/common/css-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { Modifiers } from '../../../../utils/modifiers'
+import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
+import { EditorDispatch } from '../../../editor/action-types'
+import CanvasActions from '../../canvas-actions'
+import {
+  CanvasControlType,
+  createInteractionViaMouse,
+} from '../../canvas-strategies/interaction-state'
+import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const Emdash: string = '\u2014'
 
@@ -246,4 +253,31 @@ export function shouldShowControls(params: ShouldShowControlsParams): boolean {
   }
 
   return true
+}
+
+export function startResizeInteraction(
+  event: React.MouseEvent<HTMLDivElement>,
+  dispatch: EditorDispatch,
+  handle: CanvasControlType,
+  canvasOffset: CanvasVector,
+  scale: number,
+): void {
+  if (event.buttons === 1 && event.button !== 2) {
+    event.stopPropagation()
+    const canvasPositions = windowToCanvasCoordinates(
+      scale,
+      canvasOffset,
+      windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+    )
+
+    dispatch([
+      CanvasActions.createInteractionSession(
+        createInteractionViaMouse(
+          canvasPositions.canvasPositionRaw,
+          Modifier.modifiersForEvent(event),
+          handle,
+        ),
+      ),
+    ])
+  }
 }

@@ -1,7 +1,6 @@
 import React from 'react'
-import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
+import { CanvasVector, Size } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
@@ -19,17 +18,17 @@ import {
   BorderRadiusSides,
   handlePosition,
 } from '../../border-radius-control-utils'
-import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
-import {
-  borderRadiusResizeHandle,
-  createInteractionViaMouse,
-} from '../../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
+import { borderRadiusResizeHandle, disabledHandle } from '../../canvas-strategies/interaction-state'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CanvasLabel, CSSNumberWithRenderedValue, DisabledColor } from './controls-common'
+import {
+  CanvasLabel,
+  CSSNumberWithRenderedValue,
+  DisabledColor,
+  startResizeInteraction,
+} from './controls-common'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner, disabled: boolean): string =>
   `circular-handle-${disabled ? 'disabled-' : ''}${corner}`
@@ -157,9 +156,11 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const handleHoverEnd = React.useCallback(() => setHovered(false), [])
 
   const handleMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) =>
-      !disabled && startInteraction(e, dispatch, canvasOffsetRef.current, scale, corner),
-    [canvasOffsetRef, corner, disabled, dispatch, scale],
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const handle = props.disabled ? disabledHandle() : borderRadiusResizeHandle(corner)
+      startResizeInteraction(e, dispatch, handle, canvasOffsetRef.current, scale)
+    },
+    [canvasOffsetRef, corner, dispatch, props.disabled, scale],
   )
 
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
@@ -235,29 +236,3 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     </div>
   )
 })
-
-function startInteraction(
-  event: React.MouseEvent<HTMLDivElement>,
-  dispatch: EditorDispatch,
-  canvasOffset: CanvasVector,
-  scale: number,
-  corner: BorderRadiusCorner,
-) {
-  if (event.buttons === 1 && event.button !== 2) {
-    event.stopPropagation()
-    const canvasPositions = windowToCanvasCoordinates(
-      scale,
-      canvasOffset,
-      windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-    )
-    dispatch([
-      CanvasActions.createInteractionSession(
-        createInteractionViaMouse(
-          canvasPositions.canvasPositionRaw,
-          Modifier.modifiersForEvent(event),
-          borderRadiusResizeHandle(corner),
-        ),
-      ),
-    ])
-  }
-}
