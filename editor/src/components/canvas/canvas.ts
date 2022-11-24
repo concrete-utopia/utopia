@@ -19,6 +19,7 @@ import * as EP from '../../core/shared/element-path'
 import { buildTree, ElementPathTree, getSubTree } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
+import { memoize } from '../../core/shared/memoize'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -34,6 +35,85 @@ type FrameWithPath = {
   frame: CanvasRectangle
 }
 
+function getFramesInCanvasContextUncached(
+  allElementProps: AllElementProps,
+  metadata: ElementInstanceMetadataMap,
+  useBoundingFrames: boolean,
+): Array<FrameWithPath> {
+  // Note: This will not necessarily be representative of the structured ordering in
+  // the code that produced these elements.
+  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+
+  function recurseChildren(componentTree: ElementPathTree): {
+    boundingRect: CanvasRectangle | null
+    frames: Array<FrameWithPath>
+  } {
+    const component = MetadataUtils.findElementByElementPath(metadata, componentTree.path)
+    if (component == null) {
+      return {
+        boundingRect: null,
+        frames: [],
+      }
+    }
+    const globalFrame = component.globalFrame
+    if (globalFrame == null) {
+      return {
+        boundingRect: null,
+        frames: [],
+      }
+    }
+
+    const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
+    const includeClippedNext = useBoundingFrames && overflows
+
+    let children: Array<ElementPathTree> = []
+    let unfurledComponents: Array<ElementPathTree> = []
+    fastForEach(componentTree.children, (childTree) => {
+      if (EP.isRootElementOfInstance(childTree.path)) {
+        unfurledComponents.push(childTree)
+      } else {
+        children.push(childTree)
+      }
+    })
+
+    const childFrames = children.map((child) => {
+      const recurseResults = recurseChildren(child)
+      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
+    })
+    const unfurledFrames = unfurledComponents.map((unfurledElement) => {
+      const recurseResults = recurseChildren(unfurledElement)
+      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
+    })
+    const allFrames = [...childFrames, ...unfurledFrames]
+    const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
+    if (allFrames.length > 0 && allChildrenBounds != null) {
+      const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
+      const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
+      const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
+      return {
+        boundingRect: boundingRect,
+        frames: [toAppend].concat(allChildrenFrames),
+      }
+    } else {
+      const boundingRect = globalFrame
+      const toAppend = { path: component.elementPath, frame: boundingRect }
+      return { boundingRect: boundingRect, frames: [toAppend] }
+    }
+  }
+
+  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+  return storyboardChildren.flatMap((storyboardChild) => {
+    const subTree = getSubTree(projectTree, storyboardChild)
+    if (subTree == null) {
+      return []
+    } else {
+      return recurseChildren(subTree).frames
+    }
+  })
+}
+
 const Canvas = {
   parentsAndSiblings: [
     TargetSearchType.SelectedElements,
@@ -46,84 +126,7 @@ const Canvas = {
     TargetSearchType.SiblingsOfSelected,
     TargetSearchType.ParentsOfSelected,
   ],
-  getFramesInCanvasContext(
-    allElementProps: AllElementProps,
-    metadata: ElementInstanceMetadataMap,
-    useBoundingFrames: boolean,
-  ): Array<FrameWithPath> {
-    // Note: This will not necessarily be representative of the structured ordering in
-    // the code that produced these elements.
-    const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
-
-    function recurseChildren(componentTree: ElementPathTree): {
-      boundingRect: CanvasRectangle | null
-      frames: Array<FrameWithPath>
-    } {
-      const component = MetadataUtils.findElementByElementPath(metadata, componentTree.path)
-      if (component == null) {
-        return {
-          boundingRect: null,
-          frames: [],
-        }
-      }
-      const globalFrame = component.globalFrame
-      if (globalFrame == null) {
-        return {
-          boundingRect: null,
-          frames: [],
-        }
-      }
-
-      const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
-      const includeClippedNext = useBoundingFrames && overflows
-
-      let children: Array<ElementPathTree> = []
-      let unfurledComponents: Array<ElementPathTree> = []
-      fastForEach(componentTree.children, (childTree) => {
-        if (EP.isRootElementOfInstance(childTree.path)) {
-          unfurledComponents.push(childTree)
-        } else {
-          children.push(childTree)
-        }
-      })
-
-      const childFrames = children.map((child) => {
-        const recurseResults = recurseChildren(child)
-        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
-        return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
-      })
-      const unfurledFrames = unfurledComponents.map((unfurledElement) => {
-        const recurseResults = recurseChildren(unfurledElement)
-        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
-        return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
-      })
-      const allFrames = [...childFrames, ...unfurledFrames]
-      const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
-      if (allFrames.length > 0 && allChildrenBounds != null) {
-        const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
-        const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
-        const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
-        return {
-          boundingRect: boundingRect,
-          frames: [toAppend].concat(allChildrenFrames),
-        }
-      } else {
-        const boundingRect = globalFrame
-        const toAppend = { path: component.elementPath, frame: boundingRect }
-        return { boundingRect: boundingRect, frames: [toAppend] }
-      }
-    }
-
-    const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
-    return storyboardChildren.flatMap((storyboardChild) => {
-      const subTree = getSubTree(projectTree, storyboardChild)
-      if (subTree == null) {
-        return []
-      } else {
-        return recurseChildren(subTree).frames
-      }
-    })
-  },
+  getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 2 }),
   jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:

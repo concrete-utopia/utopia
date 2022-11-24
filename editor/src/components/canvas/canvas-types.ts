@@ -64,6 +64,13 @@ export enum CSSCursor {
   PointerMagic = "-webkit-image-set( url( '/editor/cursors/cursor-pointer-magic.png ') 1x, url( '/editor/cursors/cursor-pointer-magic@2x.png ') 2x ) 4 4, default",
   ColResize = 'col-resize',
   RowResize = 'row-resize',
+  Radius = "-webkit-image-set( url( '/editor/cursors/cursor-radius.png ') 1x, url( '/editor/cursors/cursor-radius@2x.png ') 2x ) 4 4, default",
+  PaddingWest = "-webkit-image-set( url( '/editor/cursors/cursor-padding-west.png ') 1x, url( '/editor/cursors/cursor-padding-west@2x.png ') 2x ) 4 9, ew-resize",
+  PaddingEast = "-webkit-image-set( url( '/editor/cursors/cursor-padding-east.png ') 1x, url( '/editor/cursors/cursor-padding-east@2x.png ') 2x ) 4 9, ew-resize",
+  PaddingNorth = "-webkit-image-set( url( '/editor/cursors/cursor-padding-north.png ') 1x, url( '/editor/cursors/cursor-padding-north@2x.png ') 2x ) 9 4, ns-resize",
+  PaddingSouth = "-webkit-image-set( url( '/editor/cursors/cursor-padding-south.png ') 1x, url( '/editor/cursors/cursor-padding-south@2x.png ') 2x ) 9 4, ns-resize",
+  GapNS = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ns.png ') 1x, url( '/editor/cursors/cursor-gap-ns@2x.png ') 2x ) 8 8, ns-resize",
+  GapEW = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ew.png ') 1x, url( '/editor/cursors/cursor-gap-ew@2x.png ') 2x ) 8 8, ew-resize",
 }
 
 export type VerticalRectangles = {
