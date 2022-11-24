@@ -586,7 +586,6 @@ function useSelectOrLiveModeSelectAndHover(
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
-  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
 
@@ -649,8 +648,8 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved) {
-        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
 
@@ -729,6 +728,7 @@ function useSelectOrLiveModeSelectAndHover(
       editorStoreRef,
       draggingAllowed,
       windowToCanvasCoordinates,
+      active,
     ],
   )
 

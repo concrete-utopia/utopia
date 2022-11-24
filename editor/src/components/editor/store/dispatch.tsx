@@ -730,7 +730,7 @@ function editorDispatchInner(
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
-    const actionNames = dispatchedActions.map((action) => action.action).join(',')
+    const actionNames = simpleStringifyActions(dispatchedActions)
     getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {

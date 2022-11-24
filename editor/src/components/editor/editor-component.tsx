@@ -48,8 +48,7 @@ import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
 } from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
-import { refreshGithubData } from '../../core/shared/github'
+import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
@@ -61,8 +60,6 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
   const title = `Utopia ${projectName}`
   window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
-
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 export interface EditorProps {}
 
@@ -86,8 +83,6 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
-  useGithubData()
-
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
@@ -394,66 +389,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     </>
   )
 })
-
-const useGithubData = (): void => {
-  const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
-  const {
-    githubAuthenticated,
-    githubRepo,
-    githubOperations,
-    branchName,
-    githubChecksums,
-    githubUserDetails,
-    lastRefreshedCommit,
-  } = useEditorState(
-    (store) => ({
-      githubAuthenticated: store.userState.githubState.authenticated,
-      githubRepo: store.editor.githubSettings.targetRepository,
-      githubOperations: store.editor.githubOperations,
-      branchName: store.editor.githubSettings.branchName,
-      githubChecksums: store.editor.githubChecksums,
-      githubUserDetails: store.editor.githubData.githubUserDetails,
-      lastRefreshedCommit: store.editor.githubData.lastRefreshedCommit,
-    }),
-    'Github data',
-  )
-
-  const refresh = React.useCallback(() => {
-    void refreshGithubData(
-      dispatch,
-      githubAuthenticated,
-      githubRepo,
-      branchName,
-      githubChecksums,
-      githubUserDetails,
-      lastRefreshedCommit,
-    )
-  }, [
-    dispatch,
-    githubAuthenticated,
-    githubRepo,
-    branchName,
-    githubChecksums,
-    githubUserDetails,
-    lastRefreshedCommit,
-  ])
-
-  // perform a straight refresh then the repo or the auth change
-  React.useEffect(() => refresh(), [refresh])
-
-  // schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
-  React.useEffect(() => {
-    if (githubOperations.length > 0) {
-      // ignore scheduling if there are already operations going on
-      return
-    }
-
-    let interval = setInterval(refresh, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
-    return function () {
-      clearInterval(interval)
-    }
-  }, [refresh, githubOperations])
-}
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const { modal, dispatch, currentBranch } = useEditorState((store) => {

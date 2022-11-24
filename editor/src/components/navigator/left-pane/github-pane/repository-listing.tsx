@@ -117,7 +117,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
+        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {props.isPrivate ? 'private' : 'public'}
           {props.updatedAt == null ? null : (
@@ -237,8 +237,14 @@ export const RepositoryListing = React.memo(
     const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
 
     const refreshRepos = React.useCallback(() => {
-      void getUsersPublicGithubRepositories(dispatch)
+      void getUsersPublicGithubRepositories(dispatch).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
     }, [dispatch])
+
+    React.useEffect(() => {
+      refreshRepos()
+    }, [refreshRepos])
 
     const clearRepository = React.useCallback(() => {
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')
