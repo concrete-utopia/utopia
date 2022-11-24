@@ -42,7 +42,7 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-export function getSHA1Checksum(contents: string | Buffer): string {
+function getSHA1Checksum(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
 
