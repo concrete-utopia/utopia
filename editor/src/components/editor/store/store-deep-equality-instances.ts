@@ -1250,7 +1250,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const borderRadiusEquals = nullableDeepEquality(SidesKeepDeepEquality)(
       oldSize.borderRadius,
       newSize.borderRadius,
-    )
+    ).areEqual
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
