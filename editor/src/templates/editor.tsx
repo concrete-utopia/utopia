@@ -172,10 +172,10 @@ function fixElementsToRerender(
     lastElementsToRerender !== 'rerender-all-elements'
   ) {
     // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
-    fixedElementsToRerender = uniqBy(
-      [...lastElementsToRerender, ...currentOrTransientElementsToRerender],
-      EP.pathsEqual,
-    )
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...currentOrTransientElementsToRerender,
+    ])
   }
 
   lastElementsToRerender = currentOrTransientElementsToRerender
