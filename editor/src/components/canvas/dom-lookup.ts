@@ -158,7 +158,9 @@ export function getAllTargetsAtPoint(
   return elementsFromDOM
 }
 
-const findFirstParentsWithValidElementPath = memoize(findFirstParentsWithValidElementPathUncached)
+const findFirstParentsWithValidElementPath = memoize(findFirstParentsWithValidElementPathUncached, {
+  maxSize: 30,
+})
 
 function findFirstParentsWithValidElementPathUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
