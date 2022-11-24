@@ -90,11 +90,12 @@ const BorderRadius = 2
 interface CanvasLabelProps {
   scale: number
   color: string
+  textColor: string
   value: string | number
 }
 
 export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
-  const { scale, color, value } = props
+  const { scale, color, value, textColor } = props
   const fontSize = FontSize / scale
   const padding = Padding / scale
   const borderRadius = BorderRadius / scale
@@ -104,7 +105,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         fontSize: fontSize,
         padding: padding,
         backgroundColor: color,
-        color: 'white',
+        color: textColor,
         borderRadius: borderRadius,
       }}
     >
@@ -128,7 +129,7 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
         width: width,
         height: height,
         backgroundColor: pillColor,
-        border: `${borderWidth}px solid ${colorTheme.bg0.value}`,
+        border: `${borderWidth}px solid ${colorTheme.white.value}`,
       }}
     />
   )
