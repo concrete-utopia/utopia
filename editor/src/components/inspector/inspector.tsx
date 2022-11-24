@@ -36,6 +36,7 @@ import {
 
 import {
   EditorStorePatched,
+  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -230,8 +231,11 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
-export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
-  return !isStrategyActive(strategyState)
+export function shouldInspectorUpdate(
+  strategyState: StrategyState,
+  elementsToRerender: ElementsToRerender,
+): boolean {
+  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
@@ -641,7 +645,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -660,7 +666,9 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -673,7 +681,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      return transient ? [transientActions(actionsArray)] : actionsArray
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
     },
     [refElementsToTargetForUpdates],
   )
@@ -691,7 +701,9 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      return transient ? [transientActions(actionsArray)] : actionsArray
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
     },
     [refElementsToTargetForUpdates],
   )

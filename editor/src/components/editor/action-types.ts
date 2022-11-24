@@ -255,6 +255,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
+  elementsToRerender: Array<ElementPath> | null
 }
 
 export type Atomic = {
