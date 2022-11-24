@@ -1,4 +1,4 @@
-import { appendNewElementPath, elementPath, fromString } from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   canvasVector,
   CanvasVector,
@@ -9,7 +9,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
 import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
@@ -159,9 +158,6 @@ describe('set border radius strategy', () => {
         x: divBounds.x + Math.floor(divBounds.width / 2),
         y: divBounds.y + Math.floor(divBounds.height / 2),
       }
-
-      const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
-      await editor.dispatch([selectComponents(selectedViews, false)], true)
 
       mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 

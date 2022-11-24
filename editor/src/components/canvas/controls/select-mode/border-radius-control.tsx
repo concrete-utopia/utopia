@@ -13,14 +13,14 @@ import {
   BorderRadiusAdjustMode,
   BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
-  BorderRadiusCorners,
   borderRadiusFromElement,
   BorderRadiusHandleBorderWidth,
   BorderRadiusHandleDotSize,
   BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
-  BorderRadiusSides,
+  BorderRadiusCornerMapped,
   handlePosition,
+  BorderRadiusCorners,
 } from '../../border-radius-control-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -40,7 +40,7 @@ export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
-  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue> | null
+  borderRadius: BorderRadiusCornerMapped<CSSNumberWithRenderedValue> | null
   showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
 }
@@ -88,30 +88,33 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   if (element == null) {
     return null
   }
+
   const borderRadius = borderRadiusFromElement(element)
   if (borderRadius == null) {
     return null
   }
 
+  const controls = BorderRadiusCorners.map((corner) => (
+    <CircularHandle
+      key={CircularHandleTestId(corner)}
+      borderRadius={(borderRadiusFromStrategy ?? borderRadius.borderRadius)[corner]}
+      isDragging={isDragging}
+      backgroundShown={backgroundShown}
+      scale={scale}
+      color={colorTheme.brandNeonPink.value}
+      canvasOffsetRef={canvasOffset}
+      dispatch={dispatch}
+      corner={corner}
+      elementSize={elementSize}
+      showIndicatorFromParent={showIndicatorOnEdge === corner}
+      showDot={mode === 'individual'}
+    />
+  ))
+
   return (
     <CanvasOffsetWrapper>
       <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
-        {BorderRadiusCorners.map((corner) => (
-          <CircularHandle
-            key={CircularHandleTestId(corner)}
-            borderRadius={(borderRadiusFromStrategy ?? borderRadius.borderRadius)[corner]}
-            isDragging={isDragging}
-            backgroundShown={backgroundShown}
-            scale={scale}
-            color={colorTheme.brandNeonPink.value}
-            canvasOffsetRef={canvasOffset}
-            dispatch={dispatch}
-            corner={corner}
-            elementSize={elementSize}
-            showIndicatorFromParent={showIndicatorOnEdge === corner}
-            showDot={mode === 'individual'}
-          />
-        ))}
+        {controls}
       </div>
     </CanvasOffsetWrapper>
   )

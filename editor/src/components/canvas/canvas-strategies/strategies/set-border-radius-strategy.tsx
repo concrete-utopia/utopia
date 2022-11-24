@@ -24,7 +24,7 @@ import {
   BorderRadiusCorner,
   BorderRadiusData,
   borderRadiusFromElement,
-  BorderRadiusSides,
+  BorderRadiusCornerMapped,
   mapBorderRadiusSides,
   maxBorderRadius,
   sizeFromElement,
@@ -168,7 +168,7 @@ function deltaFromDrag(drag: CanvasVector, corner: BorderRadiusCorner): number {
 
 interface SetBorderRadiusStrategyRunResult {
   commands: (target: ElementPath) => CanvasCommand
-  updatedBorderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
+  updatedBorderRadius: BorderRadiusCornerMapped<CSSNumberWithRenderedValue>
 }
 
 interface BoderRadiusCorner {
