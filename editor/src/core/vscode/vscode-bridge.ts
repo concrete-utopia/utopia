@@ -66,7 +66,8 @@ import {
   Theme,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
-import { VSCODE_EDITOR_IFRAME_ID } from '../../components/code-editor/code-editor-container'
+
+export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`

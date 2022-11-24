@@ -5,8 +5,7 @@ import { createIframeUrl } from '../../core/shared/utils'
 import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
 import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
-
-export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
+import { VSCODE_EDITOR_IFRAME_ID } from '../../core/vscode/vscode-bridge'
 
 const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   const projectID = props.projectID
