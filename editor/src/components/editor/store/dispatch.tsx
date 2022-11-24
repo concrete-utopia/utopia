@@ -31,6 +31,7 @@ import {
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+  ElementsToRerender,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -427,10 +428,12 @@ export function editorDispatch(
     }
   }
 
-  const elementsToRerenderTransient = uniqBy<ElementPath>(
-    dispatchedActions.reduce(collectElementsToRerenderTransient, [] as Array<ElementPath>),
-    pathsEqual,
-  )
+  const elementsToRerenderTransient = allTransient
+    ? uniqBy<ElementPath>(
+        dispatchedActions.reduce(collectElementsToRerenderTransient, [] as Array<ElementPath>),
+        pathsEqual,
+      )
+    : 'rerender-all-elements'
 
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
 
@@ -661,7 +664,7 @@ function editorDispatchInner(
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-  elementsToRerenderTransient: Array<ElementPath>,
+  elementsToRerenderTransient: ElementsToRerender,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -740,7 +743,11 @@ function editorDispatchInner(
       }
     }
 
-    if (elementsToRerenderTransient.length > 0) {
+    // set transient elements to rerender after all actions are processed
+    if (
+      elementsToRerenderTransient === 'rerender-all-elements' ||
+      elementsToRerenderTransient.length > 0
+    ) {
       result = {
         ...result,
         unpatchedEditor: {
