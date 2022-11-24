@@ -94,11 +94,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     return null
   }
 
-  // console.group()
-  // console.log('computedStyle', element.computedStyle?.borderRadius)
-  // console.log('specialSizeMeasurements', element.specialSizeMeasurements.borderRadius)
-  // console.groupEnd()
-
   const controls = BorderRadiusCorners.map((corner) => (
     <CircularHandle
       key={CircularHandleTestId(corner)}

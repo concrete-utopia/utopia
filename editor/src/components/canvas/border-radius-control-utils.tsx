@@ -1,13 +1,6 @@
 import { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import {
-  foldEither,
-  defaultEither,
-  isLeft,
-  isRight,
-  right,
-  mapEither,
-} from '../../core/shared/either'
+import { foldEither, defaultEither, isLeft, isRight, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
   isIntrinsicElement,
@@ -25,7 +18,6 @@ import {
   CSSBorderRadiusIndividual,
   CSSNumber,
   cssNumber,
-  parseBorderRadius,
 } from '../inspector/common/css-utils'
 import {
   CSSNumberWithRenderedValue,
@@ -39,6 +31,8 @@ import {
 export type BorderRadiusCorner = keyof CSSBorderRadiusIndividual
 
 export const BorderRadiusCorners: BorderRadiusCorner[] = ['tl', 'tr', 'bl', 'br']
+
+const AllSides: Array<keyof Sides> = ['bottom', 'left', 'right', 'top']
 
 export type BorderRadiusCornerMapped<T> = { [key in BorderRadiusCorner]: T }
 
@@ -94,22 +88,13 @@ export function borderRadiusFromElement(
     return null
   }
 
-  const renderedValueSides: BorderRadiusCornerMapped<CSSNumber> | null = optionalMap(
-    (borderRadius) =>
-      defaultEither(
-        null,
-        mapEither(borderRadiusIndividualFromCSSBorderRadius, parseBorderRadius(borderRadius)),
-      ),
-    element.computedStyle?.borderRadius,
-  )
+  const renderedValueSides = element.specialSizeMeasurements.borderRadius
   if (renderedValueSides == null) {
     return null
   }
 
   const fromProps = borderRadiusFromProps(jsxElement.props)
-  const measurementsNonZero = BorderRadiusCorners.some(
-    (c) => (renderedValueSides[c].value ?? 0) > 0,
-  )
+  const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
   const elementIsIntrinsicElementOrScene = foldEither(
     () => false,
@@ -240,14 +225,14 @@ export function sizeFromElement(element: ElementInstanceMetadata): Size {
 }
 
 function measurementFromBorderRadius(
-  corners: BorderRadiusCornerMapped<CSSNumber>,
+  sides: Sides,
   borderRadius: BorderRadiusFromProps,
 ): BorderRadiusCornerMapped<CSSNumberWithRenderedValue> | null {
   return {
-    tl: cssNumberWithRenderedValue(borderRadius.sides.tl, corners.tl.value),
-    tr: cssNumberWithRenderedValue(borderRadius.sides.tr, corners.tr.value),
-    bl: cssNumberWithRenderedValue(borderRadius.sides.bl, corners.bl.value),
-    br: cssNumberWithRenderedValue(borderRadius.sides.br, corners.br.value),
+    tl: cssNumberWithRenderedValue(borderRadius.sides.tl, sides.top ?? 0),
+    tr: cssNumberWithRenderedValue(borderRadius.sides.tr, sides.right ?? 0),
+    bl: cssNumberWithRenderedValue(borderRadius.sides.bl, sides.bottom ?? 0),
+    br: cssNumberWithRenderedValue(borderRadius.sides.br, sides.left ?? 0),
   }
 }
 

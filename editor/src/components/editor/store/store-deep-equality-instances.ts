@@ -1281,7 +1281,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       hasPositionOffsetEquals &&
       textDirectionEquals &&
       hasTransformEquals &&
-      borderRadiusEquals
+      borderRadiusEquals.areEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
