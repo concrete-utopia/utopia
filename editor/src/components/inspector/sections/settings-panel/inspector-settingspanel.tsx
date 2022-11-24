@@ -20,16 +20,12 @@ import {
   CheckboxInput,
   FlexColumn,
   useColorTheme,
-  Button,
-  StringInput,
   HeadlessStringInput,
 } from '../../../../uuiui'
-import { getControlStyles, SliderControl } from '../../../../uuiui-deps'
+import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
-import { NO_OP } from '../../../../core/shared/utils'
 import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
-import { MoveIntoDragThreshold } from '../../../canvas/canvas-utils'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -47,19 +43,6 @@ const FeatureSwitchesSection = React.memo(() => {
         {AllFeatureNames.map((name) => (
           <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
         ))}
-        <FlexRow>
-          Drag threshold
-          <SimpleSlider
-            id='MoveIntoDragThreshold.current'
-            min={0}
-            max={15}
-            initialValue={MoveIntoDragThreshold.current}
-            // eslint-disable-next-line react/jsx-no-bind
-            onChange={(v) => {
-              MoveIntoDragThreshold.current = v
-            }}
-          />
-        </FlexRow>
       </React.Fragment>
     )
   } else {
