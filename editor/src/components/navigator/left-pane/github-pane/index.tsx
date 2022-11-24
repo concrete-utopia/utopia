@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
+  dispatchPromiseActions,
   getBranchesForGithubRepository,
   getGithubFileChangesCount,
   githubFileChangesToList,
@@ -170,9 +171,16 @@ const BranchBlock = () => {
 
   const refreshBranches = React.useCallback(() => {
     if (targetRepository != null) {
-      void getBranchesForGithubRepository(dispatch, targetRepository)
+      void dispatchPromiseActions(
+        dispatch,
+        getBranchesForGithubRepository(dispatch, targetRepository),
+      )
     }
   }, [dispatch, targetRepository])
+
+  React.useEffect(() => {
+    refreshBranches()
+  }, [refreshBranches])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -470,7 +478,7 @@ const RemoteChangesBlock = () => {
       subtitle={
         <TimeAgo
           style={{ color: colorTheme.fg7.value }}
-          date={githubLastUpdatedAt || 0}
+          date={githubLastUpdatedAt ?? 0}
           formatter={compactTimeagoFormatter}
         />
       }

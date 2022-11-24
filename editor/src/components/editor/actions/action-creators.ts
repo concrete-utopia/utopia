@@ -1021,10 +1021,7 @@ export function updateGithubSettings(
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
-    data: {
-      lastUpdatedAt: Date.now(),
-      ...data,
-    },
+    data: data,
   }
 }
 
