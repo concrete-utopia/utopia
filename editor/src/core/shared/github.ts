@@ -271,7 +271,7 @@ export async function saveProjectToGithub(
         )
 
         // refresh the branches after the content was saved
-        if (persistentModel.githubSettings.targetRepository) {
+        if (persistentModel.githubSettings.targetRepository != null) {
           void dispatchPromiseActions(
             dispatch,
             getBranchesForGithubRepository(

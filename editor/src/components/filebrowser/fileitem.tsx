@@ -486,7 +486,7 @@ class FileBrowserItemInner extends React.PureComponent<
             EditorActions.showModal({
               type: 'file-revert',
               filePath: this.props.path,
-              status: this.props.githubStatus || null,
+              status: this.props.githubStatus ?? null,
             }),
           ],
           'everyone',

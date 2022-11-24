@@ -709,7 +709,7 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      if (process.env.HOT_MODE) {
+      if (process.env.HOT_MODE != null) {
         ReactDOM.render(
           <HotRoot
             api={api}

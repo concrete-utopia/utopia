@@ -101,7 +101,7 @@ const RepositoryBlock = () => {
     (store) => store.userState.githubState.authenticated,
     'RepositoryBlock authenticated',
   )
-  const repoName = React.useMemo(() => githubRepoFullName(repo) || undefined, [repo])
+  const repoName = React.useMemo(() => githubRepoFullName(repo) ?? undefined, [repo])
   const hasRepo = React.useMemo(() => repo != null, [repo])
   const [expanded, setExpanded] = React.useState(false)
   React.useEffect(() => {
@@ -404,7 +404,7 @@ const BranchBlock = () => {
       expanded={expanded}
       onClick={toggleExpanded}
       title={currentBranch != null ? 'Branch' : 'Select Branch'}
-      subtitle={currentBranch || undefined}
+      subtitle={currentBranch ?? undefined}
       status={!expanded && currentBranch != null ? 'successful' : 'incomplete'}
       last={currentBranch == null}
     >
@@ -634,7 +634,7 @@ const LocalChangesBlock = () => {
               <StringInput
                 testId='commit-branch-input'
                 placeholder='New branch name'
-                value={rawCommitBranchName || ''}
+                value={rawCommitBranchName ?? ''}
                 onChange={updateCommitBranchName}
               />
               {when(
@@ -809,7 +809,7 @@ const BranchNotLoadedBlock = () => {
     setFlow(isANewBranch ? 'createBranch' : null)
   }, [branchName, isANewBranch])
 
-  if (!branchName || branchLoaded) {
+  if (branchName == null || branchName === '' || branchLoaded) {
     return null
   }
   return (

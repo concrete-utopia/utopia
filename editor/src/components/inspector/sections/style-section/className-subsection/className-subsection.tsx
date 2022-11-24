@@ -362,9 +362,13 @@ const ClassNameControl = React.memo(() => {
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const enabledColor = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const enabledColor = (isFocused as boolean)
+        ? theme.inverted.textColor.value
+        : theme.inverted.primary.value
       const color = isMenuEnabled ? enabledColor : theme.fg8.value
-      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      const backgroundColor = (isFocused as boolean)
+        ? theme.inverted.primary.value
+        : theme.bg1.value
       return {
         ...base,
         label: 'multiValueLabel',
@@ -409,8 +413,10 @@ const ClassNameControl = React.memo(() => {
 
   const multiValue: styleFn = React.useCallback(
     (base, { isFocused, data }) => {
-      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
-      if (isFocused) {
+      const backgroundColor = (isFocused as boolean)
+        ? theme.inverted.primary.value
+        : theme.bg1.value
+      if (isFocused as boolean) {
         focusedValueRef.current = data.label
       }
 
@@ -426,7 +432,7 @@ const ClassNameControl = React.memo(() => {
         minWidth: 0,
         height: UtopiaTheme.layout.inputHeight.small,
         boxShadow: `inset 0 0 0 1px ${
-          isFocused ? theme.inspectorFocusedColor.value : 'transparent'
+          (isFocused as boolean) ? theme.inspectorFocusedColor.value : 'transparent'
         }`,
         overflow: 'hidden',
         backgroundColor: backgroundColor,
@@ -440,7 +446,7 @@ const ClassNameControl = React.memo(() => {
       if (
         isFocusedRef.current &&
         shouldPreviewOnFocusRef.current &&
-        isFocused &&
+        (isFocused as boolean) &&
         targets.length === 1
       ) {
         const oldClassNameString =
@@ -465,9 +471,11 @@ const ClassNameControl = React.memo(() => {
         updateFocusedOption(value)
       }
 
-      const color = isFocused ? theme.inverted.textColor.value : theme.textColor.value
-      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
-      const borderRadius = isFocused ? 3 : 0
+      const color = (isFocused as boolean) ? theme.inverted.textColor.value : theme.textColor.value
+      const backgroundColor = (isFocused as boolean)
+        ? theme.inverted.primary.value
+        : theme.bg1.value
+      const borderRadius = (isFocused as boolean) ? 3 : 0
 
       return {
         minHeight: 27,
@@ -477,7 +485,7 @@ const ClassNameControl = React.memo(() => {
         paddingRight: 8,
         backgroundColor: backgroundColor,
         color: color,
-        cursor: isDisabled ? 'not-allowed' : 'default',
+        cursor: (isDisabled as boolean) ? 'not-allowed' : 'default',
         borderRadius: borderRadius,
       }
 

@@ -282,7 +282,7 @@ export const ClassNameSelect = React.memo(
             height: 18,
             border: `1px solid ${theme.inverted.primary.value}`,
             borderRadius: UtopiaTheme.inputBorderRadius,
-            backgroundColor: state.isFocused
+            backgroundColor: (state.isFocused as boolean)
               ? theme.inverted.primary.value
               : theme.inverted.bg1.value,
           }
@@ -337,7 +337,7 @@ export const ClassNameSelect = React.memo(
             paddingRight: 8,
             backgroundColor: optionColors.backgroundColor,
             color: optionColors.color,
-            cursor: isDisabled ? 'not-allowed' : 'default',
+            cursor: (isDisabled as boolean) ? 'not-allowed' : 'default',
 
             ':active': {
               ...(styles as any)[':active'],

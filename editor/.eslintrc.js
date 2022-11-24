@@ -6,5 +6,14 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+        allowNullableBoolean: true,
+      },
+    ],
   },
 }

@@ -166,7 +166,7 @@ const TitleBar = React.memo(() => {
           height: 27,
         }}
       >
-        {currentBranch ? (
+        {currentBranch != null ? (
           <SimpleFlexRow style={{ gap: 5 }}>
             {repoName}
             {<Icons.Branch style={{ width: 19, height: 19 }} />}

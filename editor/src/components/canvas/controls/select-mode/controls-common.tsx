@@ -143,7 +143,7 @@ export function useHoverWithDelay(
   const fadeInTimeout = React.useRef<Timeout | null>(null)
 
   const onHoverEnd = () => {
-    if (fadeInTimeout.current) {
+    if (fadeInTimeout.current != null) {
       clearTimeout(fadeInTimeout.current)
     }
     fadeInTimeout.current = null
