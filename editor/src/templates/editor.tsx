@@ -113,6 +113,8 @@ import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/sto
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { ElementPath } from '../core/shared/project-file-types'
+import { uniqBy } from '../core/shared/array-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -127,6 +129,21 @@ function replaceLoadingMessage(newMessage: string) {
   }
 }
 
+function collectElementsToRerenderTransient(
+  working: Array<ElementPath>,
+  action: EditorAction,
+): Array<ElementPath> {
+  if (action.action === 'TRANSIENT_ACTIONS') {
+    if (action.elementsToRerender != null) {
+      working.push(...action.elementsToRerender)
+    }
+    working.push(...action.transientActions.reduce(collectElementsToRerenderTransient, working))
+    return working
+  } else {
+    return working
+  }
+}
+
 // If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
 // for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
 // the previously focused elements may not now exist.
@@ -134,8 +151,21 @@ function replaceLoadingMessage(newMessage: string) {
 // `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
 // for the very first pass to get another `rerender-all-elements`.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): ElementsToRerender {
-  let elementsToRerender: ElementsToRerender = currentElementsToRerender
+function fixElementsToRerender(
+  currentElementsToRerender: ElementsToRerender,
+  dispatchedActions: readonly EditorAction[],
+): ElementsToRerender {
+  // while running transient actions there is an optional elementsToRerender
+  const elementsToRerenderTransient = uniqBy<ElementPath>(
+    dispatchedActions.reduce(collectElementsToRerenderTransient, [] as Array<ElementPath>),
+    EP.pathsEqual,
+  )
+
+  const currentOrTransientElementsToRerender =
+    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+
+  let elementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
+
   switch (lastElementsToRerender) {
     case 'rerender-all-elements':
       switch (currentElementsToRerender) {
@@ -155,7 +185,8 @@ function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): E
           }
       }
   }
-  lastElementsToRerender = currentElementsToRerender
+
+  lastElementsToRerender = currentOrTransientElementsToRerender
   return elementsToRerender
 }
 
@@ -436,6 +467,7 @@ export class Editor {
         }
         const currentElementsToRender = fixElementsToRerender(
           this.storedState.patchedEditor.canvas.elementsToRerender,
+          dispatchedActions,
         )
         ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         ReactDOM.flushSync(() => {
@@ -495,10 +527,7 @@ export class Editor {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
             if (
-              shouldUpdateLowPriorityUI(
-                this.storedState.strategyState,
-                this.storedState.patchedEditor.canvas.elementsToRerender,
-              )
+              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
             ) {
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),

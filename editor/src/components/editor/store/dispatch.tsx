@@ -1,6 +1,6 @@
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { ElementPath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -31,7 +31,6 @@ import {
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
-  ElementsToRerender,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -62,9 +61,8 @@ import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
-import { pathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { uniqBy } from '../../../core/shared/array-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -412,29 +410,6 @@ export function editorDispatch(
       return updatedGroups
     }
   }
-
-  function collectElementsToRerenderTransient(
-    working: Array<ElementPath>,
-    action: EditorAction,
-  ): Array<ElementPath> {
-    if (action.action === 'TRANSIENT_ACTIONS') {
-      if (action.elementsToRerender != null) {
-        working.push(...action.elementsToRerender)
-      }
-      working.push(...action.transientActions.reduce(collectElementsToRerenderTransient, working))
-      return working
-    } else {
-      return working
-    }
-  }
-
-  const elementsToRerenderTransient = allTransient
-    ? uniqBy<ElementPath>(
-        dispatchedActions.reduce(collectElementsToRerenderTransient, [] as Array<ElementPath>),
-        pathsEqual,
-      )
-    : 'rerender-all-elements'
-
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
 
   const result: InnerDispatchResult = actionGroupsToProcess.reduce(
@@ -445,7 +420,6 @@ export function editorDispatch(
         working,
         spyCollector,
         strategiesToUse,
-        elementsToRerenderTransient,
       )
       return newStore
     },
@@ -664,7 +638,6 @@ function editorDispatchInner(
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-  elementsToRerenderTransient: ElementsToRerender,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -740,23 +713,6 @@ function editorDispatchInner(
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }
-      }
-    }
-
-    // set transient elements to rerender after all actions are processed
-    if (
-      elementsToRerenderTransient === 'rerender-all-elements' ||
-      elementsToRerenderTransient.length > 0
-    ) {
-      result = {
-        ...result,
-        unpatchedEditor: {
-          ...result.unpatchedEditor,
-          canvas: {
-            ...result.unpatchedEditor.canvas,
-            elementsToRerender: elementsToRerenderTransient,
-          },
-        },
       }
     }
 
