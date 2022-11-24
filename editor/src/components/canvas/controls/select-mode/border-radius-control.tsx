@@ -168,7 +168,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         left: position.x,
         top: position.y,
         padding: padding,
-        border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
         pointerEvents: 'all',
         cursor: CSSCursor.Radius,
       }}

@@ -226,7 +226,6 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           visibility: shouldShowHandle ? 'visible' : 'hidden',
           padding: hitAreaPadding,
           cursor: cursorFromFlexDirection(flexDirection),
-          border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
         }}
         onMouseDown={onMouseDown}
         onMouseEnter={handleHoverStartInner}

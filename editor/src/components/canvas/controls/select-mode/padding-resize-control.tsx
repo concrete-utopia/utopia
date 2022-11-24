@@ -172,7 +172,6 @@ const PaddingResizeControlI = React.memo(
             padding: hitAreaWidth,
             cursor: cursor,
             zIndex: 1,
-            border: isFeatureEnabled('Canvas Control Debug Border') ? '1px solid red' : undefined,
           }}
         >
           {!isDragging && indicatorShown && (
