@@ -65,7 +65,7 @@ const PaddingResizeControlWidth = 4
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
-const PaddingResizeControlHitAreaWidth = 10
+const PaddingResizeControlHitAreaWidth = 3
 
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
