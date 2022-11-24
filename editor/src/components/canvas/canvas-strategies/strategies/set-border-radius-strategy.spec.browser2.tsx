@@ -515,7 +515,11 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             width: '300px',
             height: '400px',
             backgroundColor: 'green',
-            ${props.internalBorderRadius ? `borderRadius: '${props.internalBorderRadius}',` : ''}
+            ${
+              props.internalBorderRadius != null
+                ? `borderRadius: '${props.internalBorderRadius}',`
+                : ''
+            }
             ...props.style,
           }}
           data-uid='RootDiv'
@@ -530,7 +534,11 @@ function projectWithComponentThatDefinesBorderRadiusInternally(
             position: 'absolute',
             left: 420,
             top: 420,
-            ${props.externalBorderRadius ? `borderRadius: '${props.externalBorderRadius}',` : ''}
+            ${
+              props.externalBorderRadius != null
+                ? `borderRadius: '${props.externalBorderRadius}',`
+                : ''
+            }
           }}
           data-uid='Horrible'
         />

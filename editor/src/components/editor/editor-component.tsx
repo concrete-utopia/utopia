@@ -253,7 +253,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     if (IS_BROWSER_TEST_DEBUG) {
       return
     }
-    if (projectId) {
+    if (projectId != null) {
       pushProjectURLToBrowserHistory(projectId, projectName)
     }
   }, [projectName, projectId])
