@@ -470,8 +470,8 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
   }, [dispatch])
 
   const tailwindAlreadyAdded =
-    props.packagesWithStatus.find((p) => p.name === 'tailwindcss') != null &&
-    props.packagesWithStatus.find((p) => p.name === 'postcss') != null
+    props.packagesWithStatus.some((p) => p.name === 'tailwindcss') &&
+    props.packagesWithStatus.some((p) => p.name === 'postcss')
   if (tailwindAlreadyAdded) {
     return null
   }
