@@ -1219,7 +1219,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
-    )
+    ).areEqual
     const usesParentBoundsResult = oldSize.usesParentBounds === newSize.usesParentBounds
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
     const layoutSystemForChildrenResult =
@@ -1256,7 +1256,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       coordinateSystemBoundsResult.areEqual &&
       immediateParentBoundsResult.areEqual &&
       immediateParentProvidesLayoutResult &&
-      closestOffsetParentPathResult.areEqual &&
+      closestOffsetParentPathResult &&
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
@@ -1279,7 +1279,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       hasPositionOffsetEquals &&
       textDirectionEquals &&
       hasTransformEquals &&
-      borderRadiusEquals.areEqual
+      borderRadiusEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
