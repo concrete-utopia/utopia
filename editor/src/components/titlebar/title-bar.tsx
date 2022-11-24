@@ -92,7 +92,7 @@ const TitleBar = React.memo(() => {
     dispatch(actions)
   }, [dispatch])
 
-  const openLeftPanel = useCallback(() => {
+  const openLeftPaneltoGithubTab = useCallback(() => {
     let actions: Array<EditorAction> = []
     actions.push(setPanelVisibility('leftmenu', true))
     actions.push(setLeftMenuTab(LeftMenuTab.Github))
@@ -139,14 +139,14 @@ const TitleBar = React.memo(() => {
           <>
             {when(
               hasUpstreamChanges,
-              <RoundButton color={colorTheme.secondaryOrange.value} onClick={openLeftPanel}>
+              <RoundButton color={colorTheme.secondaryOrange.value} onClick={openLeftPaneltoGithubTab}>
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton color={colorTheme.secondaryBlue.value} onClick={openLeftPanel}>
+              <RoundButton color={colorTheme.secondaryBlue.value} onClick={openLeftPaneltoGithubTab}>
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Push Local</>
               </RoundButton>,
