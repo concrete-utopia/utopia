@@ -1,4 +1,5 @@
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -13,6 +14,7 @@ import {
   BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusCorners,
+  borderRadiusFromElement,
   BorderRadiusHandleBorderWidth,
   BorderRadiusHandleDotSize,
   BorderRadiusHandleHitArea,
@@ -38,7 +40,7 @@ export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
-  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
+  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue> | null
   showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
 }
@@ -46,18 +48,19 @@ export interface BorderRadiusControlProps {
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
   const {
     selectedElement,
-    borderRadius,
+    borderRadius: borderRadiusFromStrategy,
     elementSize,
     showIndicatorOnCorner: showIndicatorOnEdge,
     mode,
   } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const { dispatch, scale, hoveredViews, isDragging } = useEditorState(
+  const { dispatch, scale, metadata, hoveredViews, isDragging } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
       hoveredViews: store.editor.hoveredViews,
+      metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
       isDragging:
         store.editor.canvas.interactionSession?.activeControl.type ===
         'BORDER_RADIUS_RESIZE_HANDLE',
@@ -81,13 +84,22 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     }
   })
 
+  const element = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+  if (element == null) {
+    return null
+  }
+  const borderRadius = borderRadiusFromElement(element)
+  if (borderRadius == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
-            borderRadius={borderRadius[corner]}
+            borderRadius={(borderRadiusFromStrategy ?? borderRadius.borderRadius)[corner]}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}
