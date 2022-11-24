@@ -47,7 +47,7 @@ function getSHA1Checksum(contents: string | Buffer): string {
 }
 
 export function inferGitBlobChecksum(buf: Buffer): string {
-  return getSHA1Checksum(Buffer.concat([Buffer.from(`blob ${buf.byteLength.toString()}\0`), buf]))
+  return getSHA1Checksum(Buffer.concat([Buffer.from(`blob ${buf.byteLength}\0`), buf]))
 }
 
 export function getProjectContentsChecksums(
