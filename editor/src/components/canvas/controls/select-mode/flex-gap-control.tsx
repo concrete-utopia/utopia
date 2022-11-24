@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import * as EP from '../../../../core/shared/element-path'
+import { emptyComments, jsxAttributeValue } from '../../../../core/shared/element-template'
 import {
   CanvasRectangle,
   CanvasVector,
@@ -13,14 +14,18 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { setProperty } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
+import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
+import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { isZeroSizedElement } from '../outline-utils'
 import {
   CanvasLabel,
   CSSNumberWithRenderedValue,
@@ -79,6 +84,15 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl dispatch scale',
   )
 
+  const [numberInputShown, setNumberInputShown] = React.useState<boolean>(false)
+
+  const showNumberInput = React.useCallback(() => setNumberInputShown(true), [])
+  React.useEffect(() => {
+    if (isDragging) {
+      setNumberInputShown(false)
+    }
+  }, [hoveredViews, isDragging, selectedElement])
+
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
   const controlBounds = gapControlBoundsFromMetadata(
@@ -95,9 +109,63 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
+  const { width, height } = size(50, 20)
+  const numberInputRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    if (isZeroSizedElement(boundingBox)) {
+      ref.current.style.display = 'none'
+    } else {
+      ref.current.style.display = 'block'
+      ref.current.style.left = boundingBox.x + (boundingBox.width - width) / 2 + 'px'
+      ref.current.style.top = boundingBox.y + 'px'
+      ref.current.style.width = width + 'px'
+      ref.current.style.height = height + 'px'
+    }
+  })
+
+  const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
+    if (isZeroSizedElement(boundingBox)) {
+      ref.current.style.display = 'none'
+    } else {
+      ref.current.style.display = 'block'
+      ref.current.style.left = boundingBox.x + 'px'
+      ref.current.style.top = boundingBox.y + 'px'
+      ref.current.style.width = width + 'px'
+      ref.current.style.height = height + 'px'
+    }
+  })
+
+  const onNumberInputUpdate = React.useCallback(
+    (n: number) => {
+      dispatch([
+        setProperty(
+          selectedElement,
+          stylePropPathMappingFn('gap', ['style']),
+          jsxAttributeValue(
+            printCSSNumber({ value: n, unit: updatedGapValue.value.unit }, null),
+            emptyComments,
+          ),
+        ),
+      ])
+    },
+    [dispatch, selectedElement, updatedGapValue.value.unit],
+  )
+
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
+      <div ref={controlRef} data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
+        {when(
+          numberInputShown,
+          <div
+            ref={numberInputRef}
+            style={{ position: 'absolute', zIndex: 1, pointerEvents: 'all' }}
+          >
+            <NumberInput
+              id={`${FlexGapControlTestId}NumberInput`}
+              initialValue={updatedGapValue.renderedValuePx}
+              onChange={onNumberInputUpdate}
+            />
+          </div>,
+        )}
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
           return (
@@ -108,13 +176,14 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               handleHoverStart={handleHoverStart}
               handleHoverEnd={handleHoverEnd}
               onMouseDown={onMouseDown}
+              showNumberInput={showNumberInput}
               indicatorShown={indicatorShown}
               path={path}
               bounds={bounds}
               flexDirection={flexDirection}
               indicatorColor={indicatorColor}
               scale={scale}
-              backgroundShown={backgroundShown}
+              backgroundShown={backgroundShown || numberInputShown}
               isDragging={isDragging}
               gapValue={updatedGapValue.value}
             />
@@ -154,6 +223,7 @@ interface GapControlSegmentProps {
   hoverEnd: React.MouseEventHandler
   handleHoverStart: (_: string) => void
   handleHoverEnd: () => void
+  showNumberInput: () => void
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
   flexDirection: FlexDirection
@@ -173,6 +243,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     handleHoverEnd,
     handleHoverStart,
     onMouseDown,
+    showNumberInput,
     indicatorShown,
     bounds,
     isDragging,
@@ -236,6 +307,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         data-testid={FlexGapControlHandleTestId}
         style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
         onMouseDown={onMouseDown}
+        onMouseUp={showNumberInput}
         onMouseEnter={handleHoverStartInner}
         onMouseLeave={handleHoverEnd}
       >
@@ -304,3 +376,46 @@ function startInteraction(
     ])
   }
 }
+
+interface NumberInputProps {
+  id: string
+  initialValue: number
+  onChange: (_: number) => void
+}
+
+const NumberInput = React.memo<NumberInputProps>((props) => {
+  const { onChange } = props
+  const [currentValue, setCurrentValue] = React.useState<number>(props.initialValue)
+  const onValueChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const {
+      target: { value },
+    } = event
+    const valueNumeric = parseFloat(value)
+    setCurrentValue(valueNumeric)
+  }, [])
+
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.code === 'Enter') {
+        onChange(currentValue)
+      }
+    },
+    [currentValue, onChange],
+  )
+
+  return (
+    <>
+      <input
+        onKeyDown={onKeyDown}
+        type='number'
+        id={props.id}
+        name={props.id}
+        value={currentValue}
+        onChange={onValueChange}
+      />
+    </>
+  )
+})
