@@ -216,12 +216,7 @@ export function createHoverInteractionViaMouse(
 }
 
 function dragExceededThreshold(drag: CanvasVector): boolean {
-  if (isFeatureEnabled('Drag Threshold is Magnitude')) {
-    return magnitude(drag) > MoveIntoDragThreshold.current
-  }
-  const xDiff = Math.abs(drag.x)
-  const yDiff = Math.abs(drag.y)
-  return xDiff > MoveIntoDragThreshold.current || yDiff > MoveIntoDragThreshold.current
+  return magnitude(drag) > MoveIntoDragThreshold.current
 }
 
 export function updateInteractionViaDragDelta(
