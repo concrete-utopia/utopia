@@ -97,10 +97,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const flexGapRenderedValue =
     updatedGapValue?.renderedValuePx ?? flexGap?.value.renderedValuePx ?? 0
 
-  const controlBounds = React.useMemo(
-    () =>
-      gapControlBoundsFromMetadata(metadata, selectedElement, flexGapRenderedValue, flexDirection),
-    [flexDirection, flexGapRenderedValue, metadata, selectedElement],
+  const controlBounds = gapControlBoundsFromMetadata(
+    metadata,
+    selectedElement,
+    flexGapRenderedValue,
+    flexDirection,
   )
 
   const onMouseDown = React.useCallback(

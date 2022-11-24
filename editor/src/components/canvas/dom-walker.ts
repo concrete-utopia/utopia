@@ -48,6 +48,7 @@ import {
   computedStyleKeys,
   parseDirection,
   parseFlexDirection,
+  parseCSSLengthPercent,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -859,6 +860,8 @@ function getSpecialMeasurements(
   const parentFlexDirection = eitherToMaybe(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
+
+  const flexGap = eitherToMaybe(parseCSSLengthPercent(elementStyle?.gap))?.value ?? 0
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
@@ -958,6 +961,7 @@ function getSpecialMeasurements(
     clientHeight,
     parentFlexDirection,
     parsedFlexGapValue,
+    flexGap,
     flexDirection,
     element.localName,
     childrenCount,
