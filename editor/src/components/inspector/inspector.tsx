@@ -36,6 +36,7 @@ import {
 
 import {
   EditorStorePatched,
+  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -230,8 +231,11 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
-export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
-  return !isStrategyActive(strategyState)
+export function shouldInspectorUpdate(
+  strategyState: StrategyState,
+  elementsToRerender: ElementsToRerender,
+): boolean {
+  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {

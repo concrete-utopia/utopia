@@ -494,7 +494,12 @@ export class Editor {
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
-            if (shouldUpdateLowPriorityUI(this.storedState.strategyState)) {
+            if (
+              shouldUpdateLowPriorityUI(
+                this.storedState.strategyState,
+                this.storedState.patchedEditor.canvas.elementsToRerender,
+              )
+            ) {
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
               )
