@@ -113,6 +113,7 @@ import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/sto
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { uniqBy } from '../core/shared/array-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -128,35 +129,23 @@ function replaceLoadingMessage(newMessage: string) {
 }
 
 // If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
-// for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
-// the previously focused elements may not now exist.
-// Also as some canvas strategies may not supply a specific set of elements to re-render, if
-// `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
-// for the very first pass to get another `rerender-all-elements`.
+// for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
+// and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
 function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): ElementsToRerender {
-  let elementsToRerender: ElementsToRerender = currentElementsToRerender
-  switch (lastElementsToRerender) {
-    case 'rerender-all-elements':
-      switch (currentElementsToRerender) {
-        case 'rerender-all-elements':
-          break
-        default:
-          elementsToRerender = 'rerender-all-elements'
-      }
-      break
-    default:
-      switch (currentElementsToRerender) {
-        case 'rerender-all-elements':
-          break
-        default:
-          if (!arrayEquals(lastElementsToRerender, currentElementsToRerender, EP.pathsEqual)) {
-            elementsToRerender = 'rerender-all-elements'
-          }
-      }
+  let fixedElementsToRerender: ElementsToRerender = currentElementsToRerender
+  if (
+    currentElementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = uniqBy(
+      [...lastElementsToRerender, ...currentElementsToRerender],
+      EP.pathsEqual,
+    )
   }
   lastElementsToRerender = currentElementsToRerender
-  return elementsToRerender
+  return fixedElementsToRerender
 }
 
 const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
