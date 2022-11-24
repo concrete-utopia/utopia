@@ -160,7 +160,6 @@ export const BackgroundSolidOrGradientThumbnailControl = React.memo(
     const backgroundIndex = props.backgroundIndex
     const onMouseDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
       (e) => {
-        e.stopPropagation()
         setOpenPopup((openPopup) => {
           if (openPopup != null) {
             return undefined
@@ -176,7 +175,11 @@ export const BackgroundSolidOrGradientThumbnailControl = React.memo(
       <div
         key={props.id}
         id={`trigger-${props.id}`}
-        className={` hexField ${Utils.pathOr('', ['controlClassName'], props)}`}
+        className={` hexField ${Utils.pathOr(
+          '',
+          ['controlClassName'],
+          props,
+        )} ignore-react-onclickoutside-${props.id}`}
         style={props.style}
       >
         {picker}

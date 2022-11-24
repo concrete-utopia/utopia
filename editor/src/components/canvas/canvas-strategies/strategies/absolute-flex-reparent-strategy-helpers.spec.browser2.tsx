@@ -2170,6 +2170,40 @@ const TestProjectFlexAndAbsoluteSiblings = (flexDirection: 'row' | 'row-reverse'
 </div>
 `
 
+const TestProjectNoSiblings = (flexDirection: 'row' | 'row-reverse') => `
+<div
+  style={{
+    position: 'absolute',
+    width: 600,
+    height: 600,
+  }}
+  data-uid='container'
+  data-testid='container'
+>
+  <div
+    style={{
+      position: 'absolute',
+      width: 50,
+      height: 50,
+      top: -50,
+    }}
+    data-uid='absolutechild'
+    data-testid='absolutechild'
+  />
+  <div
+    style={{
+      position: 'absolute',
+      width: 400,
+      height: 400,
+      display: 'flex',
+      flexDirection: '${flexDirection}',
+    }}
+    data-uid='flexcontainer'
+    data-testid='flexcontainer'
+  />
+</div>
+`
+
 async function checkReparentIndicator(
   renderResult: EditorRenderResult,
   expectedLeft: number,
@@ -2460,5 +2494,51 @@ describe('Reparent indicators', () => {
 
     // Check the indicator presence and position.
     await checkReparentIndicator(renderResult, 788, 110, 2, 40)
+  })
+  it(`doesn't show the reparent indicator when there are no siblings`, async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectNoSiblings('row')),
+      'await-first-dom-report',
+    )
+
+    // Select the target first.
+    const targetPath = EP.fromString(
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/absolutechild',
+    )
+    await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Start dragging the target.
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const flexContainer = renderResult.renderedDOM.getByTestId('flexcontainer')
+    const flexContainerBounds = flexContainer.getBoundingClientRect()
+
+    const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
+    const endPoint = {
+      x: flexContainerBounds.x + flexContainerBounds.width - 20,
+      y: flexContainerBounds.y + flexContainerBounds.height / 2,
+    }
+    const dragDelta = windowPoint({
+      x: endPoint.x - startPoint.x,
+      y: endPoint.y - startPoint.y,
+    })
+
+    dragElement(
+      renderResult,
+      'absolutechild',
+      defaultMouseDownOffset,
+      dragDelta,
+      emptyModifiers,
+      false,
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the indicator is not there.
+    await expect(
+      async () => await renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0'),
+    ).rejects.toThrow()
   })
 })

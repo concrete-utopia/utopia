@@ -586,7 +586,6 @@ function useSelectOrLiveModeSelectAndHover(
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
-  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
 
@@ -649,8 +648,8 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved) {
-        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
 
@@ -669,23 +668,15 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
-          if (isFeatureEnabled('Canvas Strategies')) {
-            const start = windowToCanvasCoordinates(
-              windowPoint(point(event.clientX, event.clientY)),
-            ).canvasPositionRounded
-            if (event.button !== 2 && event.type !== 'mouseup') {
-              editorActions.push(
-                CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(
-                    start,
-                    Modifier.modifiersForEvent(event),
-                    boundingArea(),
-                  ),
-                ),
-              )
-            }
-          } else {
-            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          const start = windowToCanvasCoordinates(
+            windowPoint(point(event.clientX, event.clientY)),
+          ).canvasPositionRounded
+          if (event.button !== 2 && event.type !== 'mouseup') {
+            editorActions.push(
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
+              ),
+            )
           }
         }
 
@@ -720,14 +711,7 @@ function useSelectOrLiveModeSelectAndHover(
 
           // then we set the selected views for the editor state, 1 frame later
           if (updatedSelection.length === 0) {
-            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-              'Click on empty canvas unfocuses',
-            )
-              ? [setFocusedElement(null)]
-              : []
-
-            editorActions.push(clearSelection())
-            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
+            editorActions.push(clearSelection(), setFocusedElement(null))
           } else {
             editorActions.push(selectComponents(updatedSelection, event.shiftKey))
           }
@@ -739,12 +723,12 @@ function useSelectOrLiveModeSelectAndHover(
       dispatch,
       selectedViewsRef,
       findValidTarget,
-      startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
       windowToCanvasCoordinates,
+      active,
     ],
   )
 
@@ -812,32 +796,29 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }) {
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
-    if (!isFeatureEnabled('Keyboard up clears interaction')) {
+    if (keyboardTimeoutHandler.current != null) {
+      clearTimeout(keyboardTimeoutHandler.current)
+      keyboardTimeoutHandler.current = null
+    }
+
+    const clearKeyboardInteraction = () => {
+      window.removeEventListener('mousedown', clearKeyboardInteraction)
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
       }
-
-      const clearKeyboardInteraction = () => {
-        window.removeEventListener('mousedown', clearKeyboardInteraction)
-        if (keyboardTimeoutHandler.current != null) {
-          clearTimeout(keyboardTimeoutHandler.current)
-          keyboardTimeoutHandler.current = null
-        }
-        if (
-          editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-          'KEYBOARD'
-        ) {
-          editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-        }
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
+      ) {
+        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }
-
-      keyboardTimeoutHandler.current = setTimeout(
-        clearKeyboardInteraction,
-        KeyboardInteractionTimeout,
-      )
-
-      window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
     }
+
+    keyboardTimeoutHandler.current = setTimeout(
+      clearKeyboardInteraction,
+      KeyboardInteractionTimeout,
+    )
+
+    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [editorStoreRef])
 }

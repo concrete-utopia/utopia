@@ -6,53 +6,27 @@ export type FeatureName =
   | 'Debug mode – Redux Devtools'
   | 'Debug mode – Performance Marks'
   | 'Dragging Reparents By Default'
-  | 'Dragging Shows Overlay'
-  | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
-  | 'Click on empty canvas unfocuses'
-  | 'Insertion Plus Button'
-  | 'Canvas Strategies'
   | 'Canvas Strategies Debug Panel'
-  | 'Keyboard up clears interaction'
-  | 'Canvas Selective Rerender'
-  | 'Single child, contiguous parent: move parent'
-  | 'Single child, zero sized parent: move parent'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Debug mode – Redux Devtools',
   'Debug mode – Performance Marks',
-  'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
-  'Click on empty canvas unfocuses',
-  'Insertion Plus Button',
-  'Canvas Strategies',
   'Canvas Strategies Debug Panel',
-  'Keyboard up clears interaction',
-  'Canvas Selective Rerender',
-  'Single child, contiguous parent: move parent',
-  'Single child, zero sized parent: move parent',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug mode – Redux Devtools': false,
   'Debug mode – Performance Marks': false,
   'Dragging Reparents By Default': false,
-  'Dragging Shows Overlay': false,
-  'Advanced Resize Box': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
-  'Click on empty canvas unfocuses': true,
-  'Insertion Plus Button': true,
-  'Canvas Strategies': true,
   'Canvas Strategies Debug Panel': false,
-  'Keyboard up clears interaction': false,
-  'Canvas Selective Rerender': true,
-  'Single child, contiguous parent: move parent': true,
-  'Single child, zero sized parent: move parent': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

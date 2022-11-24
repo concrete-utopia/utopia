@@ -130,7 +130,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           }}
         >
           <TopMenu />
-          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyPicker />)}
+          <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
 

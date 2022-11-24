@@ -730,7 +730,7 @@ function editorDispatchInner(
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
-    const actionNames = dispatchedActions.map((action) => action.action).join(',')
+    const actionNames = simpleStringifyActions(dispatchedActions)
     getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {
@@ -753,20 +753,13 @@ function editorDispatchInner(
     }
 
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-      isFeatureEnabled('Canvas Strategies')
-        ? handleStrategies(
-            strategiesToUse,
-            dispatchedActions,
-            storedState,
-            result,
-            storedState.patchedDerived,
-          )
-        : {
-            unpatchedEditorState: result.unpatchedEditor,
-            patchedEditorState: result.unpatchedEditor,
-            newStrategyState: result.strategyState,
-            patchedDerivedState: result.unpatchedDerived,
-          }
+      handleStrategies(
+        strategiesToUse,
+        dispatchedActions,
+        storedState,
+        result,
+        storedState.patchedDerived,
+      )
 
     return {
       unpatchedEditor: unpatchedEditorState,

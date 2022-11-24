@@ -1,4 +1,5 @@
 import React from 'react'
+import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifier } from '../../../../utils/modifiers'
@@ -64,20 +65,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     'BorderRadiusControl dispatch scale',
   )
 
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
-  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
-  React.useEffect(() => {
-    const timeoutHandle = timeoutRef.current
-    if (timeoutHandle != null) {
-      clearTimeout(timeoutHandle)
-    }
-
-    if (hoveredViews.includes(selectedElement)) {
-      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
-    } else {
-      setBackgroundShown(false)
-    }
-  }, [hoveredViews, selectedElement])
+  const backgroundShown = hoveredViews.some((p) => EP.pathsEqual(p, selectedElement))
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {

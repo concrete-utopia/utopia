@@ -21,6 +21,10 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
+import {
+  isGithubCommishing,
+  isGithubLoadingAnyBranch,
+} from '../../../../components/editor/store/editor-state'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -136,12 +140,11 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
 
 export const GithubFileChangesList: React.FC<{
   changes: GithubFileChanges | null
-  githubWorking: boolean
   revertable: boolean
   clickable: boolean
   showHeader: boolean
   conflicts?: string[]
-}> = ({ changes, githubWorking, revertable, showHeader, conflicts, clickable }) => {
+}> = ({ changes, revertable, showHeader, conflicts, clickable }) => {
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
@@ -188,6 +191,15 @@ export const GithubFileChangesList: React.FC<{
     [dispatch],
   )
 
+  const githubOperations = useEditorState(
+    (store) => store.editor.githubOperations,
+    'Github operations',
+  )
+
+  const disableButtons = React.useMemo(() => {
+    return isGithubLoadingAnyBranch(githubOperations) || isGithubCommishing(githubOperations)
+  }, [githubOperations])
+
   if (count === 0) {
     return null
   }
@@ -199,7 +211,7 @@ export const GithubFileChangesList: React.FC<{
         <Header
           count={count}
           revertable={revertable}
-          githubWorking={githubWorking}
+          disabled={disableButtons}
           onClickRevertAll={handleClickRevertAllFiles}
         />,
       )}
@@ -246,14 +258,14 @@ export const GithubFileChangesList: React.FC<{
               {when(conflicting, <WarningIcon color='error' />)}
               {when(
                 revertable && !isTreeConflict,
-                <RevertButton disabled={githubWorking} onMouseUp={handleClickRevertFile(i)} />,
+                <RevertButton disabled={disableButtons} onMouseUp={handleClickRevertFile(i)} />,
               )}
               {when(
                 isTreeConflict,
                 <ConflictButton
                   fullPath={i.filename}
                   conflict={treeConflicts[i.filename]}
-                  disabled={githubWorking}
+                  disabled={disableButtons}
                 />,
               )}
             </UIGridRow>
@@ -267,9 +279,9 @@ export const GithubFileChangesList: React.FC<{
 const Header: React.FC<{
   count: number
   revertable: boolean
-  githubWorking: boolean
+  disabled: boolean
   onClickRevertAll: (e: React.MouseEvent) => void
-}> = ({ count, revertable, githubWorking, onClickRevertAll }) => {
+}> = ({ count, revertable, disabled, onClickRevertAll }) => {
   return (
     <UIGridRow padded={false} variant='<----------1fr---------><-auto->' style={{ minHeight: 0 }}>
       <div>
@@ -277,7 +289,7 @@ const Header: React.FC<{
       </div>
       {when(
         revertable,
-        <RevertButton disabled={githubWorking} text='Revert all' onMouseUp={onClickRevertAll} />,
+        <RevertButton disabled={disabled} text='Revert all' onMouseUp={onClickRevertAll} />,
       )}
     </UIGridRow>
   )

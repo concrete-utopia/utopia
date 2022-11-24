@@ -42,9 +42,13 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { githubOperationLocksEditor, LeftMenuTab, LeftPaneDefaultWidth } from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
-import { refreshGithubData } from '../../core/shared/github'
+import {
+  emptyGithubSettings,
+  githubOperationLocksEditor,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
+} from './store/editor-state'
+import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
@@ -56,8 +60,6 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
   const title = `Utopia ${projectName}`
   window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
-
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 export interface EditorProps {}
 
@@ -81,8 +83,6 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
-  useGithubData()
-
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
@@ -138,10 +138,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      if (
-        isFeatureEnabled('Canvas Strategies') &&
-        editorIsTarget(event, editorStoreRef.current.editor)
-      ) {
+      if (editorIsTarget(event, editorStoreRef.current.editor)) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
         const modifiers = Modifier.modifiersForKeyboardEvent(event)
 
@@ -194,27 +191,19 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyUp = React.useCallback(
     (event: KeyboardEvent) => {
-      if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (existingInteractionSession != null) {
-          if (isFeatureEnabled('Keyboard up clears interaction')) {
-            const action = CanvasActions.clearInteractionSession(true)
-            editorStoreRef.current.dispatch([action], 'everyone')
-          } else {
-            const action = CanvasActions.createInteractionSession(
-              updateInteractionViaKeyboard(
-                existingInteractionSession,
-                [],
-                [Keyboard.keyCharacterForCode(event.keyCode)],
-                Modifier.modifiersForKeyboardEvent(event),
-                { type: 'KEYBOARD_CATCHER_CONTROL' },
-              ),
-            )
-            editorStoreRef.current.dispatch([action], 'everyone')
-          }
-        }
+      const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+      if (existingInteractionSession != null) {
+        const action = CanvasActions.createInteractionSession(
+          updateInteractionViaKeyboard(
+            existingInteractionSession,
+            [],
+            [Keyboard.keyCharacterForCode(event.keyCode)],
+            Modifier.modifiersForKeyboardEvent(event),
+            { type: 'KEYBOARD_CATCHER_CONTROL' },
+          ),
+        )
+        editorStoreRef.current.dispatch([action], 'everyone')
       }
-
       handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
     },
     [editorStoreRef, namesByKey],
@@ -296,8 +285,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{
-          height: '100%',
-          width: '100%',
+          height: '100vh',
+          width: '100vw',
           overscrollBehaviorX: 'contain',
           color: colorTheme.fg1.value,
         }}
@@ -400,55 +389,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     </>
   )
 })
-
-const useGithubData = (): void => {
-  const dispatch = useEditorState((store) => store.dispatch, 'Dispatch')
-  const {
-    githubAuthenticated,
-    githubRepo,
-    githubOperations,
-    branchName,
-    githubChecksums,
-    githubUserDetails,
-  } = useEditorState(
-    (store) => ({
-      githubAuthenticated: store.userState.githubState.authenticated,
-      githubRepo: store.editor.githubSettings.targetRepository,
-      githubOperations: store.editor.githubOperations,
-      branchName: store.editor.githubSettings.branchName,
-      githubChecksums: store.editor.githubChecksums,
-      githubUserDetails: store.editor.githubData.githubUserDetails,
-    }),
-    'Github data',
-  )
-
-  const refresh = React.useCallback(() => {
-    void refreshGithubData(
-      dispatch,
-      githubAuthenticated,
-      githubRepo,
-      branchName,
-      githubChecksums,
-      githubUserDetails,
-    )
-  }, [dispatch, githubAuthenticated, githubRepo, branchName, githubChecksums, githubUserDetails])
-
-  // perform a straight refresh then the repo or the auth change
-  React.useEffect(() => refresh(), [refresh])
-
-  // schedule a repeat refresh every GITHUB_REFRESH_INTERVAL
-  React.useEffect(() => {
-    if (githubOperations.length > 0) {
-      // ignore scheduling if there are already operations going on
-      return
-    }
-
-    let interval = setInterval(refresh, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
-    return function () {
-      clearInterval(interval)
-    }
-  }, [refresh, githubOperations])
-}
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const { modal, dispatch, currentBranch } = useEditorState((store) => {

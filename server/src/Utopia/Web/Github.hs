@@ -150,7 +150,7 @@ callGithub makeRequest queryParameters handleErrorCases accessToken restURL requ
   -- Parse the response contents.
   then except $ bimap show (\r -> view WR.responseBody r) (WR.asJSON result)
   else logStuffForErrors >> handleErrorCases status
-  
+
 
 createTreeHandleErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 createTreeHandleErrorCases status | status == forbidden403            = throwE "Forbidden from creating tree."
@@ -161,14 +161,14 @@ createTreeHandleErrorCases status | status == forbidden403            = throwE "
 createGitTree :: (MonadIO m, MonadBaseControl IO m) => AccessToken -> Text -> Text -> CreateGitTree -> ExceptT Text m CreateGitTreeResult
 createGitTree accessToken owner repository gitTree = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/trees"
-  callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl gitTree 
+  callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl gitTree
 
 createGitTreeFromProjectContents :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> AccessToken -> GithubRepo -> ProjectContentTreeRoot -> ExceptT Text m CreateGitTreeResult
 createGitTreeFromProjectContents loadAsset accessToken repo@GithubRepo{..} projectContents = do
   -- Create a simpler function for creating a git blob.
   let createBlob = createGitBlob accessToken repo
   request <- gitTreeFromProjectContent loadAsset createBlob projectContents
-  createGitTree accessToken owner repository request 
+  createGitTree accessToken owner repository request
 
 createGitTreeFromModel :: (MonadIO m, MonadBaseControl IO m) => LoadAsset -> Text -> AccessToken -> PersistentModel -> ExceptT Text m CreateGitTreeResult
 createGitTreeFromModel loadAsset projectID accessToken PersistentModel{..} = do

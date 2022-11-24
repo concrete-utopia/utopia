@@ -145,7 +145,7 @@ instance ToJSON GetReferenceResult where
   toJSON = genericToJSON defaultOptions
 
 data UpdateGitBranch = UpdateGitBranch
-                     { sha :: Text
+                     { sha   :: Text
                      , force :: Bool
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
@@ -206,8 +206,8 @@ instance ToJSON UpdateGitFile where
   toJSON = genericToJSON defaultOptions
 
 data UpdateGitFileResultCommit = UpdateGitFileResultCommit
-                               { sha   :: Text
-                               , url   :: Text
+                               { sha :: Text
+                               , url :: Text
                                }
                                deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -544,8 +544,8 @@ instance ToJSON GetBranchContentResponse where
   toJSON (GetBranchContentResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
 data RepositoryOwner = RepositoryOwner
-                     { avatar_url   :: Text
-                     , login        :: Text
+                     { avatar_url :: Text
+                     , login      :: Text
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 

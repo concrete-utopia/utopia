@@ -124,7 +124,6 @@ export const TopMenu = React.memo(() => {
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}
-      onMouseUp={stopPropagation}
       onClick={stopPropagation}
     >
       <TopMenuLeftControls />

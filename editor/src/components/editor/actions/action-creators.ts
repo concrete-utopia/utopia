@@ -308,10 +308,14 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   }
 }
 
-export function transientActions(actions: Array<EditorAction>): TransientActions {
+export function transientActions(
+  actions: Array<EditorAction>,
+  elementsToRerender: Array<ElementPath> | null = null,
+): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
+    elementsToRerender: elementsToRerender,
   }
 }
 
@@ -1021,10 +1025,7 @@ export function updateGithubSettings(
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
-    data: {
-      lastUpdatedAt: Date.now(),
-      ...data,
-    },
+    data: data,
   }
 }
 
@@ -1507,7 +1508,7 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+export function updateGithubChecksums(checksums: GithubChecksums | null): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,

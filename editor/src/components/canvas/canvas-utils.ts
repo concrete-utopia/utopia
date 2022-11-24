@@ -1886,9 +1886,6 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (!isFeatureEnabled('Canvas Strategies')) {
-          throw Error('Insert mode is not supported with disabled Canvas Strategies feature switch')
-        }
         break
       case 'select':
         if (
