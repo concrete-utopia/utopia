@@ -253,6 +253,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               value={printCSSNumber(gapValue, null)}
               scale={scale}
               color={colorTheme.brandNeonPink.value}
+              textColor={colorTheme.white.value}
             />
           </div>,
         )}
