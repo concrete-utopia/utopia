@@ -3279,7 +3279,7 @@ export function getResizeOptions(
   }
 }
 
-export const MoveIntoDragThreshold = 3
+export const MoveIntoDragThreshold = { current: 3 }
 
 export function dragExceededThreshold(
   canvasPosition: CanvasPoint,
@@ -3287,7 +3287,7 @@ export function dragExceededThreshold(
 ): boolean {
   const xDiff = Math.abs(canvasPosition.x - dragStart.x)
   const yDiff = Math.abs(canvasPosition.y - dragStart.y)
-  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+  return xDiff > MoveIntoDragThreshold.current || yDiff > MoveIntoDragThreshold.current
 }
 
 export function getObservableValueForLayoutProp(
