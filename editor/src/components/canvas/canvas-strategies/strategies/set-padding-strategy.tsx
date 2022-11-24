@@ -152,10 +152,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
-        return strategyApplicationResult([
-          setCursorCommand(pickCursorFromEdge(edgePiece)),
-          updateHighlightedViews('mid-interaction', []),
-        ])
+        return emptyStrategyApplicationResult
       }
 
       const selectedElement = filteredSelectedElements[0]
@@ -241,11 +238,13 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   switch (edgePiece) {
     case 'top':
+      return CSSCursor.PaddingNorth
     case 'bottom':
-      return CSSCursor.RowResize
+      return CSSCursor.PaddingSouth
     case 'left':
+      return CSSCursor.PaddingEast
     case 'right':
-      return CSSCursor.ColResize
+      return CSSCursor.PaddingWest
     default:
       assertNever(edgePiece)
   }
