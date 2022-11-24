@@ -126,7 +126,7 @@ const Canvas = {
     TargetSearchType.SiblingsOfSelected,
     TargetSearchType.ParentsOfSelected,
   ],
-  getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 1 }),
+  getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 2 }),
   jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
