@@ -3,6 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import {
   CanvasPoint,
   CanvasVector,
+  magnitude,
   offsetPoint,
   pointDifference,
   roundPointTo,
@@ -10,6 +11,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps } from '../../editor/store/editor-state'
@@ -214,6 +216,9 @@ export function createHoverInteractionViaMouse(
 }
 
 function dragExceededThreshold(drag: CanvasVector): boolean {
+  if (isFeatureEnabled('Drag Threshold is Magnitude')) {
+    return magnitude(drag) > MoveIntoDragThreshold.current
+  }
   const xDiff = Math.abs(drag.x)
   const yDiff = Math.abs(drag.y)
   return xDiff > MoveIntoDragThreshold.current || yDiff > MoveIntoDragThreshold.current
