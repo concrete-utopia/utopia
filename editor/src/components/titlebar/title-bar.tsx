@@ -93,10 +93,7 @@ const TitleBar = React.memo(() => {
   }, [dispatch])
 
   const openLeftPaneltoGithubTab = useCallback(() => {
-    dispatch([
-      setPanelVisibility('leftmenu', true),
-      setLeftMenuTab(LeftMenuTab.Github),
-    ])
+    dispatch([setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Github)])
   }, [dispatch])
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
