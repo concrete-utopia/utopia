@@ -31,6 +31,7 @@ import {
   updateGithubOperations,
   updateGithubSettings,
   updateProjectContents,
+  updateAssetChecksums,
 } from '../../components/editor/actions/action-creators'
 import {
   EditorStorePatched,

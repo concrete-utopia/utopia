@@ -123,6 +123,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_REFRESHING_DEPENDENCIES':
     case 'UPDATE_GITHUB_CHECKSUMS':
     case 'SET_ASSET_CHECKSUM':
+    case 'UPDATE_ASSET_CHECKSUMS':
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
       return true

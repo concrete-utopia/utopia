@@ -145,6 +145,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
     case 'SET_ASSET_CHECKSUM':
       return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
+    case 'UPDATE_ASSET_CHECKSUMS':
+      return UPDATE_FNS.UPDATE_ASSET_CHECKSUMS(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':

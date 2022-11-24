@@ -221,6 +221,7 @@ import type {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  UpdateAssetChecksums,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1520,6 +1521,13 @@ export function setAssetChecksum(filename: string, checksum: string | null): Set
     action: 'SET_ASSET_CHECKSUM',
     filename: filename,
     checksum: checksum,
+  }
+}
+
+export function updateAssetChecksums(checksums: GithubChecksums): UpdateAssetChecksums {
+  return {
+    action: 'UPDATE_ASSET_CHECKSUMS',
+    checksums: checksums,
   }
 }
 

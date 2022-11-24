@@ -317,6 +317,7 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  UpdateAssetChecksums,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -2012,9 +2013,15 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    const checksums = action.checksums ? { ...action.checksums } : null
+    if (checksums != null) {
+      Object.keys(editor.assetChecksums).forEach((k) => {
+        checksums[k] = editor.assetChecksums[k]
+      })
+    }
     return {
       ...editor,
-      githubChecksums: action.checksums,
+      githubChecksums: checksums,
     }
   },
   SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
@@ -2029,6 +2036,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       assetChecksums: checksums,
+    }
+  },
+  UPDATE_ASSET_CHECKSUMS: (action: UpdateAssetChecksums, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      assetChecksums: action.checksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {

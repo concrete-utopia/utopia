@@ -949,6 +949,11 @@ export interface SetAssetChecksum {
   checksum: string | null
 }
 
+export interface UpdateAssetChecksums {
+  action: 'UPDATE_ASSET_CHECKSUMS'
+  checksums: GithubChecksums
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1239,6 +1244,7 @@ export type EditorAction =
   | UpdateGithubOperations
   | UpdateGithubChecksums
   | SetAssetChecksum
+  | UpdateAssetChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
 
