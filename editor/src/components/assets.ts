@@ -46,8 +46,13 @@ function getSHA1Checksum(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
 
-export function inferGitBlobChecksum(buf: Buffer): string {
-  return getSHA1Checksum(Buffer.concat([Buffer.from(`blob ${buf.byteLength}\0`), buf]))
+export function inferGitBlobChecksum(buffer: Buffer): string {
+  // This function returns the same SHA1 checksum string that git would return for the same contents.
+  // Given the contents in the buffer variable, the final checksum is calculated by hashing
+  // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
+  const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
+  const wrapped = Buffer.concat([prefix, buffer])
+  return getSHA1Checksum(wrapped)
 }
 
 export function getProjectContentsChecksums(
