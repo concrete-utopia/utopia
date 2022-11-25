@@ -127,9 +127,6 @@ import {
   addFileToProjectContents,
   contentsToTree,
   getContentsTreeFileFromString,
-  getProjectContentsChecksums,
-  getProjectFileFromContents,
-  ProjectContentsTree,
   ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
@@ -1496,6 +1493,22 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
   }
 }
 
+function pruneAssetChecksums(
+  tree: ProjectContentTreeRoot,
+  checksums: GithubChecksums,
+): GithubChecksums {
+  // this function removes the asset checksums that reference files that don't exist in the project anymore
+  const assetChecksums = checksums != null ? { ...checksums } : {}
+  const keepChecksums: GithubChecksums = {}
+  Object.keys(assetChecksums).forEach((filename) => {
+    const file = getContentsTreeFileFromString(tree, filename)
+    if (file != null && (isAssetFile(file) || isImageFile(file))) {
+      keepChecksums[filename] = assetChecksums[filename]
+    }
+  })
+  return keepChecksums
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -2033,10 +2046,11 @@ export const UPDATE_FNS = {
   SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
     const assetChecksums: GithubChecksums =
       editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
+    const absoluteFilename = action.filename.replace(/^\.\//, '/')
     if (action.checksum == null) {
-      delete assetChecksums[action.filename]
+      delete assetChecksums[absoluteFilename]
     } else {
-      assetChecksums[action.filename.replace(/^\.\//, '/')] = action.checksum
+      assetChecksums[absoluteFilename] = action.checksum
     }
 
     return {
@@ -3769,6 +3783,7 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
+      assetChecksums: pruneAssetChecksums(action.contents, editor.assetChecksums),
     }
   },
   UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
