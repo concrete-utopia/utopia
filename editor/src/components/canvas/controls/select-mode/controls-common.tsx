@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
-import { defaultEither, Either } from '../../../../core/shared/either'
+import { defaultEither, Either, foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, roundTo, size, windowPoint } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -14,7 +14,13 @@ import {
   printCSSNumber,
 } from '../../../inspector/common/css-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  isIntrinsicElement,
+  isJSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../../../core/shared/element-template'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { ColorTheme, colorTheme } from '../../../../uuiui'
@@ -281,4 +287,14 @@ export function startResizeInteraction(
       ),
     ])
   }
+}
+
+export function elementIsIntrinsicElementOrScene(element: ElementInstanceMetadata): boolean {
+  return foldEither(
+    () => false,
+    (e) =>
+      isJSXElement(e) &&
+      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
+    element.element,
+  )
 }

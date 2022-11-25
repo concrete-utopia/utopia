@@ -5,12 +5,9 @@ import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../c
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
   JSXElement,
-  jsxElementName,
-  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -52,6 +49,7 @@ import {
   cssNumberEqual,
   cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
+  elementIsIntrinsicElementOrScene,
   getPropertyFromStyle,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
@@ -265,13 +263,11 @@ function borderRadiusFromElementProps(
 
   const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
 
-  const elementIsIntrinsicElementOrScene =
-    isIntrinsicElement(jsxElement.name) ||
-    jsxElementNameEquals(jsxElement.name, jsxElementName('Scene', []))
+  const elementIntrinsicElementOrScene = elementIsIntrinsicElementOrScene(element)
 
   if (
     !(
-      elementIsIntrinsicElementOrScene ||
+      elementIntrinsicElementOrScene ||
       shouldShowControls({
         propAvailableFromStyle: radiusFromProps != null,
         measurementsNonZero: measurementsNonZero,
@@ -282,7 +278,7 @@ function borderRadiusFromElementProps(
   }
 
   if (radiusFromProps == null) {
-    if (!elementIsIntrinsicElementOrScene) {
+    if (!elementIntrinsicElementOrScene) {
       return {
         mode: 'all',
         source: 'props',

@@ -1,10 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isIntrinsicElement,
-  isJSXElement,
-  jsxElementName,
-  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -50,6 +47,7 @@ import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/
 import {
   canShowCanvasPropControl,
   CSSNumberWithRenderedValue,
+  elementIsIntrinsicElementOrScene,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -57,7 +55,7 @@ import {
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
-import { foldEither } from '../../../../core/shared/either'
+import { AllElementProps } from '../../../editor/store/editor-state'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -95,25 +93,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
-  if (!supportsPaddingControls(canvasState.startingMetadata, selectedElements[0])) {
-    return null
-  }
-
-  const paddingFromMetadata = simplePaddingFromMetadata(
+  const paddingData = supportsPaddingControls(
     canvasState.startingMetadata,
-    selectedElements[0],
-  )
-
-  const paddingFromAllElementProps = simplePaddingFromAllElementProps(
     canvasState.startingAllElementProps,
-    canvasState.startingMetadata,
     selectedElements[0],
   )
-  const paddingData = paddingIsDefined(paddingFromMetadata)
-    ? { padding: paddingFromMetadata, source: 'props' }
-    : paddingIsDefined(paddingFromAllElementProps)
-    ? { padding: paddingFromAllElementProps, source: 'code' }
-    : { padding: paddingFromSingleValue(unitlessCSSNumberWithRenderedValue(0)), source: 'props' }
 
   if (paddingData == null) {
     return null
@@ -280,9 +264,10 @@ interface PaddingWithSource {
 
 function supportsPaddingControls(
   metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  allElementProps: AllElementProps,
+  selectedElement: ElementPath,
+): PaddingWithSource | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, selectedElement)
   if (element == null) {
     return null
   }
@@ -291,49 +276,27 @@ function supportsPaddingControls(
     return null
   }
 
-  const paddingFromMetadata = simplePaddingFromMetadata(metadata, path)
-  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
-  const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
-    (s) => s != null && s > 0,
-  )
-  const elementHasNonzeroPaddingFromProps = IndividualPaddingProps.some(
-    (s) => paddingFromMetadata[s] != null,
-  )
-
-  const elementIsScene = foldEither(
-    () => false,
-    (e) => isJSXElement(e) && jsxElementNameEquals(e.name, jsxElementName('Scene', [])),
-    element.element,
-  )
-
-  if (elementIsScene) {
-    return null
-  }
-
-  const elementIsIntrinsicElement = foldEither(
-    () => false,
-    (e) =>
-      isJSXElement(e) &&
-      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
-    element.element,
-  )
+  const paddingData = getPaddingData(metadata, allElementProps, selectedElement)
 
   if (
-    !elementIsIntrinsicElement &&
+    !elementIsIntrinsicElementOrScene(element) &&
     shouldShowControls({
-      propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
-      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
+      propAvailableFromStyle: elementHasNonZeroPadding(paddingData.padding),
+      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements(element),
     })
   ) {
-    return paddingFromMetadata
+    return paddingData
   }
 
-  const children = MetadataUtils.getChildren(metadata, path)
+  const children = MetadataUtils.getChildren(metadata, selectedElement)
   if (children.length === 0) {
     return null
   }
 
-  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(
+    metadata,
+    selectedElement,
+  ).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
@@ -343,7 +306,39 @@ function supportsPaddingControls(
     return null
   }
 
-  return paddingFromMetadata
+  return paddingData
+}
+
+function getPaddingData(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  selectedElement: ElementPath,
+): PaddingWithSource {
+  const paddingFromMetadata = simplePaddingFromMetadata(metadata, selectedElement)
+
+  const paddingFromAllElementProps = simplePaddingFromAllElementProps(
+    allElementProps,
+    metadata,
+    selectedElement,
+  )
+
+  const paddingData: PaddingWithSource = paddingIsDefined(paddingFromMetadata)
+    ? { padding: paddingFromMetadata, source: 'props' }
+    : paddingIsDefined(paddingFromAllElementProps)
+    ? { padding: paddingFromAllElementProps, source: 'code' }
+    : { padding: paddingFromSingleValue(unitlessCSSNumberWithRenderedValue(0)), source: 'props' }
+  return paddingData
+}
+
+function elementHasNonzeroPaddingFromMeasurements(element: ElementInstanceMetadata): boolean {
+  const { top, right, bottom, left } = element.specialSizeMeasurements.padding
+  return [top, right, bottom, left].some((s) => s != null && s > 0)
+}
+
+function elementHasNonZeroPadding(
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): boolean {
+  return IndividualPaddingProps.some((s) => padding[s] != null)
 }
 
 function paddingValueIndicatorProps(
