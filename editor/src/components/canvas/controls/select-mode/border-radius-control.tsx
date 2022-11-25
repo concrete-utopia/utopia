@@ -161,7 +161,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     scale,
   )
 
-  const indicatorColor = disabled ? DisabledColor : colorTheme.brandNeonPink.value
+  const indicatorColor = disabled ? DisabledColor(colorTheme) : colorTheme.brandNeonPink.value
 
   return (
     <div

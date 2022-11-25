@@ -17,7 +17,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
-import { colorTheme } from '../../../../uuiui'
+import { ColorTheme, colorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import CanvasActions from '../../canvas-actions'
 import {
@@ -28,7 +28,7 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const Emdash: string = '\u2014'
 
-export const DisabledColor = 'rgba(150, 150, 150, 0.5)'
+export const DisabledColor = (theme: ColorTheme): string => theme.fg5.value
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber

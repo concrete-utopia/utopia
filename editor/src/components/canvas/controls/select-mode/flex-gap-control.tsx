@@ -211,8 +211,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
   const shouldShowBackground = !isDragging && backgroundShown && stripesShown
 
-  const stripeColor = disabled ? DisabledColor : indicatorColor
-  const handleColor = disabled ? DisabledColor : colorTheme.brandNeonPink.value
+  const stripeColor = disabled ? DisabledColor(colorTheme) : indicatorColor
+  const handleColor = disabled ? DisabledColor(colorTheme) : colorTheme.brandNeonPink.value
 
   return (
     <div
@@ -255,7 +255,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
             <CanvasLabel
               value={printCSSNumber(gapValue, null)}
               scale={scale}
-              color={colorTheme.brandNeonPink.value}
+              color={handleColor}
               textColor={colorTheme.white.value}
             />
           </div>,
