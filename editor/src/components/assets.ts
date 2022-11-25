@@ -74,13 +74,11 @@ export function getProjectContentsChecksums(
         checksums[filename] = getSHA1Checksum(file.fileContents.code)
         break
       case 'ASSET_FILE':
-        if (file.base64 != undefined) {
-          checksums[filename] = getSHA1Checksum(file.base64)
-        }
-        break
       case 'IMAGE_FILE':
-        if (file.gitBlobSha) {
+        if (file.gitBlobSha != null) {
           checksums[filename] = file.gitBlobSha
+        } else if (file.base64 != undefined) {
+          checksums[filename] = getSHA1Checksum(file.base64)
         } else if (Object.keys(assetChecksums).includes(filename)) {
           checksums[filename] = assetChecksums[filename]
         }
