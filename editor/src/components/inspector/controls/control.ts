@@ -47,6 +47,8 @@ export interface DEPRECATEDControlProps<T> {
   style?: React.CSSProperties
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onDragStart?: () => void
+  onDragEnd?: () => void
 }
 
 export interface InspectorControlProps {

@@ -23,20 +23,43 @@ export type SliderControlProps = DEPRECATEDControlProps<number> & {
 export const SliderControl: React.FunctionComponent<React.PropsWithChildren<SliderControlProps>> = (
   props,
 ) => {
+  const { onTransientSubmitValue, value, onDragStart, onDragEnd, onDrag } = props
   const [isSliding, setIsSliding] = React.useState(false)
+  const [displayValue, setDisplayValue] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!isSliding) {
+      setDisplayValue(value)
+    }
+  }, [isSliding, value])
 
   const handleBeforeChange = React.useCallback(() => {
     setIsSliding(true)
-  }, [])
+    if (onDragStart != null) {
+      onDragStart()
+    }
+  }, [onDragStart])
 
+  const handleDragging = React.useCallback(
+    (newValue: number) => {
+      onTransientSubmitValue!(newValue, true)
+      setDisplayValue(newValue)
+      if (onDrag != null) {
+        onDrag(newValue)
+      }
+    },
+    [onTransientSubmitValue, onDrag],
+  )
   const onChangeFn = props.onForcedSubmitValue ?? props.onSubmitValue
-
   const handleOnAfterChange = React.useCallback(
     (n: number) => {
       onChangeFn(n)
       setIsSliding(false)
+      if (onDragEnd != null) {
+        onDragEnd()
+      }
     },
-    [onChangeFn],
+    [onChangeFn, onDragEnd],
   )
 
   const controlOptions = React.useMemo(() => {
@@ -75,6 +98,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
       label: String(controlOptions.origin),
     }
   }
+
   return (
     <FlexRow
       style={{
@@ -90,9 +114,9 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
     >
       <Slider
         disabled={!props.controlStyles.interactive}
-        value={props.value}
+        value={displayValue}
         onBeforeChange={handleBeforeChange}
-        onChange={props.onTransientSubmitValue}
+        onChange={handleDragging}
         onAfterChange={handleOnAfterChange}
         min={controlOptions.minimum}
         max={controlOptions.maximum}
