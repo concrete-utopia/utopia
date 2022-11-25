@@ -80,8 +80,6 @@ const GradientStop = React.memo<GradientStopProps>(
       [dragScreenOrigin, valueAtDragOrigin, indexedUpdateStop, stop],
     )
 
-    // TODO ez nem mukodik!
-
     const onMouseUp = React.useCallback(
       (e: MouseEvent) => {
         if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
