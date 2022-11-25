@@ -45,10 +45,6 @@ export const OpacityRow = React.memo(() => {
     (newValue) => updateScaledValue(newValue, opacity),
     [updateScaledValue, opacity],
   )
-  const transformValueToScaled = React.useCallback<(opacity: CSSNumber) => number>(
-    (value) => value.value / scale,
-    [scale],
-  )
 
   const opacityContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     opacity != null,
@@ -95,7 +91,6 @@ export const OpacityRow = React.memo(() => {
           onSliderSubmitValue={onScaledSubmit}
           onSliderTransientSubmitValue={onScaledTransientSubmit}
           transformSliderValueToCSSNumber={transformNewScaledValue}
-          transformCSSNumberToSliderValue={transformValueToScaled}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

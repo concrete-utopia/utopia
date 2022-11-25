@@ -4,13 +4,11 @@ import { CSSNumber } from '../common/css-utils'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { OnSubmitValue } from './control'
 import { SliderControl, SliderControlProps } from './slider-control'
-
 interface SliderNumberControlProps {
   value: CSSNumber
   onSliderSubmitValue: OnSubmitValue<number>
   onSliderTransientSubmitValue: OnSubmitValue<number>
   transformSliderValueToCSSNumber: (value: number) => CSSNumber
-  transformCSSNumberToSliderValue: (value: CSSNumber) => number
 }
 
 type FilteredSliderProps = Omit<
@@ -22,7 +20,7 @@ type FilteredSliderProps = Omit<
 export const SliderNumberControl: React.FunctionComponent<
   React.PropsWithChildren<NumberInputProps & FilteredSliderProps & SliderNumberControlProps>
 > = React.memo((props) => {
-  const { value, transformSliderValueToCSSNumber, transformCSSNumberToSliderValue } = props
+  const { value, transformSliderValueToCSSNumber, numberType } = props
   const [isDragging, setIsDragging] = React.useState(false)
   const [displayValue, setDisplayValue] = React.useState<CSSNumber>(value)
 
@@ -46,13 +44,22 @@ export const SliderNumberControl: React.FunctionComponent<
     [transformSliderValueToCSSNumber, setDisplayValue],
   )
 
+  const transformCSSNumberToSliderValue = React.useCallback(() => {
+    if (numberType === 'UnitlessPercent' || numberType === 'Percent') {
+      const scale = displayValue.unit === '%' ? 100 : 1
+      return displayValue.value / scale
+    } else {
+      return displayValue.value
+    }
+  }, [numberType, displayValue])
+
   return (
     <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
       <SliderControl
         id={`${props.id}-slider`}
         key={`${props.id}-slider`}
         testId={`${props.id}-slider`}
-        value={transformCSSNumberToSliderValue(displayValue)}
+        value={transformCSSNumberToSliderValue()}
         DEPRECATED_controlOptions={props.DEPRECATED_controlOptions}
         onSubmitValue={props.onSliderSubmitValue}
         onTransientSubmitValue={props.onSliderTransientSubmitValue}

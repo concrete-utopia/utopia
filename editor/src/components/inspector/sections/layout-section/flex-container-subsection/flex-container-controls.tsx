@@ -260,10 +260,6 @@ export const FlexGapControl = React.memo(() => {
   const [sliderSubmitValue, sliderTransientSubmitValue] = useSubmitValueFactory(
     transformNumberToCSSNumber,
   )
-  const transformCSSNumberToNumber = React.useCallback(
-    (valueAsCSSNumber: CSSNumber) => valueAsCSSNumber.value,
-    [],
-  )
 
   const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.targetPath
@@ -303,7 +299,6 @@ export const FlexGapControl = React.memo(() => {
           onSliderSubmitValue={sliderSubmitValue}
           onSliderTransientSubmitValue={sliderTransientSubmitValue}
           transformSliderValueToCSSNumber={transformNumberToCSSNumber}
-          transformCSSNumberToSliderValue={transformCSSNumberToNumber}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

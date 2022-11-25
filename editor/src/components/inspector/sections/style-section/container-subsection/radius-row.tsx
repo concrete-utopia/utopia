@@ -227,10 +227,6 @@ export const RadiusRow = React.memo(() => {
     },
     [borderRadiusValue],
   )
-  const transformBorderRadiusToSliderValue = React.useCallback(
-    (value: CSSNumber) => value.value,
-    [],
-  )
 
   return (
     <InspectorContextMenuWrapper
@@ -319,7 +315,6 @@ export const RadiusRow = React.memo(() => {
             onSliderSubmitValue={onBorderRadiusAllSubmitValue}
             onSliderTransientSubmitValue={onBorderRadiusAllTransientSubmitValue}
             transformSliderValueToCSSNumber={transformBorderRadiusAllNumberToCSSNumber}
-            transformCSSNumberToSliderValue={transformBorderRadiusToSliderValue}
           />
         )}
       </UIGridRow>
