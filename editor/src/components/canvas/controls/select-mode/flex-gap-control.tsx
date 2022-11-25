@@ -272,7 +272,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           </div>,
         )}
         {when(
-          backgroundShown,
+          !isDragging && backgroundShown,
           <PillHandle
             width={width}
             height={height}
