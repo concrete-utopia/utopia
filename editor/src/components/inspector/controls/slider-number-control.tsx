@@ -15,7 +15,7 @@ interface SliderNumberControlProps {
 
 type FilteredSliderProps = Omit<
   SliderControlProps,
-  'onSubmitValue' | 'onTransientSubmitValue' | 'value'
+  'onSubmitValue' | 'onTransientSubmitValue' | 'onForcedSubmitValue' | 'value'
 >
 
 // Slider + Number combo control
