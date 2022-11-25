@@ -212,7 +212,7 @@ async function fetchPackagerResponseWithRetry(
     }
   }
 
-  return await fetchPackagerResponseWithRetryInner(NR_RETRIES, RETRY_FREQ_MS)
+  return fetchPackagerResponseWithRetryInner(NR_RETRIES, RETRY_FREQ_MS)
 }
 
 async function fetchPackagerResponse(

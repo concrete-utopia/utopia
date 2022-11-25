@@ -259,7 +259,7 @@ export async function saveAsset(
   imageId: string,
 ): Promise<string | null> {
   try {
-    return saveAssetRequest(projectId, fileType, base64, imageId)
+    return await saveAssetRequest(projectId, fileType, base64, imageId)
   } catch (e) {
     // FIXME Client should show an error if server requests fail
     console.error(e)

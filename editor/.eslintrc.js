@@ -15,5 +15,8 @@ module.exports = {
         allowNullableBoolean: true,
       },
     ],
+    // Note: Required by the return-await rule, you must disable the base rule as it can report incorrect errors
+    'no-return-await': 'off',
+    '@typescript-eslint/return-await': 'error',
   },
 }
