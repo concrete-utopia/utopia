@@ -186,6 +186,7 @@ const PaddingResizeControlI = React.memo(
                 value={printCSSNumber(props.paddingValue.value, null)}
                 scale={scale}
                 color={color}
+                textColor={colorTheme.white.value}
               />
             </div>
           )}

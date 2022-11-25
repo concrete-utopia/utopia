@@ -56,7 +56,7 @@ import {
   StoredEditorState,
   Theme,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   UserConfiguration,
 } from './store/editor-state'
@@ -255,6 +255,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
+  elementsToRerender: Array<ElementPath> | null
 }
 
 export type Atomic = {
@@ -940,7 +941,13 @@ export interface SetRefreshingDependencies {
 
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: GithubChecksums | null
+  checksums: FileChecksums | null
+}
+
+export interface SetAssetChecksum {
+  action: 'SET_ASSET_CHECKSUM'
+  filename: string
+  checksum: string | null
 }
 
 export interface ResetCanvas {
@@ -1234,6 +1241,7 @@ export type EditorAction =
   | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
+  | SetAssetChecksum
 
 export type DispatchPriority =
   | 'everyone'

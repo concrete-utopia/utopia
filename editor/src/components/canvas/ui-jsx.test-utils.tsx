@@ -281,7 +281,12 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
-      if (shouldInspectorUpdate(workingEditorState.strategyState)) {
+      if (
+        shouldInspectorUpdate(
+          workingEditorState.strategyState,
+          workingEditorState.patchedEditor.canvas.elementsToRerender,
+        )
+      ) {
         lowPriorityStoreHook.setState(
           patchedStoreFromFullStore(workingEditorState, 'low-priority-store'),
         )
@@ -410,9 +415,7 @@ export async function renderTestEditorWithModel(
       waitForDOMReport: boolean,
       innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
     ) => {
-      return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)
-      })
+      return act(async () => asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse))
     },
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),

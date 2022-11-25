@@ -29,7 +29,12 @@ export const FloatingIndicator = controlForStrategyMemoized<FloatingIndicatorPro
           top: position.y,
         }}
       >
-        <CanvasLabel value={value} scale={scale} color={colorTheme.brandNeonPink.value} />
+        <CanvasLabel
+          value={value}
+          scale={scale}
+          color={colorTheme.brandNeonPink.value}
+          textColor={colorTheme.white.value}
+        />
       </div>
     </CanvasOffsetWrapper>
   )

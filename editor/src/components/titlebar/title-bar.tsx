@@ -16,8 +16,8 @@ import {
 } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { togglePanel } from '../editor/actions/action-creators'
-import { EditorStorePatched, githubRepoFullName } from '../editor/store/editor-state'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
@@ -81,10 +81,19 @@ const TitleBar = React.memo(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
+  const isLeftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'LeftPanelRoot isLeftMenuExpanded',
+  )
+
   const toggleLeftPanel = useCallback(() => {
     let actions: Array<EditorAction> = []
     actions.push(togglePanel('leftmenu'))
     dispatch(actions)
+  }, [dispatch])
+
+  const openLeftPaneltoGithubTab = useCallback(() => {
+    dispatch([setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Github)])
   }, [dispatch])
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
@@ -127,14 +136,20 @@ const TitleBar = React.memo(() => {
           <>
             {when(
               hasUpstreamChanges,
-              <RoundButton color={colorTheme.secondaryOrange.value} onClick={toggleLeftPanel}>
+              <RoundButton
+                color={colorTheme.secondaryOrange.value}
+                onClick={openLeftPaneltoGithubTab}
+              >
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
               hasDownstreamChanges,
-              <RoundButton color={colorTheme.secondaryBlue.value} onClick={toggleLeftPanel}>
+              <RoundButton
+                color={colorTheme.secondaryBlue.value}
+                onClick={openLeftPaneltoGithubTab}
+              >
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Push Local</>
               </RoundButton>,
@@ -151,7 +166,7 @@ const TitleBar = React.memo(() => {
           height: 27,
         }}
       >
-        {currentBranch ? (
+        {currentBranch != null ? (
           <SimpleFlexRow style={{ gap: 5 }}>
             {repoName}
             {<Icons.Branch style={{ width: 19, height: 19 }} />}

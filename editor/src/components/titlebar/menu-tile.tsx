@@ -96,7 +96,7 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
         {React.cloneElement(props.icon, {
           color: props.selected ? 'primary' : 'secondary',
         })}
-        {props.badge && <MenuTileBadge text={props.badge} />}
+        {props.badge != null && <MenuTileBadge text={props.badge} />}
       </div>
     </Tile>
   )

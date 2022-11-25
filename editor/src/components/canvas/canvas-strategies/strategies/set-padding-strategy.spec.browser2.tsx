@@ -750,7 +750,7 @@ function projectWithComponentThatDefinesPaddingInternally(props: HorribleCompone
           width: '300px',
           height: '400px',
           backgroundColor: 'green',
-          ${props.internalPadding ? `padding: '${props.internalPadding}',` : ''}
+          ${props.internalPadding != null ? `padding: '${props.internalPadding}',` : ''}
           ...props.style,
         }}
         data-uid='8bc'
@@ -765,7 +765,7 @@ function projectWithComponentThatDefinesPaddingInternally(props: HorribleCompone
           position: 'absolute',
           left: 420,
           top: 420,
-          ${props.externalPadding ? `padding: '${props.externalPadding}',` : ''}
+          ${props.externalPadding != null ? `padding: '${props.externalPadding}',` : ''}
         }}
         data-uid='ca3'
       />

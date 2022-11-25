@@ -67,8 +67,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     'BorderRadiusControl dispatch scale',
   )
 
-  const colorTheme = useColorTheme()
-
   const backgroundShown = hoveredViews.some((p) => EP.pathsEqual(p, selectedElement))
 
   const controlRef = useBoundingBox([selectedElement], (ref, boundingBox) => {
@@ -93,7 +91,6 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}
-            color={colorTheme.brandNeonPink.value}
             canvasOffsetRef={canvasOffset}
             dispatch={dispatch}
             corner={corner}
@@ -115,7 +112,6 @@ interface CircularHandleProp {
   isDragging: boolean
   backgroundShown: boolean
   scale: number
-  color: string
   elementSize: Size
   showIndicatorFromParent: boolean
   showDot: boolean
@@ -127,7 +123,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
     isDragging,
     backgroundShown,
     scale,
-    color,
     canvasOffsetRef,
     dispatch,
     corner,
@@ -137,6 +132,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   } = props
 
   const [hovered, setHovered] = React.useState<boolean>(false)
+
+  const colorTheme = useColorTheme()
 
   const handleHoverStart = React.useCallback(() => setHovered(true), [])
   const handleHoverEnd = React.useCallback(() => setHovered(false), [])
@@ -189,7 +186,8 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             <CanvasLabel
               value={`${printCSSNumber(borderRadius.value, null)}`}
               scale={scale}
-              color={color}
+              color={colorTheme.brandNeonPink.value}
+              textColor={colorTheme.white.value}
             />
           </div>,
         )}
