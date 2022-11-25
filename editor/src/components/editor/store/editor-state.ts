@@ -1219,7 +1219,7 @@ export function emptyGithubData(): GithubData {
   }
 }
 
-export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1292,9 +1292,10 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
+  assetChecksums: FileChecksums
 }
 
 export function editorState(
@@ -1366,10 +1367,11 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: GithubChecksums | null,
+  githubChecksums: FileChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
+  assetChecksums: FileChecksums,
 ): EditorState {
   return {
     id: id,
@@ -1444,6 +1446,7 @@ export function editorState(
     githubChecksums: githubChecksums,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
+    assetChecksums: assetChecksums,
   }
 }
 
@@ -2032,8 +2035,9 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
+  assetChecksums: FileChecksums
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2076,6 +2080,7 @@ export function mergePersistentModel(
     githubSettings: second.githubSettings,
     githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
+    assetChecksums: second.assetChecksums,
   }
 }
 
@@ -2265,6 +2270,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     branchContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
+    assetChecksums: {},
   }
 }
 
@@ -2566,6 +2572,7 @@ export function editorModelFromPersistentModel(
     githubChecksums: persistentModel.githubChecksums,
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
+    assetChecksums: {},
   }
   return editor
 }
@@ -2604,6 +2611,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     githubSettings: editor.githubSettings,
     githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
+    assetChecksums: editor.assetChecksums,
   }
 }
 
@@ -2638,6 +2646,7 @@ export function persistentModelForProjectContents(
     githubSettings: emptyGithubSettings(),
     githubChecksums: null,
     branchContents: null,
+    assetChecksums: {},
   }
 }
 

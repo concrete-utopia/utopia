@@ -168,7 +168,6 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
-  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -242,7 +241,6 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
-      elementsToRerender: editor.canvas.elementsToRerender,
     }
   }
 }
@@ -358,7 +356,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   const cssImports = useKeepReferenceEqualityIfPossible(
     normalizedCssImportsFromImports(uiFilePath, imports),
   )
-  if (props.elementsToRerender === 'rerender-all-elements') {
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
     unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
   }
 
@@ -509,7 +507,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.domWalkerInvalidateCount,
     props.mountCount,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    props.elementsToRerender,
+    ElementsToRerenderGLOBAL.current,
   ])
 
   return (

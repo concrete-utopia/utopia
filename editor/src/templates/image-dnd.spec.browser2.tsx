@@ -238,7 +238,10 @@ describe('image drag and drop', () => {
     dropDone = defer()
     const onDropStub = sandbox.stub(ImageDrop.DropHandlers, 'onDrop')
     onDropStub.callsFake((e, f, context) => {
-      const mockContext: ImageDrop.DropContext = { ...context, saveAssets: () => Promise.resolve() }
+      const mockContext: ImageDrop.DropContext = {
+        ...context,
+        saveAssets: () => Promise.resolve([]),
+      }
       return originalOnDrop(e, f, mockContext).then(() => dropDone.resolve())
     })
   })

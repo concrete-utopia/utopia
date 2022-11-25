@@ -186,7 +186,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           {when(
             flexDirectionIcon != null && parentLayout === 'flex',
             <div>
-              {selectedAlignment ? (
+              {selectedAlignment != null ? (
                 <PopupList
                   options={allAlignmentOptions}
                   value={selectedAlignment}

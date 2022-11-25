@@ -124,6 +124,7 @@ async function loadProject(
     },
     githubChecksums: null,
     branchContents: null,
+    assetChecksums: {},
   }
 
   // Load the project itself.

@@ -145,7 +145,7 @@ export const Icn = React.memo(
   }: IcnProps) => {
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
 
-    const iconColor = useIconColor(props.color || 'main')
+    const iconColor = useIconColor(props.color ?? 'main')
 
     const { onMouseDown: propsOnMouseDown, onClick } = props
     const onMouseDown = React.useCallback(

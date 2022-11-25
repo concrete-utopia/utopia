@@ -1,16 +1,18 @@
 export function normalizePath(path: Array<string>): Array<string> {
-  return path.reduce((pathSoFar: Array<string>, pathElem: string, index: number) => {
-    if (pathElem === '') {
-      return pathSoFar
+  let result: Array<string> = []
+  for (const elem of path) {
+    switch (elem) {
+      case '':
+      case '.':
+        break
+      case '..':
+        result.pop()
+        break
+      default:
+        result.push(elem)
     }
-    if (pathElem === '.') {
-      return pathSoFar
-    }
-    if (pathElem === '..') {
-      return pathSoFar.slice(0, -1)
-    }
-    return [...pathSoFar, pathElem]
-  }, [])
+  }
+  return result
 }
 
 export function stripTrailingSlash(path: string): string {

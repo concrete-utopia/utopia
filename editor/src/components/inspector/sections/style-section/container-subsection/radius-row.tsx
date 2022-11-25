@@ -213,7 +213,6 @@ export const RadiusRow = React.memo(() => {
     onUnsetValues,
   )
 
-  // slider conversion functions
   const transformBorderRadiusAllNumberToCSSNumber = React.useCallback<
     (newValue: number) => CSSNumber
   >(

@@ -18,7 +18,7 @@ import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
-import { GithubChecksums } from './editor/store/editor-state'
+import { FileChecksums } from './editor/store/editor-state'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -42,20 +42,52 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-function getSHA1Checksum(contents: string): string {
+function getSHA1Checksum(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
 
-export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): GithubChecksums {
+export function inferGitBlobChecksum(buffer: Buffer): string {
+  // This function returns the same SHA1 checksum string that git would return for the same contents.
+  // Given the contents in the buffer variable, the final checksum is calculated by hashing
+  // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
+  // Ref: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+  const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
+  const wrapped = Buffer.concat([prefix, buffer])
+  return getSHA1Checksum(wrapped)
+}
+
+export function getProjectContentsChecksums(
+  tree: ProjectContentTreeRoot,
+  assetChecksums: FileChecksums,
+): FileChecksums {
   const contents = treeToContents(tree)
 
-  const checksums: GithubChecksums = {}
+  const checksums: FileChecksums = {}
   Object.keys(contents).forEach((filename) => {
     const file = contents[filename]
-    if (isTextFile(file)) {
-      checksums[filename] = getSHA1Checksum(file.fileContents.code)
-    } else if (isAssetFile(file) && file.base64 != undefined) {
-      checksums[filename] = getSHA1Checksum(file.base64)
+    if (file == null) {
+      return
+    }
+
+    switch (file.type) {
+      case 'TEXT_FILE':
+        checksums[filename] = getSHA1Checksum(file.fileContents.code)
+        break
+      case 'ASSET_FILE':
+      case 'IMAGE_FILE':
+        if (file.gitBlobSha != null) {
+          checksums[filename] = file.gitBlobSha
+        } else if (file.base64 != undefined) {
+          checksums[filename] = getSHA1Checksum(file.base64)
+        } else if (Object.keys(assetChecksums).includes(filename)) {
+          checksums[filename] = assetChecksums[filename]
+        }
+        break
+      case 'DIRECTORY':
+        break
+      default:
+        const _exhaustiveCheck: never = file
+        throw new Error(`Invalid file type`)
     }
   })
 
@@ -63,8 +95,8 @@ export function getProjectContentsChecksums(tree: ProjectContentTreeRoot): Githu
 }
 
 export function deriveGithubFileChanges(
-  projectChecksums: GithubChecksums,
-  githubChecksums: GithubChecksums | null,
+  projectChecksums: FileChecksums,
+  githubChecksums: FileChecksums | null,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
   if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {

@@ -37,10 +37,9 @@ export const OpacityRow = React.memo(() => {
     },
     [scale],
   )
+
   const [onScaledSubmit, onScaledTransientSubmit] =
     opacityMetadata.useSubmitValueFactory(updateScaledValue)
-
-  // slider conversion functions
   const transformNewScaledValue = React.useCallback<(newValue: number) => CSSNumber>(
     (newValue) => updateScaledValue(newValue, opacity),
     [updateScaledValue, opacity],
