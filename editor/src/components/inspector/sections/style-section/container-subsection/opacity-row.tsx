@@ -10,6 +10,8 @@ import {
   InspectorContextMenuWrapper,
   SliderControl,
 } from '../../../../../uuiui-deps'
+import { SliderNumberControl } from '../../../controls/slider-number-control'
+import { CSSNumber, setCSSNumberValue } from '../../../common/css-utils'
 
 const sliderControlOptions = {
   minimum: 0,
@@ -27,13 +29,20 @@ export const OpacityRow = React.memo(() => {
 
   const opacity = opacityMetadata.value
   const scale = opacity.unit === '%' ? 100 : 1
-  const scaledOpacity = opacity.value / scale
 
   const isVisible = useIsSubSectionVisible('opacity')
-  const [onScaledSubmit, onScaledTransientSubmit] = opacityMetadata.useSubmitValueFactory(
-    (newValue: number, oldValue) => {
-      return CSSUtils.setCSSNumberValue(oldValue, newValue * scale)
+  const updateScaledValue = React.useCallback(
+    (newValue: number, oldValue: CSSNumber) => {
+      return setCSSNumberValue(oldValue, newValue * scale)
     },
+    [scale],
+  )
+
+  const [onScaledSubmit, onScaledTransientSubmit] =
+    opacityMetadata.useSubmitValueFactory(updateScaledValue)
+  const transformNewScaledValue = React.useCallback<(newValue: number) => CSSNumber>(
+    (newValue) => updateScaledValue(newValue, opacity),
+    [updateScaledValue, opacity],
   )
 
   const opacityContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
@@ -63,33 +72,25 @@ export const OpacityRow = React.memo(() => {
     >
       <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
-        <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
-          <SliderControl
-            DEPRECATED_controlOptions={sliderControlOptions}
-            id={`opacity-slider`}
-            key={`opacity-slider`}
-            testId={`opacity-slider`}
-            value={scaledOpacity}
-            controlStatus={opacityMetadata.controlStatus}
-            controlStyles={opacityMetadata.controlStyles}
-            onSubmitValue={onScaledSubmit}
-            onTransientSubmitValue={onScaledTransientSubmit}
-            onForcedSubmitValue={onScaledSubmit}
-          />
-          <NumberInput
-            value={opacity}
-            minimum={0}
-            maximum={1}
-            stepSize={0.01}
-            id='opacity-number-control'
-            testId='opacity-number-control'
-            onSubmitValue={wrappedOnSubmitValue}
-            onTransientSubmitValue={wrappedOnTransientSubmitValue}
-            controlStatus={opacityMetadata.controlStatus}
-            numberType='UnitlessPercent'
-            defaultUnitToHide={null}
-          />
-        </UIGridRow>
+        <SliderNumberControl
+          id='opacity'
+          key='opacity'
+          testId='opacity'
+          value={opacity}
+          DEPRECATED_controlOptions={sliderControlOptions}
+          controlStatus={opacityMetadata.controlStatus}
+          controlStyles={opacityMetadata.controlStyles}
+          minimum={0}
+          maximum={1}
+          stepSize={0.01}
+          numberType='UnitlessPercent'
+          defaultUnitToHide={null}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          onSliderSubmitValue={onScaledSubmit}
+          onSliderTransientSubmitValue={onScaledTransientSubmit}
+          transformSliderValueToCSSNumber={transformNewScaledValue}
+        />
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
