@@ -95,8 +95,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     control: FlexGapControl,
     props: {
       selectedElement: selectedElement,
-      flexDirection: flexGap.direction,
-      updatedGapValue: updatedFlexGapMeasurement,
+      updatedGapValue: isDragOngoing(interactionSession) ? updatedFlexGapMeasurement : null,
     },
     key: 'flex-gap-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
@@ -227,4 +226,12 @@ function flexGapValueIndicatorProps(
     ),
     position: position,
   }
+}
+
+function isDragOngoing(interactionSession: InteractionSession | null): boolean {
+  return (
+    interactionSession != null &&
+    interactionSession.activeControl.type === 'FLEX_GAP_HANDLE' &&
+    interactionSession.interactionData.type === 'DRAG'
+  )
 }

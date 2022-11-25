@@ -25,6 +25,7 @@ import {
   isRight,
   left,
   eitherToMaybe,
+  mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -924,6 +925,11 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.left)
   const hasTransform = elementStyle.transform !== 'none'
 
+  const flexGap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
+  )
+
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
@@ -958,6 +964,7 @@ function getSpecialMeasurements(
     clientHeight,
     parentFlexDirection,
     parsedFlexGapValue,
+    flexGap,
     flexDirection,
     element.localName,
     childrenCount,
