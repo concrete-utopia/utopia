@@ -15,5 +15,7 @@ module.exports = {
         allowNullableBoolean: true,
       },
     ],
+    'no-return-await': 'off',
+    '@typescript-eslint/return-await': 'error',
   },
 }
