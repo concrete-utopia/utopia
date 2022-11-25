@@ -36,7 +36,7 @@ import {
   EditorStorePatched,
   emptyGithubData,
   emptyGithubSettings,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   GithubOperation,
   GithubRepo,
@@ -202,7 +202,7 @@ export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
-  assetChecksums: GithubChecksums
+  assetChecksums: FileChecksums
 }
 
 export async function saveProjectToGithub(
@@ -1193,7 +1193,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  localChecksums: GithubChecksums | null,
+  localChecksums: FileChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {
@@ -1241,7 +1241,7 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  localChecksums: GithubChecksums | null,
+  localChecksums: FileChecksums | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {

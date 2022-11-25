@@ -1219,7 +1219,7 @@ export function emptyGithubData(): GithubData {
   }
 }
 
-export type GithubChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1292,10 +1292,10 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
-  assetChecksums: GithubChecksums
+  assetChecksums: FileChecksums
 }
 
 export function editorState(
@@ -1367,11 +1367,11 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: GithubChecksums | null,
+  githubChecksums: FileChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
-  assetChecksums: GithubChecksums,
+  assetChecksums: FileChecksums,
 ): EditorState {
   return {
     id: id,
@@ -2035,9 +2035,9 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: GithubChecksums | null
+  githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
-  assetChecksums: GithubChecksums
+  assetChecksums: FileChecksums
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {

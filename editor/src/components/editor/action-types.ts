@@ -56,7 +56,7 @@ import {
   StoredEditorState,
   Theme,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   UserConfiguration,
 } from './store/editor-state'
@@ -940,7 +940,7 @@ export interface SetRefreshingDependencies {
 
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: GithubChecksums | null
+  checksums: FileChecksums | null
 }
 
 export interface SetAssetChecksum {

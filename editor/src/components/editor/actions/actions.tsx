@@ -343,7 +343,6 @@ import {
   DerivedState,
   editorModelFromPersistentModel,
   EditorState,
-  emptyGithubSettings,
   getAllBuildErrors,
   getAllLintErrors,
   getCurrentTheme,
@@ -355,7 +354,7 @@ import {
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
-  GithubChecksums,
+  FileChecksums,
   insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
@@ -371,7 +370,6 @@ import {
   packageJsonFileFromProjectContents,
   PersistentModel,
   persistentModelFromEditorModel,
-  ProjectGithubSettings,
   removeElementAtPath,
   RightMenuTab,
   SimpleParseSuccess,
@@ -1495,11 +1493,11 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
 
 function pruneAssetChecksums(
   tree: ProjectContentTreeRoot,
-  checksums: GithubChecksums,
-): GithubChecksums {
+  checksums: FileChecksums,
+): FileChecksums {
   // this function removes the asset checksums that reference files that don't exist in the project anymore
   const assetChecksums = checksums != null ? { ...checksums } : {}
-  const keepChecksums: GithubChecksums = {}
+  const keepChecksums: FileChecksums = {}
   Object.keys(assetChecksums).forEach((filename) => {
     const file = getContentsTreeFileFromString(tree, filename)
     if (file != null && (isAssetFile(file) || isImageFile(file))) {
@@ -2044,7 +2042,7 @@ export const UPDATE_FNS = {
     }
   },
   SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
-    const assetChecksums: GithubChecksums =
+    const assetChecksums: FileChecksums =
       editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
     const absoluteFilename = action.filename.replace(/^\.\//, '/')
     if (action.checksum == null) {
