@@ -133,7 +133,7 @@ const PaddingResizeControlI = React.memo(
     ].map((v) => v / scale)
 
     const [indicatorColor, stripeColor, borderColor] = props.disabled
-      ? [DisabledColor, DisabledColor, DisabledColor]
+      ? [DisabledColor(colorTheme), DisabledColor(colorTheme), DisabledColor(colorTheme)]
       : [
           colorTheme.brandNeonPink.value,
           colorTheme.brandNeonPink.value,
