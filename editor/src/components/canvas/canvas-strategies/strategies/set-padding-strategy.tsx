@@ -238,13 +238,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   switch (edgePiece) {
     case 'top':
-      return CSSCursor.PaddingNorth
     case 'bottom':
-      return CSSCursor.PaddingSouth
+      return CSSCursor.RowResize
     case 'left':
-      return CSSCursor.PaddingEast
     case 'right':
-      return CSSCursor.PaddingWest
+      return CSSCursor.ColResize
     default:
       assertNever(edgePiece)
   }
