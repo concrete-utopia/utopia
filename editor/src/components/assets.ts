@@ -65,16 +65,31 @@ export function getProjectContentsChecksums(
   const checksums: GithubChecksums = {}
   Object.keys(contents).forEach((filename) => {
     const file = contents[filename]
-    if (isTextFile(file)) {
-      checksums[filename] = getSHA1Checksum(file.fileContents.code)
-    } else if (isAssetFile(file) && file.base64 != undefined) {
-      checksums[filename] = getSHA1Checksum(file.base64)
-    } else if (isImageFile(file)) {
-      if (file.gitBlobSha) {
-        checksums[filename] = file.gitBlobSha
-      } else if (Object.keys(assetChecksums).includes(filename)) {
-        checksums[filename] = assetChecksums[filename]
-      }
+    if (file == null) {
+      return
+    }
+
+    switch (file.type) {
+      case 'TEXT_FILE':
+        checksums[filename] = getSHA1Checksum(file.fileContents.code)
+        break
+      case 'ASSET_FILE':
+        if (file.base64 != undefined) {
+          checksums[filename] = getSHA1Checksum(file.base64)
+        }
+        break
+      case 'IMAGE_FILE':
+        if (file.gitBlobSha) {
+          checksums[filename] = file.gitBlobSha
+        } else if (Object.keys(assetChecksums).includes(filename)) {
+          checksums[filename] = assetChecksums[filename]
+        }
+        break
+      case 'DIRECTORY':
+        break
+      default:
+        const _exhaustiveCheck: never = file
+        throw new Error(`Invalid file type`)
     }
   })
 
