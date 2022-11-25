@@ -96,7 +96,6 @@ export function createComponentRendererComponent(params: {
 
     function shouldUpdate() {
       return (
-        !isFeatureEnabled('Canvas Selective Rerender') ||
         ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
         ElementsToRerenderGLOBAL.current.some((er) => {
           return (

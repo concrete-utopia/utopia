@@ -1,12 +1,13 @@
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { getSelectionColor } from '../outline-control'
 import { isZeroSizedElement } from '../outline-utils'
 
 interface MultiSelectOutlineControlProps {
@@ -90,3 +91,24 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }
   return null
 })
+
+export function getSelectionColor(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  focusedElementPath: ElementPath | null,
+  colorTheme: any,
+): string {
+  if (EP.isInsideFocusedComponent(path)) {
+    if (MetadataUtils.isFocusableComponent(path, metadata)) {
+      return colorTheme.canvasSelectionFocusableChild.value
+    } else {
+      return colorTheme.canvasSelectionNotFocusableChild.value
+    }
+  } else if (EP.isFocused(focusedElementPath, path)) {
+    return colorTheme.canvasSelectionIsolatedComponent.value
+  } else if (MetadataUtils.isFocusableComponent(path, metadata)) {
+    return colorTheme.canvasSelectionFocusable.value
+  } else {
+    return colorTheme.canvasSelectionNotFocusable.value
+  }
+}

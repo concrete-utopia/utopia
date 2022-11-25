@@ -112,7 +112,9 @@ import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
-import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { ElementPath } from '../core/shared/project-file-types'
+import { uniqBy } from '../core/shared/array-utils'
+import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -127,36 +129,89 @@ function replaceLoadingMessage(newMessage: string) {
   }
 }
 
-// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
-// for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
-// the previously focused elements may not now exist.
-// Also as some canvas strategies may not supply a specific set of elements to re-render, if
-// `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
-// for the very first pass to get another `rerender-all-elements`.
-let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): ElementsToRerender {
-  let elementsToRerender: ElementsToRerender = currentElementsToRerender
-  switch (lastElementsToRerender) {
-    case 'rerender-all-elements':
-      switch (currentElementsToRerender) {
-        case 'rerender-all-elements':
-          break
-        default:
-          elementsToRerender = 'rerender-all-elements'
-      }
-      break
-    default:
-      switch (currentElementsToRerender) {
-        case 'rerender-all-elements':
-          break
-        default:
-          if (!arrayEquals(lastElementsToRerender, currentElementsToRerender, EP.pathsEqual)) {
-            elementsToRerender = 'rerender-all-elements'
-          }
-      }
+function collectElementsToRerenderForTransientActions(
+  working: Array<ElementPath>,
+  action: EditorAction,
+): Array<ElementPath> {
+  if (action.action === 'TRANSIENT_ACTIONS') {
+    if (action.elementsToRerender != null) {
+      working.push(...action.elementsToRerender)
+    }
+    working.push(
+      ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
+    )
+    return working
+  } else {
+    return working
   }
-  lastElementsToRerender = currentElementsToRerender
-  return elementsToRerender
+}
+
+// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
+// for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
+// and let the canvas re-render components that may have a missing child now.
+let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
+function fixElementsToRerender(
+  currentElementsToRerender: ElementsToRerender,
+  dispatchedActions: readonly EditorAction[],
+): ElementsToRerender {
+  // while running transient actions there is an optional elementsToRerender
+  const elementsToRerenderTransient = uniqBy<ElementPath>(
+    dispatchedActions.reduce(
+      collectElementsToRerenderForTransientActions,
+      [] as Array<ElementPath>,
+    ),
+    EP.pathsEqual,
+  )
+
+  const currentOrTransientElementsToRerender =
+    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+
+  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
+  if (
+    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...currentOrTransientElementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = currentOrTransientElementsToRerender
+  return fixedElementsToRerender
+}
+
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
+export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI): void {
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const githubChecksums = currentState.editor.githubChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const dispatch = currentState.dispatch
+      void refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        githubChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      globalThis.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  pollGithub()
 }
 
 export class Editor {
@@ -268,6 +323,8 @@ export class Editor {
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
     void renderRootEditor()
+
+    startGithubPolling(this.utopiaStoreHook)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -436,6 +493,7 @@ export class Editor {
         }
         const currentElementsToRender = fixElementsToRerender(
           this.storedState.patchedEditor.canvas.elementsToRerender,
+          dispatchedActions,
         )
         ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         ReactDOM.flushSync(() => {
@@ -494,7 +552,9 @@ export class Editor {
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
-            if (shouldUpdateLowPriorityUI(this.storedState.strategyState)) {
+            if (
+              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
+            ) {
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
               )
@@ -636,7 +696,7 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      if (process.env.HOT_MODE) {
+      if (process.env.HOT_MODE != null) {
         ReactDOM.render(
           <HotRoot
             api={api}

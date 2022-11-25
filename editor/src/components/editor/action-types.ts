@@ -255,6 +255,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
+  elementsToRerender: Array<ElementPath> | null
 }
 
 export type Atomic = {
@@ -940,7 +941,7 @@ export interface SetRefreshingDependencies {
 
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: GithubChecksums
+  checksums: GithubChecksums | null
 }
 
 export interface ResetCanvas {

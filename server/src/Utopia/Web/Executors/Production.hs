@@ -279,12 +279,12 @@ innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = d
   pool <- fmap _projectPool ask
   result <- getGithubBranches githubResources logger metrics pool user owner repository
   pure $ action result
-innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha action) = do
+innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha
+  result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
   pure $ action result
 innerServerExecutor (GetUsersRepositories user action) = do
   githubResources <- fmap _githubResources ask

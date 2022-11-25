@@ -36,6 +36,7 @@ import {
 
 import {
   EditorStorePatched,
+  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -230,8 +231,11 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
-export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
-  return !isStrategyActive(strategyState)
+export function shouldInspectorUpdate(
+  strategyState: StrategyState,
+  elementsToRerender: ElementsToRerender,
+): boolean {
+  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
@@ -641,7 +645,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -660,15 +666,53 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
   )
 
+  const collectActionsToSubmitValue = React.useCallback(
+    (newValue: JSXAttribute, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+      const actionsArray = [
+        ...refElementsToTargetForUpdates.current.map((elem) => {
+          return setProp_UNSAFE(elem, path, newValue)
+        }),
+      ]
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
+  const collectActionsToUnsetValue = React.useCallback(
+    (property: PropertyPath | Array<PropertyPath>, transient: boolean): Array<EditorAction> => {
+      let actionsArray: Array<EditorAction> = []
+      Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
+        if (Array.isArray(property)) {
+          Utils.fastForEach(property, (p) => {
+            actionsArray.push(unsetProperty(elem, p))
+          })
+        } else {
+          actionsArray.push(unsetProperty(elem, property))
+        }
+      })
+
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
     onSubmitValue: onSubmitValueForHooks,
     onUnsetValue: onUnsetValue,
+    collectActionsToSubmitValue: collectActionsToSubmitValue,
+    collectActionsToUnsetValue: collectActionsToUnsetValue,
     selectedViewsRef: selectedViewsRef,
   })
 

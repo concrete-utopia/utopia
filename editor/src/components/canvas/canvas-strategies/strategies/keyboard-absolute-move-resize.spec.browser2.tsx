@@ -21,18 +21,8 @@ const defaultBBBProperties = {
 }
 
 function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
-  let originalCanvasStrategiesFSValue: boolean
-  before(() => {
-    originalCanvasStrategiesFSValue = isFeatureEnabled('Canvas Strategies')
-    setFeatureEnabled('Canvas Strategies', true)
-  })
-  after(() => {
-    setFeatureEnabled('Canvas Strategies', originalCanvasStrategiesFSValue)
-  })
-
   let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
-    setFeatureEnabled('Canvas Strategies', true)
     // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
     clock.current = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
@@ -399,7 +389,6 @@ function elementWidth(renderedDom: RenderResult, testId: string): number {
 }
 
 async function setupTest(initialBBBProperties: { [key: string]: any }) {
-  expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
   const renderResult = await renderTestEditorWithCode(
     TestProjectDeluxeStallion(initialBBBProperties),
     'await-first-dom-report',

@@ -454,21 +454,17 @@ function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): vo
 async function revealRangeIfPossible(
   workspaceRootUri: vscode.Uri,
   boundsInFile: BoundsInFile,
-  forceIfFocused: boolean = false,
 ): Promise<void> {
-  const focused = vscode.window.state.focused
-  if (forceIfFocused || !focused) {
-    const visibleEditor = vscode.window.visibleTextEditors.find(
-      (editor) => editor.document.uri.path === boundsInFile.filePath,
-    )
-    if (visibleEditor == null) {
-      const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
-      if (opened) {
-        revealRangeIfPossibleInVisibleEditor(boundsInFile)
-      }
-    } else {
+  const visibleEditor = vscode.window.visibleTextEditors.find(
+    (editor) => editor.document.uri.path === boundsInFile.filePath,
+  )
+  if (visibleEditor == null) {
+    const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
+    if (opened) {
       revealRangeIfPossibleInVisibleEditor(boundsInFile)
     }
+  } else {
+    revealRangeIfPossibleInVisibleEditor(boundsInFile)
   }
 }
 

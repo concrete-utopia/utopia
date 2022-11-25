@@ -345,6 +345,7 @@ import {
   DerivedState,
   editorModelFromPersistentModel,
   EditorState,
+  emptyGithubSettings,
   getAllBuildErrors,
   getAllLintErrors,
   getCurrentTheme,
@@ -371,6 +372,7 @@ import {
   packageJsonFileFromProjectContents,
   PersistentModel,
   persistentModelFromEditorModel,
+  ProjectGithubSettings,
   removeElementAtPath,
   RightMenuTab,
   SimpleParseSuccess,
@@ -1461,6 +1463,32 @@ function updateSelectedComponentsFromEditorPosition(
       editor,
       dispatch,
     )
+  }
+}
+
+function normalizeGithubData(editor: EditorModel): EditorModel {
+  const { githubSettings } = editor
+  const hasRepo = githubSettings.targetRepository != null
+  const hasBranch = githubSettings.branchName != null
+  return {
+    ...editor,
+
+    githubSettings: {
+      ...githubSettings,
+      branchName: hasRepo ? githubSettings.branchName : null,
+      branchLoaded: hasRepo && hasBranch && githubSettings.branchLoaded,
+      originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
+      pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
+    },
+
+    githubChecksums:
+      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.githubChecksums : null,
+
+    githubData: {
+      ...editor.githubData,
+      upstreamChanges: null,
+      currentBranchPullRequests: null,
+    },
   }
 }
 
@@ -3718,19 +3746,20 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
-    return {
+    return normalizeGithubData({
       ...editor,
       githubSettings: {
         ...editor.githubSettings,
         ...action.settings,
       },
-    }
+    })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       githubData: {
         ...editor.githubData,
+        lastUpdatedAt: Date.now(),
         ...action.data,
       },
     }

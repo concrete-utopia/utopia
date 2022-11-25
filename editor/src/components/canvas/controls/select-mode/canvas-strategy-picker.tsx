@@ -84,7 +84,6 @@ export const CanvasStrategyPicker = React.memo(() => {
             fontSize: 9,
           }}
           onMouseDown={stopPropagation}
-          onMouseUp={stopPropagation}
           onClick={stopPropagation}
         >
           <FlexColumn

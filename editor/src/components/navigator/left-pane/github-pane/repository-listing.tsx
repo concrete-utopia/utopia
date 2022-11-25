@@ -5,12 +5,17 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
 import { notice } from '../../../../components/common/notice'
-import { showToast } from '../../../../components/editor/actions/action-creators'
 import {
+  showToast,
+  updateGithubSettings,
+} from '../../../../components/editor/actions/action-creators'
+import {
+  emptyGithubSettings,
   GithubRepo,
   githubRepoEquals,
   githubRepoFullName,
   isGithubLoadingBranch,
+  isGithubLoadingRepositories,
 } from '../../../../components/editor/store/editor-state'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import {
@@ -33,12 +38,12 @@ interface RepositoryRowProps extends RepositoryEntry {
 const RepositoryRow = (props: RepositoryRowProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'RepositoryRow dispatch')
 
-  const githubWorking = useEditorState(
-    (store) => store.editor.githubOperations.length > 0,
-    'RepositoryRow githubWorking',
-  )
-
   const [importing, setImporting] = React.useState(false)
+
+  const loadingRepos = useEditorState(
+    (store) => isGithubLoadingRepositories(store.editor.githubOperations),
+    'RepositoryRow loadingRepos',
+  )
 
   const importingThisBranch = useEditorState((store) => {
     if (props.defaultBranch == null) {
@@ -69,7 +74,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
   )
 
   const importRepository = React.useCallback(() => {
-    if (githubWorking) {
+    if (loadingRepos) {
       return
     }
     const parsedTargetRepository = parseGithubProjectString(props.fullName)
@@ -89,7 +94,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       const isAnotherRepo = !githubRepoEquals(parsedTargetRepository, currentRepo)
       dispatch(connectRepo(isAnotherRepo, parsedTargetRepository, null, null, isAnotherRepo))
     }
-  }, [dispatch, props.fullName, props.defaultBranch, currentRepo, githubWorking])
+  }, [dispatch, props.fullName, props.defaultBranch, loadingRepos, currentRepo])
 
   return (
     <UIGridRow
@@ -99,10 +104,10 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       css={{
         cursor: importing
           ? 'wait'
-          : githubWorking || !props.importPermitted
+          : loadingRepos || !props.importPermitted
           ? 'not-allowed'
           : 'pointer',
-        opacity: githubWorking || !props.importPermitted ? 0.5 : 1,
+        opacity: loadingRepos || !props.importPermitted ? 0.5 : 1,
         '&:hover': {
           background: colorTheme.primarySubdued.value,
           color: colorTheme.white.value,
@@ -112,7 +117,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 140 }}>{props.fullName}</Ellipsis>
+        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {props.isPrivate ? 'private' : 'public'}
           {props.updatedAt == null ? null : (
@@ -225,7 +230,6 @@ export const RepositoryListing = React.memo(
       (store) => store.editor.githubOperations,
       'Github operations',
     )
-    const githubWorking = React.useMemo(() => githubOperations.length > 0, [githubOperations])
     const isLoadingRepositories = React.useMemo(
       () => githubOperations.some((op) => op.name === 'loadRepositories'),
       [githubOperations],
@@ -233,7 +237,17 @@ export const RepositoryListing = React.memo(
     const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
 
     const refreshRepos = React.useCallback(() => {
-      void getUsersPublicGithubRepositories(dispatch)
+      void getUsersPublicGithubRepositories(dispatch).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
+    }, [dispatch])
+
+    React.useEffect(() => {
+      refreshRepos()
+    }, [refreshRepos])
+
+    const clearRepository = React.useCallback(() => {
+      dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')
     }, [dispatch])
 
     if (!githubAuthenticated) {
@@ -281,7 +295,7 @@ export const RepositoryListing = React.memo(
           spotlight
           highlight
           style={{ padding: '0 6px' }}
-          disabled={githubWorking}
+          disabled={isLoadingRepositories}
           onMouseDown={refreshRepos}
         >
           {isLoadingRepositories ? (
@@ -297,6 +311,17 @@ export const RepositoryListing = React.memo(
             Create new repository on Github.
           </a>
         </UIGridRow>
+        {when(
+          targetRepository != null,
+          <Button
+            spotlight
+            highlight
+            style={{ color: colorTheme.errorForeground.value }}
+            onClick={clearRepository}
+          >
+            Clear repository
+          </Button>,
+        )}
       </FlexColumn>
     )
   },

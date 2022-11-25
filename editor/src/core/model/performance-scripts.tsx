@@ -529,8 +529,6 @@ export function useTriggerAbsoluteMovePerformanceTest(
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
-    // Switch Canvas Strategies on.
-    setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
     const siblingPaths = allPaths.current.filter(
@@ -718,8 +716,6 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
-    // Switch Canvas Strategies on.
-    setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
     const siblingPaths = allPaths.current.filter(

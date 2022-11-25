@@ -515,6 +515,7 @@ export const BackgroundPicker: React.FunctionComponent<
         zIndex: 1,
       }}
       closePopupOnUnmount={false}
+      outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.id}`}
     >
       <div
         id={props.id}

@@ -22,6 +22,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
 import           Data.Generics.Product
+import           Data.Generics.Sum
 import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
@@ -673,9 +674,19 @@ getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranch
 getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
   getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
 
-getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> ServerMonad GetBranchContentResponse
-getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha = requireUser cookie $ \sessionUser -> do
-  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha
+getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> ServerMonad GetBranchContentResponse
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha Nothing = requireUser cookie $ \sessionUser -> do
+  -- No previous commit SHA was supplied.
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha Nothing
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha justPreviousCommitSha@(Just _) = requireUser cookie $ \sessionUser -> do
+  -- A previous commit SHA was supplied, which may mean we want to return a 304.
+  contentResponse <- getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha justPreviousCommitSha
+  -- Check the previous commit SHA against the newly returned content.
+  let possibleNewCommitSha = firstOf (_Ctor @"GetBranchContentResponseSuccess" . field @"branch" . _Just . field @"originCommit") contentResponse
+  -- Return a 304 if the commits match.
+  if possibleNewCommitSha == justPreviousCommitSha
+    then notModified
+    else pure contentResponse
 
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do

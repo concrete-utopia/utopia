@@ -252,7 +252,12 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               pointerEvents: 'none',
             }}
           >
-            <CanvasLabel value={printCSSNumber(gapValue, null)} scale={scale} color={stripeColor} />
+            <CanvasLabel
+              value={printCSSNumber(gapValue, null)}
+              scale={scale}
+              color={colorTheme.brandNeonPink.value}
+              textColor={colorTheme.white.value}
+            />
           </div>,
         )}
         {when(

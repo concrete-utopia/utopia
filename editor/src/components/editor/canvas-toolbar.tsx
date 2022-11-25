@@ -148,7 +148,6 @@ export const CanvasToolbar = React.memo(() => {
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}
-      onMouseUp={stopPropagation}
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>

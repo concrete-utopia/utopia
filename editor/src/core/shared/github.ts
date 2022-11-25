@@ -63,6 +63,13 @@ import { emptySet } from './set-utils'
 import { trimUpToAndIncluding } from './string-utils'
 import { arrayEquals } from './utils'
 
+export function dispatchPromiseActions(
+  dispatch: EditorDispatch,
+  promise: Promise<Array<EditorAction>>,
+): Promise<void> {
+  return promise.then((actions) => dispatch(actions, 'everyone'))
+}
+
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
 
@@ -258,16 +265,19 @@ export async function saveProjectToGithub(
               ),
             ),
             updateBranchContents(persistentModel.projectContents),
-            showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
+            showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'SUCCESS')),
           ],
           'everyone',
         )
 
         // refresh the branches after the content was saved
-        if (persistentModel.githubSettings.targetRepository) {
-          void getBranchesForGithubRepository(
+        if (persistentModel.githubSettings.targetRepository != null) {
+          void dispatchPromiseActions(
             dispatch,
-            persistentModel.githubSettings.targetRepository,
+            getBranchesForGithubRepository(
+              dispatch,
+              persistentModel.githubSettings.targetRepository,
+            ),
           )
         }
         break
@@ -287,49 +297,51 @@ export async function saveProjectToGithub(
 export async function getBranchesForGithubRepository(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
-): Promise<void> {
+): Promise<Array<EditorAction>> {
   const operation: GithubOperation = { name: 'listBranches' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'branches', githubRepo.owner, githubRepo.repository)
+  try {
+    const url = urljoin(
+      UTOPIA_BACKEND,
+      'github',
+      'branches',
+      githubRepo.owner,
+      githubRepo.repository,
+    )
 
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
 
-  if (response.ok) {
-    const responseBody: GetBranchesResponse = await response.json()
+    if (response.ok) {
+      const responseBody: GetBranchesResponse = await response.json()
 
-    switch (responseBody.type) {
-      case 'FAILURE':
-        dispatch(
-          [
+      switch (responseBody.type) {
+        case 'FAILURE':
+          return [
             showToast(
               notice(`Error when listing branches: ${responseBody.failureReason}`, 'ERROR'),
             ),
-          ],
-          'everyone',
-        )
-        break
-      case 'SUCCESS':
-        dispatch([updateGithubData({ branches: responseBody.branches })], 'everyone')
-        break
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          ]
+        case 'SUCCESS':
+          return [updateGithubData({ branches: responseBody.branches })]
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    } else {
+      return [
+        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+      ]
     }
-  } else {
-    dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
-      'everyone',
-    )
+  } finally {
+    dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
   }
-
-  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 const RE_PULL_REQUEST_URL_NUMBER = /.+\/pull\/([0-9]+).*/
@@ -346,7 +358,7 @@ export async function updatePullRequestsForBranch(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo,
   branchName: string,
-): Promise<void> {
+): Promise<Array<EditorAction>> {
   const operation: GithubOperation = {
     name: 'listPullRequestsForBranch',
     githubRepo: githubRepo,
@@ -355,66 +367,59 @@ export async function updatePullRequestsForBranch(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const url = urljoin(
-    UTOPIA_BACKEND,
-    'github',
-    'branches',
-    githubRepo.owner,
-    githubRepo.repository,
-    'branch',
-    branchName,
-    'pullrequest',
-  )
+  try {
+    const url = urljoin(
+      UTOPIA_BACKEND,
+      'github',
+      'branches',
+      githubRepo.owner,
+      githubRepo.repository,
+      'branch',
+      branchName,
+      'pullrequest',
+    )
 
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
 
-  if (response.ok) {
-    const responseBody: GetBranchPullRequestResponse = await response.json()
+    if (response.ok) {
+      const responseBody: GetBranchPullRequestResponse = await response.json()
 
-    switch (responseBody.type) {
-      case 'FAILURE':
-        dispatch(
-          [
+      switch (responseBody.type) {
+        case 'FAILURE':
+          return [
             showToast(
               notice(
                 `Error when listing pull requests for branch: ${responseBody.failureReason}`,
                 'ERROR',
               ),
             ),
-          ],
-          'everyone',
-        )
-        break
-      case 'SUCCESS':
-        dispatch(
-          [
+          ]
+        case 'SUCCESS':
+          return [
             updateGithubData({
               currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
                 ...pr,
                 number: getPullRequestNumberFromUrl(pr.htmlURL),
               })),
             }),
-          ],
-          'everyone',
-        )
-        break
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          ]
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    } else {
+      return [
+        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+      ]
     }
-  } else {
-    dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
-      'everyone',
-    )
+  } finally {
+    dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
   }
-
-  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 export async function updateProjectAgainstGithub(
@@ -429,8 +434,8 @@ export async function updateProjectAgainstGithub(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null)
-  const specificCommitRequest = getBranchContentFromServer(githubRepo, branchName, commitSha)
+  const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null, null)
+  const specificCommitRequest = getBranchContentFromServer(githubRepo, branchName, commitSha, null)
 
   const branchLatestResponse = await branchLatestRequest
   const specificCommitResponse = await specificCommitRequest
@@ -530,7 +535,7 @@ export async function updateProjectWithBranchContent(
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const response = await getBranchContentFromServer(githubRepo, branchName, null)
+  const response = await getBranchContentFromServer(githubRepo, branchName, null, null)
 
   if (response.ok) {
     const responseBody: GetBranchContentResponse = await response.json()
@@ -606,6 +611,7 @@ async function getBranchContentFromServer(
   githubRepo: GithubRepo,
   branchName: string,
   commitSha: string | null,
+  previousCommitSha: string | null,
 ): Promise<Response> {
   const url = urljoin(
     UTOPIA_BACKEND,
@@ -622,6 +628,10 @@ async function getBranchContentFromServer(
     includeQueryParams = true
     paramsRecord.commit_sha = commitSha
   }
+  if (previousCommitSha != null) {
+    includeQueryParams = true
+    paramsRecord.previous_commit_sha = previousCommitSha
+  }
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
@@ -633,7 +643,7 @@ async function getBranchContentFromServer(
   })
 }
 
-export async function getUserDetailsFromServer(): Promise<GithubUser> {
+export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
   const url = urljoin(UTOPIA_BACKEND, 'github', 'user')
 
   const response = await fetch(url, {
@@ -651,7 +661,7 @@ export async function getUserDetailsFromServer(): Promise<GithubUser> {
           `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
         )
       case 'SUCCESS':
-        return responseBody.user
+        return [updateGithubData({ githubUserDetails: responseBody.user })]
       default:
         const _exhaustiveCheck: never = responseBody
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
@@ -668,72 +678,66 @@ export async function updateUserDetailsWhenAuthenticated(
 ): Promise<boolean> {
   const authenticationResult = await authenticationCheck
   if (authenticationResult) {
-    await getUserDetailsFromServer()
-      .then((userDetails) => {
-        dispatch([updateGithubData({ githubUserDetails: userDetails })], 'everyone')
-      })
-      .catch((error) => {
-        console.error(`Error while attempting to retrieve Github user details: ${error}`)
-      })
+    await dispatchPromiseActions(dispatch, getUserDetailsFromServer()).catch((error) => {
+      console.error(`Error while attempting to retrieve Github user details: ${error}`)
+    })
   }
   return authenticationResult
 }
 
-export async function getUsersPublicGithubRepositories(dispatch: EditorDispatch): Promise<void> {
+export async function getUsersPublicGithubRepositories(
+  dispatch: EditorDispatch,
+): Promise<Array<EditorAction>> {
   const operation: GithubOperation = { name: 'loadRepositories' }
 
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
 
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
+  try {
+    const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
 
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
-    switch (responseBody.type) {
-      case 'FAILURE':
-        const actions: EditorAction[] = [
-          showToast(
-            notice(
-              `Error when getting a user's repositories: ${responseBody.failureReason}`,
-              'ERROR',
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+    if (response.ok) {
+      const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          const actions: EditorAction[] = [
+            showToast(
+              notice(
+                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                'ERROR',
+              ),
             ),
-          ),
-        ]
-        if (responseBody.failureReason.includes('Authentication')) {
-          actions.push(
-            updateGithubSettings(emptyGithubSettings()),
-            setGithubState({ authenticated: false }),
-          )
-        }
-        dispatch(actions, 'everyone')
-        break
-      case 'SUCCESS':
-        dispatch(
-          [
+          ]
+          if (responseBody.failureReason.includes('Authentication')) {
+            actions.push(
+              updateGithubSettings(emptyGithubSettings()),
+              setGithubState({ authenticated: false }),
+            )
+          }
+          return actions
+        case 'SUCCESS':
+          return [
             updateGithubData({
               publicRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
             }),
-          ],
-          'everyone',
-        )
-        break
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          ]
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    } else {
+      return [
+        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+      ]
     }
-  } else {
-    dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
-      'everyone',
-    )
+  } finally {
+    dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
   }
-
-  dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
 }
 
 const githubFileChangesSelector = createSelector(
@@ -1186,47 +1190,93 @@ export async function refreshGithubData(
   branchName: string | null,
   branchChecksums: GithubChecksums | null,
   githubUserDetails: GithubUser | null,
+  previousCommitSha: string | null,
 ): Promise<void> {
+  // Collect actions which are the results of the various requests,
+  // but not those that show which Github operations are running.
+  const promises: Array<Promise<Array<EditorAction>>> = []
   if (githubAuthenticated) {
     if (githubUserDetails === null) {
-      void getUserDetailsFromServer().then((r) =>
-        dispatch([updateGithubData({ githubUserDetails: r })]),
-      )
+      promises.push(getUserDetailsFromServer())
     }
-    void getUsersPublicGithubRepositories(dispatch)
+    promises.push(getUsersPublicGithubRepositories(dispatch))
     if (githubRepo != null) {
-      let upstreamChangesSuccess = false
-      void getBranchesForGithubRepository(dispatch, githubRepo)
+      promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
+      promises.push(
+        updateUpstreamChanges(branchName, branchChecksums, githubRepo, previousCommitSha),
+      )
       if (branchName != null && branchChecksums != null) {
-        void updatePullRequestsForBranch(dispatch, githubRepo, branchName)
-        const branchContentResponse = await getBranchContentFromServer(githubRepo, branchName, null)
-        if (branchContentResponse.ok) {
-          const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
-          if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
-            upstreamChangesSuccess = true
-            const upstreamChecksums = getProjectContentsChecksums(
-              branchLatestContent.branch.content,
-            )
-            const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
-            dispatch([updateGithubData({ upstreamChanges: upstreamChanges })], 'everyone')
-          }
-        }
-      }
-      if (!upstreamChangesSuccess) {
-        dispatch([updateGithubData({ upstreamChanges: null })], 'everyone')
+        promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
       }
     } else {
-      dispatch([updateGithubData({ branches: null })], 'everyone')
+      promises.push(Promise.resolve([updateGithubData({ branches: null })]))
     }
   } else {
-    dispatch([updateGithubData(emptyGithubData())], 'everyone')
+    promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   }
+
+  // Resolve all the promises.
+  await Promise.allSettled(promises).then((results) => {
+    let actions: Array<EditorAction> = []
+    for (const result of results) {
+      switch (result.status) {
+        case 'rejected':
+          console.error(`Error whie polling Github: ${result.reason}`)
+          break
+        case 'fulfilled':
+          actions.push(...result.value)
+          break
+      }
+    }
+
+    // Dispatch all the actions from all the polling functions.
+    dispatch(actions, 'everyone')
+  })
+}
+
+async function updateUpstreamChanges(
+  branchName: string | null,
+  branchChecksums: GithubChecksums | null,
+  githubRepo: GithubRepo,
+  previousCommitSha: string | null,
+): Promise<Array<EditorAction>> {
+  const actions: Array<EditorAction> = []
+  let upstreamChangesSuccess = false
+  if (branchName != null && branchChecksums != null) {
+    const branchContentResponse = await getBranchContentFromServer(
+      githubRepo,
+      branchName,
+      null,
+      previousCommitSha,
+    )
+    if (branchContentResponse.ok) {
+      const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
+      if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
+        upstreamChangesSuccess = true
+        const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.branch.content)
+        const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
+        actions.push(
+          updateGithubData({
+            upstreamChanges: upstreamChanges,
+            lastRefreshedCommit: branchLatestContent.branch.originCommit,
+          }),
+        )
+      }
+    } else if (branchContentResponse.status === 304) {
+      // Not modified status means that the branch has the same commit SHA.
+      upstreamChangesSuccess = true
+    }
+  }
+  if (!upstreamChangesSuccess) {
+    actions.push(updateGithubData({ upstreamChanges: null }))
+  }
+  return actions
 }
 
 export function disconnectGithubProjectActions(): EditorAction[] {
   return [
     updateGithubData(emptyGithubData()),
-    updateGithubChecksums({}),
+    updateGithubChecksums(null),
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]

@@ -252,6 +252,13 @@ export const Icons = {
     height: 18,
     color: 'main',
   }),
+  Branch: makeIcon({
+    category: 'semantic',
+    type: 'branch',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
 }
 
 export const FunctionIcons = {
