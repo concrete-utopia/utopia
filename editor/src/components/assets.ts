@@ -50,6 +50,7 @@ export function inferGitBlobChecksum(buffer: Buffer): string {
   // This function returns the same SHA1 checksum string that git would return for the same contents.
   // Given the contents in the buffer variable, the final checksum is calculated by hashing
   // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
+  // Ref: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
   const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
   const wrapped = Buffer.concat([prefix, buffer])
   return getSHA1Checksum(wrapped)
