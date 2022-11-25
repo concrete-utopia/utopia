@@ -284,7 +284,7 @@ export function assetToSave(fileType: string, base64: string, fileName: string):
 export async function saveAssets(
   projectId: string,
   assets: Array<AssetToSave>,
-): Promise<(string | null)[]> {
+): Promise<Array<string | null>> {
   const promises = assets.map((asset) =>
     saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
   )

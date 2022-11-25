@@ -74,7 +74,7 @@ export async function insertImageFromClipboard(
 }
 
 export interface DropContext {
-  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<(string | null)[]>
+  saveAssets: (projectId: string, assets: AssetToSave[]) => Promise<Array<string | null>>
   mousePosition: CanvasPositions
   editor: () => EditorState
   dispatch: EditorDispatch
