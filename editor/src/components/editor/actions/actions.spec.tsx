@@ -942,6 +942,7 @@ describe('LOAD', () => {
       },
       githubChecksums: null,
       branchContents: null,
+      assetChecksums: {},
     }
 
     const action = {
