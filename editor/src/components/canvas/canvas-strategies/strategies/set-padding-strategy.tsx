@@ -93,7 +93,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
-  const paddingData = supportsPaddingControls(
+  const paddingData = maybePaddingWithSource(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     selectedElements[0],
@@ -262,7 +262,7 @@ interface PaddingWithSource {
   source: 'props' | 'code'
 }
 
-function supportsPaddingControls(
+function maybePaddingWithSource(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   selectedElement: ElementPath,
@@ -330,15 +330,19 @@ function getPaddingData(
   return paddingData
 }
 
+const isConsideredNonZeroPaddingValue = (n: number | undefined): boolean => (n ?? 0) !== 0
+
 function elementHasNonzeroPaddingFromMeasurements(element: ElementInstanceMetadata): boolean {
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
-  return [top, right, bottom, left].some((s) => s != null && s > 0)
+  return [top, right, bottom, left].some(isConsideredNonZeroPaddingValue)
 }
 
 function elementHasNonZeroPadding(
   padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
 ): boolean {
-  return IndividualPaddingProps.some((s) => padding[s] != null)
+  return IndividualPaddingProps.some((s) =>
+    isConsideredNonZeroPaddingValue(padding[s]?.renderedValuePx),
+  )
 }
 
 function paddingValueIndicatorProps(
