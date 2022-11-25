@@ -25,13 +25,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
 ) => {
   const { onTransientSubmitValue, value, onDragStart, onDragEnd, onDrag } = props
   const [isSliding, setIsSliding] = React.useState(false)
-  const [displayValue, setDisplayValue] = React.useState(0)
-
-  React.useEffect(() => {
-    if (!isSliding) {
-      setDisplayValue(value)
-    }
-  }, [isSliding, value])
+  const [slidingValue, setSlidingValue] = React.useState(0)
 
   const handleBeforeChange = React.useCallback(() => {
     setIsSliding(true)
@@ -43,7 +37,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
   const handleDragging = React.useCallback(
     (newValue: number) => {
       onTransientSubmitValue!(newValue, true)
-      setDisplayValue(newValue)
+      setSlidingValue(newValue)
       if (onDrag != null) {
         onDrag(newValue)
       }
@@ -114,7 +108,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
     >
       <Slider
         disabled={!props.controlStyles.interactive}
-        value={displayValue}
+        value={isSliding ? slidingValue : value}
         onBeforeChange={handleBeforeChange}
         onChange={handleDragging}
         onAfterChange={handleOnAfterChange}

@@ -22,13 +22,7 @@ export const SliderNumberControl: React.FunctionComponent<
 > = React.memo((props) => {
   const { value, transformSliderValueToCSSNumber, numberType } = props
   const [isDragging, setIsDragging] = React.useState(false)
-  const [displayValue, setDisplayValue] = React.useState<CSSNumber>(value)
-
-  React.useEffect(() => {
-    if (!isDragging) {
-      setDisplayValue(value)
-    }
-  }, [isDragging, value])
+  const [dragValue, setDragValue] = React.useState<CSSNumber>(value)
 
   const onDragStart = React.useCallback(() => {
     setIsDragging(true)
@@ -39,19 +33,20 @@ export const SliderNumberControl: React.FunctionComponent<
 
   const onSliderDrag = React.useCallback(
     (newValue: number) => {
-      setDisplayValue(transformSliderValueToCSSNumber(newValue))
+      setDragValue(transformSliderValueToCSSNumber(newValue))
     },
-    [transformSliderValueToCSSNumber, setDisplayValue],
+    [transformSliderValueToCSSNumber, setDragValue],
   )
 
   const transformCSSNumberToSliderValue = React.useCallback(() => {
+    const valueToUse = isDragging ? dragValue : value
     if (numberType === 'UnitlessPercent' || numberType === 'Percent') {
-      const scale = displayValue.unit === '%' ? 100 : 1
-      return displayValue.value / scale
+      const scale = valueToUse.unit === '%' ? 100 : 1
+      return valueToUse.value / scale
     } else {
-      return displayValue.value
+      return valueToUse.value
     }
-  }, [numberType, displayValue])
+  }, [numberType, isDragging, dragValue, value])
 
   return (
     <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
@@ -70,7 +65,7 @@ export const SliderNumberControl: React.FunctionComponent<
         onDrag={onSliderDrag}
       />
       <NumberInput
-        value={displayValue}
+        value={isDragging ? dragValue : value}
         id={`${props.id}-number-input`}
         testId={`${props.id}-number-input`}
         onSubmitValue={props.onSubmitValue}
