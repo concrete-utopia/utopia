@@ -351,7 +351,7 @@ function deleteStopAndUpdateIndex(
       },
     )
     if (isFinite(lowestDistance) && indexWithLowestDistance >= 0) {
-      setStops(newStops, false, 'dragEnd')
+      setStops(newStops, 'dragEnd')
       setSelectedStopUnorderedIndex(indexWithLowestDistance)
     }
   }
