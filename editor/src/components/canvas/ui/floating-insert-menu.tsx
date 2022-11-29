@@ -287,7 +287,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           paddingLeft: 4,
           paddingRight: 4,
           cursor: isDisabled ? 'not-allowed' : 'default',
-          color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+          color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
           backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
           borderRadius: UtopiaTheme.inputBorderRadius,
         }
@@ -331,7 +331,7 @@ const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
         paddingLeft: 4,
         paddingRight: 4,
         cursor: isDisabled ? 'not-allowed' : 'default',
-        color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+        color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
         backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
         borderRadius: UtopiaTheme.inputBorderRadius,
       }}

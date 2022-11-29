@@ -4,7 +4,7 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
-import { useColorTheme } from '../../../uuiui'
+import { AlternateColorThemeComponent, useColorTheme } from '../../../uuiui'
 
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -41,16 +41,18 @@ export const ModeToggleButton = React.memo(() => {
       >
         CSS
       </Button>
-      <Button
-        style={{
-          background: colorTheme.inverted.neutralForeground.value,
-        }}
-        selected={selectedMode === 'content'}
-        width={45}
-        onClick={contentButtonOnClick}
-      >
-        Content
-      </Button>
+      <AlternateColorThemeComponent>
+        <Button
+          style={{
+            background: colorTheme.neutralForeground.value,
+          }}
+          selected={selectedMode === 'content'}
+          width={45}
+          onClick={contentButtonOnClick}
+        >
+          Content
+        </Button>
+      </AlternateColorThemeComponent>
     </div>
   )
 })

@@ -3,7 +3,12 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useColorTheme, SimpleFlexRow, HeadlessStringInput } from '../../../uuiui'
+import {
+  useColorTheme,
+  SimpleFlexRow,
+  HeadlessStringInput,
+  AlternateColorThemeComponent,
+} from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
@@ -149,34 +154,36 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
       onKeyDown={onKeyDown}
     >
       {inputFieldVisible ? (
-        <HeadlessStringInput
-          ref={inputRef}
-          type='text'
-          placeholder=''
-          css={{
-            paddingLeft: 4,
-            paddingRight: 4,
-            width: '100%',
-            height: '100%',
-            fontSize: 12,
-            letterSpacing: 0.2,
-            border: '1px solid transparent',
-            borderRadius: 3,
-            backgroundColor: 'transparent',
-            color: colorTheme.inverted.fg1.value,
-            transition: 'background-color .1s ease-in-out',
-            '&:hover': {
-              outline: 'none',
-            },
-            '&:focus': {
-              outline: 'none',
-            },
-          }}
-          onChange={onInputChange}
-          onBlur={onBlur}
-          value={simpleText}
-          disabled={disabled}
-        />
+        <AlternateColorThemeComponent>
+          <HeadlessStringInput
+            ref={inputRef}
+            type='text'
+            placeholder=''
+            css={{
+              paddingLeft: 4,
+              paddingRight: 4,
+              width: '100%',
+              height: '100%',
+              fontSize: 12,
+              letterSpacing: 0.2,
+              border: '1px solid transparent',
+              borderRadius: 3,
+              backgroundColor: 'transparent',
+              color: colorTheme.fg1.value,
+              transition: 'background-color .1s ease-in-out',
+              '&:hover': {
+                outline: 'none',
+              },
+              '&:focus': {
+                outline: 'none',
+              },
+            }}
+            onChange={onInputChange}
+            onBlur={onBlur}
+            value={simpleText}
+            disabled={disabled}
+          />
+        </AlternateColorThemeComponent>
       ) : (
         <span style={{ fontSize: 13, letterSpacing: 0.2, opacity: 0.4 }}>(Unavailable)</span>
       )}

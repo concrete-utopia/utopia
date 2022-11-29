@@ -5,7 +5,14 @@ import React from 'react'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
-import { useColorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
+import {
+  useColorTheme,
+  FlexRow,
+  UtopiaTheme,
+  Tooltip,
+  Icons,
+  AlternateColorThemeComponent,
+} from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
@@ -175,25 +182,28 @@ export const DependencyListItem: React.FunctionComponent<
           </span>
           {isDefault ? (
             <Tooltip title='Dependency is required for Utopian projects'>
-              <FlexRow
-                css={{
-                  backgroundColor: colorTheme.canvasControlsSizeBoxShadowColor50.value,
-                  boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
-                  borderRadius: 2,
-                  height: 14,
-                  padding: '0 3px',
-                  margin: 0,
-                  marginLeft: 6,
-                  display: 'none',
-                  '.dependency-item:hover &': {
-                    display: 'flex',
-                  },
-                  flexGrow: 0,
-                  flexShrink: 0,
-                }}
-              >
-                default
-              </FlexRow>
+              <AlternateColorThemeComponent>
+                <FlexRow
+                  css={{
+                    backgroundColor: colorTheme.bg0.value,
+                    boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
+                    color: colorTheme.fg0.value,
+                    borderRadius: 2,
+                    height: 14,
+                    padding: '0 3px',
+                    margin: 0,
+                    marginLeft: 6,
+                    display: 'none',
+                    '.dependency-item:hover &': {
+                      display: 'flex',
+                    },
+                    flexGrow: 0,
+                    flexShrink: 0,
+                  }}
+                >
+                  default
+                </FlexRow>
+              </AlternateColorThemeComponent>
             </Tooltip>
           ) : null}
           <a

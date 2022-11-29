@@ -19,17 +19,11 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import {
-  IcnProps,
-  useColorTheme,
-  UtopiaStyles,
-  UtopiaTheme,
-  FlexRow,
-  ColorTheme,
-} from '../../../uuiui'
+import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -133,7 +127,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
   iconColor: 'warning',
 })
 
-const componentSelected = (colorTheme: any): ComputedLook => ({
+const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: colorTheme.navigatorComponentSelected.value,
     color: colorTheme.neutralForeground.value,
@@ -150,7 +144,7 @@ const computeResultingStyle = (
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
-  colorTheme: ColorTheme,
+  colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
   if (isHighlightedForInteraction) {
