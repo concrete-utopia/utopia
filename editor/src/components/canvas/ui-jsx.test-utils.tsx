@@ -415,9 +415,7 @@ export async function renderTestEditorWithModel(
       waitForDOMReport: boolean,
       innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
     ) => {
-      return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)
-      })
+      return act(async () => asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse))
     },
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),

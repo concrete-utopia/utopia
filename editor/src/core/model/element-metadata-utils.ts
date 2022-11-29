@@ -213,6 +213,20 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
+  getClosestParentWithMetadata(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata | null {
+    if (target == null) {
+      return null
+    }
+    const parentPath = EP.parentPath(target)
+    const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
+    if (parent == null) {
+      return this.getClosestParentWithMetadata(metadata, parentPath)
+    }
+    return parent
+  },
   getSiblingsProjectContentsOrdered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
@@ -546,6 +560,25 @@ export const MetadataUtils = {
       } else {
         return null
       }
+    }, Object.keys(elements))
+    return possibleChildren
+  },
+  getChildrenPathsSkippingNoMetadataElements(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleChildren = mapDropNulls((elementPathString) => {
+      const elementPath = EP.fromString(elementPathString)
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      }
+      if (EP.isDescendantOf(elementPath, target)) {
+        const parent = MetadataUtils.getClosestParentWithMetadata(elements, elementPath)
+        if (parent != null && EP.pathsEqual(parent.elementPath, target)) {
+          return elementPath
+        }
+      }
+      return null
     }, Object.keys(elements))
     return possibleChildren
   },
@@ -934,6 +967,15 @@ export const MetadataUtils = {
       unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
     }
   },
+  getAllChildrenIncludingUnfurledFocusedComponentsSkippingNoMetadataElements(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): { children: Array<ElementPath>; unfurledComponents: Array<ElementPath> } {
+    return {
+      children: MetadataUtils.getChildrenPathsSkippingNoMetadataElements(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
+    }
+  },
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -1126,17 +1168,14 @@ export const MetadataUtils = {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
               // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
-                  }
-                  if (isJSXArbitraryBlock(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
-                  }
-                }
-              }
+              // if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+              //   const firstChild = jsxElement.children[0]
+              //   if (firstChild != null) {
+              //     if (isJSXTextBlock(firstChild)) {
+              //       return firstChild.text
+              //     }
+              //   }
+              // }
               // With images, take their alt and src properties as possible names first.
               const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
               if (lastNamePart === 'img') {
@@ -1160,6 +1199,8 @@ export const MetadataUtils = {
               return '(code)'
             case 'JSX_FRAGMENT':
               return '(fragment)'
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return '(conditional)'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)

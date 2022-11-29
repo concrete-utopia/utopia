@@ -91,7 +91,7 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           whiteSpace: 'nowrap',
         }}
         onDoubleClick={(event) => {
-          if (!this.props.isDynamic && event.altKey) {
+          if (!this.props.isDynamic && this.props.selected && event.altKey) {
             this.props.dispatch(
               [EditorActions.setNavigatorRenamingTarget(this.props.target)],
               'leftpane',

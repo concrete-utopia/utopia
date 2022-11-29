@@ -9,12 +9,14 @@ import {
 } from '../../shared/array-utils'
 import {
   applicative2Either,
+  applicative3Either,
   bimapEither,
   Either,
   flatMapEither,
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -66,6 +68,7 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
+  jsxConditionalExpression,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1012,18 +1015,28 @@ function parseJSXArbitraryBlock(
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
-  jsxExpression: TS.JsxExpression,
+  jsxExpression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
   // Remove the braces around the expression
-  const expressionFullText = jsxExpression.getFullText(sourceFile).slice(1, -1)
-  const expressionAndText = createExpressionAndText(
-    jsxExpression.expression,
-    expressionFullText,
-    jsxExpression.getFullStart() + 1,
-    jsxExpression.getEnd() + 2,
-  )
+
+  const expressionFullText = TS.isJsxExpression(jsxExpression)
+    ? jsxExpression.getFullText(sourceFile).slice(1, -1)
+    : jsxExpression.getFullText(sourceFile)
+  const expressionAndText = TS.isJsxExpression(jsxExpression)
+    ? createExpressionAndText(
+        jsxExpression.expression,
+        expressionFullText,
+        jsxExpression.getFullStart() + 1,
+        jsxExpression.getEnd() + 2,
+      )
+    : createExpressionAndText(
+        jsxExpression,
+        expressionFullText,
+        jsxExpression.getFullStart(),
+        jsxExpression.getEnd(),
+      )
 
   return parseOtherJavaScript(
     sourceFile,
@@ -1720,6 +1733,7 @@ export function parseOutJSXElements(
   function innerParse(nodes: Array<TS.Node>): Either<string, Array<SuccessfullyParsedElement>> {
     // First parse to extract the nodes we really want into a sensible form
     // and fail if there's anything unexpected.
+    const validNodes = pullOutElementsToParse(nodes)
     return flatMapEither((toParse) => {
       // Handle the two different cases of either an element or a bunch of JSX inner content.
       let parsedNodes: Array<SuccessfullyParsedElement> = []
@@ -1787,11 +1801,34 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.JsxExpression: {
-            const possibleExpression = produceArbitraryBlockFromJsxExpression(elem)
-            if (isLeft(possibleExpression)) {
-              return possibleExpression
+            let parseResult: Either<string, SuccessfullyParsedElement> =
+              left('Expression fallback.')
+            // Handle ternaries.
+            if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
+              const possibleConditional = produceConditionalFromExpression(elem.expression)
+              parseResult = bimapEither(
+                (failure) => failure,
+                (success) => {
+                  highlightBounds = {
+                    ...highlightBounds,
+                    ...success.highlightBounds,
+                  }
+                  propsUsed.push(...success.propsUsed)
+                  definedElsewhere.push(...success.definedElsewhere)
+                  return success.value
+                },
+                possibleConditional,
+              )
+            }
+            // Fallback to arbitrary block parsing.
+            if (isLeft(parseResult)) {
+              parseResult = produceArbitraryBlockFromJsxExpression(elem)
+            }
+
+            if (isRight(parseResult)) {
+              addParsedElement(parseResult.value)
             } else {
-              addParsedElement(possibleExpression.value)
+              return parseResult
             }
             break
           }
@@ -1843,7 +1880,7 @@ export function parseOutJSXElements(
       } else {
         return left('Not enough closed fragments.')
       }
-    }, pullOutElementsToParse(nodes))
+    }, validNodes)
   }
 
   function produceFragmentFromJsxFragment(
@@ -1963,6 +2000,61 @@ export function parseOutJSXElements(
         }, parseJSXElementName(sourceFile, tagName))
       }, parsedAttributes)
     }, children)
+  }
+
+  function produceConditionalFromExpression(
+    expression: TS.ConditionalExpression,
+  ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
+    function parseAttribute(
+      attributeExpression: TS.Expression,
+    ): Either<string, WithParserMetadata<JSXAttribute>> {
+      return parseAttributeExpression(
+        sourceFile,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        propsObjectName,
+        attributeExpression,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        [],
+      )
+    }
+
+    const innerWhenTrue = TS.isParenthesizedExpression(expression.whenTrue)
+      ? expression.whenTrue.expression
+      : expression.whenTrue
+    const whenTrueBlock = innerParse([innerWhenTrue])
+    const innerWhenFalse = TS.isParenthesizedExpression(expression.whenFalse)
+      ? expression.whenFalse.expression
+      : expression.whenFalse
+    const whenFalseBlock = innerParse([innerWhenFalse])
+
+    return applicative3Either<
+      string,
+      WithParserMetadata<JSXAttribute>,
+      SuccessfullyParsedElement[],
+      SuccessfullyParsedElement[],
+      WithParserMetadata<SuccessfullyParsedElement>
+    >(
+      (condition, whenTrue, whenFalse) => {
+        const conditionalExpression = jsxConditionalExpression(
+          condition.value,
+          whenTrue[0].value,
+          whenFalse[0].value,
+        )
+        return withParserMetadata(
+          successfullyParsedElement(sourceFile, expression, conditionalExpression),
+          highlightBounds,
+          propsUsed,
+          definedElsewhere,
+        )
+      },
+      parseAttribute(expression.condition),
+      whenTrueBlock,
+      whenFalseBlock,
+    )
   }
 
   const flattened = flatMapArray(

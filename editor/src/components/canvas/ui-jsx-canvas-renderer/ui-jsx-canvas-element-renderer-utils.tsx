@@ -24,6 +24,7 @@ import {
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
+  jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -81,16 +82,7 @@ export function createLookupRender(
       jsxAttributeValue(generatedUID, emptyComments),
     )
 
-    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      EP.parentPath,
-      elementPath,
-    )
-
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -311,6 +303,44 @@ export function renderCoreElement(
     }
     case 'JSX_TEXT_BLOCK': {
       return element.text
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const conditionValue = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element.condition,
+      )
+      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
+
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+      )
     }
     default:
       const _exhaustiveCheck: never = element

@@ -490,6 +490,16 @@ function jsxElementToExpression(
     case 'JSX_TEXT_BLOCK': {
       return TS.createJsxText(element.text)
     }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const condition = jsxAttributeToExpression(element.condition)
+      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs) as TS.Expression
+      const whenFalse = jsxElementToExpression(
+        element.whenFalse,
+        imports,
+        stripUIDs,
+      ) as TS.Expression
+      return TS.createJsxExpression(undefined, TS.createConditional(condition, whenTrue, whenFalse))
+    }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)

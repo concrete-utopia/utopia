@@ -26,6 +26,20 @@ export function dragTargetsElementPaths(targets: Array<ElementPath>): DragTarget
   }
 }
 
+interface DragTargetsElementPathsLive {
+  type: 'element-paths-live'
+  targets: Array<ElementPath>
+}
+
+export function dragTargetsElementPathsLive(
+  targets: Array<ElementPath>,
+): DragTargetsElementPathsLive {
+  return {
+    type: 'element-paths-live',
+    targets: targets,
+  }
+}
+
 interface DragTargetsFrames {
   type: 'frames'
   frames: Array<CanvasRectangle>
@@ -38,7 +52,10 @@ export function dragTargetsFrame(frames: Array<CanvasRectangle>): DragTargetsFra
   }
 }
 
-type DragOutlineControlProps = DragTargetsElementPaths | DragTargetsFrames
+type DragOutlineControlProps =
+  | DragTargetsElementPaths
+  | DragTargetsElementPathsLive
+  | DragTargetsFrames
 
 export const DragOutlineControl = controlForStrategyMemoized((props: DragOutlineControlProps) => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
@@ -76,6 +93,12 @@ function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | nu
         return boundingRectangleArray(props.frames)
       case 'element-paths':
         return getMultiselectBounds(store.strategyState.startingMetadata, props.targets)
+      case 'element-paths-live':
+        return getMultiselectBounds(
+          store.editor.canvas.interactionSession?.latestMetadata ??
+            store.strategyState.startingMetadata,
+          props.targets,
+        )
       default:
         assertNever(props)
     }
@@ -92,5 +115,9 @@ function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | nu
     return null
   }
 
-  return offsetRect(bounds, dragVector)
+  if (props.type === 'element-paths-live') {
+    return bounds
+  } else {
+    return offsetRect(bounds, dragVector)
+  }
 }

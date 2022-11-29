@@ -541,7 +541,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
@@ -636,7 +636,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1193,7 +1193,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"100"`)
@@ -1293,7 +1293,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const earlyOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
@@ -1351,7 +1351,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const laterOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
@@ -1446,7 +1446,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
@@ -1559,7 +1559,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
@@ -1679,7 +1679,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -1788,7 +1788,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -2216,12 +2216,12 @@ describe('Undo behavior in inspector', () => {
     })
 
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
     matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
 
     // change the opacity of the selected element
-    await setControlValue('opacity-number-control', '0.6', renderResult.renderedDOM)
+    await setControlValue('opacity-number-input', '0.6', renderResult.renderedDOM)
 
     matchInlineSnapshotBrowser(opacityControl.value, `"0.6"`)
     matchInlineSnapshotBrowser(
@@ -2247,7 +2247,7 @@ describe('Undo behavior in inspector', () => {
 
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
-      ((await renderResult.renderedDOM.findByTestId('opacity-number-control')) as HTMLInputElement)
+      ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)
         .value,
       `"0.5"`,
     )

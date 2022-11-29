@@ -284,6 +284,10 @@ export const NavigatorItem: React.FunctionComponent<
     return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
   }, 'NavigatorItem isFocusable')
 
+  const hasMetadata = useEditorState((store) => {
+    return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath) != null
+  }, 'NavigatorIterm hasMetadata')
+
   const childComponentCount = props.noOfChildren
 
   const isDynamic =
@@ -326,9 +330,12 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, elementPath],
   )
   const select = React.useCallback(
-    (event: any) =>
-      selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),
-    [dispatch, getSelectedViewsInRange, elementPath, index, selected],
+    (event: any) => {
+      if (hasMetadata) {
+        selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event)
+      }
+    },
+    [dispatch, getSelectedViewsInRange, elementPath, index, selected, hasMetadata],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, elementPath, selected, isHighlighted),

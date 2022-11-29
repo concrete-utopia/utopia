@@ -2537,8 +2537,8 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the indicator is not there.
-    await expect(
-      async () => await renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0'),
+    await expect(async () =>
+      renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0'),
     ).rejects.toThrow()
   })
 })
