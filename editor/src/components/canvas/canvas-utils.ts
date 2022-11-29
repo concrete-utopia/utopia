@@ -58,6 +58,7 @@ import {
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
   isSceneElement,
+  getZIndexOfElement,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -104,7 +105,12 @@ import {
   isLeft,
   Either,
 } from '../../core/shared/either'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils, {
+  absolute,
+  after,
+  IndexPosition,
+  shiftIndexPositionForRemovedElement,
+} from '../../utils/utils'
 import {
   CanvasPoint,
   canvasPoint,
@@ -118,7 +124,6 @@ import {
   Size,
   vectorDifference,
 } from '../../core/shared/math-utils'
-import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
   DerivedState,
   EditorState,
@@ -152,7 +157,6 @@ import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
 import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
-import Canvas, { TargetSearchType } from './canvas'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
@@ -168,14 +172,12 @@ import {
   ResizeDragState,
   singleResizeChange,
   ResizeDragStatePropertyChange,
-  CanvasPositions,
   CreateDragState,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
-  pointGuidelineToBoundsEdge,
 } from './controls/guideline-helpers'
 import {
   determineElementsToOperateOnForDragging,
@@ -184,39 +186,29 @@ import {
 } from './controls/select-mode/move-utils'
 import {
   cornerGuideline,
-  Guideline,
   Guidelines,
-  GuidelineWithSnappingVector,
+  GuidelineWithRelevantPoints,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
   xAxisGuideline,
   yAxisGuideline,
 } from './guideline'
-import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
+import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import {
-  addFileToProjectContents,
-  contentsToTree,
-  getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-} from '../assets'
-import { getAllTargetsAtPoint, getAllTargetsAtPointAABB } from './dom-lookup'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
-import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
+import { uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
-import { emptySet } from '../../core/shared/set-utils'
-import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
-import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
-import CanvasActions from './canvas-actions'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -528,7 +520,7 @@ export function updateFramesOfScenesAndComponents(
                   workingEditorState.canvas.openFile?.filename ?? null,
                   components,
                   underlyingTarget,
-                  frameAndTarget.newIndex,
+                  absolute(frameAndTarget.newIndex),
                 )
                 return {
                   ...success,
@@ -1111,12 +1103,16 @@ export function collectGuidelines(
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
-): Array<GuidelineWithSnappingVector> {
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   if (draggedPoint == null) {
     return []
   }
 
-  let guidelines: Array<Guideline> = collectParentAndSiblingGuidelines(metadata, selectedViews)
+  let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
+    metadata,
+    selectedViews,
+  )
+
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
     Utils.fastForEach(selectedViews, (selectedView) => {
@@ -1144,78 +1140,211 @@ export function collectGuidelines(
             if (resizingFromPosition.x === 0) {
               if (resizingFromPosition.y === 0) {
                 // Top-left.
-                guidelines.push(
-                  cornerGuideline(
+                guidelines.push({
+                  guideline: cornerGuideline(
                     point.x + imageDimension.width,
                     point.y + imageDimension.height,
                     -imageDimension.width,
                     -imageDimension.height,
                   ),
-                )
+                  pointsOfRelevance: [
+                    canvasPoint({
+                      x: point.x + imageDimension.width,
+                      y: point.y + imageDimension.height,
+                    }),
+                  ],
+                })
               } else {
                 // Bottom-left.
-                guidelines.push(
-                  cornerGuideline(
+                guidelines.push({
+                  guideline: cornerGuideline(
                     point.x,
                     point.y + imageDimension.height,
                     imageDimension.width,
                     -imageDimension.height,
                   ),
-                )
+                  pointsOfRelevance: [
+                    canvasPoint({
+                      x: point.x,
+                      y: point.y + imageDimension.height,
+                    }),
+                  ],
+                })
               }
             } else {
               if (resizingFromPosition.y === 0) {
                 // Top-right.
-                guidelines.push(
-                  cornerGuideline(
+                guidelines.push({
+                  guideline: cornerGuideline(
                     point.x + imageDimension.width,
                     point.y,
                     -imageDimension.width,
                     imageDimension.height,
                   ),
-                )
+                  pointsOfRelevance: [
+                    canvasPoint({
+                      x: point.x + imageDimension.width,
+                      y: point.y,
+                    }),
+                  ],
+                })
               } else {
                 // Bottom-right.
-                guidelines.push(
-                  cornerGuideline(point.x, point.y, imageDimension.width, imageDimension.height),
-                )
+                guidelines.push({
+                  guideline: cornerGuideline(
+                    point.x,
+                    point.y,
+                    imageDimension.width,
+                    imageDimension.height,
+                  ),
+                  pointsOfRelevance: [
+                    canvasPoint({
+                      x: point.x,
+                      y: point.y,
+                    }),
+                  ],
+                })
               }
             }
           } else if (isEdgePositionAVerticalEdge(resizingFromPosition)) {
             // If this is a side edge the guidelines will be at x +/- width and y +/- (height / 2).
             guidelines.push(
-              xAxisGuideline(
-                point.x - imageDimension.width,
-                point.y - lowHalfHeight,
-                point.y + highHalfHeight,
-              ),
-              xAxisGuideline(
-                point.x + imageDimension.width,
-                point.y - lowHalfHeight,
-                point.y + highHalfHeight,
-              ),
-              yAxisGuideline(point.y - lowHalfHeight, point.x - imageDimension.width, point.x),
-              yAxisGuideline(point.y - lowHalfHeight, point.x, point.x + imageDimension.width),
-              yAxisGuideline(point.y + highHalfHeight, point.x - imageDimension.width, point.x),
-              yAxisGuideline(point.y + highHalfHeight, point.x, point.x + imageDimension.width),
+              {
+                guideline: xAxisGuideline(
+                  point.x - imageDimension.width,
+                  point.y - lowHalfHeight,
+                  point.y + highHalfHeight,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y + highHalfHeight }),
+                ],
+              },
+              {
+                guideline: xAxisGuideline(
+                  point.x + imageDimension.width,
+                  point.y - lowHalfHeight,
+                  point.y + highHalfHeight,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y + highHalfHeight }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y - lowHalfHeight,
+                  point.x - imageDimension.width,
+                  point.x,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y - lowHalfHeight }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y - lowHalfHeight,
+                  point.x,
+                  point.x + imageDimension.width,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y - lowHalfHeight }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y + highHalfHeight,
+                  point.x - imageDimension.width,
+                  point.x,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y + lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y + lowHalfHeight }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y + highHalfHeight,
+                  point.x,
+                  point.x + imageDimension.width,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y + lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y + lowHalfHeight }),
+                ],
+              },
             )
           } else if (isEdgePositionAHorizontalEdge(resizingFromPosition)) {
             // If this is a top/bottom edge the guidelines will be at x +/- (width / 2) and y +/- height.
             guidelines.push(
-              xAxisGuideline(point.x - lowHalfWidth, point.y - imageDimension.height, point.y),
-              xAxisGuideline(point.x - lowHalfWidth, point.y, point.y + imageDimension.height),
-              xAxisGuideline(point.x + highHalfWidth, point.y - imageDimension.height, point.y),
-              xAxisGuideline(point.x + highHalfWidth, point.y, point.y + imageDimension.height),
-              yAxisGuideline(
-                point.y - imageDimension.height,
-                point.x - lowHalfWidth,
-                point.x + highHalfWidth,
-              ),
-              yAxisGuideline(
-                point.y + imageDimension.height,
-                point.x - lowHalfWidth,
-                point.x + highHalfWidth,
-              ),
+              {
+                guideline: xAxisGuideline(
+                  point.x - lowHalfWidth,
+                  point.y - imageDimension.height,
+                  point.y,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y }),
+                ],
+              },
+              {
+                guideline: xAxisGuideline(
+                  point.x - lowHalfWidth,
+                  point.y,
+                  point.y + imageDimension.height,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y }),
+                ],
+              },
+              {
+                guideline: xAxisGuideline(
+                  point.x + highHalfWidth,
+                  point.y - imageDimension.height,
+                  point.y,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + highHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y }),
+                ],
+              },
+              {
+                guideline: xAxisGuideline(
+                  point.x + highHalfWidth,
+                  point.y,
+                  point.y + imageDimension.height,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + highHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y - imageDimension.height,
+                  point.x - lowHalfWidth,
+                  point.x + highHalfWidth,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y - imageDimension.height }),
+                ],
+              },
+              {
+                guideline: yAxisGuideline(
+                  point.y + imageDimension.height,
+                  point.x - lowHalfWidth,
+                  point.x + highHalfWidth,
+                ),
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y + imageDimension.height }),
+                ],
+              },
             )
           }
         })
@@ -1224,7 +1353,7 @@ export function collectGuidelines(
   }
   const filteredGuidelines =
     resizingFromPosition != null
-      ? filterGuidelinesStaticAxis(guidelines, resizingFromPosition)
+      ? filterGuidelinesStaticAxis((g) => g.guideline, guidelines, resizingFromPosition)
       : guidelines
   const closestGuidelines = Guidelines.getClosestGuidelinesAndOffsets(
     [draggedPoint.x],
@@ -1247,8 +1376,8 @@ function innerSnapPoint(
   allElementProps: AllElementProps,
 ): {
   point: CanvasPoint
-  snappedGuideline: GuidelineWithSnappingVector | null
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+  snappedGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   const guidelines = oneGuidelinePerDimension(
     collectGuidelines(
@@ -1261,13 +1390,11 @@ function innerSnapPoint(
     ),
   )
   let snappedPoint = point
-  let snappedGuideline: GuidelineWithSnappingVector | null = null
+  let snappedGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null = null
 
   guidelines.forEach((guideline) => {
-    if (guideline.activateSnap) {
-      snappedPoint = Utils.offsetPoint(snappedPoint, guideline.snappingVector)
-      snappedGuideline = guideline
-    }
+    snappedPoint = Utils.offsetPoint(snappedPoint, guideline.snappingVector)
+    snappedGuideline = guideline
   })
   return {
     point: snappedPoint,
@@ -1289,7 +1416,7 @@ export function snapPoint(
   allElementProps: AllElementProps,
 ): {
   snappedPointOnCanvas: CanvasPoint
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     selectedViews,
@@ -1562,6 +1689,7 @@ function getTransientCanvasStateFromFrameChanges(
   return transientCanvasState(
     editorState.selectedViews,
     editorState.highlightedViews,
+    [],
     mapValues((success) => {
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
@@ -1592,7 +1720,13 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      dragState.draggedElements,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1666,7 +1800,13 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1747,54 +1887,6 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (insertionSubjectIsJSXElement(editorMode.subject) && editorMode.insertionStarted) {
-          const insertionElement = editorMode.subject.element
-          const importsToAdd = editorMode.subject.importsToAdd
-          const insertionParent = editorMode.subject.parent?.target ?? null
-
-          // Not actually modifying the underlying target, but we'll exploit the functionality.
-          modifyUnderlyingTarget(
-            insertionParent,
-            currentOpenFile,
-            editorState,
-            (element) => element,
-            (parseSuccess, underlying, underlyingFilePath) => {
-              const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-
-              const updatedComponents = insertJSXElementChild(
-                editorState.projectContents,
-                currentOpenFile,
-                underlying,
-                insertionElement,
-                openComponents,
-                {
-                  type: 'front',
-                },
-              )
-              const updatedImports: Imports = mergeImports(
-                underlyingFilePath,
-                parseSuccess.imports,
-                importsToAdd,
-              )
-
-              // Sync these back up.
-              const topLevelElements = applyUtopiaJSXComponentsChanges(
-                parseSuccess.topLevelElements,
-                updatedComponents,
-              )
-
-              transientState = transientCanvasState(
-                editorState.selectedViews,
-                editorState.highlightedViews,
-                {
-                  [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
-                },
-                [],
-              )
-              return parseSuccess
-            },
-          )
-        }
         break
       case 'select':
         if (
@@ -1843,7 +1935,13 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   } else {
     return transientState
   }
@@ -1902,6 +2000,7 @@ function getReparentTargetAtPosition(
     'no-filter',
     pointOnCanvas,
     allElementProps,
+    true, // this is how it was historically, but I think it should be false?
   )
   // filtering for non-selected views from alltargets
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
@@ -2404,7 +2503,8 @@ function produceMoveTransientCanvasState(
   const moveGuidelines = collectParentAndSiblingGuidelines(
     workingEditorState.jsxMetadata,
     selectedViews,
-  )
+  ).map((g) => g.guideline)
+
   const framesAndTargets = dragComponent(
     workingEditorState.jsxMetadata,
     selectedViews,
@@ -2437,6 +2537,7 @@ function produceMoveTransientCanvasState(
   return transientCanvasState(
     selectedViews,
     workingEditorState.highlightedViews,
+    workingEditorState.hoveredViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
   )
@@ -2566,6 +2667,7 @@ export function duplicate(
   newParentPath: ElementPath | null,
   editor: EditorState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
+  insertAfterCurrentElement: boolean = false,
 ): DuplicateResult | null {
   let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
@@ -2595,6 +2697,10 @@ export function duplicate(
         let jsxElement: JSXElementChild | null = findElementAtPath(
           underlyingInstancePath,
           utopiaComponents,
+        )
+        const elementIndex = getZIndexOfElement(
+          success.topLevelElements,
+          EP.dynamicPathToStaticPath(path),
         )
         let uid: string
         if (jsxElement == null) {
@@ -2659,7 +2765,7 @@ export function duplicate(
               newParentPath,
               newElement,
               utopiaComponents,
-              null,
+              after(elementIndex),
             )
 
             newSelectedViews.push(newPath)
@@ -2705,20 +2811,24 @@ export function reorderComponent(
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
-  newIndex: number,
+  indexPosition: IndexPosition,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
-  const parentPath = EP.parentPath(target)
   const jsxElement = findElementAtPath(target, workingComponents)
+  const parentPath = EP.parentPath(target)
+  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
 
-  if (jsxElement != null) {
-    const newPosition: IndexPosition = {
-      type: 'absolute',
-      index: newIndex,
+  if (jsxElement != null && parentElement != null) {
+    const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)
+    if (indexOfRemovedElement < 0) {
+      throw new Error(`Unable to determine old element index.`)
     }
-
     workingComponents = removeElementAtPath(target, workingComponents)
+    const adjustedIndexPosition = shiftIndexPositionForRemovedElement(
+      indexPosition,
+      indexOfRemovedElement,
+    )
 
     workingComponents = insertElementAtPath(
       projectContents,
@@ -2726,7 +2836,7 @@ export function reorderComponent(
       parentPath,
       jsxElement,
       workingComponents,
-      newPosition,
+      adjustedIndexPosition,
     )
   }
 
@@ -3034,6 +3144,7 @@ function createCanvasTransientStateFromProperties(
     return transientCanvasState(
       updatedEditor.selectedViews,
       updatedEditor.highlightedViews,
+      updatedEditor.hoveredViews,
       transientFilesState,
       [],
     )

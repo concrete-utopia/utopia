@@ -16,6 +16,7 @@
     "check-ci": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test-ci && pnpm run test-browser",
     "lint": "pnpx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "pnpx eslint \"src/**/*.{js,ts,tsx}\"",
+    "lint-lite": "pnpm run lint -- --config ./.eslintrc-lite.js --no-eslintrc",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "test-base": "jest --config ./jest.config.js",
     "test": "pnpm run test-base -- --maxWorkers '50%'",
@@ -23,8 +24,8 @@
     "test-debug": "NODE_OPTIONS='--inspect-brk' jest --config ./jest.config.js --runInBand",
     "test-watch": "pnpm run test -- --watch",
     "test-update-snapshot": "pnpm run test -- --updateSnapshot",
-    "test-browser": "karma start --single-run",
-    "test-browser-debug": "karma start --debug",
+    "test-browser": "REACT_APP_AUTH0_CLIENT_ID='test' REACT_APP_AUTH0_ENDPOINT='test' REACT_APP_AUTH0_REDIRECT_URI='test' REACT_APP_ENVIRONMENT_CONFIG=development karma start --single-run",
+    "test-browser-debug": "REACT_APP_AUTH0_CLIENT_ID='test' REACT_APP_AUTH0_ENDPOINT='test' REACT_APP_AUTH0_REDIRECT_URI='test' REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_BROWSER_TEST_DEBUG='true' karma start --debug",
     "move-fast-and-break-things": "REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 webpack-dev-server --progress",
     "performance-test": "REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 PERFORMANCE='true' webpack-dev-server --progress",
     "move-fast-and-break-things-hot": "REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 HOT='true' webpack-dev-server --progress",
@@ -47,7 +48,7 @@
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "*.{html}": [
@@ -56,32 +57,32 @@
     ],
     "../puppeteer-tests/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-common/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../website-next/pages/**.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../website-next/components/**.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ]
   },
@@ -141,6 +142,7 @@
     "jotai": "^1.4.2",
     "json5": "0.5.1",
     "jszip": "3.5.0",
+    "keycode": "2.2.1",
     "localforage": "1.7.3",
     "lodash.clamp": "4.0.3",
     "lru-cache": "7.10.1",
@@ -148,6 +150,7 @@
     "mime-types": "2.1.24",
     "moize": "5.4.7",
     "node-html-parser": "1.2.20",
+    "node-diff3": "3.1.2",
     "npm-package-arg": "8.1.5",
     "object-hash": "2.0.3",
     "object-path": "0.11.4",
@@ -177,16 +180,18 @@
     "react-select": "3.1.0",
     "react-spring": "9.0.0-rc.3",
     "react-syntax-highlighter": "12.2.1",
+    "react-timeago": "7.1.0",
     "react-use-gesture": "6.0.2",
     "react-virtualized-auto-sizer": "1.0.2",
     "react-vtree": "2.0.0",
-    "react-window": "1.8.5",
+    "react-window": "1.8.7",
     "react-windowed-select": "3.1.2",
     "reselect": "4.0.0",
     "resize-observer-polyfill": "1.5.0",
     "scheduler": "0.17.0",
     "semver": "7.3.2",
     "settle-promise": "1.0.0",
+    "sha.js": "2.4.11",
     "source-map": "0.5.6",
     "stream-browserify": "^3.0.0",
     "string-hash": "1.1.3",
@@ -253,10 +258,12 @@
     "@types/react-highlight-words": "0.16.3",
     "@types/react-onclickoutside": "6.7.3",
     "@types/react-select": "3.0.15",
+    "@types/react-timeago": "4.1.3",
     "@types/react-virtualized-auto-sizer": "1.0.0",
-    "@types/react-window": "1.8.2",
+    "@types/react-window": "1.8.5",
     "@types/scheduler": "0.16.1",
     "@types/semver": "7.3.4",
+    "@types/sha.js": "2.4.0",
     "@types/shuffle-array": "0.0.28",
     "@types/sinon": "^10.0.11",
     "@types/tar": "4.0.4",

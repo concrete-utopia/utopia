@@ -13,19 +13,23 @@
   All the endpoints defined in "Utopia.Web.Types" are implemented here.
 -}
 module Utopia.Web.Endpoints where
+
 import           Control.Arrow                   ((&&&))
 import           Control.Lens
+import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
 import           Data.Generics.Product
+import           Data.Generics.Sum
 import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Time
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
+import           Network.OAuth.OAuth2
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Prelude                         (String)
@@ -47,6 +51,7 @@ import           Utopia.Web.Database             (projectContentTreeFromDecodedP
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Github.Types
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
@@ -59,10 +64,11 @@ import           WaiAppStatic.Types
 type TagSoupTags = [Tag Text]
 
 projectContentTreeFromSaveProjectRequest :: SaveProjectRequest -> Maybe (Either Text ProjectContentTreeRoot)
-projectContentTreeFromSaveProjectRequest saveProjectRequest =
-  let possiblePersistentModel = firstOf (field @"_content" . _Just) saveProjectRequest
-      possibleParsedPersistentModel = fmap persistentModelFromJSON possiblePersistentModel
-   in over (_Just . _Right) (view (field @"projectContents")) possibleParsedPersistentModel
+projectContentTreeFromSaveProjectRequest saveProjectRequest = do
+  projectContent <- firstOf (field @"_content" . _Just . key "projectContents") saveProjectRequest
+  Just $ case fromJSON projectContent of
+    Error err      -> Left $ toS err
+    Success result -> Right result
 
 validateSaveRequest :: SaveProjectRequest -> Bool
 validateSaveRequest saveProjectRequest =
@@ -136,9 +142,9 @@ thumbnailUrl siteRoot projectID = siteRoot <> "/v1/thumbnail/" <> projectID
 projectUrl :: Text -> Text -> Text
 projectUrl siteRoot projectID = siteRoot <> "/project/" <> projectID
 
-projectDescription :: Maybe Text -> Text
-projectDescription (Just projectOwner) = "Made by " <> projectOwner <> " with Utopia"
-projectDescription Nothing = "A Utopia project"
+descriptionFromOwner :: Maybe Text -> Text
+descriptionFromOwner (Just projectOwner) = "Made by " <> projectOwner <> " with Utopia"
+descriptionFromOwner Nothing = "A Utopia project"
 
 isoFormatTime :: FormatTime t => t -> String
 isoFormatTime = formatTime defaultTimeLocale "%s"
@@ -149,7 +155,7 @@ twitterCardMetadata projectMetadata siteRoot =
   , TagOpen "meta" [("name", "twitter:site"), ("content", "@UtopiaApp")], TagClose "meta"
   , TagOpen "meta" [("name", "twitter:title"), ("content", view (field @"title") projectMetadata)], TagClose "meta"
   , TagOpen "meta" [("name", "twitter:image"), ("content", thumbnailUrl siteRoot $ view (field @"id") projectMetadata)], TagClose "meta"
-  , TagOpen "meta" [("name", "twitter:description"), ("content", projectDescription $ view (field @"ownerName") projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:description"), ("content", descriptionFromOwner $ view (field @"ownerName") projectMetadata)], TagClose "meta"
   ]
 
 facebookCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
@@ -163,7 +169,7 @@ facebookCardMetadata projectMetadata siteRoot =
   , TagOpen "meta" [("property", "og:url"), ("content", projectUrl siteRoot $ view (field @"id") projectMetadata)], TagClose "meta"
   , TagOpen "meta" [("property", "og:updated_time"), ("content", toS $ isoFormatTime $ view (field @"modifiedAt") projectMetadata)], TagClose "meta"
   , TagOpen "meta" [("property", "og:site_name"), ("content", "Utopia")], TagClose "meta"
-  , TagOpen "meta" [("property", "og:description"), ("content", projectDescription $ view (field @"ownerName") projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:description"), ("content", descriptionFromOwner $ view (field @"ownerName") projectMetadata)], TagClose "meta"
   ]
 
 projectTitleMetadata :: ProjectMetadata -> TagSoupTags
@@ -370,14 +376,14 @@ projectChangedSince projectID lastChangedDate = do
             (ProjectDetailsMetadata projMeta) -> Just (view (field @"modifiedAt") projMeta > lastChangedDate)
             _ -> Nothing
 
-downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
+downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad DownloadProjectResponse
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
   possibleProject <- loadProject projectID
   let contentLookup = foldl' (\ lensSoFar pathPart -> lensSoFar . key pathPart) (field @"content") pathIntoContent
   fromMaybe notFound $ do
     project <- possibleProject
     contentFromLookup <- firstOf contentLookup project
-    return $ return contentFromLookup
+    pure $ pure $ addHeader "*" contentFromLookup
 
 loadProjectEndpoint :: ProjectIdWithSuffix -> Maybe UTCTime -> ServerMonad LoadProjectResponse
 loadProjectEndpoint projectID Nothing = actuallyLoadProject projectID
@@ -424,9 +430,11 @@ forkProject sessionUser sourceProject projectTitle = do
 
 saveProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ServerMonad SaveProjectResponse
 saveProjectEndpoint cookie (ProjectIdWithSuffix projectID _) saveRequest = requireUser cookie $ \sessionUser -> do
-  let projectValid = validateSaveRequest saveRequest
-  unless projectValid badRequest
-  saveProject sessionUser projectID (view (field @"_name") saveRequest) (view (field @"_content") saveRequest)
+  let saveRequestValid = validateSaveRequest saveRequest
+  unless saveRequestValid $
+    badRequest
+  when saveRequestValid $
+    saveProject sessionUser projectID (view (field @"_name") saveRequest) (view (field @"_content") saveRequest)
   return $ SaveProjectResponse projectID (view (field @"_id") sessionUser)
 
 deleteProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad NoContent
@@ -623,10 +631,10 @@ packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
   pure $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 emptyUserConfigurationResponse :: UserConfigurationResponse
-emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
+emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing, _themeConfig = Nothing }
 
 decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
-decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf }
+decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf, _themeConfig = view (field @"theme") userConf }
 
 getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse
 getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
@@ -635,8 +643,67 @@ getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
 
 saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
 saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
-  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig
+  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig _themeConfig
   return NoContent
+
+githubStartAuthenticationEndpoint :: Maybe Text -> ServerMonad H.Html
+githubStartAuthenticationEndpoint cookie = requireUser cookie $ \_ -> do
+  authURI <- getGithubAuthorizationURI
+  _ <- tempRedirect authURI
+  pure mempty
+
+githubFinishAuthenticationEndpoint :: Maybe Text -> Maybe ExchangeToken -> ServerMonad H.Html
+githubFinishAuthenticationEndpoint _ Nothing = badRequest
+githubFinishAuthenticationEndpoint cookie (Just authCode) = requireUser cookie $ \sessionUser -> do
+  _ <- getGithubAccessToken (view (field @"_id") sessionUser) authCode
+  pure $
+    H.div $ do
+      H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.close();" :: Text)
+      H.toMarkup ("Auth Successful" :: Text)
+
+githubAuthenticatedEndpoint :: Maybe Text -> ServerMonad Bool
+githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
+  pure $ isJust possibleAuthDetails
+
+githubSaveEndpoint :: Maybe Text -> Text -> Maybe Text -> Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
+githubSaveEndpoint cookie projectID possibleBranchName possibleCommitMessage persistentModel = requireUser cookie $ \sessionUser -> do
+  saveToGithubRepo (view (field @"_id") sessionUser) projectID possibleBranchName possibleCommitMessage persistentModel
+
+getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
+getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
+  getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
+
+getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> ServerMonad GetBranchContentResponse
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha Nothing = requireUser cookie $ \sessionUser -> do
+  -- No previous commit SHA was supplied.
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha Nothing
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha justPreviousCommitSha@(Just _) = requireUser cookie $ \sessionUser -> do
+  -- A previous commit SHA was supplied, which may mean we want to return a 304.
+  contentResponse <- getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha justPreviousCommitSha
+  -- Check the previous commit SHA against the newly returned content.
+  let possibleNewCommitSha = firstOf (_Ctor @"GetBranchContentResponseSuccess" . field @"branch" . _Just . field @"originCommit") contentResponse
+  -- Return a 304 if the commits match.
+  if possibleNewCommitSha == justPreviousCommitSha
+    then notModified
+    else pure contentResponse
+
+getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
+getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  getUsersRepositories (view (field @"_id") sessionUser)
+
+saveGithubAssetEndpoint :: Maybe Text -> Text -> Text -> Text -> Text -> Text -> ServerMonad GithubSaveAssetResponse
+saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = requireUser cookie $ \sessionUser -> do
+  let splitPath = drop 1 $ T.splitOn "/" fullPath
+  saveGithubAsset (view (field @"_id") sessionUser) owner repository assetSha projectId splitPath
+
+getGithubBranchPullRequestEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchPullRequestResponse
+getGithubBranchPullRequestEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
+  getPullRequestForBranch (view (field @"_id") sessionUser) owner repository branchName
+
+getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
+getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  getGithubUserDetails (view (field @"_id") sessionUser)
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
@@ -657,6 +724,16 @@ protected authCookie = logoutPage authCookie
                   :<|> saveProjectAssetEndpoint authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
                   :<|> downloadGithubProjectEndpoint authCookie
+                  :<|> githubStartAuthenticationEndpoint authCookie
+                  :<|> githubFinishAuthenticationEndpoint authCookie
+                  :<|> githubAuthenticatedEndpoint authCookie
+                  :<|> githubSaveEndpoint authCookie
+                  :<|> getGithubBranchesEndpoint authCookie
+                  :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> getGithubBranchPullRequestEndpoint authCookie
+                  :<|> getGithubUsersRepositoriesEndpoint authCookie
+                  :<|> saveGithubAssetEndpoint authCookie
+                  :<|> getGithubUserEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

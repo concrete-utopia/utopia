@@ -15,7 +15,7 @@ import {
   PRODUCTION_ENV,
   requireElectron,
 } from '../common/env-vars'
-import { EditorID } from '../core/shared/utils'
+import { arrayEquals, EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { DispatchPriority, EditorAction, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
@@ -52,11 +52,13 @@ import {
   persistentModelForProjectContents,
   EditorStorePatched,
   patchedStoreFromFullStore,
+  ElementsToRerender,
+  getCurrentTheme,
 } from '../components/editor/store/editor-state'
 import {
   CanvasStateContext,
   EditorStateContext,
-  InspectorStateContext,
+  LowPriorityStateContext,
   UtopiaStoreAPI,
   UtopiaStoreHook,
 } from '../components/editor/store/store-hook'
@@ -69,7 +71,6 @@ import {
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
 import '../utils/react-shim'
-import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import {
@@ -78,11 +79,16 @@ import {
   UiJsxCanvasCtxAtom,
   ElementsToRerenderGLOBAL,
 } from '../components/canvas/ui-jsx-canvas'
-import { isLeft } from '../core/shared/either'
-import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
+import { foldEither, isLeft } from '../core/shared/either'
+import {
+  getURLImportDetails,
+  importZippedGitProject,
+  isProjectImportSuccess,
+  reuploadAssets,
+} from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
-import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
@@ -100,8 +106,15 @@ import {
   runDomWalker,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
-import { shouldInspectorUpdate } from '../components/inspector/inspector'
+import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
+import { isAuthenticatedWithGithub } from '../utils/github-auth'
+import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
+import { waitUntil } from '../core/shared/promise-utils'
+import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
+import { ElementPath } from '../core/shared/project-file-types'
+import { uniqBy } from '../core/shared/array-utils'
+import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -116,6 +129,91 @@ function replaceLoadingMessage(newMessage: string) {
   }
 }
 
+function collectElementsToRerenderForTransientActions(
+  working: Array<ElementPath>,
+  action: EditorAction,
+): Array<ElementPath> {
+  if (action.action === 'TRANSIENT_ACTIONS') {
+    if (action.elementsToRerender != null) {
+      working.push(...action.elementsToRerender)
+    }
+    working.push(
+      ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
+    )
+    return working
+  } else {
+    return working
+  }
+}
+
+// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
+// for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
+// and let the canvas re-render components that may have a missing child now.
+let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
+function fixElementsToRerender(
+  currentElementsToRerender: ElementsToRerender,
+  dispatchedActions: readonly EditorAction[],
+): ElementsToRerender {
+  // while running transient actions there is an optional elementsToRerender
+  const elementsToRerenderTransient = uniqBy<ElementPath>(
+    dispatchedActions.reduce(
+      collectElementsToRerenderForTransientActions,
+      [] as Array<ElementPath>,
+    ),
+    EP.pathsEqual,
+  )
+
+  const currentOrTransientElementsToRerender =
+    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+
+  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
+  if (
+    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...currentOrTransientElementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = currentOrTransientElementsToRerender
+  return fixedElementsToRerender
+}
+
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
+export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI): void {
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const githubChecksums = currentState.editor.githubChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const dispatch = currentState.dispatch
+      void refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        githubChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      globalThis.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  pollGithub()
+}
+
 export class Editor {
   storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreHook
@@ -123,13 +221,12 @@ export class Editor {
   updateStore: (partialState: EditorStorePatched) => void
   canvasStore: UtopiaStoreHook & UtopiaStoreAPI
   updateCanvasStore: (partialState: EditorStorePatched) => void
-  inspectorStore: UtopiaStoreHook & UtopiaStoreAPI
-  updateInspectorStore: (partialState: EditorStorePatched) => void
+  lowPriorityStore: UtopiaStoreHook & UtopiaStoreAPI
+  updateLowPriorityStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
@@ -150,7 +247,7 @@ export class Editor {
         this.utopiaStoreHook,
         this.utopiaStoreApi,
         this.canvasStore,
-        this.inspectorStore,
+        this.lowPriorityStore,
         this.spyCollector,
         this.domWalkerMutableState,
       )
@@ -193,21 +290,25 @@ export class Editor {
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'editor-store')))
 
     const canvasStoreHook = create<
       EditorStorePatched,
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'canvas-store')))
 
-    const inspectorStoreHook = create<
+    const lowPriorityStoreHook = create<
       EditorStorePatched,
       SetState<EditorStorePatched>,
       GetState<EditorStorePatched>,
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+    >(
+      subscribeWithSelector((set) =>
+        patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+      ),
+    )
 
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
@@ -216,12 +317,14 @@ export class Editor {
     this.canvasStore = canvasStoreHook
     this.updateCanvasStore = canvasStoreHook.setState
 
-    this.inspectorStore = inspectorStoreHook
-    this.updateInspectorStore = inspectorStoreHook.setState
+    this.lowPriorityStore = lowPriorityStoreHook
+    this.updateLowPriorityStore = lowPriorityStoreHook.setState
 
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
-    renderRootEditor()
+    void renderRootEditor()
+
+    startGithubPolling(this.utopiaStoreHook)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -254,63 +357,81 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState('cache').then((loginState: LoginState) => {
+    void getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      getUserConfiguration(loginState).then((shortcutConfiguration) => {
-        this.storedState.userState = {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
+        const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
         }
+        this.storedState.userState = userState
 
-        const projectId = getProjectID()
-        if (isLoggedIn(loginState)) {
-          this.storedState.persistence.login()
-        }
+        // Ensure we have the correct theme set in VS Code
+        void sendSetVSCodeTheme(getCurrentTheme(userState))
 
-        const urlParams = new URLSearchParams(window.location.search)
-        const githubOwner = urlParams.get('github_owner')
-        const githubRepo = urlParams.get('github_repo')
-
-        if (isCookiesOrLocalForageUnavailable(loginState)) {
-          this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
-        } else if (projectId == null) {
-          if (githubOwner != null && githubRepo != null) {
-            replaceLoadingMessage('Downloading Repo...')
-
-            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-              if (isRequestFailure(repoResult)) {
-                if (repoResult.statusCode === 404) {
-                  renderProjectNotFound()
-                } else {
-                  renderProjectLoadError(repoResult.errorMessage)
-                }
-              } else {
-                replaceLoadingMessage('Importing Project...')
-
-                const projectName = `${githubOwner}-${githubRepo}`
-                importZippedGitProject(projectName, repoResult.value)
-                  .then((importProjectResult) => {
-                    if (isProjectImportSuccess(importProjectResult)) {
-                      const importedProject = persistentModelForProjectContents(
-                        importProjectResult.contents,
-                      )
-                      this.storedState.persistence.createNew(projectName, importedProject)
-                    } else {
-                      renderProjectLoadError(importProjectResult.errorMessage)
-                    }
-                  })
-                  .catch((err) => {
-                    console.error('Import error.', err)
-                  })
-              }
-            })
-          } else {
-            this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+        void updateUserDetailsWhenAuthenticated(
+          this.boundDispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) => {
+          this.storedState.userState = {
+            ...this.storedState.userState,
+            githubState: {
+              authenticated: authenticatedWithGithub,
+            },
           }
-        } else {
-          this.storedState.persistence.load(projectId)
-        }
+          const projectId = getProjectID()
+          if (isLoggedIn(loginState)) {
+            this.storedState.persistence.login()
+          }
+
+          const urlParams = new URLSearchParams(window.location.search)
+          const githubOwner = urlParams.get('github_owner')
+          const githubRepo = urlParams.get('github_repo')
+          const importURL = urlParams.get('import_url')
+
+          if (isCookiesOrLocalForageUnavailable(loginState)) {
+            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+          } else if (projectId == null) {
+            if (githubOwner != null && githubRepo != null) {
+              replaceLoadingMessage('Downloading Repo...')
+
+              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+                if (isRequestFailure(repoResult)) {
+                  if (repoResult.statusCode === 404) {
+                    void renderProjectNotFound()
+                  } else {
+                    void renderProjectLoadError(repoResult.errorMessage)
+                  }
+                } else {
+                  replaceLoadingMessage('Importing Project...')
+
+                  const projectName = `${githubOwner}-${githubRepo}`
+                  importZippedGitProject(projectName, repoResult.value)
+                    .then((importProjectResult) => {
+                      if (isProjectImportSuccess(importProjectResult)) {
+                        const importedProject = persistentModelForProjectContents(
+                          importProjectResult.contents,
+                        )
+                        this.storedState.persistence.createNew(projectName, importedProject)
+                      } else {
+                        void renderProjectLoadError(importProjectResult.errorMessage)
+                      }
+                    })
+                    .catch((err) => {
+                      console.error('Import error.', err)
+                    })
+                }
+              })
+            } else if (importURL != null) {
+              this.createNewProjectFromImportURL(importURL)
+            } else {
+              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+            }
+          } else {
+            this.storedState.persistence.load(projectId)
+          }
+        })
       })
     })
   }
@@ -370,10 +491,14 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        ElementsToRerenderGLOBAL.current = this.storedState.patchedEditor.canvas.elementsToRerender // Mutation!
+        const currentElementsToRender = fixElementsToRerender(
+          this.storedState.patchedEditor.canvas.elementsToRerender,
+          dispatchedActions,
+        )
+        ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState))
+            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
           })
         })
         if (PerformanceMarks) {
@@ -392,7 +517,7 @@ export class Editor {
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: this.storedState.patchedEditor.canvas.elementsToRerender,
+          elementsToFocusOn: currentElementsToRender,
           scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -426,9 +551,13 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateStore(patchedStoreFromFullStore(this.storedState))
-            if (shouldInspectorUpdate(this.storedState.strategyState)) {
-              this.updateInspectorStore(patchedStoreFromFullStore(this.storedState))
+            this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
+            if (
+              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
+            ) {
+              this.updateLowPriorityStore(
+                patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+              )
             }
           })
         })
@@ -456,6 +585,50 @@ export class Editor {
       )
     }
   }
+
+  private createNewProjectFromImportURL(importURL: string): void {
+    getURLImportDetails(importURL)
+      .then((importResult) => {
+        foldEither(
+          (errorMessage) => {
+            void renderProjectLoadError(errorMessage)
+          },
+          (successResult) => {
+            // Create the new project.
+            this.storedState.persistence.createNew(createNewProjectName(), successResult.model)
+
+            // Checks to see if the given project has been loaded and received a project ID.
+            function projectLoaded(storedState: EditorStoreFull): boolean {
+              const successResultFilenames = new Set(
+                Object.keys(successResult.model.projectContents),
+              )
+              const unpatchedEditorFilenames = new Set(
+                Object.keys(storedState.unpatchedEditor.projectContents),
+              )
+              return (
+                successResultFilenames.size === unpatchedEditorFilenames.size &&
+                storedState.unpatchedEditor.id != null
+              )
+            }
+
+            void waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
+              if (waitResult) {
+                void reuploadAssets(
+                  successResult.originalProjectRootURL,
+                  this.storedState.unpatchedEditor,
+                )
+              } else {
+                console.error(`Waited too long for the project to get a app ID.`)
+              }
+            })
+          },
+          importResult,
+        )
+      })
+      .catch((err) => {
+        console.error('Import error.', err)
+      })
+  }
 }
 
 let canvasUpdateId: number = 0
@@ -464,19 +637,21 @@ export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = ({ api, useStore, canvasStore, inspectorStore, spyCollector, domWalkerMutableState }) => {
+}> = ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
         <CanvasStateContext.Provider value={{ api: canvasStore, useStore: canvasStore }}>
-          <InspectorStateContext.Provider value={{ api: inspectorStore, useStore: inspectorStore }}>
+          <LowPriorityStateContext.Provider
+            value={{ api: lowPriorityStore, useStore: lowPriorityStore }}
+          >
             <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
               <EditorComponent />
             </UiJsxCanvasCtxAtom.Provider>
-          </InspectorStateContext.Provider>
+          </LowPriorityStateContext.Provider>
         </CanvasStateContext.Provider>
       </DomWalkerMutableStateCtx.Provider>
     </EditorStateContext.Provider>
@@ -489,28 +664,30 @@ export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = hot(({ api, useStore, canvasStore, inspectorStore, spyCollector, domWalkerMutableState }) => {
-  return (
-    <EditorRoot
-      api={api}
-      useStore={useStore}
-      spyCollector={spyCollector}
-      canvasStore={canvasStore}
-      inspectorStore={inspectorStore}
-      domWalkerMutableState={domWalkerMutableState}
-    />
-  )
-})
+}> = hot(
+  ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+    return (
+      <EditorRoot
+        api={api}
+        useStore={useStore}
+        spyCollector={spyCollector}
+        canvasStore={canvasStore}
+        lowPriorityStore={lowPriorityStore}
+        domWalkerMutableState={domWalkerMutableState}
+      />
+    )
+  },
+)
 HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   canvasStore: UtopiaStoreAPI & UtopiaStoreHook,
-  inspectorStore: UtopiaStoreAPI & UtopiaStoreHook,
+  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
 ): Promise<void> {
@@ -519,14 +696,14 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      if (process.env.HOT_MODE) {
+      if (process.env.HOT_MODE != null) {
         ReactDOM.render(
           <HotRoot
             api={api}
             useStore={useStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
-            inspectorStore={inspectorStore}
+            lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
           rootElement,
@@ -538,7 +715,7 @@ async function renderRootComponent(
             useStore={useStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
-            inspectorStore={inspectorStore}
+            lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
           rootElement,

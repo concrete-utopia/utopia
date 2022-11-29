@@ -35,9 +35,13 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   const targetParent = EP.parentPath(command.target)
   const newPath = EP.appendToPath(targetParent, command.newUid)
 
-  const duplicateResult = duplicate([command.target], targetParent, editorState, [
-    { originalPath: command.target, newUID: command.newUid },
-  ])
+  const duplicateResult = duplicate(
+    [command.target],
+    targetParent,
+    editorState,
+    [{ originalPath: command.target, newUID: command.newUid }],
+    true,
+  )
 
   const originalParsedFile = withUnderlyingTargetFromEditorState(
     command.target,

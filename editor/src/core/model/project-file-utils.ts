@@ -9,14 +9,11 @@ import {
   HighlightBoundsForUids,
   ImageFile,
   Imports,
-  isParseFailure,
   ParsedTextFile,
   ParseSuccess,
-  ProjectContents,
   ProjectFile,
   ProjectFileType,
   RevisionsState,
-  SceneMetadata,
   TextFile,
   AssetFile,
   foldParsedTextFile,
@@ -24,7 +21,6 @@ import {
   textFile,
   TextFileContents,
   textFileContents,
-  unparsed,
   HighlightBoundsWithFileForUids,
   forEachParseSuccess,
   isParseSuccess,
@@ -38,7 +34,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
-  jsxElementNameEquals,
   ImportInfo,
   createImportedFrom,
   createNotImported,
@@ -54,7 +49,7 @@ import {
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
 import { mapDropNulls, pluck } from '../shared/array-utils'
-import { forEachValue, mapValues } from '../shared/object-utils'
+import { forEachValue } from '../shared/object-utils'
 import {
   getContentsTreeFileFromString,
   projectContentFile,
@@ -66,9 +61,9 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
-import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
-import { splitAt } from '../shared/string-utils'
+import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
 import { memoize } from '../shared/memoize'
+import { filenameFromParts, getFilenameParts } from '../../components/images'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -151,16 +146,6 @@ export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMeta
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
-export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
-  return isJSXElement(element) && isTextAgainstImports(element.name, imports)
-}
-
-export function isUtopiaAPITextElementFromMetadata(
-  elementInstanceMetadata: ElementInstanceMetadata,
-): boolean {
-  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Text')
-}
-
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
 }
@@ -182,10 +167,6 @@ export function isViewLikeFromMetadata(elementInstanceMetadata: ElementInstanceM
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexRow') ||
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexCol')
   )
-}
-
-export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
-  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Text')
 }
 
 export function isImg(jsxElementName: JSXElementName): boolean {
@@ -549,6 +530,7 @@ export function isDirectory(projectFile: ProjectFile): projectFile is Directory 
 }
 
 // A layer over the mime-types library which means we can shim in things we need.
+// Keep this in sync with Utopia/Web/Assets.hs.
 export function mimeTypeLookup(filename: string): string | false {
   if (filename.endsWith('.ts')) {
     return 'application/x-typescript'
@@ -657,41 +639,39 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
 }
 
 export function uniqueProjectContentID(
-  startingID: string,
+  filename: string,
   projectContents: ProjectContentTreeRoot,
 ): string {
-  const startingIDCorrected = correctProjectContentsPath(startingID)
-  if (getContentsTreeFileFromString(projectContents, startingIDCorrected) != null) {
-    const firstIndexOfFullStop = startingIDCorrected.indexOf('.')
-    if (firstIndexOfFullStop === -1) {
-      let counter = 2
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const possibleNewID = `${startingIDCorrected}_${counter}`
-        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
-          counter += 1
-        } else {
-          return correctProjectContentsPath(possibleNewID)
-        }
-      }
-    } else {
-      // Kinda assume it's a filename.
-      const [prefix, suffixWithFullStop] = splitAt(firstIndexOfFullStop, startingIDCorrected)
-      const suffix = suffixWithFullStop.slice(1)
-      let counter = 2
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const possibleNewID = `${prefix}_${counter}.${suffix}`
-        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
-          counter += 1
-        } else {
-          return correctProjectContentsPath(possibleNewID)
-        }
-      }
-    }
-  } else {
+  const startingIDCorrected = correctProjectContentsPath(filename)
+  const fileWithSameNameExistsAlready =
+    getContentsTreeFileFromString(projectContents, startingIDCorrected) != null
+
+  if (!fileWithSameNameExistsAlready) {
     return startingIDCorrected
   }
+
+  const parts = getFilenameParts(startingIDCorrected)
+
+  const makeNameWithCounter =
+    parts !== null
+      ? (counter: number) => filenameFromParts({ ...parts, deduplicationSeqNumber: counter })
+      : (counter: number) => `${startingIDCorrected}_${counter}`
+
+  let counter = 2
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const possibleNewID = makeNameWithCounter(counter)
+    if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
+      counter += 1
+    } else {
+      return correctProjectContentsPath(possibleNewID)
+    }
+  }
+}
+
+export function fileExists(projectContents: ProjectContentTreeRoot, filename: string): boolean {
+  const filenameCorrected = correctProjectContentsPath(filename)
+  return getContentsTreeFileFromString(projectContents, filenameCorrected) != null
 }
 
 export function saveTextFileContents(

@@ -1,11 +1,13 @@
-import { AllElementProps } from '../../../components/editor/store/editor-state'
+import React from 'react'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyApplicationStatus } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -13,6 +15,8 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
 }
+
+export type CustomStrategyStatePatch = Partial<CustomStrategyState>
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
@@ -24,74 +28,136 @@ export function defaultCustomStrategyState(): CustomStrategyState {
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
+  customStatePatch: CustomStrategyStatePatch
+  status: StrategyApplicationStatus
 }
 
-export const emptyStrategyApplicationResult = {
+export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
-  customState: null,
+  customStatePatch: {},
+  status: 'success',
 }
 
-export interface ControlWithKey {
-  control: React.FC<React.PropsWithChildren<unknown>>
+export function strategyApplicationResult(
+  commands: Array<CanvasCommand>,
+  customStatePatch: CustomStrategyStatePatch = {},
+  status: StrategyApplicationStatus = 'success',
+): StrategyApplicationResult {
+  return {
+    commands: commands,
+    customStatePatch: customStatePatch,
+    status: status,
+  }
+}
+
+export interface MoveStrategy {
+  strategy: CanvasStrategy
+  dragType: 'absolute' | 'static'
+}
+
+export interface ControlForStrategy<P> {
+  type: 'ControlForStrategy'
+  control: React.FC<P>
+}
+
+export function controlForStrategyMemoized<P>(control: React.FC<P>): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: React.memo<any>(control) }
+}
+
+export type WhenToShowControl =
+  | 'always-visible'
+  | 'visible-only-while-active'
+  | 'visible-except-when-other-strategy-is-active'
+
+export interface ControlWithProps<P> {
+  control: ControlForStrategy<P>
+  props: P
   key: string
-  show:
-    | 'always-visible'
-    | 'visible-only-while-active'
-    | 'visible-except-when-other-strategy-is-active'
+  show: WhenToShowControl
+}
+
+export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProps<P> {
+  return value
 }
 
 export interface InteractionCanvasState {
-  selectedElements: Array<ElementPath>
+  interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+  startingMetadata: ElementInstanceMetadataMap
+  startingAllElementProps: AllElementProps
 }
 
-export type CanvasStrategyId =
-  | 'ABSOLUTE_MOVE'
-  | 'ABSOLUTE_REPARENT'
-  | 'ABSOLUTE_DUPLICATE'
-  | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
-  | 'KEYBOARD_ABSOLUTE_MOVE'
-  | 'KEYBOARD_ABSOLUTE_RESIZE'
-  | 'ESCAPE_HATCH_STRATEGY'
-  | 'FLEX_REORDER'
-  | 'ABSOLUTE_REPARENT_TO_FLEX'
-  | 'FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FLEX_REPARENT_TO_FLEX'
+export type InteractionTarget = TargetPaths | InsertionSubjects
+
+interface TargetPaths {
+  type: 'TARGET_PATHS'
+  elements: Array<ElementPath>
+}
+
+export function targetPaths(elements: Array<ElementPath>): TargetPaths {
+  return {
+    type: 'TARGET_PATHS',
+    elements: elements,
+  }
+}
+
+export function isTargetPaths(target: InteractionTarget): target is TargetPaths {
+  return target.type === 'TARGET_PATHS'
+}
+
+export interface InsertionSubjects {
+  type: 'INSERTION_SUBJECTS'
+  subjects: Array<InsertionSubject>
+}
+
+export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionSubjects {
+  return {
+    type: 'INSERTION_SUBJECTS',
+    subjects: subjects,
+  }
+}
+
+export function isInsertionSubjects(target: InteractionTarget): target is InsertionSubjects {
+  return target.type === 'INSERTION_SUBJECTS'
+}
+
+export function getTargetPathsFromInteractionTarget(target: InteractionTarget): Array<ElementPath> {
+  if (target.type === 'TARGET_PATHS') {
+    return target.elements
+  }
+  return []
+}
+
+export function getInsertionSubjectsFromInteractionTarget(
+  target: InteractionTarget,
+): Array<InsertionSubject> {
+  if (target.type === 'INSERTION_SUBJECTS') {
+    return target.subjects
+  }
+  return []
+}
+
+export type CanvasStrategyId = string
+
+export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
   name: string
 
-  // Determines if we should show the controls that this strategy renders
-  isApplicable: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
-  ) => boolean
-
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  controlsToRender: Array<ControlWithKey>
+  controlsToRender: Array<ControlWithProps<any>>
 
-  // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
-  fitness: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ) => number
+  // For determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
+  fitness: number
 
   // Returns the commands that inform how the model and the editor should be updated
-  apply: (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ) => StrategyApplicationResult
+  apply: (strategyLifecycle: InteractionLifecycle) => StrategyApplicationResult
 }
 
-export const ControlDelay = 300
+export const ControlDelay = 600

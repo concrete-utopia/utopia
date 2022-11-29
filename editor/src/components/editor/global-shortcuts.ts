@@ -1,9 +1,5 @@
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
-  isUtopiaAPITextElement,
-  isUtopiaAPITextElementFromMetadata,
-} from '../../core/model/project-file-utils'
 import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
@@ -14,7 +10,7 @@ import Keyboard, {
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { Modifier, Modifiers } from '../../utils/modifiers'
+import { emptyModifiers, Modifier, Modifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas, { TargetSearchType } from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
@@ -27,13 +23,13 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { toggleTextFormatting } from '../text-utils'
-import { EditorAction, EditorDispatch } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
+import * as MetaActions from './actions/meta-actions'
 import {
+  defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
-  defaultTextElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
@@ -52,31 +48,14 @@ import {
   INSERT_ELLIPSE_SHORTCUT,
   INSERT_IMAGE_SHORTCUT,
   INSERT_RECTANGLE_SHORTCUT,
-  INSERT_TEXT_SHORTCUT,
   INSERT_VIEW_SHORTCUT,
   JUMP_TO_PARENT_SHORTCUT,
   MOVE_ELEMENT_BACKWARD_SHORTCUT,
-  MOVE_ELEMENT_DOWN_MORE_SHORTCUT,
-  MOVE_ELEMENT_DOWN_SHORTCUT,
   MOVE_ELEMENT_FORWARD_SHORTCUT,
-  MOVE_ELEMENT_LEFT_MORE_SHORTCUT,
-  MOVE_ELEMENT_LEFT_SHORTCUT,
-  MOVE_ELEMENT_RIGHT_MORE_SHORTCUT,
-  MOVE_ELEMENT_RIGHT_SHORTCUT,
   MOVE_ELEMENT_TO_BACK_SHORTCUT,
   MOVE_ELEMENT_TO_FRONT_SHORTCUT,
-  MOVE_ELEMENT_UP_MORE_SHORTCUT,
-  MOVE_ELEMENT_UP_SHORTCUT,
   REDO_CHANGES_SHORTCUT,
   RESET_CANVAS_ZOOM_SHORTCUT,
-  RESIZE_ELEMENT_DOWN_MORE_SHORTCUT,
-  RESIZE_ELEMENT_DOWN_SHORTCUT,
-  RESIZE_ELEMENT_LEFT_MORE_SHORTCUT,
-  RESIZE_ELEMENT_LEFT_SHORTCUT,
-  RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT,
-  RESIZE_ELEMENT_RIGHT_SHORTCUT,
-  RESIZE_ELEMENT_UP_MORE_SHORTCUT,
-  RESIZE_ELEMENT_UP_SHORTCUT,
   SAVE_CURRENT_FILE_SHORTCUT,
   SELECT_ALL_SIBLINGS_SHORTCUT,
   START_RENAMING_SHORTCUT,
@@ -91,9 +70,6 @@ import {
   TOGGLE_PREVIEW_SHORTCUT,
   TOGGLE_RIGHT_MENU_SHORTCUT,
   TOGGLE_SHADOW_SHORTCUT,
-  TOGGLE_TEXT_BOLD_SHORTCUT,
-  TOGGLE_TEXT_ITALIC_SHORTCUT,
-  TOGGLE_TEXT_UNDERLINE_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
   WRAP_ELEMENT_DEFAULT_SHORTCUT,
@@ -109,12 +85,17 @@ import {
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
+  INSERT_DIV_SHORTCUT,
 } from './shortcut-definitions'
-import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
+import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import {
+  boundingArea,
+  createHoverInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -171,7 +152,7 @@ function jumpToParentActions(
     case 'CLEAR':
       return [EditorActions.clearSelection()]
     default:
-      return [EditorActions.selectComponents([jumpResult], false)]
+      return MetaActions.selectComponents([jumpResult], false)
   }
 }
 
@@ -339,19 +320,14 @@ export function handleKeyDown(
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
   const editorTargeted = editorIsTarget(event, editor)
+
+  const modifiers = Modifier.modifiersForKeyboardEvent(event)
+
   let updatedKeysPressed: KeysPressed
   if (editorTargeted) {
-    updatedKeysPressed = updateKeysPressed(
-      editor.keysPressed,
-      key,
-      true,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateKeysPressed(editor.keysPressed, key, true, modifiers)
   } else {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateModifiers(editor.keysPressed, modifiers)
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
@@ -359,33 +335,10 @@ export function handleKeyDown(
     if (isSelectMode(editor.mode)) {
       const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
       if (tabbedTo != null) {
-        return [EditorActions.selectComponents([tabbedTo], false)]
+        return MetaActions.selectComponents([tabbedTo], false)
       }
     }
     return []
-  }
-
-  function adjustFrames(
-    isResizing: boolean,
-    direction: 'vertical' | 'horizontal',
-    directionModifier: -1 | 1,
-    adjustment: 1 | 10,
-  ): Array<EditorAction> {
-    if (isFeatureEnabled('Canvas Strategies')) {
-      // Disable these keyboard shortcuts so they don't interfere with strategies
-      return []
-    }
-
-    const adjustmentActions = adjustAllSelectedFrames(
-      editor,
-      dispatch,
-      false,
-      isResizing,
-      directionModifier,
-      direction,
-      adjustment,
-    )
-    return [EditorActions.transientActions(adjustmentActions)]
   }
 
   function getUIFileActions(): Array<EditorAction> {
@@ -419,7 +372,7 @@ export function handleKeyDown(
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
-              return [EditorActions.selectComponents([childToSelect], false)]
+              return MetaActions.selectComponents([childToSelect], false)
             }
           }
         }
@@ -433,12 +386,8 @@ export function handleKeyDown(
         }
       },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
-        if (isInsertMode(editor.mode)) {
-          return [
-            EditorActions.switchEditorMode(EditorModes.selectMode()),
-            CanvasActions.clearDragState(false),
-            EditorActions.clearHighlightedViews(),
-          ]
+        if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
+          return MetaActions.cancelInsertModeActions('do-not-apply-changes')
         } else if (
           editor.canvas.dragState != null &&
           getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
@@ -453,8 +402,6 @@ export function handleKeyDown(
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
-        } else if (isInsertMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
         }
         return []
       },
@@ -468,7 +415,7 @@ export function handleKeyDown(
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
           } else {
-            return [EditorActions.selectComponents([nextTarget], false)]
+            return MetaActions.selectComponents([nextTarget], false)
           }
         }
         return []
@@ -479,59 +426,8 @@ export function handleKeyDown(
       [CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT]: () => {
         return cycleSiblings(false)
       },
-      [RESIZE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 1) : []
-      },
-      [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 10) : []
-      },
-      [MOVE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 1) : []
-      },
-      [MOVE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 10) : []
-      },
-      [RESIZE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 1) : []
-      },
-      [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 10) : []
-      },
-      [MOVE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 1) : []
-      },
-      [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 10) : []
-      },
-      [RESIZE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 1) : []
-      },
-      [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 10) : []
-      },
-      [MOVE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 1) : []
-      },
-      [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 10) : []
-      },
-      [RESIZE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 1) : []
-      },
-      [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 10) : []
-      },
-      [MOVE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 1) : []
-      },
-      [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 10) : []
-      },
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
         return [EditorActions.selectAllSiblings()]
-      },
-      [TOGGLE_TEXT_BOLD_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
@@ -585,9 +481,6 @@ export function handleKeyDown(
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
       },
-      [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'italic') : []
-      },
       [INSERT_IMAGE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           // FIXME: Side effects.
@@ -618,7 +511,7 @@ export function handleKeyDown(
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
@@ -627,7 +520,8 @@ export function handleKeyDown(
               },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
@@ -635,14 +529,15 @@ export function handleKeyDown(
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
@@ -658,35 +553,32 @@ export function handleKeyDown(
           ),
         )
       },
-      [INSERT_TEXT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
-            EditorActions.enableInsertModeForJSXElement(
-              defaultTextElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-              null,
-            ),
-          ]
-        } else {
-          return []
-        }
-      },
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
+      },
+      [INSERT_DIV_SHORTCUT]: () => {
+        if (!isSelectMode(editor.mode) && !isInsertMode(editor.mode)) {
+          return []
+        }
+
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        return addCreateHoverInteractionActionToSwitchModeAction(
+          EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null),
+          modifiers,
+        )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
@@ -716,9 +608,6 @@ export function handleKeyDown(
       },
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
-      },
-      [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
       },
       [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('leftmenu')]
@@ -856,4 +745,18 @@ export function handleKeyUp(
   }
 
   dispatch(actions, 'everyone')
+}
+
+function addCreateHoverInteractionActionToSwitchModeAction(
+  switchModeAction: SwitchEditorMode,
+  modifiers: Modifiers,
+) {
+  return CanvasMousePositionRaw != null
+    ? [
+        switchModeAction,
+        CanvasActions.createInteractionSession(
+          createHoverInteractionViaMouse(CanvasMousePositionRaw, modifiers, boundingArea()),
+        ),
+      ]
+    : [switchModeAction]
 }

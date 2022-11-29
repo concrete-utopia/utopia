@@ -10,7 +10,6 @@ import {
   textFileContents,
   unparsed,
   RevisionsState,
-  isParsedTextFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
 import {
@@ -30,7 +29,7 @@ import {
 } from '../../../assets'
 import { isUtopiaJSXComponent } from '../../../../core/shared/element-template'
 
-export const CURRENT_PROJECT_VERSION = 7
+export const CURRENT_PROJECT_VERSION = 12
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -42,7 +41,12 @@ export function applyMigrations(
   const version5 = migrateFromVersion4(version4)
   const version6 = migrateFromVersion5(version5)
   const version7 = migrateFromVersion6(version6)
-  return version7
+  const version8 = migrateFromVersion7(version7)
+  const version9 = migrateFromVersion8(version8)
+  const version10 = migrateFromVersion9(version9)
+  const version11 = migrateFromVersion10(version10)
+  const version12 = migrateFromVersion11(version11)
+  return version12
 }
 
 function migrateFromVersion0(
@@ -323,6 +327,94 @@ function migrateFromVersion6(
       ...persistentModel,
       projectVersion: 7,
       projectContents: updatedProjectContents,
+    }
+  }
+}
+
+function migrateFromVersion7(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 8 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 7) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 8,
+      githubSettings: {
+        targetRepository: null,
+      } as any,
+    }
+  }
+}
+
+function migrateFromVersion8(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 9 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 8) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 9,
+      githubSettings: {
+        ...persistentModel.githubSettings,
+        originCommit: null,
+      },
+    }
+  }
+}
+
+function migrateFromVersion9(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 10 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 9) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 10,
+      githubSettings: {
+        ...persistentModel.githubSettings,
+        originCommit: null,
+        branchName: null,
+      },
+      githubChecksums: null,
+      branchContents: null,
+    }
+  }
+}
+
+function migrateFromVersion10(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 11 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 10) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 11,
+      githubSettings: {
+        ...persistentModel.githubSettings,
+        originCommit: null,
+        branchName: null,
+        branchLoaded: false,
+      },
+      githubChecksums: null,
+      branchContents: null,
+    }
+  }
+}
+
+function migrateFromVersion11(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 12 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 11) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 12,
+      assetChecksums: {},
     }
   }
 }

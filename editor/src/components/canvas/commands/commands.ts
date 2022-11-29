@@ -15,7 +15,6 @@ import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
-import { mergePatches } from './merge-patches'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
@@ -31,6 +30,8 @@ import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equal
 import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
 import { runSetCursor, SetCursorCommand } from './set-cursor-command'
 import {
+  AppendElementsToRerenderCommand,
+  runAppendElementsToRerender,
   runSetElementsToRerender,
   SetElementsToRerenderCommand,
 } from './set-elements-to-rerender-command'
@@ -39,10 +40,24 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
+import { runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
-  addToReparentedToPaths,
-} from '../canvas-strategies/add-to-reparented-to-paths-command'
+  AddToReparentedToPaths,
+} from './add-to-reparented-to-paths-command'
+import {
+  InsertElementInsertionSubject,
+  runInsertElementInsertionSubject,
+} from './insert-element-insertion-subject'
+import { AddElement, runAddElement } from './add-element-command'
+import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
+import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { runShowReorderIndicator, ShowReorderIndicator } from './show-reorder-indicator-command'
+import {
+  ConvertCssPercentToPx,
+  runConvertCssPercentToPx,
+} from './convert-css-percent-to-px-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -72,17 +87,25 @@ export type CanvasCommand =
   | SetCssLengthProperty
   | ReorderElement
   | ShowOutlineHighlight
+  | ShowReorderIndicator
   | SetCursorCommand
   | SetElementsToRerenderCommand
+  | AppendElementsToRerenderCommand
   | PushIntendedBounds
   | DeleteProperties
+  | SetProperty
+  | UpdatePropIfExists
   | AddImportsToFile
-  | addToReparentedToPaths
+  | AddToReparentedToPaths
+  | InsertElementInsertionSubject
+  | AddElement
+  | HighlightElementsCommand
+  | ConvertCssPercentToPx
 
 export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
@@ -113,18 +136,34 @@ export const runCanvasCommand = (
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
       return runShowOutlineHighlight(editorState, command)
+    case 'SHOW_REORDER_INDICATOR':
+      return runShowReorderIndicator(editorState, command)
     case 'SET_CURSOR_COMMAND':
       return runSetCursor(editorState, command)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
       return runSetElementsToRerender(editorState, command)
+    case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
+      return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS':
       return runPushIntendedBounds(editorState, command)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
+    case 'SET_PROPERTY':
+      return runSetProperty(editorState, command)
+    case 'UPDATE_PROP_IF_EXISTS':
+      return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'INSERT_ELEMENT_INSERTION_SUBJECT':
+      return runInsertElementInsertionSubject(editorState, command)
+    case 'ADD_ELEMENT':
+      return runAddElement(editorState, command)
+    case 'HIGHLIGHT_ELEMENTS_COMMAND':
+      return runHighlightElementsCommand(editorState, command)
+    case 'CONVERT_CSS_PERCENT_TO_PX':
+      return runConvertCssPercentToPx(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -145,21 +184,16 @@ export function foldAndApplyCommandsSimple(
 
 export function foldAndApplyCommandsInner(
   editorState: EditorState,
-  patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
-  accumulatedPatches: EditorStatePatch[]
   commandDescriptions: CommandDescription[]
 } {
-  let statePatches: Array<EditorStatePatch> = [...patches]
-  let accumulatedPatches: Array<EditorStatePatch> = [...patches]
-  let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
-    return update(workingState, patch)
-  }, editorState)
+  let statePatches: Array<EditorStatePatch> = []
+  let workingEditorState: EditorState = editorState
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
@@ -179,13 +213,6 @@ export function foldAndApplyCommandsInner(
       workingEditorState = updateEditorStateWithPatches(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(...statePatch)
-      // Do not accumulate commands that are not permanent.
-      if (
-        shouldAccumulatePatches &&
-        (command.whenToRun === 'always' || command.whenToRun === 'on-complete')
-      ) {
-        accumulatedPatches.push(...statePatch)
-      }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
         transient: command.whenToRun === 'mid-interaction',
@@ -199,7 +226,6 @@ export function foldAndApplyCommandsInner(
   return {
     statePatches: statePatches,
     updatedEditorState: workingEditorState,
-    accumulatedPatches: accumulatedPatches,
     commandDescriptions: workingCommandDescriptions,
   }
 }
@@ -207,23 +233,19 @@ export function foldAndApplyCommandsInner(
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
-  patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   editorState: EditorState
-  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const { statePatches, accumulatedPatches, updatedEditorState, commandDescriptions } =
-    foldAndApplyCommandsInner(
-      editorState,
-      patches,
-      commandsToAccumulate,
-      commands,
-      commandLifecycle,
-    )
+  const { statePatches, updatedEditorState, commandDescriptions } = foldAndApplyCommandsInner(
+    editorState,
+    commandsToAccumulate,
+    commands,
+    commandLifecycle,
+  )
 
   let workingEditorState = updatedEditorState
   if (statePatches.length === 0) {
@@ -234,7 +256,6 @@ export function foldAndApplyCommands(
 
   return {
     editorState: workingEditorState,
-    accumulatedPatches: mergePatches(accumulatedPatches),
     commandDescriptions: commandDescriptions,
   }
 }

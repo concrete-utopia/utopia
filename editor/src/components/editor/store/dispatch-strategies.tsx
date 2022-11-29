@@ -1,6 +1,8 @@
 import {
+  ApplicableStrategy,
   applyCanvasStrategy,
   findCanvasStrategy,
+  MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -10,6 +12,7 @@ import {
   InteractionSession,
   interactionSessionHardReset,
   isKeyboardInteractionData,
+  isNotYetStartedDragInteraction,
   KeyboardInteractionData,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -21,15 +24,21 @@ import {
   isCreateOrUpdateInteractionSession,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
-import { InnerDispatchResult } from './dispatch'
-import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
 import {
-  CanvasStrategy,
+  DerivedState,
+  deriveState,
+  EditorState,
+  EditorStoreFull,
+  EditorStoreUnpatched,
+} from './editor-state'
+import {
+  CustomStrategyState,
+  CustomStrategyStatePatch,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import { saveDOMReport } from '../actions/action-creators'
 import { last } from '../../../core/shared/array-utils'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
@@ -40,14 +49,15 @@ interface HandleStrategiesResult {
 }
 
 export function interactionFinished(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
-    newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
-    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -62,18 +72,13 @@ export function interactionFinished(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
+    const { strategy } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
-      result.strategyState,
+      result.strategyState.customStrategyState,
       result.strategyState.currentStrategy,
     )
-
-    const newStrategyState = {
-      ...withClearedSession,
-      sortedApplicableStrategies: sortedApplicableStrategies,
-    }
 
     const strategyResult =
       strategy != null
@@ -81,7 +86,8 @@ export function interactionFinished(
             strategy.strategy,
             canvasState,
             interactionSession,
-            result.strategyState,
+            result.strategyState.customStrategyState,
+            'end-interaction',
           )
         : {
             commands: [],
@@ -89,24 +95,31 @@ export function interactionFinished(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
-      result.strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
       'end-interaction',
     )
 
+    const finalEditor: EditorState = {
+      ...commandResult.editorState,
+      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+      jsxMetadata: {},
+      domMetadata: {},
+      spyMetadata: {},
+    }
+
     return {
-      unpatchedEditorState: commandResult.editorState,
-      patchedEditorState: commandResult.editorState,
-      newStrategyState: newStrategyState,
+      unpatchedEditorState: finalEditor,
+      patchedEditorState: finalEditor,
+      newStrategyState: withClearedSession,
     }
   }
 }
 
 export function interactionHardReset(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
@@ -118,7 +131,10 @@ export function interactionHardReset(
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -135,7 +151,7 @@ export function interactionHardReset(
       strategies,
       canvasState,
       resetInteractionSession,
-      resetStrategyState,
+      resetStrategyState.customStrategyState,
       resetStrategyState.currentStrategy,
     )
 
@@ -145,12 +161,12 @@ export function interactionHardReset(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        resetStrategyState,
+        resetStrategyState.customStrategyState,
+        'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        [],
         [],
         strategyResult.commands,
         'mid-interaction',
@@ -159,11 +175,14 @@ export function interactionHardReset(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: strategyResult.commands,
-        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
+        status: strategyResult.status,
         startingMetadata: resetStrategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        customStrategyState: patchCustomStrategyState(
+          result.strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
         startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
@@ -183,9 +202,9 @@ export function interactionHardReset(
 }
 
 export function interactionUpdate(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
   actionType: 'interaction-create-or-update' | 'non-interaction',
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -194,7 +213,10 @@ export function interactionUpdate(
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -206,7 +228,7 @@ export function interactionUpdate(
       strategies,
       canvasState,
       interactionSession,
-      result.strategyState,
+      result.strategyState.customStrategyState,
       result.strategyState.currentStrategy,
     )
 
@@ -255,21 +277,25 @@ export function interactionUpdate(
 }
 
 export function interactionStart(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
-    newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
-    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  if (
+    interactionSession == null ||
+    isNotYetStartedDragInteraction(interactionSession.interactionData)
+  ) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -281,7 +307,7 @@ export function interactionStart(
       strategies,
       canvasState,
       interactionSession,
-      withClearedSession,
+      withClearedSession.customStrategyState,
       result.strategyState.currentStrategy,
     )
 
@@ -291,12 +317,12 @@ export function interactionStart(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        withClearedSession,
+        withClearedSession.customStrategyState,
+        'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        [],
         [],
         strategyResult.commands,
         'mid-interaction',
@@ -306,12 +332,15 @@ export function interactionStart(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: strategyResult.commands,
-        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
-        startingMetadata: newEditorState.canvas.interactionSession.metadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
-        startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
+        status: strategyResult.status,
+        startingMetadata: newEditorState.canvas.interactionSession.latestMetadata,
+        customStrategyState: patchCustomStrategyState(
+          result.strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
+        startingAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
       }
 
       return {
@@ -331,7 +360,7 @@ export function interactionStart(
 
 export function interactionCancel(
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
     ...result.unpatchedEditor,
@@ -339,6 +368,9 @@ export function interactionCancel(
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
+    jsxMetadata: {},
+    domMetadata: {},
+    spyMetadata: {},
   }
 
   return {
@@ -355,7 +387,7 @@ function handleUserChangedStrategy(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -383,12 +415,12 @@ function handleUserChangedStrategy(
       strategy.strategy,
       canvasState,
       newEditorState.canvas.interactionSession,
-      strategyState,
+      strategyState.customStrategyState,
+      'mid-interaction',
     )
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      strategyState.accumulatedPatches,
       strategyChangedLogCommands.flatMap((c) => c.commands),
       strategyResult.commands,
       'mid-interaction',
@@ -397,11 +429,14 @@ function handleUserChangedStrategy(
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: strategyResult.commands,
-      accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: patchCustomStrategyState(
+        strategyState.customStrategyState,
+        strategyResult.customStatePatch,
+      ),
       startingAllElementProps: strategyState.startingAllElementProps,
     }
 
@@ -426,7 +461,7 @@ function handleAccumulatingKeypresses(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -458,16 +493,13 @@ function handleAccumulatingKeypresses(
               strategy.strategy,
               canvasState,
               updatedInteractionSession,
-              strategyState,
+              strategyState.customStrategyState,
+              'mid-interaction',
             )
-          : {
-              commands: [],
-              customState: strategyState.customStrategyState,
-            }
+          : strategyApplicationResult([])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
-        strategyState.accumulatedPatches,
         strategyState.currentStrategyCommands,
         strategyResult.commands,
         'mid-interaction',
@@ -476,11 +508,14 @@ function handleAccumulatingKeypresses(
         currentStrategy: strategy?.strategy.id ?? null,
         currentStrategyFitness: strategy?.fitness ?? 0,
         currentStrategyCommands: strategyResult.commands,
-        accumulatedPatches: commandResult.accumulatedPatches,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
+        status: strategyResult.status,
         startingMetadata: strategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+        customStrategyState: patchCustomStrategyState(
+          strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
         startingAllElementProps: strategyState.startingAllElementProps,
       }
 
@@ -505,7 +540,7 @@ function handleUpdate(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -519,16 +554,13 @@ function handleUpdate(
             strategy.strategy,
             canvasState,
             newEditorState.canvas.interactionSession,
-            strategyState,
+            strategyState.customStrategyState,
+            'mid-interaction',
           )
-        : {
-            commands: [],
-            customState: strategyState.customStrategyState,
-          }
+        : strategyApplicationResult([])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
       'mid-interaction',
@@ -537,11 +569,14 @@ function handleUpdate(
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: strategyResult.commands,
-      accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: patchCustomStrategyState(
+        strategyState.customStrategyState,
+        strategyResult.customStatePatch,
+      ),
       startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
@@ -559,10 +594,10 @@ function handleUpdate(
 }
 
 export function handleStrategies(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
   const MeasureDispatchTime =
@@ -581,7 +616,8 @@ export function handleStrategies(
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
     jsxMetadata:
-      patchedEditorState.canvas.interactionSession?.metadata ?? patchedEditorState.jsxMetadata,
+      patchedEditorState.canvas.interactionSession?.latestMetadata ??
+      patchedEditorState.jsxMetadata,
   }
 
   if (MeasureDispatchTime) {
@@ -628,7 +664,7 @@ function injectNewMetadataToOldEditorState(
           ...oldEditorState.canvas,
           interactionSession: {
             ...oldEditorState.canvas.interactionSession,
-            metadata: newEditorState.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
+            latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
           },
         },
       }
@@ -663,10 +699,10 @@ function injectNewMetadataToOldEditorState(
 }
 
 function handleStrategiesInner(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
 
@@ -716,5 +752,15 @@ function handleStrategiesInner(
         return interactionUpdate(strategies, storedState, result, isInteractionAction)
       }
     }
+  }
+}
+
+function patchCustomStrategyState(
+  existingState: CustomStrategyState,
+  patch: CustomStrategyStatePatch,
+): CustomStrategyState {
+  return {
+    ...existingState,
+    ...patch,
   }
 }

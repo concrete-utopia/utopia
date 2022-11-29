@@ -3,47 +3,19 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  jsxAttributeValue,
-  JSXElement,
-  jsxElement,
-  jsxElementName,
-  JSXAttributes,
-  setJSXAttributesAttribute,
-  jsxAttributesFromMap,
-} from '../../core/shared/element-template'
-import { getAllUniqueUids } from '../../core/model/element-template-utils'
-import { generateUID } from '../../core/shared/uid-utils'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  isModifiedFile,
-} from '../../core/model/project-file-utils'
+import { isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
-import {
-  isParseSuccess,
-  ProjectFileType,
-  importDetails,
-  importAlias,
-} from '../../core/shared/project-file-types'
+import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  getAllCodeEditorErrors,
-  getOpenFilename,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-} from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenFilename, GithubRepo } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
-import { dropFileExtension } from '../../core/shared/file-utils'
-import { objectMap } from '../../core/shared/object-utils'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
   Section,
   SectionBodyArea,
-  Button,
   SectionTitleRow,
   FlexRow,
   Title,
@@ -51,8 +23,16 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
-import { unless, when } from '../../utils/react-conditionals'
+import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import {
+  Conflict,
+  GithubFileChanges,
+  GithubFileStatus,
+  TreeConflicts,
+  useGithubFileChanges,
+} from '../../core/shared/github'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -66,6 +46,12 @@ export interface FileBrowserItemInfo {
   errorMessages: ErrorMessage[]
   exportedFunction: boolean
   isUploadedAssetFile: boolean
+  imageFile: ImageFile | null
+  projectContents: ProjectContentTreeRoot
+  githubStatus?: GithubFileStatus
+  conflict: Conflict | null
+  githubRepo: GithubRepo | null
+  projectID: string | null
 }
 
 export function filterErrorMessages(
@@ -84,7 +70,21 @@ function collectFileBrowserItems(
   collapsedPaths: string[],
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
+  githubChanges: GithubFileChanges | null,
+  projectID: string | null,
+  conflicts: TreeConflicts,
+  githubRepo: GithubRepo | null,
 ): FileBrowserItemInfo[] {
+  const getGithubStatus = (filename: string) => {
+    if (githubChanges?.untracked.includes(filename)) {
+      return 'untracked'
+    }
+    if (githubChanges?.modified.includes(filename)) {
+      return 'modified'
+    }
+    return undefined
+  }
+
   let fileBrowserItems: FileBrowserItemInfo[] = []
   walkContentsTree(projectContents, (fullPath, element) => {
     const originatingPath = fullPath
@@ -101,6 +101,12 @@ function collectFileBrowserItems(
         isUploadedAssetFile:
           (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE') &&
           element.base64 == undefined,
+        imageFile: element.type === 'IMAGE_FILE' ? element : null,
+        projectContents: projectContents,
+        githubStatus: getGithubStatus(fullPath),
+        githubRepo: githubRepo,
+        conflict: conflicts[fullPath] ?? null,
+        projectID: projectID,
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -122,6 +128,11 @@ function collectFileBrowserItems(
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
                 isUploadedAssetFile: false,
+                imageFile: null,
+                projectContents: projectContents,
+                githubRepo: githubRepo,
+                conflict: conflicts[fullPath] ?? null,
+                projectID: projectID,
               })
             }
           })
@@ -240,6 +251,9 @@ const FileBrowserItems = React.memo(() => {
     codeResultCache,
     renamingTarget,
     dropTarget,
+    conflicts,
+    githubRepo,
+    projectID,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -250,6 +264,9 @@ const FileBrowserItems = React.memo(() => {
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       dropTarget: store.editor.fileBrowser.dropTarget,
+      conflicts: store.editor.githubData.treeConflicts,
+      githubRepo: store.editor.githubSettings.targetRepository,
+      projectID: store.editor.id,
     }
   }, 'FileBrowserItems')
 
@@ -257,7 +274,7 @@ const FileBrowserItems = React.memo(() => {
 
   const [collapsedPaths, setCollapsedPaths] = React.useState<string[]>([])
 
-  const Expand = React.useCallback(
+  const expand = React.useCallback(
     (filePath: string) => {
       setCollapsedPaths(collapsedPaths.filter((path) => filePath !== path))
     },
@@ -281,9 +298,33 @@ const FileBrowserItems = React.memo(() => {
     }
   }, [])
 
-  const fileBrowserItems = React.useMemo(
-    () => collectFileBrowserItems(projectContents, collapsedPaths, codeResultCache, errorMessages),
-    [projectContents, collapsedPaths, codeResultCache, errorMessages],
+  const githubFileChanges = useGithubFileChanges()
+
+  const fileBrowserItems = React.useMemo(() => {
+    return collectFileBrowserItems(
+      projectContents,
+      collapsedPaths,
+      codeResultCache,
+      errorMessages,
+      githubFileChanges,
+      projectID,
+      conflicts,
+      githubRepo,
+    )
+  }, [
+    projectContents,
+    collapsedPaths,
+    codeResultCache,
+    errorMessages,
+    githubFileChanges,
+    projectID,
+    conflicts,
+    githubRepo,
+  ])
+
+  const generateNewUid = React.useCallback(
+    () => generateUidWithExistingComponents(projectContents),
+    [projectContents],
   )
 
   return (
@@ -302,11 +343,13 @@ const FileBrowserItems = React.memo(() => {
             key={`filebrowser-${index}`}
             dispatch={dispatch}
             toggleCollapse={toggleCollapse}
-            expand={Expand}
+            expand={expand}
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             errorMessages={filterErrorMessages(element.path, errorMessages)}
             dropTarget={dropTarget}
+            imageFile={element.imageFile}
+            generateNewUid={generateNewUid}
           />
         </div>
       ))}

@@ -18,6 +18,7 @@ import           Control.Lens                    hiding ((.>))
 import           Control.Monad.Catch
 import           Control.Monad.Fail
 import           Data.Aeson
+import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.Generics.Product
 import           Data.Generics.Sum
@@ -56,6 +57,8 @@ data DatabaseMetrics = DatabaseMetrics
                      , _getUserConfigurationMetrics     :: InvocationMetric
                      , _saveUserConfigurationMetrics    :: InvocationMetric
                      , _checkIfProjectIDReservedMetrics :: InvocationMetric
+                     , _updateGithubAuthenticationDetailsMetrics ::InvocationMetric
+                     , _getGithubAuthenticationDetailsMetrics :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -77,6 +80,8 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.getuserconfiguration" store
   <*> createInvocationMetric "utopia.database.saveuserconfiguration" store
   <*> createInvocationMetric "utopia.database.checkifprojectidreserved" store
+  <*> createInvocationMetric "utopia.database.updategithubauthenticationdetails" store
+  <*> createInvocationMetric "utopia.database.lookupgithubauthenticationdetails" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -344,33 +349,39 @@ getUserDetails metrics pool userId = invokeAndMeasure (_getUserDetailsMetrics me
   pure $ fmap userDetailsFromRow $ listToMaybe userDetails
 
 userConfigurationToDecodedUserConfiguration :: UserConfiguration -> IO DecodedUserConfiguration
-userConfigurationToDecodedUserConfiguration (userId, encodedShortcutConfig) = do
+userConfigurationToDecodedUserConfiguration (userId, encodedShortcutConfig, encodedTheme) = do
   let decodeShortcutConfig conf = either fail return $ eitherDecodeStrict' $ encodeUtf8 conf
   decodedShortcutConfig <- traverse decodeShortcutConfig encodedShortcutConfig
+  let decodeTheme conf = either fail return $ eitherDecodeStrict' $ encodeUtf8 conf
+  decodedTheme <- traverse decodeTheme encodedTheme
   return $ DecodedUserConfiguration
               { id = userId
               , shortcutConfig = decodedShortcutConfig
+              , theme = decodedTheme
               }
 
 getUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedUserConfiguration)
 getUserConfiguration metrics pool userId = invokeAndMeasure (_getUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
   userConf <- fmap listToMaybe $ runSelect connection $ do
-    configurationRow@(rowUserId, _) <- userConfigurationSelect
+    configurationRow@(rowUserId, _, _) <- userConfigurationSelect
     where_ $ rowUserId .== toFields userId
     pure configurationRow
   traverse userConfigurationToDecodedUserConfiguration userConf
 
-saveUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> Maybe Value -> IO ()
-saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
+saveUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> Maybe Value -> Maybe Value -> IO ()
+saveUserConfiguration metrics pool userId updatedShortcutConfig updatedTheme = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
   encodedShortcutConfig <- do
     let encoded = fmap encode updatedShortcutConfig
     either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
-  let newRecord = (toFields userId, toFields encodedShortcutConfig)
+  encodedTheme <- do
+    let encoded = fmap encode updatedTheme
+    either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
+  let newRecord = (toFields userId, toFields encodedShortcutConfig, toFields encodedTheme)
   let insertConfig = void $ insert userConfigurationTable newRecord
-  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _) -> (rowUserId, toFields encodedShortcutConfig)) (\(rowUserId, _) -> rowUserId .== toFields userId)
+  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _, _) -> (rowUserId, toFields encodedShortcutConfig, toFields encodedTheme)) (\(rowUserId, _, _) -> rowUserId .== toFields userId)
   runOpaleyeT connection $ transaction $ do
     userConf <- queryFirst $ do
-      (rowUserId, _) <- userConfigurationSelect
+      (rowUserId, _, _) <- userConfigurationSelect
       where_ $ rowUserId .== toFields userId
       pure rowUserId
     maybe insertConfig updateConfig (userConf :: Maybe Text)
@@ -384,5 +395,36 @@ checkIfProjectIDReserved metrics pool projectId = invokeAndMeasure (_checkIfProj
 
 projectContentTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentTreeRoot
 projectContentTreeFromDecodedProject decodedProject = do
-  let contentOfProject = view (field @"content") decodedProject
-  fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject
+  let possibleContentOfProject = firstOf (field @"content" . key "projectContents") decodedProject
+  case possibleContentOfProject of
+    Nothing               -> Left "No projectContents found."
+    Just contentOfProject -> do
+      case fromJSON contentOfProject of
+        Error err      -> Left $ toS err
+        Success result -> Right result
+
+updateGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> GithubAuthenticationDetails -> IO ()
+updateGithubAuthenticationDetails metrics pool GithubAuthenticationDetails{..} = invokeAndMeasure (_updateGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  let githubAuthenticationDetailsEntry = toFields (userId, accessToken, refreshToken, expiresAt)
+  void $ runDelete_ connection $ Delete
+                               { dTable = githubAuthenticationTable
+                               , dWhere = (\(rowUserId, _, _, _) -> rowUserId .=== toFields userId)
+                               , dReturning = rCount
+                               }
+  void $ runInsert_ connection $ Insert
+                               { iTable = githubAuthenticationTable
+                               , iRows = [githubAuthenticationDetailsEntry]
+                               , iReturning = rCount
+                               , iOnConflict = Nothing
+                               }
+
+githubAuthenticationDetailsFromRow :: (Text, Text, Maybe Text, Maybe UTCTime) -> GithubAuthenticationDetails
+githubAuthenticationDetailsFromRow (userId, accessToken, refreshToken, expiresAt) = GithubAuthenticationDetails{..}
+
+lookupGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe GithubAuthenticationDetails)
+lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  githubAuthenticationDetails <- runSelect connection $ do
+    githubAuthenticationDetailsRow@(rowUserId, _, _, _) <- githubAuthenticationSelect
+    where_ $ rowUserId .== toFields userId
+    pure githubAuthenticationDetailsRow
+  pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails

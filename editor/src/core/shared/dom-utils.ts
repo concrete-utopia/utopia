@@ -1,6 +1,7 @@
 import { ReactDOM } from 'react'
 import { canvasRectangle, CanvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
+import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -267,3 +268,21 @@ export function addScriptToPage(
 }
 
 export const JSX_CANVAS_LOOKUP_FUNCTION_NAME = 'utopiaCanvasJSXLookup'
+
+export function getDomRectCenter(rect: DOMRect): { x: number; y: number } {
+  return {
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+  }
+}
+
+export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' | 'block' | null {
+  // TODO global css overrides can change these defaults
+  if (inlineHtmlElements.includes(elementName)) {
+    return 'inline'
+  } else if (blockLevelHtmlElements.includes(elementName)) {
+    return 'block'
+  } else {
+    return null
+  }
+}

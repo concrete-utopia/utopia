@@ -21,7 +21,7 @@ module.exports = function (config) {
       'karma-mocha-reporter',
       require('./test/karma-custom-reporter/short-console-messages'),
     ],
-    reporters: config.debug ? ['mocha'] : ['mocha', 'utopia'],
+    reporters: config.debug ? ['mocha'] : ['mocha', 'short-console-messages'],
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -34,6 +34,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './mocha-setup-beforeall.js',
       './karma-setup.js',
       './src/**/*.spec.browser2.+(ts|tsx)',
       {

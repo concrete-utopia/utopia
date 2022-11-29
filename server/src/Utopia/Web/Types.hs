@@ -15,11 +15,14 @@ import           Data.Aeson
 import           Data.Aeson.TH
 import qualified Data.ByteString.Lazy    as BL
 import           Data.Time
+import           Network.OAuth.OAuth2
 import           Protolude
 import           Servant
 import           Servant.HTML.Blaze
 import           Servant.RawM.Server
 import qualified Text.Blaze.Html5        as H
+import           Utopia.ClientModel
+import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
@@ -78,7 +81,9 @@ type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
 type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
-type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
+type DownloadProjectResponse = Headers '[Header "Access-Control-Allow-Origin" Text] Value
+
+type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] DownloadProjectResponse
 
 type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "owner" :> Get '[JSON] ProjectOwnerResponse
 
@@ -116,7 +121,27 @@ type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Proje
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
-type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
+type DownloadGithubProjectAPI = "v1" :> "github" :> "import" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
+
+type GithubAuthenticatedAPI = "v1" :> "github" :> "authentication" :> "status" :> Get '[JSON] Bool
+
+type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "start" :> Get '[HTML] H.Html
+
+type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
+
+type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> QueryParam "branch_name" Text :> QueryParam "commit_message" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
+
+type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
+
+type GithubSaveAssetAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "asset" :> Capture "asset_sha" Text :> QueryParam' '[Required, Strict] "project_id" Text :> QueryParam' '[Required, Strict] "path" Text :> Post '[JSON] GithubSaveAssetResponse
+
+type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> QueryParam "previous_commit_sha" Text :> Get '[JSON] GetBranchContentResponse
+
+type GithubBranchPullRequestAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> "pullrequest" :> Get '[JSON] GetBranchPullRequestResponse
+
+type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
+
+type GithubUserAPI = "v1" :> "github" :> "user" :> Get '[JSON] GetGithubUserResponse
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
@@ -167,6 +192,16 @@ type Protected = LogoutAPI
             :<|> SaveProjectAssetAPI
             :<|> SaveProjectThumbnailAPI
             :<|> DownloadGithubProjectAPI
+            :<|> GithubStartAuthenticationAPI
+            :<|> GithubFinishAuthenticationAPI
+            :<|> GithubAuthenticatedAPI
+            :<|> GithubSaveAPI
+            :<|> GithubBranchesAPI
+            :<|> GithubBranchLoadAPI
+            :<|> GithubBranchPullRequestAPI
+            :<|> GithubUsersRepositoriesAPI
+            :<|> GithubSaveAssetAPI
+            :<|> GithubUserAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI
@@ -209,4 +244,5 @@ packagerLink :: Text -> Text -> Text
 packagerLink jsPackageName jsPackageVersion =
   let versionedName = jsPackageName <> "@" <> jsPackageVersion
    in toUrlPiece $ safeLink apiProxy packagerAPI versionedName
+
 

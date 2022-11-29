@@ -85,6 +85,11 @@ export type StyleLayoutProp =
   | 'marginLeft'
   | 'margin'
   | 'display'
+  | 'borderRadius'
+  | 'borderTopLeftRadius'
+  | 'borderTopRightRadius'
+  | 'borderBottomLeftRadius'
+  | 'borderBottomRightRadius'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {
@@ -133,7 +138,7 @@ export interface LayoutPropertyTypes {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
 
-  gap: number
+  gap: CSSNumber
   flexBasis: CSSNumber | undefined
 
   left: CSSNumber | undefined

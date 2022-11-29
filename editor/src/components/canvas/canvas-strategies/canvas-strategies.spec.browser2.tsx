@@ -1,42 +1,25 @@
-import { elementPath } from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { canvasPoint, Rectangle, SimpleRectangle } from '../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers } from '../../../utils/modifiers'
-import {
-  findCanvasStrategy,
-  pickCanvasStateFromEditorState,
-  RegisteredCanvasStrategies,
-} from './canvas-strategies'
-import { InteractionSession, StrategyState } from './interaction-state'
-import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act } from '@testing-library/react'
+import { elementPath } from '../../../core/shared/element-path'
+import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { selectComponents } from '../../editor/actions/action-creators'
+import CanvasActions from '../canvas-actions'
+import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { selectComponents } from '../../editor/actions/action-creators'
-import CanvasActions from '../canvas-actions'
-import { AllElementProps } from '../../editor/store/editor-state'
-
-const baseStrategyState = (
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-) =>
-  ({
-    currentStrategy: null as any, // the strategy does not use this
-    currentStrategyFitness: null as any, // the strategy does not use this
-    currentStrategyCommands: null as any, // the strategy does not use this
-    accumulatedPatches: null as any, // the strategy does not use this
-    commandDescriptions: null as any, // the strategy does not use this
-    sortedApplicableStrategies: null as any, // the strategy does not use this
-    startingMetadata: metadata,
-    startingAllElementProps: allElementProps,
-    customStrategyState: {
-      escapeHatchActivated: false,
-      lastReorderIdx: null,
-    },
-  } as StrategyState)
+import {
+  findCanvasStrategy,
+  pickCanvasStateFromEditorState,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
+import { boundingArea, InteractionSession } from './interaction-state'
+import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 interface StyleRectangle {
   left: string
@@ -111,11 +94,11 @@ async function getGuidelineRenderResult(scale: number) {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 60, y: 150 }),
       emptyModifiers,
-      { type: 'BOUNDING_AREA', target: targetElement },
+      boundingArea(),
       canvasPoint({ x: 10, y: 10 }),
     ),
-    metadata: renderResult.getEditorState().editor.jsxMetadata,
-    allElementProps: renderResult.getEditorState().editor.allElementProps,
+    latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+    latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
   }
 
   await act(async () => {
@@ -124,6 +107,25 @@ async function getGuidelineRenderResult(scale: number) {
     await dispatchDone
   })
   return renderResult
+}
+
+function startElementDragNoMouseUp(
+  renderResult: EditorRenderResult,
+  targetTestId: string,
+  dragDelta: WindowPoint,
+  modifiers: Modifiers,
+) {
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
+  const endPoint = offsetPoint(startPoint, dragDelta)
+  mouseDownAtPoint(canvasControl, startPoint, { modifiers: modifiers })
+  mouseMoveToPoint(canvasControl, endPoint, {
+    modifiers: modifiers,
+    eventOptions: { buttons: 1 },
+  })
 }
 
 describe('Strategy Fitness', () => {
@@ -155,11 +157,11 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -169,10 +171,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -206,11 +205,11 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -220,15 +219,13 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
     expect(canvasStrategy.strategy?.strategy.id).toEqual('ESCAPE_HATCH_STRATEGY')
   })
+
   it('fits Flex Reorder Strategy when dragging a flex element with siblings', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
@@ -241,6 +238,7 @@ describe('Strategy Fitness', () => {
         <div
           style={{ backgroundColor: '#0091FFAA', width: 100, height: 200 }}
           data-uid='bbb'
+          data-testid='bbb'
         />
         <div
           style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
@@ -251,38 +249,13 @@ describe('Strategy Fitness', () => {
       'await-first-dom-report',
     )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await dispatchDone
-    })
+    await renderResult.dispatch([selectComponents([targetElement], false)], false)
 
-    const interactionSession: InteractionSession = {
-      ...createMouseInteractionForTests(
-        canvasPoint({ x: 0, y: 0 }),
-        emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
-        canvasPoint({ x: 15, y: 15 }),
-      ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-    }
+    // we don't want to mouse up to avoid clearInteractionSession
+    startElementDragNoMouseUp(renderResult, 'bbb', windowPoint({ x: 15, y: 15 }), emptyModifiers)
 
-    const canvasStrategy = findCanvasStrategy(
-      RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(
-        renderResult.getEditorState().editor,
-        renderResult.getEditorState().builtInDependencies,
-      ),
-      interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
-      null,
-    )
-
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('FLEX_REORDER')
+    const canvasStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(canvasStrategy).toEqual('FLEX_REORDER')
   })
   it('fits Flex Reparent to Absolute Strategy when cmd-dragging a flex element with siblings the cursor is outside of the parent', async () => {
     const targetElement = elementPath([
@@ -298,7 +271,7 @@ describe('Strategy Fitness', () => {
           data-uid='bbb'
         />
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
+          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50, contain: 'layout' }}
           data-uid='ccc'
         />
       </div>
@@ -314,13 +287,13 @@ describe('Strategy Fitness', () => {
 
     const interactionSession: InteractionSession = {
       ...createMouseInteractionForTests(
-        canvasPoint({ x: 0, y: 0 }),
+        canvasPoint({ x: 10, y: 10 }),
         cmdModifier,
-        { type: 'BOUNDING_AREA', target: targetElement },
-        canvasPoint({ x: -15, y: -15 }),
+        boundingArea(),
+        canvasPoint({ x: -25, y: -25 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -330,10 +303,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -370,8 +340,8 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -381,10 +351,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -421,8 +388,8 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -432,10 +399,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -474,7 +438,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -485,9 +448,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -498,6 +470,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -532,7 +514,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -543,9 +524,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -556,6 +546,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -590,7 +590,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110,
@@ -601,9 +600,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 110,
+            y: 216,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60,
@@ -614,7 +622,228 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 118,
+            y: 206,
+          },
+        ],
       },
     ])
+  })
+})
+
+const projectWithNonResizableElement = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const ChildrenHider = (props) => {
+  return <div data-uid='33d' style={{ ...props.style }} />
+}
+
+export const Button = () => {
+  return (
+    <div
+      data-uid='buttondiv'
+      data-testid='buttondiv'
+      data-label='buttondiv'
+      style={{
+        width: 100,
+        height: 30,
+        backgroundColor: 'pink',
+      }}
+    >
+      BUTTON
+    </div>
+  )
+}
+
+const unmoveableColour = 'orange'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 400,
+          height: 500,
+        }}
+        data-uid='sceneroot'
+      >
+        <ChildrenHider
+          style={{
+            backgroundColor: 'teal',
+            position: 'absolute',
+            left: 150,
+            top: 200,
+            height: 50,
+            width: 50,
+          }}
+          data-uid='d75'
+        />
+        <div
+          style={{
+            backgroundColor: 'purple',
+            position: 'absolute',
+            left: 21,
+            top: 215.5,
+            width: 123,
+            height: 100,
+          }}
+          data-uid='seconddiv'
+          data-testid='seconddiv'
+          data-label='seconddiv'
+        />
+        <div
+          style={{
+            backgroundColor: unmoveableColour,
+            height: 65,
+            width: 66,
+            position: 'absolute',
+            left: 265,
+            top: 300,
+          }}
+          data-uid='notdrag'
+          data-testid='notdrag'
+          data-label='notdrag'
+        >
+          not drag
+        </div>
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            height: 111,
+            width: 140,
+            position: 'absolute',
+            left: 197,
+            top: 376,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+          data-label='dragme'
+        >
+          <Button
+            data-uid='button'
+            data-testid='button'
+            data-label='button'
+          />
+          <Button
+            data-uid='other-button'
+            data-testid='other-button'
+            data-label='other-button'
+          />
+        </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: 'grey',
+          position: 'absolute',
+          display: 'flex',
+          left: 0,
+          top: 500,
+          width: 400,
+          height: 200,
+        }}
+        data-uid='parentsibling'
+        data-testid='parentsibling'
+        data-label='parentsibling'
+      >
+        <div
+          style={{
+            backgroundColor: 'teal',
+            position: 'relative',
+            width: 109,
+            height: 123,
+          }}
+          data-uid='firstdiv'
+          data-testid='firstdiv'
+          data-label='firstdiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'green',
+            position: 'relative',
+            width: 118,
+            height: 123,
+          }}
+          data-uid='thirddiv'
+          data-testid='thirddiv'
+          data-label='thirddiv'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+describe('special case controls', () => {
+  it('non-resizable corner controls show for an element that is not resizable', async () => {
+    const targetElement = elementPath([['storyboard', 'scene', 'sceneroot', 'dragme', 'button']])
+
+    const renderResult = await renderTestEditorWithCode(
+      projectWithNonResizableElement,
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    async function checkResizableControl(
+      controlTestId: string,
+      expectedLeft: string,
+      expectedTop: string,
+    ): Promise<void> {
+      const nonResizableControl = await renderResult.renderedDOM.findByTestId(controlTestId)
+      const nonResizableControlParent = forceNotNull(
+        'Should be able to find the parent.',
+        nonResizableControl.parentElement,
+      )
+      expect(nonResizableControlParent.style.left).toEqual(expectedLeft)
+      expect(nonResizableControlParent.style.top).toEqual(expectedTop)
+    }
+
+    await checkResizableControl('non-resizable-0-0', '', '')
+    await checkResizableControl('non-resizable-1-0', '100px', '')
+    await checkResizableControl('non-resizable-0-1', '', '30px')
+    await checkResizableControl('non-resizable-1-1', '100px', '30px')
+  })
+
+  it('no non-resizable corner controls show for an element that is resizable', async () => {
+    const targetElement = elementPath([['storyboard', 'scene', 'sceneroot', 'dragme']])
+
+    const renderResult = await renderTestEditorWithCode(
+      projectWithNonResizableElement,
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    const nonResizableControl = renderResult.renderedDOM.queryByTestId('non-resizable-control')
+    expect(nonResizableControl).toEqual(null)
   })
 })

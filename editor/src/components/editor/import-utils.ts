@@ -1,8 +1,14 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
-import { TopLevelElement } from '../../core/shared/element-template'
+import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
 import {
+  isIntrinsicElement,
+  isJSXElement,
+  TopLevelElement,
+  walkElement,
+} from '../../core/shared/element-template'
+import {
+  ElementPath,
   importAlias,
   importDetails,
   Imports,
@@ -12,6 +18,8 @@ import {
 } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { withUnderlyingTarget } from './store/editor-state'
+import * as EP from '../../core/shared/element-path'
 
 interface SameFileOrigin {
   type: 'SAME_FILE_ORIGIN'
@@ -37,6 +45,87 @@ function importedOrigin(filePath: string, exportedName: string | null): Imported
     filePath: filePath,
     exportedName: exportedName,
   }
+}
+
+export function getRequiredImportsForElement(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  targetFilePath: string,
+  builtInDependencies: BuiltInDependencies,
+): Imports {
+  return withUnderlyingTarget<Imports>(
+    target,
+    projectContents,
+    nodeModules,
+    openFile,
+    emptyImports(),
+    (success, element, underlyingTarget, underlyingFilePath) => {
+      const importsInOriginFile = success.imports
+      const topLevelElementsInOriginFile = success.topLevelElements
+      const lastPathPart =
+        EP.lastElementPathForPath(underlyingTarget) ?? EP.emptyStaticElementPathPart()
+
+      let importsToAdd: Imports = emptyImports()
+      // Walk down through the elements as elements within the element being reparented might also be imported.
+      walkElement(element, lastPathPart, 0, (elem, subPath, depth) => {
+        if (isJSXElement(elem)) {
+          // Straight up ignore intrinsic elements as they wont be imported.
+          if (!isIntrinsicElement(elem.name)) {
+            const importedFromResult = importedFromWhere(
+              underlyingFilePath,
+              elem.name.baseVariable,
+              topLevelElementsInOriginFile,
+              importsInOriginFile,
+            )
+
+            if (importedFromResult != null) {
+              switch (importedFromResult.type) {
+                case 'SAME_FILE_ORIGIN':
+                  importsToAdd = mergeImports(
+                    targetFilePath,
+                    importsToAdd,
+                    getImportsFor(
+                      builtInDependencies,
+                      importsInOriginFile,
+                      projectContents,
+                      nodeModules,
+                      underlyingFilePath,
+                      elem.name.baseVariable,
+                    ),
+                  )
+                  break
+                case 'IMPORTED_ORIGIN':
+                  if (importedFromResult.exportedName != null) {
+                    importsToAdd = mergeImports(
+                      targetFilePath,
+                      importsToAdd,
+                      getImportsFor(
+                        builtInDependencies,
+                        importsInOriginFile,
+                        projectContents,
+                        nodeModules,
+                        underlyingFilePath,
+                        importedFromResult.exportedName,
+                      ),
+                    )
+                  }
+                  break
+                default:
+                  const _exhaustiveCheck: never = importedFromResult
+                  throw new Error(
+                    `Unhandled imported from result ${JSON.stringify(importedFromResult)}`,
+                  )
+              }
+            }
+          }
+        }
+      })
+
+      return importsToAdd
+    },
+  )
 }
 
 type ImportedFromWhereResult = SameFileOrigin | ImportedOrigin

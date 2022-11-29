@@ -52,7 +52,7 @@ export const CheckboxInput = React.memo(
             outline: 'none',
             margin: '5px 2px',
             boxShadow: `0 0 0 1px ${controlStyles.borderColor}`,
-            backgroundColor: controlStyles.backgroundColor,
+            backgroundColor: colorTheme.bg5.value,
             borderRadius: UtopiaTheme.inputBorderRadius,
             width: 12,
             height: 12,

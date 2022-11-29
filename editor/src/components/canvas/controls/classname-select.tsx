@@ -90,7 +90,6 @@ function formatOptionLabel(
 }
 
 const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
-  const theme = useColorTheme()
   const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom, AlwaysTrue)
   const showFooter = props.options.length > 0
   const joinedAttributes = focusedOption?.attributes?.join(', ')
@@ -106,11 +105,11 @@ const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
             css={{
               label: 'focusedElementMetadata',
               overflow: 'hidden',
-              boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
+              boxShadow: `inset 0px 1px 0px 0px ${colorTheme.inverted.bg0Opacity10.value}`,
               padding: '8px 8px',
               fontSize: '10px',
               pointerEvents: 'none',
-              color: theme.inverted.textColor.value,
+              color: colorTheme.inverted.textColor.value,
             }}
           >
             <FlexColumn>
@@ -283,7 +282,7 @@ export const ClassNameSelect = React.memo(
             height: 18,
             border: `1px solid ${theme.inverted.primary.value}`,
             borderRadius: UtopiaTheme.inputBorderRadius,
-            backgroundColor: state.isFocused
+            backgroundColor: (state.isFocused as boolean)
               ? theme.inverted.primary.value
               : theme.inverted.bg1.value,
           }
@@ -338,7 +337,7 @@ export const ClassNameSelect = React.memo(
             paddingRight: 8,
             backgroundColor: optionColors.backgroundColor,
             color: optionColors.color,
-            cursor: isDisabled ? 'not-allowed' : 'default',
+            cursor: (isDisabled as boolean) ? 'not-allowed' : 'default',
 
             ':active': {
               ...(styles as any)[':active'],

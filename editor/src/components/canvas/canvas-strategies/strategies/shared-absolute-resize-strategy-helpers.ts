@@ -1,0 +1,212 @@
+import { isHorizontalPoint } from 'utopia-api/core'
+import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { isRight, right } from '../../../../core/shared/either'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
+import {
+  canvasPoint,
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  pointDifference,
+} from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { AllElementProps } from '../../../editor/store/editor-state'
+import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import { pickPointOnRect, snapPoint } from '../../canvas-utils'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../../commands/adjust-css-length-command'
+import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
+
+export function createResizeCommands(
+  element: JSXElement,
+  selectedElement: ElementPath,
+  edgePosition: EdgePosition,
+  drag: CanvasVector,
+  elementGlobalFrame: CanvasRectangle | null,
+  elementParentBounds: CanvasRectangle | null,
+): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
+  const pins = pinsForEdgePosition(edgePosition)
+  const commands = mapDropNulls((pin) => {
+    const horizontal = isHorizontalPoint(
+      // TODO avoid using the loaded FramePoint enum
+      framePointForPinnedProp(pin),
+    )
+    const negative =
+      pin === 'right' ||
+      pin === 'bottom' ||
+      (pin === 'width' && edgePosition.x === 0) ||
+      (pin === 'height' && edgePosition.y === 0)
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    if (isRight(value) && value.value != null) {
+      // TODO what to do about missing properties?
+      return adjustCssLengthProperty(
+        'always',
+        selectedElement,
+        stylePropPathMappingFn(pin, ['style']),
+        (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        true,
+      )
+    } else {
+      return null
+    }
+  }, pins)
+
+  const intendedBounds: CanvasFrameAndTarget | null =
+    elementGlobalFrame == null
+      ? null
+      : {
+          frame: resizeBoundingBox(
+            elementGlobalFrame,
+            drag,
+            edgePosition,
+            null,
+            'non-center-based',
+          ),
+          target: selectedElement,
+        }
+  return { commands, intendedBounds }
+}
+
+function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
+  let horizontalPins: AbsolutePin[] = []
+  let verticalPins: AbsolutePin[] = []
+
+  if (edgePosition.x === 0) {
+    horizontalPins = ['left', 'width']
+  } else if (edgePosition.x === 1) {
+    horizontalPins = ['right', 'width']
+  }
+
+  if (edgePosition.y === 0) {
+    verticalPins = ['top', 'height']
+  } else if (edgePosition.y === 1) {
+    verticalPins = ['bottom', 'height']
+  }
+
+  return [...horizontalPins, ...verticalPins]
+}
+
+export function runLegacyAbsoluteResizeSnapping(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  draggedCorner: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  canvasScale: number,
+  lockedAspectRatio: number | null,
+  centerBased: IsCenterBased,
+  allElementProps: AllElementProps,
+): {
+  snapDelta: CanvasVector
+  snappedBoundingBox: CanvasRectangle
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
+} {
+  const oppositeCorner: EdgePosition = {
+    x: 1 - draggedCorner.x,
+    y: 1 - draggedCorner.y,
+  } as EdgePosition
+
+  const draggedPointMovedWithoutSnap = pickPointOnRect(resizedBounds, draggedCorner)
+  const oppositePoint =
+    lockedAspectRatio == null
+      ? pickPointOnRect(resizedBounds, oppositeCorner)
+      : getPointOnDiagonal(draggedCorner, draggedPointMovedWithoutSnap, lockedAspectRatio)
+
+  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
+    selectedElements,
+    jsxMetadata,
+    canvasScale,
+    draggedPointMovedWithoutSnap,
+    true,
+    lockedAspectRatio != null,
+    draggedPointMovedWithoutSnap,
+    oppositePoint,
+    draggedCorner,
+    allElementProps,
+  )
+
+  const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
+  const snappedBounds = resizeBoundingBox(
+    resizedBounds,
+    snapDelta,
+    draggedCorner,
+    lockedAspectRatio,
+    centerBased,
+  )
+
+  const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+    guidelinesWithSnappingVector,
+    snappedBounds,
+  )
+
+  return {
+    snapDelta: snapDelta,
+    snappedBoundingBox: snappedBounds,
+    guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
+  }
+}
+
+// returns a point on the diagonal of a rectangle, using a given corner and the aspect ratio of the rectangle, in the direction towards the inside of the rectangle
+// from the center of the sides it returns a point on the orthogonal line from the side center
+function getPointOnDiagonal(
+  edgePosition: EdgePosition,
+  cornerPoint: CanvasPoint,
+  aspectRatio: number,
+) {
+  if (edgePosition.x === 0 && edgePosition.y === 0) {
+    return canvasPoint({
+      x: cornerPoint.x + 100 * aspectRatio,
+      y: cornerPoint.y + 100,
+    })
+  }
+  if (edgePosition.x === 0 && edgePosition.y === 1) {
+    return canvasPoint({
+      x: cornerPoint.x + 100 * aspectRatio,
+      y: cornerPoint.y - 100,
+    })
+  }
+  if (edgePosition.x === 1 && edgePosition.y === 1) {
+    return canvasPoint({
+      x: cornerPoint.x - 100 * aspectRatio,
+      y: cornerPoint.y - 100,
+    })
+  }
+  if (edgePosition.x === 1 && edgePosition.y === 0) {
+    return canvasPoint({
+      x: cornerPoint.x - 100 * aspectRatio,
+      y: cornerPoint.y + 100,
+    })
+  }
+  if (edgePosition.x === 0.5 && edgePosition.y === 0) {
+    return canvasPoint({
+      x: cornerPoint.x,
+      y: cornerPoint.y + 100,
+    })
+  }
+  if (edgePosition.x === 0.5 && edgePosition.y === 1) {
+    return canvasPoint({
+      x: cornerPoint.x,
+      y: cornerPoint.y - 100,
+    })
+  }
+  if (edgePosition.x === 0 && edgePosition.y === 0.5) {
+    return canvasPoint({
+      x: cornerPoint.x + 100,
+      y: cornerPoint.y,
+    })
+  }
+  if (edgePosition.x === 1 && edgePosition.y === 0.5) {
+    return canvasPoint({
+      x: cornerPoint.x + 100,
+      y: cornerPoint.y,
+    })
+  }
+  throw new Error(`Edge position ${edgePosition} is not a corner position`)
+}

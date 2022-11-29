@@ -1,9 +1,9 @@
 /// <reference types="karma-viewport" />
-import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
-import { canvasPoint } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  EditorRenderResult,
+  getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -13,168 +13,43 @@ import {
 import {
   selectComponents,
   setCursorOverlay,
-  setFocusedElement,
+  toggleSelectionLock,
 } from '../../../editor/actions/action-creators'
-import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { SceneLabelTestID } from './scene-label'
 import { CSSCursor } from '../../../../uuiui-deps'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  mouseDownAtPoint,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
+import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
 
 function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
-  fireEvent(
-    target,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      clientX: clientX,
-      clientY: clientY,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mousedown', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mouseup', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('click', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
+  mouseMoveToPoint(target, { x: clientX, y: clientY })
+  mouseClickAtPoint(target, { x: clientX, y: clientY })
 }
 
-function createDoubleClicker(): (target: HTMLElement, clientX: number, clientY: number) => void {
+function createDoubleClicker(target: HTMLElement, clientX: number, clientY: number): () => void {
   let clickCount = 0
 
-  return (target: HTMLElement, clientX: number, clientY: number) => {
-    fireEvent(
+  return () => {
+    mouseMoveToPoint(target, { x: clientX, y: clientY })
+    mouseDoubleClickAtPoint(
       target,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        clientX: clientX,
-        clientY: clientY,
-      }),
+      { x: clientX, y: clientY },
+      {
+        initialClickCount: clickCount,
+      },
     )
-    fireEvent(
-      target,
-      new MouseEvent('mousedown', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mouseup', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('click', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mousedown', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mouseup', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('click', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('dblclick', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-
     clickCount += 2
   }
 }
 
 describe('Select Mode Selection', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('keep double clicking on a children eventually selects it – even if it is out of bounds of the parents', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -250,53 +125,47 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      areaControlBounds.left + 20,
+      areaControlBounds.top + 20,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          areaControlBounds.left + 20,
-          areaControlBounds.top + 20,
-        )
-      })
-    }
-
-    await doubleClick()
+    doubleClick()
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
     ])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews3).toEqual([EP.appendNewElementPath(TestScenePath, ['a'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews4).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews5).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews6).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews7 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews7).toEqual([
       EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e']),
     ])
 
-    await doubleClick()
+    doubleClick()
 
     // after 8 "double clicks", the `targetdiv` div should be selected
     const selectedViews8 = renderResult.getEditorState().editor.selectedViews
@@ -340,9 +209,7 @@ describe('Select Mode Selection', () => {
     const sceneLabel = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
     const sceneLabelBounds = sceneLabel.getBoundingClientRect()
 
-    await act(async () => {
-      fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
-    })
+    fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
@@ -370,15 +237,11 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    await act(async () => {
-      fireDoubleClickEvents(
-        canvasControlsLayer,
-        areaControlBounds.left + 20,
-        areaControlBounds.top + 20,
-      )
-    })
+    createDoubleClicker(
+      canvasControlsLayer,
+      areaControlBounds.left + 20,
+      areaControlBounds.top + 20,
+    )()
 
     const selectedViews = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews).toEqual([EP.appendNewElementPath(appElementPath, [targetElementUid])])
@@ -386,10 +249,6 @@ describe('Select Mode Selection', () => {
 })
 
 describe('Select Mode Advanced Cases', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('Can cmd-click to select Button on a Card Scene Root', async () => {
     const renderResult = await renderTestEditorWithCode(
       TestProjectAlpineClimb,
@@ -401,20 +260,14 @@ describe('Select Mode Advanced Cases', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await act(async () => {
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: true,
-          clientX: cardSceneRootBounds.left + 130,
-          clientY: cardSceneRootBounds.top + 220,
-          buttons: 1,
-        }),
-      )
-    })
+    mouseClickAtPoint(
+      canvasControlsLayer,
+      {
+        x: cardSceneRootBounds.left + 130,
+        y: cardSceneRootBounds.top + 220,
+      },
+      { modifiers: cmdModifier },
+    )
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
@@ -429,10 +282,6 @@ describe('Select Mode Double Clicking', () => {
   // Each double click should _either_ select the next element down the hierarchy, _or_ focus
   // the currently selected element. Also, we specifically skip over Scenes, meaning a single
   // double click with nothing selected will select the first child of a Scene
-
-  before(() => {
-    viewport.set(2200, 1000)
-  })
 
   it('One double clicks to select Card Instance', async () => {
     // prettier-ignore
@@ -452,19 +301,13 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -488,20 +331,14 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -527,22 +364,16 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -569,24 +400,18 @@ describe('Select Mode Double Clicking', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -615,26 +440,20 @@ describe('Select Mode Double Clicking', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -645,10 +464,6 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // they use a test project which contain components which renders fragment root
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
-
-  before(() => {
-    viewport.set(2200, 1000)
-  })
 
   it('One double clicks to select Card Instance', async () => {
     // prettier-ignore
@@ -668,19 +483,13 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -704,20 +513,14 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -743,22 +546,16 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -784,23 +581,17 @@ describe('Select Mode Double Clicking With Fragments', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -828,27 +619,330 @@ describe('Select Mode Double Clicking With Fragments', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
-
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+})
+
+describe('Selection with locked elements', () => {
+  it('Double click selection skips locked elements', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // <- First double click
+      ':Card-Root' +        // <- Second double click, as the instance is automatically focused by the scene
+      '/Card-Row-Buttons' + // <- Locked element is skipped
+      '/Card-Button-3',     // <- Third double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
+    )
+
+    // Lock element
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          [EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons')],
+          'locked',
+        ),
+      ],
+      true,
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    doubleClick()
+    doubleClick()
+    doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+  it('Double click selection stops when reaching hierarchy locked elements', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // <- First double click
+      ':Card-Root'          // <- Second double click, as the instance is automatically focused by the scene
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
+    )
+
+    // Lock element
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          [EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons')],
+          'locked-hierarchy',
+        ),
+      ],
+      true,
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+})
+
+describe('mouseup selection', () => {
+  const MouseupTestProject = makeTestProjectCodeWithSnippet(`
+    <div
+      style={{ width: '100%', height: '100%' }}
+      data-uid='app-root'
+    >
+      <div
+        data-uid='red'
+        data-testid='red'
+        style={{
+          position: 'absolute',
+          left: 0,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'red',
+        }}
+      />
+      <div
+        data-uid='blue'
+        data-testid='blue'
+        style={{
+          position: 'absolute',
+          left: 75,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'blue',
+        }}
+      />
+      <div
+        data-uid='green'
+        data-testid='green'
+        style={{
+          position: 'absolute',
+          left: 150,
+          width: 50,
+          top: 0,
+          height: 50,
+          backgroundColor: 'green',
+        }}
+      />
+    </div>
+  `)
+
+  const RedPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'red'],
+  ])
+  const BluePath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'blue'],
+  ])
+  const GreenPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'green'],
+  ])
+
+  async function getElementRect(testId: string, renderResult: EditorRenderResult) {
+    const targetElement = await renderResult.renderedDOM.findByTestId(testId)
+    return targetElement.getBoundingClientRect()
+  }
+
+  function getDOMRectCentre(domRect: DOMRect) {
+    return {
+      x: domRect.x + domRect.width / 2,
+      y: domRect.y + domRect.height / 2,
+    }
+  }
+
+  async function getElementCentre(testId: string, renderResult: EditorRenderResult) {
+    const elementRect = await getElementRect(testId, renderResult)
+    return getDOMRectCentre(elementRect)
+  }
+
+  it('mouseup in the gap between a multi-selection will select the element behind if no drag happens', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+    const greenCentre = await getElementCentre('green', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    mouseClickAtPoint(canvasControlsLayer, greenCentre, { modifiers: shiftCmdModifier })
+
+    // Check we have multi-selected the red and green elements
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // mousedown over the blue element to check that doesn't select it, as it is within the multiselect bounds
+    mouseMoveToPoint(canvasControlsLayer, blueCentre)
+    mouseDownAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // now mouseup over that blue element to check that it _does_ select it
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([BluePath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  it('mouseup in the gap between a multi-selection will not select the element behind if a drag happens', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+    const greenCentre = await getElementCentre('green', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    mouseClickAtPoint(canvasControlsLayer, greenCentre, { modifiers: shiftCmdModifier })
+
+    // Check we have multi-selected the red and green elements
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // mousedown over the blue element to check that doesn't select it, as it is within the multiselect bounds
+    mouseMoveToPoint(canvasControlsLayer, blueCentre)
+    mouseDownAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // trigger enough of a drag to surpass the dragging threshold, but move the element back
+    mouseMoveToPoint(canvasControlsLayer, redCentre, { eventOptions: { buttons: 1 } })
+    mouseMoveToPoint(canvasControlsLayer, blueCentre, { eventOptions: { buttons: 1 } })
+
+    // now mouseup over that blue element to check that the selection doesn't change
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath, GreenPath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  it('mouseup does not change selection after a cancelled interaction', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redCentre = await getElementCentre('red', renderResult)
+    const blueCentre = await getElementCentre('blue', renderResult)
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Drag the red element directly over the blue element
+    mouseDownAtPoint(canvasControlsLayer, redCentre)
+    mouseMoveToPoint(canvasControlsLayer, blueCentre, { eventOptions: { buttons: 1 } })
+
+    // Cancel the interaction, then mouseup and check that the selection wasn't changed
+    pressKey('Escape')
+    mouseUpAtPoint(canvasControlsLayer, blueCentre)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+  })
+
+  xit('clicking on the catchment area of a control but over another element does not change the selection', async () => {
+    // FIXME for some reason the absolute resize controls don't capture the mousedown event here
+    // even though they definitely should
+    const renderResult = await renderTestEditorWithCode(
+      MouseupTestProject,
+      'await-first-dom-report',
+      [],
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const redElementRect = await getElementRect('red', renderResult)
+    const redCentre = getDOMRectCentre(redElementRect)
+
+    // Far enough to the left to be outside of the element, but still inside the resize control
+    // catchment area
+    const justToTheLeftOfRedElement = {
+      x: redElementRect.x - 2,
+      y: redElementRect.y + redElementRect.height / 2,
+    }
+
+    // Miles away
+    const farToTheLeftOfRedElement = {
+      x: redElementRect.x - 200,
+      y: redElementRect.y + redElementRect.height / 2,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Click just to the left of the red element
+    mouseMoveToPoint(canvasControlsLayer, justToTheLeftOfRedElement)
+    mouseClickAtPoint(canvasControlsLayer, justToTheLeftOfRedElement)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+    // Just to be sure, if we move further left it clears the selection
+    mouseMoveToPoint(canvasControlsLayer, farToTheLeftOfRedElement)
+    mouseClickAtPoint(canvasControlsLayer, farToTheLeftOfRedElement)
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([])
+
+    // Check nothing has changed in the project
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
   })
 })
 

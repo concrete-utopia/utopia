@@ -1,9 +1,3 @@
-#canvas-root {
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
 .canvas-text.canvas-text-editable,
 .canvas-text.canvas-text-editable * {
   user-select: text;

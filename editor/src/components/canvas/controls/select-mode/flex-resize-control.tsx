@@ -248,11 +248,11 @@ const DimensionableControlVertical = React.memo(() => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'relative',
-        backgroundColor: colorTheme.primary.shade(10).value,
+        backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: 5 / scale,
         boxShadow: `0px 0px 0px ${0.3 / scale}px ${colorTheme.primary.value}, 0px ${1 / scale}px ${
           3 / scale
-        }px rgba(140,140,140,.9)`,
+        }px ${colorTheme.canvasControlsDimensionableControlShadow.value}`,
         height: controlLength / scale,
         width: controlWidth / scale,
         left: -1 / scale,
@@ -277,11 +277,11 @@ const DimensionableControlHorizontal = React.memo(() => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'relative',
-        backgroundColor: colorTheme.primary.shade(10).value,
+        backgroundColor: colorTheme.canvasElementBackground.value,
         borderRadius: 5 / scale,
         boxShadow: `0px 0px 0px ${0.3 / scale}px ${colorTheme.primary.value}, 0px ${1 / scale}px ${
           3 / scale
-        }px rgba(140,140,140,.9)`,
+        }px ${colorTheme.canvasControlsDimensionableControlShadow.value}`,
         height: controlLength / scale,
         width: controlWidth / scale,
         left: -controlOffset / scale,

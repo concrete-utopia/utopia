@@ -14,12 +14,20 @@ import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './st
 import { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
 import JSZip from 'jszip'
-import { addFileToProjectContents, AssetFileWithFileName, walkContentsTree } from '../assets'
+import { AssetFileWithFileName, inferGitBlobChecksum } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
-import { setLoginState, showToast, removeToast } from './actions/action-creators'
+import {
+  setLoginState,
+  showToast,
+  removeToast,
+  setUserConfiguration,
+  setGithubState,
+} from './actions/action-creators'
 import { getFileExtension } from '../../core/shared/file-utils'
+import { isAuthenticatedWithGithub } from '../../utils/github-auth'
+import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -225,7 +233,7 @@ async function saveAssetRequest(
   fileType: string,
   base64: string,
   fileName: string,
-): Promise<void> {
+): Promise<string> {
   const mimeStrippedBase64 = getMimeStrippedBase64(base64)
   const asset = Buffer.from(mimeStrippedBase64, 'base64')
   const url = assetURL(projectId, fileName)
@@ -238,7 +246,7 @@ async function saveAssetRequest(
     body: asset,
   })
   if (response.ok) {
-    return
+    return inferGitBlobChecksum(asset)
   } else {
     throw new Error(`Save asset request failed (${response.status}): ${response.statusText}`)
   }
@@ -249,13 +257,13 @@ export async function saveAsset(
   fileType: string,
   base64: string,
   imageId: string,
-): Promise<void> {
+): Promise<string | null> {
   try {
-    return saveAssetRequest(projectId, fileType, base64, imageId)
+    return await saveAssetRequest(projectId, fileType, base64, imageId)
   } catch (e) {
     // FIXME Client should show an error if server requests fail
     console.error(e)
-    return
+    return null
   }
 }
 
@@ -273,12 +281,14 @@ export function assetToSave(fileType: string, base64: string, fileName: string):
   }
 }
 
-export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
+export async function saveAssets(
+  projectId: string,
+  assets: Array<AssetToSave>,
+): Promise<Array<string | null>> {
   const promises = assets.map((asset) =>
     saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
   )
-  await Promise.all(promises)
-  return
+  return await Promise.all(promises)
 }
 
 export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promise<void> {
@@ -349,7 +359,7 @@ export async function downloadGithubRepo(
   owner: string,
   repo: string,
 ): Promise<ServerResponse<JSZip>> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'import', owner, repo)
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -377,7 +387,32 @@ export function startPollingLoginState(
   setInterval(async () => {
     const loginState = await getLoginState('no-cache')
     if (previousLoginState.type !== loginState.type) {
+      if (isLoggedIn(loginState)) {
+        // Fetch the user configuration
+        void getUserConfiguration(loginState).then((userConfig) =>
+          dispatch([setUserConfiguration(userConfig)]),
+        )
+
+        // Fetch the github auth status
+        void updateUserDetailsWhenAuthenticated(
+          dispatch,
+          isAuthenticatedWithGithub(loginState),
+        ).then((authenticatedWithGithub) =>
+          dispatch([
+            setGithubState({
+              authenticated: authenticatedWithGithub,
+            }),
+          ]),
+        )
+
+        if (isLoginLost(previousLoginState)) {
+          // Login was lost and subsequently regained so remove the persistent toast.
+          dispatch([removeToast(loginLostNoticeID)])
+        }
+      }
+
       dispatch([setLoginState(loginState)])
+
       if (isLoginLost(loginState)) {
         dispatch([
           showToast(
@@ -389,13 +424,6 @@ export function startPollingLoginState(
             ),
           ),
         ])
-      }
-
-      if (isLoggedIn(loginState)) {
-        if (isLoginLost(previousLoginState)) {
-          // Login was lost and subsequently regained so remove the persistent toast.
-          dispatch([removeToast(loginLostNoticeID)])
-        }
       }
     }
     previousLoginState = loginState

@@ -19,7 +19,13 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, isRight, left } from '../../core/shared/either'
+import {
+  applicative4Either,
+  defaultEither,
+  isRight,
+  left,
+  eitherToMaybe,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -40,6 +46,8 @@ import {
   CSSPosition,
   positionValues,
   computedStyleKeys,
+  parseDirection,
+  parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -59,7 +67,6 @@ import {
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
   EditorState,
@@ -77,10 +84,10 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
     return 'none'
   }
   if (computedStyle.display != null) {
-    if (computedStyle.display === 'flex') {
+    if (computedStyle.display.includes('flex')) {
       return 'flex'
     }
-    if (computedStyle.display === 'grid') {
+    if (computedStyle.display.includes('grid')) {
       return 'grid'
     }
   }
@@ -123,7 +130,13 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   if (computedStyle.filter != null && computedStyle.filter !== 'none') {
     return true
   }
-  if (computedStyle.contain === 'paint') {
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/contain
+  if (
+    computedStyle.contain.includes('layout') ||
+    computedStyle.contain.includes('paint') ||
+    computedStyle.contain.includes('strict') ||
+    computedStyle.contain.includes('content')
+  ) {
     return true
   }
   return false
@@ -843,8 +856,11 @@ function getSpecialMeasurements(
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
-  const parentFlexDirection = parentElementStyle?.flexDirection ?? null
-  const flexDirection = elementStyle.flexDirection ?? null
+  const parentFlexDirection = eitherToMaybe(
+    parseFlexDirection(parentElementStyle?.flexDirection, null),
+  )
+  const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
+  const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -885,13 +901,42 @@ function getSpecialMeasurements(
     left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
   }
 
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const offsetParent = element.offsetParent as HTMLElement | null
+  const elementOrContainingParent =
+    providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
+
+  const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
   const globalContentBox = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
     width: globalFrame.width - border.left - border.right,
     height: globalFrame.height - border.top - border.bottom,
   })
+
+  function positionValueIsDefault(value: string) {
+    return value === 'auto' || value === '0px'
+  }
+
+  const hasPositionOffset =
+    !positionValueIsDefault(elementStyle.top) ||
+    !positionValueIsDefault(elementStyle.right) ||
+    !positionValueIsDefault(elementStyle.bottom) ||
+    !positionValueIsDefault(elementStyle.left)
+  const hasTransform = elementStyle.transform !== 'none'
+
+  const flexGapValue = parseCSSLength(parentElementStyle?.gap)
+  const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
+
+  const borderRadius = defaultEither(
+    null,
+    applicative4Either(
+      applicativeSidesPxTransform,
+      parseCSSLength(elementStyle.borderTopLeftRadius),
+      parseCSSLength(elementStyle.borderTopRightRadius),
+      parseCSSLength(elementStyle.borderBottomLeftRadius),
+      parseCSSLength(elementStyle.borderBottomRightRadius),
+    ),
+  )
 
   return specialSizeMeasurements(
     offset,
@@ -912,10 +957,16 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parsedFlexGapValue,
     flexDirection,
     element.localName,
     childrenCount,
     globalContentBox,
+    elementStyle.float,
+    hasPositionOffset,
+    parentTextDirection,
+    hasTransform,
+    borderRadius,
   )
 }
 
@@ -991,8 +1042,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
-      { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
+      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,

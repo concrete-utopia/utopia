@@ -208,6 +208,33 @@ export function before(index: number): Before {
 
 export type IndexPosition = Front | Back | Absolute | After | Before
 
+export function shiftIndexPositionForRemovedElement(
+  indexPosition: IndexPosition,
+  removedElementIndex: number,
+): IndexPosition {
+  switch (indexPosition.type) {
+    case 'front':
+    case 'back':
+    case 'absolute':
+      return indexPosition
+    case 'before':
+      if (removedElementIndex < indexPosition.index) {
+        return before(indexPosition.index - 1)
+      } else {
+        return indexPosition
+      }
+    case 'after':
+      if (removedElementIndex < indexPosition.index) {
+        return after(indexPosition.index - 1)
+      } else {
+        return indexPosition
+      }
+    default:
+      const _exhaustiveCheck: never = indexPosition
+      throw new Error(`Unhandled index position ${JSON.stringify(indexPosition)}`)
+  }
+}
+
 export type Axis = 'x' | 'y'
 
 export type DiagonalAxis = 'TopLeftToBottomRight' | 'BottomLeftToTopRight'
@@ -849,7 +876,7 @@ function update<T>(index: number, newValue: T, array: Array<T>): Array<T> {
   return result
 }
 
-function defer<T>(): Promise<T> & {
+export function defer<T>(): Promise<T> & {
   resolve: (value?: T) => void
   reject: (reason?: any) => void
 } {
@@ -859,7 +886,9 @@ function defer<T>(): Promise<T> & {
     res = resolve
     rej = reject
   })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'resolve', { value: res })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'reject', { value: rej })
 
   return promise as any
@@ -891,6 +920,19 @@ export function isOptionsType<T extends OptionTypeBase>(
   value: ValueType<T>,
 ): value is OptionsType<T> {
   return Array.isArray(value)
+}
+
+function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
+  const seen = new Set<string>()
+  const results: Array<T> = []
+  for (const t of ts) {
+    const k = key(t)
+    if (!seen.has(k)) {
+      results.push(t)
+      seen.add(k)
+    }
+  }
+  return results
 }
 
 export default {
@@ -1053,4 +1095,5 @@ export default {
   processErrorWithSourceMap: processErrorWithSourceMap,
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
+  deduplicateBy: deduplicateBy,
 }

@@ -28,6 +28,7 @@ import {
   alignSelectedViews,
   distributeSelectedViews,
   setAspectRatioLock,
+  setProperty,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
@@ -35,15 +36,12 @@ import {
 
 import {
   EditorStorePatched,
+  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import {
-  EditorStateContext,
-  InspectorStateContext,
-  useEditorState,
-} from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -87,6 +85,7 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
+import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 
 export interface ElementPathElement {
   name?: string
@@ -232,8 +231,11 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
-export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
-  return !isStrategyActive(strategyState)
+export function shouldInspectorUpdate(
+  strategyState: StrategyState,
+  elementsToRerender: ElementsToRerender,
+): boolean {
+  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
@@ -312,9 +314,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const toggleAspectRatioLock = React.useCallback(() => {
-    const actions = selectedViews.map((path) => {
-      return setAspectRatioLock(path, !aspectRatioLocked)
-    })
+    const actions: EditorAction[] = selectedViews.map((path) =>
+      setAspectRatioLock(path, !aspectRatioLocked),
+    )
     dispatch(actions, 'everyone')
   }, [dispatch, selectedViews, aspectRatioLocked])
 
@@ -382,13 +384,10 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
-    const inspectorStore = React.useContext(InspectorStateContext)?.useStore
     return (
-      <EditorStateContext.Provider
-        value={inspectorStore == null ? null : { api: inspectorStore, useStore: inspectorStore }}
-      >
+      <LowPriorityStoreProvider>
         <MultiselectInspector />
-      </EditorStateContext.Provider>
+      </LowPriorityStoreProvider>
     )
   })
 
@@ -646,7 +645,9 @@ export const InspectorContextProvider = React.memo<{
           return setProp_UNSAFE(elem, path, newValue)
         }),
       ]
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
@@ -665,15 +666,53 @@ export const InspectorContextProvider = React.memo<{
         }
       })
 
-      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
+      const actions: EditorAction[] = transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
   )
 
+  const collectActionsToSubmitValue = React.useCallback(
+    (newValue: JSXAttribute, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+      const actionsArray = [
+        ...refElementsToTargetForUpdates.current.map((elem) => {
+          return setProp_UNSAFE(elem, path, newValue)
+        }),
+      ]
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
+  const collectActionsToUnsetValue = React.useCallback(
+    (property: PropertyPath | Array<PropertyPath>, transient: boolean): Array<EditorAction> => {
+      let actionsArray: Array<EditorAction> = []
+      Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
+        if (Array.isArray(property)) {
+          Utils.fastForEach(property, (p) => {
+            actionsArray.push(unsetProperty(elem, p))
+          })
+        } else {
+          actionsArray.push(unsetProperty(elem, property))
+        }
+      })
+
+      return transient
+        ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
+        : actionsArray
+    },
+    [refElementsToTargetForUpdates],
+  )
+
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
     onSubmitValue: onSubmitValueForHooks,
     onUnsetValue: onUnsetValue,
+    collectActionsToSubmitValue: collectActionsToSubmitValue,
+    collectActionsToUnsetValue: collectActionsToUnsetValue,
     selectedViewsRef: selectedViewsRef,
   })
 

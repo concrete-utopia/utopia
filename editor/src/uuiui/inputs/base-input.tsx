@@ -2,7 +2,7 @@ import type { CSSObject } from '@emotion/styled'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
 import { ControlStyles, ControlStatus } from '../../uuiui-deps'
-import { UtopiaTheme } from '../styles/theme'
+import { colorTheme, UtopiaTheme } from '../styles/theme'
 import React from 'react'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
@@ -26,8 +26,8 @@ function getChainedBoxShadow(
   hovered: boolean,
 ) {
   const controlStatusEdges = getChainSegmentEdge(controlStyles)
-  const hoveredBoxShadow = `0 0 0 1px hsl(0,0%,83%) inset`
-  const focusedBoxShadow = `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value} inset`
+  const hoveredBoxShadow = `0 0 0 1px ${colorTheme.inspectorHoverColor.value} inset`
+  const focusedBoxShadow = `0 0 0 1px ${colorTheme.inspectorFocusedColor.value} inset`
 
   const standardBoxShadow = {
     boxShadow: focused

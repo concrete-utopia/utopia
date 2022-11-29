@@ -6,7 +6,6 @@ import {
   TextFile,
   AssetFile,
   ParseSuccess,
-  isParsedTextFile,
   isTextFile,
   isParseSuccess,
   isAssetFile,
@@ -17,6 +16,9 @@ import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
+import { sha1 } from 'sha.js'
+import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
+import { FileChecksums } from './editor/store/editor-state'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -38,6 +40,102 @@ export function getAllProjectAssetFiles(
   })
 
   return allProjectAssets
+}
+
+function getSHA1Checksum(contents: string | Buffer): string {
+  return new sha1().update(contents).digest('hex')
+}
+
+export function inferGitBlobChecksum(buffer: Buffer): string {
+  // This function returns the same SHA1 checksum string that git would return for the same contents.
+  // Given the contents in the buffer variable, the final checksum is calculated by hashing
+  // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
+  // Ref: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+  const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
+  const wrapped = Buffer.concat([prefix, buffer])
+  return getSHA1Checksum(wrapped)
+}
+
+export function getProjectContentsChecksums(
+  tree: ProjectContentTreeRoot,
+  assetChecksums: FileChecksums,
+): FileChecksums {
+  const contents = treeToContents(tree)
+
+  const checksums: FileChecksums = {}
+  Object.keys(contents).forEach((filename) => {
+    const file = contents[filename]
+    if (file == null) {
+      return
+    }
+
+    switch (file.type) {
+      case 'TEXT_FILE':
+        checksums[filename] = getSHA1Checksum(file.fileContents.code)
+        break
+      case 'ASSET_FILE':
+      case 'IMAGE_FILE':
+        if (file.gitBlobSha != null) {
+          checksums[filename] = file.gitBlobSha
+        } else if (file.base64 != undefined) {
+          checksums[filename] = getSHA1Checksum(file.base64)
+        } else if (Object.keys(assetChecksums).includes(filename)) {
+          checksums[filename] = assetChecksums[filename]
+        }
+        break
+      case 'DIRECTORY':
+        break
+      default:
+        const _exhaustiveCheck: never = file
+        throw new Error(`Invalid file type`)
+    }
+  })
+
+  return checksums
+}
+
+export function deriveGithubFileChanges(
+  projectChecksums: FileChecksums,
+  githubChecksums: FileChecksums | null,
+  treeConflicts: TreeConflicts,
+): GithubFileChanges | null {
+  if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {
+    return null
+  }
+
+  const projectFiles = new Set(Object.keys(projectChecksums))
+  const githubFiles = new Set(Object.keys(githubChecksums))
+
+  let untracked: Array<string> = []
+  let modified: Array<string> = []
+  let deleted: Array<string> = []
+  const conflicted: Array<string> = Object.keys(treeConflicts)
+  const conflictedSet = new Set(conflicted)
+
+  projectFiles.forEach((f) => {
+    if (!conflictedSet.has(f)) {
+      if (!githubFiles.has(f)) {
+        untracked.push(f)
+      } else if (githubChecksums[f] !== projectChecksums[f]) {
+        modified.push(f)
+      }
+    }
+  })
+
+  githubFiles.forEach((f) => {
+    if (!conflictedSet.has(f)) {
+      if (!projectFiles.has(f)) {
+        deleted.push(f)
+      }
+    }
+  })
+
+  return {
+    untracked,
+    modified,
+    deleted,
+    conflicted,
+  }
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
@@ -436,6 +534,18 @@ export function addFileToProjectContents(
   }
 
   return addAtCurrentIndex(tree, 0)
+}
+
+export function getProjectFileFromContents(contents: ProjectContentsTree): ProjectFile {
+  switch (contents.type) {
+    case 'PROJECT_CONTENT_FILE':
+      return contents.content
+    case 'PROJECT_CONTENT_DIRECTORY':
+      return contents.directory
+    default:
+      const _exhaustiveCheck: never = contents
+      throw new Error(`Unhandled contents ${JSON.stringify(contents)}`)
+  }
 }
 
 export function removeFromProjectContents(

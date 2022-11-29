@@ -1,5 +1,6 @@
 import React from 'react'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
@@ -7,6 +8,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePosition } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
@@ -15,93 +17,102 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
-const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
-export const AbsoluteResizeControl = React.memo((props) => {
-  const selectedElements = useEditorState(
-    selectedElementsSelector,
-    'AbsoluteResizeControl selectedElements',
-  )
+interface AbsoluteResizeControlProps {
+  targets: Array<ElementPath>
+}
 
-  const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
+export const AbsoluteResizeControl = controlForStrategyMemoized(
+  ({ targets }: AbsoluteResizeControlProps) => {
+    const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
+      if (isZeroSizedElement(boundingBox)) {
+        ref.current.style.display = 'none'
+      } else {
+        ref.current.style.display = 'block'
+        ref.current.style.left = boundingBox.x + 'px'
+        ref.current.style.top = boundingBox.y + 'px'
+        ref.current.style.width = boundingBox.width + 'px'
+        ref.current.style.height = boundingBox.height + 'px'
+      }
+    })
+
+    const leftRef = useBoundingBox(targets, (ref, boundingBox) => {
       ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
+    })
+    const topRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.width = boundingBox.width + 'px'
+    })
+    const rightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.left = boundingBox.width + 'px'
+      ref.current.style.height = boundingBox.height + 'px'
+    })
 
-  const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.height = boundingBox.height + 'px'
-  })
-  const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.width = boundingBox.width + 'px'
-  })
-  const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
-    ref.current.style.height = boundingBox.height + 'px'
-  })
+    const bottomRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.top = boundingBox.height + 'px'
+      ref.current.style.width = boundingBox.width + 'px'
+    })
 
-  const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.top = boundingBox.height + 'px'
-    ref.current.style.width = boundingBox.width + 'px'
-  })
+    const topLeftRef = useBoundingBox(targets, NO_OP)
+    const topRightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.left = boundingBox.width + 'px'
+    })
+    const bottomLeftRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.top = boundingBox.height + 'px'
+    })
+    const bottomRightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.left = boundingBox.width + 'px'
+      ref.current.style.top = boundingBox.height + 'px'
+    })
 
-  const topLeftRef = useBoundingBox(selectedElements, NO_OP)
-  const topRightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
-  })
-  const bottomLeftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.top = boundingBox.height + 'px'
-  })
-  const bottomRightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
-    ref.current.style.top = boundingBox.height + 'px'
-  })
-
-  return (
-    <CanvasOffsetWrapper>
-      <div
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-        }}
-      >
-        <ResizeEdge
-          ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-        />
-        <ResizeEdge
-          ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-        />
-        <ResizeEdge
-          ref={leftRef}
-          position={{ x: 0, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-        />
-        <ResizeEdge
-          ref={topRef}
-          position={{ x: 0.5, y: 0 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-        />
-        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
-      </div>
-    </CanvasOffsetWrapper>
-  )
-})
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          ref={controlRef}
+          style={{
+            position: 'absolute',
+            pointerEvents: 'none',
+          }}
+        >
+          <ResizeEdge
+            ref={rightRef}
+            position={{ x: 1, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+          />
+          <ResizeEdge
+            ref={bottomRef}
+            position={{ x: 0.5, y: 1 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+          />
+          <ResizeEdge
+            ref={leftRef}
+            position={{ x: 0, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+          />
+          <ResizeEdge
+            ref={topRef}
+            position={{ x: 0.5, y: 0 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+          />
+          <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
+          <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
+          <ResizePoint
+            ref={bottomLeftRef}
+            position={{ x: 0, y: 1 }}
+            cursor={CSSCursor.ResizeNESW}
+          />
+          <ResizePoint
+            ref={bottomRightRef}
+            position={{ x: 1, y: 1 }}
+            cursor={CSSCursor.ResizeNWSE}
+          />
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)
 
 interface ResizePointProps {
   cursor: CSSCursor
@@ -156,8 +167,8 @@ const ResizePoint = React.memo(
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
-            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
               1 / scale
             }px ${2 / scale}px ${1 / scale}px`,
           }}
@@ -175,7 +186,7 @@ const ResizePoint = React.memo(
           }}
           onMouseDown={onPointMouseDown}
           onMouseMove={onMouseMove}
-          data-testid={`absolute-resize-${props.position.x}-${props.position.y}`}
+          data-testid={`resize-control-${props.position.x}-${props.position.y}`}
         />
       </div>
     )
@@ -230,7 +241,7 @@ const ResizeEdge = React.memo(
         }}
         onMouseDown={onEdgeMouseDown}
         onMouseMove={onMouseMove}
-        data-testid={`absolute-resize-${props.position.x}-${props.position.y}`}
+        data-testid={`resize-control-${props.position.x}-${props.position.y}`}
       />
     )
   }),

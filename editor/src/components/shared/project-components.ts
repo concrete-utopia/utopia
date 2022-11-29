@@ -18,13 +18,16 @@ import {
   isIntrinsicElementFromString,
   JSXAttributes,
   jsxAttributesEntry,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
+  parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
+import { size, Size } from '../../core/shared/math-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -49,6 +52,7 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../custom-code/code-file'
+import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
@@ -59,6 +63,7 @@ export interface InsertableComponent {
   element: JSXElementWithoutUID
   name: string
   stylePropOptions: Array<StylePropOption>
+  defaultSize: Size | null
 }
 
 export function insertableComponent(
@@ -66,12 +71,14 @@ export function insertableComponent(
   element: JSXElementWithoutUID,
   name: string,
   stylePropOptions: Array<StylePropOption>,
+  defaultSize: Size | null,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
     stylePropOptions: stylePropOptions,
+    defaultSize: defaultSize,
   }
 }
 
@@ -226,8 +233,23 @@ function makeHTMLDescriptor(
   }
 }
 
+export const defaultImageAttributes: JSXAttributes = [
+  simpleAttribute('style', {
+    width: '64px',
+    height: '64px',
+    position: 'absolute',
+  }),
+  simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
+]
+
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor('div', {}),
+  div: makeHTMLDescriptor(
+    'div',
+    {},
+    jsxAttributesFromMap({
+      style: defaultViewElementStyle(),
+    }),
+  ),
   span: makeHTMLDescriptor('span', {}),
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
@@ -257,6 +279,7 @@ const basicHTMLElementsDescriptors = {
       simpleAttribute('style', {
         width: '250px',
         height: '120px',
+        position: 'absolute',
       }),
       simpleAttribute('controls', true),
       simpleAttribute('autoPlay', true),
@@ -274,13 +297,7 @@ const basicHTMLElementsDescriptors = {
         control: 'style-controls',
       },
     },
-    [
-      simpleAttribute('style', {
-        width: '64px',
-        height: '64px',
-      }),
-      simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
-    ],
+    defaultImageAttributes,
   ),
 }
 
@@ -311,6 +328,48 @@ export function getNonEmptyComponentGroups(
   return groups.filter((group) => {
     return group.insertableComponents.length > 0
   })
+}
+
+const SceneDefaultWidth = 325
+const SceneDefaultHeight = 350
+
+// Scene components from utopia-api are special: they should appear as the first insertable component, and
+// they should have a custom default size
+export function moveSceneToTheBeginningAndSetDefaultSize(
+  groups: Array<InsertableComponentGroup>,
+): Array<InsertableComponentGroup> {
+  const utopiaApiGroupIdx = groups.findIndex(
+    (group) => getInsertableGroupLabel(group.source) === 'utopia-api',
+  )
+  if (utopiaApiGroupIdx > -1) {
+    const utopiaApiGroup = groups[utopiaApiGroupIdx]
+    const sceneIdx = utopiaApiGroup.insertableComponents.findIndex((comp) => comp.name === 'Scene')
+    if (sceneIdx > -1) {
+      const scene = utopiaApiGroup.insertableComponents[sceneIdx]
+      const utopiaApiGroupWithoutScene = insertableComponentGroup(utopiaApiGroup.source, [
+        ...utopiaApiGroup.insertableComponents.slice(0, sceneIdx),
+        ...utopiaApiGroup.insertableComponents.slice(sceneIdx + 1),
+      ])
+      const groupsWithoutUtopiaApi = [
+        ...groups.slice(0, utopiaApiGroupIdx),
+        ...groups.slice(utopiaApiGroupIdx + 1),
+      ]
+      const newSceneGroup = insertableComponentGroup(
+        insertableComponentGroupProjectComponent('Storyboard'),
+        [
+          insertableComponent(
+            scene.importsToAdd,
+            scene.element,
+            scene.name,
+            scene.stylePropOptions,
+            size(SceneDefaultWidth, SceneDefaultHeight),
+          ),
+        ],
+      )
+      return [newSceneGroup, ...groupsWithoutUtopiaApi, utopiaApiGroupWithoutScene]
+    }
+  }
+  return groups
 }
 
 export function getComponentGroups(
@@ -358,6 +417,7 @@ export function getComponentGroups(
                   insertOption.elementToInsert,
                   insertOption.insertMenuLabel,
                   stylePropOptions,
+                  null,
                 ),
               )
             })
@@ -368,6 +428,7 @@ export function getComponentGroups(
                 jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
               ),
             )
           }
@@ -403,6 +464,7 @@ export function getComponentGroups(
             insertOption.elementToInsert,
             insertOption.insertMenuLabel,
             stylePropOptions,
+            null,
           ),
         )
       })

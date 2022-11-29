@@ -42,6 +42,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
     useEditorState((store) => {
       if (
+        store.editor.canvas.controls.flexReparentTargetLines != null ||
         store.editor.selectedViews.length !== 1 ||
         store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
       ) {
@@ -155,9 +156,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           flexDirection: 'column',
           alignItems: 'stretch',
           justifyContent: 'flex-start',
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(20).value} 0px 0px 1px, ${
-            colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
-          } 0px 1px 2px 1px`,
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 1px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px 1px 2px 1px`,
           backgroundColor: colorTheme.inspectorBackground.value,
           textTransform: 'capitalize',
         }}
@@ -187,7 +186,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           {when(
             flexDirectionIcon != null && parentLayout === 'flex',
             <div>
-              {selectedAlignment ? (
+              {selectedAlignment != null ? (
                 <PopupList
                   options={allAlignmentOptions}
                   value={selectedAlignment}

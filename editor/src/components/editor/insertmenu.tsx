@@ -4,7 +4,6 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import {
   JSXElementName,
-  jsxElementName,
   jsxElementNameEquals,
   jsxAttributeValue,
   setJSXAttributesAttribute,
@@ -13,70 +12,54 @@ import {
   JSXAttributes,
   JSXAttributesPart,
   isJSXAttributesEntry,
+  getJSXAttribute,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
   ElementPath,
-  isTextFile,
   importDetails,
   importAlias,
   Imports,
   importsEquals,
-  forEachParseSuccess,
 } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import {
-  defaultAnimatedDivElement,
-  defaultEllipseElement,
-  defaultRectangleElement,
-  defaultTextElement,
-  defaultDivElement,
-} from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
 import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/action-creators'
-import {
-  ElementInsertionSubject,
-  insertionSubjectIsScene,
-  Mode,
-  insertionSubjectIsJSXElement,
-} from './editor-modes'
-import { insertImage } from './image-insert'
-import { getOpenFilename, getOpenUIJSFile } from './store/editor-state'
+import { enableInsertModeForJSXElement } from './actions/action-creators'
+import { InsertionSubject, Mode } from './editor-modes'
+import { getOpenFilename } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
-import { last } from '../../core/shared/array-utils'
-import { defaultIfNull } from '../../core/shared/optional-utils'
-import { forEachRight } from '../../core/shared/either'
-import { dropFileExtension } from '../../core/shared/file-utils'
-import { objectMap } from '../../core/shared/object-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
   PossiblyUnversionedNpmDependency,
-  isResolvedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
+import { InspectorSubsectionHeader, useColorTheme, Icn, UtopiaStyles, UIRow } from '../../uuiui'
 import {
-  FlexRow,
-  UtopiaTheme,
-  InspectorSubsectionHeader,
-  useColorTheme,
-  Icn,
-  UtopiaStyles,
-  UIRow,
-} from '../../uuiui'
-import {
-  getDependencyStatus,
   getInsertableGroupLabel,
   getInsertableGroupPackageStatus,
   getNonEmptyComponentGroups,
+  moveSceneToTheBeginningAndSetDefaultSize,
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
+import CanvasActions from '../canvas/canvas-actions'
+import {
+  boundingArea,
+  createHoverInteractionViaMouse,
+  createInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
+import { Modifier } from '../../utils/modifiers'
+import * as PP from '../../core/shared/property-path'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
+import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
+import { isLeft } from '../../core/shared/either'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -88,6 +71,8 @@ interface InsertMenuProps {
   packageStatus: PackageStatusMap
   propertyControlsInfo: PropertyControlsInfo
   projectContents: ProjectContentTreeRoot
+  canvasScale: number
+  canvasOffset: CanvasVector
 }
 
 export const InsertMenu = React.memo(() => {
@@ -103,6 +88,8 @@ export const InsertMenu = React.memo(() => {
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       projectContents: store.editor.projectContents,
+      canvasScale: store.editor.canvas.scale,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   }, 'InsertMenu')
 
@@ -185,126 +172,33 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     this.props.editorDispatch([action], 'everyone')
   }
 
-  sceneInsertMode = () => {
-    this.props.editorDispatch([enableInsertModeForScene('scene')], 'everyone')
-  }
-
   getNewUID = () => generateUidWithExistingComponents(this.props.projectContents)
 
-  divInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
-      'everyone',
-    )
-  }
-
-  imageInsert = () => {
-    insertImage(this.props.editorDispatch)
-  }
-
-  textInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultTextElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  animatedDivInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultAnimatedDivElement(newUID),
-          newUID,
-          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  ellipseInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultEllipseElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  rectangleInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultRectangleElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
   render() {
-    let sceneSelected: boolean = false
     let currentlyBeingInserted: ComponentBeingInserted | null = null
-    if (this.props.mode.type === 'insert') {
-      if (insertionSubjectIsScene(this.props.mode.subject)) {
-        sceneSelected = true
-      } else if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-        const insertionSubject: ElementInsertionSubject = this.props.mode.subject
-        currentlyBeingInserted = componentBeingInserted(
-          insertionSubject.importsToAdd,
-          insertionSubject.element.name,
-          insertionSubject.element.props,
-        )
-      }
+    if (this.props.mode.type === 'insert' && this.props.mode.subjects.length === 1) {
+      const insertionSubject: InsertionSubject = this.props.mode.subjects[0]
+      currentlyBeingInserted = componentBeingInserted(
+        insertionSubject.importsToAdd,
+        insertionSubject.element.name,
+        insertionSubject.element.props,
+      )
     }
 
     const insertableGroups =
       this.props.currentlyOpenFilename == null
         ? []
-        : getNonEmptyComponentGroups(
-            this.props.packageStatus,
-            this.props.propertyControlsInfo,
-            this.props.projectContents,
-            this.props.dependencies,
-            this.props.currentlyOpenFilename,
+        : moveSceneToTheBeginningAndSetDefaultSize(
+            getNonEmptyComponentGroups(
+              this.props.packageStatus,
+              this.props.propertyControlsInfo,
+              this.props.projectContents,
+              this.props.dependencies,
+              this.props.currentlyOpenFilename,
+            ),
           )
 
     return [
-      // FIXME: Once scenes are refactored, this should be removed.
-      <InsertGroup
-        label='Storyboard'
-        key='insert-group-storyboard'
-        dependencyStatus='loaded'
-        dependencyVersion={null}
-      >
-        <InsertItem
-          type='scene'
-          label='Scene'
-          selected={sceneSelected}
-          onMouseDown={this.sceneInsertMode}
-        />
-      </InsertGroup>,
       ...insertableGroups.map((insertableGroup, groupIndex) => {
         return (
           <InsertGroup
@@ -314,20 +208,67 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              const insertItemOnMouseDown = () => {
+              const insertItemOnMouseDown = (event: React.MouseEvent) => {
                 const newUID = this.getNewUID()
+
+                const updatedPropsWithPosition = addPositionAbsoluteToProps(component.element.props)
+
+                const mousePoint = windowToCanvasCoordinates(
+                  this.props.canvasScale,
+                  this.props.canvasOffset,
+                  windowPoint(point(event.clientX, event.clientY)),
+                ).canvasPositionRounded
+
                 const newElement = jsxElement(
                   component.element.name,
                   newUID,
                   setJSXAttributesAttribute(
-                    component.element.props,
+                    updatedPropsWithPosition,
                     'data-uid',
                     jsxAttributeValue(newUID, emptyComments),
                   ),
                   component.element.children,
                 )
                 this.props.editorDispatch(
-                  [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
+                  [
+                    enableInsertModeForJSXElement(
+                      newElement,
+                      newUID,
+                      component.importsToAdd,
+                      component.defaultSize,
+                    ),
+                    CanvasActions.createInteractionSession(
+                      createInteractionViaMouse(
+                        mousePoint,
+                        Modifier.modifiersForEvent(event),
+                        boundingArea(),
+                      ),
+                    ),
+                  ],
+                  'everyone',
+                )
+              }
+              const insertItemOnMouseUp = (event: React.MouseEvent) => {
+                const mousePoint = windowToCanvasCoordinates(
+                  this.props.canvasScale,
+                  this.props.canvasOffset,
+                  windowPoint(point(event.clientX, event.clientY)),
+                ).canvasPositionRounded
+
+                this.props.editorDispatch(
+                  [CanvasActions.clearInteractionSession(false)],
+                  'everyone',
+                )
+                this.props.editorDispatch(
+                  [
+                    CanvasActions.createInteractionSession(
+                      createHoverInteractionViaMouse(
+                        mousePoint,
+                        Modifier.modifiersForEvent(event),
+                        boundingArea(),
+                      ),
+                    ),
+                  ],
                   'everyone',
                 )
               }
@@ -346,6 +287,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   )}
                   // eslint-disable-next-line react/jsx-no-bind
                   onMouseDown={insertItemOnMouseDown}
+                  // eslint-disable-next-line react/jsx-no-bind
+                  onMouseUp={insertItemOnMouseUp}
                 />
               )
             })}
@@ -354,6 +297,22 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
       }),
     ]
   }
+}
+
+function addPositionAbsoluteToProps(props: JSXAttributes) {
+  const styleAttributes = getJSXAttribute(props, 'style') ?? jsxAttributeValue({}, emptyComments)
+
+  const updatedStyleAttrs = setJSXValueInAttributeAtPath(
+    styleAttributes,
+    PP.fromString('position'),
+    jsxAttributeValue('absolute', emptyComments),
+  )
+
+  if (isLeft(updatedStyleAttrs)) {
+    throw new Error(`Problem setting position absolute on an element we just created.`)
+  }
+
+  return setJSXAttributesAttribute(props, 'style', updatedStyleAttrs.value)
 }
 
 interface InsertGroupProps {
@@ -386,7 +345,9 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
             />
           </div>
         </UIRow>
-        <div style={{ padding: 8 }}>{props.children}</div>
+        <div style={{ padding: 8, color: colorTheme.subduedForeground.value }}>
+          {props.children}
+        </div>
       </div>
     )
   })
@@ -396,6 +357,7 @@ interface InsertItemProps {
   selected: boolean
   type: string
   onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
   category?: string
   disabled?: boolean
   warningMessage?: string
@@ -421,8 +383,8 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     <UIRow
       rowHeight={'normal'}
       css={{
-        background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
-        color: props.selected ? colorTheme.white.value : 'initial',
+        background: props.selected ? UtopiaStyles.backgrounds.blue : undefined,
+        color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,
         '&:hover': {
@@ -430,6 +392,8 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
         },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
+      onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
+      data-testid={`insert-item-${props.label}`}
     >
       {resultingIcon}
       <span>{props.label}</span>

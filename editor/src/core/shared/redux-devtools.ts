@@ -1,3 +1,4 @@
+import { StrategyState } from '../../components/canvas/canvas-strategies/interaction-state'
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull, EditorState } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -86,8 +87,14 @@ function sanitizeEditor(editor: EditorState) {
       mountCount: editor.canvas.mountCount,
       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
+      controls: {
+        ...editor.canvas.controls,
+      },
       interactionSession: {
-        metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
+        interactionData: editor.canvas.interactionSession?.interactionData,
+        latestMetadata: simplifiedMetadataMap(
+          editor.canvas.interactionSession?.latestMetadata ?? {},
+        ) as any,
       },
     } as Partial<EditorState['canvas']>,
     jsxMetadata: simplifiedMetadataMap(editor.jsxMetadata) as any,
@@ -96,11 +103,20 @@ function sanitizeEditor(editor: EditorState) {
   } as Partial<EditorState>
 }
 
+function sanitizeStrategyState(strategyState: StrategyState) {
+  return {
+    currentStrategy: strategyState.currentStrategy,
+    currentStrategyFitness: strategyState.currentStrategyFitness,
+    currentStrategyCommands: strategyState.currentStrategyCommands,
+  }
+}
+
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     unpatchedEditor: sanitizeEditor(store.unpatchedEditor),
     patchedEditor: sanitizeEditor(store.patchedEditor),
+    strategyState: sanitizeStrategyState(store.strategyState),
   }
 }
 
@@ -122,8 +138,10 @@ export function reduxDevtoolsSendActions(
           return null
         }
         // These actions will be logged with all of their payload. Be careful: large payloads choke the Redux Devtool logging
+        case 'SELECT_COMPONENTS':
         case 'CREATE_INTERACTION_SESSION':
         case 'UPDATE_INTERACTION_SESSION':
+        case 'UPDATE_DRAG_INTERACTION_DATA':
         case 'CLEAR_INTERACTION_SESSION': {
           return action
         }

@@ -19,10 +19,12 @@ import {
 } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import { createClipboardDataFromSelection } from './clipboard'
+import json5 from 'json5'
 
 describe('copy to clipboard', () => {
   it('creates copy data multifile elements', async () => {
     const appFilePath = '/src/app.js'
+    const cardFilePath = '/src/card.js'
     let projectContents: ProjectContents = {
       '/package.json': textFile(
         textFileContents(
@@ -61,10 +63,19 @@ export var storyboard = (
         appFilePath,
         `
 import React from 'react'
+import { Card } from '/src/card.js'
 export var App = (props) => {
   return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
-    <div data-uid='app-inner-div-to-copy'/>
+    <Card data-uid='card-element-to-copy'/>
   </div>
+}`,
+      ),
+      [cardFilePath]: createCodeFile(
+        cardFilePath,
+        `
+import React from 'react'
+export var Card = (props) => {
+  return <div data-uid='card-outer-div'/>
 }`,
       ),
     }
@@ -74,16 +85,79 @@ export var App = (props) => {
     )
     const targetPath1 = EP.appendNewElementPath(TestScenePath, [
       'app-outer-div',
-      'app-inner-div-to-copy',
+      'card-element-to-copy',
     ])
 
     await renderResult.dispatch([selectComponents([targetPath1], false)], false)
-    const clipboardData = createClipboardDataFromSelection(renderResult.getEditorState().editor)
+    const clipboardData = createClipboardDataFromSelection(
+      renderResult.getEditorState().editor,
+      renderResult.getEditorState().builtInDependencies,
+    )
 
     expect(clipboardData?.data.length).toEqual(1)
     expect(clipboardData?.data[0].type).toEqual('ELEMENT_COPY')
-    expect(clipboardData?.data[0].elements).toMatchInlineSnapshot(
-      `"[{type:\\"JSX_ELEMENT\\",name:{baseVariable:\\"div\\",propertyPath:{propertyElements:[]}},uid:\\"app-inner-div-to-copy\\",props:[{type:\\"JSX_ATTRIBUTES_ENTRY\\",key:\\"data-uid\\",value:{type:\\"ATTRIBUTE_VALUE\\",value:\\"app-inner-div-to-copy\\",comments:{leadingComments:[],trailingComments:[]}},comments:{leadingComments:[],trailingComments:[]}}],children:[]}]"`,
-    )
+    expect(clipboardData?.data[0].elements).not.toBeNull()
+    const elements = json5.parse(clipboardData?.data[0].elements ?? '')
+    expect(json5.stringify(elements, null, 2)).toMatchInlineSnapshot(`
+      "[
+        {
+          element: {
+            type: \\"JSX_ELEMENT\\",
+            name: {
+              baseVariable: \\"Card\\",
+              propertyPath: {
+                propertyElements: []
+              }
+            },
+            uid: \\"card-element-to-copy\\",
+            props: [
+              {
+                type: \\"JSX_ATTRIBUTES_ENTRY\\",
+                key: \\"data-uid\\",
+                value: {
+                  type: \\"ATTRIBUTE_VALUE\\",
+                  value: \\"card-element-to-copy\\",
+                  comments: {
+                    leadingComments: [],
+                    trailingComments: []
+                  }
+                },
+                comments: {
+                  leadingComments: [],
+                  trailingComments: []
+                }
+              }
+            ],
+            children: []
+          },
+          importsToAdd: {
+            \\"/src/card.js\\": {
+              importedWithName: null,
+              importedFromWithin: [
+                {
+                  name: \\"Card\\",
+                  alias: \\"Card\\"
+                }
+              ],
+              importedAs: null
+            }
+          },
+          originalElementPath: {
+            type: \\"elementpath\\",
+            parts: [
+              [
+                \\"utopia-storyboard-uid\\",
+                \\"scene-aaa\\",
+                \\"app-entity\\"
+              ],
+              [
+                \\"app-outer-div\\",
+                \\"card-element-to-copy\\"
+              ]
+            ]
+          }
+        }
+      ]"
+    `)
   })
 })

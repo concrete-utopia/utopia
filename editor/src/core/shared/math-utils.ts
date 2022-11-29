@@ -21,6 +21,16 @@ export type Point<C extends CoordinateMarker> = PointInner & C
 export type RawPoint = RawModifier & PointInner
 export type WindowPoint = WindowModifier & PointInner
 export type CanvasPoint = CanvasModifier & PointInner
+export interface Segment<C extends CoordinateMarker> {
+  a: Point<C>
+  b: Point<C>
+}
+
+export type CanvasSegment = Segment<CanvasModifier>
+export function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
+  return { a: a, b: b }
+}
+
 export function canvasPoint(p: PointInner): CanvasPoint {
   return p as CanvasPoint
 }
@@ -35,6 +45,10 @@ export type WindowVector = WindowModifier & PointInner
 export type CanvasVector = CanvasModifier & PointInner
 export type LocalVector = LocalModifier & PointInner
 export type UnsafePoint = PointInner
+
+export function canvasVector(vector: PointInner): CanvasVector {
+  return vector as CanvasVector
+}
 
 export type Circle = {
   cx: number
@@ -231,6 +245,10 @@ export function setRectSize<C extends CoordinateMarker>(
   } as Rectangle<C>
 }
 
+export function sizeFitsInTarget(sizeToCheck: Size, target: Size): boolean {
+  return sizeToCheck.width <= target.width && sizeToCheck.height <= target.height
+}
+
 export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,
@@ -240,6 +258,18 @@ export function rectContainsPoint<C extends CoordinateMarker>(
     rectangle.y < p.y &&
     rectangle.x + rectangle.width > p.x &&
     rectangle.y + rectangle.height > p.y
+  )
+}
+
+export function rectContainsPointInclusive<C extends CoordinateMarker>(
+  rectangle: Rectangle<C>,
+  p: Point<C>,
+): boolean {
+  return (
+    rectangle.x <= p.x &&
+    rectangle.y <= p.y &&
+    rectangle.x + rectangle.width >= p.x &&
+    rectangle.y + rectangle.height >= p.y
   )
 }
 
@@ -289,6 +319,19 @@ export function distance<C extends CoordinateMarker>(from: Point<C>, to: Point<C
 
 export function product<C extends CoordinateMarker>(a: Point<C>, b: Point<C>): number {
   return a.x * b.x + a.y * b.y
+}
+
+export function pointIsClockwiseFromLine<C extends CoordinateMarker>(
+  targetPoint: Point<C>,
+  linePointA: Point<C>,
+  linePointB: Point<C>,
+): boolean {
+  // The order of line points a and b are important, as they determine which direction the line is pointing in,
+  // and therefore which direction is clockwise from it
+  return (
+    (linePointB.x - linePointA.x) * (targetPoint.y - linePointA.y) >
+    (linePointB.y - linePointA.y) * (targetPoint.x - linePointA.x)
+  )
 }
 
 export function vectorFromPoints<C extends CoordinateMarker>(
@@ -873,9 +916,9 @@ export function nanToZero(n: number): number {
   }
 }
 
-export function safeParseInt(s: string): number {
-  const n = Number.parseInt(s)
-  return forceNotNaN(n, `Unable to parse ${s}.`)
+export function safeParseInt(raw: string): number | null {
+  const result = Number.parseInt(raw)
+  return isNaN(result) ? null : result
 }
 
 export function clampValue(value: number, minimum: number, maximum: number): number {
@@ -941,11 +984,99 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
-  const diff = pointDifference(parentRect, canvasRect)
+  const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
     y: diff.y,
     width: canvasRect.width,
     height: canvasRect.height,
   })
+}
+
+// https://algs4.cs.princeton.edu/91primitives/
+function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
+  function counterClockwise(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): number {
+    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x)
+  }
+
+  if (counterClockwise(a.a, a.b, b.a) * counterClockwise(a.a, a.b, b.b) > 0) {
+    return false
+  }
+  if (counterClockwise(b.a, b.b, a.a) * counterClockwise(b.a, b.b, a.b) > 0) {
+    return false
+  }
+
+  return true
+}
+
+export function segmentIntersection(
+  leftSegment: CanvasSegment,
+  rightSegment: CanvasSegment,
+): CanvasPoint | null {
+  const pointOfIntersection = lineIntersection(
+    leftSegment.a,
+    leftSegment.b,
+    rightSegment.a,
+    rightSegment.b,
+  )
+  if (segmentsIntersect(leftSegment, rightSegment)) {
+    return pointOfIntersection
+  }
+  return null
+}
+
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder#description
+ * This is the modulo function, be careful as % is the remainder operator.
+ * The main difference is when using negative n, for example "-1 % 4 = -1" but "mod(-1, 4) = 3"
+ * For two values of the same sign, the two are equivalent, but when the operands are of different signs,
+ * the modulo result always has the same sign as the divisor, while the remainder has the same sign as the dividend,
+ * which can make them differ by one unit of d.
+ */
+export function mod(n: number, m: number): number {
+  return ((n % m) + m) % m
+}
+
+interface ResizeOptions {
+  desiredWidth: number
+  desiredHeight: number
+  keepAspectRatio: boolean
+  centerPoint: CanvasPoint
+}
+
+export function resizeCanvasRectangle(
+  rectangle: CanvasRectangle,
+  options: ResizeOptions,
+): CanvasRectangle {
+  const resizeI = (dimensions: { width: number; height: number }): CanvasRectangle => {
+    const { width, height } = dimensions
+    return canvasRectangle({
+      x: options.centerPoint.x - width / 2,
+      y: options.centerPoint.y - height / 2,
+      width: width,
+      height: height,
+    })
+  }
+
+  if (options.keepAspectRatio) {
+    const aspectRatio = rectangle.width / rectangle.height
+    options.desiredHeight = (options.desiredWidth / aspectRatio) ^ 0
+    return resizeI({ width: options.desiredWidth, height: options.desiredHeight })
+  }
+
+  return resizeI({ width: options.desiredWidth, height: options.desiredHeight })
+}
+
+export function resize(
+  originalSize: Size,
+  desiredSize: Size,
+  mode: 'force' | 'keep-aspect-ratio',
+): Size {
+  if (mode === 'force') {
+    return desiredSize
+  }
+
+  const aspectRatio = originalSize.width / originalSize.height
+  const desiredHeight = (desiredSize.width / aspectRatio) ^ 0
+  return size(desiredSize.width, desiredHeight)
 }

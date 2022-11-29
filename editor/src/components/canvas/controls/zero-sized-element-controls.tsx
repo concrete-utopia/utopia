@@ -12,10 +12,10 @@ import {
 } from '../../../core/shared/element-template'
 import {
   clearHighlightedViews,
-  selectComponents,
   setHighlightedView,
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
+import { selectComponents } from '../../editor/actions/meta-actions'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
@@ -25,59 +25,79 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 
-const EmptyChildren: ElementInstanceMetadata[] = []
-export const ZeroSizedElementControls = React.memo(() => {
-  const highlightedViews = useEditorState(
-    (store) => store.editor.highlightedViews,
-    'ZeroSizedElementControls highlightedViews',
-  )
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.realCanvasOffset,
-    'ZeroSizedElementControls canvasOffset',
-  )
-  const scale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'ZeroSizedElementControls scale',
-  )
-  const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+interface ZeroSizedElementControlProps {
+  showAllPossibleElements: boolean
+}
 
-  const zeroSizeChildren = useEditorState((store) => {
-    if (store.editor.keysPressed['cmd']) {
-      return store.editor.selectedViews.flatMap((view) => {
-        const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
-        return children.filter((child) => {
-          if (child.globalFrame == null) {
-            return false
-          } else {
-            return isZeroSizedElement(child.globalFrame)
-          }
+export const ZeroSizedElementControls = controlForStrategyMemoized(
+  ({ showAllPossibleElements }: ZeroSizedElementControlProps) => {
+    const highlightedViews = useEditorState(
+      (store) => store.editor.highlightedViews,
+      'ZeroSizedElementControls highlightedViews',
+    )
+    const selectedElements = useEditorState(
+      (store) => store.editor.selectedViews,
+      'ZeroSizedElementControls selectedElements',
+    )
+    const canvasOffset = useEditorState(
+      (store) => store.editor.canvas.realCanvasOffset,
+      'ZeroSizedElementControls canvasOffset',
+    )
+    const scale = useEditorState(
+      (store) => store.editor.canvas.scale,
+      'ZeroSizedElementControls scale',
+    )
+    const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+
+    const zeroSizeElements = useEditorState((store) => {
+      if (showAllPossibleElements) {
+        return Object.values(store.editor.jsxMetadata).filter((element) => {
+          return (
+            element.globalFrame != null &&
+            isZeroSizedElement(element.globalFrame) &&
+            MetadataUtils.targetElementSupportsChildren(
+              store.editor.projectContents,
+              store.editor.canvas.openFile?.filename,
+              element,
+            )
+          )
         })
-      })
-    } else {
-      return EmptyChildren
-    }
-  }, 'ZeroSizedElementControls selectedViews')
+      } else {
+        return selectedElements.flatMap((view) => {
+          const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+          return children.filter((child) => {
+            if (child.globalFrame == null) {
+              return false
+            } else {
+              return isZeroSizedElement(child.globalFrame)
+            }
+          })
+        })
+      }
+    }, 'ZeroSizedElementControls zeroSizeElements')
 
-  return (
-    <React.Fragment>
-      {zeroSizeChildren.map((element) => {
-        let isHighlighted =
-          highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
-        return (
-          <ZeroSizeSelectControl
-            key={`zero-size-element-${EP.toString(element.elementPath)}`}
-            element={element}
-            dispatch={dispatch}
-            canvasOffset={canvasOffset}
-            scale={scale}
-            isHighlighted={isHighlighted}
-          />
-        )
-      })}
-    </React.Fragment>
-  )
-})
+    return (
+      <React.Fragment>
+        {zeroSizeElements.map((element) => {
+          let isHighlighted =
+            highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
+          return (
+            <ZeroSizeSelectControl
+              key={`zero-size-element-${EP.toString(element.elementPath)}`}
+              element={element}
+              dispatch={dispatch}
+              canvasOffset={canvasOffset}
+              scale={scale}
+              isHighlighted={isHighlighted}
+            />
+          )
+        })}
+      </React.Fragment>
+    )
+  },
+)
 
 interface ZeroSizeSelectControlProps {
   element: ElementInstanceMetadata
@@ -94,7 +114,7 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
   const onControlMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation()
-      dispatch([selectComponents([element.elementPath], false)], 'everyone')
+      dispatch(selectComponents([element.elementPath], false), 'everyone')
     },
     [dispatch, element.elementPath],
   )
@@ -194,53 +214,59 @@ export const ZeroSizeOutlineControl = React.memo(
   },
 )
 
-export const ZeroSizeResizeControlWrapper = React.memo(() => {
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-  const zeroSizeElements = useEditorState((store) => {
-    return mapDropNulls((path) => {
-      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-      const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-      if (frame != null && isZeroSizedElement(frame)) {
-        return element
-      } else {
-        return null
-      }
-    }, store.editor.selectedViews)
-  }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
+interface ZeroSizeResizeControlWrapperProps {
+  targets: Array<ElementPath>
+}
 
-  const dispatch = useEditorState(
-    (store) => store.dispatch,
-    'ZeroSizeResizeControlWrapper dispatch',
-  )
-  const scale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'ZeroSizeResizeControlWrapper scale',
-  )
-
-  return (
-    <React.Fragment>
-      {zeroSizeElements.map((element) => {
-        if (element.globalFrame != null) {
-          return (
-            <React.Fragment>
-              <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
-              <ZeroSizeResizeControl
-                element={element}
-                frame={element.globalFrame}
-                dispatch={dispatch}
-                scale={scale}
-                color={null}
-                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-              />
-            </React.Fragment>
-          )
+export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
+  ({ targets }: ZeroSizeResizeControlWrapperProps) => {
+    const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+    const zeroSizeElements = useEditorState((store) => {
+      return mapDropNulls((path) => {
+        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+        if (frame != null && isZeroSizedElement(frame)) {
+          return element
         } else {
           return null
         }
-      })}
-    </React.Fragment>
-  )
-})
+      }, targets)
+    }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
+
+    const dispatch = useEditorState(
+      (store) => store.dispatch,
+      'ZeroSizeResizeControlWrapper dispatch',
+    )
+    const scale = useEditorState(
+      (store) => store.editor.canvas.scale,
+      'ZeroSizeResizeControlWrapper scale',
+    )
+
+    return (
+      <React.Fragment>
+        {zeroSizeElements.map((element) => {
+          if (element.globalFrame != null) {
+            return (
+              <React.Fragment>
+                <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
+                <ZeroSizeResizeControl
+                  element={element}
+                  frame={element.globalFrame}
+                  dispatch={dispatch}
+                  scale={scale}
+                  color={null}
+                  maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+                />
+              </React.Fragment>
+            )
+          } else {
+            return null
+          }
+        })}
+      </React.Fragment>
+    )
+  },
+)
 
 interface ZeroSizeResizeControlProps {
   frame: CanvasRectangle
@@ -326,6 +352,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       <div
         onMouseMove={onControlMouseMove}
         onMouseDown={onControlStopPropagation}
+        onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
         style={{

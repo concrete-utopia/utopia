@@ -571,14 +571,18 @@ export function textFile(
   }
 }
 
-export function codeFile(fileContents: string, lastSavedContents: string | null): TextFile {
+export function codeFile(
+  fileContents: string,
+  lastSavedContents: string | null,
+  lastRevisedTime: number = 0,
+): TextFile {
   return textFile(
     textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
     lastSavedContents == null
       ? null
       : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
     null,
-    0,
+    lastRevisedTime,
   )
 }
 
@@ -653,6 +657,7 @@ export interface ImageFile {
   width?: number
   height?: number
   hash: number
+  gitBlobSha?: string
 }
 
 export function imageFile(
@@ -661,6 +666,7 @@ export function imageFile(
   width: number | undefined,
   height: number | undefined,
   hash: number,
+  gitBlobSha: string | undefined,
 ): ImageFile {
   return {
     type: 'IMAGE_FILE',
@@ -669,6 +675,7 @@ export function imageFile(
     width: width,
     height: height,
     hash: hash,
+    gitBlobSha: gitBlobSha,
   }
 }
 
@@ -676,12 +683,14 @@ export function imageFile(
 export interface AssetFile {
   type: 'ASSET_FILE'
   base64?: string
+  gitBlobSha?: string
 }
 
-export function assetFile(base64: string | undefined): AssetFile {
+export function assetFile(base64: string | undefined, gitBlobSha: string | undefined): AssetFile {
   return {
     type: 'ASSET_FILE',
     base64: base64,
+    gitBlobSha: gitBlobSha,
   }
 }
 

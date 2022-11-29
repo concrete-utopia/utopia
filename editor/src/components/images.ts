@@ -4,8 +4,10 @@ import {
   emptyComments,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  JSXElement,
   jsxElement,
   jsxElementName,
+  setJSXAttributesAttribute,
 } from '../core/shared/element-template'
 import { isImageFile } from '../core/model/project-file-utils'
 import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
@@ -13,9 +15,10 @@ import Utils from '../utils/utils'
 import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
-import { forceNotNull } from '../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
+import { identity } from '../core/shared/utils'
 
 export function getImageSrc(
   projectId: string | null,
@@ -45,14 +48,94 @@ export function getImageSrc(
   }
 }
 
-export function parseImageMultiplier(imagePath: string): number {
-  const imageMultiplierRegex = /.*@(\d*)x\..*/
-  const imageMultiplierResult = imageMultiplierRegex.exec(imagePath)
-  let multiplier: number = 1
-  if (imageMultiplierResult != null && imageMultiplierResult.length === 2) {
-    multiplier = Number.parseInt(imageMultiplierResult[1])
+export interface FilenameParts {
+  filename: string
+  extension: string
+  multiplier?: number
+  deduplicationSeqNumber?: number
+}
+
+export function filenameFromParts(parts: FilenameParts): string {
+  const { filename, multiplier, extension, deduplicationSeqNumber } = parts
+  const multiplierString = optionalMap((m) => `@${m}x`, multiplier) ?? ''
+  const dedupeString = optionalMap((n) => `_${n}`, deduplicationSeqNumber) ?? ''
+  return `${filename}${dedupeString}${multiplierString}.${extension}`
+}
+
+export interface LastPartSeparatedByResult<T> {
+  part: T
+  rest: string
+}
+
+interface LastPartSeparatedByParams<T> {
+  separator: string
+  raw: string
+  make: (_: string) => T | null
+}
+
+function lastPartSeparatedBy<T>(
+  params: LastPartSeparatedByParams<T>,
+): LastPartSeparatedByResult<T> | null {
+  const { separator, make, raw } = params
+  const parts = raw.split(separator)
+  if (raw.length < 2) {
+    return null
   }
-  return multiplier
+
+  const made = make(parts[parts.length - 1])
+  if (made == null) {
+    return null
+  }
+
+  return {
+    rest: parts.slice(0, -1).join(separator),
+    part: made,
+  }
+}
+
+const parseNumber =
+  (re: RegExp) =>
+  (raw: string): number | null => {
+    const match = re.exec(raw)
+    if (match == null || match.length < 2) {
+      return null
+    }
+    return Utils.safeParseInt(match[1])
+  }
+
+export const parseMultiplier = parseNumber(/^(\d+)x$/)
+export const parseDedupeId = parseNumber(/^(\d+)$/)
+
+export function getFilenameParts(filename: string): FilenameParts | null {
+  const extensionResult = lastPartSeparatedBy<string>({
+    separator: '.',
+    make: identity,
+    raw: filename,
+  })
+  if (extensionResult == null) {
+    return null
+  }
+
+  const { part: extension, rest: restFromExtension } = extensionResult
+
+  const { part: multiplier, rest: restFromMultiplier } = lastPartSeparatedBy<number | undefined>({
+    separator: '@',
+    make: parseMultiplier,
+    raw: restFromExtension,
+  }) ?? { rest: restFromExtension }
+
+  const { part: dedupSeqNumber, rest: restFromDedupe } = lastPartSeparatedBy<number | undefined>({
+    separator: '_',
+    make: parseDedupeId,
+    raw: restFromMultiplier,
+  }) ?? { rest: restFromMultiplier }
+
+  return {
+    extension: extension,
+    multiplier: multiplier,
+    deduplicationSeqNumber: dedupSeqNumber,
+    filename: restFromDedupe,
+  }
 }
 
 interface FrameAndMultiplier {
@@ -67,7 +150,9 @@ export function getFrameAndMultiplier(
   overrideDefaultMultiplier: number | null,
 ): FrameAndMultiplier {
   const multiplier =
-    overrideDefaultMultiplier == null ? parseImageMultiplier(filename) : overrideDefaultMultiplier
+    overrideDefaultMultiplier == null
+      ? getFilenameParts(filename)?.multiplier ?? 1
+      : overrideDefaultMultiplier
   const scaledSize = scaleImageDimensions(size, multiplier)
   const frame: CanvasRectangle = canvasRectangle({
     x: centerPoint.x - scaledSize.width / 2,
@@ -167,6 +252,39 @@ export function getScaledImageDimensionsFromProps(props: any): Size {
   const imageSizeMultiplier = getImageSizeMultiplierFromProps(props)
   const imageSize = getImageSizeFromProps(props)
   return scaleImageDimensions(imageSize, imageSizeMultiplier)
+}
+
+export interface JSXImageOptions {
+  opacity: number
+  width: number
+  height: number
+  top: number
+  left: number
+  src: string
+}
+
+export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
+  const propsForElement = jsxAttributesFromMap({
+    'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+    src: jsxAttributeValue(options.src, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        width: options.width,
+        height: options.height,
+        top: options.top,
+        left: options.left,
+      },
+      emptyComments,
+    ),
+  })
+
+  return jsxElement(
+    'img',
+    uid,
+    setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    [],
+  )
 }
 
 export const MultipliersForImages: Array<number> = [1, 2]

@@ -17,10 +17,14 @@ import {
   PinMoveChange,
   pinMoveChange,
 } from '../../canvas-types'
-import { ConstrainedDragAxis, Guideline, Guidelines } from '../../guideline'
+import {
+  ConstrainedDragAxis,
+  Guideline,
+  Guidelines,
+  GuidelineWithRelevantPoints,
+} from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
-import { flatMapArray } from '../../../../core/shared/array-utils'
 
 export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -120,13 +124,17 @@ export function dragComponent(
     } else {
       // TODO determine if node graph affects the drag
 
+      const moveGuidelinesWithNoPoints: Array<GuidelineWithRelevantPoints> = moveGuidelines.map(
+        (guideline) => ({ guideline, pointsOfRelevance: [] }),
+      )
+
       const constrainedDragAxis: ConstrainedDragAxis | null =
         constrainDragAxis && furthestDragDelta != null
           ? determineConstrainedDragAxis(furthestDragDelta)
           : null
       const snapDelta = enableSnapping
         ? getSnapDelta(
-            moveGuidelines,
+            moveGuidelinesWithNoPoints,
             constrainedDragAxis,
             Utils.offsetRect(
               Utils.defaultIfNull(Utils.zeroRectangle as CanvasRectangle, dragSelectionBoundingBox),

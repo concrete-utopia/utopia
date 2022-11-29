@@ -47,6 +47,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: 'auto 22px',
   },
+  '<--1fr--><--1fr--><--1fr-->': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 1fr 1fr',
+  },
   '<--1fr--><--1fr-->': {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr',
@@ -54,6 +58,14 @@ const gridTemplates = {
   '<-------------1fr------------->': {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr',
+  },
+  '<----------1fr---------><-auto->': {
+    gridColumnGap: 8,
+    gridTemplateColumns: '1fr auto',
+  },
+  '|--16px--|<--------auto-------->': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '16px auto',
   },
 } as const
 
@@ -74,7 +86,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
   /**
    * alignItems: default value is 'center'
    */
-  alignItems?: 'start' | 'center'
+  alignItems?: 'start' | 'center' | 'stretch'
 }
 
 export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({

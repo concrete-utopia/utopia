@@ -53,11 +53,64 @@
         }
       }
 
+      @keyframes animate-pyramid {
+        0% {
+          transform: translateY(10px);
+        }
+        100% {
+          transform: translateY(-10px);
+        }
+      }
+
       .animation-progress {
         animation-name: animation-keyframes;
         animation-duration: 10s;
         animation-iteration-count: infinite;
         animation-direction: alternate;
+      }
+
+      .utopia-logo-pyramid {
+        animation-name: animate-pyramid;
+        animation-duration: 1.5s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        animation-timing-function: ease-in-out;
+      }
+
+      .progress-bar-shell {
+        border: 1px solid black;
+      }
+
+      .progress-bar-progress {
+        background-color: black;
+      }
+
+      .utopia-logo-pyramid.light {
+        display: block;
+      }
+      .utopia-logo-pyramid.dark {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #1a1a1a;
+        }
+
+        .progress-bar-shell {
+          border: 1px solid white;
+        }
+
+        .progress-bar-progress {
+          background-color: white;
+        }
+
+        .utopia-logo-pyramid.light {
+          display: none;
+        }
+        .utopia-logo-pyramid.dark {
+          display: block;
+        }
       }
     </style>
   </head>
@@ -81,6 +134,7 @@
           display: flex;
           align-items: stretch;
           justify-content: stretch;
+          pointer-events: initial;
         "
       >
         <!-- loading content-->
@@ -96,13 +150,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid beige;
           "
         >
+          <img
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark@2x.png?hash=<%- UTOPIA_SHA %>"
+            height="74px"
+            alt="Utopia Logo"
+            class="utopia-logo-pyramid dark"
+          />
           <img
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
             height="128px"
             alt="Utopia Logo"
+            class="utopia-logo-pyramid light"
           />
 
           <div
@@ -111,7 +171,6 @@
               margin-top: 64px;
               width: 212px;
               height: 11px;
-              border: 1px solid black;
               border-radius: 8px;
               overflow: hidden;
               box-sizing: border-box !important;
@@ -119,12 +178,7 @@
           >
             <div
               class="progress-bar-progress animation-progress"
-              style="
-                background-color: black;
-                border-radius: 6px;
-                height: 9px;
-                transform: translateX(-212px);
-              "
+              style="border-radius: 6px; height: 9px; transform: translateX(-212px)"
             ></div>
           </div>
 
@@ -132,6 +186,5 @@
         </div>
       </div>
     </div>
-    <div id="cursor-overlay-portal"></div>
   </body>
 </html>

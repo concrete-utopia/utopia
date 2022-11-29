@@ -26,6 +26,9 @@ default-extensions:
   - TypeOperators
   - DeriveDataTypeable
   - DataKinds
+  - DeriveAnyClass
+  - Strict
+  - StrictData
 
 dependencies:
   - base
@@ -37,7 +40,26 @@ dependencies:
   - tasty
   - unordered-containers
   - text
+  - QuickCheck
+  - generic-arbitrary
+  - quickcheck-instances
 
 library:
   source-dirs:
     - src
+
+tests:
+  clientmodel-test:
+    main: Main.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - hspec
+      - hedgehog
+      - tasty
+      - tasty-hedgehog
+      - tasty-hspec
+      - tasty-hunit
+      - tasty-quickcheck
+      - hedgehog-quickcheck

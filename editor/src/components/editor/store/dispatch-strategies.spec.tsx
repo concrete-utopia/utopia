@@ -1,6 +1,15 @@
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { right } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  jsxElement,
+} from '../../../core/shared/element-template'
+import { canvasPoint } from '../../../core/shared/math-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import {
   FakeLinterWorker,
@@ -8,8 +17,38 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
+import { emptyModifiers } from '../../../utils/modifiers'
+import CanvasActions from '../../canvas/canvas-actions'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  InteractionCanvasState,
+  strategyApplicationResult,
+  StrategyApplicationResult,
+} from '../../canvas/canvas-strategies/canvas-strategy-types'
+import {
+  boundingArea,
+  createEmptyStrategyState,
+  createInteractionViaKeyboard,
+  createInteractionViaMouse,
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+  updateInteractionViaMouse,
+} from '../../canvas/canvas-strategies/interaction-state'
+import { runCanvasCommand } from '../../canvas/commands/commands'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import {
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestAppUID,
+  TestSceneUID,
+} from '../../canvas/ui-jsx.test-utils'
+import { toggleBackgroundLayers, toggleStylePropPaths } from '../../inspector/common/css-utils'
 import { EditorDispatch, notLoggedIn } from '../action-types'
+import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
@@ -21,35 +60,6 @@ import {
   interactionUpdate,
 } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import {
-  ElementInstanceMetadata,
-  elementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsxAttributeValue,
-} from '../../../core/shared/element-template'
-import {
-  createEmptyStrategyState,
-  createInteractionViaKeyboard,
-  createInteractionViaMouse,
-  InteractionSession,
-  InteractionSessionWithoutMetadata,
-  StrategyState,
-} from '../../canvas/canvas-strategies/interaction-state'
-import {
-  CanvasStrategy,
-  CanvasStrategyId,
-  defaultCustomStrategyState,
-  InteractionCanvasState,
-  StrategyApplicationResult,
-} from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { canvasPoint } from '../../../core/shared/math-utils'
-import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
-import { runCanvasCommand } from '../../canvas/commands/commands'
-import { saveDOMReport } from '../actions/action-creators'
-import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -61,15 +71,14 @@ afterAll(() => {
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
-  strategyState?: StrategyState,
 ): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
   let interactionSessionWithMetadata: InteractionSession | null = null
   if (interactionSession != null) {
     interactionSessionWithMetadata = {
       ...interactionSession,
-      metadata: {},
-      allElementProps: {},
+      latestMetadata: {},
+      latestAllElementProps: {},
     }
   }
 
@@ -89,11 +98,15 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: strategyState ?? createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      themeConfig: 'light',
+      githubState: {
+        authenticated: false,
+      },
     },
     workers: new UtopiaTsWorkersImplementation(
       new FakeParserPrinterWorker(),
@@ -125,51 +138,32 @@ describe('interactionCancel', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { selectedViews: { $set: [] } }),
-      'end-interaction',
-    ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
-    expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategy).toBeNull()
   })
 })
 
-const testStrategy: CanvasStrategy = {
-  id: 'TEST_STRATEGY' as CanvasStrategyId,
-  name: 'Test Strategy',
-  isApplicable: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    return true
+const testStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+) => [
+  {
+    id: 'TEST_STRATEGY',
+    name: 'Test Strategy',
+    controlsToRender: [],
+    fitness: 10,
+    apply: function (): StrategyApplicationResult {
+      return strategyApplicationResult([
+        wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
+      ])
+    },
   },
-  controlsToRender: [],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): number {
-    return 10
-  },
-  apply: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): StrategyApplicationResult {
-    return {
-      commands: [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-      customState: defaultCustomStrategyState(),
-    }
-  },
-}
+]
 
 describe('interactionStart', () => {
   it('creates the initial state with a simple test strategy', () => {
@@ -177,7 +171,7 @@ describe('interactionStart', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
     const actualResult = interactionStart(
@@ -187,64 +181,37 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
-        "commandDescriptions": Array [
-          Object {
-            "description": "Wildcard Patch: {
-        \\"canvas\\": {
-          \\"scale\\": {
-            \\"$set\\": 100
-          }
-        }
-      }",
-            "transient": false,
-          },
-        ],
-        "currentStrategy": "TEST_STRATEGY",
-        "currentStrategyCommands": Array [
-          Object {
-            "patch": Object {
-              "canvas": Object {
-                "scale": Object {
-                  "$set": 100,
-                },
-              },
-            },
-            "type": "WILDCARD_PATCH",
-            "whenToRun": "always",
-          },
-        ],
-        "currentStrategyFitness": 10,
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [
-          Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
-            "name": "Test Strategy",
-          },
-        ],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": null,
         "dragStart": Object {
           "x": 100,
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -256,6 +223,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "prevDrag": null,
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -269,7 +237,6 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -279,9 +246,10 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -292,16 +260,24 @@ describe('interactionStart', () => {
   })
 })
 
-describe('interactionUpdatex', () => {
+describe('interactionUpdate', () => {
   it('steps an interaction session correctly', () => {
+    const startInteraction = createInteractionViaMouse(
+      canvasPoint({ x: 100, y: 200 }),
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      boundingArea(),
+    )
+
     const editorStore = createEditorStore(
-      createInteractionViaMouse(
-        canvasPoint({ x: 100, y: 200 }),
+      updateInteractionViaMouse(
+        startInteraction,
+        'DRAG',
+        canvasPoint({ x: 10, y: 10 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        null,
       ),
     )
-    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY'
     const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
@@ -310,7 +286,6 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -345,16 +320,19 @@ describe('interactionUpdatex', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": 10,
+              "id": "TEST_STRATEGY",
+              "name": "Test Strategy",
+            },
           },
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -362,12 +340,20 @@ describe('interactionUpdatex', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
-        "drag": null,
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
+        "drag": Object {
+          "x": 10,
+          "y": 10,
+        },
         "dragStart": Object {
           "x": 100,
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -379,6 +365,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "prevDrag": null,
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -393,7 +380,6 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -403,9 +389,10 @@ describe('interactionUpdatex', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -416,38 +403,12 @@ describe('interactionUpdatex', () => {
   })
 })
 
-describe('interactionUpdate without strategy', () => {
-  it('processes the accumulated commands', () => {
-    const editorStore = createEditorStore(
-      createInteractionViaMouse(
-        canvasPoint({ x: 100, y: 200 }),
-        { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-      ),
-    )
-    editorStore.strategyState.currentStrategy = null
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
-      'end-interaction',
-    ).editorStatePatches
-    const actualResult = interactionUpdate(
-      [],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'non-interaction',
-    )
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-  })
-})
-
 describe('interactionHardReset', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      boundingArea(),
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -462,7 +423,6 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -497,16 +457,19 @@ describe('interactionHardReset', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": 10,
+              "id": "TEST_STRATEGY",
+              "name": "Test Strategy",
+            },
           },
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -514,6 +477,10 @@ describe('interactionHardReset', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": Object {
           "x": 50,
           "y": 140,
@@ -523,6 +490,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -537,6 +505,7 @@ describe('interactionHardReset', () => {
           "x": 30,
           "y": 120,
         },
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -550,7 +519,6 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -560,9 +528,10 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -573,91 +542,18 @@ describe('interactionHardReset', () => {
   })
 })
 
-describe('interactionUpdate with accumulating keypresses', () => {
-  it('steps an interaction session correctly', () => {
-    let interactionSession = createInteractionViaKeyboard(
-      ['left'],
-      { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-    )
-
-    const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY' as CanvasStrategyId
-    // the currentStrategyCommands should be added to accumulatedCommands
-    editorStore.strategyState.currentStrategyCommands = [
-      wildcardPatch('always', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
-    ]
-    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-      editorStore.unpatchedEditor,
-      wildcardPatch('always', { focusedPanel: { $set: 'codeEditor' } }),
-      'end-interaction',
-    ).editorStatePatches
-
-    const actualResult = interactionUpdate(
-      [testStrategy],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'interaction-create-or-update',
-    )
-
-    // accumulatedCommands should have the currentStrategyCommands added
-    expect(actualResult.newStrategyState.accumulatedPatches).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "focusedPanel": Object {
-            "$set": "codeEditor",
-          },
-        },
-        Object {
-          "selectedViews": Object {
-            "$set": Array [
-              Object {
-                "parts": Array [
-                  Array [
-                    "aaa",
-                  ],
-                ],
-                "type": "elementpath",
-              },
-            ],
-          },
-        },
-      ]
-    `)
-
-    // accumulatedCommands + currentStrategyCommands + the command coming from the strategy should all be applied to the patch
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "parts": Array [
-            Array [
-              "aaa",
-            ],
-          ],
-          "type": "elementpath",
-        },
-      ]
-    `)
-    expect(actualResult.unpatchedEditorState.selectedViews).toHaveLength(0)
-    expect(actualResult.patchedEditorState.focusedPanel).toEqual('codeEditor')
-    expect(actualResult.unpatchedEditorState.focusedPanel).toEqual('canvas')
-  })
-})
-
 describe('interactionUpdate with user changed strategy', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      boundingArea(),
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
       interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
-      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
+      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY'
     }
     const editorStore = createEditorStore(interactionSession)
 
@@ -668,7 +564,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ...result.unpatchedEditor.canvas,
         interactionSession: {
           ...result.unpatchedEditor.canvas.interactionSession!,
-          userPreferredStrategy: 'TEST_STRATEGY' as CanvasStrategyId,
+          userPreferredStrategy: 'TEST_STRATEGY',
         },
       },
     }
@@ -676,7 +572,6 @@ describe('interactionUpdate with user changed strategy', () => {
     const actualResult = interactionUpdate([testStrategy], editorStore, result, 'non-interaction')
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
@@ -715,16 +610,19 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": 10,
+              "id": "TEST_STRATEGY",
+              "name": "Test Strategy",
+            },
           },
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -732,6 +630,10 @@ describe('interactionUpdate with user changed strategy', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": Object {
           "x": 50,
           "y": 140,
@@ -741,6 +643,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -755,6 +658,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 30,
           "y": 120,
         },
+        "spacePressed": false,
         "type": "DRAG",
       }
     `)
@@ -769,7 +673,6 @@ describe('interactionUpdate with user changed strategy', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -779,9 +682,10 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -801,6 +705,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 
@@ -837,7 +742,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
 
@@ -845,6 +750,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 
@@ -860,7 +766,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
           ...oldEditorStore.unpatchedEditor.canvas,
           interactionSession: {
             ...oldEditorStore.unpatchedEditor.canvas.interactionSession,
-            metadata: newMetadata,
+            latestMetadata: newMetadata,
           },
         },
       },
@@ -877,7 +783,99 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     )
 
     expect(actualResult.patchedEditorState.jsxMetadata).toBe(
-      newEditorStore.unpatchedEditor.canvas.interactionSession?.metadata,
+      newEditorStore.unpatchedEditor.canvas.interactionSession?.latestMetadata,
     )
+  })
+
+  it('InteractionSession.metadata is the latest metadata', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div data-uid="aaa" style={{}}>hello!</div>`),
+      'await-first-dom-report',
+    )
+
+    const targetElement = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa'],
+    ])
+
+    await renderResult.dispatch([selectComponents([targetElement], false)], true)
+
+    // FIXME We need a working setup here where the TEST_STRATEGY isn't active at first, but then later becomes active,
+    // however for some reason triggering multiple `updateInteractionViaMouse` calls here was resulting in `latestMetadata`
+    // becoming undefined for the target element
+    await renderResult.dispatch(
+      [
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(canvasPoint({ x: 0, y: 0 }), emptyModifiers, boundingArea()),
+        ),
+      ],
+      true,
+      [],
+    )
+
+    // toggling the backgroundColor to update the metadata
+    await renderResult.dispatch(
+      [toggleProperty(targetElement, toggleStylePropPaths(toggleBackgroundLayers))],
+      true,
+    )
+
+    // dispatching a no-op change to the interaction session to trigger the strategies
+
+    await renderResult.dispatch(
+      [
+        CanvasActions.updateInteractionSession(
+          updateInteractionViaMouse(
+            renderResult.getEditorState().editor.canvas.interactionSession!,
+            'DRAG',
+            canvasPoint({ x: 10, y: 10 }),
+            { alt: false, shift: false, ctrl: false, cmd: false },
+            null,
+          ),
+        ),
+      ],
+      true,
+      [
+        (canvasState: InteractionCanvasState, interactionSession: InteractionSession | null) => [
+          {
+            id: 'TEST_STRATEGY',
+            name: 'Test Strategy',
+            controlsToRender: [],
+            fitness: 10,
+            apply: function (): StrategyApplicationResult {
+              if (interactionSession == null) {
+                return strategyApplicationResult([])
+              }
+              expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
+              expect(canvasState.startingAllElementProps).not.toBe(
+                interactionSession.latestAllElementProps,
+              )
+
+              // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
+              expect(
+                canvasState.startingMetadata[EP.toString(targetElement)].computedStyle
+                  ?.backgroundColor,
+              ).toBeUndefined()
+              expect(
+                canvasState.startingAllElementProps[EP.toString(targetElement)].style
+                  .backgroundColor,
+              ).toBeUndefined()
+
+              // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch
+              expect(
+                interactionSession.latestMetadata[EP.toString(targetElement)].computedStyle
+                  ?.backgroundColor,
+              ).toBeDefined()
+              expect(
+                interactionSession.latestAllElementProps[EP.toString(targetElement)].style
+                  .backgroundColor,
+              ).toBeDefined()
+              return strategyApplicationResult([])
+            },
+          },
+        ],
+      ],
+    )
+
+    expect.assertions(6) // this ensures that the test fails if the expects inside the apply function are not called
   })
 })

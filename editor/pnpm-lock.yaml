@@ -72,10 +72,12 @@ specifiers:
   '@types/react-onclickoutside': 6.7.3
   '@types/react-select': 3.0.15
   '@types/react-syntax-highlighter': 11.0.4
+  '@types/react-timeago': 4.1.3
   '@types/react-virtualized-auto-sizer': 1.0.0
-  '@types/react-window': 1.8.2
+  '@types/react-window': 1.8.5
   '@types/scheduler': 0.16.1
   '@types/semver': 7.3.4
+  '@types/sha.js': 2.4.0
   '@types/shuffle-array': 0.0.28
   '@types/sinon': ^10.0.11
   '@types/tar': 4.0.4
@@ -162,6 +164,7 @@ specifiers:
   karma-mocha-reporter: 2.2.5
   karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
+  keycode: 2.2.1
   lint-staged: 8.1.7
   livereloadify: 2.0.0
   localforage: 1.7.3
@@ -173,6 +176,7 @@ specifiers:
   minimist: 1.2.0
   mocha: 8.4.0
   moize: 5.4.7
+  node-diff3: 3.1.2
   node-fetch: 2.6.1
   node-html-parser: 1.2.20
   npm-package-arg: 8.1.5
@@ -209,10 +213,11 @@ specifiers:
   react-spring: 9.0.0-rc.3
   react-syntax-highlighter: 12.2.1
   react-test-renderer: 16.9.0
+  react-timeago: 7.1.0
   react-use-gesture: 6.0.2
   react-virtualized-auto-sizer: 1.0.2
   react-vtree: 2.0.0
-  react-window: 1.8.5
+  react-window: 1.8.7
   react-windowed-select: 3.1.2
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
@@ -221,6 +226,7 @@ specifiers:
   selenium-webdriver: 3.0.1
   semver: 7.3.2
   settle-promise: 1.0.0
+  sha.js: 2.4.11
   shuffle-array: 1.0.1
   sinon: ^14.0.0
   source-map: 0.5.6
@@ -313,12 +319,14 @@ dependencies:
   jotai: 1.4.2_c8568ef6511711a4cdb79f0a6d5315db
   json5: 0.5.1
   jszip: 3.5.0
+  keycode: 2.2.1
   localforage: 1.7.3
   lodash.clamp: 4.0.3
   lru-cache: 7.10.1
   matter-js: github.com/liabru/matter-js/e909b0466cea2051267bab92a38ccaa9bf7f154e
   mime-types: 2.1.24
   moize: 5.4.7
+  node-diff3: 3.1.2
   node-html-parser: 1.2.20
   npm-package-arg: 8.1.5
   object-hash: 2.0.3
@@ -349,16 +357,18 @@ dependencies:
   react-select: 3.1.0_react-dom@18.1.0+react@18.1.0
   react-spring: 9.0.0-rc.3_ed739fef80a23a6a6d2cf5963a105dc3
   react-syntax-highlighter: 12.2.1_react@18.1.0
+  react-timeago: 7.1.0_react@18.1.0
   react-use-gesture: 6.0.2_react@18.1.0
   react-virtualized-auto-sizer: 1.0.2_react-dom@18.1.0+react@18.1.0
-  react-vtree: 2.0.0_0775d8f38a5a36de1426be6f01f8569f
-  react-window: 1.8.5_react-dom@18.1.0+react@18.1.0
+  react-vtree: 2.0.0_fc75b599a283ce88adf32a755f569cd4
+  react-window: 1.8.7_react-dom@18.1.0+react@18.1.0
   react-windowed-select: 3.1.2_3b9cfa1ca2be6d0dc04583129899fdc5
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   semver: 7.3.2
   settle-promise: 1.0.0
+  sha.js: 2.4.11
   source-map: 0.5.6
   stream-browserify: 3.0.0
   string-hash: 1.1.3
@@ -428,10 +438,12 @@ devDependencies:
   '@types/react-highlight-words': 0.16.3
   '@types/react-onclickoutside': 6.7.3
   '@types/react-select': 3.0.15
+  '@types/react-timeago': 4.1.3
   '@types/react-virtualized-auto-sizer': 1.0.0
-  '@types/react-window': 1.8.2
+  '@types/react-window': 1.8.5
   '@types/scheduler': 0.16.1
   '@types/semver': 7.3.4
+  '@types/sha.js': 2.4.0
   '@types/shuffle-array': 0.0.28
   '@types/sinon': 10.0.11
   '@types/tar': 4.0.4
@@ -1039,11 +1051,15 @@ packages:
     resolution: {integrity: sha512-rycZXvQ+xS9QyIcJ9HXeDWf1uxqlbVFAUq0Rq0dbc50Zb/+wUe/ehyfzGfm9KZZF0kBejYgxltBXocP+gKdL2g==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+    dependencies:
+      '@babel/types': 7.17.0
 
   /@babel/parser/7.17.3:
     resolution: {integrity: sha512-7yJPvPV+ESz2IUTPbOL+YkIGyCqOyNIzdguKQuJGnH7bg1WTIifuM21YqokFt/THWh1AkCRn9IgoykTRCBVpzA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+    dependencies:
+      '@babel/types': 7.17.0
 
   /@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining/7.15.4_@babel+core@7.15.5:
     resolution: {integrity: sha512-eBnpsl9tlhPhpI10kU06JHnrYXwg3+V6CaP2idsCXNef0aeslpqyITXQ74Vfk5uHgY7IG7XP0yIH8b42KSzHog==}
@@ -2102,7 +2118,7 @@ packages:
       '@babel/helper-plugin-utils': 7.16.7
       '@babel/plugin-proposal-unicode-property-regex': 7.14.5_@babel+core@7.15.5
       '@babel/plugin-transform-dotall-regex': 7.14.5_@babel+core@7.15.5
-      '@babel/types': 7.15.6
+      '@babel/types': 7.17.0
       esutils: 2.0.3
     dev: true
 
@@ -3621,6 +3637,12 @@ packages:
       '@types/react': 18.0.9
     dev: false
 
+  /@types/react-timeago/4.1.3:
+    resolution: {integrity: sha512-XaaMBzuXLw7lxPPDs/fenlohcf3NDqM5qP4oOL/Meu+Hb1QChW4Igw/SruS1llEqch18RQB3wDTIwvqq4nivvw==}
+    dependencies:
+      '@types/react': 18.0.9
+    dev: true
+
   /@types/react-transition-group/4.4.3:
     resolution: {integrity: sha512-fUx5muOWSYP8Bw2BUQ9M9RK9+W1XBK/7FLJ8PTQpnpTEkn0ccyMffyEQvan4C3h53gHdx7KE5Qrxi/LnUGQtdg==}
     dependencies:
@@ -3632,8 +3654,8 @@ packages:
       '@types/react': 18.0.9
     dev: true
 
-  /@types/react-window/1.8.2:
-    resolution: {integrity: sha512-gP1xam68Wc4ZTAee++zx6pTdDAH08rAkQrWm4B4F/y6hhmlT9Mgx2q8lTCXnrPHXsr15XjRN9+K2DLKcz44qEQ==}
+  /@types/react-window/1.8.5:
+    resolution: {integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==}
     dependencies:
       '@types/react': 18.0.9
 
@@ -3673,6 +3695,12 @@ packages:
 
   /@types/semver/7.3.4:
     resolution: {integrity: sha512-+nVsLKlcUCeMzD2ufHEYuJ9a2ovstb6Dp52A5VsoKxDXgvE051XgHI/33I1EymwkRGQkwnA0LkhnUzituGs4EQ==}
+    dev: true
+
+  /@types/sha.js/2.4.0:
+    resolution: {integrity: sha512-amxKgPy6WJTKuw8mpUwjX2BSxuBtBmZfRwIUDIuPJKNwGN8CWDli8JTg5ONTWOtcTkHIstvT7oAhhYXqEjStHQ==}
+    dependencies:
+      '@types/node': 16.10.2
     dev: true
 
   /@types/shuffle-array/0.0.28:
@@ -6064,12 +6092,12 @@ packages:
 
   /core-js/1.2.7:
     resolution: {integrity: sha512-ZiPp9pZlgxpWRu0M+YWbm6+aQ84XEfH1JRXvfOc/fILWI0VKhLC2LX13X1NYq4fULzLMq7Hfh43CSo2/aIaUPA==}
-    deprecated: core-js@<3.4 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
     dev: false
 
   /core-js/2.6.12:
     resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
-    deprecated: core-js@<3.4 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
     dev: false
 
@@ -9043,15 +9071,15 @@ packages:
       wrappy: 1.0.2
 
   /inherits/1.0.2:
-    resolution: {integrity: sha1-ykMJ2t7mtUzAuNJH6NfHoJdb3Js=}
+    resolution: {integrity: sha512-Al67oatbRSo3RV5hRqIoln6Y5yMVbJSIn4jEJNL7VCImzq/kLr7vvb6sFRJXqr8rpHc/2kJOM+y0sPKN47VdzA==}
     dev: true
 
   /inherits/2.0.1:
-    resolution: {integrity: sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=}
+    resolution: {integrity: sha512-8nWq2nLTAwd02jTqJExUYFSD/fKq6VH9Y/oG2accc/kdI0V98Bag8d5a4gi3XHz73rDWa2PvTtvcWYquKqSENA==}
     dev: true
 
   /inherits/2.0.3:
-    resolution: {integrity: sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=}
+    resolution: {integrity: sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw==}
 
   /inherits/2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -10568,6 +10596,10 @@ packages:
       - utf-8-validate
     dev: true
 
+  /keycode/2.2.1:
+    resolution: {integrity: sha512-Rdgz9Hl9Iv4QKi8b0OlCRQEzp4AgVxyCtz5S/+VIHezDmrDhkp2N2TqBWOLz0/gbeREXOOiI9/4b8BY9uw2vFg==}
+    dev: false
+
   /keyv/4.0.3:
     resolution: {integrity: sha512-zdGa2TOpSZPq5mU6iowDARnMBZgtCqJ11dJROFi6tg6kTn4nuUdU09lFyLFSaHrWqpIJ+EBq4E8/Dc0Vx5vLdA==}
     dependencies:
@@ -11428,6 +11460,11 @@ packages:
       tslib: 2.3.1
     dev: true
 
+  /node-diff3/3.1.2:
+    resolution: {integrity: sha512-wUd9TWy059I8mZdH6G3LPNlAEfxDvXtn/RcyFrbqL3v34WlDxn+Mh4HDhOwWuaMk/ROVepe5tTpnGHbve6Db2g==}
+    engines: {node: '>14'}
+    dev: false
+
   /node-fetch/1.7.3:
     resolution: {integrity: sha512-NhZ4CsKx7cYm2vSrBAr2PvFOe6sWDf0UYLRqA6svUYg7+/TSfVAu49jYC4BvQ4Sms9SZgdqGBgroqfDhJdTyKQ==}
     dependencies:
@@ -12072,7 +12109,7 @@ packages:
     dev: true
 
   /performance-now/2.1.0:
-    resolution: {integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=}
+    resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
 
   /picocolors/1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
@@ -13539,6 +13576,14 @@ packages:
       scheduler: 0.15.0
     dev: true
 
+  /react-timeago/7.1.0_react@18.1.0:
+    resolution: {integrity: sha512-rouF7MiEm55fH791Y8cg+VobIJgx8gtNJ+gjr86R4ZqO1WKPkXiXjdT/lRzrvEkUzsxT1exHqV2V+Zdi114H3A==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.1.0
+    dev: false
+
   /react-transition-group/4.4.2_react-dom@18.1.0+react@18.1.0:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
     peerDependencies:
@@ -13584,7 +13629,7 @@ packages:
       react-dom: 18.1.0_react@18.1.0
     dev: false
 
-  /react-vtree/2.0.0_0775d8f38a5a36de1426be6f01f8569f:
+  /react-vtree/2.0.0_fc75b599a283ce88adf32a755f569cd4:
     resolution: {integrity: sha512-UuPGZMBYoH0E9bklJxtSP2/SeMGNg1yQrfIb+G7YjfXXiilxMUSzgW2tv6agB5TvASS3HqzxnYhUHsFumiwQcQ==}
     peerDependencies:
       '@types/react-window': ^1.8.2
@@ -13593,31 +13638,18 @@ packages:
       react-window: ^1.8.5
     dependencies:
       '@babel/runtime': 7.15.4
-      '@types/react-window': 1.8.2
+      '@types/react-window': 1.8.5
       react: 18.1.0
       react-dom: 18.1.0_react@18.1.0
-      react-window: 1.8.5_react-dom@18.1.0+react@18.1.0
+      react-window: 1.8.7_react-dom@18.1.0+react@18.1.0
     dev: false
 
-  /react-window/1.8.5_react-dom@18.1.0+react@18.1.0:
-    resolution: {integrity: sha512-HeTwlNa37AFa8MDZFZOKcNEkuF2YflA0hpGPiTT9vR7OawEt+GZbfM6wqkBahD3D3pUjIabQYzsnY/BSJbgq6Q==}
+  /react-window/1.8.7_react-dom@18.1.0+react@18.1.0:
+    resolution: {integrity: sha512-JHEZbPXBpKMmoNO1bNhoXOOLg/ujhL/BU4IqVU9r8eQPcy5KQnGHIHDRkJ0ns9IM5+Aq5LNwt3j8t3tIrePQzA==}
     engines: {node: '>8.0.0'}
     peerDependencies:
-      react: ^15.0.0 || ^16.0.0
-      react-dom: ^15.0.0 || ^16.0.0
-    dependencies:
-      '@babel/runtime': 7.15.4
-      memoize-one: 5.2.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
-    dev: false
-
-  /react-window/1.8.6_react-dom@18.1.0+react@18.1.0:
-    resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
-    engines: {node: '>8.0.0'}
-    peerDependencies:
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0
-      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
     dependencies:
       '@babel/runtime': 7.17.9
       memoize-one: 5.2.1
@@ -13634,11 +13666,11 @@ packages:
       '@types/react': 17.0.25
       '@types/react-dom': 17.0.9
       '@types/react-select': 4.0.18
-      '@types/react-window': 1.8.2
+      '@types/react-window': 1.8.5
       react: 18.1.0
       react-dom: 18.1.0_react@18.1.0
       react-select: 4.3.1_df7cef7d670217316eb640e25ca62a90
-      react-window: 1.8.6_react-dom@18.1.0+react@18.1.0
+      react-window: 1.8.7_react-dom@18.1.0+react@18.1.0
     transitivePeerDependencies:
       - '@babel/core'
     dev: false
@@ -14293,7 +14325,6 @@ packages:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /shallow-clone/3.0.1:
     resolution: {integrity: sha512-/6KqX+GVUdqPuPPd2LxDDxzX6CAbjJehAAOKlNpqqUpAqPM6HeL8f+o3a+JsyGjn2lv0WY8UsTgUJjU9Ok55NA==}
@@ -15116,6 +15147,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
+      acorn: 8.6.0
       commander: 2.20.3
       source-map: 0.6.1
       source-map-support: 0.5.20
@@ -15131,6 +15163,7 @@ packages:
       acorn:
         optional: true
     dependencies:
+      acorn: 8.6.0
       commander: 2.20.3
       source-map: 0.7.3
       source-map-support: 0.5.20
@@ -15141,6 +15174,7 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
+      acorn: 8.6.0
       commander: 2.20.3
       source-map: 0.7.3
       source-map-support: 0.5.20

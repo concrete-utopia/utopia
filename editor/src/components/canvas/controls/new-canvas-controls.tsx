@@ -1,43 +1,31 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import Utils from '../../../utils/utils'
 import { CanvasPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
-  DerivedState,
   EditorState,
   getMetadata,
-  getOpenUIJSFileKey,
   TransientCanvasState,
-  TransientFilesState,
   ResizeOptions,
   AllElementProps,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
-import { SelectModeControlContainer } from './select-mode-control-container'
-import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import {
-  ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
+import { useEditorState } from '../../editor/store/store-hook'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes, Mode } from '../../editor/editor-modes'
+import { isLiveMode, isSelectMode, Mode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { flatMapArray } from '../../../core/shared/array-utils'
-import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
-import { createSelector } from 'reselect'
-import { PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
+import { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
   isDragging,
@@ -47,32 +35,24 @@ import {
   useSelectAndHover,
   useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
-import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { shallowEqual } from '../../../core/shared/equality-utils'
-import { KeysPressed } from '../../../utils/keyboard'
-import { usePrevious } from '../../editor/hook-utils'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
-import { getDragStateStart } from '../canvas-utils'
-import {
-  useGetApplicableStrategiesOrderedByFitness,
-  useGetApplicableStrategyControls,
-} from '../canvas-strategies/canvas-strategies'
-import { FlexResizeControl } from './select-mode/flex-resize-control'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
-import { CursorOverlay } from './select-mode/cursor-overlay'
+import { CursorComponent } from './select-mode/cursor-component'
+import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { ZeroSizedElementControls } from './zero-sized-element-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -164,7 +144,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   // Somehow this being setup and hooked into the div makes the `onDrop` call
   // work properly in `editor-canvas.ts`. I blame React DnD for this.
   const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
-    accept: 'filebrowser',
+    accept: 'files',
     canDrop: () => true,
   }
 
@@ -181,54 +161,52 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     return null
   } else {
     return (
-      <DndProvider backend={HTML5Backend}>
+      <div
+        key='canvas-controls'
+        ref={forwardedRef}
+        className={
+          canvasControlProps.focusedPanel === 'canvas'
+            ? '  canvas-controls focused '
+            : ' canvas-controls '
+        }
+        id='canvas-controls'
+        style={{
+          pointerEvents: 'initial',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'translate3d(0, 0, 0)',
+          width: `100%`,
+          height: `100%`,
+          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+          cursor: props.cursor,
+          visibility: canvasScrollAnimation ? 'hidden' : 'initial',
+        }}
+      >
         <div
-          key='canvas-controls'
-          ref={forwardedRef}
-          className={
-            canvasControlProps.focusedPanel === 'canvas'
-              ? '  canvas-controls focused '
-              : ' canvas-controls '
-          }
-          id='canvas-controls'
           style={{
-            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            transform: 'translate3d(0, 0, 0)',
-            width: `100%`,
-            height: `100%`,
-            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-            cursor: props.cursor,
-            visibility: canvasScrollAnimation ? 'hidden' : 'initial',
+            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+            transformOrigin: 'top left',
+            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              transformOrigin: 'top left',
-              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
-            }}
-          >
-            <NewCanvasControlsInner
-              windowToCanvasPosition={props.windowToCanvasPosition}
-              localSelectedViews={localSelectedViews}
-              localHighlightedViews={localHighlightedViews}
-              setLocalSelectedViews={setSelectedViewsLocally}
-              editor={canvasControlProps.editor}
-              transientState={canvasControlProps.transientCanvasState}
-              dispatch={canvasControlProps.dispatch}
-              canvasOffset={canvasControlProps.canvasOffset}
-            />
-          </div>
-          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+          <NewCanvasControlsInner
+            windowToCanvasPosition={props.windowToCanvasPosition}
+            localSelectedViews={localSelectedViews}
+            localHighlightedViews={localHighlightedViews}
+            setLocalSelectedViews={setSelectedViewsLocally}
+            editor={canvasControlProps.editor}
+            transientState={canvasControlProps.transientCanvasState}
+            dispatch={canvasControlProps.dispatch}
+            canvasOffset={canvasControlProps.canvasOffset}
+          />
         </div>
-      </DndProvider>
+        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+      </div>
     )
   }
 })
@@ -247,7 +225,6 @@ interface NewCanvasControlsInnerProps {
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
-  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
   const strategyControls = useGetApplicableStrategyControls()
 
   const anyStrategyActive = useEditorState(
@@ -260,7 +237,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const componentMetadata = getMetadata(props.editor)
 
-  const resizing = isResizing(props.editor)
   const dragging = isDragging(props.editor)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
   const contextMenuEnabled = !isLiveMode(props.editor.mode)
@@ -295,117 +271,22 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>): void => {
-      if (isFeatureEnabled('Canvas Strategies')) {
-        switch (props.editor.mode.type) {
-          case 'select':
-          case 'live': {
-            event.stopPropagation()
-            event.preventDefault()
-            if (contextMenuEnabled && localSelectedViews.length > 0) {
-              props.dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
-            }
-            break
+      switch (props.editor.mode.type) {
+        case 'select':
+        case 'live': {
+          event.stopPropagation()
+          event.preventDefault()
+          if (contextMenuEnabled && localSelectedViews.length > 0) {
+            props.dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
           }
-          default:
-            break
+          break
         }
+        default:
+          break
       }
     },
     [contextMenuEnabled, localSelectedViews, props],
   )
-
-  const renderModeControlContainer = () => {
-    const elementAspectRatioLocked = localSelectedViews.every((target) => {
-      const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
-      const elementProps = props.editor.allElementProps[EP.toString(target)]
-      if (possibleElement == null || elementProps == null) {
-        return false
-      } else {
-        return isAspectRatioLockedNew(possibleElement, elementProps)
-      }
-    })
-    const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
-      componentMetadata,
-      localSelectedViews,
-      props.editor.allElementProps,
-    )
-    const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
-    const controlProps: ControlProps = {
-      selectedViews: localSelectedViews,
-      highlightedViews: localHighlightedViews,
-      componentMetadata: componentMetadata,
-      hiddenInstances: props.editor.hiddenInstances,
-      focusedElementPath: props.editor.focusedElementPath,
-      canvasOffset: props.canvasOffset,
-      scale: props.editor.canvas.scale,
-      dispatch: props.dispatch,
-      resizeStatus: getResizeStatus(),
-      elementAspectRatioLocked: elementAspectRatioLocked,
-      imageMultiplier: imageMultiplier,
-      windowToCanvasPosition: props.windowToCanvasPosition,
-      cmdKeyPressed: cmdKeyPressed,
-      showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
-      maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
-      projectContents: props.editor.projectContents,
-      nodeModules: props.editor.nodeModules.files,
-      openFile: props.editor.canvas.openFile?.filename ?? null,
-      transientState: props.transientState,
-      resolve: resolveFn,
-      resizeOptions: props.editor.canvas.resizeOptions,
-      allElementProps: props.editor.allElementProps,
-    }
-    const dragState = props.editor.canvas.dragState
-    switch (props.editor.mode.type) {
-      case 'select':
-      case 'live': {
-        if (isFeatureEnabled('Canvas Strategies')) {
-          return null
-        } else {
-          return (
-            <SelectModeControlContainer
-              {...controlProps}
-              startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
-              setSelectedViewsLocally={setLocalSelectedViews}
-              keysPressed={props.editor.keysPressed}
-              windowToCanvasPosition={props.windowToCanvasPosition}
-              isDragging={dragging}
-              isResizing={resizing}
-              selectionEnabled={selectionEnabled}
-              contextMenuEnabled={contextMenuEnabled}
-              maybeHighlightOnHover={maybeHighlightOnHover}
-              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-              duplicationState={props.editor.canvas.duplicationState}
-              dragState={
-                dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
-                  ? dragState
-                  : null
-              }
-              showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-            />
-          )
-        }
-      }
-      case 'insert': {
-        return (
-          <InsertModeControlContainer
-            {...controlProps}
-            mode={props.editor.mode}
-            keysPressed={props.editor.keysPressed}
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            dragState={
-              dragState != null && dragState.type === 'INSERT_DRAG_STATE' ? dragState : null
-            }
-            canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
-            scale={props.editor.canvas.scale}
-          />
-        )
-      }
-      default: {
-        const _exhaustiveCheck: never = props.editor.mode
-        throw new Error(`Unhandled editor mode ${JSON.stringify(props.editor.mode)}`)
-      }
-    }
-  }
 
   const renderHighlightControls = () => {
     return selectionEnabled
@@ -451,9 +332,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
     >
-      {renderModeControlContainer()}
       {when(
-        isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select',
+        isSelectMode(props.editor.mode),
         <SceneLabelControl
           maybeHighlightOnHover={maybeHighlightOnHover}
           maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -462,36 +342,52 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
-          {when(
-            isCanvasStrategyOnAndSelectMode(props.editor.mode) && !anyStrategyActive,
-            <PinLines />,
-          )}
-          {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
-          {when(
-            isFeatureEnabled('Canvas Strategies') &&
-              isFeatureEnabled('Insertion Plus Button') &&
-              props.editor.mode.type === 'select',
-            <InsertionControls />,
-          )}
+          {when(isSelectMode(props.editor.mode) && !anyStrategyActive, <PinLines />)}
+          {when(isSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
+          {when(isSelectMode(props.editor.mode), <InsertionControls />)}
           {renderHighlightControls()}
           {unless(dragging, <LayoutParentControl />)}
+          <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
+          <GuidelineControls />
+          <ZeroSizedElementControls.control showAllPossibleElements={false} />
           {when(
-            isFeatureEnabled('Canvas Strategies'),
-            <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
-          )}
-          {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
-          <OutlineHighlightControl />
-          {when(
-            isCanvasStrategyOnAndSelectMode(props.editor.mode),
-            <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+            isSelectOrInsertMode(props.editor.mode),
+            <>
+              {strategyControls.map((c) => (
+                <RenderControlMemoized
+                  key={c.key}
+                  control={c.control.control}
+                  propsForControl={c.props}
+                />
+              ))}
+            </>,
           )}
         </>,
       )}
-      <CursorOverlay />
+      <CursorComponent />
     </div>
   )
 }
 
-function isCanvasStrategyOnAndSelectMode(mode: Mode): boolean {
-  return isFeatureEnabled('Canvas Strategies') && mode.type === 'select'
+function isSelectOrInsertMode(mode: Mode): boolean {
+  return mode.type === 'select' || mode.type === 'insert'
 }
+
+interface RenderControlMemoizedProps {
+  control: React.FC
+  propsForControl: any
+}
+
+const RenderControlMemoized = React.memo(
+  ({ control, propsForControl }: RenderControlMemoizedProps) => {
+    const ControlToRender = control
+
+    return <ControlToRender {...propsForControl} />
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.control === nextProps.control &&
+      shallowEqual(prevProps.propsForControl, nextProps.propsForControl)
+    )
+  },
+)

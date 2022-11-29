@@ -31,7 +31,8 @@ import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
-import { selectComponents, setHighlightedView } from './editor/actions/action-creators'
+import { setHighlightedView } from './editor/actions/action-creators'
+import { selectComponents } from './editor/actions/meta-actions'
 import * as EP from '../core/shared/element-path'
 import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
@@ -105,7 +106,7 @@ function useCanvasContextMenuItems(
           },
           submenuName: 'Select Elements',
           enabled: true,
-          action: () => dispatch([selectComponents([path], false)], 'canvas'),
+          action: () => dispatch(selectComponents([path], false), 'canvas'),
           isHidden: (data: CanvasData) => {
             // Only run this once as the values used are the same for each and every
             // entry and `getAllTargetsAtPoint` is very expensive.

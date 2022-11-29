@@ -75,6 +75,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
+  const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 9
   const offsetY = scaledFontSize
   const offsetX = scaledFontSize
@@ -109,8 +110,18 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     }
   }, [dispatch, isHighlighted])
 
+  const onMouseUp = React.useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation()
+      window.removeEventListener('mouseup', onMouseUp, true)
+      dispatch([CanvasActions.clearInteractionSession(true)], 'canvas')
+    },
+    [dispatch],
+  )
+
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      window.addEventListener('mouseup', onMouseUp, true)
       if (event.buttons === 1 && event.button !== 2) {
         event.stopPropagation()
 
@@ -126,22 +137,20 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           createInteractionViaMouse(
             canvasPositions.canvasPositionRaw,
             Modifier.modifiersForEvent(event),
-            boundingArea(props.target),
+            boundingArea(),
           ),
         )
         dispatch([selectAction, dragAction], 'canvas')
       }
     },
-    [dispatch, scale, canvasOffset, props.target],
+    [dispatch, scale, canvasOffset, props.target, onMouseUp],
   )
 
-  const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.stopPropagation()
-      dispatch([CanvasActions.clearInteractionSession(true)], 'canvas')
-    },
-    [dispatch],
-  )
+  React.useEffect(() => {
+    return () => {
+      window.removeEventListener('mouseup', onMouseUp, true)
+    }
+  }, [onMouseUp])
 
   const highlightColor = colorTheme.fg9.value
   const selectedColor = colorTheme.verySubduedForeground.value
@@ -156,7 +165,6 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
-          onMouseUp={labelSelectable ? onMouseUp : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
           data-testid={SceneLabelTestID}
           className='roleComponentName'
@@ -173,6 +181,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,
+            lineHeight: `${scaledLineHeight}px`,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

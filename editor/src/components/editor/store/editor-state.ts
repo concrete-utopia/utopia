@@ -143,37 +143,40 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
-import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { memoize } from '../../../core/shared/memoize'
+import { emptySet } from '../../../core/shared/set-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
-import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
-import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
+import { FileResult } from '../../../core/shared/file-utils'
+import {
+  GithubBranch,
+  GithubFileChanges,
+  GithubFileStatus,
+  RepositoryEntry,
+  TreeConflicts,
+} from '../../../core/shared/github'
 
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
   Project = 'project',
-  Storyboards = 'storyboards',
-  Contents = 'contents',
   Settings = 'settings',
-  Sharing = 'sharing',
   Github = 'github',
 }
 
@@ -233,21 +236,147 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
+  themeConfig: Theme | null
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
   return {
     shortcutConfig: null,
+    themeConfig: DefaultTheme,
   }
+}
+
+export interface GithubState {
+  authenticated: boolean
 }
 
 export interface UserState extends UserConfiguration {
   loginState: LoginState
+  githubState: GithubState
+}
+
+export interface GithubCommish {
+  name: 'commish'
+}
+
+export interface GithubListBranches {
+  name: 'listBranches'
+}
+
+export interface GithubLoadBranch {
+  name: 'loadBranch'
+  githubRepo: GithubRepo
+  branchName: string
+}
+
+export interface GithubLoadRepositories {
+  name: 'loadRepositories'
+}
+
+export interface GithubUpdateAgainstBranch {
+  name: 'updateAgainstBranch'
+}
+
+export interface GithubListPullRequestsForBranch {
+  name: 'listPullRequestsForBranch'
+  githubRepo: GithubRepo
+  branchName: string
+}
+
+export type GithubOperation =
+  | GithubCommish
+  | GithubListBranches
+  | GithubLoadBranch
+  | GithubLoadRepositories
+  | GithubUpdateAgainstBranch
+  | GithubListPullRequestsForBranch
+
+export function githubOperationPrettyName(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commish':
+      return 'Saving'
+    case 'listBranches':
+      return 'Listing branches'
+    case 'loadBranch':
+      return 'Loading branch'
+    case 'loadRepositories':
+      return 'Loading Repositories'
+    case 'updateAgainstBranch':
+      return 'Updating'
+    case 'listPullRequestsForBranch':
+      return 'Listing pull requests'
+    default:
+      const _exhaustiveCheck: never = op
+      return 'Unknown operation' // this should never happen
+  }
+}
+
+export function githubOperationLocksEditor(op: GithubOperation): boolean {
+  switch (op.name) {
+    case 'listBranches':
+    case 'loadRepositories':
+    case 'listPullRequestsForBranch':
+      return false
+    default:
+      return true
+  }
+}
+
+export function isGithubLoadingBranch(
+  operations: Array<GithubOperation>,
+  branchName: string,
+  repo: GithubRepo | null,
+): boolean {
+  return operations.some(
+    (o) =>
+      o.name === 'loadBranch' &&
+      o.branchName === branchName &&
+      o.githubRepo.owner === repo?.owner &&
+      o.githubRepo.repository === repo?.repository,
+  )
+}
+
+export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
+  return operations.some((o) => o.name === 'commish')
+}
+
+export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'loadRepositories')
+}
+
+export function isGithubListingBranches(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'listBranches')
+}
+
+export function isGithubLoadingAnyBranch(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'loadBranch')
+}
+
+export function isGithubUpdating(operations: Array<GithubOperation>): boolean {
+  return operations.some((operation) => operation.name === 'updateAgainstBranch')
+}
+
+export function isGithubListingPullRequestsForBranch(
+  operations: Array<GithubOperation>,
+  repo: GithubRepo,
+  branchName: string,
+): boolean {
+  return operations.some((operation) => {
+    return (
+      operation.name === 'listPullRequestsForBranch' &&
+      githubRepoEquals(operation.githubRepo, repo) &&
+      operation.branchName === branchName
+    )
+  })
 }
 
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
+  themeConfig: 'light',
+  githubState: {
+    authenticated: false,
+  },
 }
 
 type EditorStoreShared = {
@@ -268,14 +397,23 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
+type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+
 export type EditorStorePatched = EditorStoreShared & {
+  storeName: StoreName
   editor: EditorState
   derived: DerivedState
 }
 
-export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+export type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
+
+export function patchedStoreFromFullStore(
+  store: EditorStoreFull,
+  name: StoreName,
+): EditorStorePatched {
   return {
     ...store,
+    storeName: name,
     editor: store.patchedEditor,
     derived: store.patchedDerived,
   }
@@ -293,7 +431,73 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
-export type ModalDialog = FileDeleteModal
+export interface FileRevertModal {
+  type: 'file-revert'
+  filePath: string
+  status: GithubFileStatus | null
+}
+
+export function fileRevertModal(
+  filePath: string,
+  status: GithubFileStatus | null,
+): FileRevertModal {
+  return {
+    type: 'file-revert',
+    filePath: filePath,
+    status: status,
+  }
+}
+
+export interface FileRevertAllModal {
+  type: 'file-revert-all'
+}
+
+export function fileRevertAllModal(): FileRevertAllModal {
+  return {
+    type: 'file-revert-all',
+  }
+}
+
+export interface DisconnectGithubProjectModal {
+  type: 'disconnect-github-project'
+}
+
+export function disconnectGithubProjectModal(branchName: string): DisconnectGithubProjectModal {
+  return {
+    type: 'disconnect-github-project',
+  }
+}
+
+export interface FileUploadInfo {
+  fileResult: FileResult
+  targetPath: string
+}
+
+export function fileUploadInfo(fileResult: FileResult, targetPath: string): FileUploadInfo {
+  return {
+    fileResult: fileResult,
+    targetPath: targetPath,
+  }
+}
+
+export interface FileOverwriteModal {
+  type: 'file-overwrite'
+  files: Array<FileUploadInfo>
+}
+
+export function fileOverwriteModal(files: Array<FileUploadInfo>): FileOverwriteModal {
+  return {
+    type: 'file-overwrite',
+    files: files,
+  }
+}
+
+export type ModalDialog =
+  | FileDeleteModal
+  | FileOverwriteModal
+  | FileRevertModal
+  | FileRevertAllModal
+  | DisconnectGithubProjectModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {
@@ -367,6 +571,7 @@ export function designerFile(filename: string): DesignerFile {
 }
 
 export type Theme = 'light' | 'dark'
+export const DefaultTheme: Theme = 'light'
 
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
@@ -380,6 +585,7 @@ export interface NavigatorState {
   dropTargetHint: DropTargetHint
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
+  highlightedTargets: Array<ElementPath>
 }
 
 export interface FloatingInsertMenuStateClosed {
@@ -593,25 +799,61 @@ export function editorStateCanvasTransientProperty(
   }
 }
 
+export function dragToMoveIndicatorFlags(
+  showIndicator: boolean,
+  dragType: 'absolute' | 'static',
+  reparent: 'same-component' | 'different-component' | 'none',
+  ancestor: boolean,
+): DragToMoveIndicatorFlags {
+  return {
+    showIndicator,
+    dragType,
+    reparent,
+    ancestor,
+  }
+}
+
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(
+  false,
+  'static',
+  'none',
+  false,
+)
+export interface DragToMoveIndicatorFlags {
+  showIndicator: boolean
+  dragType: 'absolute' | 'static'
+  reparent: 'same-component' | 'different-component' | 'none'
+  ancestor: boolean
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
-  snappingGuidelines: Array<GuidelineWithSnappingVector>
+  snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
   outlineHighlights: Array<CanvasRectangle>
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
+  flexReparentTargetLines: Array<CanvasRectangle>
+  parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
+  dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
 }
 
 export function editorStateCanvasControls(
-  snappingGuidelines: Array<GuidelineWithSnappingVector>,
+  snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
   outlineHighlights: Array<CanvasRectangle>,
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
+  flexReparentTargetLines: Array<CanvasRectangle>,
+  parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
+  dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
     outlineHighlights: outlineHighlights,
     strategyIntendedBounds: strategyIntendedBounds,
+    flexReparentTargetLines: flexReparentTargetLines,
+    parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
+    dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
   }
 }
 
@@ -707,6 +949,56 @@ export function editorStateInspector(
     visible: visible,
     classnameFocusCounter: classnameFocusCounter,
     layoutSectionHovered: layoutSectionHovered,
+  }
+}
+
+export interface DraggedImageProperties {
+  width: number
+  height: number
+  src: string
+}
+
+interface NotDragging {
+  type: 'NOT_DRAGGING'
+}
+
+interface DraggingFromFS {
+  type: 'DRAGGING_FROM_FS'
+}
+
+export interface DraggingFromSidebar {
+  type: 'DRAGGING_FROM_SIDEBAR'
+  draggedImageProperties: DraggedImageProperties | null
+}
+
+export type ImageDragSessionState = NotDragging | DraggingFromFS | DraggingFromSidebar
+
+export function notDragging(): NotDragging {
+  return { type: 'NOT_DRAGGING' }
+}
+
+export function draggingFromFS(): DraggingFromFS {
+  return { type: 'DRAGGING_FROM_FS' }
+}
+
+export function draggingFromSidebar(
+  draggedImage: DraggedImageProperties | null,
+): DraggingFromSidebar {
+  return {
+    type: 'DRAGGING_FROM_SIDEBAR',
+    draggedImageProperties: draggedImage,
+  }
+}
+
+export function draggedImageProperties(
+  width: number,
+  height: number,
+  src: string,
+): DraggedImageProperties {
+  return {
+    width,
+    height,
+    src,
   }
 }
 
@@ -828,6 +1120,107 @@ export type ElementProps = { [key: string]: any }
 
 export type AllElementProps = { [path: string]: ElementProps }
 
+export type LockedElements = {
+  simpleLock: Array<ElementPath>
+  hierarchyLock: Array<ElementPath>
+}
+
+export interface GithubRepo {
+  owner: string
+  repository: string
+}
+
+export function githubRepoFullName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return `${repo.owner}/${repo.repository}`
+}
+
+export function githubRepo(owner: string, repository: string): GithubRepo {
+  return {
+    owner: owner,
+    repository: repository,
+  }
+}
+
+export function githubRepoEquals(a: GithubRepo | null, b: GithubRepo | null): boolean {
+  return a?.owner === b?.owner && a?.repository === b?.repository
+}
+
+export interface PullRequest {
+  title: string
+  htmlURL: string
+  number: number
+}
+
+export interface ProjectGithubSettings {
+  targetRepository: GithubRepo | null
+  originCommit: string | null
+  branchName: string | null
+  pendingCommit: string | null
+  branchLoaded: boolean
+}
+
+export function projectGithubSettings(
+  targetRepository: GithubRepo | null,
+  originCommit: string | null,
+  branchName: string | null,
+  pendingCommit: string | null,
+  branchLoaded: boolean,
+): ProjectGithubSettings {
+  return {
+    targetRepository: targetRepository,
+    originCommit: originCommit,
+    branchName: branchName,
+    pendingCommit: pendingCommit,
+    branchLoaded: branchLoaded,
+  }
+}
+
+export function emptyGithubSettings(): ProjectGithubSettings {
+  return {
+    targetRepository: null,
+    originCommit: null,
+    branchName: null,
+    pendingCommit: null,
+    branchLoaded: false,
+  }
+}
+
+export interface GithubUser {
+  login: string
+  avatarURL: string
+  htmlURL: string
+  name: string | null
+}
+
+export interface GithubData {
+  branches: Array<GithubBranch> | null
+  publicRepositories: Array<RepositoryEntry>
+  treeConflicts: TreeConflicts
+  lastUpdatedAt: number | null
+  upstreamChanges: GithubFileChanges | null
+  currentBranchPullRequests: Array<PullRequest> | null
+  githubUserDetails: GithubUser | null
+  lastRefreshedCommit: string | null
+}
+
+export function emptyGithubData(): GithubData {
+  return {
+    branches: null,
+    publicRepositories: [],
+    treeConflicts: {},
+    lastUpdatedAt: null,
+    upstreamChanges: null,
+    currentBranchPullRequests: null,
+    githubUserDetails: null,
+    lastRefreshedCommit: null,
+  }
+}
+
+export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -842,13 +1235,17 @@ export interface EditorState {
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
+  branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
+  displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
+  lockedElements: LockedElements
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -887,11 +1284,18 @@ export interface EditorState {
   vscodeReady: boolean
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
-  theme: Theme
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
-  allElementProps: AllElementProps // the final, resolved, static props value for each element.
+  allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
+  _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  githubSettings: ProjectGithubSettings
+  imageDragSessionState: ImageDragSessionState
+  githubOperations: Array<GithubOperation>
+  githubChecksums: FileChecksums | null
+  githubData: GithubData
+  refreshingDependencies: boolean
+  assetChecksums: FileChecksums
 }
 
 export function editorState(
@@ -912,8 +1316,11 @@ export function editorState(
   nodeModules: EditorStateNodeModules,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
+  lockedElements: LockedElements,
   mode: Mode,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
@@ -952,11 +1359,19 @@ export function editorState(
   vscodeReady: boolean,
   focusedElementPath: ElementPath | null,
   config: UtopiaVSCodeConfig,
-  theme: Theme,
   vscodeLoadingScreenVisible: boolean,
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
+  _currentAllElementProps_KILLME: AllElementProps,
+  githubSettings: ProjectGithubSettings,
+  imageDragSessionState: ImageDragSessionState,
+  githubOperations: Array<GithubOperation>,
+  githubChecksums: FileChecksums | null,
+  branchContents: ProjectContentTreeRoot | null,
+  githubData: GithubData,
+  refreshingDependencies: boolean,
+  assetChecksums: FileChecksums,
 ): EditorState {
   return {
     id: id,
@@ -971,13 +1386,17 @@ export function editorState(
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
     projectContents: projectContents,
+    branchContents: branchContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     hiddenInstances: hiddenInstances,
+    displayNoneInstances: displayNoneInstances,
     warnedInstances: warnedInstances,
+    lockedElements: lockedElements,
     mode: mode,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
@@ -1016,11 +1435,18 @@ export function editorState(
     vscodeReady: vscodeReady,
     focusedElementPath: focusedElementPath,
     config: config,
-    theme: theme,
     vscodeLoadingScreenVisible: vscodeLoadingScreenVisible,
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
+    _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
+    githubSettings: githubSettings,
+    imageDragSessionState: imageDragSessionState,
+    githubOperations: githubOperations,
+    githubChecksums: githubChecksums,
+    githubData: githubData,
+    refreshingDependencies: refreshingDependencies,
+    assetChecksums: assetChecksums,
   }
 }
 
@@ -1512,6 +1938,7 @@ export type EditorStatePatch = Spec<EditorState>
 export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
+  hoveredViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
 }
@@ -1519,12 +1946,14 @@ export interface TransientCanvasState {
 export function transientCanvasState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
+  hoveredViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
+    hoveredViews: hoveredViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
   }
@@ -1581,7 +2010,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
 }
 
 export interface PersistentModel {
-  appID?: string | null
+  appID: string | null
   forkedFromProjectId: string | null
   projectVersion: number
   projectDescription: string
@@ -1605,6 +2034,10 @@ export interface PersistentModel {
   navigator: {
     minimised: boolean
   }
+  githubSettings: ProjectGithubSettings
+  githubChecksums: FileChecksums | null
+  branchContents: ProjectContentTreeRoot | null
+  assetChecksums: FileChecksums
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1644,6 +2077,10 @@ export function mergePersistentModel(
     navigator: {
       minimised: second.navigator.minimised,
     },
+    githubSettings: second.githubSettings,
+    githubChecksums: second.githubChecksums,
+    branchContents: second.branchContents,
+    assetChecksums: second.assetChecksums,
   }
 }
 
@@ -1686,8 +2123,14 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: [],
+    displayNoneInstances: [],
     warnedInstances: [],
+    lockedElements: {
+      simpleLock: [],
+      hierarchyLock: [],
+    },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
@@ -1699,7 +2142,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Contents,
+      selectedTab: LeftMenuTab.Project,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
@@ -1744,7 +2187,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
+        parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
@@ -1780,6 +2226,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       },
       collapsedViews: [],
       renamingTarget: null,
+      highlightedTargets: [],
     },
     topmenu: {
       formulaBarMode: 'content',
@@ -1811,11 +2258,19 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    _currentAllElementProps_KILLME: {},
+    githubSettings: emptyGithubSettings(),
+    imageDragSessionState: notDragging(),
+    githubOperations: [],
+    githubChecksums: null,
+    branchContents: null,
+    githubData: emptyGithubData(),
+    refreshingDependencies: false,
+    assetChecksums: {},
   }
 }
 
@@ -1977,8 +2432,14 @@ export function editorModelFromPersistentModel(
     },
     selectedViews: [],
     highlightedViews: [],
+    hoveredViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
+    displayNoneInstances: [],
     warnedInstances: [],
+    lockedElements: {
+      simpleLock: [],
+      hierarchyLock: [],
+    },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
@@ -1990,7 +2451,7 @@ export function editorModelFromPersistentModel(
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Contents,
+      selectedTab: LeftMenuTab.Project,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
@@ -2035,7 +2496,10 @@ export function editorModelFromPersistentModel(
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
+        parentHighlightPaths: null,
         reparentedToPaths: [],
+        dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
       },
     },
     floatingInsertMenu: {
@@ -2084,6 +2548,7 @@ export function editorModelFromPersistentModel(
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
+      highlightedTargets: [],
     },
     fileBrowser: {
       renamingTarget: null,
@@ -2095,11 +2560,19 @@ export function editorModelFromPersistentModel(
     vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    _currentAllElementProps_KILLME: {},
+    githubSettings: persistentModel.githubSettings,
+    imageDragSessionState: notDragging(),
+    githubOperations: [],
+    refreshingDependencies: false,
+    githubChecksums: persistentModel.githubChecksums,
+    branchContents: persistentModel.branchContents,
+    githubData: emptyGithubData(),
+    assetChecksums: {},
   }
   return editor
 }
@@ -2135,6 +2608,10 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     navigator: {
       minimised: editor.navigator.minimised,
     },
+    githubSettings: editor.githubSettings,
+    githubChecksums: editor.githubChecksums,
+    branchContents: editor.branchContents,
+    assetChecksums: editor.assetChecksums,
   }
 }
 
@@ -2166,6 +2643,10 @@ export function persistentModelForProjectContents(
     navigator: {
       minimised: false,
     },
+    githubSettings: emptyGithubSettings(),
+    githubChecksums: null,
+    branchContents: null,
+    assetChecksums: {},
   }
 }
 
@@ -2733,8 +3214,8 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(editor: EditorState): Theme {
-  return editor.theme
+export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
+  return userConfiguration.themeConfig ?? DefaultTheme
 }
 
 export function getNewSceneName(editor: EditorState): string {

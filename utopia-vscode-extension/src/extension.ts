@@ -346,6 +346,9 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
           .getConfiguration()
           .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Workspace)
         break
+      case 'SET_VSCODE_THEME':
+        vscode.workspace.getConfiguration().update('workbench.colorTheme', message.theme, true)
+        break
       case 'ACCUMULATED_TO_VSCODE_MESSAGE':
         for (const innerMessage of message.messages) {
           handleMessage(innerMessage)
@@ -451,21 +454,17 @@ function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): vo
 async function revealRangeIfPossible(
   workspaceRootUri: vscode.Uri,
   boundsInFile: BoundsInFile,
-  forceIfFocused: boolean = false,
 ): Promise<void> {
-  const focused = vscode.window.state.focused
-  if (forceIfFocused || !focused) {
-    const visibleEditor = vscode.window.visibleTextEditors.find(
-      (editor) => editor.document.uri.path === boundsInFile.filePath,
-    )
-    if (visibleEditor == null) {
-      const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
-      if (opened) {
-        revealRangeIfPossibleInVisibleEditor(boundsInFile)
-      }
-    } else {
+  const visibleEditor = vscode.window.visibleTextEditors.find(
+    (editor) => editor.document.uri.path === boundsInFile.filePath,
+  )
+  if (visibleEditor == null) {
+    const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
+    if (opened) {
       revealRangeIfPossibleInVisibleEditor(boundsInFile)
     }
+  } else {
+    revealRangeIfPossibleInVisibleEditor(boundsInFile)
   }
 }
 

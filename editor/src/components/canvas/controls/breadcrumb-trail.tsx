@@ -4,7 +4,7 @@ import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-perform
 import { Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { selectComponents } from '../../../components/editor/actions/action-creators'
+import { selectComponents } from '../../../components/editor/actions/meta-actions'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
@@ -24,7 +24,7 @@ export const BreadcrumbTrail = React.memo(() => {
   }, 'TopMenuContextProvider')
 
   const onSelect = React.useCallback(
-    (path: ElementPath) => dispatch([selectComponents([path], false)], 'everyone'),
+    (path: ElementPath) => dispatch(selectComponents([path], false), 'everyone'),
     [dispatch],
   )
 

@@ -44,7 +44,6 @@ body {
   letter-spacing: 0.2px;
   line-height: 17px;
   overflow: hidden;
-  cursor: default;
   outline: none;
   overscroll-behavior-x: contain;
 }

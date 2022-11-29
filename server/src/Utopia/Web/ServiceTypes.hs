@@ -24,11 +24,15 @@ import qualified Data.ByteString.Lazy      as BL
 import           Data.Generics.Product
 import           Data.Time
 import           Network.HTTP.Client       hiding (Cookie)
+import           Network.OAuth.OAuth2
 import           Protolude
-import           Servant
+import           Servant                   hiding (URI)
 import qualified Text.Blaze.Html5          as H
+import           URI.ByteString
+import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Web.Cookie
 
@@ -90,6 +94,7 @@ data ServiceCallsF a = NotFound
                      | BadRequest
                      | NotAuthenticated
                      | NotModified
+                     | TempRedirect URI
                      | CheckAuthCode Text (Maybe SetCookie -> a)
                      | Logout Text H.Html (SetSessionCookies H.Html -> a)
                      | ValidateAuth Text (Maybe SessionUser -> a)
@@ -124,9 +129,19 @@ data ServiceCallsF a = NotFound
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      | GetVSCodeAssetRoot (FilePath -> a)
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
-                     | SaveUserConfiguration Text (Maybe Value) a
+                     | SaveUserConfiguration Text (Maybe Value) (Maybe Value) a
                      | ClearBranchCache Text a
                      | GetDownloadBranchFolders ([FilePath] -> a)
+                     | GetGithubAuthorizationURI (URI -> a)
+                     | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
+                     | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
+                     | SaveToGithubRepo Text Text (Maybe Text) (Maybe Text) PersistentModel (SaveToGithubResponse -> a)
+                     | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
+                     | GetBranchContent Text Text Text Text (Maybe Text) (Maybe Text) (GetBranchContentResponse -> a)
+                     | GetUsersRepositories Text (GetUsersPublicRepositoriesResponse -> a)
+                     | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
+                     | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
+                     | GetGithubUserDetails Text (GetGithubUserResponse -> a)
                      deriving Functor
 
 {-
@@ -205,17 +220,19 @@ loggedIn :: Text
 loggedIn = "LOGGED_IN"
 
 instance ToJSON UserResponse where
-  toJSON NotLoggedIn         = object ["type" .= notLoggedIn]
-  toJSON (LoggedInUser user) = object ["type" .= loggedIn, "user" .= user]
+  toJSON NotLoggedIn                  = object ["type" .= notLoggedIn]
+  toJSON (LoggedInUser loggedInUser)  = object ["type" .= loggedIn, "user" .= loggedInUser]
 
 data UserConfigurationResponse = UserConfigurationResponse
-                               { _shortcutConfig :: Maybe Value
+                               { _shortcutConfig :: Maybe Value,
+                                _themeConfig     :: Maybe Value
                                } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationResponse)
 
 data UserConfigurationRequest = UserConfigurationRequest
-                              { _shortcutConfig :: Maybe Value
+                              { _shortcutConfig :: Maybe Value,
+                                _themeConfig    :: Maybe Value
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)

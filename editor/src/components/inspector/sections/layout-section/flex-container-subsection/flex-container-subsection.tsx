@@ -1,7 +1,7 @@
 import React from 'react'
 import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
@@ -12,8 +12,6 @@ import {
   FlexDirectionControl,
   getDirectionAwareLabels,
 } from './flex-container-controls'
-import { PropertyLabel } from '../../../widgets/property-label'
-import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
   // Right now flex layout isn't supported on groups, so just don't show the controls if a group is selected
@@ -22,7 +20,6 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const gap = useInspectorLayoutInfo('gap')
 
   const {
     justifyFlexStart,
@@ -38,15 +35,6 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
     flexWrap.value === FlexWrap.NoWrap ? 'disabled' : alignItems.controlStatus
   const alignItemsControlStyles: ControlStyles =
     flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
-
-  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    gap.onSubmitValue,
-    gap.onUnsetValues,
-  )
-  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    gap.onSubmitValue,
-    gap.onUnsetValues,
-  )
 
   return (
     <>
@@ -70,14 +58,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           justifyFlexEnd={justifyFlexEnd}
         />
       </UIGridRow>
-      <FlexGapControl
-        value={gap.value}
-        onSubmitValue={wrappedOnSubmitValue}
-        onTransientSubmitValue={wrappedOnTransientSubmitValue}
-        onUnset={gap.onUnsetValues}
-        controlStatus={gap.controlStatus}
-        controlStyles={gap.controlStyles}
-      />
+      <FlexGapControl />
       <FlexAlignItemsControl
         value={alignItems.value}
         controlStatus={alignItems.controlStatus}

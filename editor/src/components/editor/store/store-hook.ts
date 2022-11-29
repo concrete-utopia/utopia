@@ -143,8 +143,8 @@ export const EditorStateContext = React.createContext<EditorStateContextData | n
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)
 CanvasStateContext.displayName = 'CanvasStateContext'
-export const InspectorStateContext = React.createContext<EditorStateContextData | null>(null)
-InspectorStateContext.displayName = 'InspectorStateContext'
+export const LowPriorityStateContext = React.createContext<EditorStateContextData | null>(null)
+LowPriorityStateContext.displayName = 'LowPriorityStateContext'
 
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStorePatched, U>,

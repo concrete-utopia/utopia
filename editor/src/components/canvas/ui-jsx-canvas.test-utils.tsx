@@ -211,6 +211,7 @@ export function renderCanvasReturnResultAndError(
       base64FileBlobs: {},
       clearErrors: clearErrors,
       hiddenInstances: [],
+      displayNoneInstances: [],
       editedTextElement: null,
       mountCount: 0,
       domWalkerInvalidateCount: 0,
@@ -226,7 +227,6 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
-      elementsToRerender: 'rerender-all-elements',
     }
   } else {
     canvasProps = {
@@ -236,6 +236,7 @@ export function renderCanvasReturnResultAndError(
       curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       clearErrors: clearErrors,
+      displayNoneInstances: [],
       domWalkerInvalidateCount: 0,
       imports_KILLME: imports,
       canvasIsLive: false,
@@ -249,7 +250,6 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
-      elementsToRerender: 'rerender-all-elements',
     }
   }
 

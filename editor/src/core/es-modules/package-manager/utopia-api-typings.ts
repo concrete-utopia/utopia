@@ -55,7 +55,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/common';
   export * from 'utopia-api/primitives/view';
   export * from 'utopia-api/primitives/flex-views';
-  export * from 'utopia-api/primitives/text';
   export * from 'utopia-api/primitives/rectangle';
   export * from 'utopia-api/primitives/ellipse';
   export * from 'utopia-api/primitives/scene';
@@ -345,12 +344,6 @@ declare module 'utopia-api/primitives/scene' {
 declare module 'utopia-api/primitives/storyboard' {
   import React from 'react';
   export const Storyboard: React.MemoExoticComponent<(props: React.PropsWithChildren<any>) => JSX.Element>;
-
-}
-declare module 'utopia-api/primitives/text' {
-  import React from 'react';
-  import { ViewProps } from 'utopia-api/primitives/view';
-  export const Text: React.FunctionComponent<ViewProps>;
 
 }
 declare module 'utopia-api/primitives/view' {

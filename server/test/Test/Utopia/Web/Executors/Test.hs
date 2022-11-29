@@ -47,9 +47,9 @@ dropTestDatabase utopiaPool databaseName = do
   void $ DB.usePool utopiaPool $ \connection -> execute connection (fromString ("DROP DATABASE " <> databaseName)) ()
 
 initialiseTestResources :: DB.DBPool -> IO DevServerResources
-initialiseTestResources pool = do
+initialiseTestResources databasePool = do
   proxyHttpManager <- newManager defaultManagerSettings
-  sessionStore <- createSessionState pool
+  sessionStore <- createSessionState databasePool
   store <- newStore
   dbMetrics <- DB.createDatabaseMetrics store
   npmRegistryManager <- newManager tlsManagerSettings
@@ -61,13 +61,14 @@ initialiseTestResources pool = do
   (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   return $ DevServerResources
          { _commitHash = "nocommit"
-         , _projectPool = pool
+         , _projectPool = databasePool
          , D._serverPort = 8888
          , _silentMigration = True
          , _logOnStartup = False
          , _proxyManager = Just proxyHttpManager
          , _auth0Resources = Nothing
          , _awsResources = Nothing
+         , _githubResources = Nothing
          , _sessionState = sessionStore
          , _storeForMetrics = store
          , _databaseMetrics = dbMetrics

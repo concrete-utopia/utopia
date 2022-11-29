@@ -121,4 +121,4 @@ async function printAllDiffs(): Promise<void> {
   }
 }
 
-printAllDiffs()
+void printAllDiffs()

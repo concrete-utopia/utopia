@@ -25,14 +25,16 @@ import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { ModeSelectButtons } from './mode-select-buttons'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
-import { CanvasStrategyIndicator } from './controls/select-mode/canvas-strategy-indicator'
+import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { when } from '../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
+import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { TopMenu } from '../editor/top-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -58,11 +60,12 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
-  const { dispatch, editorState, derivedState } = useEditorState(
+  const { dispatch, editorState, derivedState, userState } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
       editorState: store.editor,
       derivedState: store.derived,
+      userState: store.userState,
     }),
     'CanvasWrapperComponent',
   )
@@ -97,6 +100,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     >
       {fatalErrors.length === 0 && !safeMode ? (
         <EditorCanvas
+          userState={userState}
           editor={editorState}
           model={createCanvasModelKILLME(editorState, derivedState)}
           dispatch={dispatch}
@@ -121,11 +125,17 @@ export const CanvasWrapperComponent = React.memo(() => {
             alignSelf: 'stretch',
             flexGrow: 1,
             position: 'relative',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
           }}
         >
+          <TopMenu />
+          <CanvasStrategyPicker />
+          <StrategyIndicator />
+          <CanvasToolbar />
+
+          {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-          <ModeSelectButtons />
-          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyIndicator />)}
         </FlexColumn>
       </FlexRow>
     </FlexColumn>

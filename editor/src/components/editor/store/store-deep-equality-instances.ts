@@ -9,6 +9,7 @@ import {
   assetFile,
   AssetFile,
   Directory,
+  ElementPath,
   esCodeFile,
   ESCodeFile,
   esRemoteDependencyPlaceholder,
@@ -50,7 +51,6 @@ import {
   reexportVariables,
   ReexportWildcard,
   reexportWildcard,
-  RevisionsState,
   RevisionsStateType,
   textFile,
   TextFile,
@@ -129,7 +129,6 @@ import {
   JSXAttributesEntry,
   jsxAttributesEntry,
   ImportInfo,
-  createImportedFrom,
   FoundImportInfo,
   JSXAttributesSpread,
   jsxAttributesSpread,
@@ -197,7 +196,6 @@ import {
   combine12EqualityCalls,
   combine11EqualityCalls,
   combine1EqualityCall,
-  combine14EqualityCalls,
   createCallWithShallowEquals,
   combine10EqualityCalls,
   ComplexMapKeepDeepEquality,
@@ -208,7 +206,7 @@ import {
   NullableStringKeepDeepEquality,
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
-  unionDeepEquality,
+  combine9EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -229,7 +227,6 @@ import {
   TransientFilesState,
   transientCanvasState,
   DerivedState,
-  EditorStatePatch,
   EditorStateNodeModules,
   editorStateNodeModules,
   EditorStateLeftMenu,
@@ -298,13 +295,34 @@ import {
   EditorStateHome,
   FileDeleteModal,
   fileDeleteModal,
+  fileOverwriteModal,
   ModalDialog,
   EditorStateCodeEditorErrors,
   ErrorMessages,
   editorStateCodeEditorErrors,
-  Theme,
   editorState,
   AllElementProps,
+  LockedElements,
+  ProjectGithubSettings,
+  GithubRepo,
+  githubRepo,
+  DraggedImageProperties,
+  draggedImageProperties,
+  ImageDragSessionState,
+  DraggingFromSidebar,
+  draggingFromSidebar,
+  fileUploadInfo,
+  FileUploadInfo,
+  FileOverwriteModal,
+  GithubOperation,
+  FileChecksums,
+  FileRevertModal,
+  fileRevertModal,
+  GithubData,
+  emptyGithubData,
+  DragToMoveIndicatorFlags,
+  dragToMoveIndicatorFlags,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -314,8 +332,8 @@ import {
   YAxisGuideline,
   cornerGuideline,
   Guideline,
-  GuidelineWithSnappingVector,
-  guidelineWithSnappingVector,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
+  guidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../canvas/guideline'
 import {
   boundingArea,
@@ -324,6 +342,9 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  ReorderSlider,
+  reorderSlider,
+  HoverInteractionData,
   InputData,
   interactionSession,
   InteractionSession,
@@ -331,8 +352,10 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  PaddingResizeHandle,
   resizeHandle,
   ResizeHandle,
+  BorderRadiusResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -374,21 +397,17 @@ import {
   FileEvaluationCache,
 } from '../../../core/es-modules/package-manager/package-manager'
 import {
-  dragAndDropInsertionSubject,
-  DragAndDropInsertionSubject,
+  ImageInsertionSubject,
   EditorModes,
-  elementInsertionSubject,
-  ElementInsertionSubject,
-  insertionParent,
+  insertionSubject,
   InsertionSubject,
   InsertMode,
   LiveCanvasMode,
   Mode,
-  sceneInsertionSubject,
-  SceneInsertionSubject,
   SelectMode,
   targetedInsertionParent,
   TargetedInsertionParent,
+  imageInsertionSubject,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -420,6 +439,26 @@ import {
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
+import { assertNever } from '../../../core/shared/utils'
+import {
+  assetResult,
+  AssetResult,
+  imageResult,
+  ImageResult,
+  FileResult,
+  TextResult,
+  textResult,
+} from '../../../core/shared/file-utils'
+import {
+  emptyGithubFileChanges,
+  GithubBranch,
+  GithubFileChanges,
+  GithubFileStatus,
+  repositoryEntry,
+  RepositoryEntry,
+  repositoryEntryPermissions,
+  RepositoryEntryPermissions,
+} from '../../../core/shared/github'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -429,10 +468,12 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
 }
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.hoveredViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
@@ -1178,7 +1219,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
-    )
+    ).areEqual
     const usesParentBoundsResult = oldSize.usesParentBounds === newSize.usesParentBounds
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
     const layoutSystemForChildrenResult =
@@ -1193,6 +1234,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
+    const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
@@ -1201,12 +1243,20 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const floatEquals = oldSize.float === newSize.float
+    const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
+    const textDirectionEquals = oldSize.parentTextDirection === newSize.parentTextDirection
+    const hasTransformEquals = oldSize.hasTransform === newSize.hasTransform
+    const borderRadiusEquals = nullableDeepEquality(SidesKeepDeepEquality)(
+      oldSize.borderRadius,
+      newSize.borderRadius,
+    ).areEqual
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
       immediateParentBoundsResult.areEqual &&
       immediateParentProvidesLayoutResult &&
-      closestOffsetParentPathResult.areEqual &&
+      closestOffsetParentPathResult &&
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
@@ -1219,11 +1269,17 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientWidthResult &&
       clientHeightResult &&
       parentFlexDirectionResult &&
+      flexGapEquals &&
       flexDirectionResult &&
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      floatEquals &&
+      hasPositionOffsetEquals &&
+      textDirectionEquals &&
+      hasTransformEquals &&
+      borderRadiusEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1246,10 +1302,16 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientWidth,
         newSize.clientHeight,
         newSize.parentFlexDirection,
+        newSize.parentFlexGap,
         newSize.flexDirection,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.float,
+        newSize.hasPositionOffset,
+        newSize.parentTextDirection,
+        newSize.hasTransform,
+        newSize.borderRadius,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -1389,6 +1451,9 @@ export const MultiFileBuildResultKeepDeepEquality: KeepDeepEqualityCall<MultiFil
 export const PackageStatusKeepDeepEquality: KeepDeepEqualityCall<PackageStatus> =
   createCallWithTripleEquals()
 
+export const GithubFileStatusKeepDeepEquality: KeepDeepEqualityCall<GithubFileStatus> =
+  createCallWithTripleEquals()
+
 export const PackageDetailsKeepDeepEquality: KeepDeepEqualityCall<PackageDetails> =
   combine1EqualityCall((details) => details.status, PackageStatusKeepDeepEquality, packageDetails)
 
@@ -1518,27 +1583,46 @@ export const GuidelineKeepDeepEquality: KeepDeepEqualityCall<Guideline> = (oldVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVector> =
+export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVectorAndPointsOfRelevance> =
   combine3EqualityCalls(
     (guideline) => guideline.guideline,
     GuidelineKeepDeepEquality,
     (guideline) => guideline.snappingVector,
     CanvasPointKeepDeepEquality,
-    (guideline) => guideline.activateSnap,
-    createCallWithTripleEquals(),
-    guidelineWithSnappingVector,
+    (guideline) => guideline.pointsOfRelevance,
+    arrayDeepEquality(CanvasPointKeepDeepEquality),
+    guidelineWithSnappingVectorAndPointsOfRelevance,
+  )
+
+export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<DragToMoveIndicatorFlags> =
+  combine4EqualityCalls(
+    (indicatorFlag) => indicatorFlag.showIndicator,
+    BooleanKeepDeepEquality,
+    (indicatorFlag) => indicatorFlag.dragType,
+    createCallWithTripleEquals<'absolute' | 'static'>(),
+    (indicatorFlag) => indicatorFlag.reparent,
+    createCallWithTripleEquals<'same-component' | 'different-component' | 'none'>(),
+    (indicatorFlag) => indicatorFlag.ancestor,
+    BooleanKeepDeepEquality,
+    dragToMoveIndicatorFlags,
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine4EqualityCalls(
+  combine7EqualityCalls(
     (controls) => controls.snappingGuidelines,
-    arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
+    arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
     arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    (controls) => controls.flexReparentTargetLines,
+    arrayDeepEquality(CanvasRectangleKeepDeepEquality),
+    (controls) => controls.parentHighlightPaths,
+    nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
+    (controls) => controls.dragToMoveIndicatorFlags,
+    DragToMoveIndicatorFlagsKeepDeepEquality,
     editorStateCanvasControls,
   )
 
@@ -1562,7 +1646,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine6EqualityCalls(
+  combine9EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1575,7 +1659,23 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     ModifiersKeepDeepEquality,
     (data) => data.globalTime,
     createCallWithTripleEquals(),
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime) => {
+    (data) => data.hasMouseMoved,
+    BooleanKeepDeepEquality,
+    (data) => data._accumulatedMovement,
+    CanvasPointKeepDeepEquality,
+    (data) => data.spacePressed,
+    BooleanKeepDeepEquality,
+    (
+      dragStart,
+      drag,
+      prevDrag,
+      originalDragStart,
+      modifiers,
+      globalTime,
+      hasMouseMoved,
+      accumulatedMovement,
+      spacePressed,
+    ) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1584,6 +1684,24 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         originalDragStart: originalDragStart,
         modifiers: modifiers,
         globalTime: globalTime,
+        hasMouseMoved: hasMouseMoved,
+        _accumulatedMovement: accumulatedMovement,
+        spacePressed: spacePressed,
+      }
+    },
+  )
+
+export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
+  combine2EqualityCalls(
+    (data) => data.point,
+    CanvasPointKeepDeepEquality,
+    (data) => data.modifiers,
+    ModifiersKeepDeepEquality,
+    (point, modifiers) => {
+      return {
+        type: 'HOVER',
+        point: point,
+        modifiers: modifiers,
       }
     },
   )
@@ -1625,6 +1743,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
         return KeyboardInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'HOVER':
+      if (newValue.type === oldValue.type) {
+        return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1640,9 +1763,10 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
     createCallWithTripleEquals(),
     edgePosition,
   )
-
-export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> =
-  combine1EqualityCall((area) => area.target, ElementPathKeepDeepEquality, boundingArea)
+boundingArea() // this is here to break if the definition of boundingArea changes
+export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
@@ -1660,6 +1784,28 @@ export const FlexGapHandleKeepDeepEquality: KeepDeepEqualityCall<FlexGapHandle> 
 keyboardCatcherControl()
 export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   KeyboardCatcherControl
+> = (oldValue, newValue) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingResizeHandle> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+// This will break should the definition of `ReorderSlider` change.
+reorderSlider()
+export const ReorderSliderKeepDeepEquality: KeepDeepEqualityCall<ReorderSlider> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
+  BorderRadiusResizeHandle
 > = (oldValue, newValue) => {
   return keepDeepEqualityResult(oldValue, true)
 }
@@ -1689,6 +1835,21 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'PADDING_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return PaddingResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'REORDER_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return ReorderSliderKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'BORDER_RADIUS_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1697,23 +1858,25 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
 }
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine8EqualityCalls(
+  combine9EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
     CanvasControlTypeKeepDeepEquality,
-    (session) => session.sourceOfUpdate,
-    CanvasControlTypeKeepDeepEquality,
     (session) => session.lastInteractionTime,
     createCallWithTripleEquals(),
-    (session) => session.metadata,
+    (session) => session.latestMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (sesssion) => sesssion.userPreferredStrategy,
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.startedAt,
     createCallWithTripleEquals(),
-    (session) => session.allElementProps,
+    (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
+    (session) => session.updatedTargetPaths,
+    objectDeepEquality(ElementPathKeepDeepEquality),
+    (session) => session.aspectRatioLock,
+    nullableDeepEquality(createCallWithTripleEquals()),
     interactionSession,
   )
 
@@ -2197,7 +2360,7 @@ export const TextFileKeepDeepEquality: KeepDeepEqualityCall<TextFile> = combine4
   textFile,
 )
 
-export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combine5EqualityCalls(
+export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combine6EqualityCalls(
   (file) => file.imageType,
   undefinableDeepEquality(StringKeepDeepEquality),
   (file) => file.base64,
@@ -2208,11 +2371,15 @@ export const ImageFileKeepDeepEquality: KeepDeepEqualityCall<ImageFile> = combin
   undefinableDeepEquality(NumberKeepDeepEquality),
   (file) => file.hash,
   NumberKeepDeepEquality,
+  (file) => file.gitBlobSha,
+  undefinableDeepEquality(StringKeepDeepEquality),
   imageFile,
 )
 
-export const AssetFileKeepDeepEquality: KeepDeepEqualityCall<AssetFile> = combine1EqualityCall(
+export const AssetFileKeepDeepEquality: KeepDeepEqualityCall<AssetFile> = combine2EqualityCalls(
   (file) => file.base64,
+  undefinableDeepEquality(StringKeepDeepEquality),
+  (file) => file.gitBlobSha,
   undefinableDeepEquality(StringKeepDeepEquality),
   assetFile,
 )
@@ -2286,6 +2453,22 @@ export function ProjectContentsTreeKeepDeepEquality(): KeepDeepEqualityCall<Proj
 
 export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<ProjectContentTreeRoot> {
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
+}
+
+const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> = (
+  oldAttribute,
+  newAttribute,
+) => {
+  if (oldAttribute == null && newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, true)
+  }
+  if (oldAttribute == null) {
+    return keepDeepEqualityResult(newAttribute, false)
+  }
+  if (newAttribute == null) {
+    return keepDeepEqualityResult(oldAttribute, false)
+  }
+  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
 }
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
@@ -2438,69 +2621,33 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
-export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubject> =
+export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine5EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
-    (subject) => subject.size,
+    (subject) => subject.defaultSize,
     nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
-    elementInsertionSubject,
+    insertionSubject,
   )
 
-// Here to trigger failure in the case of `SceneInsertionSubject` changing it's definition.
-sceneInsertionSubject()
-export const SceneInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<SceneInsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const DragAndDropInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<DragAndDropInsertionSubject> =
-  combine1EqualityCall(
-    (subject) => subject.imageAssets,
-    nullableDeepEquality(arrayDeepEquality(StringKeepDeepEquality)),
-    dragAndDropInsertionSubject,
+export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
+  combine2EqualityCalls(
+    (s) => s.file,
+    ImageFileKeepDeepEquality,
+    (s) => s.path,
+    StringKeepDeepEquality,
+    imageInsertionSubject,
   )
 
-export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'Element':
-      if (newValue.type === oldValue.type) {
-        return ElementInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'Scene':
-      if (newValue.type === oldValue.type) {
-        return SceneInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DragAndDrop':
-      if (newValue.type === oldValue.type) {
-        return DragAndDropInsertionSubjectKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
-export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine2EqualityCalls(
-  (mode) => mode.insertionStarted,
-  BooleanKeepDeepEquality,
-  (mode) => mode.subject,
-  InsertionSubjectKeepDeepEquality,
+export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
+  (mode) => mode.subjects,
+  arrayDeepEquality(InsertionSubjectKeepDeepEquality),
   EditorModes.insertMode,
 )
 
@@ -2715,6 +2862,52 @@ export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorSt
     editorStateInspector,
   )
 
+export const DraggedImagePropertiesDeepEquality: KeepDeepEqualityCall<DraggedImageProperties> =
+  combine3EqualityCalls(
+    (draggedImage) => draggedImage.width,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.height,
+    NumberKeepDeepEquality,
+    (draggedImage) => draggedImage.src,
+    StringKeepDeepEquality,
+    draggedImageProperties,
+  )
+
+export const DraggingFromSidebarKeepDeepEquality: KeepDeepEqualityCall<DraggingFromSidebar> =
+  combine2EqualityCalls(
+    (d) => d.draggedImageProperties,
+    nullableDeepEquality(DraggedImagePropertiesDeepEquality),
+    (d) => d.type,
+    StringKeepDeepEquality,
+    draggingFromSidebar,
+  )
+
+export const DragSessionStateKeepDeepEquality: KeepDeepEqualityCall<ImageDragSessionState> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'NOT_DRAGGING':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_FS':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'DRAGGING_FROM_SIDEBAR':
+      if (newValue.type === oldValue.type) {
+        return DraggingFromSidebarKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateFileBrowserKeepDeepEquality: KeepDeepEqualityCall<EditorStateFileBrowser> =
   combine3EqualityCalls(
     (fileBrowser) => fileBrowser.minimised,
@@ -2774,6 +2967,18 @@ export const EditorStatePreviewKeepDeepEquality: KeepDeepEqualityCall<EditorStat
 
 export const EditorStateHomeKeepDeepEquality: KeepDeepEqualityCall<EditorStateHome> =
   combine1EqualityCall((preview) => preview.visible, BooleanKeepDeepEquality, editorStateHome)
+
+export const EditorStateLockedElementsDeepEquality: KeepDeepEqualityCall<LockedElements> =
+  combine2EqualityCalls(
+    (locked) => locked.simpleLock,
+    ElementPathArrayKeepDeepEquality,
+    (locked) => locked.hierarchyLock,
+    ElementPathArrayKeepDeepEquality,
+    (simpleLock: Array<ElementPath>, hierarchyLock: Array<ElementPath>) => ({
+      simpleLock: simpleLock,
+      hierarchyLock: hierarchyLock,
+    }),
+  )
 
 export function CSSColorKeepDeepEquality(
   oldValue: CSSColor,
@@ -2855,8 +3060,127 @@ export const FontSettingsKeepDeepEquality: KeepDeepEqualityCall<FontSettings> =
 export const FileDeleteModalKeepDeepEquality: KeepDeepEqualityCall<FileDeleteModal> =
   combine1EqualityCall((modal) => modal.filePath, StringKeepDeepEquality, fileDeleteModal)
 
-export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> =
-  FileDeleteModalKeepDeepEquality
+export const AssetResultKeepDeepEquality: KeepDeepEqualityCall<AssetResult> = combine3EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  assetResult,
+)
+
+export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = combine5EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.base64Bytes,
+  StringKeepDeepEquality,
+  (result) => result.size,
+  SizeKeepDeepEquality,
+  (result) => result.fileType,
+  StringKeepDeepEquality,
+  (result) => result.hash,
+  NumberKeepDeepEquality,
+  imageResult,
+)
+
+export const TextResultKeepDeepEquality: KeepDeepEqualityCall<TextResult> = combine2EqualityCalls(
+  (result) => result.filename,
+  StringKeepDeepEquality,
+  (result) => result.content,
+  StringKeepDeepEquality,
+  textResult,
+)
+
+export const FileResultKeepDeepEquality: KeepDeepEqualityCall<FileResult> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'ASSET_RESULT':
+      if (newValue.type === oldValue.type) {
+        return AssetResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMAGE_RESULT':
+      if (newValue.type === oldValue.type) {
+        return ImageResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TEXT_RESULT':
+      if (newValue.type === oldValue.type) {
+        return TextResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const FileUploadInfoKeepDeepEquality: KeepDeepEqualityCall<FileUploadInfo> =
+  combine2EqualityCalls(
+    (file) => file.fileResult,
+    FileResultKeepDeepEquality,
+    (file) => file.targetPath,
+    StringKeepDeepEquality,
+    fileUploadInfo,
+  )
+
+export const FileOverwriteModalKeepDeepEquality: KeepDeepEqualityCall<FileOverwriteModal> =
+  combine1EqualityCall(
+    (modal) => modal.files,
+    arrayDeepEquality(FileUploadInfoKeepDeepEquality),
+    fileOverwriteModal,
+  )
+
+export const FileRevertModalKeepDeepEquality: KeepDeepEqualityCall<FileRevertModal> =
+  combine2EqualityCalls(
+    (modal) => modal.filePath,
+    StringKeepDeepEquality,
+    (modal) => modal.status,
+    nullableDeepEquality(GithubFileStatusKeepDeepEquality),
+    fileRevertModal,
+  )
+
+export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'file-delete':
+      if (newValue.type === oldValue.type) {
+        return FileDeleteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-overwrite':
+      if (newValue.type === oldValue.type) {
+        return FileOverwriteModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-revert':
+      if (newValue.type === oldValue.type) {
+        return FileRevertModalKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'file-revert-all':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      } else {
+        return keepDeepEqualityResult(newValue, false)
+      }
+    case 'disconnect-github-project':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      } else {
+        return keepDeepEqualityResult(newValue, false)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const ProjectListingKeepDeepEquality: KeepDeepEqualityCall<ProjectListing> =
   combine5EqualityCalls(
@@ -2903,6 +3227,104 @@ export const UtopiaVSCodeConfigKeepDeepEquality: KeepDeepEqualityCall<UtopiaVSCo
       }
     },
   )
+
+export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = combine2EqualityCalls(
+  (repo) => repo.owner,
+  createCallWithTripleEquals(),
+  (repo) => repo.repository,
+  createCallWithTripleEquals(),
+  githubRepo,
+)
+
+export const GithubBranchKeepDeepEquality: KeepDeepEqualityCall<GithubBranch> =
+  combine1EqualityCall(
+    (branch) => branch.name,
+    StringKeepDeepEquality,
+    (name: string): GithubBranch => ({ name }),
+  )
+
+export const RepositoryEntryPermissionsKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntryPermissions> =
+  combine3EqualityCalls(
+    (p) => p.admin,
+    BooleanKeepDeepEquality,
+    (p) => p.pull,
+    BooleanKeepDeepEquality,
+    (p) => p.push,
+    BooleanKeepDeepEquality,
+    repositoryEntryPermissions,
+  )
+
+export const RepositoryEntryKeepDeepEquality: KeepDeepEqualityCall<RepositoryEntry> =
+  combine8EqualityCalls(
+    (r) => r.avatarUrl,
+    NullableStringKeepDeepEquality,
+    (r) => r.isPrivate,
+    BooleanKeepDeepEquality,
+    (r) => r.fullName,
+    StringKeepDeepEquality,
+    (r) => r.name,
+    StringKeepDeepEquality,
+    (r) => r.description,
+    NullableStringKeepDeepEquality,
+    (r) => r.updatedAt,
+    NullableStringKeepDeepEquality,
+    (r) => r.defaultBranch,
+    StringKeepDeepEquality,
+    (r) => r.permissions,
+    RepositoryEntryPermissionsKeepDeepEquality,
+    repositoryEntry,
+  )
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine5EqualityCalls(
+    (settings) => settings.targetRepository,
+    nullableDeepEquality(GithubRepoKeepDeepEquality),
+    (settings) => settings.originCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchName,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.pendingCommit,
+    nullableDeepEquality(createCallWithTripleEquals<string>()),
+    (settings) => settings.branchLoaded,
+    BooleanKeepDeepEquality,
+    projectGithubSettings,
+  )
+
+export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
+  combine3EqualityCalls(
+    (settings) => settings.modified,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (settings) => settings.untracked,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (settings) => settings.deleted,
+    arrayDeepEquality(StringKeepDeepEquality),
+    emptyGithubFileChanges,
+  )
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
+  (data) => data.branches,
+  nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
+  (data) => data.publicRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.lastUpdatedAt,
+  NullableNumberKeepDeepEquality,
+  (data) => data.upstreamChanges,
+  nullableDeepEquality(GithubFileChangesKeepDeepEquality),
+  emptyGithubData,
+)
+
+export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.name !== newValue.name) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
+  arrayDeepEquality(GithubOperationKeepDeepEquality)
 
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
@@ -2968,13 +3390,27 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.highlightedViews,
     newValue.highlightedViews,
   )
+  const hoveredViewsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.hoveredViews,
+    newValue.hoveredViews,
+  )
   const hiddenInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.hiddenInstances,
     newValue.hiddenInstances,
   )
+
+  const displayNoneInstancesResult = ElementPathArrayKeepDeepEquality(
+    oldValue.displayNoneInstances,
+    newValue.displayNoneInstances,
+  )
+
   const warnedInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.warnedInstances,
     newValue.warnedInstances,
+  )
+  const lockedElementsResult = EditorStateLockedElementsDeepEquality(
+    oldValue.lockedElements,
+    newValue.lockedElements,
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
@@ -3095,7 +3531,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.focusedElementPath,
   )
   const configResults = UtopiaVSCodeConfigKeepDeepEquality(oldValue.config, newValue.config)
-  const themeResults = createCallWithTripleEquals<Theme>()(oldValue.theme, newValue.theme)
   const vscodeLoadingScreenVisibleResults = BooleanKeepDeepEquality(
     oldValue.vscodeLoadingScreenVisible,
     newValue.vscodeLoadingScreenVisible,
@@ -3111,6 +3546,47 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const allElementPropsResults = createCallFromIntrospectiveKeepDeep<AllElementProps>()(
     oldValue.allElementProps,
     newValue.allElementProps,
+  )
+  const _currentAllElementProps_KILLME_Results =
+    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+      oldValue._currentAllElementProps_KILLME,
+      newValue._currentAllElementProps_KILLME,
+    )
+  const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
+    oldValue.githubSettings,
+    newValue.githubSettings,
+  )
+
+  const imageDragSessionStateEqual = DragSessionStateKeepDeepEquality(
+    oldValue.imageDragSessionState,
+    newValue.imageDragSessionState,
+  )
+
+  const githubOperationsResults = GithubOperationsKeepDeepEquality(
+    oldValue.githubOperations,
+    newValue.githubOperations,
+  )
+
+  const githubChecksumsResults = FileChecksumsKeepDeepEquality(
+    oldValue.githubChecksums,
+    newValue.githubChecksums,
+  )
+
+  const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
+    oldValue.branchContents,
+    newValue.branchContents,
+  )
+
+  const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
+
+  const refreshingDependenciesResults = BooleanKeepDeepEquality(
+    oldValue.refreshingDependencies,
+    newValue.refreshingDependencies,
+  )
+
+  const assetChecksumsResults = objectDeepEquality(StringKeepDeepEquality)(
+    oldValue.assetChecksums,
+    newValue.assetChecksums,
   )
 
   const areEqual =
@@ -3131,8 +3607,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     nodeModulesResult.areEqual &&
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
+    hoveredViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
+    displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
+    lockedElementsResult.areEqual &&
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
@@ -3171,11 +3650,19 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeReadyResults.areEqual &&
     focusedElementPathResults.areEqual &&
     configResults.areEqual &&
-    themeResults.areEqual &&
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
-    allElementPropsResults.areEqual
+    allElementPropsResults.areEqual &&
+    _currentAllElementProps_KILLME_Results.areEqual &&
+    githubSettingsResults.areEqual &&
+    imageDragSessionStateEqual.areEqual &&
+    githubOperationsResults.areEqual &&
+    githubChecksumsResults.areEqual &&
+    branchContentsResults.areEqual &&
+    githubDataResults.areEqual &&
+    refreshingDependenciesResults.areEqual &&
+    assetChecksumsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3198,8 +3685,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       nodeModulesResult.value,
       selectedViewsResult.value,
       highlightedViewsResult.value,
+      hoveredViewsResult.value,
       hiddenInstancesResult.value,
+      displayNoneInstancesResult.value,
       warnedInstancesResult.value,
+      lockedElementsResult.value,
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,
@@ -3238,11 +3728,19 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       vscodeReadyResults.value,
       focusedElementPathResults.value,
       configResults.value,
-      themeResults.value,
       vscodeLoadingScreenVisibleResults.value,
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      _currentAllElementProps_KILLME_Results.value,
+      githubSettingsResults.value,
+      imageDragSessionStateEqual.value,
+      githubOperationsResults.value,
+      githubChecksumsResults.value,
+      branchContentsResults.value,
+      githubDataResults.value,
+      refreshingDependenciesResults.value,
+      assetChecksumsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

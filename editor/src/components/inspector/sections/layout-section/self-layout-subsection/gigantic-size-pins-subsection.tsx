@@ -324,6 +324,8 @@ function flexStyleNumberControl(label: string, styleProp: StyleLayoutNumberProp)
 
 const spacingButton = <SquareButton />
 
+export const AspectRatioLockButtonTestId = 'AspectRatioLockButton'
+
 interface WidthHeightRowProps {
   layoutType: SelfLayoutTab
   toggleMinMax: () => void
@@ -394,7 +396,11 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
       </div>
       <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
         {widthControl}
-        <SquareButton onClick={toggleAspectRatioLock} style={{ width: 16, height: 16 }}>
+        <SquareButton
+          data-testid={AspectRatioLockButtonTestId}
+          onClick={toggleAspectRatioLock}
+          style={{ width: 16, height: 16 }}
+        >
           {aspectRatioLocked ? <Icons.LockClosed /> : <Icons.LockOpen />}
         </SquareButton>
         {heightControl}

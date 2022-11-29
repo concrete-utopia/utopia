@@ -1,4 +1,4 @@
-import { aperture, intersection } from './array-utils'
+import { aperture, intersection, mapAndFilter } from './array-utils'
 
 describe('intersection', () => {
   it('two empty arrays should return an empty array', () => {
@@ -44,5 +44,24 @@ describe('aperture', () => {
   it('should return a single element array when the window is larger than the input', () => {
     const actualResult = aperture(20, [1, 2, 3, 4, 5, 6])
     expect(actualResult).toEqual([[1, 2, 3, 4, 5, 6]])
+  })
+})
+
+describe('mapAndFilter', () => {
+  const input = [1, 2, 3, 4, 5]
+  const mapFn = (n: number) => n + 10
+  const filter = (n: number) => n % 2 === 0
+
+  it('should correctly map an array', () => {
+    const actualResult = mapAndFilter(mapFn, () => true, input)
+    expect(actualResult).toEqual([11, 12, 13, 14, 15])
+  })
+  it('should correctly filter an array', () => {
+    const actualResult = mapAndFilter((n) => n, filter, input)
+    expect(actualResult).toEqual([2, 4])
+  })
+  it('should correctly map and filter an array', () => {
+    const actualResult = mapAndFilter(mapFn, filter, input)
+    expect(actualResult).toEqual([12, 14])
   })
 })

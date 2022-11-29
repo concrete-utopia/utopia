@@ -4,6 +4,7 @@ import {
 } from '../../components/custom-code/code-file'
 import {
   defaultFlexRowOrColStyle,
+  defaultRectangleElementStyle,
   defaultSceneElementStyle,
   defaultTextElementStyle,
   defaultViewElementStyle,
@@ -52,8 +53,7 @@ const BasicUtopiaComponentDescriptor = (
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
   Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultViewElementStyle()),
-  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultViewElementStyle()),
-  Text: BasicUtopiaComponentDescriptor('Text', defaultTextElementStyle()),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultRectangleElementStyle()),
   View: BasicUtopiaComponentDescriptor('View', defaultViewElementStyle()),
   FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
   FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),

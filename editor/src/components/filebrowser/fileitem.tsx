@@ -5,7 +5,7 @@ import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
+import { ImageFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
@@ -15,7 +15,6 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
-import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
@@ -26,7 +25,6 @@ import {
   flexRowStyle,
   OnClickOutsideHOC,
   StringInput,
-  //TODO: switch to functional component and make use of 'useColorTheme':
   colorTheme,
   UtopiaTheme,
   SimpleFlexRow,
@@ -35,6 +33,21 @@ import {
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import CanvasActions from '../canvas/canvas-actions'
+import { imagePathURL } from '../../common/server'
+import { useEditorState } from '../editor/store/store-hook'
+import { EditorModes } from '../editor/editor-modes'
+import {
+  DraggedImageProperties,
+  draggingFromSidebar,
+  notDragging,
+} from '../editor/store/editor-state'
+import { fileExists } from '../../core/model/project-file-utils'
+import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { GithubFileStatus } from '../../core/shared/github'
+import { getFilenameParts } from '../images'
+import { getConflictMenuItems } from '../../core/shared/github-ui'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -46,17 +59,13 @@ export interface FileBrowserItemProps extends FileBrowserItemInfo {
   toggleCollapse: (filePath: string) => void
   expand: (filePath: string) => void
   setSelected: (selectedItem: FileBrowserItemInfo | null) => void
+  generateNewUid: () => string
 }
 
 interface FileBrowserItemState {
   isRenaming: boolean
   isHovered: boolean
   adding: AddingFile | null
-  // we need the following to keep track of 'internal' exits,
-  // eg when moving from the outer folder div to a span with the folder name inside it
-  // see https://medium.com/@650egor/simple-drag-and-drop-file-upload-in-react-2cb409d88929
-  currentExternalFilesDragEventCounter: number
-  externalFilesDraggedIn: boolean
   filename: string
   pathParts: Array<string>
 }
@@ -197,6 +206,36 @@ const isFile = (fileBrowserItem: FileBrowserItemInfo) => {
   return fileBrowserItem.type === 'file'
 }
 
+export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
+  // NOTE: these are placeholder colors, we should update them once we finalize the design
+  switch (type) {
+    case 'untracked':
+      return colorTheme.githubMUDUntracked.value
+    case 'modified':
+      return colorTheme.githubMUDModified.value
+    case 'deleted':
+      return colorTheme.githubMUDDeleted.value
+    default:
+      return colorTheme.githubMUDDefault.value
+  }
+}
+
+export const GithubFileStatusLetter: React.FunctionComponent<{ status: GithubFileStatus }> = (
+  props,
+) => {
+  return (
+    <div
+      style={{
+        fontWeight: 500,
+        width: 15,
+        color: getGithubFileStatusColor(props.status),
+      }}
+    >
+      {props.status.charAt(0).toUpperCase()}
+    </div>
+  )
+}
+
 export function addingChildElement(
   indentation: number,
   addingChildName: string,
@@ -245,8 +284,6 @@ class FileBrowserItemInner extends React.PureComponent<
       isRenaming: false,
       isHovered: false,
       adding: null,
-      currentExternalFilesDragEventCounter: 0,
-      externalFilesDraggedIn: false,
       filename: '',
       pathParts: [],
     }
@@ -271,6 +308,16 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   toggleCollapse = () => this.props.toggleCollapse(this.props.path)
+
+  renderGithubStatus = () => {
+    if (this.props.conflict != null) {
+      return <GithubFileStatusLetter status={'conflicted'} />
+    }
+    if (this.props.githubStatus != undefined) {
+      return <GithubFileStatusLetter status={this.props.githubStatus} />
+    }
+    return null
+  }
 
   renderIcon() {
     return (
@@ -415,8 +462,8 @@ class FileBrowserItemInner extends React.PureComponent<
       name: `Rename ${
         this.props.fileType != null
           ? this.props.fileType === 'DIRECTORY'
-            ? 'Folder'
-            : 'File'
+            ? 'folder'
+            : 'file'
           : 'this'
       }`,
       enabled: this.props.fileType != null && canRename(this.props),
@@ -429,6 +476,24 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
+  revertContextMenuItem(): ContextMenuItem<unknown> {
+    return {
+      name: `Revert changes`,
+      enabled: this.props.githubStatus != null,
+      action: (_data: unknown, dispatch?: EditorDispatch) => {
+        requireDispatch(dispatch)(
+          [
+            EditorActions.showModal({
+              type: 'file-revert',
+              filePath: this.props.path,
+              status: this.props.githubStatus ?? null,
+            }),
+          ],
+          'everyone',
+        )
+      },
+    }
+  }
   delete = () => {
     this.props.dispatch(
       [
@@ -448,13 +513,14 @@ class FileBrowserItemInner extends React.PureComponent<
       event.stopPropagation()
     }
 
-    this.setState({
-      externalFilesDraggedIn: false,
-      currentExternalFilesDragEventCounter: 0,
-    })
+    this.props.dispatch([
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setFilebrowserDropTarget(null),
+    ])
 
-    parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
+    void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
+      let overwriteFiles: Array<FileUploadInfo> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
         let targetPath: string | null = null
         let replace = false
@@ -474,9 +540,16 @@ class FileBrowserItemInner extends React.PureComponent<
         }
 
         if (targetPath != null) {
-          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          if (fileExists(this.props.projectContents, targetPath)) {
+            overwriteFiles.push({ fileResult: resultFile, targetPath: targetPath })
+          } else {
+            actions.push(fileResultUploadAction(resultFile, targetPath, replace))
+          }
         }
       })
+      if (overwriteFiles.length > 1) {
+        actions.push(EditorActions.showModal(fileOverwriteModal(overwriteFiles)))
+      }
       this.props.dispatch(actions, 'everyone')
     })
   }
@@ -498,7 +571,37 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  onItemMouseDown = (e: React.MouseEvent) => {
+  onDragEnter = (e: React.DragEvent) => {
+    // this disables react-dnd while dropping external files
+    if (
+      this.props.isOver ||
+      (e.dataTransfer?.items != null &&
+        Array.from(e.dataTransfer?.items).filter((item) => item.kind === 'file').length === 0)
+    ) {
+      return
+    }
+    const filesBeingDragged = e.dataTransfer?.items?.length ?? 0
+    if (filesBeingDragged > 0) {
+      this.setState({ isHovered: true })
+    }
+    const targetDirectory =
+      this.props.fileType === 'DIRECTORY' ? this.props.path : getParentDirectory(this.props.path)
+    this.props.dispatch(
+      [
+        CanvasActions.clearInteractionSession(false),
+        EditorActions.setFilebrowserDropTarget(targetDirectory),
+      ],
+      'leftpane',
+    )
+  }
+
+  onDragLeave = () => {
+    this.setState({
+      isHovered: false,
+    })
+  }
+
+  onMouseClick = (e: React.MouseEvent) => {
     if (e.button === 0) {
       if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
         this.props.setSelected(this.props)
@@ -509,35 +612,24 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  onDragEnter = (e: React.DragEvent) => {
-    // this disables react-dnd while dropping external files
-    if (
-      this.props.isOver ||
-      (e.dataTransfer?.items != null &&
-        Array.from(e.dataTransfer?.items).filter((item) => item.kind === 'file').length === 0)
-    ) {
-      return
-    }
-    this.setState((prevState) => {
-      return {
-        currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter + 1,
-      }
-    })
-    const filesBeingDragged = e.dataTransfer?.items?.length ?? 0
-    if (filesBeingDragged > 0) {
-      this.setState({ externalFilesDraggedIn: true })
-    }
+  onMouseDown = (e: React.MouseEvent) => {
+    const imageProperties: DraggedImageProperties | null =
+      this.props.imageFile == null
+        ? null
+        : draggedImagePropertiesFromImageFile(this.props.path, this.props.imageFile)
+
+    this.props.dispatch(
+      [EditorActions.setImageDragSessionState(draggingFromSidebar(imageProperties))],
+      'everyone',
+    )
   }
 
-  onDragLeave = () => {
-    this.setState((prevState) => {
-      return {
-        currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter - 1,
-        externalFilesDraggedIn:
-          prevState.currentExternalFilesDragEventCounter > 1 && prevState.externalFilesDraggedIn,
-      }
-    })
-  }
+  onMouseUp = () =>
+    this.props.dispatch([
+      CanvasActions.clearInteractionSession(false),
+      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.setImageDragSessionState(notDragging()),
+    ])
 
   showAddingFileRow = () => {
     this.setState({
@@ -591,18 +683,11 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  isCurrentDropTargetForInternalFiles = () => {
+  isCurrentDropTarget = () => {
     return this.props.dropTarget === this.props.path
   }
 
   render() {
-    const isCurrentDropTargetForInternalFiles = this.isCurrentDropTargetForInternalFiles()
-    const isCurrentDropTargetForExternalFiles =
-      this.state.externalFilesDraggedIn && this.props.fileType === 'DIRECTORY'
-
-    const isCurrentDropTargetForAnyFiles =
-      isCurrentDropTargetForInternalFiles || isCurrentDropTargetForExternalFiles
-
     const extraIndentationForExport = 0
     const indentation = this.state.pathParts.length + extraIndentationForExport - 1
 
@@ -611,7 +696,7 @@ class FileBrowserItemInner extends React.PureComponent<
         return colorTheme.subtleBackground.value
       } else if (this.state.isHovered) {
         return colorTheme.secondaryBackground.value
-      } else if (isCurrentDropTargetForAnyFiles) {
+      } else if (this.isCurrentDropTarget()) {
         return colorTheme.brandNeonYellow.value
       } else {
         return 'transparent'
@@ -630,16 +715,19 @@ class FileBrowserItemInner extends React.PureComponent<
     const displayDelete = this.state.isHovered
 
     let fileBrowserItem = (
-      <div>
+      <div style={{ width: '100%' }}>
         <div
           tabIndex={0}
+          data-testid={`fileitem-${this.props.path}`}
           onDrop={this.onItemDrop}
           onMouseEnter={this.setItemIsHovered}
           onMouseLeave={this.setItemIsNotHovered}
           onDragEnter={this.onDragEnter}
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
-          onMouseDown={this.onItemMouseDown}
+          onMouseDown={this.onMouseDown}
+          onMouseUp={this.onMouseUp}
+          onClick={this.onMouseClick}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -711,7 +799,6 @@ class FileBrowserItemInner extends React.PureComponent<
                   <Icons.Cross tooltipText='Delete' />
                 </Button>
               ) : null}
-
               {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
                   <WarningIcon
@@ -725,6 +812,7 @@ class FileBrowserItemInner extends React.PureComponent<
                   />
                 </span>
               ) : null}
+              {this.renderGithubStatus()}
             </SimpleFlexRow>
           ) : null}
         </div>
@@ -743,12 +831,36 @@ class FileBrowserItemInner extends React.PureComponent<
     // The context menu wrapper causes focus issues with renaming.
     if (this.props.type === 'file' && !this.state.isRenaming) {
       const contextMenuID = `file-context-menu-${this.state.filename.replace(' ', '_space_')}`
+      const items = [this.deleteContextMenuItem(), this.renameContextMenuItem()]
+      if (this.props.githubStatus != undefined) {
+        items.push(this.revertContextMenuItem())
+      }
+      if (
+        this.props.conflict != null &&
+        this.props.githubRepo != null &&
+        this.props.projectID != null
+      ) {
+        items.push(
+          ...getConflictMenuItems(
+            this.props.githubRepo,
+            this.props.projectID,
+            this.props.dispatch,
+            this.props.path,
+            this.props.conflict,
+            'Resolve Conflict',
+          ),
+        )
+      }
       fileBrowserItem = (
-        <div ref={this.props.forwardedRef} key={`${contextMenuID}-wrapper`}>
+        <div
+          ref={this.props.forwardedRef}
+          style={{ width: '100%' }}
+          key={`${contextMenuID}-wrapper`}
+        >
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
-            items={[this.deleteContextMenuItem(), this.renameContextMenuItem()]}
+            items={items}
             data={{}}
           >
             {fileBrowserItem}
@@ -761,12 +873,9 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-interface FilebrowserDragItem {
-  type: 'filebrowser'
-  props: FileBrowserItemProps
-}
+export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
 
-export function FileBrowserItem(props: FileBrowserItemProps) {
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
@@ -775,12 +884,13 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        props.dispatch([
-          EditorActions.switchEditorMode(
-            EditorModes.insertMode(false, dragAndDropInsertionSubject([props.path])),
-          ),
-        ])
         return props
+      },
+      end: () => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
       },
     }),
     [props],
@@ -790,20 +900,34 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
       accept: 'files',
       canDrop: () => true,
       drop: (item, monitor) => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.setImageDragSessionState(notDragging()),
+          EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
         onDrop(props, item)
       },
       hover: (item: FileBrowserItemProps) => {
         const targetDirectory =
           props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
         // do not trigger highlight when it tries to move to it's descendant directories
-        if (targetDirectory.includes(item.path)) {
-          if (props.dropTarget != null) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
-          }
-        } else {
-          if (props.dropTarget !== targetDirectory) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
-          }
+        if (targetDirectory.includes(item.path) && props.dropTarget != null) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(null),
+            ],
+            'leftpane',
+          )
+        } else if (props.dropTarget !== targetDirectory) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(targetDirectory),
+            ],
+            'leftpane',
+          )
         }
       },
       collect: (monitor) => ({
@@ -825,4 +949,16 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
       forwardedRef={forwardedRef}
     />
   )
+}
+
+function draggedImagePropertiesFromImageFile(
+  path: string,
+  imageFile: ImageFile,
+): DraggedImageProperties {
+  const imageMultiplier = getFilenameParts(path)?.multiplier ?? 1
+  return {
+    src: imagePathURL(path),
+    width: optionalMap((w) => w / imageMultiplier, imageFile.width) ?? 200,
+    height: optionalMap((h) => h / imageMultiplier, imageFile.height) ?? 200,
+  }
 }

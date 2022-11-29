@@ -8,6 +8,7 @@ import * as ReactDOM from 'react-dom'
 import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
 import {
   placeComponentsAfter,
@@ -21,6 +22,9 @@ import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-i
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
 import { JSXElementName } from '../../../core/shared/element-template'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
+import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -53,10 +57,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
-  return (
-    EP.pathsEqual(props.elementPath, dropSource) ||
-    !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
-  )
+  return !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
 }
 
 function onDrop(
@@ -64,11 +65,11 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor,
   component: HTMLDivElement | null,
-) {
+): void {
   if (monitor != null && component != null) {
     const dragSelections = propsOfDraggedItem.getDragSelections()
     const filteredSelections = dragSelections.filter((selection) =>
-      canDrop(propsOfDraggedItem, selection.elementPath),
+      canDrop(propsOfDropTargetItem, selection.elementPath),
     )
     const draggedElements = filteredSelections.map((selection) => selection.elementPath)
     const clearHintAction = showNavigatorDropTargetHint(null, null)
@@ -76,22 +77,26 @@ function onDrop(
 
     switch (propsOfDropTargetItem.appropriateDropTargetHint?.type) {
       case 'before':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [placeComponentsBefore(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       case 'after':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [placeComponentsAfter(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       case 'reparent':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [reparentComponents(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       default:
-        return propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
+        propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
+        break
     }
   }
 }
@@ -119,7 +124,7 @@ function onHover(
     component != null &&
     propsOfDraggedItem
       .getDragSelections()
-      .some((selection) => canDrop(propsOfDraggedItem, selection.elementPath))
+      .every((selection) => canDrop(propsOfDropTargetItem, selection.elementPath))
   ) {
     // React DnD necessitates the two divs around the actual navigator item,
     // so we need to drill down to the navigator elements themselves which have real dimensions.
@@ -134,13 +139,7 @@ function onHover(
     const targetAction = propsOfDraggedItem.highlighted
       ? []
       : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
-    const canReparent = propsOfDraggedItem
-      .getDragSelections()
-      .every(
-        (dragSelectedItem: DragSelection) =>
-          !EP.pathsEqual(propsOfDraggedItem.elementPath, dragSelectedItem.elementPath) &&
-          propsOfDraggedItem.supportsChildren,
-      )
+    const canReparent = propsOfDropTargetItem.supportsChildren
     const numberOfAreasToCut = canReparent ? 3 : 2
 
     if (cursor == null) {
@@ -219,7 +218,7 @@ function beginDrag(
   props: NavigatorItemDragAndDropWrapperProps,
 ): NavigatorItemDragAndDropWrapperProps {
   if (!props.selected) {
-    props.editorDispatch([EditorActions.selectComponents([props.elementPath], false)], 'leftpane')
+    props.editorDispatch(MetaActions.selectComponents([props.elementPath], false), 'leftpane')
   }
   return props
 }
@@ -245,11 +244,13 @@ export class NavigatorItemDndWrapper extends PureComponent<
 
   render(): React.ReactElement {
     const props = this.props
+    const safeComponentId = EP.toVarSafeComponentId(this.props.elementPath)
 
     return (
       <div
         key='navigatorItem'
-        id={`navigator-item-${EP.toVarSafeComponentId(this.props.elementPath)}`}
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
         style={{
           ...props.windowStyle,
         }}
@@ -293,6 +294,7 @@ interface DropCollectedProps {
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
+  const editorStateRef = useRefEditorState((store) => store.editor)
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',
@@ -301,6 +303,16 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       }),
       item: props,
       beginDrag: beginDrag,
+      canDrag: (monitor) => {
+        const editorState = editorStateRef.current
+        const result = isAllowedToReparent(
+          editorState.projectContents,
+          editorState.canvas.openFile?.filename,
+          editorState.jsxMetadata,
+          props.elementPath,
+        )
+        return result
+      },
     }),
     [props],
   )
@@ -324,6 +336,22 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)
       },
+      canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        const editorState = editorStateRef.current
+        const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
+        const childrenSupportedIfRequired =
+          !isReparentTarget ||
+          MetadataUtils.targetSupportsChildren(
+            editorState.projectContents,
+            editorState.canvas.openFile?.filename,
+            editorState.jsxMetadata,
+            props.elementPath,
+          )
+        const notSelectedItem = item.getDragSelections().every((selection) => {
+          return canDrop(props, selection.elementPath)
+        })
+        return childrenSupportedIfRequired && notSelectedItem
+      },
     }),
     [props],
   )
@@ -335,10 +363,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     },
     [drop, dropRef],
   )
+  const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
   return (
-    <div ref={attachDrop}>
-      <div ref={drag}>
+    <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
+      <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
         <NavigatorItemDndWrapper {...props} isOver={isOver} isDragging={isDragging} />
       </div>
     </div>

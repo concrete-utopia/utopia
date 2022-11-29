@@ -41,13 +41,13 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   height: UtopiaTheme.layout.inputHeight.default,
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
-  boxShadow: props.outline ? 'inset 0px 0px 0px 1px hsl(0,0%,90%)' : undefined,
+  boxShadow: props.outline ? `inset 0px 0px 0px 1px ${colorTheme.buttonShadow.value}` : undefined,
   color: props.primary ? 'white' : 'inherit',
   //TODO Nested ternaries
   background: props.primary
     ? UtopiaStyles.backgrounds.blue
     : props.spotlight
-    ? UtopiaTheme.color.buttonBackground.value
+    ? colorTheme.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
@@ -60,7 +60,9 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   '&:active': {
     outline: 'none',
     border: 'none',
-    boxShadow: props.outline ? 'inset 0px 0px 0px 1px  hsl(0,0%,80%)' : undefined,
+    boxShadow: props.outline
+      ? `inset 0px 0px 0px 1px  ${colorTheme.buttonShadowActive.value}`
+      : undefined,
     filter: props.highlight ? 'brightness(98%)' : undefined,
   },
 }))
@@ -74,9 +76,9 @@ export const SquareButton = styled(Button)({
 export const ToggleButton = styled(SquareButton)<{
   value: boolean
 }>((props) => ({
-  background: props.value ? UtopiaTheme.color.buttonBackground.value : 'transparent',
+  background: props.value ? colorTheme.buttonBackground.value : 'transparent',
   '&:hover': {
-    background: UtopiaTheme.color.buttonHoverBackground.value,
+    background: colorTheme.buttonHoverBackground.value,
   },
 }))
 
@@ -95,13 +97,14 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   outline: 'none',
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
+  cursor: 'pointer',
 
   // slightly subdued colors in default state
   backgroundColor: props.primary
     ? props.danger
-      ? colorTheme.errorForeground.shade(90).value
-      : colorTheme.primary.shade(90).value
-    : colorTheme.emphasizedBackground.shade(101).value,
+      ? colorTheme.errorForegroundSubdued.value
+      : colorTheme.primarySubdued.value
+    : colorTheme.emphasizedBackgroundPop.value,
 
   color: props.primary ? 'white' : props.danger ? colorTheme.errorForeground.value : 'inherit',
 
@@ -126,10 +129,10 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     //  solid subdued outline in focused state
     boxShadow: `0px 0px 0px 2px ${
       props.danger
-        ? colorTheme.errorForeground.o(20).value
+        ? colorTheme.errorForeground20.value
         : props.primary
-        ? colorTheme.primary.o(30).value
-        : colorTheme.subduedBorder.o(80).value
+        ? colorTheme.primary30.value
+        : colorTheme.subduedBorder80.value
     }`,
   },
   '&:active': {
@@ -137,8 +140,8 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     // slightly brighter backgrounds while pressed
     backgroundColor: props.primary
       ? props.danger
-        ? colorTheme.errorForeground.shade(103).value
-        : colorTheme.primary.shade(103).value
-      : colorTheme.emphasizedBackground.shade(98).value,
+        ? colorTheme.errorForegroundEmphasized.value
+        : colorTheme.primaryEmphasized.value
+      : colorTheme.emphasizedBackgroundReduced.value,
   },
 }))

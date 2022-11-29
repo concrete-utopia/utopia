@@ -25,17 +25,17 @@ import           Servant.Server
 import           Utopia.Web.Metrics
 
 gaugeInflight :: Gauge -> Middleware
-gaugeInflight inflight application request respond =
+gaugeInflight inflight application request respondToRequest =
     bracket_ (incrementGauge inflight)
              (decrementGauge inflight)
-             (application request respond)
+             (application request respondToRequest)
 
 -- | Count responses with 2XX, 4XX, 5XX, and XXX response codes.
 countResponseCodes :: (Counter, Counter, Counter, Counter) -> Middleware
-countResponseCodes (c2XX, c4XX, c5XX, cXXX) application request respond =
+countResponseCodes (c2XX, c4XX, c5XX, cXXX) application request respondToRequest =
     application request respond'
   where
-    respond' res = count (responseStatus res) >> respond res
+    respond' res = count (responseStatus res) >> respondToRequest res
     count Status{statusCode = sc }
         | 200 <= sc && sc < 300 = incrementCounter c2XX
         | 400 <= sc && sc < 500 = incrementCounter c4XX
@@ -43,8 +43,8 @@ countResponseCodes (c2XX, c4XX, c5XX, cXXX) application request respond =
         | otherwise             = incrementCounter cXXX
 
 responseTimeDistribution :: Distribution -> Middleware
-responseTimeDistribution dist application request respond =
-    bracket getCurrentTime stop $ const $ application request respond
+responseTimeDistribution dist application request respondToRequest =
+    bracket getCurrentTime stop $ const $ application request respondToRequest
   where
     stop t1 = do
         t2 <- getCurrentTime

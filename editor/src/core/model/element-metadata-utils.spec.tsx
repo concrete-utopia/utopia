@@ -23,12 +23,18 @@ import {
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
   emptyComments,
+  JSXElementChildren,
+  jsxFragment,
+  jsxArbitraryBlock,
+  isJSXElement,
+  JSXElement,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import {
   ElementPath,
   isParseSuccess,
+  ParseSuccess,
   ParsedTextFile,
   RevisionsState,
   textFile,
@@ -43,6 +49,8 @@ import { parseCode } from '../workers/parser-printer/parser-printer'
 import { TestAppUID, TestSceneUID } from '../../components/canvas/ui-jsx.test-utils'
 import { contentsToTree } from '../../components/assets'
 import { SampleNodeModules } from '../../components/custom-code/code-file.test-utils'
+import { findJSXElementAtStaticPath } from './element-template-utils'
+import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
 const TestScenePath = 'scene-aaa'
 
@@ -313,12 +321,13 @@ describe('findElementByElementPath', () => {
 function dummyInstanceDataForElementType(
   elementName: JSXElementName | string,
   elementPath: ElementPath,
+  children: JSXElementChildren = [],
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     elementPath: elementPath,
-    element: right(jsxTestElement(elementName, [], [])),
+    element: right(jsxTestElement(elementName, [], children)),
     componentInstance: false,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -406,6 +415,99 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed div with an arbitrary jsx block child', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+      [jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed div with another parsed div child', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+      [jsxTestElement('div', [], [])],
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed div with an empty fragment child', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+      [jsxFragment([], false)],
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed div with a fragment child containing another parsed div', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+      [jsxFragment([jsxTestElement('div', [], [])], false)],
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed div with a fragment child containing an arbitrary jsx block', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+      [
+        jsxFragment(
+          [
+            jsxTestElement(
+              'div',
+              [],
+              [
+                jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+              ],
+            ),
+          ],
+          false,
+        ),
+      ],
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
@@ -534,6 +636,67 @@ export const App = (props) => {
       element,
     )
     expect(actualResult).toEqual(true)
+  })
+  it('returns false for a component used from a different file that uses props.children but has only text children', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}'>
+        Some Dummy Text
+      </App>
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>{props.children}</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+    })
+
+    // Painfully pull out the parsed children so that we can add them into the dummy metadata
+    expect(isParseSuccess(storyboardJS)).toBeTruthy()
+    const parsedStoryboard = storyboardJS as ParseSuccess
+    const parsedElement = findJSXElementAtStaticPath(
+      getUtopiaJSXComponentsFromSuccess(parsedStoryboard),
+      EP.elementPath([EP.staticElementPath([BakedInStoryboardUID, TestSceneUID, TestAppUID])]),
+    )
+    expect(parsedElement).toBeDefined()
+    expect(isJSXElement(parsedElement!)).toBeTruthy()
+    const parsedChildren = (parsedElement! as JSXElement).children
+
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('App', []),
+      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+      parsedChildren,
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(false)
   })
   it('returns false for a component used from a different file that does not use props.children', () => {
     const storyboardCode = `import React from 'react'

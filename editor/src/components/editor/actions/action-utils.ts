@@ -43,6 +43,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEW':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
+    case 'SET_HOVERED_VIEW':
+    case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
@@ -89,6 +91,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FOLLOW_SELECTION_ENABLED':
     case 'UPDATE_CONFIG_FROM_VSCODE':
     case 'SET_LOGIN_STATE':
+    case 'SET_GITHUB_STATE':
+    case 'SET_USER_CONFIGURATION':
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
@@ -113,6 +117,14 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_DRAG_INTERACTION_DATA':
     case 'SET_USERS_PREFERRED_STRATEGY':
     case 'SET_ELEMENTS_TO_RERENDER':
+    case 'TOGGLE_SELECTION_LOCK':
+    case 'SAVE_TO_GITHUB':
+    case 'UPDATE_GITHUB_OPERATIONS':
+    case 'SET_REFRESHING_DEPENDENCIES':
+    case 'UPDATE_GITHUB_CHECKSUMS':
+    case 'UPDATE_GITHUB_DATA':
+    case 'REMOVE_FILE_CONFLICT':
+    case 'SET_ASSET_CHECKSUM':
       return true
 
     case 'NEW':
@@ -121,6 +133,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
+    case 'SET_PROPERTY':
     case 'INSERT_SCENE':
     case 'INSERT_JSX_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
@@ -152,6 +165,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
+    case 'UPDATE_PROJECT_CONTENTS':
+    case 'UPDATE_BRANCH_CONTENTS':
+    case 'UPDATE_GITHUB_SETTINGS':
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
@@ -170,6 +186,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
     case 'RUN_ESCAPE_HATCH':
+    case 'SET_IMAGE_DRAG_SESSION_STATE':
+    case 'UPDATE_AGAINST_GITHUB':
       return false
     case 'SAVE_ASSET':
       return (

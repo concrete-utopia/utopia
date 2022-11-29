@@ -1,5 +1,6 @@
 import React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
+import { colorTheme } from '../../../uuiui'
 import { isZeroSizedElement } from './outline-utils'
 import { ZeroSizeOutlineControl } from './zero-sized-element-controls'
 
@@ -43,7 +44,7 @@ export class Outline extends React.Component<OutlineProps> {
             height: this.props.rect.height + outlineWidthHeightOffset,
             boxShadow: `0px 0px 0px ${outlineWidth}px ${this.props.color}`,
             backgroundImage: this.props.striped
-              ? `linear-gradient(135deg, ${stripedColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${stripedColor} 50%, ${this.props.color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`
+              ? `linear-gradient(135deg, ${stripedColor} 2.5%, ${colorTheme.transparent.value} 2.5%, ${colorTheme.transparent.value} 50%, ${stripedColor} 50%, ${this.props.color} 52%, ${colorTheme.transparent.value} 52%, ${colorTheme.transparent.value} 100%)`
               : '',
             backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
             pointerEvents: 'none',

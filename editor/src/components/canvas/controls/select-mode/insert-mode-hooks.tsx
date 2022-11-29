@@ -3,11 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
-import {
-  insertionSubjectIsDragAndDrop,
-  insertionSubjectIsJSXElement,
-  isInsertMode,
-} from '../../../editor/editor-modes'
+import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
@@ -29,10 +25,11 @@ function useGetHighlightableViewsForInsertMode() {
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata)
       const insertTargets = allPaths.filter((path) => {
-        return (
-          (insertionSubjectIsJSXElement(mode.subject) ||
-            insertionSubjectIsDragAndDrop(mode.subject)) &&
-          MetadataUtils.targetSupportsChildren(projectContents, openFile, componentMetadata, path)
+        return MetadataUtils.targetSupportsChildren(
+          projectContents,
+          openFile,
+          componentMetadata,
+          path,
         )
       })
       return insertTargets

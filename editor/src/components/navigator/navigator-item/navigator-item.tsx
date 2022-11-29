@@ -10,6 +10,7 @@ import {
 import { ElementOriginType, ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -18,7 +19,14 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import {
+  IcnProps,
+  useColorTheme,
+  UtopiaStyles,
+  UtopiaTheme,
+  FlexRow,
+  ColorTheme,
+} from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -62,13 +70,13 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch([EditorActions.selectComponents([elementPath], true)], 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
-      dispatch([EditorActions.selectComponents(targets, false)], 'leftpane')
+      dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch([EditorActions.selectComponents([elementPath], false)], 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
     }
   }
 }
@@ -141,9 +149,26 @@ const computeResultingStyle = (
   fullyVisible: boolean,
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
-  colorTheme: any,
+  isHighlightedForInteraction: boolean,
+  colorTheme: ColorTheme,
 ) => {
   let result = defaultUnselected(colorTheme)
+  if (isHighlightedForInteraction) {
+    result = {
+      style: {
+        background: colorTheme.brandPurple70.value,
+        color: colorTheme.white.value,
+      },
+      iconColor: 'main',
+    }
+  } else if (isInsideComponent) {
+    result = componentUnselected(colorTheme)
+  } else if (isDynamic) {
+    result = dynamicUnselected(colorTheme)
+  } else {
+    result = defaultUnselected(colorTheme)
+  }
+
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
@@ -156,15 +181,6 @@ const computeResultingStyle = (
       result = dynamicSelected(colorTheme)
     } else {
       result = defaultSelected(colorTheme)
-    }
-  } else {
-    // unselected
-    if (isInsideComponent) {
-      result = componentUnselected(colorTheme)
-    } else if (isDynamic) {
-      result = dynamicUnselected(colorTheme)
-    } else {
-      result = defaultUnselected(colorTheme)
     }
   }
 
@@ -282,6 +298,12 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
+  const isHighlightedForInteraction = useEditorState((store) => {
+    return store.editor.navigator.highlightedTargets.some((target) =>
+      EP.pathsEqual(target, props.elementPath),
+    )
+  }, 'isreallyhighlighted')
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -290,6 +312,7 @@ export const NavigatorItem: React.FunctionComponent<
     fullyVisible,
     isFocusedComponent,
     isFocusableComponent,
+    isHighlightedForInteraction,
     colorTheme,
   )
 

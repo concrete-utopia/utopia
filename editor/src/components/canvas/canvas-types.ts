@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
-import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
+import { KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
@@ -10,20 +10,14 @@ import {
   CanvasVector,
   CoordinateMarker,
   Rectangle,
-  Size,
   WindowPoint,
 } from '../../core/shared/math-utils'
 import { EditorPanel } from '../common/actions/index'
-import { EditorAction } from '../editor/action-types'
 import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
-import {
-  LayoutFlexElementNumericProp,
-  LayoutFlexElementProp,
-  LayoutTargetableProp,
-} from '../../core/layout/layout-helpers-new'
+import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   DragInteractionData,
   InteractionSession,
@@ -59,8 +53,24 @@ export enum CSSCursor {
   BrowserAuto = 'auto',
   Duplicate = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate.png ') 1x, url( '/editor/cursors/cursor-duplicate@2x.png ') 2x ) 4 4, default",
   OpenHand = "-webkit-image-set( url( '/editor/cursors/cursor-open-hand.png ') 1x, url( '/editor/cursors/cursor-open-hand@2x.png ') 2x ) 4 4, default",
-  ReparentNotPermitted = "-webkit-image-set( url( '/editor/cursors/cursor-no-reparent.png ') 1x, url( '/editor/cursors/cursor-no-reparent@2x.png ') 2x ) 4 4, default",
-  MagicHand = "-webkit-image-set( url( '/editor/cursors/cursor-magic-hand.png ') 1x, url( '/editor/cursors/cursor-magic-move@2x.png ') 2x ) 4 4, default",
+  NotPermitted = "-webkit-image-set( url( '/editor/cursors/cursor-no-reparent.png ') 1x, url( '/editor/cursors/cursor-no-reparent@2x.png ') 2x ) 4 4, default",
+  DefaultMagic = "-webkit-image-set( url( '/editor/cursors/cursor-default-magic.png ') 1x, url( '/editor/cursors/cursor-default-magic@2x.png ') 2x ) 4 4, default",
+  DuplicateMagic = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate-magic.png ') 1x, url( '/editor/cursors/cursor-duplicate-magic@2x.png ') 2x ) 4 4, default",
+  ResizeEWMagic = "-webkit-image-set( url( '/editor/cursors/cursor-ew-resize-magic.png ') 1x, url( '/editor/cursors/cursor-ew-resize-magic@2x.png ') 2x ) 4 4, default",
+  MovingMagic = "-webkit-image-set( url( '/editor/cursors/cursor-moving-magic.png ') 1x, url( '/editor/cursors/cursor-moving-magic@2x.png ') 2x ) 4 4, default",
+  NESWResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-nesw-resize-magic.png ') 1x, url( '/editor/cursors/cursor-nesw-resize-magic@2x.png ') 2x ) 4 4, default",
+  NSResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-ns-resize-magic.png ') 1x, url( '/editor/cursors/cursor-ns-resize-magic@2x.png ') 2x ) 4 4, default",
+  NWSEResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-nwse-resize-magic.png ') 1x, url( '/editor/cursors/cursor-nwse-resize-magic@2x.png ') 2x ) 4 4, default",
+  PointerMagic = "-webkit-image-set( url( '/editor/cursors/cursor-pointer-magic.png ') 1x, url( '/editor/cursors/cursor-pointer-magic@2x.png ') 2x ) 4 4, default",
+  ColResize = 'col-resize',
+  RowResize = 'row-resize',
+  Radius = "-webkit-image-set( url( '/editor/cursors/cursor-radius.png ') 1x, url( '/editor/cursors/cursor-radius@2x.png ') 2x ) 4 4, default",
+  PaddingWest = "-webkit-image-set( url( '/editor/cursors/cursor-padding-west.png ') 1x, url( '/editor/cursors/cursor-padding-west@2x.png ') 2x ) 4 9, ew-resize",
+  PaddingEast = "-webkit-image-set( url( '/editor/cursors/cursor-padding-east.png ') 1x, url( '/editor/cursors/cursor-padding-east@2x.png ') 2x ) 4 9, ew-resize",
+  PaddingNorth = "-webkit-image-set( url( '/editor/cursors/cursor-padding-north.png ') 1x, url( '/editor/cursors/cursor-padding-north@2x.png ') 2x ) 9 4, ns-resize",
+  PaddingSouth = "-webkit-image-set( url( '/editor/cursors/cursor-padding-south.png ') 1x, url( '/editor/cursors/cursor-padding-south@2x.png ') 2x ) 9 4, ns-resize",
+  GapNS = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ns.png ') 1x, url( '/editor/cursors/cursor-gap-ns@2x.png ') 2x ) 8 8, ns-resize",
+  GapEW = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ew.png ') 1x, url( '/editor/cursors/cursor-gap-ew@2x.png ') 2x ) 8 8, ew-resize",
 }
 
 export type VerticalRectangles = {
@@ -662,7 +672,7 @@ export interface ClearInteractionSession {
 
 export interface UpdateInteractionSession {
   action: 'UPDATE_INTERACTION_SESSION'
-  interactionSessionUpdate: Partial<InteractionSession>
+  interactionSessionUpdate: Partial<InteractionSessionWithoutMetadata>
 }
 
 export interface UpdateDragInteractionData {
@@ -744,6 +754,8 @@ export function oppositeEdgePositionPart(part: EdgePositionPart): EdgePositionPa
   }
 }
 
+export type EdgePiece = 'top' | 'bottom' | 'left' | 'right'
+
 export function oppositeEdgePosition(edgePos: EdgePosition): EdgePosition {
   return {
     x: oppositeEdgePositionPart(edgePos.x),
@@ -765,3 +777,5 @@ export const EdgePositionTopLeft: EdgePosition = { x: 0, y: 0 }
 export const EdgePositionBottomLeft: EdgePosition = { x: 0, y: 1 }
 export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
+
+export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'

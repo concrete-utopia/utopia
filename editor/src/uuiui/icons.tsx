@@ -123,7 +123,7 @@ export const InspectorSectionIcons = {
   }),
   Transforms: makeIcon({
     category: 'inspector',
-    type: 'transforms',
+    type: 'transform',
     color: 'main',
     width: 16,
     height: 16,
@@ -138,6 +138,13 @@ export const InspectorSectionIcons = {
   Image: makeIcon({
     category: 'inspector',
     type: 'image',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Interactions: makeIcon({
+    category: 'inspector',
+    type: 'interactions',
     color: 'main',
     width: 16,
     height: 16,
@@ -172,7 +179,7 @@ export const Icons = {
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
-  Download: makeIcon({ type: 'download', color: 'main', width: 18, height: 18 }),
+
   Downloaded: makeIcon({ type: 'downloaded', color: 'main', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'main' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
@@ -190,7 +197,8 @@ export const Icons = {
   SmallCross: makeIcon({ type: 'cross-small', color: 'main' }),
   Smiangle: makeIcon({ type: 'smiangle', color: 'primary' }),
   WarningTriangle: makeIcon({ type: 'warningtriangle', color: 'main' }),
-
+  DotDotDot: makeIcon({ type: 'dotdotdot', color: 'main' }),
+  ConvertObject: makeIcon({ type: 'convertobject', color: 'main' }),
   NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
@@ -230,6 +238,27 @@ export const Icons = {
   CircleSmall: makeIcon({ type: 'circle-small', color: 'secondary' }),
   CrossSmall: makeIcon({ type: 'cross-small', color: 'secondary' }),
   CrossInTranslucentCircle: makeIcon({ type: 'cross-in-translucent-circle', color: 'main' }),
+  Download: makeIcon({
+    category: 'semantic',
+    type: 'download',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
+  Upload: makeIcon({
+    category: 'semantic',
+    type: 'upload',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
+  Branch: makeIcon({
+    category: 'semantic',
+    type: 'branch',
+    width: 18,
+    height: 18,
+    color: 'main',
+  }),
 }
 
 export const FunctionIcons = {
@@ -245,6 +274,44 @@ export const FunctionIcons = {
   Refresh: Icons.Refresh,
   Reset: Icons.Refresh,
   RefreshingAnimated: Icons.Refresh,
+}
+
+export const ModalityIcons = {
+  MoveAbsolute: makeIcon({
+    category: 'modalities',
+    type: 'moveabs-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Reorder: makeIcon({
+    category: 'modalities',
+    type: 'reorder-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Reparent: makeIcon({
+    category: 'modalities',
+    type: 'reparent-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Replant: makeIcon({
+    category: 'modalities',
+    type: 'replant-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
+  Magic: makeIcon({
+    category: 'modalities',
+    type: 'magic-large',
+    color: 'main',
+    width: 24,
+    height: 24,
+  }),
 }
 
 export const MenuIcons = {

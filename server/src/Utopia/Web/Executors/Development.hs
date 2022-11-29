@@ -31,8 +31,10 @@ import           Servant
 import           Servant.Client
 import           System.Environment
 import           System.Log.FastLogger
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database            as DB
@@ -63,6 +65,7 @@ data DevServerResources = DevServerResources
                         , _proxyManager          :: Maybe Manager
                         , _auth0Resources        :: Maybe Auth0Resources
                         , _awsResources          :: Maybe AWSResources
+                        , _githubResources       :: Maybe GithubAuthResources
                         , _sessionState          :: SessionState
                         , _storeForMetrics       :: Store
                         , _databaseMetrics       :: DB.DatabaseMetrics
@@ -139,6 +142,8 @@ innerServerExecutor BadRequest = do
   throwError err400
 innerServerExecutor NotAuthenticated = do
   throwError err401
+innerServerExecutor (TempRedirect uri) = do
+  throwError err302 { errHeaders = [("Location", serializeURIRef' uri)]}
 innerServerExecutor NotModified = do
   throwError err304
 innerServerExecutor (CheckAuthCode authCode action) = do
@@ -199,15 +204,14 @@ innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
-  let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
-  application <- loadProjectAssetWithCall loadCall path possibleETag
+  possibleAsset <- liftIO $ loadAsset awsResource path possibleETag
+  application <- loadProjectAssetWithAsset path possibleAsset
   return $ action application
 innerServerExecutor (SaveProjectAsset user projectID path action) = do
   awsResource <- fmap _awsResources ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
-  application <- saveProjectAssetWithCall metrics pool user projectID path saveCall
+  application <- saveProjectAssetWithCall metrics pool user projectID path $ saveAsset awsResource
   return $ action application
 innerServerExecutor (RenameProjectAsset user projectID oldPath newPath next) = do
   awsResource <- fmap _awsResources ask
@@ -299,10 +303,10 @@ innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   getUserConfigurationWithDBPool metrics pool user action
-innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
+innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig possibleTheme action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig possibleTheme
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -312,6 +316,100 @@ innerServerExecutor (GetDownloadBranchFolders action) = do
   downloads <- fmap _branchDownloads ask
   folders <- liftIO $ maybe (pure []) getDownloadedLocalFolders downloads
   pure $ action folders
+innerServerExecutor (GetGithubAuthorizationURI action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      let uri = getAuthorizationURI githubResources
+      pure $ action uri
+innerServerExecutor (GetGithubAccessToken user authCode action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  logger <- fmap _logger ask
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getAndHandleGithubAccessToken githubResources logger metrics pool user authCode
+      pure $ action result
+innerServerExecutor (GetGithubAuthentication user action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
+  pure $ action result
+innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID possibleBranchName possibleCommitMessage model
+      pure $ action result
+innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getGithubBranches githubResources logger metrics pool user owner repository
+      pure $ action result
+innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
+      pure $ action result
+innerServerExecutor (GetUsersRepositories user action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+      pure $ action result
+innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- saveGithubAssetToProject githubResources awsResource logger metrics pool user owner repository assetSha projectID assetPath
+      pure $ action result
+innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
+      pure $ action result
+innerServerExecutor (GetGithubUserDetails user action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getDetailsOfGithubUser githubResources logger metrics pool user
+      pure $ action result
 
 {-|
   Invokes a service call using the supplied resources.
@@ -365,6 +463,7 @@ initialiseResources = do
   _proxyManager <- if shouldProxy then Just <$> newManager defaultManagerSettings else return Nothing
   _auth0Resources <- getAuth0Environment
   _awsResources <- getAmazonResourcesFromEnvironment
+  _githubResources <- getGithubAuthResources
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore

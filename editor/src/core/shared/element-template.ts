@@ -13,7 +13,7 @@ import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api/core'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import {
   dropKeyFromNestedObject,
   getJSXAttributeAtPathInner,
@@ -1166,7 +1166,7 @@ export function jsxElement(
 export function jsxTestElement(
   name: JSXElementName | string,
   props: JSXAttributes,
-  children: Array<JSXElement>,
+  children: JSXElementChildren,
   uid: string = 'aaa',
 ): JSXElement {
   return jsxElement(
@@ -1629,6 +1629,7 @@ export function elementInstanceMetadata(
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
+export type TextDirection = 'ltr' | 'rtl'
 
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
@@ -1648,11 +1649,17 @@ export interface SpecialSizeMeasurements {
   naturalHeight: number | null
   clientWidth: number
   clientHeight: number
-  parentFlexDirection: string | null
-  flexDirection: string | null
+  parentFlexDirection: FlexDirection | null
+  parentFlexGap: number
+  flexDirection: FlexDirection | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
+  float: string
+  hasPositionOffset: boolean
+  parentTextDirection: TextDirection | null
+  hasTransform: boolean
+  borderRadius: Sides | null
 }
 
 export function specialSizeMeasurements(
@@ -1673,11 +1680,17 @@ export function specialSizeMeasurements(
   naturalHeight: number | null,
   clientWidth: number,
   clientHeight: number,
-  parentFlexDirection: string | null,
-  flexDirection: string | null,
+  parentFlexDirection: FlexDirection | null,
+  parentFlexGap: number,
+  flexDirection: FlexDirection | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
+  float: string,
+  hasPositionOffset: boolean,
+  parentTextDirection: TextDirection | null,
+  hasTransform: boolean,
+  borderRadius: Sides | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1698,10 +1711,16 @@ export function specialSizeMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentFlexGap,
     flexDirection,
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
+    float,
+    hasPositionOffset,
+    parentTextDirection,
+    hasTransform,
+    borderRadius,
   }
 }
 
@@ -1727,9 +1746,15 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   0,
   null,
+  0,
   null,
   'div',
   0,
+  null,
+  'none',
+  false,
+  'ltr',
+  false,
   null,
 )
 

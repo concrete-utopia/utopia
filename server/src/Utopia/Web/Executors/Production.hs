@@ -23,8 +23,10 @@ import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
 import           System.Log.FastLogger
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database            as DB
@@ -50,6 +52,7 @@ data ProductionServerResources = ProductionServerResources
                                , _projectPool             :: DBPool
                                , _auth0Resources          :: Auth0Resources
                                , _awsResources            :: AWSResources
+                               , _githubResources         :: GithubAuthResources
                                , _sessionState            :: SessionState
                                , _serverPort              :: Int
                                , _storeForMetrics         :: Store
@@ -79,6 +82,8 @@ innerServerExecutor BadRequest = do
   throwError err400
 innerServerExecutor NotAuthenticated = do
   throwError err401
+innerServerExecutor (TempRedirect uri) = do
+  throwError err302 { errHeaders = [("Location", serializeURIRef' uri)]}
 innerServerExecutor NotModified = do
   throwError err304
 innerServerExecutor (CheckAuthCode authCode action) = do
@@ -138,13 +143,14 @@ innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
-  application <- loadProjectAssetWithCall (loadProjectAssetFromS3 awsResource) path possibleETag
+  possibleAsset <- liftIO $ loadAsset (Just awsResource) path possibleETag
+  application <- loadProjectAssetWithAsset path possibleAsset
   return $ action application
 innerServerExecutor (SaveProjectAsset user projectID path action) = do
   pool <- fmap _projectPool ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
-  application <- saveProjectAssetWithCall metrics pool user projectID path $ saveProjectAssetToS3 awsResource
+  application <- saveProjectAssetWithCall metrics pool user projectID path $ saveAsset $ Just awsResource
   return $ action application
 innerServerExecutor (RenameProjectAsset user projectID oldPath newPath next) = do
   awsResource <- fmap _awsResources ask
@@ -229,10 +235,10 @@ innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   getUserConfigurationWithDBPool metrics pool user action
-innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
+innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig possibleTheme action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig possibleTheme
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -242,6 +248,73 @@ innerServerExecutor (GetDownloadBranchFolders action) = do
   downloads <- fmap _branchDownloads ask
   folders <- liftIO $ maybe (pure []) getDownloadedLocalFolders downloads
   pure $ action folders
+innerServerExecutor (GetGithubAuthorizationURI action) = do
+  githubResources <- fmap _githubResources ask
+  let uri = getAuthorizationURI githubResources
+  pure $ action uri
+innerServerExecutor (GetGithubAccessToken user authCode action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getAndHandleGithubAccessToken githubResources logger metrics pool user authCode
+  pure $ action result
+innerServerExecutor (GetGithubAuthentication user action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
+  pure $ action result
+innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
+  githubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- createTreeAndSaveToGithub githubResources (Just awsResource) logger metrics pool user projectID possibleBranchName possibleCommitMessage model
+  pure $ action result
+innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getGithubBranches githubResources logger metrics pool user owner repository
+  pure $ action result
+innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
+  pure $ action result
+innerServerExecutor (GetUsersRepositories user action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+  pure $ action result
+innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  githubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath
+  pure $ action result
+innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
+  pure $ action result
+innerServerExecutor (GetGithubUserDetails user action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getDetailsOfGithubUser githubResources logger metrics pool user
+  pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
@@ -278,9 +351,11 @@ initialiseResources = do
   _commitHash <- toS <$> getEnv "UTOPIA_SHA"
   _projectPool <- DB.createDatabasePoolFromEnvironment
   maybeAuth0Resources <- getAuth0Environment
-  _auth0Resources <- maybe (panic "No Auth0 environment configured") return maybeAuth0Resources
+  _auth0Resources <- maybe (panic "No Auth0 environment configured.") pure maybeAuth0Resources
   maybeAws <- getAmazonResourcesFromEnvironment
-  _awsResources <- maybe (panic "No AWS environment configured") return maybeAws
+  _awsResources <- maybe (panic "No AWS environment configured.") pure maybeAws
+  maybeGithubAuthResources <- getGithubAuthResources
+  _githubResources <- maybe (panic "No Github resources configured.") pure maybeGithubAuthResources
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore

@@ -1,20 +1,19 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import React from 'react'
-import { css, jsx } from '@emotion/react'
-import { Component as ReactComponent } from 'react'
+import { jsx } from '@emotion/react'
+import fastDeepEquals from 'fast-deep-equal'
+import React, { Component as ReactComponent } from 'react'
 import {
-  Menu,
-  Item,
-  Submenu as SubmenuComponent,
   contextMenu,
+  Item,
+  Menu,
+  Submenu as SubmenuComponent,
   useContextMenu,
 } from 'react-contexify'
+import { colorTheme, Icons } from '../uuiui'
+import { getControlStyles } from '../uuiui-deps'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
-import fastDeepEquals from 'fast-deep-equal'
-import { Icons, UtopiaTheme } from '../uuiui'
-import { getControlStyles } from '../uuiui-deps'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -201,10 +200,10 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
         css={{
           width: '100%',
           ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+          '--control-styles-interactive-unset-main-color': colorTheme.fg7.value,
+          '--control-styles-interactive-unset-secondary-color': colorTheme.fg7.value,
+          '--control-styles-interactive-unset-track-color': colorTheme.bg5.value,
+          '--control-styles-interactive-unset-rail-color': colorTheme.bg3.value,
           '&:hover': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
             '--control-styles-interactive-unset-secondary-color':

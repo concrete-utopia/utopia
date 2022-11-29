@@ -2,45 +2,138 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { arrayEquals } from '../../../core/shared/utils'
-import { InnerDispatchResult } from '../../editor/store/dispatch'
-import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import { arrayEquals, assertNever } from '../../../core/shared/utils'
+import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { CanvasCommand } from '../commands/commands'
-import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
   ControlDelay,
-  ControlWithKey,
+  ControlWithProps,
+  insertionSubjects,
   InteractionCanvasState,
+  InteractionTarget,
+  targetPaths,
   StrategyApplicationResult,
+  InteractionLifecycle,
+  CustomStrategyState,
+  controlWithProps,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
-import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
-import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
-import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
-import { flexReorderStrategy } from './flex-reorder-strategy'
-import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
-import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
-import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import {
+  CanvasControlType,
+  InteractionSession,
+  isNotYetStartedDragInteraction,
+  StrategyState,
+} from './interaction-state'
+import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
+import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
+import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
+import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { StateSelector } from 'zustand'
+import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
+import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import { setPaddingStrategy } from './strategies/set-padding-strategy'
+import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
+import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
+import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
+import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
+import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
+import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
+import { getDragTargets } from './strategies/shared-move-strategies-helpers'
+import * as EP from '../../../core/shared/element-path'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
-  absoluteMoveStrategy,
-  absoluteReparentStrategy,
-  absoluteDuplicateStrategy,
-  keyboardAbsoluteMoveStrategy,
-  keyboardAbsoluteResizeStrategy,
-  absoluteResizeBoundingBoxStrategy,
-  flexReorderStrategy,
-  flexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
-  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
-  absoluteReparentToFlexStrategy,
+export type CanvasStrategyFactory = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => CanvasStrategy | null
+
+export type MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+) => Array<CanvasStrategy>
+
+const moveOrReorderStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [
+      absoluteDuplicateStrategy,
+      keyboardAbsoluteMoveStrategy,
+      keyboardReorderStrategy,
+      convertToAbsoluteAndMoveStrategy,
+      reorderSliderStategy,
+    ],
+  )
+}
+
+const resizeStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
+  )
+}
+
+const propertyControlStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+  )
+}
+
+const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStrategy = (
+  metaStrategy: MetaCanvasStrategy,
+) => {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ): Array<CanvasStrategy> => {
+    const selectedElements = getDragTargets(
+      getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+    )
+
+    if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
+      return []
+    }
+
+    return metaStrategy(canvasState, interactionSession, customStrategyState)
+  }
+}
+
+const preventAllOnRootElements = (metaStrategies: Array<MetaCanvasStrategy>) =>
+  metaStrategies.map(preventOnRootElements)
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRootElements([
+  moveOrReorderStrategies,
+  dragToMoveMetaStrategy,
+])
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  ...AncestorCompatibleStrategies,
+  preventOnRootElements(resizeStrategies),
+  propertyControlStrategies,
+  drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
+  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -49,47 +142,95 @@ export function pickCanvasStateFromEditorState(
 ): InteractionCanvasState {
   return {
     builtInDependencies: builtInDependencies,
-    selectedElements: editorState.selectedViews,
+    interactionTarget: getInteractionTargetFromEditorState(editorState),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: editorState.jsxMetadata,
+    startingAllElementProps: editorState.allElementProps,
   }
 }
 
-function getApplicableStrategies(
-  strategies: Array<CanvasStrategy>,
+export function pickCanvasStateFromEditorStateWithMetadata(
+  editorState: EditorState,
+  builtInDependencies: BuiltInDependencies,
+  metadata: ElementInstanceMetadataMap,
+): InteractionCanvasState {
+  return {
+    builtInDependencies: builtInDependencies,
+    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    projectContents: editorState.projectContents,
+    nodeModules: editorState.nodeModules.files,
+    openFile: editorState.canvas.openFile?.filename,
+    scale: editorState.canvas.scale,
+    canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: metadata,
+    startingAllElementProps: editorState.allElementProps,
+  }
+}
+
+function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
+  switch (editor.mode.type) {
+    case 'insert':
+      return insertionSubjects(editor.mode.subjects)
+    case 'live':
+    case 'select':
+      return targetPaths(editor.selectedViews)
+    default:
+      assertNever(editor.mode)
+  }
+}
+
+export interface ApplicableStrategy {
+  strategy: CanvasStrategy
+  name: string
+}
+
+export function applicableStrategy(strategy: CanvasStrategy, name: string): ApplicableStrategy {
+  return {
+    strategy: strategy,
+    name: name,
+  }
+}
+
+export function getApplicableStrategies(
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
+  customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+  return strategies.flatMap((s) => s(canvasState, interactionSession, customStrategyState))
 }
 
 const getApplicableStrategiesSelector = createSelector(
+  (store: EditorStorePatched) =>
+    optionalMap(
+      (sas) => sas.map((s) => s.strategy),
+      store.strategyState.sortedApplicableStrategies,
+    ),
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched) => store.editor.allElementProps,
+  (store: EditorStorePatched) => store.strategyState.customStrategyState,
   (
+    applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
+    customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
-    return getApplicableStrategies(
-      RegisteredCanvasStrategies,
-      canvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
+    if (applicableStrategiesFromStrategyState != null) {
+      return applicableStrategiesFromStrategyState
+    } else {
+      return getApplicableStrategies(
+        RegisteredCanvasStrategies,
+        canvasState,
+        interactionSession,
+        customStrategyState,
+      )
+    }
   },
 )
 
@@ -102,23 +243,21 @@ export interface StrategyWithFitness {
   strategy: CanvasStrategy
 }
 
-function getApplicableStrategiesOrderedByFitness(
-  strategies: Array<CanvasStrategy>,
+export function getApplicableStrategiesOrderedByFitness(
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
     strategies,
     canvasState,
     interactionSession,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    customStrategyState,
   )
 
-  // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
-    const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
+    const fitness = strategy.fitness
     if (fitness <= 0) {
       return null
     } else {
@@ -135,36 +274,6 @@ function getApplicableStrategiesOrderedByFitness(
   })
 
   return sortedStrategies
-}
-
-const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
-  (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
-  },
-  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.strategyState,
-  (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    strategyState: StrategyState,
-  ): Array<CanvasStrategy> => {
-    if (interactionSession == null) {
-      return []
-    }
-    return getApplicableStrategiesOrderedByFitness(
-      RegisteredCanvasStrategies,
-      canvasState,
-      interactionSession,
-      strategyState,
-    ).map((s) => s.strategy)
-  },
-)
-
-export function useGetApplicableStrategiesOrderedByFitness(): Array<CanvasStrategy> {
-  return useEditorState(
-    getApplicableStrategiesOrderedByFitnessSelector,
-    'useGetApplicableStrategiesOrderedByFitness',
-  )
 }
 
 function pickDefaultCanvasStrategy(
@@ -203,26 +312,32 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyId)
 }
 
-export function findCanvasStrategy(
-  strategies: Array<CanvasStrategy>,
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
-  strategyState: StrategyState,
-  previousStrategyId: CanvasStrategyId | null,
-): {
+export interface FindCanvasStrategyResult {
   strategy: StrategyWithFitness | null
   previousStrategy: StrategyWithFitness | null
-  sortedApplicableStrategies: Array<CanvasStrategy>
-} {
+  sortedApplicableStrategies: Array<ApplicableStrategy>
+}
+
+export function findCanvasStrategy(
+  strategies: Array<MetaCanvasStrategy>,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
+  previousStrategyId: CanvasStrategyId | null,
+): FindCanvasStrategyResult {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
-    strategyState,
+    customStrategyState,
   )
+
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
-    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
+      strategy: s.strategy,
+      name: s.strategy.name,
+    })),
   }
 }
 
@@ -230,84 +345,166 @@ export function applyCanvasStrategy(
   strategy: CanvasStrategy,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState)
+  return strategy.apply(strategyLifecycle)
 }
 
-export const useDelayedCurrentStrategy = () => {
+export function useDelayedEditorState<T>(
+  selector: StateSelector<EditorStorePatched, T | null>,
+): T | null {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
    * but when a drag threshold passes before the timer ends it shows up without delay
    */
-  const [delayedStrategyValue, setDelayedStrategyValue] = React.useState<CanvasStrategyId | null>(
-    null,
-  )
+
+  const [delayedValue, setDelayedValue] = React.useState<T | null>(null)
   const [timer, setTimer] = React.useState<number | null>(null)
 
   const immediateCallback = React.useCallback(
-    (currentStrategy: CanvasStrategyId | null) => {
-      setDelayedStrategyValue(currentStrategy)
+    (currentValue: T | null) => {
+      setDelayedValue(currentValue)
       if (timer != null) {
         window.clearTimeout(timer)
         setTimer(null)
       }
     },
-    [timer, setTimer, setDelayedStrategyValue],
+    [timer, setTimer, setDelayedValue],
   )
 
   const maybeDelayedCallback = React.useCallback(
-    (currentStrategy: CanvasStrategyId | null) => {
-      if (currentStrategy != null && delayedStrategyValue == null) {
+    (currentValue: T | null) => {
+      if (currentValue != null && delayedValue == null) {
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {
-              setDelayedStrategyValue(currentStrategy)
+              setDelayedValue(currentValue)
               setTimer(null)
             }, ControlDelay),
           )
         }
       } else {
-        immediateCallback(currentStrategy)
+        immediateCallback(currentValue)
       }
     },
-    [immediateCallback, delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
+    [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback((store) => store.strategyState.currentStrategy, maybeDelayedCallback)
+  useSelectorWithCallback(selector, maybeDelayedCallback)
   useSelectorWithCallback((store) => {
     if (
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.drag != null
+      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
     ) {
-      return store.strategyState.currentStrategy
+      return selector(store)
     } else {
       return null
     }
   }, immediateCallback)
 
-  return delayedStrategyValue
+  return delayedValue
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
+export const useDelayedCurrentStrategy = () => {
+  const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
+  return useDelayedEditorState<CanvasStrategyId | null>(selector)
+}
+
+const notResizableControls = controlWithProps({
+  control: NonResizableControl,
+  props: {},
+  key: 'not-resizable-control',
+  show: 'visible-except-when-other-strategy-is-active',
+})
+
+export function getApplicableControls(
+  currentStrategy: CanvasStrategyId | null,
+  strategy: CanvasStrategy,
+): Array<ControlWithProps<unknown>> {
+  return strategy.controlsToRender.filter((control) => {
+    return (
+      control.show === 'always-visible' ||
+      (control.show === 'visible-only-while-active' && strategy.id === currentStrategy) ||
+      (control.show === 'visible-except-when-other-strategy-is-active' &&
+        (currentStrategy == null || strategy.id === currentStrategy))
+    )
+  })
+}
+
+export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
+  switch (canvasStrategy.id) {
+    case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
+    case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'FLEX_RESIZE_BASIC':
+      return true
+    default:
+      return false
+  }
+}
+
+export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
+  if (interactionSession == null) {
+    return false
+  } else {
+    switch (interactionSession.interactionData.type) {
+      case 'DRAG':
+        return !isNotYetStartedDragInteraction(interactionSession.interactionData)
+      case 'KEYBOARD':
+      case 'HOVER':
+        return true
+      default:
+        const _exhaustiveCheck: never = interactionSession.interactionData
+        throw new Error(`Unhandled interaction data type: ${interactionSession.interactionData}`)
+    }
+  }
+}
+
+export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
+  const currentlyInProgress = useEditorState((store) => {
+    return interactionInProgress(store.editor.canvas.interactionSession)
+  }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {
-    return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      const filteredControls = s.controlsToRender.filter(
-        (control) =>
-          control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
-          (control.show === 'visible-except-when-other-strategy-is-active' &&
-            (currentStrategy == null || s.id === currentStrategy)),
+    let applicableControls: Array<ControlWithProps<unknown>> = []
+    let isResizable: boolean = false
+    // Add the controls for currently applicable strategies.
+    for (const strategy of applicableStrategies) {
+      if (isResizableStrategy(strategy)) {
+        isResizable = true
+      }
+      const strategyControls = getApplicableControls(currentStrategy, strategy)
+      applicableControls = addAllUniquelyBy(
+        applicableControls,
+        strategyControls,
+        (l, r) => l.control === r.control,
       )
-      return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
-    }, [])
-  }, [applicableStrategies, currentStrategy])
+    }
+    // Special case controls.
+    if (!isResizable && !currentlyInProgress) {
+      applicableControls.push(notResizableControls)
+    }
+    return applicableControls
+  }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
-  return (
-    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
-  )
+  return strategyState.currentStrategyCommands.length > 0
+}
+
+export function onlyFitWhenDraggingThisControl(
+  interactionSession: InteractionSession | null,
+  controlType: CanvasControlType['type'],
+  fitnessWhenFit: number,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === controlType
+  ) {
+    return fitnessWhenFit
+  } else {
+    return 0
+  }
 }

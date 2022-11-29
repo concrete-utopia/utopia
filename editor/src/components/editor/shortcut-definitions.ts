@@ -35,25 +35,7 @@ export const CYCLE_HIERACHY_TARGETS_SHORTCUT = 'cycle-hierachy-targets'
 export const CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT = 'cycle-forward-sibling-targets'
 export const CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT = 'cycle-backward-sibling-targets'
 
-export const RESIZE_ELEMENT_UP_SHORTCUT = 'resize-element-up'
-export const RESIZE_ELEMENT_UP_MORE_SHORTCUT = 'resize-element-up-more'
-export const MOVE_ELEMENT_UP_SHORTCUT = 'move-element-up'
-export const MOVE_ELEMENT_UP_MORE_SHORTCUT = 'move-element-up-more'
-export const RESIZE_ELEMENT_DOWN_SHORTCUT = 'resize-element-down'
-export const RESIZE_ELEMENT_DOWN_MORE_SHORTCUT = 'resize-element-down-more'
-export const MOVE_ELEMENT_DOWN_SHORTCUT = 'move-element-down'
-export const MOVE_ELEMENT_DOWN_MORE_SHORTCUT = 'move-element-down-more'
-export const RESIZE_ELEMENT_LEFT_SHORTCUT = 'resize-element-left'
-export const RESIZE_ELEMENT_LEFT_MORE_SHORTCUT = 'resize-element-left-more'
-export const MOVE_ELEMENT_LEFT_SHORTCUT = 'move-element-left'
-export const MOVE_ELEMENT_LEFT_MORE_SHORTCUT = 'move-element-left-more'
-export const RESIZE_ELEMENT_RIGHT_SHORTCUT = 'resize-element-right'
-export const RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT = 'resize-element-right-more'
-export const MOVE_ELEMENT_RIGHT_SHORTCUT = 'move-element-right'
-export const MOVE_ELEMENT_RIGHT_MORE_SHORTCUT = 'move-element-right-more'
-
 export const SELECT_ALL_SIBLINGS_SHORTCUT = 'select-all-siblings'
-export const TOGGLE_TEXT_BOLD_SHORTCUT = 'toggle-text-bold'
 export const TOGGLE_BORDER_SHORTCUT = 'toggle-border'
 export const COPY_SELECTION_SHORTCUT = 'copy-selection'
 export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
@@ -64,7 +46,6 @@ export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
 export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
-export const TOGGLE_TEXT_ITALIC_SHORTCUT = 'toggle-text-italic'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
 export const TOGGLE_PREVIEW_SHORTCUT = 'toggle-preview'
 export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
@@ -74,8 +55,8 @@ export const INSERT_ELLIPSE_SHORTCUT = 'insert-ellipse'
 export const ADD_ELEMENT_SHORTCUT = 'add-element'
 export const SAVE_CURRENT_FILE_SHORTCUT = 'save-current-file'
 export const TOGGLE_SHADOW_SHORTCUT = 'toggle-shadow'
-export const INSERT_TEXT_SHORTCUT = 'insert-text'
 export const INSERT_VIEW_SHORTCUT = 'insert-view'
+export const INSERT_DIV_SHORTCUT = 'insert-div'
 export const CUT_SELECTION_SHORTCUT = 'cut-selection'
 export const UNDO_CHANGES_SHORTCUT = 'undo-changes'
 export const REDO_CHANGES_SHORTCUT = 'redo-changes'
@@ -85,7 +66,6 @@ export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
 export const FOCUS_CLASS_NAME_INPUT = 'focus-inspector-class-name-input'
 export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
-export const TOGGLE_TEXT_UNDERLINE_SHORTCUT = 'toggle-text-underline'
 export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
 export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
@@ -126,62 +106,9 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Cycle backward between siblings of the currently selected element.',
     key('tab', 'shift'),
   ),
-  [RESIZE_ELEMENT_UP_SHORTCUT]: shortcut('Resize top edge of selected elements.', key('up', 'cmd')),
-  [MOVE_ELEMENT_UP_SHORTCUT]: shortcut('Move element up in the y-axis.', key('up', [])),
-  [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: shortcut(
-    'Fast resize top edge of selected elements.',
-    key('up', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_UP_MORE_SHORTCUT]: shortcut(
-    'Fast move element up in the y-axis.',
-    key('up', ['shift']),
-  ),
-  [RESIZE_ELEMENT_DOWN_SHORTCUT]: shortcut(
-    'Resize bottom edge of selected elements.',
-    key('down', 'cmd'),
-  ),
-  [MOVE_ELEMENT_DOWN_SHORTCUT]: shortcut('Move element down in the y-axis.', key('down', [])),
-  [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: shortcut(
-    'Fast resize bottom edge of selected elements.',
-    key('down', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: shortcut(
-    'Fast move element down in the y-axis.',
-    key('down', ['shift']),
-  ),
-  [RESIZE_ELEMENT_LEFT_SHORTCUT]: shortcut(
-    'Resize left edge of selected elements.',
-    key('left', 'cmd'),
-  ),
-  [MOVE_ELEMENT_LEFT_SHORTCUT]: shortcut('Move element left in the x-axis.', key('left', [])),
-  [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: shortcut(
-    'Fast resize left edge of selected elements.',
-    key('left', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: shortcut(
-    'Fast move element left in the x-axis.',
-    key('left', ['shift']),
-  ),
-  [RESIZE_ELEMENT_RIGHT_SHORTCUT]: shortcut(
-    'Resize right edge of selected elements.',
-    key('right', 'cmd'),
-  ),
-  [MOVE_ELEMENT_RIGHT_SHORTCUT]: shortcut('Move element right in the x-axis.', key('right', [])),
-  [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: shortcut(
-    'Fast resize right edge of selected elements.',
-    key('right', ['cmd', 'shift']),
-  ),
-  [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: shortcut(
-    'Fast move element right in the x-axis.',
-    key('right', ['shift']),
-  ),
   [SELECT_ALL_SIBLINGS_SHORTCUT]: shortcut(
     'Select all siblings of currently selected element.',
     key('a', 'cmd'),
-  ),
-  [TOGGLE_TEXT_BOLD_SHORTCUT]: shortcut(
-    'Toggle the bold attribute of the current text element.',
-    key('b', 'cmd'),
   ),
   [TOGGLE_BORDER_SHORTCUT]: shortcut(
     'Toggle the border of the currently selected text element.',
@@ -211,10 +138,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
-  [TOGGLE_TEXT_ITALIC_SHORTCUT]: shortcut(
-    'Toggle the italic attribute of the current text element.',
-    key('i', 'cmd'),
-  ),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
   [TOGGLE_PREVIEW_SHORTCUT]: shortcut('Toggle the preview panel.', key('p', 'cmd')),
   [TOGGLE_LIVE_CANVAS_SHORTCUT]: shortcut(
@@ -232,8 +155,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the shadow of the currently selected element.',
     key('s', []),
   ),
-  [INSERT_TEXT_SHORTCUT]: shortcut('Insert a text element.', key('t', [])),
   [INSERT_VIEW_SHORTCUT]: shortcut('Insert a view.', key('v', [])),
+  [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', key('d', [])),
   [CUT_SELECTION_SHORTCUT]: shortcut(
     'Cut the current selection to the clipboard.',
     key('x', 'cmd'),
@@ -266,10 +189,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [TOGGLE_FOCUSED_OMNIBOX_TAB]: shortcut(
     'Focus the omnibox or toggle its current tab.',
     key('forwardslash', 'cmd'),
-  ),
-  [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: shortcut(
-    'Toggle the underline attribute of the current text element.',
-    key('u', 'cmd'),
   ),
   [TOGGLE_LEFT_MENU_SHORTCUT]: shortcut(
     'Toggle the left hand menu panel.',

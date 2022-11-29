@@ -4,11 +4,10 @@ import {
 } from '../../core/shared/element-template'
 import { left } from '../../core/shared/either'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { mapValues, pick } from '../../core/shared/object-utils'
+import { mapValues } from '../../core/shared/object-utils'
 import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import * as EP from '../../core/shared/element-path'
 
 disableStoredStateforTests()
@@ -89,10 +88,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -105,12 +104,13 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -125,7 +125,10 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -144,7 +147,9 @@ describe('DOM Walker tests', () => {
           },
           "padding": Object {},
           "parentFlexDirection": null,
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -191,6 +196,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -210,12 +221,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -244,7 +258,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -288,6 +304,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -307,12 +329,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -341,7 +366,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -392,6 +419,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -411,12 +444,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -445,7 +481,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -497,6 +535,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 124,
           "clientWidth": 266,
           "closestOffsetParentPath": Object {
@@ -520,12 +564,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 124,
             "width": 266,
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -554,7 +601,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -607,6 +656,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -631,12 +686,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 70,
             "width": 125,
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 124,
@@ -665,7 +723,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
@@ -741,10 +801,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -757,12 +817,13 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -777,7 +838,10 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -796,7 +860,9 @@ describe('DOM Walker tests', () => {
           },
           "padding": Object {},
           "parentFlexDirection": null,
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -843,6 +909,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -862,12 +934,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -896,7 +971,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -940,6 +1017,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -959,12 +1042,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -993,7 +1079,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1040,6 +1128,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1059,12 +1153,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1093,7 +1190,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1141,6 +1240,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 164,
           "clientWidth": 306,
           "closestOffsetParentPath": Object {
@@ -1159,12 +1264,15 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 164,
             "width": 306,
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1193,7 +1301,9 @@ describe('DOM Walker tests', () => {
             "top": 20,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "fixed",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1242,6 +1352,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -1266,12 +1382,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 70,
             "width": 125,
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1300,7 +1419,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
@@ -1376,10 +1497,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -1392,12 +1513,13 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -1412,7 +1534,10 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -1431,7 +1556,9 @@ describe('DOM Walker tests', () => {
           },
           "padding": Object {},
           "parentFlexDirection": null,
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -1478,6 +1605,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1497,12 +1630,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1531,7 +1667,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1575,6 +1713,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1594,12 +1738,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1628,7 +1775,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1675,6 +1824,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -1694,12 +1849,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1728,7 +1886,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1776,6 +1936,12 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 164,
           "clientWidth": 306,
           "closestOffsetParentPath": Object {
@@ -1794,12 +1960,15 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 164,
             "width": 306,
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1828,7 +1997,9 @@ describe('DOM Walker tests', () => {
             "top": 20,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flex",
+          "parentTextDirection": "ltr",
           "position": "fixed",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -1877,6 +2048,12 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 70,
           "clientWidth": 125,
           "closestOffsetParentPath": Object {
@@ -1901,12 +2078,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 70,
             "width": 125,
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": true,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1935,7 +2115,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
@@ -1999,10 +2181,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2015,12 +2197,13 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -2035,7 +2218,10 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2054,7 +2240,9 @@ describe('DOM Walker tests', () => {
           },
           "padding": Object {},
           "parentFlexDirection": null,
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -2101,6 +2289,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2120,12 +2314,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2154,7 +2351,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -2198,6 +2397,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2217,12 +2422,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2251,7 +2459,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
@@ -2298,6 +2508,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2317,12 +2533,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2351,7 +2570,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
@@ -2419,10 +2640,10 @@ describe('DOM Walker tests', () => {
           "type": "elementpath",
         },
         "globalFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "importInfo": Object {
           "type": "RIGHT",
@@ -2435,12 +2656,13 @@ describe('DOM Walker tests', () => {
         "isEmotionOrStyledComponent": false,
         "label": null,
         "localFrame": Object {
-          "height": 0,
-          "width": 0,
-          "x": 0,
-          "y": 0,
+          "height": Infinity,
+          "width": Infinity,
+          "x": -Infinity,
+          "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
           "closestOffsetParentPath": Object {
@@ -2455,7 +2677,10 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2474,7 +2699,9 @@ describe('DOM Walker tests', () => {
           },
           "padding": Object {},
           "parentFlexDirection": null,
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -2521,6 +2748,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2540,12 +2773,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2574,7 +2810,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
@@ -2618,6 +2856,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2637,12 +2881,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2671,7 +2918,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 3,
@@ -2718,6 +2967,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 812,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2737,12 +2992,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2771,7 +3029,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 3,
@@ -2819,6 +3079,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2842,12 +3108,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2876,7 +3145,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -2924,6 +3195,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -2947,12 +3224,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2981,7 +3261,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
@@ -3029,6 +3311,12 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "borderRadius": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
           "clientHeight": 0,
           "clientWidth": 375,
           "closestOffsetParentPath": Object {
@@ -3052,12 +3340,15 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "float": "none",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
+          "hasTransform": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3086,7 +3377,9 @@ describe('DOM Walker tests', () => {
             "top": 0,
           },
           "parentFlexDirection": "row",
+          "parentFlexGap": 0,
           "parentLayoutSystem": "flow",
+          "parentTextDirection": "ltr",
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,

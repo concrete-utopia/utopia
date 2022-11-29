@@ -6,14 +6,20 @@ module Utopia.Web.Assets where
 
 import           Conduit
 import           Control.Lens
+import           Control.Monad.Fail
 import           Control.Monad.Trans.AWS
+import qualified Data.ByteString         as B
 import qualified Data.ByteString.Lazy    as BL
 import           Data.Generics.Sum
+import           Data.List               hiding (intercalate)
+import           Data.Map.Strict         as M
 import           Data.String
-import           Data.Text
+import           Data.Text               hiding (isInfixOf, isPrefixOf,
+                                          isSuffixOf)
 import           Data.Text.Strict.Lens
 import qualified Data.UUID               as U
 import           Data.UUID.V4
+import           Magic
 import           Network.AWS.Auth
 import           Network.AWS.Data.Text
 import           Network.AWS.S3
@@ -21,6 +27,9 @@ import           Protolude               hiding (intercalate)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
+
+
+import           Data.Time
 
 data AWSResources = AWSResources
                   { _awsEnv :: Env
@@ -31,7 +40,14 @@ data LoadAssetResult = AssetUnmodified
                      | AssetNotFound
                      | AssetLoaded BL.ByteString (Maybe Text)
 
+assetContentsFromLoadAssetResult :: LoadAssetResult -> IO BL.ByteString
+assetContentsFromLoadAssetResult AssetUnmodified          = fail "Asset is unmodified."
+assetContentsFromLoadAssetResult AssetNotFound            = fail "Asset not found."
+assetContentsFromLoadAssetResult (AssetLoaded content _)  = pure content
+
 type LoadAsset = [Text] -> Maybe Text -> IO LoadAssetResult
+
+type SaveAsset = Text -> [Text] -> BL.ByteString -> IO ()
 
 type LoadThumbnail = Text -> Maybe Text -> IO LoadAssetResult
 
@@ -141,7 +157,7 @@ loadFileFromS3 bucketName objectKey possibleETag = do
       fileContents <- sinkBody (view gorsBody successfulResponse) sinkLazy
       let etagFromS3 = firstOf (gorsETag . _Just . _Ctor @"ETag" . utf8) successfulResponse
       pure $ AssetLoaded fileContents etagFromS3
-    Left serviceError ->
+    Left _ ->
       pure AssetUnmodified
 
 checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
@@ -190,3 +206,31 @@ saveProjectThumbnailToS3 :: AWSResources -> Text -> BL.ByteString -> IO ()
 saveProjectThumbnailToS3 resources projectID contents = runInAWS resources $ do
   let putObjectRequest = putObject (_bucket resources) (projectIDToThumbnailObjectKey projectID) (toBody contents)
   void $ send putObjectRequest
+
+data BlobEntryType = TextEntryType
+                   | ImageEntryType
+                   | AssetEntryType
+                   deriving (Eq, Ord, Show)
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeJavaScript :: String -> Bool
+looksLikeJavaScript mimeType = isInfixOf "/javascript" mimeType || isInfixOf "/typescript" mimeType
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeText :: String -> Bool
+looksLikeText mimeType = looksLikeJavaScript mimeType || isPrefixOf "text/" mimeType || isPrefixOf "application/json" mimeType
+
+-- Keep in sync with core/model/project-file-utils.ts.
+looksLikeImage :: String -> Bool
+looksLikeImage mimeType = isPrefixOf "image/" mimeType
+
+blobEntryTypeFromContents :: (MonadIO m) => BL.ByteString -> m BlobEntryType
+blobEntryTypeFromContents bytes = liftIO $ do
+  magic <- magicOpen [MagicMime]
+  magicLoadDefault magic
+  let strictBytes = BL.toStrict bytes
+  mimeType <- B.useAsCStringLen strictBytes $ magicCString magic
+  let possiblyText = if looksLikeText mimeType then Just TextEntryType else Nothing
+  let possiblyImage = if looksLikeImage mimeType then Just ImageEntryType else Nothing
+  pure $ fromMaybe AssetEntryType (possiblyText <|> possiblyImage)
+

@@ -1,16 +1,14 @@
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
-import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
-import type { revertFile, saveFile } from '../../../core/model/project-file-utils'
-import type { foldEither } from '../../../core/shared/either'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
-  ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -31,20 +29,15 @@ import type {
   PropertyPath,
   StaticElementPathPart,
   ElementPath,
+  ImageFile,
 } from '../../../core/shared/project-file-types'
 import { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import { IndexPosition } from '../../../utils/utils'
-import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import type { CSSCursor } from '../../../uuiui-deps'
-import type {
-  addFileToProjectContents,
-  getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-} from '../../assets'
+import { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
-import type { CursorPosition } from '../../code-editor/code-editor-utils'
+import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
@@ -209,23 +202,44 @@ import type {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
+  ElementPaste,
+  SetGithubState,
+  SetProperty,
+  SaveToGithub,
+  UpdateProjectContents,
+  UpdateGithubSettings,
+  SetImageDragSessionState as SetDragSessionState,
+  UpdateGithubOperations,
+  UpdateGithubChecksums,
+  UpdateBranchContents,
+  UpdateAgainstGithub,
+  UpdateGithubData,
+  RemoveFileConflict,
+  SetRefreshingDependencies,
+  SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
+  SetAssetChecksum,
 } from '../action-types'
-import {
-  EditorModes,
-  elementInsertionSubject,
-  Mode,
-  sceneInsertionSubject,
-  SceneInsertionSubject,
-} from '../editor-modes'
+import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
+  ImageDragSessionState,
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubRepo,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
+  ProjectGithubSettings,
   RightMenuTab,
   Theme,
+  GithubOperation,
+  FileChecksums,
+  GithubData,
+  UserConfiguration,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -275,6 +289,19 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
   }
 }
 
+export function setProperty(
+  element: ElementPath,
+  property: PropertyPath,
+  value: JSXAttribute,
+): SetProperty {
+  return {
+    action: 'SET_PROPERTY',
+    element: element,
+    property: property,
+    value: value,
+  }
+}
+
 export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
@@ -282,10 +309,14 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   }
 }
 
-export function transientActions(actions: Array<EditorAction>): TransientActions {
+export function transientActions(
+  actions: Array<EditorAction>,
+  elementsToRerender: Array<ElementPath> | null = null,
+): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
+    elementsToRerender: elementsToRerender,
   }
 }
 
@@ -386,15 +417,27 @@ export function closePopup(): ClosePopup {
   }
 }
 
+export function elementPaste(
+  element: JSXElementChild,
+  importsToAdd: Imports,
+  originalElementPath: ElementPath,
+): ElementPaste {
+  return {
+    element: element,
+    importsToAdd: importsToAdd,
+    originalElementPath: originalElementPath,
+  }
+}
+
 export function pasteJSXElements(
-  elements: Array<JSXElement>,
-  originalElementPaths: Array<ElementPath>,
+  pasteInto: ElementPath,
+  elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
+    pasteInto: pasteInto,
     elements: elements,
-    originalElementPaths: originalElementPaths,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
   }
 }
@@ -436,12 +479,8 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
   )
-}
-
-export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {
@@ -509,9 +548,22 @@ export function setHighlightedView(target: ElementPath): SetHighlightedView {
   }
 }
 
+export function setHoveredView(target: ElementPath): SetHoveredView {
+  return {
+    action: 'SET_HOVERED_VIEW',
+    target: target,
+  }
+}
+
 export function clearHighlightedViews(): ClearHighlightedViews {
   return {
     action: 'CLEAR_HIGHLIGHTED_VIEWS',
+  }
+}
+
+export function clearHoveredViews(): ClearHoveredViews {
+  return {
+    action: 'CLEAR_HOVERED_VIEWS',
   }
 }
 
@@ -947,6 +999,44 @@ export function updateFile(
   }
 }
 
+export function updateProjectContents(contents: ProjectContentTreeRoot): UpdateProjectContents {
+  return {
+    action: 'UPDATE_PROJECT_CONTENTS',
+    contents: contents,
+  }
+}
+
+export function updateBranchContents(
+  contents: ProjectContentTreeRoot | null,
+): UpdateBranchContents {
+  return {
+    action: 'UPDATE_BRANCH_CONTENTS',
+    contents: contents,
+  }
+}
+
+export function updateGithubSettings(
+  settings: Partial<ProjectGithubSettings>,
+): UpdateGithubSettings {
+  return {
+    action: 'UPDATE_GITHUB_SETTINGS',
+    settings: settings,
+  }
+}
+export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
+  return {
+    action: 'UPDATE_GITHUB_DATA',
+    data: data,
+  }
+}
+
+export function removeFileConflict(path: string): RemoveFileConflict {
+  return {
+    action: 'REMOVE_FILE_CONFLICT',
+    path: path,
+  }
+}
+
 export function workerCodeUpdate(
   filePath: string,
   code: string,
@@ -1200,10 +1290,15 @@ export function setSaveError(value: boolean): SetSaveError {
   }
 }
 
-export function insertDroppedImage(imagePath: string, position: CanvasPoint): InsertDroppedImage {
+export function insertDroppedImage(
+  image: ImageFile,
+  path: string,
+  position: CanvasPoint,
+): InsertDroppedImage {
   return {
     action: 'INSERT_DROPPED_IMAGE',
-    imagePath: imagePath,
+    image: image,
+    path: path,
     position: position,
   }
 }
@@ -1380,6 +1475,55 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   }
 }
 
+export function setGithubState(githubState: GithubState): SetGithubState {
+  return {
+    action: 'SET_GITHUB_STATE',
+    githubState: githubState,
+  }
+}
+
+export function setUserConfiguration(userConfiguration: UserConfiguration): SetUserConfiguration {
+  return {
+    action: 'SET_USER_CONFIGURATION',
+    userConfiguration: userConfiguration,
+  }
+}
+
+export type GithubOperationType = 'add' | 'remove'
+
+export function updateGithubOperations(
+  operation: GithubOperation,
+  type: GithubOperationType,
+): UpdateGithubOperations {
+  return {
+    action: 'UPDATE_GITHUB_OPERATIONS',
+    operation: operation,
+    type: type,
+  }
+}
+
+export function setRefreshingDependencies(value: boolean): SetRefreshingDependencies {
+  return {
+    action: 'SET_REFRESHING_DEPENDENCIES',
+    value: value,
+  }
+}
+
+export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
+  return {
+    action: 'UPDATE_GITHUB_CHECKSUMS',
+    checksums: checksums,
+  }
+}
+
+export function setAssetChecksum(filename: string, checksum: string | null): SetAssetChecksum {
+  return {
+    action: 'SET_ASSET_CHECKSUM',
+    filename: filename,
+    checksum: checksum,
+  }
+}
+
 export function resetCanvas(): ResetCanvas {
   return {
     action: 'RESET_CANVAS',
@@ -1497,5 +1641,51 @@ export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
   return {
     action: 'RUN_ESCAPE_HATCH',
     targets: targets,
+  }
+}
+
+export function toggleSelectionLock(
+  targets: Array<ElementPath>,
+  newValue: SelectionLocked,
+): ToggleSelectionLock {
+  return {
+    action: 'TOGGLE_SELECTION_LOCK',
+    targets: targets,
+    newValue: newValue,
+  }
+}
+
+export function saveToGithub(
+  targetRepository: GithubRepo,
+  branchName: string,
+  commitMessage: string,
+): SaveToGithub {
+  return {
+    action: 'SAVE_TO_GITHUB',
+    targetRepository: targetRepository,
+    branchName: branchName,
+    commitMessage: commitMessage,
+  }
+}
+
+export function updateAgainstGithub(
+  branchLatestContent: ProjectContentTreeRoot,
+  specificCommitContent: ProjectContentTreeRoot,
+  latestCommit: string,
+): UpdateAgainstGithub {
+  return {
+    action: 'UPDATE_AGAINST_GITHUB',
+    branchLatestContent: branchLatestContent,
+    specificCommitContent: specificCommitContent,
+    latestCommit: latestCommit,
+  }
+}
+
+export function setImageDragSessionState(
+  imageDragSessionState: ImageDragSessionState,
+): SetDragSessionState {
+  return {
+    action: 'SET_IMAGE_DRAG_SESSION_STATE',
+    imageDragSessionState: imageDragSessionState,
   }
 }

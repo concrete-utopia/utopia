@@ -1,67 +1,57 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
-import { ResizeDirection } from 're-resizable'
+import { css, jsx, keyframes } from '@emotion/react'
+import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
-import * as ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import Utils from '../../utils/utils'
-import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { getCursorFromDragState } from '../canvas/canvas-utils'
-import { DesignPanelRoot } from '../canvas/design-panel-root'
-import { resizeLeftPane } from '../common/actions'
-import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
-import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
-import { Menubar } from '../menubar/menubar'
-import { LeftPaneComponent } from '../navigator/left-pane'
-import { PreviewColumn } from '../preview/preview-pane'
-import { ReleaseNotesContent } from '../documentation/release-notes'
-import { EditorDispatch, LoginState } from './action-types'
-import * as EditorActions from './actions/action-creators'
-import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
-import { StateHistory } from './history'
-import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
-import {
-  ConsoleLog,
-  getOpenFile,
-  getOpenTextFileKey,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  StoryboardFilePath,
-} from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
-import { isParsedTextFile } from '../../core/shared/project-file-types'
-import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
-import { Toast } from '../common/notices'
-import { chrome as isChrome } from 'platform-detect'
-import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
-import {
-  SimpleFlexRow,
-  SimpleFlexColumn,
-  UtopiaTheme,
-  FlexRow,
-  ResizableFlexColumn,
-  useColorTheme,
-  TabComponent,
-  LargerIcons,
-  Subdued,
-  FlexColumn,
-} from '../../uuiui'
-import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
-import { setBranchNameFromURL } from '../../utils/branches'
-import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
+import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { projectURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
+import {
+  FlexColumn,
+  LargerIcons,
+  ResizableFlexColumn,
+  SimpleFlexColumn,
+  SimpleFlexRow,
+  ColorThemeStyleComponent,
+  TabComponent,
+  useColorTheme,
+  UtopiaTheme,
+} from '../../uuiui'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   createInteractionViaKeyboard,
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
 import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
+import { DesignPanelRoot } from '../canvas/design-panel-root'
+import { Toast } from '../common/notices'
+import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
+import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
+import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
+import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
+import { LeftPaneComponent } from '../navigator/left-pane'
+import { PreviewColumn } from '../preview/preview-pane'
+import TitleBar from '../titlebar/title-bar'
+import * as EditorActions from './actions/action-creators'
+import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
+import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
+import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
+import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
+import {
+  emptyGithubSettings,
+  githubOperationLocksEditor,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
+} from './store/editor-state'
+import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
+import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
+import { when } from '../../utils/react-conditionals'
+import { LowPriorityStoreProvider } from './store/low-priority-store'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -69,11 +59,6 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
   window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
-}
-
-interface NumberSize {
-  width: number
-  height: number
 }
 
 export interface EditorProps {}
@@ -153,25 +138,16 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      if (
-        isFeatureEnabled('Canvas Strategies') &&
-        editorIsTarget(event, editorStoreRef.current.editor)
-      ) {
+      if (editorIsTarget(event, editorStoreRef.current.editor)) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
         const modifiers = Modifier.modifiersForKeyboardEvent(event)
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (key === 'space') {
-          if (existingInteractionSession != null) {
-            editorStoreRef.current.dispatch(
-              [CanvasActions.clearInteractionSession(false)],
-              'everyone',
-            )
-          }
-          event.preventDefault()
-          event.stopPropagation()
-        } else if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
+        if (
+          (Keyboard.keyIsModifier(key) || key === 'space') &&
+          existingInteractionSession != null
+        ) {
           editorStoreRef.current.dispatch(
             [
               CanvasActions.createInteractionSession(
@@ -215,27 +191,19 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyUp = React.useCallback(
     (event: KeyboardEvent) => {
-      if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (existingInteractionSession != null) {
-          if (isFeatureEnabled('Keyboard up clears interaction')) {
-            const action = CanvasActions.clearInteractionSession(true)
-            editorStoreRef.current.dispatch([action], 'everyone')
-          } else {
-            const action = CanvasActions.createInteractionSession(
-              updateInteractionViaKeyboard(
-                existingInteractionSession,
-                [],
-                [Keyboard.keyCharacterForCode(event.keyCode)],
-                Modifier.modifiersForKeyboardEvent(event),
-                { type: 'KEYBOARD_CATCHER_CONTROL' },
-              ),
-            )
-            editorStoreRef.current.dispatch([action], 'everyone')
-          }
-        }
+      const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+      if (existingInteractionSession != null) {
+        const action = CanvasActions.createInteractionSession(
+          updateInteractionViaKeyboard(
+            existingInteractionSession,
+            [],
+            [Keyboard.keyCharacterForCode(event.keyCode)],
+            Modifier.modifiersForKeyboardEvent(event),
+            { type: 'KEYBOARD_CATCHER_CONTROL' },
+          ),
+        )
+        editorStoreRef.current.dispatch([action], 'everyone')
       }
-
       handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
     },
     [editorStoreRef, namesByKey],
@@ -282,7 +250,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [projectName])
 
   React.useEffect(() => {
-    if (projectId) {
+    if (IS_BROWSER_TEST_DEBUG) {
+      return
+    }
+    if (projectId != null) {
       pushProjectURLToBrowserHistory(projectId, projectName)
     }
   }, [projectName, projectId])
@@ -300,7 +271,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isDraggedFile) {
         const actions = [
           EditorActions.setPanelVisibility('leftmenu', true),
-          EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
+          EditorActions.setLeftMenuTab(LeftMenuTab.Project),
         ]
         dispatch(actions, 'everyone')
       }
@@ -310,12 +281,14 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   return (
     <>
+      <ColorThemeStyleComponent />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{
-          height: '100%',
-          width: '100%',
+          height: '100vh',
+          width: '100vw',
           overscrollBehaviorX: 'contain',
+          color: colorTheme.fg1.value,
         }}
         onDragEnter={startDragInsertion}
       >
@@ -326,8 +299,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             width: '100%',
           }}
         >
-          {(isChrome as boolean) ? null : <BrowserInfoBar />}
-          <LoginStatusBar />
+          <LowPriorityStoreProvider>
+            {(isChrome as boolean) ? null : <BrowserInfoBar />}
+            <LoginStatusBar />
+            <TitleBar />
+          </LowPriorityStoreProvider>
 
           <SimpleFlexRow
             className='editor-main-horizontal'
@@ -338,21 +314,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               alignItems: 'stretch',
             }}
           >
-            <SimpleFlexColumn
-              style={{
-                height: '100%',
-                width: 44,
-                backgroundColor: colorTheme.leftMenuBackground.value,
-              }}
-            >
-              <Menubar />
-            </SimpleFlexColumn>
             <div
               className='LeftPaneShell'
               style={{
                 height: '100%',
+                display: 'flex',
                 flexShrink: 0,
-                transition: 'all .1s ease-in-out',
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
@@ -417,21 +384,41 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         </SimpleFlexColumn>
         <ModalComponent />
         <ToastRenderer />
+        <LockedOverlay />
       </SimpleFlexRow>
     </>
   )
 })
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch } = useEditorState((store) => {
+  const { modal, dispatch, currentBranch } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       modal: store.editor.modal,
+      currentBranch: store.editor.githubSettings.branchName,
     }
   }, 'ModalComponent')
   if (modal != null) {
-    if (modal.type === 'file-delete') {
-      return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
+    switch (modal.type) {
+      case 'file-delete':
+        return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
+      case 'file-overwrite':
+        return <ConfirmOverwriteDialog dispatch={dispatch} files={modal.files} />
+      case 'file-revert':
+        return (
+          <ConfirmRevertDialogProps
+            dispatch={dispatch}
+            status={modal.status}
+            filePath={modal.filePath}
+          />
+        )
+      case 'file-revert-all':
+        return <ConfirmRevertAllDialogProps dispatch={dispatch} />
+      case 'disconnect-github-project':
+        if (currentBranch != null) {
+          return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />
+        }
+        break
     }
   }
   return null
@@ -446,7 +433,7 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend} context={window}>
       <EditorComponentInner {...props} />
     </DndProvider>
   )
@@ -478,5 +465,87 @@ const ToastRenderer = React.memo(() => {
         />
       ))}
     </FlexColumn>
+  )
+})
+
+function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
+  e.stopPropagation()
+  e.preventDefault()
+}
+
+const LockedOverlay = React.memo(() => {
+  const leftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'EditorComponentInner leftMenuExpanded',
+  )
+
+  const editorLocked = useEditorState(
+    (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
+    'EditorComponentInner editorLocked',
+  )
+
+  const refreshingDependencies = useEditorState(
+    (store) => store.editor.refreshingDependencies,
+    'EditorComponentInner refreshingDependencies',
+  )
+
+  const anim = keyframes`
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.2;
+    }
+  `
+
+  const locked = React.useMemo(() => {
+    return editorLocked || refreshingDependencies
+  }, [editorLocked, refreshingDependencies])
+
+  if (!locked) {
+    return null
+  }
+
+  return (
+    <div
+      onMouseDown={handleEventNoop}
+      onMouseUp={handleEventNoop}
+      onClick={handleEventNoop}
+      onKeyDown={handleEventNoop}
+      onKeyUp={handleEventNoop}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#00000044',
+        zIndex: 30,
+        transition: 'all .1s ease-in-out',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      css={css`
+        animation: ${anim} 0.3s ease-in-out;
+      `}
+    >
+      {when(
+        refreshingDependencies,
+        <div
+          style={{
+            opacity: 1,
+            fontSize: 12,
+            fontWeight: 500,
+            background: '#fff',
+            padding: 30,
+            borderRadius: 2,
+          }}
+        >
+          Updating dependencies…
+        </div>,
+      )}
+    </div>
   )
 })

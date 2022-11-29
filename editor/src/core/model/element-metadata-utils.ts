@@ -4,7 +4,14 @@ import { getReorderDirection } from '../../components/canvas/controls/select-mod
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
+import {
+  mapDropNulls,
+  pluck,
+  stripNulls,
+  flatMapArray,
+  uniqBy,
+  mapAndFilter,
+} from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -33,6 +40,8 @@ import {
   isIntrinsicElement,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  emptySpecialSizeMeasurements,
+  elementInstanceMetadata,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -42,8 +51,12 @@ import {
   boundingRectangleArray,
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
+  getLocalRectangleInNewParentContext,
+  localRectangle,
   LocalRectangle,
+  roundPointToNearestHalf,
   Size,
+  zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -60,6 +73,7 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
+  elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
   getUtopiaID,
 } from './element-template-utils'
@@ -73,15 +87,23 @@ import {
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import { AllElementProps, withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import {
+  AllElementProps,
+  LockedElements,
+  withUnderlyingTarget,
+} from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import {
+  Direction,
+  FlexDirection,
+  ForwardOrReverse,
+} from '../../components/inspector/common/css-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -160,9 +182,6 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
   },
-  isSceneTreatedAsGroup(allElementProps: AllElementProps, path: ElementPath): boolean {
-    return allElementProps?.[EP.toString(path)]?.[ResizesContentProp] ?? false
-  },
   isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
       element != null &&
@@ -208,6 +227,21 @@ export const MetadataUtils = {
     }
     return parent
   },
+  getSiblingsProjectContentsOrdered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    if (target == null) {
+      return []
+    }
+
+    const parentPath = EP.parentPath(target)
+    const siblingPathsOrNull = EP.isRootElementOfInstance(target)
+      ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
+      : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
+    const siblingPaths = siblingPathsOrNull ?? []
+    return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
   getSiblings(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
@@ -242,11 +276,11 @@ export const MetadataUtils = {
       return false
     }
     return (
-      MetadataUtils.isParentYogaLayoutedContainerForElement(element) &&
+      MetadataUtils.isParentFlexLayoutedContainerForElement(element) &&
       !MetadataUtils.isPositionAbsolute(element)
     )
   },
-  isParentYogaLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
+  isParentFlexLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
     return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
@@ -257,6 +291,41 @@ export const MetadataUtils = {
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
+  },
+  isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'relative'
+  },
+  isPositionedByFlow(instance: ElementInstanceMetadata | null): boolean {
+    if (instance === null) {
+      return false
+    }
+
+    const containerLayoutSystem = instance.specialSizeMeasurements.parentLayoutSystem
+    const position = instance.specialSizeMeasurements.position
+    const participatesInFlow =
+      position === 'relative' || position === 'static' || position === 'sticky'
+    return containerLayoutSystem === 'flow' && participatesInFlow
+  },
+  elementParticipatesInAutoLayout(element: ElementInstanceMetadata | null): boolean {
+    // this contains the ruleset about style properties that make an element autolayouted
+    // TODO extend with transform: translate, relative offset etc.
+    return !MetadataUtils.isPositionAbsolute(element)
+  },
+  targetParticipatesInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
+    return MetadataUtils.elementParticipatesInAutoLayout(
+      MetadataUtils.findElementByElementPath(elements, target),
+    )
+  },
+  getChildrenParticipatingInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return MetadataUtils.getChildren(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
@@ -357,8 +426,59 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
+  },
+  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): {
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
+  } {
+    return MetadataUtils.flexDirectionToSimpleFlexDirection(
+      MetadataUtils.getFlexDirection(instance),
+    )
+  },
+  flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
+  } {
+    const direction: Direction = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'row-reverse':
+          return 'horizontal'
+        case 'column':
+        case 'column-reverse':
+          return 'vertical'
+        default:
+          return 'horizontal'
+      }
+    })()
+
+    const forwardOrReverse: ForwardOrReverse = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'column':
+          return 'forward'
+        case 'row-reverse':
+        case 'column-reverse':
+          return 'reverse'
+        default:
+          return 'forward'
+      }
+    })()
+
+    return {
+      direction: direction,
+      forwardOrReverse: forwardOrReverse,
+    }
+  },
+  getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
+    const instance = MetadataUtils.findElementByElementPath(metadata, path)
+    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+      return instance?.specialSizeMeasurements?.parentFlexGap ?? 0
+    } else {
+      return 0
+    }
   },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
     const parentPath = EP.parentPath(target)
@@ -405,6 +525,19 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleRootElementsOfTarget
   },
+  getRootViewPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
+      if (EP.isRootElementOf(elementPath, target)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    return possibleRootElementsOfTarget
+  },
   getRootViews(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -449,6 +582,19 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleChildren
   },
+  getChildrenPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleChildren = mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    return possibleChildren
+  },
   getChildren(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -462,6 +608,16 @@ export const MetadataUtils = {
       }
     }
     return result
+  },
+  getDescendantPaths(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    return mapAndFilter(
+      (element) => element.elementPath,
+      (path) => EP.isDescendantOf(path, target),
+      Object.values(elements),
+    )
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
@@ -612,9 +768,6 @@ export const MetadataUtils = {
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
-  isTextAgainstImports(instance: ElementInstanceMetadata | null): boolean {
-    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Text')
-  },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')
   },
@@ -633,47 +786,59 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
       (element) => {
-        if (isJSXElement(element)) {
-          if (isIntrinsicElement(element.name)) {
-            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
-            // Explicitly prevent components / elements that we *know* don't support children
-            return (
-              isViewLikeFromMetadata(instance) ||
-              isSceneFromMetadata(instance) ||
-              isGivenUtopiaElementFromMetadata(instance, 'Text')
-            )
-          } else {
-            return MetadataUtils.targetUsesProperty(
-              projectContents,
-              openFile,
-              instance.elementPath,
-              'children',
-            )
+        if (elementOnlyHasTextChildren(element)) {
+          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
+          return false
+        } else {
+          if (isJSXElement(element)) {
+            if (isIntrinsicElement(element.name)) {
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+              // Explicitly prevent components / elements that we *know* don't support children
+              return (
+                isViewLikeFromMetadata(instance) ||
+                isSceneFromMetadata(instance) ||
+                EP.isStoryboardPath(instance.elementPath)
+              )
+            } else {
+              return MetadataUtils.targetUsesProperty(
+                projectContents,
+                openFile,
+                instance.elementPath,
+                'children',
+              )
+            }
           }
+          // We don't know at this stage
+          return true
         }
-        // We don't know at this stage
-        return true
       },
       instance.element,
     )
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
+    target: ElementPath | null,
   ): boolean {
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null
-      ? false
-      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    if (target == null) {
+      // Assumed to be reparenting to the canvas root.
+      return true
+    } else {
+      const instance = MetadataUtils.findElementByElementPath(metadata, target)
+      return instance == null
+        ? false
+        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
@@ -833,7 +998,11 @@ export const MetadataUtils = {
     } => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
+        (subTree) => {
+          return reorderTree(subTree, metadata)
+        },
+      )
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
@@ -908,6 +1077,14 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
   },
+  getBoundingRectangleInCanvasCoords(
+    paths: Array<ElementPath>,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle | null {
+    return boundingRectangleArray(
+      paths.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+    )
+  },
   getFrame(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.localFrame, element)
@@ -932,27 +1109,31 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
+  getParentCoordinateSystemBounds: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle {
+    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (parent.specialSizeMeasurements.globalContentBox != null) {
+        return parent.specialSizeMeasurements.globalContentBox
+      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return parent.specialSizeMeasurements.coordinateSystemBounds
+      }
+    }
+
+    return zeroCanvasRect
+  },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
   ): LocalRectangle {
-    const parent = this.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (
-        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
-        parent.globalFrame != null
-      ) {
-        return canvasRectangleToLocalRectangle(frame, parent.globalFrame)
-      }
-      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return canvasRectangleToLocalRectangle(
-          frame,
-          parent.specialSizeMeasurements.coordinateSystemBounds,
-        )
-      }
-    }
-    return Utils.asLocal(frame)
+    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
+      targetParent,
+      metadata,
+    )
+    return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
@@ -1004,14 +1185,10 @@ export const MetadataUtils = {
                 }
                 const src = elementProps['src']
                 if (src != null && typeof src === 'string' && src.length > 0) {
+                  if (src.startsWith('data:') && src.includes('base64')) {
+                    return '<Base64 data>'
+                  }
                   return src
-                }
-              }
-              // For Text elements, use their text property if it exists.
-              if (lastNamePart === 'Text') {
-                const text = elementProps['text']
-                if (text != null && typeof text === 'string' && text.length > 0) {
-                  return text
                 }
               }
 
@@ -1432,6 +1609,31 @@ export const MetadataUtils = {
         : null
     return localFrame
   },
+  isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
+    return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
+  },
+  collectParentsAndSiblings(
+    componentMetadata: ElementInstanceMetadataMap,
+    targets: Array<ElementPath>,
+  ): Array<ElementPath> {
+    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+    const result: Array<ElementPath> = []
+    Utils.fastForEach(targets, (target) => {
+      const parent = EP.parentPath(target)
+      Utils.fastForEach(allPaths, (maybeTarget) => {
+        const isSibling = EP.isSiblingOf(maybeTarget, target)
+        const isParent = EP.pathsEqual(parent, maybeTarget)
+        const notSelectedOrDescendantOfSelected = targets.every(
+          (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
+        )
+        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
+          result.push(maybeTarget)
+        }
+      })
+    })
+
+    return result
+  },
 }
 
 // Those elements which are not in the dom have empty globalFrame and localFrame
@@ -1556,5 +1758,44 @@ export function getSimpleAttributeAtPath(
       return flatMapEither((attr) => jsxSimpleAttributeToValue(attr), getAttrResult)
     },
     propsOrAttributes,
+  )
+}
+
+// This function creates a fake metadata for the given element
+// Useful when metadata is needed before the real on is created.
+export function createFakeMetadataForElement(
+  path: ElementPath,
+  element: JSXElementChild,
+  frame: CanvasRectangle,
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadata {
+  const parentPath = EP.parentPath(path)
+
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
+  const parentBounds = parentElement != null ? parentElement.globalFrame : null
+
+  const localFrame =
+    parentBounds != null
+      ? getLocalRectangleInNewParentContext(parentBounds, frame)
+      : localRectangle(frame)
+
+  const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
+  specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
+  specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
+
+  return elementInstanceMetadata(
+    path,
+    right(element),
+    frame,
+    localFrame,
+    false,
+    false,
+    specialSizeMeasurements,
+    null,
+    null,
+    null,
+    null,
   )
 }

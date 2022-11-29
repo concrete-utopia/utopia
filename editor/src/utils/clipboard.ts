@@ -1,23 +1,13 @@
-import { EditorAction } from '../components/editor/action-types'
+import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import {
-  DerivedState,
-  EditorState,
-  getOpenUIJSFileKey,
-  withUnderlyingTarget,
-} from '../components/editor/store/editor-state'
+import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  isParseSuccess,
-  NodeModules,
-  ElementPath,
-  isTextFile,
-} from '../core/shared/project-file-types'
+import { isParseSuccess, ElementPath, isTextFile } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
@@ -33,13 +23,14 @@ import {
 } from '../components/custom-code/code-file'
 import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
-import { mapValues, omit, pick } from '../core/shared/object-utils'
-import { metaProperty } from '@babel/types'
+import { mapValues, pick } from '../core/shared/object-utils'
+import { getStoryboardElementPath } from '../core/model/scene-utils'
+import { getRequiredImportsForElement } from '../components/editor/import-utils'
+import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
-  originalElementPaths: ElementPath[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -60,13 +51,12 @@ export function setClipboardData(
 ): void {
   // we also set the local clipboard here, used for style copy paste
   setLocalClipboardData(copyData)
-
   if (copyData != null) {
     const utopiaDataHtml = encodeUtopiaDataToHtml(copyData.data)
     const dt = new ClipboardPolyfill.DT()
     dt.setData('text/plain', copyData.plaintext)
     dt.setData('text/html', utopiaDataHtml)
-    ClipboardPolyfill.write(dt)
+    void ClipboardPolyfill.write(dt)
   }
 }
 
@@ -78,29 +68,39 @@ export function getActionsForClipboardItems(
   selectedViews: Array<ElementPath>,
   pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
 ): Array<EditorAction> {
   try {
-    const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
+    const possibleTarget = getTargetParentForPaste(
+      projectContents,
+      openFile,
+      selectedViews,
+      componentMetadata,
+      pasteTargetsToIgnore,
+    )
+    const target =
+      possibleTarget == null ? getStoryboardElementPath(projectContents, openFile) : possibleTarget
+    if (target == null) {
+      console.warn(`Unable to find the storyboard path.`)
+      return []
+    }
+
+    // Create the actions for inserting JSX elements into the hierarchy.
+    const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(elements, data.originalElementPaths, metadata)]
+      return [EditorActions.pasteJSXElements(target, elements, metadata)]
     }, clipboardData)
+
+    // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
-      const target = getTargetParentForPaste(
-        projectContents,
-        openFile,
-        selectedViews,
-        componentMetadata,
-        pasteTargetsToIgnore,
-      )
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
       const parentCenter =
         parentFrame != null
           ? Utils.getRectCenter(parentFrame)
           : (Utils.point(100, 100) as CanvasPoint)
-      const imageSizeMultiplier = 2
       let pastedImages: Array<ImageResult> = []
       fastForEach(pastedFiles, (pastedFile) => {
         if (pastedFile.type === 'IMAGE_RESULT') {
@@ -113,8 +113,8 @@ export function getActionsForClipboardItems(
       insertImageActions = createDirectInsertImageActions(
         pastedImages,
         parentCenter,
+        canvasScale,
         target,
-        imageSizeMultiplier,
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -127,8 +127,8 @@ export function getActionsForClipboardItems(
 export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
+  scale: number,
   parentPath: ElementPath | null,
-  overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -140,7 +140,7 @@ export function createDirectInsertImageActions(
           centerPoint,
           image.filename,
           image.size,
-          overrideDefaultMultiplier,
+          null,
         )
         const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
         const saveImageAction = EditorActions.saveAsset(
@@ -156,7 +156,10 @@ export function createDirectInsertImageActions(
   }
 }
 
-export function createClipboardDataFromSelection(editor: EditorState): {
+export function createClipboardDataFromSelection(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): {
   data: Array<JSXElementCopyData>
   imageFilenames: Array<string>
   plaintext: string
@@ -168,7 +171,7 @@ export function createClipboardDataFromSelection(editor: EditorState): {
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
-  const jsxElements = mapDropNulls((target) => {
+  const jsxElements: Array<ElementPaste> = mapDropNulls((target) => {
     const underlyingTarget = normalisePathToUnderlyingTarget(
       editor.projectContents,
       editor.nodeModules.files,
@@ -182,7 +185,21 @@ export function createClipboardDataFromSelection(editor: EditorState): {
     )
     if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
       const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-      return findElementAtPath(target, components)
+      const elementToPaste = findElementAtPath(target, components)
+      if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
+        return null
+      } else {
+        const requiredImports = getRequiredImportsForElement(
+          target,
+          editor.projectContents,
+          editor.nodeModules.files,
+          openUIJSFileKey,
+          targetPathSuccess.filePath,
+          builtInDependencies,
+        )
+
+        return EditorActions.elementPaste(elementToPaste, requiredImports, target)
+      }
     } else {
       return null
     }
@@ -193,7 +210,6 @@ export function createClipboardDataFromSelection(editor: EditorState): {
       {
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
-        originalElementPaths: editor.selectedViews,
         targetOriginalContextMetadata: filterMetadataForCopy(
           editor.selectedViews,
           editor.jsxMetadata,
@@ -215,7 +231,9 @@ function filterMetadataForCopy(
     // only those element paths are relevant which are descendants or ascentors of at least one selected view
     return selectedViews.some(
       (selected) =>
-        EP.isDescendantOf(selected, elementPath) || EP.isDescendantOf(elementPath, selected),
+        EP.isDescendantOf(selected, elementPath) ||
+        EP.isDescendantOf(elementPath, selected) ||
+        EP.pathsEqual(selected, elementPath),
     )
   })
   const filteredMetadata = pick(necessaryPaths, jsxMetadata)

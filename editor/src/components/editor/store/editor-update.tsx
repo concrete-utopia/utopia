@@ -3,12 +3,12 @@ import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
-import { setClipboardData, createClipboardDataFromSelection } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { assertNever } from '../../../core/shared/utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -74,9 +74,11 @@ export function runSimpleLocalEditorAction(
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
     case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState)
+      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
+    case 'SET_PROPERTY':
+      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -116,11 +118,9 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch)
+      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
-      // side effect 😟
-      setClipboardData(createClipboardDataFromSelection(state))
-      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch)
+      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
     case 'CLOSE_TEXT_EDITOR':
@@ -137,12 +137,24 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+    case 'SET_REFRESHING_DEPENDENCIES':
+      return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
+    case 'UPDATE_GITHUB_OPERATIONS':
+      return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
+    case 'UPDATE_GITHUB_CHECKSUMS':
+      return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
+    case 'SET_ASSET_CHECKSUM':
+      return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':
       return UPDATE_FNS.SET_HIGHLIGHTED_VIEW(action, state)
+    case 'SET_HOVERED_VIEW':
+      return UPDATE_FNS.SET_HOVERED_VIEW(action, state)
     case 'CLEAR_HIGHLIGHTED_VIEWS':
       return UPDATE_FNS.CLEAR_HIGHLIGHTED_VIEWS(action, state)
+    case 'CLEAR_HOVERED_VIEWS':
+      return UPDATE_FNS.CLEAR_HOVERED_VIEWS(action, state)
     case 'UPDATE_KEYS_PRESSED':
       return UPDATE_FNS.UPDATE_KEYS_PRESSED(action, state)
     case 'UPDATE_MOUSE_BUTTONS_PRESSED':
@@ -195,6 +207,16 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
+    case 'UPDATE_PROJECT_CONTENTS':
+      return UPDATE_FNS.UPDATE_PROJECT_CONTENTS(action, state)
+    case 'UPDATE_BRANCH_CONTENTS':
+      return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
+    case 'UPDATE_GITHUB_SETTINGS':
+      return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
+    case 'UPDATE_GITHUB_DATA':
+      return UPDATE_FNS.UPDATE_GITHUB_DATA(action, state)
+    case 'REMOVE_FILE_CONFLICT':
+      return UPDATE_FNS.REMOVE_FILE_CONFLICT(action, state)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
@@ -234,7 +256,7 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
-      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch, builtInDependencies)
     case 'WRAP_IN_ELEMENT':
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
@@ -308,8 +330,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
     case 'SET_FORKED_FROM_PROJECT_ID':
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
-    case 'SET_CURRENT_THEME':
-      return UPDATE_FNS.SET_CURRENT_THEME(action, state)
     case 'FOCUS_CLASS_NAME_INPUT':
       return UPDATE_FNS.FOCUS_CLASS_NAME_INPUT(state)
     case 'FOCUS_FORMULA_BAR':
@@ -335,7 +355,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     case 'SEND_CODE_EDITOR_INITIALISATION':
-      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state)
+      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state, userState)
     case 'HIDE_VSCODE_LOADING_SCREEN':
       return UPDATE_FNS.HIDE_VSCODE_LOADING_SCREEN(action, state)
     case 'SET_INDEXED_DB_FAILED':
@@ -344,6 +364,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
+    case 'TOGGLE_SELECTION_LOCK':
+      return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
+    case 'SAVE_TO_GITHUB':
+      return UPDATE_FNS.SAVE_TO_GITHUB(action, state, dispatch)
+    case 'UPDATE_AGAINST_GITHUB':
+      return UPDATE_FNS.UPDATE_AGAINST_GITHUB(action, state)
+    case 'SET_IMAGE_DRAG_SESSION_STATE':
+      return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
     default:
       return state
   }

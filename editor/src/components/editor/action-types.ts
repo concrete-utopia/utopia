@@ -1,16 +1,20 @@
 import {
-  ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
+  JSXElementChild,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
-import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
-import { CursorPosition } from '../code-editor/code-editor-utils'
+import {
+  CanvasAction,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  SelectionLocked,
+} from '../canvas/canvas-types'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
   ProjectFile,
@@ -21,6 +25,7 @@ import {
   Imports,
   ParsedTextFile,
   HighlightBoundsForUids,
+  ImageFile,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -34,21 +39,28 @@ import type {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import {
+  ImageDragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubRepo,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
   PersistentModel,
+  ProjectGithubSettings,
   RightMenuTab,
   StoredEditorState,
   Theme,
+  GithubOperation,
+  FileChecksums,
+  GithubData,
+  UserConfiguration,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
-import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
 import {
@@ -58,6 +70,8 @@ import {
 } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
+import { ProjectContentTreeRoot } from '../assets'
+import { GithubOperationType } from './actions/action-creators'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -182,6 +196,13 @@ export type UnsetProperty = {
   property: PropertyPath
 }
 
+export type SetProperty = {
+  action: 'SET_PROPERTY'
+  element: ElementPath
+  property: PropertyPath
+  value: JSXAttribute
+}
+
 export type SetCanvasFrames = {
   action: 'SET_CANVAS_FRAMES'
   framesAndTargets: Array<PinOrFlexFrameChange>
@@ -234,6 +255,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
+  elementsToRerender: Array<ElementPath> | null
 }
 
 export type Atomic = {
@@ -241,7 +263,7 @@ export type Atomic = {
   actions: Array<EditorAction>
 }
 
-export type NewProject = {
+export interface NewProject {
   action: 'NEW'
   nodeModules: NodeModules
   packageResult: PackageStatusMap
@@ -306,10 +328,16 @@ export interface ClosePopup {
   action: 'CLOSE_POPUP'
 }
 
+export interface ElementPaste {
+  element: JSXElementChild
+  importsToAdd: Imports
+  originalElementPath: ElementPath
+}
+
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  elements: JSXElement[]
-  originalElementPaths: ElementPath[]
+  pasteInto: ElementPath
+  elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -378,8 +406,16 @@ export interface SetHighlightedView {
   target: ElementPath
 }
 
+export interface SetHoveredView {
+  action: 'SET_HOVERED_VIEW'
+  target: ElementPath
+}
+
 export interface ClearHighlightedViews {
   action: 'CLEAR_HIGHLIGHTED_VIEWS'
+}
+export interface ClearHoveredViews {
+  action: 'CLEAR_HOVERED_VIEWS'
 }
 
 export type UpdateKeysPressed = {
@@ -582,6 +618,31 @@ export interface UpdateFile {
   addIfNotInFiles: boolean
 }
 
+export interface UpdateProjectContents {
+  action: 'UPDATE_PROJECT_CONTENTS'
+  contents: ProjectContentTreeRoot
+}
+
+export interface UpdateBranchContents {
+  action: 'UPDATE_BRANCH_CONTENTS'
+  contents: ProjectContentTreeRoot | null
+}
+
+export interface UpdateGithubSettings {
+  action: 'UPDATE_GITHUB_SETTINGS'
+  settings: Partial<ProjectGithubSettings>
+}
+
+export interface UpdateGithubData {
+  action: 'UPDATE_GITHUB_DATA'
+  data: Partial<GithubData>
+}
+
+export interface RemoveFileConflict {
+  action: 'REMOVE_FILE_CONFLICT'
+  path: string
+}
+
 export interface WorkerCodeUpdate {
   type: 'WORKER_CODE_UPDATE'
   filePath: string
@@ -748,7 +809,8 @@ export interface SetSaveError {
 
 export interface InsertDroppedImage {
   action: 'INSERT_DROPPED_IMAGE'
-  imagePath: string
+  image: ImageFile
+  path: string
   position: CanvasPoint
 }
 
@@ -856,6 +918,38 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
+export interface SetGithubState {
+  action: 'SET_GITHUB_STATE'
+  githubState: GithubState
+}
+
+export interface SetUserConfiguration {
+  action: 'SET_USER_CONFIGURATION'
+  userConfiguration: UserConfiguration
+}
+
+export interface UpdateGithubOperations {
+  action: 'UPDATE_GITHUB_OPERATIONS'
+  operation: GithubOperation
+  type: GithubOperationType
+}
+
+export interface SetRefreshingDependencies {
+  action: 'SET_REFRESHING_DEPENDENCIES'
+  value: boolean
+}
+
+export interface UpdateGithubChecksums {
+  action: 'UPDATE_GITHUB_CHECKSUMS'
+  checksums: FileChecksums | null
+}
+
+export interface SetAssetChecksum {
+  action: 'SET_ASSET_CHECKSUM'
+  filename: string
+  checksum: string | null
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -950,6 +1044,31 @@ export interface SetElementsToRerender {
   value: ElementsToRerender
 }
 
+export type ToggleSelectionLock = {
+  action: 'TOGGLE_SELECTION_LOCK'
+  targets: Array<ElementPath>
+  newValue: SelectionLocked
+}
+
+export interface SaveToGithub {
+  action: 'SAVE_TO_GITHUB'
+  targetRepository: GithubRepo
+  commitMessage: string
+  branchName: string
+}
+
+export interface UpdateAgainstGithub {
+  action: 'UPDATE_AGAINST_GITHUB'
+  branchLatestContent: ProjectContentTreeRoot
+  specificCommitContent: ProjectContentTreeRoot
+  latestCommit: string
+}
+
+export interface SetImageDragSessionState {
+  action: 'SET_IMAGE_DRAG_SESSION_STATE'
+  imageDragSessionState: ImageDragSessionState
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -960,6 +1079,7 @@ export type EditorAction =
   | SwitchEditorMode
   | SelectComponents
   | UnsetProperty
+  | SetProperty
   | Canvas
   | DuplicateSelected
   | MoveSelectedToBack
@@ -999,6 +1119,8 @@ export type EditorAction =
   | RemoveToast
   | SetHighlightedView
   | ClearHighlightedViews
+  | SetHoveredView
+  | ClearHoveredViews
   | UpdateKeysPressed
   | UpdateMouseButtonsPressed
   | HideModal
@@ -1037,6 +1159,10 @@ export type EditorAction =
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile
+  | UpdateProjectContents
+  | UpdateGithubSettings
+  | UpdateGithubData
+  | RemoveFileConflict
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
@@ -1086,6 +1212,8 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
+  | SetGithubState
+  | SetUserConfiguration
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
@@ -1105,6 +1233,15 @@ export type EditorAction =
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
+  | ToggleSelectionLock
+  | SaveToGithub
+  | UpdateAgainstGithub
+  | SetImageDragSessionState
+  | UpdateGithubOperations
+  | UpdateGithubChecksums
+  | UpdateBranchContents
+  | SetRefreshingDependencies
+  | SetAssetChecksum
 
 export type DispatchPriority =
   | 'everyone'
@@ -1124,6 +1261,19 @@ export type DebugDispatch = (
   priority?: DispatchPriority,
 ) => {
   entireUpdateFinished: Promise<any>
+}
+
+interface EditorDispatchScratchPad {
+  addActions: (action: Array<EditorAction>) => void
+}
+
+export const usingDispatch = (
+  dispatch: EditorDispatch,
+  run: (builder: EditorDispatchScratchPad) => void,
+): void => {
+  let scratchPad: Array<EditorAction> = []
+  run({ addActions: (actions: Array<EditorAction>) => (scratchPad = [...scratchPad, ...actions]) })
+  dispatch(scratchPad)
 }
 
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'

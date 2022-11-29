@@ -52,7 +52,7 @@ import {
   getUtopiaIDFromJSXElement,
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
-import { fastForEach } from '../shared/utils'
+import { assertNever, fastForEach } from '../shared/utils'
 import {
   isUtopiaAPIComponent,
   getComponentsFromTopLevelElements,
@@ -107,19 +107,36 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
-let MOCK_NEXT_GENERATED_UID: string | null = null
-export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
-  MOCK_NEXT_GENERATED_UID = nextUid
-}
+export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
+export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
-  if (MOCK_NEXT_GENERATED_UID != null) {
-    const toReturn = MOCK_NEXT_GENERATED_UID
-    MOCK_NEXT_GENERATED_UID = null
-    return toReturn
+  if (
+    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
+    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
+  ) {
+    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
+    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
   }
+
   const existingUIDS = getAllUniqueUids(projectContents)
   return generateUID(existingUIDS)
+}
+
+export function generateUidWithExistingComponentsAndExtraUids(
+  projectContents: ProjectContentTreeRoot,
+  additionalUids: Array<string>,
+): string {
+  if (
+    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
+    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
+  ) {
+    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
+    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
+  }
+
+  const existingUIDSFromProject = getAllUniqueUids(projectContents)
+  return generateUID([...existingUIDSFromProject, ...additionalUids])
 }
 
 export function guaranteeUniqueUids(
@@ -603,6 +620,45 @@ export function getZIndexOfElement(
 
 export function elementOnlyHasSingleTextChild(jsxElement: JSXElement): boolean {
   return jsxElement.children.length === 1 && isJSXTextBlock(jsxElement.children[0])
+}
+
+function textBlockIsNonEmpty(textBlock: JSXTextBlock): boolean {
+  return textBlock.text.trim().length > 0
+}
+
+function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolean {
+  return (
+    elements.length > 0 &&
+    elements.every((element) => {
+      switch (element.type) {
+        case 'JSX_ARBITRARY_BLOCK':
+          return false // We can't possibly know at this point
+        case 'JSX_ELEMENT':
+          return false
+        case 'JSX_FRAGMENT':
+          return allElementsAndChildrenAreText(element.children)
+        case 'JSX_TEXT_BLOCK':
+          return textBlockIsNonEmpty(element)
+        default:
+          assertNever(element)
+      }
+    })
+  )
+}
+
+export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
+  switch (element.type) {
+    case 'JSX_ARBITRARY_BLOCK':
+      return false // We can't possibly know at this point
+    case 'JSX_ELEMENT':
+      return allElementsAndChildrenAreText(element.children)
+    case 'JSX_FRAGMENT':
+      return allElementsAndChildrenAreText(element.children)
+    case 'JSX_TEXT_BLOCK':
+      return textBlockIsNonEmpty(element)
+    default:
+      assertNever(element)
+  }
 }
 
 export function codeUsesProperty(javascript: string, propsParam: Param, property: string): boolean {

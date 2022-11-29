@@ -62,9 +62,6 @@ export const EmptyUtopiaCanvasComponent = convertScenesToUtopiaCanvasComponent([
 export const PathForSceneProps = PP.create(['props'])
 export const PathForSceneStyle = PP.create(['style'])
 
-export const ResizesContentProp = 'resizeContent'
-export const PathForResizeContent = PP.create([ResizesContentProp])
-
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
 }
@@ -286,7 +283,7 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 
 export function getStoryboardElementPath(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
+  openFile: string | null | undefined,
 ): StaticElementPath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
