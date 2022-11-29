@@ -632,6 +632,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.every((element) => {
       switch (element.type) {
         case 'JSX_ARBITRARY_BLOCK':
+        case 'JSX_CONDITIONAL_EXPRESSION':
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
           return false
@@ -649,6 +650,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ARBITRARY_BLOCK':
+    case 'JSX_CONDITIONAL_EXPRESSION':
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
       return allElementsAndChildrenAreText(element.children)

@@ -325,6 +325,7 @@ export function renderCoreElement(
         parentComponentInputProps,
         requireResult,
         hiddenInstances,
+        displayNoneInstances,
         fileBlobs,
         validPaths,
         uid,
