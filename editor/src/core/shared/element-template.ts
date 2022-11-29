@@ -1050,6 +1050,7 @@ export function jsxFragment(children: JSXElementChildren, longForm: boolean): JS
 export interface JSXConditionalExpression {
   type: 'JSX_CONDITIONAL_EXPRESSION'
   condition: JSXAttribute
+  overriddenCondition: boolean | null
   whenTrue: JSXElementChild
   whenFalse: JSXElementChild
   uniqueID: string
@@ -1062,9 +1063,10 @@ export function jsxConditionalExpression(
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
-    condition,
-    whenTrue,
-    whenFalse,
+    condition: condition,
+    overriddenCondition: null,
+    whenTrue: whenTrue,
+    whenFalse: whenFalse,
     uniqueID: UUID(),
   }
 }

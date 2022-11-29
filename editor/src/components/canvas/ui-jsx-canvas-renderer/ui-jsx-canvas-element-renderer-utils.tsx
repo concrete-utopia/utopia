@@ -305,12 +305,9 @@ export function renderCoreElement(
       return element.text
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const conditionValue = jsxAttributeToValue(
-        filePath,
-        inScope,
-        requireResult,
-        element.condition,
-      )
+      const conditionValue: boolean =
+        element.overriddenCondition ??
+        jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       const childPath = optionalMap(
