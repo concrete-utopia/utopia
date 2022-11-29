@@ -1,7 +1,5 @@
 import { useColorThemeAlternateVariables, useColorThemeVariables } from './theme'
 import React from 'react'
-import { useEditorState } from '../../components/editor/store/store-hook'
-import { Theme } from '../../components/editor/store/editor-state'
 
 export const ColorThemeComponent = React.memo(() => {
   const colorTheme = useColorThemeVariables()
