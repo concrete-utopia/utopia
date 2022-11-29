@@ -205,6 +205,7 @@
     "utopia-vscode-common": "file:../utopia-vscode-common",
     "uuid": "8.3.2",
     "xstate": "4.23.1",
+    "react-router-dom": "6.4.3",
     "zustand": "3.7.1"
   },
   "devDependencies": {
