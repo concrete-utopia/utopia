@@ -238,26 +238,21 @@ export function jsxAttributesToProps(
   requireResult: MapLike<any>,
 ): any {
   let result: any = {}
-  const go = (attrs: JSXAttributes) => {
-    for (const entry of attrs) {
-      switch (entry.type) {
-        case 'JSX_ATTRIBUTES_ENTRY':
-          result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
-          break
-        case 'JSX_ATTRIBUTES_SPREAD':
-          result = {
-            ...result,
-            ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
-          }
-          break
-        default:
-          assertNever(entry)
-      }
+  for (const entry of [...attributes, ...overrides]) {
+    switch (entry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        result = {
+          ...result,
+          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+        }
+        break
+      default:
+        assertNever(entry)
     }
   }
-
-  go(attributes)
-  go(overrides)
 
   return result
 }
