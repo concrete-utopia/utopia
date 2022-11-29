@@ -221,6 +221,7 @@ import type {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  SetOverrideProp,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1137,6 +1138,19 @@ export function setProp_UNSAFE(
 ): SetProp {
   return {
     action: 'SET_PROP',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+export function setOverrideProp(
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetOverrideProp {
+  return {
+    action: 'SET_OVERRIDE_PROP',
     target: target,
     propertyPath: propertyPath,
     value: value,

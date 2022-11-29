@@ -2,8 +2,11 @@ import React from 'react'
 import { imagePathURL } from '../../../../common/server'
 import { treeToContents } from '../../../../components/assets'
 import { isImageFile } from '../../../../core/model/project-file-utils'
+import { emptyComments, jsxAttributeValue } from '../../../../core/shared/element-template'
 import { ProjectContents } from '../../../../core/shared/project-file-types'
+import { setOverrideProp } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
+import * as PP from '../../../../core/shared/property-path'
 import { useInspectorElementInfo } from '../../common/property-path-hooks'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
@@ -34,6 +37,28 @@ export const ImageSourceControl = React.memo(() => {
     controlStatus: srcControlStatus,
     onSubmitValue: srcOnSubmitValue,
   } = useInspectorElementInfo('src')
+
+  const dispatch = useEditorState((store) => store.dispatch, 'ImageSourceControl dispatch')
+  const selectedElements = useEditorState(
+    (store) => store.editor.selectedViews,
+    'ImageSourceControl selectedElements',
+  )
+
+  const dispatchOverrideAction = React.useCallback(
+    (newSrc: string) => {
+      if (selectedElements.length === 0) {
+        return
+      }
+      dispatch([
+        setOverrideProp(
+          selectedElements[0],
+          PP.create(['src']),
+          jsxAttributeValue(newSrc, emptyComments),
+        ),
+      ])
+    },
+    [dispatch, selectedElements],
+  )
 
   const { projectContents } = useEditorState((store) => {
     return {
@@ -83,7 +108,7 @@ export const ImageSourceControl = React.memo(() => {
           testId='image-src-local'
           value={srcValue}
           options={localImageFilesOptions}
-          onSubmitValue={srcOnSubmitValue}
+          onSubmitValue={dispatchOverrideAction}
           controlStyles={srcControlStyles}
           controlStatus={srcControlStatus}
         />
@@ -93,7 +118,7 @@ export const ImageSourceControl = React.memo(() => {
           key='image-src-url'
           testId='image-src-url'
           value={srcValue}
-          onSubmitValue={srcOnSubmitValue}
+          onSubmitValue={dispatchOverrideAction}
           controlStyles={srcControlStyles}
           controlStatus={srcControlStatus}
         />

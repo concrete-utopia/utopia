@@ -314,6 +314,7 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  SetOverrideProp,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -530,6 +531,21 @@ function applyUpdateToJSXElement(
   } else {
     return {
       ...element,
+      props: result.value,
+    }
+  }
+}
+
+function applyOverrideToJSXElement(
+  element: JSXElement,
+  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
+): JSXElement {
+  const result = updateFn(element.props)
+  if (isLeft(result)) {
+    return element
+  } else {
+    return {
+      ...element,
       overriddenProps: result.value,
     }
   }
@@ -543,6 +559,18 @@ function setPropertyOnTarget(
   return modifyOpenJsxElementAtPath(
     target,
     (e: JSXElement) => applyUpdateToJSXElement(e, updateFn),
+    editor,
+  )
+}
+
+function setOverridePropertyOnTargetAtElementPath(
+  editor: EditorModel,
+  target: ElementPath,
+  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
+): EditorModel {
+  return modifyOpenJsxElementAtPath(
+    target,
+    (e: JSXElement) => applyOverrideToJSXElement(e, updateFn),
     editor,
   )
 }
@@ -4165,6 +4193,14 @@ export const UPDATE_FNS = {
         },
       }
     }
+  },
+  SET_OVERRIDE_PROP: (action: SetOverrideProp, editor: EditorModel): EditorModel => {
+    return setOverridePropertyOnTargetAtElementPath(editor, action.target, (props) => {
+      return mapEither(
+        (attrs) => roundAttributeLayoutValues(['style'], attrs),
+        setJSXValueAtPath(props, action.propertyPath, action.value),
+      )
+    })
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
