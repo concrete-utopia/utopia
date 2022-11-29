@@ -530,7 +530,7 @@ function applyUpdateToJSXElement(
   } else {
     return {
       ...element,
-      props: result.value,
+      overriddenProps: result.value,
     }
   }
 }

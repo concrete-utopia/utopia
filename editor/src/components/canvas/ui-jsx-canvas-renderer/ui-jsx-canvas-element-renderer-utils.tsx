@@ -212,6 +212,7 @@ export function renderCoreElement(
         filePath,
         blockScope,
         element.props,
+        element.overriddenProps ?? [],
         requireResult,
       )
 
@@ -546,6 +547,7 @@ export function renderComponentUsingJsxFactoryFunction(
       throw new Error(`Unable to find factory function ${factoryFunctionName} in scope.`)
     }
   }
+  // console.log(fixedProps)
   return factoryFunction.call(null, type, fixedProps, ...children)
 }
 

@@ -970,6 +970,7 @@ export interface JSXElement {
   props: JSXAttributes
   children: JSXElementChildren
   uid: string
+  overriddenProps?: JSXAttributes
 }
 
 export interface JSXElementWithoutUID {
@@ -1103,12 +1104,14 @@ export function jsxElement(
   uid: string,
   props: JSXAttributes,
   children: JSXElementChildren,
+  overriddenProps: JSXAttributes = [],
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     uid: uid,
     props: props,
+    overriddenProps: overriddenProps,
     children: children,
   }
 }
@@ -1118,12 +1121,14 @@ export function jsxTestElement(
   props: JSXAttributes,
   children: JSXElementChildren,
   uid: string = 'aaa',
+  overriddenProps: JSXAttributes = [],
 ): JSXElement {
   return jsxElement(
     name,
     uid,
     setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
     children,
+    overriddenProps,
   )
 }
 

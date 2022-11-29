@@ -45,7 +45,7 @@ import {
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
-import { fastForEach } from './utils'
+import { assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
 
@@ -234,25 +234,31 @@ export function jsxAttributesToProps(
   filePath: string,
   inScope: MapLike<any>,
   attributes: JSXAttributes,
+  overrides: JSXAttributes,
   requireResult: MapLike<any>,
 ): any {
   let result: any = {}
-  for (const entry of attributes) {
-    switch (entry.type) {
-      case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
-        break
-      case 'JSX_ATTRIBUTES_SPREAD':
-        result = {
-          ...result,
-          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
-        }
-        break
-      default:
-        const _exhaustiveCheck: never = entry
-        throw new Error(`Unhandled entry ${JSON.stringify(entry)}`)
+  const go = (attrs: JSXAttributes) => {
+    for (const entry of attrs) {
+      switch (entry.type) {
+        case 'JSX_ATTRIBUTES_ENTRY':
+          result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+          break
+        case 'JSX_ATTRIBUTES_SPREAD':
+          result = {
+            ...result,
+            ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+          }
+          break
+        default:
+          assertNever(entry)
+      }
     }
   }
+
+  go(attributes)
+  go(overrides)
+
   return result
 }
 
