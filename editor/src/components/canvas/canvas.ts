@@ -11,6 +11,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  zeroCanvasRect,
 } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -49,19 +50,7 @@ function getFramesInCanvasContextUncached(
     frames: Array<FrameWithPath>
   } {
     const component = MetadataUtils.findElementByElementPath(metadata, componentTree.path)
-    if (component == null) {
-      return {
-        boundingRect: null,
-        frames: [],
-      }
-    }
-    const globalFrame = component.globalFrame
-    if (globalFrame == null) {
-      return {
-        boundingRect: null,
-        frames: [],
-      }
-    }
+    const globalFrame = component?.globalFrame ?? null
 
     const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
     const includeClippedNext = useBoundingFrames && overflows
@@ -78,27 +67,32 @@ function getFramesInCanvasContextUncached(
 
     const childFrames = children.map((child) => {
       const recurseResults = recurseChildren(child)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const unfurledFrames = unfurledComponents.map((unfurledElement) => {
       const recurseResults = recurseChildren(unfurledElement)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const allFrames = [...childFrames, ...unfurledFrames]
     const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
     if (allFrames.length > 0 && allChildrenBounds != null) {
-      const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
-      const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
-      const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
+      const allChildrenFrames = allFrames.flatMap((frameDetails) => frameDetails.frames)
+      const boundingRect =
+        globalFrame == null
+          ? allChildrenBounds
+          : Utils.boundingRectangle(globalFrame, allChildrenBounds)
+      const toAppend: FrameWithPath = { path: componentTree.path, frame: boundingRect }
       return {
         boundingRect: boundingRect,
         frames: [toAppend].concat(allChildrenFrames),
       }
     } else {
-      const boundingRect = globalFrame
-      const toAppend = { path: component.elementPath, frame: boundingRect }
+      const boundingRect = globalFrame ?? zeroCanvasRect
+      const toAppend: FrameWithPath = { path: componentTree.path, frame: boundingRect }
       return { boundingRect: boundingRect, frames: [toAppend] }
     }
   }
