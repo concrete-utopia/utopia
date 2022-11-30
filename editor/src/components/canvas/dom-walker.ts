@@ -1251,12 +1251,14 @@ function walkElements(
     const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-      const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-      return validPaths.some((validPath) => {
-        return EP.pathsEqual(staticPath, validPath)
-      })
-    })
+    const foundValidPaths = isFeatureEnabled('Disable Path Validation')
+      ? pathsWithStrings
+      : pathsWithStrings.filter((pathWithString) => {
+          const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+          return validPaths.some((validPath) => {
+            return EP.pathsEqual(staticPath, validPath)
+          })
+        })
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
