@@ -1,5 +1,14 @@
 import React from 'react'
-import { ProjectContentsTree, ProjectContentTreeRoot } from '../assets'
+import {
+  ArbitraryJSBlock,
+  getJSXElementNameAsString,
+  jsxElementName,
+  TopLevelElement,
+} from '../../core/shared/element-template'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { ParseSuccess, ParsedTextFile } from '../../core/shared/project-file-types'
+import { assertNever } from '../../core/shared/utils'
+import { ProjectContentTreeRoot } from '../assets'
 
 interface CodeOutlineEntryBase {
   depth: number
@@ -15,6 +24,81 @@ type CodeOutlineEntryModel =
       name: string
       parsed: 'parsed' | 'unparsed'
     })
+  | (CodeOutlineEntryBase & {
+      type: 'placeholder'
+      value: string
+    })
+  | (CodeOutlineEntryBase & {
+      type: 'component'
+      name: string
+    })
+  | (CodeOutlineEntryBase & {
+      type: 'jsxElement'
+      name: string
+    })
+
+function arbitraryJsBlockModel(
+  depth: number,
+  key: string,
+  block: ArbitraryJSBlock,
+): Array<CodeOutlineEntryModel> {
+  return [
+    { type: 'placeholder', depth: depth, key: key + block.uniqueID, value: 'Elements within' },
+    ...Object.entries(block.elementsWithin).map(
+      ([k, e]): CodeOutlineEntryModel => ({
+        type: 'jsxElement',
+        depth: depth + 1,
+        key: key + block.uniqueID + k,
+        name: getJSXElementNameAsString(e.name),
+      }),
+    ),
+  ]
+}
+
+function topLevelElementToModel(
+  depth: number,
+  key: string,
+  topLevelElement: TopLevelElement,
+): Array<CodeOutlineEntryModel> {
+  if (topLevelElement.type === 'IMPORT_STATEMENT') {
+    return []
+  }
+
+  if (topLevelElement.type === 'UNPARSED_CODE') {
+    return []
+    // return [{ type: 'placeholder', depth: depth, key: key + 'unparsed', value: '<<Unparsed>>' }]
+  }
+
+  if (topLevelElement.type === 'ARBITRARY_JS_BLOCK') {
+    return arbitraryJsBlockModel(depth + 1, key, topLevelElement)
+  }
+
+  const name = topLevelElement.name ?? 'name'
+  return [{ type: 'component', depth: depth, key: key + name, name: name }]
+}
+
+function codeFileModel(
+  depth: number,
+  key: string,
+  success: ParseSuccess,
+): Array<CodeOutlineEntryModel> {
+  return [
+    // { type: 'placeholder', depth: depth, key: key + '-imports', value: '<<Imports>>' }, // placeholder for success.imports
+    {
+      type: 'placeholder',
+      depth: depth,
+      key: key + '-topLevelElements',
+      value: 'Top level elements:',
+    },
+    ...success.topLevelElements.flatMap((t) => topLevelElementToModel(depth + 1, key, t)),
+    {
+      type: 'placeholder',
+      depth: depth,
+      key: key + '-combinedTopLevelArbitraryBlock',
+      value: '<<Combined top level arbitrary block>>',
+    }, // placeholder for success.combinedTopLevelArbitraryBlock
+  ]
+}
 
 export function codeOutlineModel(
   depth: number,
@@ -37,15 +121,16 @@ export function codeOutlineModel(
     }
 
     if (branch.content.type === 'TEXT_FILE') {
+      const parsed = parsedTextFile(branch.content.fileContents.parsed)
       return [
         {
           type: 'codeFile',
           name: branch.fullPath,
           depth: depth,
           key: key,
-          parsed:
-            branch.content.fileContents.parsed.type === 'PARSE_SUCCESS' ? 'parsed' : 'unparsed', // TODO: cleanup
+          parsed: parsed != null ? 'parsed' : 'unparsed',
         },
+        ...(optionalMap((p) => codeFileModel(depth + 1, key, p), parsed) ?? []),
       ]
     }
 
@@ -56,13 +141,21 @@ export function codeOutlineModel(
 function renderCodeOutlineEntry(entry: CodeOutlineEntryModel) {
   switch (entry.type) {
     case 'directory':
-      return `Dir: ${entry.name}`
+      return `Directory: ${entry.name}`
     case 'imageFile':
       return `Image: ${entry.name}`
     case 'assetFile':
       return `Asset: ${entry.name}`
     case 'codeFile':
-      return `Code: ${entry.name}`
+      return `Code file: ${entry.name}`
+    case 'placeholder':
+      return entry.value
+    case 'component':
+      return `Component: ${entry.name}`
+    case 'jsxElement':
+      return `JSXElement: ${entry.name}`
+    default:
+      assertNever(entry)
   }
 }
 
@@ -81,3 +174,10 @@ export const CodeOutlineView = React.memo<CodeOutlineViewProps>((props) => {
     </div>
   )
 })
+
+function parsedTextFile(file: ParsedTextFile): ParseSuccess | null {
+  if (file.type === 'PARSE_SUCCESS') {
+    return file
+  }
+  return null
+}

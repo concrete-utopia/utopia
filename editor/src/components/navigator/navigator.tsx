@@ -191,6 +191,14 @@ export const NavigatorComponent = React.memo(() => {
     }
   }
 
+  const CodeOutlineSized = (size: Size) => {
+    if (size.height == null) {
+      return null
+    } else {
+      return outlineModel.map((entry) => <CodeOutlineView key={entry.key} entry={entry} />)
+    }
+  }
+
   return (
     <Section
       data-name='Navigator'
@@ -265,9 +273,25 @@ export const NavigatorComponent = React.memo(() => {
               justifyContent: 'stretch',
             }}
           >
-            {outlineModel.map((entry) => (
-              <CodeOutlineView key={entry.key} entry={entry} />
-            ))}
+            <FlexColumn
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: '100%',
+                overflowX: 'hidden',
+              }}
+            >
+              <AutoSizer
+                disableWidth={true}
+                style={{
+                  overscrollBehavior: 'contain',
+                  overflowX: 'hidden',
+                  height: '100%',
+                }}
+              >
+                {CodeOutlineSized}
+              </AutoSizer>
+            </FlexColumn>
           </SectionBodyArea>
         </React.Fragment>,
       )}
