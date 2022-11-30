@@ -219,23 +219,25 @@ export function elementSupportsChildren(imports: Imports, element: JSXElementChi
   }
 }
 
-export function transformJSXComponentAtPath(
+export function transformJSXComponentAtPath<T extends JSXElementChild>(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPath,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: T) => T,
+  guard: (elem: JSXElementChild) => elem is T,
 ): Array<UtopiaJSXComponent> {
   const lastElementPathPart = EP.lastElementPathForPath(path)
   return lastElementPathPart == null
     ? components
-    : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
+    : transformJSXComponentAtElementPath(components, lastElementPathPart, transform, guard)
 }
 
-export function transformJSXComponentAtElementPath(
+export function transformJSXComponentAtElementPath<T extends JSXElementChild>(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: T) => T,
+  guard: (elem: JSXElementChild) => elem is T,
 ): Array<UtopiaJSXComponent> {
-  const transformResult = transformAtPathOptionally(components, path, transform)
+  const transformResult = transformAtPathOptionally(components, path, transform, guard)
 
   if (transformResult.transformedElement == null) {
     throw new Error(`Did not find element to transform ${EP.elementPathPartToString(path)}`)
@@ -244,22 +246,24 @@ export function transformJSXComponentAtElementPath(
   }
 }
 
-function transformAtPathOptionally(
+function transformAtPathOptionally<T extends JSXElementChild>(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: T) => T,
+  guard: (elem: JSXElementChild) => elem is T,
 ): EP.ElementsTransformResult<UtopiaJSXComponent> {
   function findAndTransformAtPathInner(
     element: JSXElementChild,
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElement(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        // transform
-        if (tailPath.length === 0) {
-          return transform(element)
-        } else {
+
+    // transform
+    if (guard(element) && getUtopiaID(element) === firstUIDOrIndex && tailPath.length === 0) {
+      return transform(element)
+    } else {
+      if (isJSXElement(element)) {
+        if (getUtopiaID(element) === firstUIDOrIndex) {
           // we will want to transform one of our children
           let childrenUpdated: boolean = false
           const updatedChildren = element.children.map((child) => {
@@ -276,94 +280,94 @@ function transformAtPathOptionally(
             }
           }
         }
-      }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        let childrenUpdated: boolean = false
-        const updatedChildren = Object.values(element.elementsWithin).reduce(
-          (acc, child): ElementsWithin => {
-            const updated = findAndTransformAtPathInner(child, tailPath)
-            if (updated != null && isJSXElement(updated)) {
-              childrenUpdated = true
-              return {
-                ...acc,
-                [child.uid]: updated,
+      } else if (isJSXArbitraryBlock(element)) {
+        if (getUtopiaID(element) === firstUIDOrIndex) {
+          let childrenUpdated: boolean = false
+          const updatedChildren = Object.values(element.elementsWithin).reduce(
+            (acc, child): ElementsWithin => {
+              const updated = findAndTransformAtPathInner(child, tailPath)
+              if (updated != null && isJSXElement(updated)) {
+                childrenUpdated = true
+                return {
+                  ...acc,
+                  [child.uid]: updated,
+                }
               }
+              return acc
+            },
+            element.elementsWithin,
+          )
+          if (childrenUpdated) {
+            return {
+              ...element,
+              elementsWithin: updatedChildren,
             }
-            return acc
-          },
-          element.elementsWithin,
-        )
+          }
+        }
+        if (firstUIDOrIndex in element.elementsWithin) {
+          const updated = findAndTransformAtPathInner(
+            element.elementsWithin[firstUIDOrIndex],
+            workingPath,
+          )
+          if (updated != null && isJSXElement(updated)) {
+            const newElementsWithin: ElementsWithin = {
+              ...element.elementsWithin,
+              [firstUIDOrIndex]: updated,
+            }
+            return {
+              ...element,
+              elementsWithin: newElementsWithin,
+            }
+          }
+        }
+      } else if (isJSXFragment(element)) {
+        let childrenUpdated: boolean = false
+        const updatedChildren = element.children.map((child) => {
+          const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
+          if (possibleUpdate != null) {
+            childrenUpdated = true
+          }
+          return Utils.defaultIfNull(child, possibleUpdate)
+        })
         if (childrenUpdated) {
           return {
             ...element,
-            elementsWithin: updatedChildren,
+            children: updatedChildren,
           }
         }
-      }
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const updated = findAndTransformAtPathInner(
-          element.elementsWithin[firstUIDOrIndex],
-          workingPath,
-        )
-        if (updated != null && isJSXElement(updated)) {
-          const newElementsWithin: ElementsWithin = {
-            ...element.elementsWithin,
-            [firstUIDOrIndex]: updated,
+      } else if (isJSXConditionalExpression(element)) {
+        if (getUtopiaID(element) === firstUIDOrIndex) {
+          const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
+          const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
+          if (updatedWhenTrue != null) {
+            return {
+              ...element,
+              whenTrue: updatedWhenTrue,
+            }
           }
-          return {
-            ...element,
-            elementsWithin: newElementsWithin,
-          }
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      let childrenUpdated: boolean = false
-      const updatedChildren = element.children.map((child) => {
-        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
-        if (possibleUpdate != null) {
-          childrenUpdated = true
-        }
-        return Utils.defaultIfNull(child, possibleUpdate)
-      })
-      if (childrenUpdated) {
-        return {
-          ...element,
-          children: updatedChildren,
-        }
-      }
-    } else if (isJSXConditionalExpression(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
-        const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
-        if (updatedWhenTrue != null) {
-          return {
-            ...element,
-            whenTrue: updatedWhenTrue,
+          if (updatedWhenFalse) {
+            return {
+              ...element,
+              whenFalse: updatedWhenFalse,
+            }
           }
         }
-        if (updatedWhenFalse) {
-          return {
-            ...element,
-            whenFalse: updatedWhenFalse,
+        if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+          const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
+          if (updated != null && isJSXElement(updated)) {
+            return {
+              ...element,
+              whenTrue: updated,
+            }
           }
         }
-      }
-      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
-        const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
-        if (updated != null && isJSXElement(updated)) {
-          return {
-            ...element,
-            whenTrue: updated,
-          }
-        }
-      }
-      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
-        const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
-        if (updated != null && isJSXElement(updated)) {
-          return {
-            ...element,
-            whenFalse: updated,
+        if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+          const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
+          if (updated != null && isJSXElement(updated)) {
+            return {
+              ...element,
+              whenFalse: updated,
+            }
           }
         }
       }
@@ -549,9 +553,14 @@ export function removeJSXElementChild(
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
   return lastElementPathPart == null
     ? rootElements
-    : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
-        return removeRelevantChild(parentElement, true)
-      }).elements
+    : transformAtPathOptionally(
+        rootElements,
+        lastElementPathPart,
+        (parentElement: JSXElement) => {
+          return removeRelevantChild(parentElement, true)
+        },
+        isJSXElement,
+      ).elements
 }
 
 export function insertJSXElementChild(
@@ -595,6 +604,7 @@ export function insertJSXElementChild(
           return parentElement
         }
       },
+      isJSXElement,
     )
   }
 }

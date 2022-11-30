@@ -581,8 +581,13 @@ function setPropertyOnTargetAtElementPath(
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElement) =>
-      applyUpdateToJSXElement(e, updateFn),
+    return transformJSXComponentAtElementPath(
+      components,
+      target,
+      (e: JSXElement) => {
+        return applyUpdateToJSXElement(e, updateFn)
+      },
+      isJSXElement,
     )
   }, editor)
 }
@@ -2344,11 +2349,15 @@ export const UPDATE_FNS = {
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
                   staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
+                  (oldRoot) => {
+                    return jsxElement(
+                      elementToInsert.name,
+                      elementToInsert.uid,
+                      elementToInsert.props,
+                      [...elementToInsert.children, oldRoot],
+                    )
+                  },
+                  isJSXElement,
                 )
               }
 
@@ -2504,11 +2513,15 @@ export const UPDATE_FNS = {
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
                   staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
+                  (oldRoot) => {
+                    return jsxElement(
+                      elementToInsert.name,
+                      elementToInsert.uid,
+                      elementToInsert.props,
+                      [...elementToInsert.children, oldRoot],
+                    )
+                  },
+                  isJSXElement,
                 )
               }
 
@@ -4837,6 +4850,7 @@ export const UPDATE_FNS = {
                 insertedElementChildren.push(...parentElement.children)
                 return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
               },
+              isJSXElement,
             )
           }
 
