@@ -581,7 +581,6 @@ const LocalChangesBlock = () => {
 
   React.useEffect(() => {
     setCommitMessage(null)
-    setRawCommitBranchName(null)
   }, [branch, originCommit])
 
   const triggerSaveToGithub = React.useCallback(() => {
