@@ -6,6 +6,7 @@ import React from 'react' // this is imported like this so that the monkey patch
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
+import * as ReactRouterDOM from 'react-router-dom'
 
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
@@ -82,6 +83,11 @@ export function createBuiltInDependenciesList(
       '@emotion/styled',
       EmotionStyled,
       editorPackageJSON.dependencies['@emotion/styled'],
+    ),
+    builtInDependency(
+      'react-router-dom',
+      ReactRouterDOM,
+      editorPackageJSON.dependencies['react-router-dom'],
     ),
   ]
 }
