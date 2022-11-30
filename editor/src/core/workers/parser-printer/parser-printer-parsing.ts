@@ -1462,11 +1462,26 @@ function parseElementProps(
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
 
+type LiteralLikeTypes = TS.StringLiteral | TS.NumericLiteral | TS.BigIntLiteral | TS.BooleanLiteral
+
 type TSTextOrExpression = TS.JsxText | TS.JsxExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement
 type ElementsToParse = Array<
-  TSJSXElement | TSTextOrExpression | TS.JsxOpeningFragment | TS.JsxClosingFragment | TS.JsxFragment
+  | TSJSXElement
+  | TSTextOrExpression
+  | TS.JsxOpeningFragment
+  | TS.JsxClosingFragment
+  | TS.JsxFragment
+  | LiteralLikeTypes
 >
+
+export function isTrueLiteral(node: TS.Node): node is TS.TrueLiteral {
+  return node.kind === TS.SyntaxKind.TrueKeyword
+}
+
+export function isFalseLiteral(node: TS.Node): node is TS.FalseLiteral {
+  return node.kind === TS.SyntaxKind.FalseKeyword
+}
 
 function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsToParse> {
   let result: ElementsToParse = []
@@ -1477,7 +1492,12 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxSelfClosingElement(node) ||
       TS.isJsxText(node) ||
       TS.isJsxExpression(node) ||
-      TS.isJsxFragment(node)
+      TS.isJsxFragment(node) ||
+      TS.isStringLiteral(node) ||
+      TS.isNumericLiteral(node) ||
+      TS.isBigIntLiteral(node) ||
+      isTrueLiteral(node) ||
+      isFalseLiteral(node)
     ) {
       result.push(node)
     } else {
@@ -1869,6 +1889,19 @@ export function parseOutJSXElements(
             }
             break
           }
+          case TS.SyntaxKind.StringLiteral:
+          case TS.SyntaxKind.NumericLiteral:
+          case TS.SyntaxKind.BigIntLiteral:
+          case TS.SyntaxKind.TrueKeyword:
+          case TS.SyntaxKind.FalseKeyword: {
+            const possibleText = produceArbitraryBlockFromJsxExpression(elem)
+            if (isLeft(possibleText)) {
+              return possibleText
+            } else {
+              addParsedElement(possibleText.value)
+            }
+            break
+          }
           default:
             const _exhaustiveCheck: never = elem
             throw new Error(`Unhandled elem type ${JSON.stringify(elem)}`)
@@ -1901,7 +1934,7 @@ export function parseOutJSXElements(
   }
 
   function produceArbitraryBlockFromJsxExpression(
-    tsExpression: TS.JsxExpression,
+    tsExpression: TS.JsxExpression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
     const result = parseJSXArbitraryBlock(
       sourceFile,
