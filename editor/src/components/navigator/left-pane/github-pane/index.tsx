@@ -569,14 +569,20 @@ const LocalChangesBlock = () => {
     return cleanupBranchName(rawCommitBranchName)
   }, [rawCommitBranchName])
 
+  const originCommit = useEditorState(
+    (store) => store.editor.githubSettings.originCommit,
+    'Github origin commit',
+  )
   const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
-  React.useEffect(() => {
-    setCommitMessage(null)
-  }, [branch])
   const updateCommitMessage = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setCommitMessage(e.target.value),
     [],
   )
+
+  React.useEffect(() => {
+    setCommitMessage(null)
+    setRawCommitBranchName(null)
+  }, [branch, originCommit])
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo != null && cleanedCommitBranchName != null && commitMessage != null) {
