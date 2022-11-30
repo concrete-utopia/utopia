@@ -13,7 +13,6 @@ import {
 } from '../core/model/new-project-files'
 import { directory } from '../core/model/project-file-utils'
 import {
-  codeFile,
   ProjectContents,
   RevisionsState,
   TextFile,
@@ -195,7 +194,24 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n      data-uid='a7b'\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n        data-uid='b15'\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n          data-uid='b0e'\n        />\n      </div>\n    </div>\n  )\n}\n",
+              code: "import './globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n        />\n      </div>\n    </div>\n  )\n}\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+          },
+        },
+        'globals.css': {
+          type: 'PROJECT_CONTENT_FILE',
+          fullPath: '/src/globals.css',
+          content: {
+            type: 'TEXT_FILE',
+            lastRevisedTime: 0,
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            fileContents: {
+              code: 'body, #canvas-container * {\n    font-family: San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";\n}\n\n@font-face {\n    font-family: \'ITC Garamond \';\n    font-style: normal;\n    font-weight: 400;\n    font-display: swap;\n    src: local(ITC Garamond ) format(\'ttf\');\n  }\n\n\n.appheadercontainer, .listcardcontainer, .gridcardcontainer {\n    container-type: inline-size;\n}\n\n@container (min-width: 700px) {\n    .apptitle {\n        font-size: 3.5em;\n    }\n\n    .listcard {\n        height: 180px\n    }   \n    .gridcard {\n        height: 325px\n    }   \n}\n\n@container (max-width: 700px) {\n    .gridcard {\n        height: 215px\n    }   \n}',
               parsed: {
                 type: 'UNPARSED',
               },
@@ -212,7 +228,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n        alt='Utopia logo'\n        style={{ height: '40%' }}\n      ></img>\n    </FlexCol>\n  )\n}\n",
+              code: "import { FlexCol } from './utils'\n\nimport './globals.css'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n        alt='Utopia logo'\n        style={{ height: '40%' }}\n      />\n    </FlexCol>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -266,7 +282,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
         lastParseSuccess: null,
         lastSavedContents: null,
         fileContents: {
-          code: '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "utopia/storyboard.js",\n    "html": "public/index.html",\n    "js": "src/index.js"\n  },\n  "dependencies": {\n    "react": "16.13.1",\n    "react-dom": "16.13.1",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27",\n    "@heroicons/react": "1.0.1",\n    "@emotion/react": "11.9.3"\n  }\n}',
+          code: '{\n  "name": "utopia-project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "utopia/storyboard.js",\n    "html": "public/index.html",\n    "js": "src/index.js"\n  },\n  "dependencies": {\n    "react": "16.13.1",\n    "react-dom": "16.13.1",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27",\n    "@heroicons/react": "1.0.1",\n    "@emotion/react": "11.9.3"\n  }\n}',
           parsed: {
             type: 'UNPARSED',
           },
@@ -290,23 +306,6 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastSavedContents: null,
             fileContents: {
               code: '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="utf-8">\n    <title>Utopia React App</title>\n    <!-- Begin Generated Utopia External Links -->\n    <link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:ital,wght@0,700" rel="stylesheet">\n    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700" rel="stylesheet">\n    <!-- End Generated Utopia External Links -->\n  </head>\n  <body>\n    <div id="root"></div>\n  </body>\n</html>',
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'globals.css': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/public/globals.css',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: 'body, #canvas-container * {\n    font-family: San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";\n}\n\n@font-face {\n    font-family: \'ITC Garamond \';\n    font-style: normal;\n    font-weight: 400;\n    font-display: swap;\n    src: local(ITC Garamond ) format(\'ttf\');\n  }\n\n\n.appheadercontainer, .listcardcontainer, .gridcardcontainer {\n    container-type: inline-size;\n}\n\n@container (min-width: 700px) {\n    .apptitle {\n        font-size: 3.5em;\n    }\n\n    .listcard {\n        height: 180px\n    }   \n    .gridcard {\n        height: 325px\n    }   \n}\n\n@container (max-width: 700px) {\n    .gridcard {\n        height: 215px\n    }   \n}',
               parsed: {
                 type: 'UNPARSED',
               },
