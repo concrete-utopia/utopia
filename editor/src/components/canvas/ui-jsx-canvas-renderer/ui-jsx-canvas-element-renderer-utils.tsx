@@ -47,6 +47,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -416,7 +417,12 @@ function renderJSXElement(
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
-  if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+  const pathIsValid =
+    elementPath != null &&
+    (isFeatureEnabled('Disable Path Validation') ||
+      validPaths.has(EP.makeLastPartOfPathStatic(elementPath)))
+
+  if (pathIsValid) {
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,

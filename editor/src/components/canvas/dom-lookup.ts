@@ -21,6 +21,7 @@ import { CanvasPositions } from './canvas-types'
 import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
@@ -75,8 +76,9 @@ export function findFirstParentWithValidElementPathInner(
       dynamic: p,
     }
   })
-  const validStaticElementPathsForSceneArray =
-    findParentSceneValidPaths(target)?.map(EP.toString) ?? []
+  const validStaticElementPathsForSceneArray = isFeatureEnabled('Disable Path Validation')
+    ? staticAndDynamicTargetElementPaths.map((paths) => paths.static)
+    : findParentSceneValidPaths(target)?.map(EP.toString) ?? []
   const validStaticElementPathsForScene = new Set(validStaticElementPathsForSceneArray)
 
   const validStaticElementPaths =

@@ -16,6 +16,7 @@ import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { fastForEach } from '../../../core/shared/utils'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -41,9 +42,13 @@ export function buildSpyWrappedElement(
      */
     const isEmotionComponent = Element['__emotion_base'] != null
     const isStyledComponent = Element['styledComponentId'] != null
+    const reportedPath = reportedProps[UTOPIA_PATH_KEY]
+    const pathToUse = reportedPath == null ? elementPath : EP.fromString(reportedPath)
+    const elementPathString = reportedPath == null ? EP.toComponentId(elementPath) : reportedPath
+
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
-      elementPath: elementPath,
+      elementPath: pathToUse,
       globalFrame: null,
       localFrame: null,
       componentInstance: false,
@@ -54,8 +59,7 @@ export function buildSpyWrappedElement(
       label: null,
       importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
-    if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
-      const elementPathString = EP.toComponentId(elementPath)
+    if (!EP.isStoryboardPath(pathToUse) || shouldIncludeCanvasRootInTheSpy) {
       // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
       updateInvalidatedPaths((current) => current)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
