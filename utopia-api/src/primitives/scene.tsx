@@ -1,5 +1,4 @@
 import React from 'react'
-import { View } from './view'
 
 export interface SceneProps {
   style?: React.CSSProperties
@@ -21,5 +20,5 @@ export const Scene = React.memo((props: React.PropsWithChildren<SceneProps>) => 
     ...props,
     style: style,
   }
-  return <View {...adjustedProps}>{props.children}</View>
+  return <div {...adjustedProps}>{props.children}</div>
 })
