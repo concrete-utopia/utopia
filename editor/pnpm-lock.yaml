@@ -209,6 +209,7 @@ specifiers:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0
   react-popper: 2.2.3
+  react-router: 6.4.3
   react-router-dom: 6.4.3
   react-select: 3.1.0
   react-spring: 9.0.0-rc.3
@@ -355,6 +356,7 @@ dependencies:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0_react-dom@18.1.0+react@18.1.0
   react-popper: 2.2.3_5d00c3641fbd7c8d2baa2b53c97059ad
+  react-router: 6.4.3_react@18.1.0
   react-router-dom: 6.4.3_react-dom@18.1.0+react@18.1.0
   react-select: 3.1.0_react-dom@18.1.0+react@18.1.0
   react-spring: 9.0.0-rc.3_ed739fef80a23a6a6d2cf5963a105dc3
@@ -5935,7 +5937,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
+    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
     dev: false
 
   /compressible/2.0.18:
