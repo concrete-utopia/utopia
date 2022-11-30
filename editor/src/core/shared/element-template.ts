@@ -975,7 +975,7 @@ export interface JSXElement {
   props: JSXAttributes
   children: JSXElementChildren
   uid: string
-  overriddenProps?: JSXAttributes
+  overriddenProps?: JSXAttributes // TODO: should be cleaned up, as we end up not using this
 }
 
 export interface JSXElementWithoutUID {
