@@ -1715,6 +1715,19 @@ export function modifyOpenJsxElementAtPath(
   )
 }
 
+export function modifyOpenJsxConditionalAtPath(
+  path: ElementPath,
+  transform: (element: JSXConditionalExpression) => JSXConditionalExpression,
+  model: EditorState,
+): EditorState {
+  return modifyUnderlyingConditional(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    transform,
+  )
+}
+
 export function modifyOpenJsxElementAtStaticPath(
   path: StaticElementPath,
   transform: (element: JSXElement) => JSXElement,

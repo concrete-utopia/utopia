@@ -66,6 +66,7 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   JSXAttributeValue,
+  JSXConditionalExpression,
   JSXElement,
   jsxElement,
   JSXElementChildren,
@@ -315,6 +316,7 @@ import {
   ClearHoveredViews,
   SetAssetChecksum,
   SetOverrideProp,
+  SetOverrideConditional,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -383,6 +385,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
+  modifyOpenJsxConditionalAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -571,6 +574,23 @@ function setOverridePropertyOnTargetAtElementPath(
   return modifyOpenJsxElementAtPath(
     target,
     (e: JSXElement) => applyOverrideToJSXElement(e, updateFn),
+    editor,
+  )
+}
+
+function setOverrideConditionOnTargetAtElementPath(
+  editor: EditorModel,
+  target: ElementPath,
+  overriddenCondition: boolean | null,
+): EditorModel {
+  return modifyOpenJsxConditionalAtPath(
+    target,
+    (conditional: JSXConditionalExpression) => {
+      return {
+        ...conditional,
+        overriddenCondition: overriddenCondition,
+      }
+    },
     editor,
   )
 }
@@ -4214,6 +4234,13 @@ export const UPDATE_FNS = {
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
     })
+  },
+  SET_OVERRIDE_CONDITIONAL: (action: SetOverrideConditional, editor: EditorModel): EditorModel => {
+    return setOverrideConditionOnTargetAtElementPath(
+      editor,
+      action.target,
+      action.overriddenCondition,
+    )
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {

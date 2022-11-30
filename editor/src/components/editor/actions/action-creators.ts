@@ -222,6 +222,7 @@ import type {
   ClearHoveredViews,
   SetAssetChecksum,
   SetOverrideProp,
+  SetOverrideConditional,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1154,6 +1155,17 @@ export function setOverrideProp(
     target: target,
     propertyPath: propertyPath,
     value: value,
+  }
+}
+
+export function setOverrideConditional(
+  target: ElementPath,
+  overriddenCondition: boolean | null,
+): SetOverrideConditional {
+  return {
+    action: 'SET_OVERRIDE_CONDITIONAL',
+    target: target,
+    overriddenCondition: overriddenCondition,
   }
 }
 

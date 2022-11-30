@@ -739,6 +739,12 @@ export interface SetOverrideProp {
   value: JSXAttribute
 }
 
+export interface SetOverrideConditional {
+  action: 'SET_OVERRIDE_CONDITIONAL'
+  target: ElementPath
+  overriddenCondition: boolean | null
+}
+
 export interface SetPropWithElementPath {
   action: 'SET_PROP_WITH_ELEMENT_PATH'
   target: StaticElementPathPart
@@ -1184,6 +1190,7 @@ export type EditorAction =
   | SaveDOMReport
   | SetProp
   | SetOverrideProp
+  | SetOverrideConditional
   | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty

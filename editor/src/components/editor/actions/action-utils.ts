@@ -172,6 +172,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_OVERRIDE_PROP':
+    case 'SET_OVERRIDE_CONDITIONAL':
     case 'SET_PROP_WITH_ELEMENT_PATH':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
