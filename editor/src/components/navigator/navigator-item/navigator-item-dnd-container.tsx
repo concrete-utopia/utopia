@@ -54,6 +54,8 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
+  isConditional: boolean
+  conditionalOverride: boolean | null
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
@@ -270,6 +272,8 @@ export class NavigatorItemDndWrapper extends PureComponent<
           selected={this.props.selected}
           elementOriginType={this.props.elementOriginType}
           elementWarnings={this.props.elementWarnings}
+          isConditional={this.props.isConditional}
+          conditionalOverride={this.props.conditionalOverride}
         />
         <NavigatorHintTop
           shouldBeShown={

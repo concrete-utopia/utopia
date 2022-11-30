@@ -117,6 +117,11 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         staticPath,
       )
 
+      const conditionalOverride =
+        jsxElement != null && isJSXConditionalExpression(jsxElement)
+          ? jsxElement.overriddenCondition
+          : null
+
       const labelInner = getElementLabel(
         jsxElement,
         allElementProps,
@@ -154,6 +159,8 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         supportsChildren: supportsChildren,
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+        isConditional: jsxElement != null && isJSXConditionalExpression(jsxElement),
+        conditionalOverride: conditionalOverride,
       }
     },
   )
@@ -178,6 +185,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     staticElementName,
     label,
     elementWarnings,
+    isConditional,
+    conditionalOverride,
   } = useEditorState(selector, 'NavigatorItemWrapper')
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
@@ -226,6 +235,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     renamingTarget: renamingTarget,
     elementWarnings: elementWarnings,
     windowStyle: props.windowStyle,
+    isConditional: isConditional,
+    conditionalOverride: conditionalOverride,
   }
 
   return <NavigatorItemContainer {...navigatorItemProps} />
@@ -243,7 +254,7 @@ function getElementLabel(
     if (isJSXArbitraryBlock(jsxElement)) {
       return jsxElement.originalJavascript
     } else if (isJSXConditionalExpression(jsxElement)) {
-      return 'CONDITION'
+      return 'Conditional expr'
     }
   }
   return MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata, staticName)

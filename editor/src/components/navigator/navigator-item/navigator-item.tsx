@@ -26,6 +26,7 @@ import {
   UtopiaTheme,
   FlexRow,
   ColorTheme,
+  Button,
 } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -57,6 +58,8 @@ export interface NavigatorItemInnerProps {
   selected: boolean
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
+  isConditional: boolean
+  conditionalOverride: boolean | null
 }
 
 function selectItem(
@@ -392,6 +395,11 @@ export const NavigatorItem: React.FunctionComponent<
           iconColor={resultingStyle.iconColor}
           warningText={warningText}
         />
+        <ConditionalOverrideButtons
+          elementPath={elementPath}
+          isConditional={props.isConditional}
+          conditionalOverride={props.conditionalOverride}
+        />
       </FlexRow>
       <NavigatorItemActionSheet
         elementPath={elementPath}
@@ -444,5 +452,65 @@ const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         color={props.iconColor}
       />
     </React.Fragment>
+  )
+})
+
+interface ConditionalOverrideButtonsProps {
+  elementPath: ElementPath
+  isConditional: boolean
+  conditionalOverride: boolean | null
+}
+
+const ConditionalOverrideButtons = React.memo((props: ConditionalOverrideButtonsProps) => {
+  const { elementPath, isConditional, conditionalOverride } = props
+
+  const dispatch = useEditorState((store) => store.dispatch, 'editor dispatch')
+
+  const toggleTrue = React.useCallback(() => {
+    dispatch([
+      EditorActions.setOverrideConditional(elementPath, conditionalOverride !== true ? true : null),
+    ])
+  }, [dispatch, elementPath, conditionalOverride])
+
+  const toggleFalse = React.useCallback(() => {
+    dispatch([
+      EditorActions.setOverrideConditional(
+        elementPath,
+        conditionalOverride !== false ? false : null,
+      ),
+    ])
+  }, [dispatch, elementPath, conditionalOverride])
+
+  if (!isConditional) {
+    return null
+  }
+
+  return (
+    <FlexRow>
+      <Button
+        style={{
+          padding: '0 6px',
+          marginLeft: 8,
+          borderRadius: 4,
+          backgroundColor: conditionalOverride === true ? 'red' : undefined,
+        }}
+        spotlight={true}
+        onClick={toggleTrue}
+      >
+        True
+      </Button>
+      <Button
+        style={{
+          padding: '0 6px',
+          marginLeft: 8,
+          borderRadius: 4,
+          backgroundColor: conditionalOverride === false ? 'red' : undefined,
+        }}
+        spotlight={true}
+        onClick={toggleFalse}
+      >
+        False
+      </Button>
+    </FlexRow>
   )
 })
