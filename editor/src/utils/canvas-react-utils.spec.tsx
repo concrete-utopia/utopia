@@ -11,6 +11,7 @@ import {
   Scene as UtopiaScene,
   Storyboard as UtopiaStoryboard,
 } from 'utopia-api'
+const { useRef } = React
 
 function renderToFormattedString(element: React.ReactElement) {
   const renderResult = ReactDOMServer.renderToStaticMarkup(element)
@@ -40,23 +41,18 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='cica' data-path='cica'>
-            <div data-uid='kutya' data-path='kutya'>
-              Hello!
-            </div>
-            <div data-uid='majom' data-path='majom'>
-              Hello!
-            </div>
+          <div data-uid='cica'>
+            <div data-uid='kutya'>Hello!</div>
+            <div data-uid='majom'>Hello!</div>
           </div>
         )
       }
     }
 
-    expect(renderToFormattedString(<TestClass data-uid={'test1'} data-path='test1' />))
-      .toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\" data-path=\\"cica\\">
-        <div data-uid=\\"kutya\\" data-path=\\"kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\" data-path=\\"majom\\">Hello!</div>
+    expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\" data-path=\\"test1:cica\\">
+        <div data-uid=\\"kutya\\" data-path=\\"test1:cica/kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-path=\\"test1:cica/majom\\">Hello!</div>
       </div>
       "
     `)
@@ -67,52 +63,45 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       context: any
       render() {
-        return (
-          <div data-uid='inner-div' data-path='inner-div'>
-            {this.context.value}
-          </div>
-        )
+        return <div data-uid='inner-div'>{this.context.value}</div>
       }
     }
     TestClass.contextType = MyContext
 
     expect(
       renderToFormattedString(
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
-          <TestClass data-uid={'test-class'} data-path='test-class' />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider'>
+          <TestClass data-uid={'test-class'} />
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\">hello!</div>
+      "<div data-uid=\\"inner-div\\" data-path=\\"provider/test-class:inner-div\\">hello!</div>
       "
     `)
   })
 
-  it('class components have a working context, third variant', () => {
+  it('class components have a working context, second variant', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
       context: any
       render() {
-        return (
-          <div data-uid='inner-div' data-path='inner-div'>
-            {this.context.value}
-          </div>
-        )
+        return <div data-uid='inner-div'>{this.context.value}</div>
       }
     }
     TestClass.contextType = MyContext
 
     const Renderer = () => {
       return (
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
-          <TestClass data-uid='test-class' data-path='test-class' />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider'>
+          <TestClass data-uid='test-class' />
         </MyContext.Provider>
       )
     }
 
-    expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-path={'renderer'} />))
-      .toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\">hello!</div>
+    expect(renderToFormattedString(<Renderer data-uid={'renderer'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-div\\" data-path=\\"renderer:provider/test-class:inner-div\\">
+        hello!
+      </div>
       "
     `)
   })
@@ -129,7 +118,7 @@ describe('Monkey Function', () => {
 
     const TestStoryboard: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return (
-        <UtopiaStoryboard data-uid='scene'>
+        <UtopiaStoryboard data-uid='sb'>
           <UtopiaScene data-uid='scene'>
             <TestComponent data-uid='component-instance' />
           </UtopiaScene>
@@ -138,10 +127,23 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div style=\\"overflow: hidden\\" data-uid=\\"scene\\">
-        <div data-uid=\\"component-root\\">
-          <div data-uid=\\"kutya\\">Hello!</div>
-          <div data-uid=\\"majom\\">Hello!</div>
+      "<div data-uid=\\"scene\\" data-path=\\"test1:sb/scene\\">
+        <div
+          data-path=\\"test1:sb/scene/component-instance:component-root\\"
+          data-uid=\\"component-root\\"
+        >
+          <div
+            data-path=\\"test1:sb/scene/component-instance:component-root/kutya\\"
+            data-uid=\\"kutya\\"
+          >
+            Hello!
+          </div>
+          <div
+            data-path=\\"test1:sb/scene/component-instance:component-root/majom\\"
+            data-uid=\\"majom\\"
+          >
+            Hello!
+          </div>
         </div>
       </div>
       "
@@ -159,9 +161,9 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">
-        <div data-uid=\\"kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\">Hello!</div>
+      "<div data-uid=\\"test1\\" data-path=\\"test1\\">
+        <div data-uid=\\"kutya\\" data-path=\\"test1/kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-path=\\"test1/majom\\">Hello!</div>
       </div>
       "
     `)
@@ -178,7 +180,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\"><div>Hello!</div></div>
+      "<div data-uid=\\"test1\\" data-path=\\"test1\\"><div>Hello!</div></div>
       "
     `)
   })
@@ -195,7 +197,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div\\" data-path=\\"test1:cica:root-div\\">Hello!</div>
       "
     `)
   })
@@ -215,7 +217,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">Hello!</div>
+      "<div data-uid=\\"cica\\" data-path=\\"cica\\">Hello!</div>
       "
     `)
   })
@@ -239,7 +241,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\"><div>Hello!</div></div>
+      "<div data-uid=\\"cica\\" data-path=\\"test1:cica\\"><div>Hello!</div></div>
       "
     `)
   })
@@ -256,7 +258,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"test1\\" data-path=\\"test1\\">Hello!</div>
       "
     `)
   })
@@ -275,7 +277,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div\\" data-path=\\"test1:test-class:root-div\\">Hello!</div>
       "
     `)
   })
@@ -296,7 +298,9 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Cica data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div\\" data-path=\\"test1:wrapper-component:root-div\\">
+        Hello!
+      </div>
       "
     `)
   })
@@ -317,7 +321,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div\\" data-path=\\"test1:cica:root-div\\">Hello!</div>
       "
     `)
   })
@@ -338,7 +342,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-path=\\"test1\\" data-uid=\\"test1\\">Hello!</div>
       "
     `)
   })
@@ -353,7 +357,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-path=\\"test1\\" data-uid=\\"test1\\">Hello!</div>
       "
     `)
   })
@@ -368,7 +372,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div\\" data-path=\\"test1:fragment/root-div\\">Hello!</div>
       "
     `)
   })
@@ -415,10 +419,14 @@ describe('Monkey Function', () => {
       )
     }
 
-    expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">
-        <div data-uid=\\"hello-div\\">Hello</div>
-        <div data-uid=\\"world-div\\">world!</div>
+    expect(renderToFormattedString(<Component data-uid='component' />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\" data-path=\\"component:cica\\">
+        <div data-uid=\\"hello-div\\" data-path=\\"component:cica/kutya/hello-div\\">
+          Hello
+        </div>
+        <div data-uid=\\"world-div\\" data-path=\\"component:cica/kutya/world-div\\">
+          world!
+        </div>
       </div>
       "
     `)
@@ -434,7 +442,11 @@ describe('Monkey Function', () => {
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\"><div data-uid=\\"cica\\">Hello!</div></div>
+      "<div data-uid=\\"scene\\" data-path=\\"ignore/scene\\">
+        <div data-uid=\\"cica\\" data-path=\\"ignore/scene/scene-component:cica\\">
+          Hello!
+        </div>
+      </div>
       "
     `)
   })
@@ -455,7 +467,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<WrappedComponent data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">Hello!</div>
+      "<div data-uid=\\"cica\\" data-path=\\"cica\\">Hello!</div>
       "
     `)
   })
@@ -474,7 +486,7 @@ describe('Monkey Function', () => {
 
     class RenderPropsFunctionChild extends React.Component<any> {
       render() {
-        return this.props.children('huha')
+        return (this.props.children as any)('huha')
       }
     }
 
@@ -511,7 +523,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"aaa\\">
+      "<div data-uid=\\"aaa\\" data-path=\\"aaa\\">
         <div>huha</div>
         huha!
       </div>
@@ -540,21 +552,21 @@ describe('Monkey Function', () => {
       )
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"zzz\\">
-        <div data-uid=\\"aaa\\">
-          <div data-uid=\\"bbb\\">4</div>
-          <div data-uid=\\"bbb\\">5</div>
-          <div data-uid=\\"bbb\\">6</div>
+      "<div data-uid=\\"zzz\\" data-path=\\"cica:zzz\\">
+        <div data-uid=\\"aaa\\" data-path=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">4</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">5</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">6</div>
         </div>
-        <div data-uid=\\"aaa\\">
-          <div data-uid=\\"bbb\\">8</div>
-          <div data-uid=\\"bbb\\">10</div>
-          <div data-uid=\\"bbb\\">12</div>
+        <div data-uid=\\"aaa\\" data-path=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">8</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">10</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">12</div>
         </div>
-        <div data-uid=\\"aaa\\">
-          <div data-uid=\\"bbb\\">12</div>
-          <div data-uid=\\"bbb\\">15</div>
-          <div data-uid=\\"bbb\\">18</div>
+        <div data-uid=\\"aaa\\" data-path=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">12</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">15</div>
+          <div data-uid=\\"bbb\\" data-path=\\"cica:zzz/aaa/bbb\\">18</div>
         </div>
       </div>
       "
@@ -566,7 +578,7 @@ describe('Monkey Function', () => {
       return <div data-uid='zzz'>{[' ']}hello!</div>
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"zzz\\">hello!</div>
+      "<div data-uid=\\"zzz\\" data-path=\\"cica:zzz\\">hello!</div>
       "
     `)
   })
@@ -591,10 +603,24 @@ describe('Monkey Function', () => {
       </Storyboard>
     )
     expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene-aaa\\" style=\\"left: 0; top: 0; width: 400px; height: 400px\\">
-        <div data-uid=\\"zzz\\">
-          <div data-uid=\\"ccc\\">Hello World!!</div>
-          <div data-uid=\\"ddd\\">Hello Dolly!!</div>
+      "<div
+        data-uid=\\"scene-aaa\\"
+        style=\\"left: 0; top: 0; width: 400px; height: 400px\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+      >
+        <div data-uid=\\"zzz\\" data-path=\\"utopia-storyboard-uid/scene-aaa/app:zzz\\">
+          <div
+            data-uid=\\"ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app:zzz/aaa:ccc\\"
+          >
+            Hello World!!
+          </div>
+          <div
+            data-uid=\\"ddd\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app:zzz/bbb:ddd\\"
+          >
+            Hello Dolly!!
+          </div>
         </div>
       </div>
       "
@@ -656,6 +682,544 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<mesh></mesh>
+      "
+    `)
+  })
+
+  it('builds the correct paths for function components', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const Blue = (props: any) => {
+      return <div data-uid='blue-root'>{props.children}</div>
+    }
+
+    var InnerComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <Blue data-uid='inner-parent'>
+          <Blue data-uid='inner-child'>
+            <Blue data-uid='blue' />
+            {red}
+          </Blue>
+        </Blue>
+      )
+    }
+
+    var OuterComponent = () => {
+      return <InnerComponent data-uid='outer' />
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:outer:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-root\\"
+          data-path=\\"component:outer:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root\\"
+            data-path=\\"component:outer:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:outer:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for function components with children', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const Blue = (props: any) => {
+      return (
+        <div data-uid='blue-root'>
+          <div data-uid='blue-child' />
+          {props.children}
+        </div>
+      )
+    }
+
+    var Component = () => {
+      return (
+        <Blue data-uid='inner-parent'>
+          <Red data-uid='red' />
+        </Blue>
+      )
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'component'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-child\\"
+          data-path=\\"component:inner-parent:blue-root/blue-child\\"
+        ></div>
+        <div
+          data-uid=\\"red-root\\"
+          data-path=\\"component:inner-parent/red:red-root\\"
+        ></div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for class components', () => {
+    class Red extends React.Component {
+      render() {
+        return <div data-uid='red-root' />
+      }
+    }
+
+    class Blue extends React.Component<React.PropsWithChildren<{ 'data-uid': string }>> {
+      render() {
+        return <div data-uid='blue-root'>{this.props.children}</div>
+      }
+    }
+
+    class InnerComponent extends React.Component {
+      render() {
+        const red = <Red data-uid='red' />
+
+        return (
+          <Blue data-uid='inner-parent'>
+            <Blue data-uid='inner-child'>
+              <Blue data-uid='blue' />
+              {red}
+            </Blue>
+          </Blue>
+        )
+      }
+    }
+
+    class OuterComponent extends React.Component {
+      render() {
+        return <InnerComponent data-uid='outer' />
+      }
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:outer:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-root\\"
+          data-path=\\"component:outer:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root\\"
+            data-path=\\"component:outer:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:outer:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for intrinsic components', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <div data-uid='outer'>
+          <div data-uid='inner-parent'>
+            <div data-uid='inner-child'>
+              <div data-uid='blue' />
+              {red}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"outer\\" data-path=\\"component:outer\\">
+        <div data-uid=\\"inner-parent\\" data-path=\\"component:outer/inner-parent\\">
+          <div
+            data-uid=\\"inner-child\\"
+            data-path=\\"component:outer/inner-parent/inner-child\\"
+          >
+            <div
+              data-uid=\\"blue\\"
+              data-path=\\"component:outer/inner-parent/inner-child/blue\\"
+            ></div>
+            <div
+              data-uid=\\"red-root\\"
+              data-path=\\"component:outer/inner-parent/inner-child/red:red-root\\"
+            ></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for fragments at the root', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <>
+          <div data-uid='inner-parent'>
+            <>
+              <div data-uid='inner-child'>
+                <div data-uid='blue' />
+                {red}
+              </div>
+            </>
+          </div>
+        </>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div data-uid=\\"inner-child\\" data-path=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-path=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for fragments below the root', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <div data-uid='root'>
+          <>
+            <div data-uid='inner-parent'>
+              <>
+                <div data-uid='inner-child'>
+                  <div data-uid='blue' />
+                  {red}
+                </div>
+              </>
+            </div>
+          </>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"root\\" data-path=\\"component:root\\">
+        <div data-uid=\\"inner-parent\\" data-path=\\"component:root/inner-parent\\">
+          <div
+            data-uid=\\"inner-child\\"
+            data-path=\\"component:root/inner-parent/inner-child\\"
+          >
+            <div
+              data-uid=\\"blue\\"
+              data-path=\\"component:root/inner-parent/inner-child/blue\\"
+            ></div>
+            <div
+              data-uid=\\"red-root\\"
+              data-path=\\"component:root/inner-parent/inner-child/red:red-root\\"
+            ></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('fragment ordering should not affect the printed paths', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <div data-uid='inner-parent'>
+            <div data-uid='inner-child' />
+          </div>
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <div data-uid='inner-child' />
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div
+          data-uid=\\"inner-child\\"
+          data-path=\\"component:inner-parent/inner-child\\"
+        ></div>
+      </div>
+      "
+    `)
+
+    expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
+  })
+
+  it('nested fragments work', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <>
+            <div data-uid='inner-parent'>
+              <div data-uid='inner-child' />
+            </div>
+          </>
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <>
+              <div data-uid='inner-child' />
+            </>
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div
+          data-uid=\\"inner-child\\"
+          data-path=\\"component:inner-parent/inner-child\\"
+        ></div>
+      </div>
+      "
+    `)
+
+    expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
+  })
+
+  it('fragment correctly handles path on child with no uid', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <div />
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <div />
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-path=\\"component\\" data-uid=\\"component\\"></div>
+      "
+    `)
+
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentBelowRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div></div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for Exotic-type with-memo components', () => {
+    const Red = React.memo(() => <div data-uid='red-root' />)
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <div data-uid='inner-parent'>
+          <div data-uid='inner-child'>
+            <div data-uid='blue' />
+            {red}
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div data-uid=\\"inner-child\\" data-path=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-path=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for Exotic-type with-memo components 2', () => {
+    const Red = React.memo(() => <div data-uid='red-root' />)
+
+    const OuterComponent = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <div data-uid='inner-child'>
+            <div data-uid='blue' />
+            <Red data-uid='red' />
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div data-uid=\\"inner-child\\" data-path=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-path=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for Exotic-type with-forwardRef components', () => {
+    const Red = React.forwardRef((props, test) => {
+      return <div data-uid='red-root' ref={test as any} />
+    })
+
+    const OuterComponent = () => {
+      const test = useRef(null)
+      const red = <Red data-uid='red' ref={test} />
+
+      return (
+        <div data-uid='inner-parent'>
+          <div data-uid='inner-child'>
+            <div data-uid='blue' />
+            {red}
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div data-uid=\\"inner-child\\" data-path=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-path=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for forwardRef components', () => {
+    const Blue = React.forwardRef((props: any, test) => {
+      return (
+        <div data-uid='blue-root' ref={test as any}>
+          {props.children}
+        </div>
+      )
+    })
+
+    const OuterComponent = () => {
+      const parentRef = useRef(null)
+      const childRef = useRef(null)
+      const blueRef = useRef(null)
+
+      return (
+        <Blue data-uid='inner-parent' ref={parentRef}>
+          <Blue data-uid='inner-child' ref={childRef}>
+            <Blue data-uid='blue' ref={blueRef} />
+          </Blue>
+        </Blue>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-root\\"
+          data-path=\\"component:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root\\"
+            data-path=\\"component:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+        </div>
+      </div>
       "
     `)
   })

@@ -2,11 +2,9 @@ import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
-  UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
 import { flatMapEither, forEachRight } from '../../../core/shared/either'
 import {
@@ -412,7 +410,6 @@ function renderJSXElement(
 
   const finalPropsIcludingElementPath = {
     ...finalProps,
-    [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
   if (FinalElement == null) {

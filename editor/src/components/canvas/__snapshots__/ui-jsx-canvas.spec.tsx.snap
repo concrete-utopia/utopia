@@ -6152,13 +6152,13 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       >
         <div
           data-uid=\\"ccc-unparsed-no-template-path\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc-unparsed-no-template-path\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc-unparsed-no-template-path\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ccc-unparsed-no-template-path\\"
         >
           Thing
         </div>
@@ -21630,7 +21630,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     >
       <div
         data-uid=\\"ccc-unparsed-no-template-path\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:ccc-unparsed-no-template-path\\"
       >
         Thing
       </div>
@@ -22739,7 +22739,10 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
           style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
         >
-          <div data-uid=\\"ccc~~~1\\" data-path=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
+          <div
+            data-uid=\\"ccc~~~1\\"
+            data-path=\\"eee/fff/app-entity:aaa/bbb:ddd/ccc~~~1\\"
+          >
             test
           </div>
         </div>
@@ -33601,6 +33604,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-label=\\"Scene 2\\"
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
@@ -33623,7 +33627,6 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
         height: 188px;
       \\"
       data-uid=\\"scene-aaa\\"
-      data-label=\\"Scene 2\\"
     >
       <div
         data-uid=\\"aaa\\"
@@ -36431,7 +36434,12 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"1a9~~~1\\" data-path=\\"1a9~~~1\\">great</div>
+      <div
+        data-uid=\\"1a9~~~1\\"
+        data-path=\\"utopia-storyboard-uid/scene/app-entity:BBB:aaa-unparsed-no-template-path:bbb-unparsed-no-template-path:aaa-unparsed-no-template-path:bbb-unparsed-no-template-path:aaa-unparsed-no-template-path:1a9~~~1\\"
+      >
+        great
+      </div>
     </div>
   </div>
 </div>
@@ -38721,8 +38729,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
   >
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       data-factory-function-works=\\"true\\"
+      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -38746,8 +38754,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     >
       <div
         data-uid=\\"4cf\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf\\"
         data-factory-function-works=\\"true\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf\\"
       >
         Utopia
       </div>
