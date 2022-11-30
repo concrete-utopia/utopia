@@ -4,6 +4,7 @@ import {
   getJSXElementNameAsString,
   isJSXElement,
   JSXElement,
+  JSXElementChild,
   TopLevelElement,
 } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -39,9 +40,75 @@ type CodeOutlineEntryModel =
     })
   | (CodeOutlineEntryBase & {
       type: 'jsxTag'
-      half: 'open' | 'close'
+      half: 'open' | 'close' | 'uni'
       name: string
     })
+  | (CodeOutlineEntryBase & {
+      type: 'text'
+      content: string
+    })
+
+function jsxElementChildTodModel(
+  depth: number,
+  key: string,
+  child: JSXElementChild,
+): Array<CodeOutlineEntryModel> {
+  if (child.type === 'JSX_ELEMENT') {
+    return jsxElementToModel(depth, key, child)
+  }
+
+  if (child.type === 'JSX_FRAGMENT') {
+    if (child.children.length === 0) {
+      return [
+        {
+          type: 'text',
+          depth: depth + 1,
+          key: key + child.uniqueID + 'uni',
+          content: '</>',
+        },
+      ]
+    }
+
+    return [
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + child.uniqueID + 'open',
+        content: '<>',
+      },
+      ...child.children.flatMap((c) => jsxElementChildTodModel(depth + 1, key + child.uniqueID, c)),
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + child.uniqueID + 'close',
+        content: '</>',
+      },
+    ]
+  }
+
+  if (child.type === 'JSX_TEXT_BLOCK') {
+    return [
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + child.uniqueID,
+        content: child.text,
+      },
+    ]
+  }
+
+  if (child.type === 'JSX_ARBITRARY_BLOCK') {
+    return [
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + child.uniqueID,
+        content: '{' + child.originalJavascript + '}',
+      },
+    ]
+  }
+  assertNever(child)
+}
 
 function jsxElementToModel(
   depth: number,
@@ -53,7 +120,7 @@ function jsxElementToModel(
       {
         type: 'jsxTag',
         depth: depth + 1,
-        half: 'close',
+        half: 'uni',
         key: key + jsxElement.uid,
         name: getJSXElementNameAsString(jsxElement.name),
       },
@@ -69,7 +136,7 @@ function jsxElementToModel(
       name: getJSXElementNameAsString(jsxElement.name),
     },
     ...jsxElement.children.flatMap((c) =>
-      isJSXElement(c) ? jsxElementToModel(depth + 1, key + jsxElement.uid, c) : [],
+      jsxElementChildTodModel(depth + 1, key + jsxElement.uid, c),
     ),
     {
       type: 'jsxTag',
@@ -86,10 +153,14 @@ function arbitraryJsBlockModel(
   key: string,
   block: ArbitraryJSBlock,
 ): Array<CodeOutlineEntryModel> {
+  if (Object.entries(block.elementsWithin).length === 0) {
+    return []
+  }
+
   return [
     { type: 'placeholder', depth: depth, key: key + block.uniqueID, value: 'Elements within' },
     ...Object.entries(block.elementsWithin).flatMap(([k, e]) =>
-      jsxElementToModel(depth + 1, key + k, e),
+      jsxElementToModel(depth + 1, k + key, e),
     ),
   ]
 }
@@ -104,8 +175,7 @@ function topLevelElementToModel(
   }
 
   if (topLevelElement.type === 'UNPARSED_CODE') {
-    return []
-    // return [{ type: 'placeholder', depth: depth, key: key + 'unparsed', value: '<<Unparsed>>' }]
+    return [] // [{ type: 'placeholder', depth: depth, key: key + 'unparsed', value: '<<Unparsed>>' }]
   }
 
   if (topLevelElement.type === 'ARBITRARY_JS_BLOCK') {
@@ -115,9 +185,7 @@ function topLevelElementToModel(
   const name = topLevelElement.name ?? 'name'
   return [
     { type: 'jsxTag', half: 'open', depth: depth, key: key + name, name: name },
-    ...(isJSXElement(topLevelElement.rootElement)
-      ? jsxElementToModel(depth + 1, key + topLevelElement + name, topLevelElement.rootElement)
-      : []),
+    ...jsxElementChildTodModel(depth + 1, key + name, topLevelElement.rootElement),
     { type: 'jsxTag', half: 'close', depth: depth, key: key + name, name: name },
   ]
 }
@@ -128,20 +196,15 @@ function codeFileModel(
   success: ParseSuccess,
 ): Array<CodeOutlineEntryModel> {
   return [
-    { type: 'placeholder', depth: depth, key: key + '-imports', value: '<<Imports>>' }, // placeholder for success.imports
-    {
-      type: 'placeholder',
-      depth: depth,
-      key: key + '-topLevelElements',
-      value: 'Top level elements:',
-    },
-    ...success.topLevelElements.flatMap((t) => topLevelElementToModel(depth + 1, key, t)),
+    ...success.topLevelElements.flatMap((t) =>
+      topLevelElementToModel(depth + 1, key + 'topLevelElements', t),
+    ),
     ...(optionalMap(
       (a): Array<CodeOutlineEntryModel> => [
         {
           type: 'placeholder',
           depth: depth,
-          key: key + '-combinedTopLevelArbitraryBlock',
+          key: key + 'combinedTopLevelArbitraryBlock',
           value: 'Combined top-level arbitrary block:',
         },
         ...arbitraryJsBlockModel(depth + 1, key, a),
@@ -206,7 +269,12 @@ function renderCodeOutlineEntry(entry: CodeOutlineEntryModel) {
     case 'jsxElement':
       return `JSXElement: ${entry.name}`
     case 'jsxTag':
+      if (entry.half === 'uni') {
+        return `<${entry.name}/>`
+      }
       return entry.half === 'open' ? `<${entry.name}>` : `</${entry.name}>`
+    case 'text':
+      return entry.content
     default:
       assertNever(entry)
   }

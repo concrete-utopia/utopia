@@ -203,8 +203,8 @@ export const NavigatorComponent = React.memo(() => {
             overflowX: 'hidden',
           }}
         >
-          {outlineModel.map((entry) => (
-            <CodeOutlineView key={entry.key} entry={entry} />
+          {outlineModel.map((entry, i) => (
+            <CodeOutlineView key={i} entry={entry} />
           ))}
         </div>
       )
