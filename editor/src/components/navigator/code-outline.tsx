@@ -114,10 +114,11 @@ function topLevelElementToModel(
 
   const name = topLevelElement.name ?? 'name'
   return [
-    { type: 'component', depth: depth, key: key + name, name: name },
+    { type: 'jsxTag', half: 'open', depth: depth, key: key + name, name: name },
     ...(isJSXElement(topLevelElement.rootElement)
       ? jsxElementToModel(depth + 1, key + topLevelElement + name, topLevelElement.rootElement)
       : []),
+    { type: 'jsxTag', half: 'close', depth: depth, key: key + name, name: name },
   ]
 }
 

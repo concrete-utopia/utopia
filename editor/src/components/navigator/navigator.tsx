@@ -195,7 +195,19 @@ export const NavigatorComponent = React.memo(() => {
     if (size.height == null) {
       return null
     } else {
-      return outlineModel.map((entry) => <CodeOutlineView key={entry.key} entry={entry} />)
+      return (
+        <div
+          style={{
+            width: '100%',
+            height: size.height,
+            overflowX: 'hidden',
+          }}
+        >
+          {outlineModel.map((entry) => (
+            <CodeOutlineView key={entry.key} entry={entry} />
+          ))}
+        </div>
+      )
     }
   }
 
