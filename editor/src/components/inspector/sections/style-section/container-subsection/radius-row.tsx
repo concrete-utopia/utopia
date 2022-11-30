@@ -29,6 +29,7 @@ import {
   NumberInput,
 } from '../../../../../uuiui'
 import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
+import { SliderNumberControl } from '../../../controls/slider-number-control'
 
 function updateRadiusType(
   newRadiusTypeValue: SelectOption,
@@ -212,6 +213,20 @@ export const RadiusRow = React.memo(() => {
     onUnsetValues,
   )
 
+  const transformBorderRadiusAllNumberToCSSNumber = React.useCallback<
+    (newValue: number) => CSSNumber
+  >(
+    (newValue) => {
+      const updatedValue = updateBorderRadiusAll(newValue, borderRadiusValue)
+      if (isLeft(updatedValue)) {
+        return updatedValue.value
+      } else {
+        return updatedValue.value.tr
+      }
+    },
+    [borderRadiusValue],
+  )
+
   return (
     <InspectorContextMenuWrapper
       id='borderRadius-subsection-context-menu'
@@ -279,34 +294,27 @@ export const RadiusRow = React.memo(() => {
             />
           </div>
         ) : (
-          <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
-            <SliderControl
-              id='radius-all-slider'
-              key='radius-all-slider'
-              testId='radius-all-slider'
-              value={borderRadiusValue.value.value}
-              DEPRECATED_controlOptions={{
-                minimum: 0,
-                maximum: sliderMax / 2,
-                stepSize: 0.5,
-              }}
-              onSubmitValue={onBorderRadiusAllSubmitValue}
-              onTransientSubmitValue={onBorderRadiusAllTransientSubmitValue}
-              controlStatus={controlStatus}
-              controlStyles={controlStyles}
-            />
-            <NumberInput
-              value={borderRadiusValue.value}
-              id='radius-all-number-input'
-              testId='radius-all-number-input'
-              onSubmitValue={wrappedOnSubmitValue}
-              onTransientSubmitValue={wrappedOnTransientSubmitValue}
-              controlStatus={controlStatus}
-              minimum={0}
-              numberType='Length'
-              defaultUnitToHide={'px'}
-            />
-          </UIGridRow>
+          <SliderNumberControl
+            id='radius-all'
+            key='radius-all'
+            testId='radius-all'
+            value={borderRadiusValue.value}
+            DEPRECATED_controlOptions={{
+              minimum: 0,
+              maximum: sliderMax / 2,
+              stepSize: 0.5,
+            }}
+            controlStatus={controlStatus}
+            controlStyles={controlStyles}
+            minimum={0}
+            numberType='Length'
+            defaultUnitToHide={'px'}
+            onSubmitValue={wrappedOnSubmitValue}
+            onTransientSubmitValue={wrappedOnTransientSubmitValue}
+            onSliderSubmitValue={onBorderRadiusAllSubmitValue}
+            onSliderTransientSubmitValue={onBorderRadiusAllTransientSubmitValue}
+            transformSliderValueToCSSNumber={transformBorderRadiusAllNumberToCSSNumber}
+          />
         )}
       </UIGridRow>
     </InspectorContextMenuWrapper>

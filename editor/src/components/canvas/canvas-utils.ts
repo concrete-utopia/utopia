@@ -1688,6 +1688,7 @@ function getTransientCanvasStateFromFrameChanges(
   return transientCanvasState(
     editorState.selectedViews,
     editorState.highlightedViews,
+    [],
     mapValues((success) => {
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
@@ -1718,7 +1719,13 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      dragState.draggedElements,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1792,7 +1799,13 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1873,9 +1886,6 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (!isFeatureEnabled('Canvas Strategies')) {
-          throw Error('Insert mode is not supported with disabled Canvas Strategies feature switch')
-        }
         break
       case 'select':
         if (
@@ -1924,7 +1934,13 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      editorState.hoveredViews,
+      null,
+      [],
+    )
   } else {
     return transientState
   }
@@ -2520,6 +2536,7 @@ function produceMoveTransientCanvasState(
   return transientCanvasState(
     selectedViews,
     workingEditorState.highlightedViews,
+    workingEditorState.hoveredViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
   )
@@ -3100,6 +3117,7 @@ function createCanvasTransientStateFromProperties(
     return transientCanvasState(
       updatedEditor.selectedViews,
       updatedEditor.highlightedViews,
+      updatedEditor.hoveredViews,
       transientFilesState,
       [],
     )

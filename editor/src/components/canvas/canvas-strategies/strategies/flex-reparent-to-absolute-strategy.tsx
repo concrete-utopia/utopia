@@ -18,6 +18,7 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -28,19 +29,17 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling } from '../interaction-state'
+import { InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
-import { ifAllowedToReparent } from './reparent-helpers'
-import { ReparentTarget } from './reparent-strategy-helpers'
+import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
   reparentTarget: ReparentTarget,
-  missingBoundsHandling: MissingBoundsHandling,
   fitness: number,
 ): CanvasStrategyFactory {
-  const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -49,8 +48,8 @@ export function baseFlexReparentToAbsoluteStrategy(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
     return {
-      id: `${forced ? 'FORCED_' : ''}FLEX_REPARENT_TO_ABSOLUTE`,
-      name: `Reparent (Abs${forced ? ', Force' : ''})`,
+      id: `FLEX_REPARENT_TO_ABSOLUTE`,
+      name: `Reparent (Abs)`,
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,
@@ -68,6 +67,12 @@ export function baseFlexReparentToAbsoluteStrategy(
           control: ParentBounds,
           props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
       ],
@@ -139,7 +144,6 @@ export function baseFlexReparentToAbsoluteStrategy(
                   )
                   const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
                     reparentTarget,
-                    missingBoundsHandling,
                     0,
                   )
                   const reparentCommands =

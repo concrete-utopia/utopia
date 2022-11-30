@@ -127,7 +127,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
                 background: colorTheme.bg0.value,
                 boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
                   2 / scale
-                }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
+                }px ${4 / scale}px 0px ${colorTheme.fg6Opacity50.value}`,
                 cursor: CSSCursor.ResizeEW,
                 display: 'flex',
                 alignItems: 'center',
@@ -260,9 +260,11 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
           height: ControlSize(scale),
           borderRadius: '50%',
           background: colorTheme.bg0.value,
-          boxShadow: `0px ${1 / scale}px ${2 / scale}px 0px rgb(52 52 52 / 35%), 0px 0px 0px ${
-            0.5 / scale
-          }px rgb(166 166 166 / 82%)`,
+          boxShadow: `0px ${1 / scale}px ${2 / scale}px 0px ${
+            colorTheme.canvasControlReorderSliderBoxShadowPrimary.value
+          }, 0px 0px 0px ${0.5 / scale}px ${
+            colorTheme.canvasControlReorderSliderBoxShadowSecondary.value
+          }`,
         }}
       ></div>
       <div

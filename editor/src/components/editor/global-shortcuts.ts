@@ -51,27 +51,11 @@ import {
   INSERT_VIEW_SHORTCUT,
   JUMP_TO_PARENT_SHORTCUT,
   MOVE_ELEMENT_BACKWARD_SHORTCUT,
-  MOVE_ELEMENT_DOWN_MORE_SHORTCUT,
-  MOVE_ELEMENT_DOWN_SHORTCUT,
   MOVE_ELEMENT_FORWARD_SHORTCUT,
-  MOVE_ELEMENT_LEFT_MORE_SHORTCUT,
-  MOVE_ELEMENT_LEFT_SHORTCUT,
-  MOVE_ELEMENT_RIGHT_MORE_SHORTCUT,
-  MOVE_ELEMENT_RIGHT_SHORTCUT,
   MOVE_ELEMENT_TO_BACK_SHORTCUT,
   MOVE_ELEMENT_TO_FRONT_SHORTCUT,
-  MOVE_ELEMENT_UP_MORE_SHORTCUT,
-  MOVE_ELEMENT_UP_SHORTCUT,
   REDO_CHANGES_SHORTCUT,
   RESET_CANVAS_ZOOM_SHORTCUT,
-  RESIZE_ELEMENT_DOWN_MORE_SHORTCUT,
-  RESIZE_ELEMENT_DOWN_SHORTCUT,
-  RESIZE_ELEMENT_LEFT_MORE_SHORTCUT,
-  RESIZE_ELEMENT_LEFT_SHORTCUT,
-  RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT,
-  RESIZE_ELEMENT_RIGHT_SHORTCUT,
-  RESIZE_ELEMENT_UP_MORE_SHORTCUT,
-  RESIZE_ELEMENT_UP_SHORTCUT,
   SAVE_CURRENT_FILE_SHORTCUT,
   SELECT_ALL_SIBLINGS_SHORTCUT,
   START_RENAMING_SHORTCUT,
@@ -353,29 +337,6 @@ export function handleKeyDown(
     return []
   }
 
-  function adjustFrames(
-    isResizing: boolean,
-    direction: 'vertical' | 'horizontal',
-    directionModifier: -1 | 1,
-    adjustment: 1 | 10,
-  ): Array<EditorAction> {
-    if (isFeatureEnabled('Canvas Strategies')) {
-      // Disable these keyboard shortcuts so they don't interfere with strategies
-      return []
-    }
-
-    const adjustmentActions = adjustAllSelectedFrames(
-      editor,
-      dispatch,
-      false,
-      isResizing,
-      directionModifier,
-      direction,
-      adjustment,
-    )
-    return [EditorActions.transientActions(adjustmentActions)]
-  }
-
   function getUIFileActions(): Array<EditorAction> {
     if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
       return []
@@ -460,54 +421,6 @@ export function handleKeyDown(
       },
       [CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT]: () => {
         return cycleSiblings(false)
-      },
-      [RESIZE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 1) : []
-      },
-      [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 10) : []
-      },
-      [MOVE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 1) : []
-      },
-      [MOVE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 10) : []
-      },
-      [RESIZE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 1) : []
-      },
-      [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 10) : []
-      },
-      [MOVE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 1) : []
-      },
-      [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 10) : []
-      },
-      [RESIZE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 1) : []
-      },
-      [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 10) : []
-      },
-      [MOVE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 1) : []
-      },
-      [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 10) : []
-      },
-      [RESIZE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 1) : []
-      },
-      [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 10) : []
-      },
-      [MOVE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 1) : []
-      },
-      [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 10) : []
       },
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
         return [EditorActions.selectAllSiblings()]

@@ -9,6 +9,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  MoveStrategy,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import {
@@ -16,11 +17,17 @@ import {
   getAdjustMoveCommands,
   getDragTargets,
 } from './shared-move-strategies-helpers'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+  dragTargetsElementPathsLive,
+} from '../../controls/select-mode/drag-outline-control'
 
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-): CanvasStrategy | null {
+): MoveStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const isApplicable =
     selectedElements.length > 0 &&
@@ -39,40 +46,55 @@ export function absoluteMoveStrategy(
     return null
   }
   return {
-    id: 'ABSOLUTE_MOVE',
-    name: 'Move',
-    controlsToRender: [
-      controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: selectedElements },
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentBounds,
-        props: { targets: selectedElements },
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-    ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness:
-      interactionSession?.interactionData.type === 'DRAG' &&
-      interactionSession?.activeControl.type === 'BOUNDING_AREA'
-        ? 1
-        : 0,
-    apply: () => {
-      if (
+    strategy: {
+      id: 'ABSOLUTE_MOVE',
+      name: 'Move',
+      controlsToRender: [
+        controlWithProps({
+          control: ImmediateParentOutlines,
+          props: { targets: selectedElements },
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentBounds,
+          props: { targets: selectedElements },
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
+          show: 'visible-only-while-active',
+        }),
+        {
+          control: DragOutlineControl,
+          props: dragTargetsElementPathsLive(selectedElements),
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        },
+      ], // Uses existing hooks in select-mode-hooks.tsx
+      fitness:
         interactionSession?.interactionData.type === 'DRAG' &&
-        interactionSession?.interactionData.drag != null
-      ) {
-        return applyMoveCommon(
-          canvasState,
-          interactionSession,
-          getAdjustMoveCommands(canvasState, interactionSession),
-        )
-      }
-      // Fallback for when the checks above are not satisfied.
-      return emptyStrategyApplicationResult
+        interactionSession?.activeControl.type === 'BOUNDING_AREA'
+          ? 1
+          : 0,
+      apply: () => {
+        if (
+          interactionSession?.interactionData.type === 'DRAG' &&
+          interactionSession?.interactionData.drag != null
+        ) {
+          return applyMoveCommon(
+            canvasState,
+            interactionSession,
+            getAdjustMoveCommands(canvasState, interactionSession),
+          )
+        }
+        // Fallback for when the checks above are not satisfied.
+        return emptyStrategyApplicationResult
+      },
     },
+    dragType: 'absolute',
   }
 }

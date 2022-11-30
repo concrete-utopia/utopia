@@ -5,6 +5,7 @@ import { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -57,7 +58,9 @@ export function ancestorMetaStrategy(
       )
     )
 
-    if (!isStaticLayout) {
+    const shouldCheckAncestor = isStaticLayout || EP.isRootElementOfInstance(target)
+
+    if (!shouldCheckAncestor) {
       return []
     }
 
@@ -82,7 +85,11 @@ export function ancestorMetaStrategy(
       // A length of > 0 means that we should be bubbling up to the next ancestor
       return nextAncestorResult.map((s) => ({
         ...s,
-        apply: appendCommandsToApplyResult(s.apply, [appendElementsToRerenderCommand([target])]),
+        apply: appendCommandsToApplyResult(
+          s.apply,
+          [appendElementsToRerenderCommand([target])],
+          [],
+        ),
       }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor
@@ -92,11 +99,23 @@ export function ancestorMetaStrategy(
           id: `${s.id}_ANCESTOR_${level}`,
           name: applyLevelSuffix(s.name, level),
           fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
-          apply: appendCommandsToApplyResult(s.apply, [
-            appendElementsToRerenderCommand([target]),
-            highlightElementsCommand([parentPath]),
-            setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
-          ]),
+          apply: appendCommandsToApplyResult(
+            s.apply,
+            [
+              appendElementsToRerenderCommand([target]),
+              highlightElementsCommand([parentPath]),
+              setCursorCommand(CSSCursor.MovingMagic),
+            ],
+            [
+              wildcardPatch('mid-interaction', {
+                canvas: {
+                  controls: {
+                    dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+                  },
+                },
+              }),
+            ],
+          ),
         })),
       )
     }
@@ -104,16 +123,28 @@ export function ancestorMetaStrategy(
 }
 
 type ApplyFn = CanvasStrategy['apply']
-function appendCommandsToApplyResult(
+export function appendCommandsToApplyResult(
   applyFn: ApplyFn,
-  commandsToAppend: Array<CanvasCommand>,
+  commandsToAppendToExtendResult: Array<CanvasCommand>,
+  commandsToAlwaysAppend: Array<CanvasCommand>,
 ): ApplyFn {
   return (strategyLifecycle: InteractionLifecycle) => {
     const result = applyFn(strategyLifecycle)
-    if (result.status === 'success' && result.commands.length > 0) {
-      return {
-        ...result,
-        commands: [...result.commands, ...commandsToAppend],
+    if (result.status === 'success') {
+      if (result.commands.length > 0) {
+        return {
+          ...result,
+          commands: [
+            ...result.commands,
+            ...commandsToAppendToExtendResult,
+            ...commandsToAlwaysAppend,
+          ],
+        }
+      } else {
+        return {
+          ...result,
+          commands: [...result.commands, ...commandsToAlwaysAppend],
+        }
       }
     } else {
       return result

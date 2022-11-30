@@ -1,16 +1,10 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import {
-  addAllUniquelyBy,
-  mapDropNulls,
-  sortBy,
-  stripNulls,
-} from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { absoluteMoveStrategy } from './strategies/absolute-move-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -24,8 +18,14 @@ import {
   InteractionLifecycle,
   CustomStrategyState,
   controlWithProps,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import {
+  CanvasControlType,
+  InteractionSession,
+  isNotYetStartedDragInteraction,
+  StrategyState,
+} from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
@@ -42,6 +42,11 @@ import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrate
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
+import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
+import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
+import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
+import { getDragTargets } from './strategies/shared-move-strategies-helpers'
+import * as EP from '../../../core/shared/element-path'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -65,6 +70,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
     [
       absoluteDuplicateStrategy,
       keyboardAbsoluteMoveStrategy,
+      keyboardReorderStrategy,
       convertToAbsoluteAndMoveStrategy,
       reorderSliderStategy,
     ],
@@ -77,24 +83,54 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [
-      keyboardAbsoluteResizeStrategy,
-      absoluteResizeBoundingBoxStrategy,
-      flexResizeBasicStrategy,
-      setPaddingStrategy,
-    ],
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
   )
 }
 
-const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = [
+const propertyControlStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
+    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+  )
+}
+
+const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStrategy = (
+  metaStrategy: MetaCanvasStrategy,
+) => {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ): Array<CanvasStrategy> => {
+    const selectedElements = getDragTargets(
+      getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+    )
+
+    if (selectedElements.length === 0 || selectedElements.some(EP.isRootElementOfInstance)) {
+      return []
+    }
+
+    return metaStrategy(canvasState, interactionSession, customStrategyState)
+  }
+}
+
+const preventAllOnRootElements = (metaStrategies: Array<MetaCanvasStrategy>) =>
+  metaStrategies.map(preventOnRootElements)
+
+const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRootElements([
   moveOrReorderStrategies,
   dragToMoveMetaStrategy,
-]
+])
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
-  resizeStrategies,
+  preventOnRootElements(resizeStrategies),
+  propertyControlStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
@@ -413,6 +449,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   } else {
     switch (interactionSession.interactionData.type) {
       case 'DRAG':
+        return !isNotYetStartedDragInteraction(interactionSession.interactionData)
       case 'KEYBOARD':
       case 'HOVER':
         return true
@@ -454,4 +491,20 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
   return strategyState.currentStrategyCommands.length > 0
+}
+
+export function onlyFitWhenDraggingThisControl(
+  interactionSession: InteractionSession | null,
+  controlType: CanvasControlType['type'],
+  fitnessWhenFit: number,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === controlType
+  ) {
+    return fitnessWhenFit
+  } else {
+    return 0
+  }
 }

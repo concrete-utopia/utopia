@@ -937,9 +937,12 @@ describe('LOAD', () => {
         targetRepository: null,
         originCommit: null,
         branchName: null,
+        pendingCommit: null,
+        branchLoaded: false,
       },
       githubChecksums: null,
       branchContents: null,
+      assetChecksums: {},
     }
 
     const action = {

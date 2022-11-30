@@ -56,8 +56,9 @@ import {
   StoredEditorState,
   Theme,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
+  UserConfiguration,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -254,6 +255,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
+  elementsToRerender: Array<ElementPath> | null
 }
 
 export type Atomic = {
@@ -404,8 +406,16 @@ export interface SetHighlightedView {
   target: ElementPath
 }
 
+export interface SetHoveredView {
+  action: 'SET_HOVERED_VIEW'
+  target: ElementPath
+}
+
 export interface ClearHighlightedViews {
   action: 'CLEAR_HIGHLIGHTED_VIEWS'
+}
+export interface ClearHoveredViews {
+  action: 'CLEAR_HOVERED_VIEWS'
 }
 
 export type UpdateKeysPressed = {
@@ -620,12 +630,17 @@ export interface UpdateBranchContents {
 
 export interface UpdateGithubSettings {
   action: 'UPDATE_GITHUB_SETTINGS'
-  settings: ProjectGithubSettings
+  settings: Partial<ProjectGithubSettings>
 }
 
 export interface UpdateGithubData {
   action: 'UPDATE_GITHUB_DATA'
   data: Partial<GithubData>
+}
+
+export interface RemoveFileConflict {
+  action: 'REMOVE_FILE_CONFLICT'
+  path: string
 }
 
 export interface WorkerCodeUpdate {
@@ -908,15 +923,31 @@ export interface SetGithubState {
   githubState: GithubState
 }
 
+export interface SetUserConfiguration {
+  action: 'SET_USER_CONFIGURATION'
+  userConfiguration: UserConfiguration
+}
+
 export interface UpdateGithubOperations {
   action: 'UPDATE_GITHUB_OPERATIONS'
   operation: GithubOperation
   type: GithubOperationType
 }
 
+export interface SetRefreshingDependencies {
+  action: 'SET_REFRESHING_DEPENDENCIES'
+  value: boolean
+}
+
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: GithubChecksums
+  checksums: FileChecksums | null
+}
+
+export interface SetAssetChecksum {
+  action: 'SET_ASSET_CHECKSUM'
+  filename: string
+  checksum: string | null
 }
 
 export interface ResetCanvas {
@@ -1022,6 +1053,8 @@ export type ToggleSelectionLock = {
 export interface SaveToGithub {
   action: 'SAVE_TO_GITHUB'
   targetRepository: GithubRepo
+  commitMessage: string
+  branchName: string
 }
 
 export interface UpdateAgainstGithub {
@@ -1086,6 +1119,8 @@ export type EditorAction =
   | RemoveToast
   | SetHighlightedView
   | ClearHighlightedViews
+  | SetHoveredView
+  | ClearHoveredViews
   | UpdateKeysPressed
   | UpdateMouseButtonsPressed
   | HideModal
@@ -1127,6 +1162,7 @@ export type EditorAction =
   | UpdateProjectContents
   | UpdateGithubSettings
   | UpdateGithubData
+  | RemoveFileConflict
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
@@ -1177,6 +1213,7 @@ export type EditorAction =
   | UpdateConfigFromVSCode
   | SetLoginState
   | SetGithubState
+  | SetUserConfiguration
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
@@ -1203,6 +1240,8 @@ export type EditorAction =
   | UpdateGithubOperations
   | UpdateGithubChecksums
   | UpdateBranchContents
+  | SetRefreshingDependencies
+  | SetAssetChecksum
 
 export type DispatchPriority =
   | 'everyone'

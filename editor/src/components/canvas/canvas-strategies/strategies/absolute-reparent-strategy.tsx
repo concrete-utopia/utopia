@@ -8,6 +8,7 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -17,20 +18,19 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, MissingBoundsHandling, UpdatedPathMap } from '../interaction-state'
+import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
-import { getAbsoluteReparentPropertyChanges, ReparentTarget } from './reparent-strategy-helpers'
+import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
+import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
-  missingBoundsHandling: MissingBoundsHandling,
   fitness: number,
 ): CanvasStrategyFactory {
-  const forced = missingBoundsHandling === 'allow-missing-bounds'
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -61,8 +61,8 @@ export function baseAbsoluteReparentStrategy(
       return null
     }
     return {
-      id: `${forced ? 'FORCED_' : ''}ABSOLUTE_REPARENT`,
-      name: `Reparent (Abs${forced ? ', Force' : ''})`,
+      id: `ABSOLUTE_REPARENT`,
+      name: `Reparent (Abs)`,
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
@@ -74,6 +74,12 @@ export function baseAbsoluteReparentStrategy(
           control: ParentBounds,
           props: { targetParent: reparentTarget.newParent },
           key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ZeroSizedElementControls,
+          props: { showAllPossibleElements: true },
+          key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
       ],
@@ -144,19 +150,20 @@ export function baseAbsoluteReparentStrategy(
                 absoluteMoveStrategy(canvasState, {
                   ...interactionSession,
                   updatedTargetPaths: updatedTargetPaths,
-                })?.apply(strategyLifecycle).commands ?? []
+                })?.strategy.apply(strategyLifecycle).commands ?? []
 
               return strategyApplicationResult([
                 ...moveCommands,
                 ...commands.flatMap((c) => c.commands),
                 updateSelectedViews('always', newPaths),
                 setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-                setCursorCommand('mid-interaction', CSSCursor.Move),
+                setCursorCommand(CSSCursor.Move),
               ])
             } else {
               const moveCommands =
-                absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle)
-                  .commands ?? []
+                absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(
+                  strategyLifecycle,
+                ).commands ?? []
 
               return strategyApplicationResult(moveCommands)
             }

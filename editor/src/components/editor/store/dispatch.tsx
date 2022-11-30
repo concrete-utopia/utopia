@@ -112,6 +112,11 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
     }
+  } else if (action.action === 'SET_CURRENT_THEME') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
+    }
   } else if (action.action === 'SET_LOGIN_STATE') {
     return {
       ...working,
@@ -121,6 +126,11 @@ function processAction(
     return {
       ...working,
       userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
+    }
+  } else if (action.action === 'SET_USER_CONFIGURATION') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_USER_CONFIGURATION(action, working.userState),
     }
   } else {
     // Process action on the JS side.
@@ -720,7 +730,7 @@ function editorDispatchInner(
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
-    const actionNames = dispatchedActions.map((action) => action.action).join(',')
+    const actionNames = simpleStringifyActions(dispatchedActions)
     getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {
@@ -743,20 +753,13 @@ function editorDispatchInner(
     }
 
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-      isFeatureEnabled('Canvas Strategies')
-        ? handleStrategies(
-            strategiesToUse,
-            dispatchedActions,
-            storedState,
-            result,
-            storedState.patchedDerived,
-          )
-        : {
-            unpatchedEditorState: result.unpatchedEditor,
-            patchedEditorState: result.unpatchedEditor,
-            newStrategyState: result.strategyState,
-            patchedDerivedState: result.unpatchedDerived,
-          }
+      handleStrategies(
+        strategiesToUse,
+        dispatchedActions,
+        storedState,
+        result,
+        storedState.patchedDerived,
+      )
 
     return {
       unpatchedEditor: unpatchedEditorState,

@@ -5,6 +5,13 @@ import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { CanvasComponentEntry } from '../components/canvas/canvas-component-entry'
 import {
+  boundingArea,
+  createInteractionViaMouse,
+  isDragToPan,
+  updateInteractionViaDragDelta,
+  updateInteractionViaMouse,
+} from '../components/canvas/canvas-strategies/interaction-state'
+import {
   CanvasAction,
   CanvasModel,
   CanvasMouseEvent,
@@ -33,7 +40,12 @@ import { NewCanvasControls } from '../components/canvas/controls/new-canvas-cont
 import { setFocus } from '../components/common/actions/index'
 import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
+import {
+  cancelInsertModeActions,
+  HandleInteractionSession,
+} from '../components/editor/actions/meta-actions'
+import { EditorModes, isLiveMode, Mode } from '../components/editor/editor-modes'
+import { saveAssets } from '../components/editor/server'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
@@ -41,10 +53,12 @@ import {
   draggingFromFS,
   EditorState,
   editorStateCanvasControls,
+  emptyDragToMoveIndicatorFlags,
   isOpenFileUiJs,
   notDragging,
   UserState,
 } from '../components/editor/store/editor-state'
+import { createJsxImage, JSXImageOptions } from '../components/images'
 import {
   didWeHandleMouseMoveForThisFrame,
   didWeHandleWheelForThisFrame,
@@ -52,62 +66,39 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import * as EP from '../core/shared/element-path'
+import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { last, reverse } from '../core/shared/array-utils'
+import * as EP from '../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { ElementPath } from '../core/shared/project-file-types'
-import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
-import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
-import { emptyModifiers, Modifier } from '../utils/modifiers'
-import RU from '../utils/react-utils'
-import Utils from '../utils/utils'
 import {
   canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   CoordinateMarker,
-  offsetPoint,
   Point,
   RawPoint,
-  resize,
   Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { UtopiaStyles } from '../uuiui'
+import { ElementPath } from '../core/shared/project-file-types'
+import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
   updateGlobalPositions,
 } from '../utils/global-positions'
-import { last, reverse } from '../core/shared/array-utils'
-import {
-  boundingArea,
-  createInteractionViaMouse,
-  reparentTargetsToFilter,
-  ReparentTargetsToFilter,
-  updateInteractionViaDragDelta,
-  updateInteractionViaMouse,
-} from '../components/canvas/canvas-strategies/interaction-state'
+import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
+import { emptyModifiers, Modifier } from '../utils/modifiers'
 import { MouseButtonsPressed } from '../utils/mouse'
-import {
-  existingReparentSubjects,
-  getReparentTargetUnified,
-} from '../components/canvas/canvas-strategies/strategies/reparent-strategy-helpers'
-import { getDragTargets } from '../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
-import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { createJsxImage, JSXImageOptions } from '../components/images'
-import {
-  cancelInsertModeActions,
-  HandleInteractionSession,
-} from '../components/editor/actions/meta-actions'
+import RU from '../utils/react-utils'
+import Utils from '../utils/utils'
+import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
-import { isFeatureEnabled } from '../utils/feature-switches'
-import { saveAssets } from '../components/editor/server'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -314,7 +305,7 @@ function on(
     ]
   }
 
-  if (canvas.keysPressed['space']) {
+  if (isDragToPan(canvas.editorState.canvas.interactionSession, canvas.keysPressed['space'])) {
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
@@ -472,46 +463,6 @@ export function runLocalCanvasAction(
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
-      const startingTargetParentsToFilterOut: ReparentTargetsToFilter | null =
-        model.canvas.interactionSession?.startingTargetParentsToFilterOut ??
-        (() => {
-          if (action.interactionSession.interactionData.type !== 'DRAG') {
-            return null
-          }
-          const pointOnCanvas = offsetPoint(
-            action.interactionSession.interactionData.originalDragStart,
-            action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
-          )
-
-          const allowSmallerParent = action.interactionSession.interactionData.modifiers.cmd
-            ? 'allow-smaller-parent'
-            : 'disallow-smaller-parent'
-
-          const strictBoundsResult = getReparentTargetUnified(
-            existingReparentSubjects(getDragTargets(model.selectedViews)),
-            pointOnCanvas,
-            action.interactionSession.interactionData.modifiers.cmd,
-            pickCanvasStateFromEditorState(model, builtinDependencies),
-            metadata,
-            allElementProps,
-            'use-strict-bounds',
-            allowSmallerParent,
-          )
-
-          const missingBoundsResult = getReparentTargetUnified(
-            existingReparentSubjects(getDragTargets(model.selectedViews)),
-            pointOnCanvas,
-            action.interactionSession.interactionData.modifiers.cmd,
-            pickCanvasStateFromEditorState(model, builtinDependencies),
-            metadata,
-            allElementProps,
-            'allow-missing-bounds',
-            allowSmallerParent,
-          )
-
-          return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
-        })()
-
       return {
         ...model,
         canvas: {
@@ -520,7 +471,6 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
-            startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },
       }
@@ -532,7 +482,15 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
-          controls: editorStateCanvasControls([], [], [], [], null, []),
+          controls: editorStateCanvasControls(
+            [],
+            [],
+            [],
+            [],
+            null,
+            [],
+            emptyDragToMoveIndicatorFlags,
+          ),
         },
       }
     case 'UPDATE_INTERACTION_SESSION':
@@ -935,6 +893,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragOver: (event) => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
+
           event.preventDefault()
 
           if (this.props.editor.canvas.interactionSession != null) {
@@ -1001,6 +963,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
 
         onDragLeave: () => {
+          if (this.props.editor.mode.type === 'live') {
+            return
+          }
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
             EditorActions.switchEditorMode(EditorModes.selectMode(null)),
@@ -1316,7 +1281,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (this.props.model.keysPressed['space'] || event.buttons === 4) {
+      if (
+        isDragToPan(
+          this.props.editor.canvas.interactionSession,
+          this.props.model.keysPressed['space'],
+        ) ||
+        event.buttons === 4
+      ) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',

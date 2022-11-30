@@ -85,7 +85,6 @@ function dragByPixels(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = absoluteMoveStrategy(
@@ -95,7 +94,7 @@ function dragByPixels(
       startingMetadata,
     ),
     interactionSession,
-  )!.apply('end-interaction')
+  )!.strategy.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')

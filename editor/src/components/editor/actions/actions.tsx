@@ -308,6 +308,12 @@ import {
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
+  RemoveFileConflict,
+  SetRefreshingDependencies,
+  SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
+  SetAssetChecksum,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -339,6 +345,7 @@ import {
   EditorState,
   getAllBuildErrors,
   getAllLintErrors,
+  getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
   getJSXComponentsAndImportsForPathFromState,
@@ -347,6 +354,7 @@ import {
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
+  FileChecksums,
   insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
@@ -386,7 +394,11 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { mergeProjectContents, saveProjectToGithub } from '../../../core/shared/github'
+import {
+  mergeProjectContents,
+  saveProjectToGithub,
+  TreeConflicts,
+} from '../../../core/shared/github'
 import { objectFilter } from '../../../core/shared/object-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
@@ -402,6 +414,7 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
+  sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
@@ -410,11 +423,8 @@ import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers'
-import {
-  getReparentPropertyChanges,
-  reparentStrategyForParent,
-} from '../../canvas/canvas-strategies/strategies/reparent-strategy-helpers'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
@@ -437,6 +447,7 @@ import {
   openCodeEditorFile,
   removeToast,
   selectComponents,
+  setAssetChecksum,
   setPackageStatus,
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
@@ -448,6 +459,11 @@ import {
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
+import {
+  refreshDependencies,
+  removeModulesFromNodeModules,
+} from '../../../core/shared/dependencies'
+import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -861,6 +877,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     propertyControlsInfo: currentEditor.propertyControlsInfo,
     selectedViews: currentEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
+    hoveredViews: currentEditor.hoveredViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     displayNoneInstances: poppedEditor.displayNoneInstances,
     warnedInstances: poppedEditor.warnedInstances,
@@ -974,7 +991,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeReady: currentEditor.vscodeReady,
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
-    theme: currentEditor.theme,
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
@@ -986,6 +1002,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubChecksums: currentEditor.githubChecksums,
     branchContents: currentEditor.branchContents,
     githubData: currentEditor.githubData,
+    refreshingDependencies: currentEditor.refreshingDependencies,
+    assetChecksums: currentEditor.assetChecksums,
   }
 }
 
@@ -1447,17 +1465,46 @@ function updateSelectedComponentsFromEditorPosition(
   }
 }
 
-function removeModulesFromNodeModules(
-  modulesToRemove: Array<string>,
-  nodeModules: NodeModules,
-): NodeModules {
-  const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
+function normalizeGithubData(editor: EditorModel): EditorModel {
+  const { githubSettings } = editor
+  const hasRepo = githubSettings.targetRepository != null
+  const hasBranch = githubSettings.branchName != null
+  return {
+    ...editor,
 
-  return objectFilter(
-    (_module, modulePath) =>
-      !filePathsToRemove.some((pathToRemove) => (modulePath as string).startsWith(pathToRemove)),
-    nodeModules,
-  )
+    githubSettings: {
+      ...githubSettings,
+      branchName: hasRepo ? githubSettings.branchName : null,
+      branchLoaded: hasRepo && hasBranch && githubSettings.branchLoaded,
+      originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
+      pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
+    },
+
+    githubChecksums:
+      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.githubChecksums : null,
+
+    githubData: {
+      ...editor.githubData,
+      upstreamChanges: null,
+      currentBranchPullRequests: null,
+    },
+  }
+}
+
+function pruneAssetChecksums(
+  tree: ProjectContentTreeRoot,
+  checksums: FileChecksums,
+): FileChecksums {
+  // this function removes the asset checksums that reference files that don't exist in the project anymore
+  const assetChecksums = checksums != null ? { ...checksums } : {}
+  const keepChecksums: FileChecksums = {}
+  Object.keys(assetChecksums).forEach((filename) => {
+    const file = getContentsTreeFileFromString(tree, filename)
+    if (file != null && (isAssetFile(file) || isImageFile(file))) {
+      keepChecksums[filename] = assetChecksums[filename]
+    }
+  })
+  return keepChecksums
 }
 
 // JS Editor Actions:
@@ -1539,6 +1586,16 @@ export const UPDATE_FNS = {
       }
     }
   },
+  SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
+      return editor
+    } else {
+      return {
+        ...editor,
+        hoveredViews: [action.target],
+      }
+    }
+  },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {
     if (editor.highlightedViews.length === 0) {
       return editor
@@ -1546,6 +1603,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       highlightedViews: [],
+    }
+  },
+  CLEAR_HOVERED_VIEWS: (action: ClearHoveredViews, editor: EditorModel): EditorModel => {
+    if (editor.hoveredViews.length === 0) {
+      return editor
+    }
+    return {
+      ...editor,
+      hoveredViews: [],
     }
   },
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
@@ -1738,7 +1804,8 @@ export const UPDATE_FNS = {
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
-            return EP.parentPath(view)
+            const parentPath = EP.parentPath(view)
+            return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, editor.selectedViews),
           EP.pathsEqual,
         )
@@ -1758,10 +1825,11 @@ export const UPDATE_FNS = {
       false,
       (e) => {
         const updatedEditor = deleteElements([action.target], e)
-        const newSelection = EP.parentPath(action.target)
+        const parentPath = EP.parentPath(action.target)
+        const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
           ...updatedEditor,
-          selectedViews: [newSelection],
+          selectedViews: newSelection,
         }
       },
       dispatch,
@@ -1945,10 +2013,47 @@ export const UPDATE_FNS = {
       githubOperations: operations,
     }
   },
-  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+  SET_REFRESHING_DEPENDENCIES: (
+    action: SetRefreshingDependencies,
+    editor: EditorModel,
+  ): EditorModel => {
     return {
       ...editor,
-      githubChecksums: action.checksums,
+      refreshingDependencies: action.value,
+    }
+  },
+  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
+    const githubChecksums = action.checksums != null ? { ...action.checksums } : null
+    const assetChecksums = { ...editor.assetChecksums }
+    if (githubChecksums != null) {
+      // patch checksums
+      Object.keys(editor.assetChecksums).forEach((k) => {
+        if (githubChecksums[k] == undefined) {
+          githubChecksums[k] = editor.assetChecksums[k] // local, non-committed checksums win
+        } else {
+          assetChecksums[k] = githubChecksums[k] // remote sha checksums win
+        }
+      })
+    }
+    return {
+      ...editor,
+      githubChecksums: githubChecksums,
+      assetChecksums: assetChecksums,
+    }
+  },
+  SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
+    const assetChecksums: FileChecksums =
+      editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
+    const absoluteFilename = action.filename.replace(/^\.\//, '/')
+    if (action.checksum == null) {
+      delete assetChecksums[absoluteFilename]
+    } else {
+      assetChecksums[absoluteFilename] = action.checksum
+    }
+
+    return {
+      ...editor,
+      assetChecksums: assetChecksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -2803,10 +2908,9 @@ export const UPDATE_FNS = {
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
 
-          const reparentStrategy = reparentStrategyForParent(
+          const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
             action.pasteInto,
-            false,
           )
           const pastedElementIsFlex =
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -2832,6 +2936,7 @@ export const UPDATE_FNS = {
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename,
               pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
             )
 
             const allCommands = [...reparentCommands, ...propertyChangeCommands]
@@ -3239,10 +3344,11 @@ export const UPDATE_FNS = {
     let editorWithToast = editor
     if (isLoggedIn(userState.loginState) && editor.id != null) {
       saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
-        .then(() => {
+        .then((checksum) => {
           dispatch(
             [
               ...actionsToRunAfterSave,
+              setAssetChecksum(assetFilename, checksum),
               showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
             ],
             'everyone',
@@ -3638,71 +3744,17 @@ export const UPDATE_FNS = {
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isTextFile(file)) {
-      const deps = dependenciesFromPackageJsonContents(file.fileContents.code)
-      if (deps != null) {
-        packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
-          packageStatus[dep.name] = { status: 'loading' }
-          return packageStatus
-        }, {})
-        let newDeps: RequestedNpmDependency[] = []
-        let updatedDeps: RequestedNpmDependency[] = []
-        let removedDeps: RequestedNpmDependency[] = []
-        const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
-        if (isTextFile(currentDepsFile)) {
-          const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
-          let foundMatchingDeps: RequestedNpmDependency[] = []
-
-          fastForEach(deps, (dep) => {
-            const matchingCurrentDep = currentDeps.find(
-              (currentDep) => dep.name === currentDep.name,
-            )
-
-            // Find the new or updated dependencies
-            if (matchingCurrentDep == null) {
-              // A new dependency has been added
-              newDeps.push(dep)
-            } else {
-              foundMatchingDeps.push(matchingCurrentDep)
-
-              if (matchingCurrentDep.version !== dep.version) {
-                // An updated dependency
-                updatedDeps.push(dep)
-              }
-            }
-
-            // Find the deleted dependencies
-            removedDeps = currentDeps.filter(
-              (currentDep) => !foundMatchingDeps.includes(currentDep),
-            )
-          })
-        } else {
-          newDeps = deps
-        }
-
-        const modulesToRemove = updatedDeps.concat(removedDeps).map((d) => d.name)
-
-        updatedNodeModulesFiles = removeModulesFromNodeModules(
-          modulesToRemove,
-          editor.nodeModules.files,
-        )
-
-        const depsToFetch = newDeps.concat(updatedDeps)
-
-        void fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
-          const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
-            deps,
-            fetchNodeModulesResult.dependenciesWithError,
-            fetchNodeModulesResult.dependenciesNotFound,
-          )
-          const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-            setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
-          )
-          dispatch([
-            ...packageErrorActions,
-            updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-          ])
-        })
-      }
+      const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
+      const currentDeps = isTextFile(packageJson)
+        ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
+        : null
+      void refreshDependencies(
+        dispatch,
+        file.fileContents.code,
+        currentDeps,
+        builtInDependencies,
+        editor.nodeModules.files,
+      )
     }
 
     return {
@@ -3729,6 +3781,7 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
+      assetChecksums: pruneAssetChecksums(action.contents, editor.assetChecksums),
     }
   },
   UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
@@ -3738,18 +3791,45 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
-    return {
+    return normalizeGithubData({
       ...editor,
-      githubSettings: action.settings,
-    }
+      githubSettings: {
+        ...editor.githubSettings,
+        ...action.settings,
+      },
+    })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       githubData: {
         ...editor.githubData,
+        lastUpdatedAt: Date.now(),
         ...action.data,
       },
+    }
+  },
+  REMOVE_FILE_CONFLICT: (action: RemoveFileConflict, editor: EditorModel): EditorModel => {
+    let updatedConflicts: TreeConflicts = { ...editor.githubData.treeConflicts }
+    delete updatedConflicts[action.path]
+    const treeConflictsRemain = Object.keys(updatedConflicts).length > 0
+    const newOriginCommit = treeConflictsRemain
+      ? editor.githubSettings.originCommit
+      : editor.githubSettings.pendingCommit
+    const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
+    const newChecksums = treeConflictsRemain ? editor.githubChecksums : null
+    return {
+      ...editor,
+      githubSettings: {
+        ...editor.githubSettings,
+        originCommit: newOriginCommit,
+        pendingCommit: newPendingCommit,
+      },
+      githubData: {
+        ...editor.githubData,
+        treeConflicts: updatedConflicts,
+      },
+      githubChecksums: newChecksums,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
@@ -4368,6 +4448,7 @@ export const UPDATE_FNS = {
     updatedShortcutConfig[action.shortcutName] = [action.newKey]
     const updatedUserConfiguration: UserConfiguration = {
       shortcutConfig: updatedShortcutConfig,
+      themeConfig: userState.themeConfig,
     }
     // Side effect.
     void saveUserConfiguration(updatedUserConfiguration)
@@ -4444,10 +4525,12 @@ export const UPDATE_FNS = {
   SEND_CODE_EDITOR_INITIALISATION: (
     action: SendCodeEditorInitialisation,
     editor: EditorModel,
+    userState: UserState,
   ): EditorModel => {
     // Side effects.
     void sendCodeEditorDecorations(editor)
     void sendSelectedElement(editor)
+    void sendSetVSCodeTheme(getCurrentTheme(userState))
     return {
       ...editor,
       vscodeReady: true,
@@ -4583,6 +4666,15 @@ export const UPDATE_FNS = {
       githubState: action.githubState,
     }
   },
+  SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {
+    // Side effect - update the theme setting in VS Code
+    void sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
+
+    return {
+      ...userState,
+      ...action.userConfiguration,
+    }
+  },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -4614,11 +4706,19 @@ export const UPDATE_FNS = {
       forkedFromProjectId: action.id,
     }
   },
-  SET_CURRENT_THEME: (action: SetCurrentTheme, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      theme: action.theme,
+  SET_CURRENT_THEME: (action: SetCurrentTheme, userState: UserState): UserState => {
+    const updatedUserConfiguration: UserConfiguration = {
+      shortcutConfig: userState.shortcutConfig,
+      themeConfig: action.theme,
     }
+
+    // Side effect - update the setting in VS Code
+    void sendSetVSCodeTheme(action.theme)
+
+    // Side effect - store the setting on the server
+    void saveUserConfiguration(updatedUserConfiguration)
+
+    return { ...userState, ...updatedUserConfiguration }
   },
   FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
     return {
@@ -5008,6 +5108,11 @@ export const UPDATE_FNS = {
       forceNotNull('Should have a project ID at this point.', editor.id),
       persistentModel,
       dispatch,
+      {
+        branchName: action.branchName,
+        commitMessage: action.commitMessage,
+        assetChecksums: editor.assetChecksums,
+      },
     )
 
     return editor
@@ -5019,17 +5124,29 @@ export const UPDATE_FNS = {
       githubSettings.branchName != null &&
       githubSettings.originCommit != null
     ) {
-      const updatedProjectContents = mergeProjectContents(
+      const mergeResults = mergeProjectContents(
+        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,
       )
+      // If there are conflicts, then don't update the origin commit so we can try again.
+      const treeConflictsPresent = Object.keys(mergeResults.treeConflicts).length > 0
+      const newOriginCommit = treeConflictsPresent
+        ? githubSettings.originCommit
+        : action.latestCommit
+      const newPendingCommit = treeConflictsPresent ? action.latestCommit : null
       return {
         ...editor,
-        projectContents: updatedProjectContents,
+        projectContents: mergeResults.value,
         githubSettings: {
           ...githubSettings,
-          originCommit: action.latestCommit,
+          originCommit: newOriginCommit,
+          pendingCommit: newPendingCommit,
+        },
+        githubData: {
+          ...editor.githubData,
+          treeConflicts: mergeResults.treeConflicts,
         },
       }
     } else {

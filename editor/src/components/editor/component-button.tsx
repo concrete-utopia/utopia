@@ -66,12 +66,12 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       if (isComponent && !isFocused) {
         return {
           color: colorTheme.component.value,
-          backgroundColor: colorTheme.component.shade(10).value,
+          backgroundColor: colorTheme.canvasComponentButtonFocusable.value,
         }
       } else if (isFocused && isComponent) {
         return {
           color: colorTheme.componentChild.value,
-          backgroundColor: colorTheme.componentChild.shade(10).value,
+          backgroundColor: colorTheme.canvasComponentButtonFocused.value,
         }
       } else {
         return {

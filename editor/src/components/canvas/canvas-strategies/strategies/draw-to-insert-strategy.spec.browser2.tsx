@@ -23,6 +23,7 @@ import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { Direction } from '../../../inspector/common/css-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -103,7 +104,7 @@ function isIndicatorBeforeSiblingBBB(
 function isIndicatorBetweenSiblingsBBBCCC(
   metadata: ElementInstanceMetadataMap,
   reparentLine: CanvasRectangle,
-  flexDirection: 'row' | 'column',
+  flexDirection: Direction,
 ): boolean {
   const targetSiblingBefore = EP.fromString(
     `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
@@ -117,7 +118,7 @@ function isIndicatorBetweenSiblingsBBBCCC(
     return false
   } else {
     const prevSiblingEdge =
-      flexDirection === 'row'
+      flexDirection === 'horizontal'
         ? {
             x: prevSiblingFrame.x + prevSiblingFrame.width,
             y: prevSiblingFrame.y,
@@ -810,11 +811,11 @@ describe('Forced inserting into Static', () => {
 
     const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
+      y: targetElementBounds.y + 15,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 25,
-      y: targetElementBounds.y + 25,
+      y: targetElementBounds.y + 35,
     })
 
     // Move before starting dragging
@@ -885,11 +886,11 @@ describe('Forced inserting into Static', () => {
 
     const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
+      y: targetElementBounds.y + 15,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
       x: targetElementBounds.x + 25,
-      y: targetElementBounds.y + 25,
+      y: targetElementBounds.y + 35,
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -935,7 +936,7 @@ describe('Forced inserting into Static', () => {
               backgroundColor: '#0091FFAA',
               position: 'absolute',
               left: 5,
-              top: 5,
+              top: 15,
               width: 20,
               height: 20,
             }}
@@ -1182,7 +1183,7 @@ describe('Inserting into flex row', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'row',
+      'horizontal',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -1260,7 +1261,7 @@ describe('Inserting into flex row', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'row',
+      'horizontal',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -1345,7 +1346,7 @@ describe('Inserting into flex row', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'row',
+      'horizontal',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -1946,7 +1947,7 @@ describe('Inserting into flex column', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'column',
+      'vertical',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -2027,7 +2028,7 @@ describe('Inserting into flex column', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'column',
+      'vertical',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -2112,7 +2113,7 @@ describe('Inserting into flex column', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
-      'column',
+      'vertical',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 

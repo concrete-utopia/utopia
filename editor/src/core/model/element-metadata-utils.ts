@@ -99,6 +99,11 @@ import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import {
+  Direction,
+  FlexDirection,
+  ForwardOrReverse,
+} from '../../components/inspector/common/css-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -257,11 +262,11 @@ export const MetadataUtils = {
       return false
     }
     return (
-      MetadataUtils.isParentYogaLayoutedContainerForElement(element) &&
+      MetadataUtils.isParentFlexLayoutedContainerForElement(element) &&
       !MetadataUtils.isPositionAbsolute(element)
     )
   },
-  isParentYogaLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
+  isParentFlexLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
     return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
@@ -286,6 +291,27 @@ export const MetadataUtils = {
     const participatesInFlow =
       position === 'relative' || position === 'static' || position === 'sticky'
     return containerLayoutSystem === 'flow' && participatesInFlow
+  },
+  elementParticipatesInAutoLayout(element: ElementInstanceMetadata | null): boolean {
+    // this contains the ruleset about style properties that make an element autolayouted
+    // TODO extend with transform: translate, relative offset etc.
+    return !MetadataUtils.isPositionAbsolute(element)
+  },
+  targetParticipatesInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
+    return MetadataUtils.elementParticipatesInAutoLayout(
+      MetadataUtils.findElementByElementPath(elements, target),
+    )
+  },
+  getChildrenParticipatingInAutoLayout(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return MetadataUtils.getChildren(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
@@ -386,8 +412,51 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
+  },
+  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): {
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
+  } {
+    return MetadataUtils.flexDirectionToSimpleFlexDirection(
+      MetadataUtils.getFlexDirection(instance),
+    )
+  },
+  flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
+    direction: Direction
+    forwardOrReverse: ForwardOrReverse
+  } {
+    const direction: Direction = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'row-reverse':
+          return 'horizontal'
+        case 'column':
+        case 'column-reverse':
+          return 'vertical'
+        default:
+          return 'horizontal'
+      }
+    })()
+
+    const forwardOrReverse: ForwardOrReverse = (() => {
+      switch (flexDirection) {
+        case 'row':
+        case 'column':
+          return 'forward'
+        case 'row-reverse':
+        case 'column-reverse':
+          return 'reverse'
+        default:
+          return 'forward'
+      }
+    })()
+
+    return {
+      direction: direction,
+      forwardOrReverse: forwardOrReverse,
+    }
   },
   getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)

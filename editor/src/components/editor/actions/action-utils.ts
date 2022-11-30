@@ -43,6 +43,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEW':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
+    case 'SET_HOVERED_VIEW':
+    case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
@@ -90,6 +92,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONFIG_FROM_VSCODE':
     case 'SET_LOGIN_STATE':
     case 'SET_GITHUB_STATE':
+    case 'SET_USER_CONFIGURATION':
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
@@ -117,8 +120,11 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_SELECTION_LOCK':
     case 'SAVE_TO_GITHUB':
     case 'UPDATE_GITHUB_OPERATIONS':
+    case 'SET_REFRESHING_DEPENDENCIES':
     case 'UPDATE_GITHUB_CHECKSUMS':
     case 'UPDATE_GITHUB_DATA':
+    case 'REMOVE_FILE_CONFLICT':
+    case 'SET_ASSET_CHECKSUM':
       return true
 
     case 'NEW':

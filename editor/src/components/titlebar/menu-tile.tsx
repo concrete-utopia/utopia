@@ -32,8 +32,8 @@ const MenuTileBadge = ({ text }: { text: string }) => {
   )
 }
 
-interface TileProps {
-  size: keyof typeof UtopiaTheme.layout.rowHeight
+export interface TileProps {
+  size: 'smaller' | 'normal' | 'large' | 'max'
 }
 
 const Tile = styled.div<TileProps>((props) => ({
@@ -47,7 +47,6 @@ const Tile = styled.div<TileProps>((props) => ({
 export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, TileProps {
   selected: boolean
   icon: React.ReactElement<IcnProps>
-  size: keyof typeof UtopiaTheme.layout.rowHeight
   badge?: string
 }
 
@@ -97,7 +96,7 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
         {React.cloneElement(props.icon, {
           color: props.selected ? 'primary' : 'secondary',
         })}
-        {props.badge && <MenuTileBadge text={props.badge} />}
+        {props.badge != null && <MenuTileBadge text={props.badge} />}
       </div>
     </Tile>
   )

@@ -303,10 +303,10 @@ innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   getUserConfigurationWithDBPool metrics pool user action
-innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
+innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig possibleTheme action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig possibleTheme
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -338,7 +338,7 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
-innerServerExecutor (SaveToGithubRepo user projectID model action) = do
+innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
   possibleGithubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
@@ -347,7 +347,7 @@ innerServerExecutor (SaveToGithubRepo user projectID model action) = do
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID model
+      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID possibleBranchName possibleCommitMessage model
       pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
   possibleGithubResources <- fmap _githubResources ask
@@ -359,7 +359,7 @@ innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = d
     Just githubResources -> do
       result <- getGithubBranches githubResources logger metrics pool user owner repository
       pure $ action result
-innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha action) = do
+innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -367,7 +367,7 @@ innerServerExecutor (GetBranchContent user owner repository branchName possibleC
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha
+      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
       pure $ action result
 innerServerExecutor (GetUsersRepositories user action) = do
   possibleGithubResources <- fmap _githubResources ask
@@ -378,6 +378,37 @@ innerServerExecutor (GetUsersRepositories user action) = do
     Nothing -> throwError err501
     Just githubResources -> do
       result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+      pure $ action result
+innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  awsResource <- fmap _awsResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- saveGithubAssetToProject githubResources awsResource logger metrics pool user owner repository assetSha projectID assetPath
+      pure $ action result
+innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
+      pure $ action result
+innerServerExecutor (GetGithubUserDetails user action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getDetailsOfGithubUser githubResources logger metrics pool user
       pure $ action result
 
 {-|

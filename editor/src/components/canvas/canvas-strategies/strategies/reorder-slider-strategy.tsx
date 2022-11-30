@@ -37,16 +37,14 @@ export function reorderSliderStategy(
     target,
   )
   const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target)
-  const isFlexMultilineLayout =
+  const isAutoLayouted =
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       canvasState.startingMetadata,
-    ) && !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
+    ) || MetadataUtils.isPositionedByFlow(elementMetadata)
+  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
 
-  if (
-    siblings.length <= 1 ||
-    (!MetadataUtils.isPositionedByFlow(elementMetadata) && !isFlexMultilineLayout)
-  ) {
+  if (siblings.length <= 1 || !isAutoLayouted || is1dLayout) {
     return null
   }
 
@@ -77,7 +75,7 @@ export function reorderSliderStategy(
 
         if (!isReorderAllowed(siblingsOfTarget)) {
           return strategyApplicationResult(
-            [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+            [setCursorCommand(CSSCursor.NotPermitted)],
             {},
             'failure',
           )
@@ -105,7 +103,7 @@ export function reorderSliderStategy(
                 canvasState.interactionTarget,
                 canvasState.startingMetadata,
               ),
-              setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+              setCursorCommand(CSSCursor.ResizeEW),
             ],
             {
               lastReorderIdx: newIndex,
@@ -113,9 +111,7 @@ export function reorderSliderStategy(
           )
         } else {
           // Fallback for when the checks above are not satisfied.
-          return strategyApplicationResult([
-            setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
-          ])
+          return strategyApplicationResult([setCursorCommand(CSSCursor.ResizeEW)])
         }
       } else {
         return emptyStrategyApplicationResult

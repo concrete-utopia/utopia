@@ -4,7 +4,6 @@ import fastDeepEqual from 'fast-deep-equal'
 import { Property } from 'csstype'
 import {
   FlexAlignment,
-  FlexDirection,
   FlexJustifyContent,
   FlexLength,
   FlexWrap,
@@ -3426,6 +3425,8 @@ export type CSSFontSize = CSSNumber
 
 export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | 'end'
 
+export type CSSDirection = 'ltr' | 'rtl'
+
 export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
@@ -3610,6 +3611,8 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
   'start',
   'end',
 ])
+
+export const parseDirection = isOneOfTheseParser<CSSDirection>(['ltr', 'rtl'])
 
 function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
   return jsxAttributeValue(cssTextAlign, emptyComments)
@@ -3964,11 +3967,16 @@ const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.WrapReverse,
 ])
 
-const flexDirectionParser: Parser<FlexDirection> = isOneOfTheseParser([
-  FlexDirection.Column,
-  FlexDirection.ColumnReverse,
-  FlexDirection.Row,
-  FlexDirection.RowReverse,
+export type Direction = 'horizontal' | 'vertical'
+export type ForwardOrReverse = 'forward' | 'reverse'
+
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
+
+export const parseFlexDirection: Parser<FlexDirection> = isOneOfTheseParser([
+  'row',
+  'row-reverse',
+  'column',
+  'column-reverse',
 ])
 
 const flexAlignmentsParser: Parser<FlexAlignment> = isOneOfTheseParser([
@@ -4033,6 +4041,10 @@ export interface ParsedCSSProperties {
   backgroundSize: CSSBackgroundSize
   border: CSSBorder
   borderRadius: CSSBorderRadius
+  borderTopLeftRadius: CSSNumber
+  borderTopRightRadius: CSSNumber
+  borderBottomLeftRadius: CSSNumber
+  borderBottomRightRadius: CSSNumber
   boxShadow: CSSBoxShadows
   color: CSSColor
   fontFamily: CSSFontFamily
@@ -4118,6 +4130,22 @@ export const cssEmptyValues: ParsedCSSProperties = {
       unit: 'px',
     },
   },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
   boxShadow: [],
   color: {
     type: 'Hex',
@@ -4155,7 +4183,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
   objectFit: 'fill',
 
   flexWrap: FlexWrap.NoWrap,
-  flexDirection: FlexDirection.Row,
+  flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
@@ -4288,6 +4316,10 @@ export const cssParsers: CSSParsers = {
   backgroundSize: parseBackgroundSize,
   border: parseBorder,
   borderRadius: parseBorderRadius,
+  borderTopLeftRadius: parseCSSLengthPercent,
+  borderTopRightRadius: parseCSSLengthPercent,
+  borderBottomLeftRadius: parseCSSLengthPercent,
+  borderBottomRightRadius: parseCSSLengthPercent,
   boxShadow: parseBoxShadow,
   color: parseColorHexHashOptional,
   fontFamily: parseFontFamily,
@@ -4310,7 +4342,7 @@ export const cssParsers: CSSParsers = {
   objectFit: parseCSSObjectFit,
 
   flexWrap: flexWrapParser,
-  flexDirection: flexDirectionParser,
+  flexDirection: parseFlexDirection,
   alignItems: flexAlignmentsParser,
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
@@ -4358,6 +4390,10 @@ const cssPrinters: CSSPrinters = {
   mixBlendMode: printMixBlendMode,
   border: printBorder,
   borderRadius: printBorderRadius,
+  borderTopLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderTopRightRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomLeftRadius: printCSSNumberAsAttributeValue('px'),
+  borderBottomRightRadius: printCSSNumberAsAttributeValue('px'),
   boxShadow: printBoxShadow,
   color: printColorToJsx,
   fontFamily: printFontFamily,
@@ -4411,7 +4447,7 @@ const cssPrinters: CSSPrinters = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  gap: jsxAttributeValueWithNoComments,
+  gap: printCSSNumberAsAttributeValue('px'),
 }
 
 export interface UtopianElementProperties {
@@ -4795,7 +4831,7 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
     try {
       return parserMap[prop](maybeValue, maybeRawValue)
     } catch (e) {
-      return left(`Failed to parse value for property ${prop}: ${e}`)
+      return left(`Failed to parse value for property ${JSON.stringify(prop)}: ${e}`)
     }
   }
 }
@@ -4978,6 +5014,22 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
       unit: 'px',
     },
   },
+  borderTopLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderTopRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomLeftRadius: {
+    value: 0,
+    unit: 'px',
+  },
+  borderBottomRightRadius: {
+    value: 0,
+    unit: 'px',
+  },
   boxShadow: [],
   color: nontrivial,
   fontFamily: nontrivial,
@@ -5003,7 +5055,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   objectFit: 'fill',
 
   flexWrap: FlexWrap.NoWrap,
-  flexDirection: FlexDirection.Row,
+  flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
@@ -5091,8 +5143,10 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   height: undefined,
   gapMain: { value: 0, unit: null },
   flexBasis: undefined,
-
-  gap: { value: 0, unit: null },
+  gap: {
+    value: 0,
+    unit: 'px',
+  },
 }
 
 export function isTrivialDefaultValue(

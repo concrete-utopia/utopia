@@ -1,6 +1,7 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
 import { useEditorState } from '../editor/store/store-hook'
+import { colorTheme } from '../../uuiui'
 
 const SampleCode = [
   {
@@ -122,8 +123,13 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
             animation-fill-mode: forwards;
             animation-iteration-count: infinite;
             animation-timing-function: linear;
-            background: #f6f6f6;
-            background: linear-gradient(to right, #f6f6f6 8%, #f0f0f0 18%, #f6f6f6 33%);
+            background: ${colorTheme.codeEditorShimmerPrimary.value};
+            background: linear-gradient(
+              to right,
+              ${colorTheme.codeEditorShimmerPrimary.value} 8%,
+              ${colorTheme.codeEditorShimmerSecondary.value} 18%,
+              ${colorTheme.codeEditorShimmerPrimary.value} 33%
+            );
             background-size: 800px 104px;
             position: relative;
           }
@@ -135,15 +141,15 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
           display: 'flex',
           alignItems: 'flex-end',
           height: 35,
-          background: '#f3f3f3',
+          background: colorTheme.codeEditorTabRowBg.value,
         }}
       >
         {/* single tab */}
         <div
           style={{
-            background: '#FAFAFA',
-            color: 'rgb(51,51,51)',
-            borderRight: '1px solid rgb(243, 243, 243)',
+            background: colorTheme.codeEditorTabSelectedBG.value,
+            color: colorTheme.codeEditorTabSelectedFG.value,
+            borderRight: `1px solid ${colorTheme.codeEditorTabSelectedBorder.value}`,
             height: 35,
             display: 'flex',
             alignItems: 'center',
@@ -152,7 +158,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
             width: 140,
           }}
         >
-          <div style={{ color: '#b7b73b', display: 'flex' }}>
+          <div style={{ color: colorTheme.jsYellow.value, display: 'flex' }}>
             <JSIcon />
           </div>
           <span style={{}}>storyboard.js</span>
@@ -166,7 +172,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
           height: 22,
           display: 'flex',
           alignItems: 'center',
-          color: '#888',
+          color: colorTheme.codeEditorBreadcrumbs.value,
         }}
       >
         <div
@@ -189,7 +195,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
           >
             <div className='monaco-icon-label-container' title='~/utopia'>
               <span className='monaco-icon-name-container'>
-                <a style={{ color: 'rgba(97, 97, 97, 0.8)' }} className='label-name'>
+                <a style={{ color: colorTheme.codeEditorTabRowFg.value }} className='label-name'>
                   utopia
                 </a>
               </span>
@@ -220,12 +226,12 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
               justifyContent: 'center',
             }}
           >
-            <div style={{ color: '#b7b73b', display: 'flex', paddingRight: 4 }}>
+            <div style={{ color: colorTheme.jsYellow.value, display: 'flex', paddingRight: 4 }}>
               <JSIcon />
             </div>
             <div className='monaco-icon-label-container' title='~/utopia/storyboard.js'>
               <span className='monaco-icon-name-container'>
-                <a style={{ color: 'rgba(97, 97, 97, 0.8)' }} className='label-name'>
+                <a style={{ color: colorTheme.codeEditorTabRowFg.value }} className='label-name'>
                   storyboard.js
                 </a>
               </span>
@@ -245,7 +251,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
           gridTemplateRows: 'repeat(12, 18px)',
           alignItems: 'center',
           fontSize: 12,
-          color: '#6d705b',
+          color: colorTheme.codeEditorGrid.value,
           fontFamily: 'Menlo, Monaco, "Courier New", monospace',
         }}
       >

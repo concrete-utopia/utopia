@@ -3,10 +3,11 @@ import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/m
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
@@ -15,12 +16,21 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { PaddingMeasurement, simplePaddingFromMetadata } from '../../padding-utils'
+import {
+  combinePaddings,
+  paddingFromSpecialSizeMeasurements,
+  PaddingIndictorOffset,
+  simplePaddingFromMetadata,
+} from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { PaddingValueLabel } from './padding-value-indicator'
-import { useMaybeHighlightElement } from './select-mode-hooks'
+import {
+  CanvasLabel,
+  CSSNumberWithRenderedValue,
+  PillHandle,
+  useHoverWithDelay,
+} from './controls-common'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -33,7 +43,7 @@ type Orientation = 'vertical' | 'horizontal'
 interface ResizeContolProps {
   edge: EdgePiece
   hiddenByParent: boolean
-  paddingValue: PaddingMeasurement
+  paddingValue: CSSNumberWithRenderedValue
 }
 
 function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size {
@@ -49,14 +59,11 @@ function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size 
 
 export const PaddingResizeControlHoverTimeout: number = 200
 
-type Timeout = ReturnType<typeof setTimeout>
-
-const PaddingResizeControlWidth = 2
+const PaddingResizeControlWidth = 4
 const PaddingResizeControlHeight = 12
-const PaddingResizeControlBorder = 0.5
+const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 10
-const PaddingIndicatorOffset = 10
 
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
@@ -78,7 +85,6 @@ const PaddingResizeControlI = React.memo(
     )
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
 
     const colorTheme = useColorTheme()
@@ -111,31 +117,22 @@ const PaddingResizeControlI = React.memo(
 
     const onMouseUp = React.useCallback(() => setHidden(false), [])
 
-    const onMouseMove = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        maybeClearHighlightsOnHoverEnd()
-        event.stopPropagation()
-      },
-      [maybeClearHighlightsOnHoverEnd],
-    )
-
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = !(props.hiddenByParent && hidden)
+    const shown = !isDragging && !(props.hiddenByParent && hidden)
 
     const { width, height } = sizeFromOrientation(
       orientation,
       size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
     )
 
-    const [hitAreaWidth, borderWidth, dragBorderWidth, paddingIndicatorOffset] = [
+    const [hitAreaWidth, borderWidth, dragBorderWidth] = [
       PaddingResizeControlHitAreaWidth,
       PaddingResizeControlBorder,
       PaddingResizeDragBorder,
-      PaddingIndicatorOffset,
     ].map((v) => v / scale)
 
-    const stripeColor = colorTheme.brandNeonPink.o(50).value
+    const stripeColor = colorTheme.brandNeonPink.value
     const color = colorTheme.brandNeonPink.value
 
     return (
@@ -144,51 +141,47 @@ const PaddingResizeControlI = React.memo(
         ref={ref}
         data-testid={paddingControlTestId(props.edge)}
         style={{
+          pointerEvents: 'all',
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundImage: hidden
-            ? undefined
-            : `linear-gradient(135deg, ${stripeColor} 12.5%, rgba(255,255,255,0) 12.5%, rgba(255,255,255,0) 50%, ${stripeColor} 50%, ${stripeColor} 62%, rgba(255,255,255,0) 62%, rgba(255,255,255,0) 100%)`,
-          backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
           border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
+          ...(hidden ? {} : UtopiaStyles.backgrounds.stripedBackground(stripeColor, scale)),
         }}
       >
         <div
           data-testid={paddingControlHandleTestId(props.edge)}
           onMouseDown={onEdgeMouseDown}
-          onMouseMove={onMouseMove}
           onMouseEnter={hoverStart}
           onMouseLeave={hoverEnd}
           onMouseUp={onMouseUp}
           style={{
+            pointerEvents: 'all',
             visibility: shown ? 'visible' : 'hidden',
             position: 'absolute',
             padding: hitAreaWidth,
             cursor: cursor,
+            zIndex: 1,
           }}
         >
           {!isDragging && indicatorShown && (
             <div
               style={{
                 position: 'absolute',
-                paddingTop: paddingIndicatorOffset,
-                paddingLeft: paddingIndicatorOffset,
+                paddingTop: PaddingIndictorOffset(scale),
+                paddingLeft: PaddingIndictorOffset(scale),
               }}
             >
-              <PaddingValueLabel value={props.paddingValue.value} scale={scale} color={color} />
+              <CanvasLabel
+                value={printCSSNumber(props.paddingValue.value, null)}
+                scale={scale}
+                color={color}
+                textColor={colorTheme.white.value}
+              />
             </div>
           )}
-          <div
-            style={{
-              boxSizing: 'border-box',
-              width: width,
-              height: height,
-              backgroundColor: color,
-              border: `${borderWidth}px solid rgba(255, 255, 255)`,
-            }}
-          />
+          <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
         </div>
       </div>
     )
@@ -202,6 +195,11 @@ interface PaddingControlProps {
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
   const selectedElements = props.targets
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const hoveredViews = useEditorState(
+    (store) => store.editor.hoveredViews,
+    'PaddingResizeControl hoveredViews',
+  )
 
   const numberToPxValue = (n: number) => n + 'px'
 
@@ -217,52 +215,65 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   })
 
-  const currentPadding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const [hoverHidden, setHoverHidden] = React.useState<boolean>(false)
+  React.useEffect(() => {
+    const timeoutHandle = timeoutRef.current
+    const shouldBeShown = hoveredViews.includes(selectedElements[0])
+    if (timeoutHandle != null) {
+      clearTimeout(timeoutHandle)
+    }
+    if (shouldBeShown) {
+      timeoutRef.current = setTimeout(() => setHoverHidden(false), PaddingResizeControlHoverTimeout)
+    } else {
+      setHoverHidden(true)
+    }
+  }, [hoveredViews, selectedElements])
+
+  const currentPadding = combinePaddings(
+    paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElements[0]),
+    simplePaddingFromMetadata(elementMetadata.current, selectedElements[0]),
+  )
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingLeft.renderedValuePx)
+    ref.current.style.width = numberToPxValue(padding.paddingLeft?.renderedValuePx ?? 0)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingTop.renderedValuePx)
+    ref.current.style.height = numberToPxValue(padding.paddingTop?.renderedValuePx ?? 0)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.left = numberToPxValue(
-      boundingBox.width - padding.paddingRight.renderedValuePx,
+      boundingBox.width - (padding.paddingRight?.renderedValuePx ?? 0),
     )
     ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingRight.renderedValuePx)
+    ref.current.style.width = numberToPxValue(padding.paddingRight?.renderedValuePx ?? 0)
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.top = numberToPxValue(
-      boundingBox.height - padding.paddingBottom.renderedValuePx,
+      boundingBox.height - (padding.paddingBottom?.renderedValuePx ?? 0),
     )
     ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingBottom.renderedValuePx)
+    ref.current.style.height = numberToPxValue(padding.paddingBottom?.renderedValuePx ?? 0)
   })
-
-  const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(PaddingResizeControlHoverTimeout, (h) =>
-    setHoverHidden(!h),
-  )
 
   return (
     <CanvasOffsetWrapper>
       <div
         data-testid={PaddingResizeControlContainerTestId}
-        onMouseEnter={hoverStart}
-        onMouseLeave={hoverEnd}
         ref={controlRef}
         style={{
           position: 'absolute',
+          pointerEvents: 'none',
         }}
       >
         <PaddingResizeControlI
@@ -301,8 +312,8 @@ function startResizeInteraction(
   canvasOffset: CanvasVector,
   scale: number,
 ) {
-  event.stopPropagation()
   if (event.buttons === 1 && event.button !== 2) {
+    event.stopPropagation()
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,
@@ -318,27 +329,6 @@ function startResizeInteraction(
       ),
     ])
   }
-}
-
-function useHoverWithDelay(
-  delay: number,
-  update: (hovered: boolean) => void,
-): [React.MouseEventHandler, React.MouseEventHandler] {
-  const fadeInTimeout = React.useRef<Timeout | null>(null)
-
-  const onHoverEnd = () => {
-    if (fadeInTimeout.current) {
-      clearTimeout(fadeInTimeout.current)
-    }
-    fadeInTimeout.current = null
-    update(false)
-  }
-
-  const onHoverStart = () => {
-    fadeInTimeout.current = setTimeout(() => update(true), delay)
-  }
-
-  return [onHoverStart, onHoverEnd]
 }
 
 function edgePieceDerivedProps(edgePiece: EdgePiece): {

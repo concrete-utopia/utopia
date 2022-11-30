@@ -130,7 +130,7 @@ export function flexResizeBasicStrategy(
             return emptyStrategyApplicationResult
           }
 
-          if (!metadata) {
+          if (metadata == null) {
             return emptyStrategyApplicationResult
           }
 
@@ -194,13 +194,13 @@ export function flexResizeBasicStrategy(
           return strategyApplicationResult([
             ...resizeCommands,
             updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
           ])
         } else {
           return strategyApplicationResult([
             updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
           ])
         }
       }

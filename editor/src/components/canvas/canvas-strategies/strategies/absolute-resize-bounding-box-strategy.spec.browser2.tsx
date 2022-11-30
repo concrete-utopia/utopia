@@ -234,10 +234,17 @@ export const App2 = (props) => {
 
 export var App = (props) => {
   return (
-    <App2
-      data-uid='app2'
-      style={{ left: 20, top: 20, width: ${width}, height: ${height} }}
-    />
+    <div data-uid='app-root'>
+      <App2
+        data-uid='app2'
+        style={{
+          left: 20,
+          top: 20,
+          width: ${width},
+          height: ${height},
+        }}
+      />
+    </div>
   )
 }
 
@@ -263,7 +270,7 @@ describe('Absolute Resize Strategy', () => {
       'await-first-dom-report',
     )
 
-    const target = EP.appendNewElementPath(TestScenePath, ['app2'])
+    const target = EP.appendNewElementPath(TestScenePath, ['app-root', 'app2'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
@@ -955,7 +962,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
+    await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')

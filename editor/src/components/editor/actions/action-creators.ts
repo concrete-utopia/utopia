@@ -215,6 +215,12 @@ import type {
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
+  RemoveFileConflict,
+  SetRefreshingDependencies,
+  SetUserConfiguration,
+  SetHoveredView,
+  ClearHoveredViews,
+  SetAssetChecksum,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -231,8 +237,9 @@ import type {
   RightMenuTab,
   Theme,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
+  UserConfiguration,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -302,10 +309,14 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   }
 }
 
-export function transientActions(actions: Array<EditorAction>): TransientActions {
+export function transientActions(
+  actions: Array<EditorAction>,
+  elementsToRerender: Array<ElementPath> | null = null,
+): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
+    elementsToRerender: elementsToRerender,
   }
 }
 
@@ -537,9 +548,22 @@ export function setHighlightedView(target: ElementPath): SetHighlightedView {
   }
 }
 
+export function setHoveredView(target: ElementPath): SetHoveredView {
+  return {
+    action: 'SET_HOVERED_VIEW',
+    target: target,
+  }
+}
+
 export function clearHighlightedViews(): ClearHighlightedViews {
   return {
     action: 'CLEAR_HIGHLIGHTED_VIEWS',
+  }
+}
+
+export function clearHoveredViews(): ClearHoveredViews {
+  return {
+    action: 'CLEAR_HOVERED_VIEWS',
   }
 }
 
@@ -991,17 +1015,25 @@ export function updateBranchContents(
   }
 }
 
-export function updateGithubSettings(settings: ProjectGithubSettings): UpdateGithubSettings {
+export function updateGithubSettings(
+  settings: Partial<ProjectGithubSettings>,
+): UpdateGithubSettings {
   return {
     action: 'UPDATE_GITHUB_SETTINGS',
     settings: settings,
   }
 }
-
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
     data: data,
+  }
+}
+
+export function removeFileConflict(path: string): RemoveFileConflict {
+  return {
+    action: 'REMOVE_FILE_CONFLICT',
+    path: path,
   }
 }
 
@@ -1450,6 +1482,13 @@ export function setGithubState(githubState: GithubState): SetGithubState {
   }
 }
 
+export function setUserConfiguration(userConfiguration: UserConfiguration): SetUserConfiguration {
+  return {
+    action: 'SET_USER_CONFIGURATION',
+    userConfiguration: userConfiguration,
+  }
+}
+
 export type GithubOperationType = 'add' | 'remove'
 
 export function updateGithubOperations(
@@ -1463,10 +1502,25 @@ export function updateGithubOperations(
   }
 }
 
-export function updateGithubChecksums(checksums: GithubChecksums): UpdateGithubChecksums {
+export function setRefreshingDependencies(value: boolean): SetRefreshingDependencies {
+  return {
+    action: 'SET_REFRESHING_DEPENDENCIES',
+    value: value,
+  }
+}
+
+export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,
+  }
+}
+
+export function setAssetChecksum(filename: string, checksum: string | null): SetAssetChecksum {
+  return {
+    action: 'SET_ASSET_CHECKSUM',
+    filename: filename,
+    checksum: checksum,
   }
 }
 
@@ -1601,10 +1655,16 @@ export function toggleSelectionLock(
   }
 }
 
-export function saveToGithub(targetRepository: GithubRepo): SaveToGithub {
+export function saveToGithub(
+  targetRepository: GithubRepo,
+  branchName: string,
+  commitMessage: string,
+): SaveToGithub {
   return {
     action: 'SAVE_TO_GITHUB',
     targetRepository: targetRepository,
+    branchName: branchName,
+    commitMessage: commitMessage,
   }
 }
 

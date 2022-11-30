@@ -39,11 +39,11 @@ export const DependencyListItem: React.FunctionComponent<
     () =>
       keyframes({
         from: {
-          backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
+          backgroundColor: colorTheme.listNewItemFlashBackground.value,
           color: colorTheme.subduedForeground.value,
         },
         to: {
-          backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
+          backgroundColor: colorTheme.listNewItemFlashBackground0.value,
           color: colorTheme.neutralForeground.value,
         },
       }),
@@ -177,8 +177,8 @@ export const DependencyListItem: React.FunctionComponent<
             <Tooltip title='Dependency is required for Utopian projects'>
               <FlexRow
                 css={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                  boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.05)',
+                  backgroundColor: colorTheme.canvasControlsSizeBoxShadowColor50.value,
+                  boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
                   borderRadius: 2,
                   height: 14,
                   padding: '0 3px',

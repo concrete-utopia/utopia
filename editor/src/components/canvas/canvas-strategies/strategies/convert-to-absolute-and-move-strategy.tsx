@@ -48,6 +48,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -92,7 +93,9 @@ export function convertToAbsoluteAndMoveStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? 0.5
+        ? interactionSession.interactionData.spacePressed
+          ? 5
+          : 0.5
         : 0,
     apply: () => {
       if (
@@ -119,7 +122,25 @@ export function convertToAbsoluteAndMoveStrategy(
           getConversionAndMoveCommands,
         )
 
-        return strategyApplicationResult(absoluteMoveApplyResult.commands)
+        const strategyIndicatorCommand = wildcardPatch('mid-interaction', {
+          canvas: {
+            controls: {
+              dragToMoveIndicatorFlags: {
+                $set: {
+                  showIndicator: true,
+                  dragType: 'absolute',
+                  reparent: 'none',
+                  ancestor: false,
+                },
+              },
+            },
+          },
+        })
+
+        return strategyApplicationResult([
+          ...absoluteMoveApplyResult.commands,
+          strategyIndicatorCommand,
+        ])
       }
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult

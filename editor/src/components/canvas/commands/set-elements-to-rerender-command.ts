@@ -1,6 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import { EditorState, EditorStatePatch, ElementsToRerender } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { BaseCommand, CommandFunction } from './commands'
 
 export interface SetElementsToRerenderCommand extends BaseCommand {
   type: 'SET_ELEMENTS_TO_RERENDER_COMMAND'
@@ -10,10 +10,11 @@ export interface SetElementsToRerenderCommand extends BaseCommand {
 export function setElementsToRerenderCommand(
   value: ElementsToRerender,
 ): SetElementsToRerenderCommand {
+  const uniqueValues = value === 'rerender-all-elements' ? value : EP.uniqueElementPaths(value)
   return {
     type: 'SET_ELEMENTS_TO_RERENDER_COMMAND',
     whenToRun: 'mid-interaction',
-    value: value,
+    value: uniqueValues,
   }
 }
 

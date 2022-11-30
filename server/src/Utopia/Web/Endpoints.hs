@@ -22,6 +22,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
 import           Data.Generics.Product
+import           Data.Generics.Sum
 import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
@@ -377,17 +378,12 @@ projectChangedSince projectID lastChangedDate = do
 
 downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad DownloadProjectResponse
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
-  possibleContent <- runMaybeT $ do
-    project <- MaybeT $ loadProject projectID
-    projectContents <- MaybeT $ pure $ firstOf (field @"content" . key "projectContents") project
-    decodedProjectContents <- MaybeT $ pure $ case fromJSON projectContents of
-                                Error _        -> Nothing
-                                Success result -> Just result
-    contentAsJSON <- if null pathIntoContent
-                     then pure projectContents
-                     else MaybeT $ pure $ fmap toJSON $ getProjectContentsTreeFile decodedProjectContents pathIntoContent
-    pure $ pure $ addHeader "*" contentAsJSON
-  fromMaybe notFound possibleContent
+  possibleProject <- loadProject projectID
+  let contentLookup = foldl' (\ lensSoFar pathPart -> lensSoFar . key pathPart) (field @"content") pathIntoContent
+  fromMaybe notFound $ do
+    project <- possibleProject
+    contentFromLookup <- firstOf contentLookup project
+    pure $ pure $ addHeader "*" contentFromLookup
 
 loadProjectEndpoint :: ProjectIdWithSuffix -> Maybe UTCTime -> ServerMonad LoadProjectResponse
 loadProjectEndpoint projectID Nothing = actuallyLoadProject projectID
@@ -635,10 +631,10 @@ packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
   pure $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 emptyUserConfigurationResponse :: UserConfigurationResponse
-emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
+emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing, _themeConfig = Nothing }
 
 decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
-decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf }
+decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf, _themeConfig = view (field @"theme") userConf }
 
 getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse
 getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
@@ -647,7 +643,7 @@ getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
 
 saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
 saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
-  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig
+  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig _themeConfig
   return NoContent
 
 githubStartAuthenticationEndpoint :: Maybe Text -> ServerMonad H.Html
@@ -670,21 +666,44 @@ githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
   possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
   pure $ isJust possibleAuthDetails
 
-githubSaveEndpoint :: Maybe Text -> Text -> PersistentModel -> ServerMonad SaveToGithubResponse
-githubSaveEndpoint cookie projectID persistentModel = requireUser cookie $ \sessionUser -> do
-  saveToGithubRepo (view (field @"_id") sessionUser) projectID persistentModel
+githubSaveEndpoint :: Maybe Text -> Text -> Maybe Text -> Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
+githubSaveEndpoint cookie projectID possibleBranchName possibleCommitMessage persistentModel = requireUser cookie $ \sessionUser -> do
+  saveToGithubRepo (view (field @"_id") sessionUser) projectID possibleBranchName possibleCommitMessage persistentModel
 
 getGithubBranchesEndpoint :: Maybe Text -> Text -> Text -> ServerMonad GetBranchesResponse
 getGithubBranchesEndpoint cookie owner repository = requireUser cookie $ \sessionUser -> do
   getBranchesFromGithubRepo (view (field @"_id") sessionUser) owner repository
 
-getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> ServerMonad GetBranchContentResponse
-getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha = requireUser cookie $ \sessionUser -> do
-  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha
+getGithubBranchContentEndpoint :: Maybe Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> ServerMonad GetBranchContentResponse
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha Nothing = requireUser cookie $ \sessionUser -> do
+  -- No previous commit SHA was supplied.
+  getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha Nothing
+getGithubBranchContentEndpoint cookie owner repository branchName possibleCommitSha justPreviousCommitSha@(Just _) = requireUser cookie $ \sessionUser -> do
+  -- A previous commit SHA was supplied, which may mean we want to return a 304.
+  contentResponse <- getBranchContent (view (field @"_id") sessionUser) owner repository branchName possibleCommitSha justPreviousCommitSha
+  -- Check the previous commit SHA against the newly returned content.
+  let possibleNewCommitSha = firstOf (_Ctor @"GetBranchContentResponseSuccess" . field @"branch" . _Just . field @"originCommit") contentResponse
+  -- Return a 304 if the commits match.
+  if possibleNewCommitSha == justPreviousCommitSha
+    then notModified
+    else pure contentResponse
 
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do
-  getUsersRepositories (view (field @"_id") sessionUser) 
+  getUsersRepositories (view (field @"_id") sessionUser)
+
+saveGithubAssetEndpoint :: Maybe Text -> Text -> Text -> Text -> Text -> Text -> ServerMonad GithubSaveAssetResponse
+saveGithubAssetEndpoint cookie owner repository assetSha projectId fullPath = requireUser cookie $ \sessionUser -> do
+  let splitPath = drop 1 $ T.splitOn "/" fullPath
+  saveGithubAsset (view (field @"_id") sessionUser) owner repository assetSha projectId splitPath
+
+getGithubBranchPullRequestEndpoint :: Maybe Text -> Text -> Text -> Text -> ServerMonad GetBranchPullRequestResponse
+getGithubBranchPullRequestEndpoint cookie owner repository branchName = requireUser cookie $ \sessionUser -> do
+  getPullRequestForBranch (view (field @"_id") sessionUser) owner repository branchName
+
+getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
+getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  getGithubUserDetails (view (field @"_id") sessionUser)
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
@@ -711,7 +730,10 @@ protected authCookie = logoutPage authCookie
                   :<|> githubSaveEndpoint authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> getGithubBranchPullRequestEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
+                  :<|> saveGithubAssetEndpoint authCookie
+                  :<|> getGithubUserEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

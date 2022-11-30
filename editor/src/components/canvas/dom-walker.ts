@@ -19,7 +19,13 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, isRight, left } from '../../core/shared/either'
+import {
+  applicative4Either,
+  defaultEither,
+  isRight,
+  left,
+  eitherToMaybe,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -40,6 +46,8 @@ import {
   CSSPosition,
   positionValues,
   computedStyleKeys,
+  parseDirection,
+  parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -58,8 +66,7 @@ import {
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { MapLike } from 'typescript'
+import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
   EditorState,
@@ -849,8 +856,11 @@ function getSpecialMeasurements(
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
-  const parentFlexDirection = parentElementStyle?.flexDirection ?? null
-  const flexDirection = elementStyle.flexDirection ?? null
+  const parentFlexDirection = eitherToMaybe(
+    parseFlexDirection(parentElementStyle?.flexDirection, null),
+  )
+  const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
+  const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -917,6 +927,17 @@ function getSpecialMeasurements(
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
+  const borderRadius = defaultEither(
+    null,
+    applicative4Either(
+      applicativeSidesPxTransform,
+      parseCSSLength(elementStyle.borderTopLeftRadius),
+      parseCSSLength(elementStyle.borderTopRightRadius),
+      parseCSSLength(elementStyle.borderBottomLeftRadius),
+      parseCSSLength(elementStyle.borderBottomRightRadius),
+    ),
+  )
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -943,8 +964,9 @@ function getSpecialMeasurements(
     globalContentBox,
     elementStyle.float,
     hasPositionOffset,
-    elementStyle.direction,
+    parentTextDirection,
     hasTransform,
+    borderRadius,
   )
 }
 

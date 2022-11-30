@@ -13,6 +13,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
+import { BorderRadiusCorner } from '../border-radius-control-utils'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -22,7 +23,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
-import type { ReparentTarget } from './strategies/reparent-strategy-helpers'
+import type { ReparentTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -34,6 +35,7 @@ export interface DragInteractionData {
   globalTime: number
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
+  spacePressed: boolean
 }
 
 export interface HoverInteractionData {
@@ -60,6 +62,12 @@ export function isDragInteractionData(inputData: InputData): inputData is DragIn
   return inputData.type === 'DRAG'
 }
 
+export function isNotYetStartedDragInteraction(
+  inputData: InputData,
+): inputData is DragInteractionData {
+  return isDragInteractionData(inputData) && inputData.drag == null
+}
+
 export function isKeyboardInteractionData(
   inputData: InputData,
 ): inputData is KeyboardInteractionData {
@@ -72,23 +80,7 @@ export function isHoverInteractionData(inputData: InputData): inputData is Hover
 
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
-export interface ReparentTargetsToFilter {
-  'use-strict-bounds': ReparentTarget | null
-  'allow-missing-bounds': ReparentTarget | null
-}
-
-export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
 export type AllowSmallerParent = 'allow-smaller-parent' | 'disallow-smaller-parent'
-
-export function reparentTargetsToFilter(
-  strictBoundsTarget: ReparentTarget | null,
-  missingBoundsTarget: ReparentTarget | null,
-): ReparentTargetsToFilter {
-  return {
-    'use-strict-bounds': strictBoundsTarget,
-    'allow-missing-bounds': missingBoundsTarget,
-  }
-}
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
@@ -103,7 +95,6 @@ export interface InteractionSession {
 
   startedAt: number
 
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null // FIXME Delete in a follow up PR
   updatedTargetPaths: UpdatedPathMap
   aspectRatioLock: number | null
 }
@@ -116,7 +107,6 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
-  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
 ): InteractionSession {
@@ -128,7 +118,6 @@ export function interactionSession(
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
     latestAllElementProps: allElementProps,
-    startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
   }
@@ -136,7 +125,7 @@ export function interactionSession(
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentsToFilterOut'
+  'latestMetadata' | 'latestAllElementProps'
 >
 
 export interface CommandDescription {
@@ -194,6 +183,7 @@ export function createInteractionViaMouse(
       globalTime: Date.now(),
       hasMouseMoved: false,
       _accumulatedMovement: zeroCanvasPoint,
+      spacePressed: false,
     },
     activeControl: activeControl,
     lastInteractionTime: Date.now(),
@@ -253,6 +243,7 @@ export function updateInteractionViaDragDelta(
         globalTime: Date.now(),
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
+        spacePressed: currentState.interactionData.spacePressed,
       },
       activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
@@ -324,6 +315,7 @@ function updateInteractionDataViaMouse(
             globalTime: Date.now(),
             hasMouseMoved: true,
             _accumulatedMovement: currentData._accumulatedMovement,
+            spacePressed: currentData.spacePressed,
           }
         case 'HOVER':
           return {
@@ -336,6 +328,7 @@ function updateInteractionDataViaMouse(
             globalTime: Date.now(),
             hasMouseMoved: false,
             _accumulatedMovement: zeroCanvasPoint,
+            spacePressed: false,
           }
         default:
           assertNever(currentData)
@@ -410,6 +403,11 @@ export function updateInteractionViaKeyboard(
       }
     }
     case 'DRAG': {
+      const isSpacePressed =
+        (currentState.interactionData.spacePressed ||
+          addedKeysPressed.some((key) => key === 'space')) &&
+        !keysReleased.some((key) => key === 'space')
+
       return {
         interactionData: {
           type: 'DRAG',
@@ -421,6 +419,7 @@ export function updateInteractionViaKeyboard(
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
+          spacePressed: isSpacePressed,
         },
         activeControl: currentState.activeControl,
         lastInteractionTime: Date.now(),
@@ -552,6 +551,18 @@ export function paddingResizeHandle(edgePosition: EdgePiece): PaddingResizeHandl
   }
 }
 
+export interface BorderRadiusResizeHandle {
+  type: 'BORDER_RADIUS_RESIZE_HANDLE'
+  corner: BorderRadiusCorner
+}
+
+export function borderRadiusResizeHandle(corner: BorderRadiusCorner): BorderRadiusResizeHandle {
+  return {
+    type: 'BORDER_RADIUS_RESIZE_HANDLE',
+    corner: corner,
+  }
+}
+
 export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
 }
@@ -578,3 +589,11 @@ export type CanvasControlType =
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider
+  | BorderRadiusResizeHandle
+
+export function isDragToPan(
+  interaction: InteractionSession | null,
+  spacePressed: boolean | undefined,
+): boolean {
+  return spacePressed === true && interaction == null
+}

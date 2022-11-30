@@ -1,5 +1,5 @@
 import { importAlias, importDetails } from '../../shared/project-file-types'
-import { mergeImports } from './project-file-utils'
+import { addImport, mergeImports } from './project-file-utils'
 
 describe('mergeImports', () => {
   it('can merge an empty imports', () => {
@@ -142,6 +142,44 @@ describe('mergeImports', () => {
     expect(result).toEqual({
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
       '/src/fileB': importDetails(null, [importAlias('FlexRow')], null),
+    })
+  })
+
+  it('does not add an import for the current file', () => {
+    const result = mergeImports(
+      '/src/code.js',
+      {
+        '/src/fileA': importDetails(null, [importAlias('Card')], null),
+        './fileA': importDetails(null, [importAlias('OtherCard')], null),
+      },
+      {
+        '/src/code.js': importDetails(null, [importAlias('FlexRow')], null),
+        './code.js': importDetails(null, [importAlias('FlexCol')], null),
+      },
+    )
+
+    expect(result).toEqual({
+      '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
+    })
+  })
+})
+
+describe('addImport', () => {
+  it('does not add an import for the current file', () => {
+    const result = addImport(
+      '/src/code.js',
+      '/src/code.js',
+      null,
+      [importAlias('FlexRow'), importAlias('FlexCol')],
+      null,
+      {
+        '/src/fileA': importDetails(null, [importAlias('Card')], null),
+        './fileA': importDetails(null, [importAlias('OtherCard')], null),
+      },
+    )
+
+    expect(result).toEqual({
+      '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
     })
   })
 })

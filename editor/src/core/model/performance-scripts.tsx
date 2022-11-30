@@ -119,9 +119,12 @@ async function loadProject(
       targetRepository: null,
       originCommit: null,
       branchName: null,
+      pendingCommit: null,
+      branchLoaded: false,
     },
     githubChecksums: null,
     branchContents: null,
+    assetChecksums: {},
   }
 
   // Load the project itself.
@@ -527,8 +530,6 @@ export function useTriggerAbsoluteMovePerformanceTest(
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
-    // Switch Canvas Strategies on.
-    setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
     const siblingPaths = allPaths.current.filter(
@@ -716,8 +717,6 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
-    // Switch Canvas Strategies on.
-    setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
     const siblingPaths = allPaths.current.filter(

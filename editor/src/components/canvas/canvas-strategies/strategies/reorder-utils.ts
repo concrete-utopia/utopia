@@ -24,6 +24,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getElementDirection } from './flow-reorder-helpers'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -33,6 +34,32 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
   const uid = EP.toUid(target)
   const staticUid = EP.toStaticUid(target)
   return uid !== staticUid
+}
+
+export function getDirectionFlexOrFlow(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): { direction: 'vertical' | 'horizontal'; shouldReverse: boolean } {
+  const element = MetadataUtils.findElementByElementPath(metadata, target)
+  if (
+    MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(element)
+  ) {
+    const flexDirection = element?.specialSizeMeasurements.parentFlexDirection
+    return {
+      direction:
+        flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical',
+      shouldReverse: flexDirection?.includes('reverse') ?? false,
+    }
+  } else {
+    const flowDirection = getElementDirection(element)
+
+    return {
+      direction: flowDirection,
+      shouldReverse:
+        flowDirection === 'horizontal' &&
+        element?.specialSizeMeasurements.parentTextDirection === 'rtl',
+    }
+  }
 }
 
 export function applyReorderCommon(
@@ -55,11 +82,7 @@ export function applyReorderCommon(
     )
 
     if (!isReorderAllowed(siblings)) {
-      return strategyApplicationResult(
-        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        {},
-        'failure',
-      )
+      return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
     }
 
     const pointOnCanvas = offsetPoint(
@@ -86,7 +109,7 @@ export function applyReorderCommon(
         [
           updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(siblings),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
+          setCursorCommand(CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
@@ -98,7 +121,7 @@ export function applyReorderCommon(
           reorderElement('always', target, absolute(newResultOrLastIndex)),
           setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
+          setCursorCommand(CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
@@ -107,7 +130,7 @@ export function applyReorderCommon(
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
+    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)])
   }
 }
 

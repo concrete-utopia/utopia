@@ -1,14 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import {
-  isRootElementOfInstance,
-  parentPath,
-  pathsEqual,
-} from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { arrayEquals, assertNever } from '../../../../core/shared/utils'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CustomStrategyState,
@@ -17,34 +14,27 @@ import {
   isInsertionSubjects,
   isTargetPaths,
 } from '../canvas-strategy-types'
-import {
-  AllowSmallerParent,
-  DragInteractionData,
-  InteractionSession,
-  MissingBoundsHandling,
-  reparentTargetsToFilter,
-  ReparentTargetsToFilter,
-} from '../interaction-state'
+import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
+import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
-  existingReparentSubjects,
   findReparentStrategies,
-  getReparentTargetUnified,
-  newReparentSubjects,
   ReparentStrategy,
   reparentSubjectsForInteractionTarget,
-} from './reparent-strategy-helpers'
+  ReparentTarget,
+} from './reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 interface ReparentFactoryAndDetails {
   targetParent: ElementPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
-  missingBoundsHandling: MissingBoundsHandling
   targetParentDisplayType: 'flex' | 'flow' // should this be here?
   fitness: number
+  dragType: 'absolute' | 'static'
   factory: CanvasStrategyFactory
 }
 
@@ -63,34 +53,28 @@ export function getApplicableReparentFactories(
   )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
-    const missingBoundsHandling: MissingBoundsHandling = result.missingBoundsHandling
     switch (result.strategy) {
       case 'REPARENT_AS_ABSOLUTE': {
-        const fitness =
-          missingBoundsHandling === 'allow-missing-bounds' ? 0.5 : result.isFallback ? 2 : 3
+        const fitness = result.isFallback ? 2 : 3
         if (allDraggedElementsAbsolute) {
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
             targetParentDisplayType: 'flow',
             fitness: fitness,
-            factory: baseAbsoluteReparentStrategy(result.target, missingBoundsHandling, fitness),
+            dragType: 'absolute',
+            factory: baseAbsoluteReparentStrategy(result.target, fitness),
           }
         } else {
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
-            missingBoundsHandling: result.missingBoundsHandling,
             targetParentDisplayType: 'flow',
             fitness: fitness,
-            factory: baseFlexReparentToAbsoluteStrategy(
-              result.target,
-              missingBoundsHandling,
-              fitness,
-            ),
+            dragType: 'absolute',
+            factory: baseFlexReparentToAbsoluteStrategy(result.target, fitness),
           }
         }
       }
@@ -109,9 +93,9 @@ export function getApplicableReparentFactories(
           targetParent: result.target.newParent,
           targetIndex: result.target.newIndex,
           strategyType: result.strategy,
-          missingBoundsHandling: result.missingBoundsHandling,
           targetParentDisplayType: targetParentDisplayType,
           fitness: fitness,
+          dragType: 'static',
           factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
         }
       }
@@ -126,7 +110,7 @@ export function getApplicableReparentFactories(
 function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-): ReparentTargetsToFilter | null {
+): ReparentTarget | null {
   if (isInsertionSubjects(canvasState.interactionTarget)) {
     return null
   }
@@ -145,29 +129,15 @@ function getStartingTargetParentsToFilterOutInner(
 
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
 
-  const strictBoundsResult = getReparentTargetUnified(
+  return getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
-    'use-strict-bounds',
     allowSmallerParent,
   )
-
-  const missingBoundsResult = getReparentTargetUnified(
-    reparentSubjects,
-    pointOnCanvas,
-    interactionData.modifiers.cmd,
-    canvasState,
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    'allow-missing-bounds',
-    allowSmallerParent,
-  )
-
-  return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
 }
 
 function isCanvasState(
@@ -188,7 +158,8 @@ const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFi
         const lTargets = getTargetPathsFromInteractionTarget(l.interactionTarget)
         const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
         return (
-          l.startingMetadata === r.startingMetadata && arrayEquals(lTargets, rTargets, pathsEqual)
+          l.startingMetadata === r.startingMetadata &&
+          arrayEquals(lTargets, rTargets, EP.pathsEqual)
         )
       }
     }
@@ -224,15 +195,15 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     ),
   )
 
-  const anyDraggedElementsRootElements = reparentSubjects.some(isRootElementOfInstance)
+  const anyDraggedElementsRootElements = reparentSubjects.some(EP.isRootElementOfInstance)
 
   if (anyDraggedElementsRootElements) {
     return []
   }
 
-  const existingParents = reparentSubjects.map(parentPath)
+  const existingParents = reparentSubjects.map(EP.parentPath)
 
-  const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
+  const startingTargetToFilter = getStartingTargetParentsToFilterOut(
     canvasState,
     interactionSession,
   )
@@ -251,26 +222,47 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     cmdPressed ? 'allow-smaller-parent' : 'disallow-smaller-parent',
   )
 
-  const targetIsValid = (
-    target: ElementPath,
-    missingBoundsHandling: MissingBoundsHandling,
-  ): boolean => {
-    if (existingParents.some((existingParent) => pathsEqual(target, existingParent))) {
+  const targetIsValid = (target: ElementPath): boolean => {
+    if (existingParents.some((existingParent) => EP.pathsEqual(target, existingParent))) {
       return false
-    } else if (startingTargetsToFilter == null) {
+    } else if (startingTargetToFilter == null) {
       return true
     } else {
-      const targetToFilter = startingTargetsToFilter[missingBoundsHandling]?.newParent ?? null
-      return !pathsEqual(target, targetToFilter)
+      const targetToFilter = startingTargetToFilter.newParent ?? null
+      return !EP.pathsEqual(target, targetToFilter)
     }
   }
 
   const filteredReparentFactories = factories.filter((reparentStrategy) =>
-    targetIsValid(reparentStrategy.targetParent, reparentStrategy.missingBoundsHandling),
+    targetIsValid(reparentStrategy.targetParent),
   )
 
-  return mapDropNulls(
-    ({ factory }) => factory(canvasState, interactionSession, customStrategyState),
-    filteredReparentFactories,
-  )
+  return mapDropNulls(({ factory, dragType, targetParent }) => {
+    const strategy = factory(canvasState, interactionSession, customStrategyState)
+    if (strategy == null) {
+      return null
+    }
+    const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const isReparentedWithinComponent = targets.some((target) =>
+      EP.pathsEqual(EP.getContainingComponent(target), EP.getContainingComponent(targetParent)),
+    )
+    const indicatorCommand = wildcardPatch('mid-interaction', {
+      canvas: {
+        controls: {
+          dragToMoveIndicatorFlags: {
+            $set: {
+              showIndicator: true,
+              dragType: dragType,
+              reparent: isReparentedWithinComponent ? 'same-component' : 'different-component',
+              ancestor: false,
+            },
+          },
+        },
+      },
+    })
+    return {
+      ...strategy,
+      apply: appendCommandsToApplyResult(strategy.apply, [], [indicatorCommand]),
+    }
+  }, filteredReparentFactories)
 }

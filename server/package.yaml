@@ -65,6 +65,7 @@ dependencies:
   - lens-aeson <1.2
   - lifted-async
   - lifted-base
+  - magic
   - mime
   - mime-types
   - modern-uri

@@ -10,6 +10,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  MoveStrategy,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import {
@@ -21,7 +22,7 @@ import {
 export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-): CanvasStrategy | null {
+): MoveStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length === 0) {
     return null
@@ -43,50 +44,52 @@ export function relativeMoveStrategy(
     (offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null)
 
   return {
-    id: 'RELATIVE_MOVE',
-    name: 'Move (Relative)',
-    controlsToRender: [
-      controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-    ],
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.drag != null &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? hasOffsets
-          ? 4 // +1 than reorder flow
-          : 1
-        : 0,
-
-    apply: () => {
-      if (
+    strategy: {
+      id: 'RELATIVE_MOVE',
+      name: 'Move (Relative)',
+      controlsToRender: [
+        controlWithProps({
+          control: ImmediateParentOutlines,
+          props: { targets: filteredSelectedElements },
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentBounds,
+          props: { targets: filteredSelectedElements },
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+      ],
+      fitness:
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.interactionData.drag != null &&
         interactionSession.activeControl.type === 'BOUNDING_AREA'
-      ) {
-        return applyMoveCommon(
-          canvasState,
-          interactionSession,
-          getAdjustMoveCommands(canvasState, interactionSession, {
-            ignoreLocalFrame: true,
-          }),
-        )
-      } else {
-        return emptyStrategyApplicationResult
-      }
+          ? hasOffsets
+            ? 4 // +1 than reorder flow
+            : 1
+          : 0,
+
+      apply: () => {
+        if (
+          interactionSession != null &&
+          interactionSession.interactionData.type === 'DRAG' &&
+          interactionSession.interactionData.drag != null &&
+          interactionSession.activeControl.type === 'BOUNDING_AREA'
+        ) {
+          return applyMoveCommon(
+            canvasState,
+            interactionSession,
+            getAdjustMoveCommands(canvasState, interactionSession, {
+              ignoreLocalFrame: true,
+            }),
+          )
+        } else {
+          return emptyStrategyApplicationResult
+        }
+      },
     },
+    dragType: 'absolute', // is this a third type?
   }
 }
 

@@ -1,6 +1,7 @@
 import {
   formatTestProjectCode,
   getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
   TestScenePath,
@@ -20,6 +21,9 @@ import {
 } from '../../../../core/model/scene-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { mapArrayToDictionary } from '../../../../core/shared/array-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { keyDown, mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
+import { cmdModifier } from '../../../../utils/modifiers'
 
 const complexProject = () => {
   const code = `
@@ -419,5 +423,51 @@ describe('Convert to Absolute', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       getCodeForTestProject(appOpeningTagAfter),
     )
+  })
+})
+
+describe('Convert to absolute/escape hatch', () => {
+  it('becomes the active strategy while space is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex'}} data-uid='flex-container'>
+          <div
+            style={{ backgroundColor: '#DDDDDD', width: 100, height: 100 }}
+            data-uid='child1'
+            data-testid='child1'
+          />
+          <div
+            style={{ backgroundColor: '#EEEEEE', width: 50, height: 100 }}
+            data-uid='child2'
+            data-testid='child2'
+          />
+        </div>
+  `),
+      'await-first-dom-report',
+    )
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child1')
+    const elementBounds = element.getBoundingClientRect()
+
+    mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + 10,
+        y: elementBounds.y + 10,
+      },
+      { modifiers: cmdModifier },
+    )
+    mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 50,
+      y: elementBounds.y + 50,
+    })
+
+    const strategyBeforeSpacePressed = renderResult.getEditorState().strategyState.currentStrategy
+    expect(strategyBeforeSpacePressed).toEqual('FLEX_REORDER')
+
+    keyDown('Space')
+
+    const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(currentStrategy).toEqual('CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY')
   })
 })

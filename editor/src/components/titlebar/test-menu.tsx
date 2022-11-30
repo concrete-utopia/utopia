@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
+import { colorTheme } from '../../uuiui'
 import {
   useTriggerAbsoluteMoveLargePerformanceTest,
   useTriggerAbsoluteMoveSmallPerformanceTest,
@@ -15,11 +16,11 @@ import {
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { UtopiaTheme } from '../../uuiui'
+
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
 interface TileProps {
-  size: keyof typeof UtopiaTheme.layout.rowHeight
+  size: 'smaller' | 'normal' | 'large' | 'max'
 }
 
 const Tile = styled.div<TileProps>((props) => ({
@@ -80,14 +81,13 @@ export const TestMenu = React.memo(() => {
     <div
       style={{
         borderRadius: '15px',
-        border: '1px solid #95D4FF',
         paddingLeft: 8,
         paddingRight: 8,
         height: 25,
-        width: 80,
+        width: 84,
         display: 'flex',
         alignItems: 'center',
-        background: '#95D4FF22',
+        background: colorTheme.bg2.value,
         overflow: 'scroll',
         color: '#95D4FF',
         fontSize: 8,
@@ -95,7 +95,7 @@ export const TestMenu = React.memo(() => {
         gap: 8,
       }}
     >
-      <span style={{ fontWeight: 800 }}>Tests</span>
+      <span style={{ fontWeight: 800 }}>DEVELOPMENT</span>
       {perfTestTriggersEnabled ? (
         <React.Fragment>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>

@@ -3,7 +3,7 @@ import React from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { useEditorState } from '../components/editor/store/store-hook'
-import { Theme } from '../components/editor/store/editor-state'
+import { getCurrentTheme, Theme } from '../components/editor/store/editor-state'
 
 export type IcnColor =
   | 'main'
@@ -15,6 +15,9 @@ export type IcnColor =
   | 'component'
   | 'on-highlight-main'
   | 'on-highlight-secondary'
+  | 'on-light-main'
+  | 'darkgray'
+  | 'black'
 
 export type IcnResultingColor =
   | 'white'
@@ -29,7 +32,10 @@ export type IcnResultingColor =
   | 'colourful'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  const currentTheme: Theme = useEditorState(
+    (store) => getCurrentTheme(store.userState),
+    'currentTheme',
+  )
   if (currentTheme === 'light') {
     switch (intent) {
       case 'main':
@@ -50,6 +56,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'white'
       case 'on-highlight-secondary':
         return 'lightgray'
+      case 'on-light-main':
+        return 'white'
       default:
         return 'white'
     }
@@ -73,6 +81,10 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'white'
       case 'on-highlight-secondary':
         return 'lightgray'
+      case 'on-light-main':
+        return 'black'
+      case 'black':
+        return 'black'
       default:
         return 'white'
     }
@@ -133,7 +145,7 @@ export const Icn = React.memo(
   }: IcnProps) => {
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
 
-    const iconColor = useIconColor(props.color || 'main')
+    const iconColor = useIconColor(props.color ?? 'main')
 
     const { onMouseDown: propsOnMouseDown, onClick } = props
     const onMouseDown = React.useCallback(
@@ -183,7 +195,7 @@ export const Icn = React.memo(
 Icn.displayName = 'Icon'
 
 export const IcnSpacer = React.memo(
-  ({ width = 16, height = 16 }: { width?: number; height?: number }) => {
+  ({ width = 16, height = 16 }: { width?: number | string; height?: number | string }) => {
     return <div style={{ width, height }} />
   },
 )

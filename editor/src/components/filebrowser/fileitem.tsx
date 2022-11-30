@@ -25,7 +25,6 @@ import {
   flexRowStyle,
   OnClickOutsideHOC,
   StringInput,
-  //TODO: switch to functional component and make use of 'useColorTheme':
   colorTheme,
   UtopiaTheme,
   SimpleFlexRow,
@@ -48,6 +47,7 @@ import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state
 import { optionalMap } from '../../core/shared/optional-utils'
 import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
+import { getConflictMenuItems } from '../../core/shared/github-ui'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -210,13 +210,13 @@ export const getGithubFileStatusColor = (type: GithubFileStatus): string => {
   // NOTE: these are placeholder colors, we should update them once we finalize the design
   switch (type) {
     case 'untracked':
-      return '#09f' // blue
+      return colorTheme.githubMUDUntracked.value
     case 'modified':
-      return '#f90' // orange
+      return colorTheme.githubMUDModified.value
     case 'deleted':
-      return '#f22' // red
+      return colorTheme.githubMUDDeleted.value
     default:
-      return '#ccc' // gray
+      return colorTheme.githubMUDDefault.value
   }
 }
 
@@ -310,6 +310,9 @@ class FileBrowserItemInner extends React.PureComponent<
   toggleCollapse = () => this.props.toggleCollapse(this.props.path)
 
   renderGithubStatus = () => {
+    if (this.props.conflict != null) {
+      return <GithubFileStatusLetter status={'conflicted'} />
+    }
     if (this.props.githubStatus != undefined) {
       return <GithubFileStatusLetter status={this.props.githubStatus} />
     }
@@ -483,7 +486,7 @@ class FileBrowserItemInner extends React.PureComponent<
             EditorActions.showModal({
               type: 'file-revert',
               filePath: this.props.path,
-              status: this.props.githubStatus || null,
+              status: this.props.githubStatus ?? null,
             }),
           ],
           'everyone',
@@ -831,6 +834,22 @@ class FileBrowserItemInner extends React.PureComponent<
       const items = [this.deleteContextMenuItem(), this.renameContextMenuItem()]
       if (this.props.githubStatus != undefined) {
         items.push(this.revertContextMenuItem())
+      }
+      if (
+        this.props.conflict != null &&
+        this.props.githubRepo != null &&
+        this.props.projectID != null
+      ) {
+        items.push(
+          ...getConflictMenuItems(
+            this.props.githubRepo,
+            this.props.projectID,
+            this.props.dispatch,
+            this.props.path,
+            this.props.conflict,
+            'Resolve Conflict',
+          ),
+        )
       }
       fileBrowserItem = (
         <div

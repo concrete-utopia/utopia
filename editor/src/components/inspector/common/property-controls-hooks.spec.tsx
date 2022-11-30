@@ -193,6 +193,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     dispatch: null as any,
     alreadySaved: null as any,
     builtInDependencies: [],
+    storeName: 'editor-store',
   }
 
   const storeHook = create<
@@ -206,6 +207,8 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     selectedViewsRef: { current: selectedViews },
     onSubmitValue: null as any,
     onUnsetValue: null as any,
+    collectActionsToSubmitValue: null as any,
+    collectActionsToUnsetValue: null as any,
   }
 
   const contextProvider = ({ children }: any) => (

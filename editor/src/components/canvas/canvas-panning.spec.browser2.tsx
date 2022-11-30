@@ -40,7 +40,7 @@ describe(`pan while 'space' is held down`, () => {
     expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(100)
     expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(100)
   })
-  it(`start drag first`, async () => {
+  it(`start drag first, the drag interaction is still active`, async () => {
     const renderResult = await createExampleProject()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     const controlsBounds = canvasControlsLayer.getBoundingClientRect()
@@ -67,7 +67,10 @@ describe(`pan while 'space' is held down`, () => {
     )
 
     const endingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
-    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(100)
-    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(100)
+    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(0)
+    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(0)
+
+    const interactionSession = renderResult.getEditorState().editor.canvas.interactionSession
+    expect(interactionSession).toBeDefined()
   })
 })

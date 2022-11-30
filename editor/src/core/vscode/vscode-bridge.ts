@@ -55,6 +55,7 @@ import {
   UpdateDecorationsMessage,
   SelectedElementChanged,
   utopiaReady,
+  setVSCodeTheme,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -62,8 +63,11 @@ import {
   EditorState,
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
+  Theme,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+
+export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -232,12 +236,6 @@ export async function sendUpdateDecorationsMessage(
   return sendMessage(updateDecorationsMessage(decorations))
 }
 
-export async function sendSelectedElementChangedMessage(
-  boundsForFile: BoundsInFile,
-): Promise<void> {
-  return sendMessage(selectedElementChanged(boundsForFile))
-}
-
 export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
   return sendMessage(setFollowSelectionConfig(enabled))
 }
@@ -315,15 +313,21 @@ export function getSelectedElementChangedMessage(
   if (highlightBounds == null) {
     return null
   } else {
-    return selectedElementChanged(
-      boundsInFile(
-        highlightBounds.filePath,
-        highlightBounds.startLine,
-        highlightBounds.startCol,
-        highlightBounds.endLine,
-        highlightBounds.endCol,
-      ),
-    )
+    if (document.activeElement?.id === VSCODE_EDITOR_IFRAME_ID) {
+      // If the code editor is active, we don't want to inform it of selection changes as that
+      // would then update the user's cursor in VS Code
+      return null
+    } else {
+      return selectedElementChanged(
+        boundsInFile(
+          highlightBounds.filePath,
+          highlightBounds.startLine,
+          highlightBounds.startCol,
+          highlightBounds.endLine,
+          highlightBounds.endCol,
+        ),
+      )
+    }
   }
 }
 
@@ -334,4 +338,21 @@ export async function sendSelectedElement(newEditorState: EditorState): Promise<
   } else {
     await sendMessage(selectedElementChangedMessage)
   }
+}
+
+function vsCodeThemeForTheme(theme: Theme): string {
+  switch (theme) {
+    case 'dark':
+      return 'Default Dark+'
+    case 'light':
+      return 'Default Light+'
+    default:
+      const _exhaustiveCheck: never = theme
+      throw new Error(`Unhandled theme ${theme}`)
+  }
+}
+
+export async function sendSetVSCodeTheme(theme: Theme): Promise<void> {
+  const vsCodeTheme = vsCodeThemeForTheme(theme)
+  await sendMessage(setVSCodeTheme(vsCodeTheme))
 }

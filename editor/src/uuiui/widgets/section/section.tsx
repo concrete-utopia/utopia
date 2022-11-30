@@ -8,6 +8,7 @@ import { FlexColumn } from '../layout/flex-column'
 import { ExpandableIndicator } from '../../../components/navigator/navigator-item/expandable-indicator'
 import { UtopiaTheme, useColorTheme } from '../../styles/theme'
 import { SquareButton } from '../../button'
+import { unless } from '../../../utils/react-conditionals'
 
 export const Section = styled.div({
   display: 'flex',
@@ -16,6 +17,7 @@ export const Section = styled.div({
 interface SectionTitleRowProps {
   minimised: boolean
   toggleMinimised?: () => void
+  hideButton?: boolean
 }
 
 export const SectionTitleRow: React.FunctionComponent<
@@ -40,6 +42,7 @@ export const SectionTitleRow: React.FunctionComponent<
         paddingLeft: 8,
         paddingRight: 8,
         minHeight: UtopiaTheme.layout.rowHeight.normal,
+        color: colorTheme.fg0.value,
         cursor: 'pointer',
       }}
       css={{
@@ -50,9 +53,12 @@ export const SectionTitleRow: React.FunctionComponent<
       onClick={handleClick}
     >
       {props.children}
-      <SquareButton highlight={true} onClick={handleClick}>
-        <ExpandableIndicator collapsed={props.minimised} selected={false} visible={true} />
-      </SquareButton>
+      {unless(
+        props.hideButton === true,
+        <SquareButton highlight={true} onClick={handleClick}>
+          <ExpandableIndicator collapsed={props.minimised} selected={false} visible={true} />
+        </SquareButton>,
+      )}
     </FlexRow>
   )
 }

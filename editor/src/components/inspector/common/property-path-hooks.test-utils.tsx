@@ -34,6 +34,8 @@ export const makeInspectorHookContextProvider =
           selectedViewsRef: { current: selectedViews },
           onSubmitValue: NO_OP,
           onUnsetValue: NO_OP,
+          collectActionsToSubmitValue: () => [],
+          collectActionsToUnsetValue: () => [],
         }}
       >
         <InspectorPropsContext.Provider

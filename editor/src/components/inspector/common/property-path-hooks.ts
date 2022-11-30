@@ -6,7 +6,7 @@ import {
   forUnderlyingTargetFromEditorState,
   withUnderlyingTarget,
 } from '../../../components/editor/store/editor-state'
-import { useEditorState } from '../../../components/editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../../components/editor/store/store-hook'
 import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
@@ -94,6 +94,7 @@ import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import fastDeepEquals from 'fast-deep-equal'
 import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
+import { EditorAction } from '../../editor/action-types'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -108,6 +109,15 @@ export interface InspectorCallbackContextData {
   selectedViewsRef: ReadonlyRef<Array<ElementPath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void
+  collectActionsToSubmitValue: (
+    newValue: any,
+    propertyPath: PropertyPath,
+    transient: boolean,
+  ) => Array<EditorAction>
+  collectActionsToUnsetValue: (
+    propertyPath: PropertyPath | Array<PropertyPath>,
+    transient: boolean,
+  ) => Array<EditorAction>
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
@@ -119,10 +129,13 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
   selectedAttributeMetadatas: [],
 })
 
+const emptyCollectActionsFn = () => []
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
   selectedViewsRef: { current: [] },
   onSubmitValue: Utils.NO_OP,
   onUnsetValue: Utils.NO_OP,
+  collectActionsToSubmitValue: emptyCollectActionsFn,
+  collectActionsToUnsetValue: emptyCollectActionsFn,
 })
 InspectorCallbackContext.displayName = 'InspectorCallbackContext'
 
@@ -153,25 +166,6 @@ export interface InspectorInfo<T> {
   onSubmitValue: (newTransformedValues: T, transient?: boolean) => void
   onTransientSubmitValue: (newTransformedValues: T) => void
   useSubmitValueFactory: UseSubmitValueFactory<T>
-}
-
-export function useMapInspectorInfoFromCSSNumberToNumber(
-  info: InspectorInfo<CSSNumber>,
-): InspectorInfo<number> {
-  const onSubmitValue = (rawNumber: number, transient?: boolean) =>
-    info.onSubmitValue({ value: rawNumber, unit: info.value.unit }, transient)
-
-  return {
-    value: info.value.value,
-    controlStatus: info.controlStatus,
-    propertyStatus: info.propertyStatus,
-    controlStyles: info.controlStyles,
-    onUnsetValues: info.onUnsetValues,
-    onSubmitValue: onSubmitValue,
-    onTransientSubmitValue: (rawNumber) =>
-      info.onTransientSubmitValue({ value: rawNumber, unit: info.value.unit }),
-    useSubmitValueFactory: useCallbackFactory(info.value.value, onSubmitValue),
-  }
 }
 
 function getSpiedValues<P extends string | number>(
@@ -382,16 +376,38 @@ export function useInspectorContext(): {
     propertyPath: PropertyPath | Array<PropertyPath>,
     transient: boolean,
   ) => void
+  collectActionsToSubmitValue: (
+    newValue: any,
+    propertyPath: PropertyPath,
+    transient: boolean,
+  ) => Array<EditorAction>
+  collectActionsToUnsetValue: (
+    propertyPath: PropertyPath | Array<PropertyPath>,
+    transient: boolean,
+  ) => Array<EditorAction>
 } {
-  const { onSubmitValue, onUnsetValue, selectedViewsRef } =
-    React.useContext(InspectorCallbackContext)
+  const {
+    onSubmitValue,
+    onUnsetValue,
+    collectActionsToSubmitValue,
+    collectActionsToUnsetValue,
+    selectedViewsRef,
+  } = React.useContext(InspectorCallbackContext)
   return React.useMemo(() => {
     return {
       onContextSubmitValue: onSubmitValue,
       onContextUnsetValue: onUnsetValue,
+      collectActionsToSubmitValue: collectActionsToSubmitValue,
+      collectActionsToUnsetValue: collectActionsToUnsetValue,
       selectedViewsRef: selectedViewsRef,
     }
-  }, [onSubmitValue, onUnsetValue, selectedViewsRef])
+  }, [
+    onSubmitValue,
+    onUnsetValue,
+    collectActionsToSubmitValue,
+    collectActionsToUnsetValue,
+    selectedViewsRef,
+  ])
 }
 
 function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
@@ -521,8 +537,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
 
   const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
 
-  const { onContextSubmitValue: onSingleSubmitValue, onContextUnsetValue: onUnsetValue } =
-    useInspectorContext()
+  const {
+    onContextSubmitValue: onSingleSubmitValue,
+    onContextUnsetValue: onUnsetValue,
+    collectActionsToSubmitValue,
+    collectActionsToUnsetValue,
+  } = useInspectorContext()
 
   const target = useKeepReferenceEqualityIfPossible(
     useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
@@ -535,13 +555,14 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   }, [onUnsetValue, propKeys, pathMappingFn, target])
 
   const transformedValue = transformValue(values)
+
   const onSubmitValue: (newValue: T, transient?: boolean) => void = useCreateOnSubmitValue<P, T>(
     untransformValue,
     propKeys,
     pathMappingFn,
     target,
-    onSingleSubmitValue,
-    onUnsetValue,
+    collectActionsToSubmitValue,
+    collectActionsToUnsetValue,
   )
 
   const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
@@ -571,24 +592,43 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
   propKeys: P[],
   pathMappingFn: PathMappingFn<P>,
   target: readonly string[],
-  onSingleSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void,
-  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void,
+  collectActionsToSubmitValue: (
+    newValue: any,
+    propertyPath: PropertyPath,
+    transient: boolean,
+  ) => Array<EditorAction>,
+  collectActionsToUnsetValue: (
+    propertyPath: PropertyPath | Array<PropertyPath>,
+    transient: boolean,
+  ) => Array<EditorAction>,
 ): (newValue: T, transient?: boolean | undefined) => void {
+  const dispatch = useRefEditorState((store) => store.dispatch)
   return React.useCallback(
     (newValue, transient = false) => {
       const untransformedValue = untransformValue(newValue)
+      let actions: Array<EditorAction> = []
       propKeys.forEach((propKey) => {
         const propertyPath = pathMappingFn(propKey, target)
         const valueToPrint = untransformedValue[propKey]
         if (valueToPrint != null) {
           const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
-          onSingleSubmitValue(printedProperty, propertyPath, transient)
+          actions.push(...collectActionsToSubmitValue(printedProperty, propertyPath, transient))
         } else {
-          onUnsetValue(propertyPath, transient)
+          actions.push(...collectActionsToUnsetValue(propertyPath, transient))
         }
       })
+
+      dispatch.current(actions)
     },
-    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
+    [
+      collectActionsToSubmitValue,
+      collectActionsToUnsetValue,
+      untransformValue,
+      propKeys,
+      pathMappingFn,
+      target,
+      dispatch,
+    ],
   )
 }
 

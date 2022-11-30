@@ -3,18 +3,18 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexColumn } from '../../../../uuiui'
+import { colorTheme, FlexColumn } from '../../../../uuiui'
 
 export const RefreshIcon: React.FC = () => {
   return (
     <FlexColumn>
       <svg
         xmlns='http://www.w3.org/2000/svg'
-        width='12'
-        height='12'
+        width='12px'
+        height='12px'
         viewBox='0 0 24 24'
         fill='none'
-        stroke='#262626'
+        stroke={colorTheme.fg0.value}
         strokeWidth='2'
         strokeLinecap='round'
         strokeLinejoin='round'

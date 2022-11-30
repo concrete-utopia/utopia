@@ -244,7 +244,7 @@ export async function renderTestEditorWithModel(
     }
 
     flushSync(() => {
-      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
     })
 
     // run dom walker
@@ -280,9 +280,16 @@ export async function renderTestEditorWithModel(
     // update state with new metadata
 
     flushSync(() => {
-      storeHook.setState(patchedStoreFromFullStore(workingEditorState))
-      if (shouldInspectorUpdate(workingEditorState.strategyState)) {
-        inspectorStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+      storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
+      if (
+        shouldInspectorUpdate(
+          workingEditorState.strategyState,
+          workingEditorState.patchedEditor.canvas.elementsToRerender,
+        )
+      ) {
+        lowPriorityStoreHook.setState(
+          patchedStoreFromFullStore(workingEditorState, 'low-priority-store'),
+        )
       }
     })
   }
@@ -307,6 +314,7 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: loginState,
       shortcutConfig: {},
+      themeConfig: 'light',
       githubState: {
         authenticated: false,
       },
@@ -323,23 +331,27 @@ export async function renderTestEditorWithModel(
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'canvas-store')))
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
-  const inspectorStoreHook = create<
+  const lowPriorityStoreHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(
+    subscribeWithSelector((set) =>
+      patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
+    ),
+  )
 
   const storeHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'editor-store')))
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
@@ -360,7 +372,7 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
-        inspectorStore={inspectorStoreHook}
+        lowPriorityStore={lowPriorityStoreHook}
         domWalkerMutableState={domWalkerMutableState}
       />
     </React.Profiler>,
@@ -403,9 +415,7 @@ export async function renderTestEditorWithModel(
       waitForDOMReport: boolean,
       innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
     ) => {
-      return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)
-      })
+      return act(async () => asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse))
     },
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),

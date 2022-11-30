@@ -9,6 +9,7 @@ import {
 import { CanvasRectangle, CanvasVector, mod } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
+import { Direction, ForwardOrReverse } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
@@ -34,51 +35,98 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
   const siblings = MetadataUtils.getSiblings(metadata, target) // including target
-  if (targetElement == null || siblings.length === 1) {
+  if (siblings.length === 1) {
     return false
   }
 
-  if (MetadataUtils.isParentYogaLayoutedContainerForElement(targetElement)) {
-    const flexDirection = targetElement.specialSizeMeasurements.parentFlexDirection
-    const targetDirection =
-      flexDirection === 'row' || flexDirection === 'row-reverse' ? 'horizontal' : 'vertical'
-    const shouldReverse = flexDirection?.includes('reverse') ?? false
-    const frames = mapDropNulls((sibling) => {
+  return (
+    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
+    'non-single-axis-autolayout'
+  )
+}
+
+export type SingleAxisAutolayoutContainerDirections = {
+  direction: Direction | null
+  forwardOrReverse: ForwardOrReverse | null
+  flexOrFlow: 'flex' | 'flow'
+}
+
+export function singleAxisAutoLayoutContainerDirections(
+  container: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
+  const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
+  const children = MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, container)
+  if (containerElement == null) {
+    return 'non-single-axis-autolayout'
+  }
+
+  const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
+
+  if (layoutSystem === 'flex') {
+    const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
+    const targetDirection = flexDirection.direction
+
+    const shouldReverse = flexDirection.forwardOrReverse === 'reverse'
+    const childrenFrames = mapDropNulls((child) => {
       if (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          sibling.elementPath,
+          child.elementPath,
           metadata,
         )
       ) {
-        return sibling.globalFrame
+        return child.globalFrame
       } else {
         return null
       }
-    }, siblings)
+    }, children)
 
-    return areNonWrappingSiblings(frames, targetDirection, shouldReverse)
-  } else {
-    const targetDirection = getElementDirection(targetElement)
+    const is1D = areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-single-axis-autolayout'
+    }
+    return { ...flexDirection, flexOrFlow: 'flex' }
+  } else if (layoutSystem === 'flow') {
+    if (children.length === 0) {
+      return {
+        direction: 'vertical',
+        forwardOrReverse: 'forward',
+        flexOrFlow: 'flow',
+      }
+    }
+    const firstChild = children[0]
+    const targetDirection = getElementDirection(firstChild)
     const shouldReverse =
       targetDirection === 'horizontal' &&
-      targetElement.specialSizeMeasurements?.textDirection === 'rtl'
+      firstChild.specialSizeMeasurements?.parentTextDirection === 'rtl'
 
     let allHorizontalOrVertical = true
-    let frames: Array<CanvasRectangle> = []
-    fastForEach(siblings, (sibling) => {
-      if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
-        if (getElementDirection(sibling) !== targetDirection) {
-          allHorizontalOrVertical = false
-        }
-        if (sibling.globalFrame != null) {
-          frames.push(sibling.globalFrame)
-        }
+    let childrenFrames: Array<CanvasRectangle> = []
+
+    // TODO turn this into a loop with early return
+    fastForEach(children, (child) => {
+      if (getElementDirection(child) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (child.globalFrame != null) {
+        childrenFrames.push(child.globalFrame)
       }
     })
 
-    return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection, shouldReverse)
+    const is1D =
+      allHorizontalOrVertical &&
+      areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
+    if (!is1D) {
+      return 'non-single-axis-autolayout'
+    }
+    return {
+      direction: targetDirection,
+      forwardOrReverse: shouldReverse ? 'reverse' : 'forward',
+      flexOrFlow: 'flow',
+    }
+  } else {
+    return 'non-single-axis-autolayout'
   }
 }
 
@@ -104,53 +152,12 @@ function areNonWrappingSiblings(
   })
 }
 
-export function getElementDirection(
-  element: ElementInstanceMetadata | null,
-): 'vertical' | 'horizontal' {
+export function getElementDirection(element: ElementInstanceMetadata | null): Direction {
   const displayValue = element?.specialSizeMeasurements.display
   return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
-function getNewDisplayTypeForIndex(
-  metadata: ElementInstanceMetadataMap,
-  targetSibling: ElementPath,
-) {
-  const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
-    ?.specialSizeMeasurements.display
-  const displayBlockInlineBlock =
-    displayType === 'block' || displayType === 'inline-block' ? displayType : null
-
-  return displayBlockInlineBlock
-}
-
-function shouldRemoveDisplayProp(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): boolean {
-  if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
-    return false
-  } else {
-    return (
-      // TODO global css overrides can change these defaults
-      defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
-      newDisplayValue
-    )
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-function getNewDisplayTypeCommands(
-  element: ElementInstanceMetadata,
-  newDisplayValue: 'block' | 'inline-block' | null,
-): Array<SetProperty | DeleteProperties> {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
-  } else if (newDisplayValue != null) {
-    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
-  } else {
-    return []
-  }
-}
 
 export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,
@@ -174,11 +181,60 @@ export function getOptionalDisplayPropCommandsForFlow(
     lastReorderIdx != null &&
     lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
   ) {
-    const newDisplayType = getNewDisplayTypeForIndex(
+    const targetSibling = MetadataUtils.findElementByElementPath(
       startingMetadata,
       siblingsOfTarget[lastReorderIdx],
     )
-    return getNewDisplayTypeCommands(element, newDisplayType)
+    const elementDisplayType = elementMetadata?.specialSizeMeasurements.display ?? null
+    const newDirection = getElementDirection(targetSibling)
+    return getOptionalCommandToConvertDisplayInlineBlock(target, elementDisplayType, newDirection)
+  } else {
+    return []
+  }
+}
+
+export function getOptionalCommandToConvertDisplayInlineBlock(
+  target: ElementPath,
+  displayValue: string | null,
+  convertTo: Direction | 'do-not-convert',
+): Array<SetProperty> {
+  switch (convertTo) {
+    case 'horizontal':
+      return getOptionalCommandToConvertDisplayInline(target, displayValue)
+    case 'vertical':
+      return getOptionalCommandToRemoveDisplayInline(target, displayValue)
+    default:
+      return []
+  }
+}
+
+function getOptionalCommandToConvertDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['block', 'flex', 'grid'].some((p) => displayValue === p)
+
+  if (displayValue == null) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, `inline-${displayValue}`)]
+  } else {
+    return []
+  }
+}
+
+function getOptionalCommandToRemoveDisplayInline(
+  target: ElementPath,
+  displayValue: string | null,
+): Array<SetProperty> {
+  const displayValueKnownGood = ['inline-block', 'inline-flex', 'inline-grid'].some(
+    (p) => displayValue === p,
+  )
+
+  if (displayValue == null || displayValue === 'inline') {
+    return [setProperty('always', target, StyleDisplayProp, `block`)]
+  } else if (displayValueKnownGood) {
+    return [setProperty('always', target, StyleDisplayProp, displayValue.slice('inline-'.length))]
   } else {
     return []
   }

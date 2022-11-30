@@ -50,6 +50,11 @@ export function strategyApplicationResult(
   }
 }
 
+export interface MoveStrategy {
+  strategy: CanvasStrategy
+  dragType: 'absolute' | 'static'
+}
+
 export interface ControlForStrategy<P> {
   type: 'ControlForStrategy'
   control: React.FC<P>

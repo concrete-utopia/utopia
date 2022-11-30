@@ -13,6 +13,7 @@ export type InspectorModalProps = {
   children: JSX.Element
   style?: React.CSSProperties
   closePopupOnUnmount?: boolean
+  outsideClickIgnoreClass?: string
 }
 
 const padding = 16
@@ -26,6 +27,7 @@ export const InspectorModal: React.FunctionComponent<
   closePopup,
   children,
   style,
+  outsideClickIgnoreClass,
   closePopupOnUnmount = true,
 }) => {
   useHandleCloseOnESCOrEnter(closePopup)
@@ -86,7 +88,10 @@ export const InspectorModal: React.FunctionComponent<
   return (
     <div ref={outerElementRef}>
       {ReactDOM.createPortal(
-        <OnClickOutsideHOC onClickOutside={closePopup}>
+        <OnClickOutsideHOC
+          onClickOutside={closePopup}
+          outsideClickIgnoreClass={outsideClickIgnoreClass}
+        >
           <div
             style={{
               position: 'absolute',

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { last, uniqBy } from '../../../../core/shared/array-utils'
+import { uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -12,8 +12,8 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
+import { fastForEach } from '../../../../core/shared/utils'
+import { KeysPressed } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -21,14 +21,11 @@ import {
   setFocusedElement,
   setHighlightedView,
   selectComponents,
+  setHoveredView,
+  clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import {
-  AllElementProps,
-  EditorState,
-  EditorStorePatched,
-  LockedElements,
-} from '../../../editor/store/editor-state'
+import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { moveDragState } from '../../canvas-types'
@@ -45,11 +42,10 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
-  reorderSlider,
+  isDragToPan,
   KeyboardInteractionTimeout,
-  updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
-import { Modifier, Modifiers } from '../../../../utils/modifiers'
+import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
 import { isInsertMode } from '../../../editor/editor-modes'
@@ -97,6 +93,8 @@ export function pickSelectionEnabled(
 export function useMaybeHighlightElement(): {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
+  maybeHoverOnHover: (target: ElementPath) => void
+  maybeClearHoveredViewsOnHoverEnd: () => void
 } {
   const stateRef = useRefEditorState((store) => {
     return {
@@ -106,6 +104,7 @@ export function useMaybeHighlightElement(): {
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
       inserting: isInserting(store.editor),
       highlightedViews: store.editor.highlightedViews,
+      hoveredViews: store.editor.hoveredViews,
     }
   })
 
@@ -132,9 +131,32 @@ export function useMaybeHighlightElement(): {
     }
   }, [stateRef])
 
+  const maybeHoverOnHover = React.useCallback(
+    (target: ElementPath): void => {
+      const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+
+      const alreadyHovered = pathsEqual(target, hoveredViews?.[0])
+
+      if (!dragging && !resizing && !inserting && !alreadyHovered) {
+        dispatch([setHoveredView(target)], 'canvas')
+      }
+    },
+    [stateRef],
+  )
+
+  const maybeClearHoveredViewsOnHoverEnd = React.useCallback((): void => {
+    const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+
+    if (!dragging && !resizing && !inserting && hoveredViews.length > 0) {
+      dispatch([clearHoveredViews()], 'canvas')
+    }
+  }, [stateRef])
+
   return {
     maybeHighlightOnHover: maybeHighlightOnHover,
     maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
+    maybeHoverOnHover: maybeHoverOnHover,
+    maybeClearHoveredViewsOnHoverEnd: maybeClearHoveredViewsOnHoverEnd,
   }
 }
 
@@ -364,27 +386,6 @@ function useStartDragState(): (
   )
 }
 
-function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
-  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
-
-  return React.useCallback(
-    (event: MouseEvent, target: ElementPath) => {
-      const start = windowToCanvasCoordinates(
-        windowPoint(point(event.clientX, event.clientY)),
-      ).canvasPositionRounded
-      if (event.button !== 2) {
-        dispatch([
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
-          ),
-        ])
-      }
-    },
-    [dispatch, windowToCanvasCoordinates],
-  )
-}
-
 function callbackAfterDragExceedsThreshold(
   startEvent: MouseEvent,
   threshold: number,
@@ -472,12 +473,29 @@ export function useCalculateHighlightedViews(
     childrenSelectable: boolean,
   ) => ElementPath[],
 ): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const {
+    maybeHighlightOnHover,
+    maybeClearHighlightsOnHoverEnd,
+    maybeHoverOnHover,
+    maybeClearHoveredViewsOnHoverEnd,
+  } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(selectableViews, targetPoint, 'dont-prefer-selected')
+      const validElementPathForHover = findValidTarget(
+        selectableViews,
+        targetPoint,
+        'prefer-selected',
+      )
+
+      if (validElementPathForHover == null) {
+        maybeClearHoveredViewsOnHoverEnd()
+      } else {
+        maybeHoverOnHover(validElementPathForHover.elementPath)
+      }
+
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
@@ -488,11 +506,13 @@ export function useCalculateHighlightedViews(
       }
     },
     [
-      allowHoverOnSelectedView,
-      maybeClearHighlightsOnHoverEnd,
-      maybeHighlightOnHover,
       getHighlightableViews,
       findValidTarget,
+      allowHoverOnSelectedView,
+      maybeClearHighlightsOnHoverEnd,
+      maybeClearHoveredViewsOnHoverEnd,
+      maybeHighlightOnHover,
+      maybeHoverOnHover,
     ],
   )
 }
@@ -566,9 +586,8 @@ function useSelectOrLiveModeSelectAndHover(
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
-  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  //const startCanvasModeSession = useStartCanvasSession()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+  const interactionSessionHappened = React.useRef(false)
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
@@ -586,11 +605,19 @@ function useSelectOrLiveModeSelectAndHover(
     (event: React.MouseEvent<HTMLDivElement>) => {
       // Do not handle the mouse move in the regular style if 'space' is pressed.
       const isDragIntention =
-        editorStoreRef.current.editor.keysPressed['space'] || event.buttons === 4
+        isDragToPan(
+          editorStoreRef.current.editor.canvas.interactionSession,
+          editorStoreRef.current.editor.keysPressed['space'],
+        ) || event.buttons === 4
       if (isDragIntention) {
         return
       }
-      innerOnMouseMove(event)
+      if (editorStoreRef.current.editor.canvas.interactionSession == null) {
+        innerOnMouseMove(event)
+      } else {
+        // An interaction session has happened, which is important to know on mouseup
+        interactionSessionHappened.current = true
+      }
     },
     [innerOnMouseMove, editorStoreRef],
   )
@@ -602,104 +629,106 @@ function useSelectOrLiveModeSelectAndHover(
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
+      const hasInteractionSession = editorStoreRef.current.editor.canvas.interactionSession != null
+      const hadInteractionSessionThatWasCancelled =
+        interactionSessionHappened.current && !hasInteractionSession
 
-      // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
-      if (!(isDragIntention || hasInteractionSessionWithMouseMoved)) {
-        const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
-        const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-        const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
-        const foundTarget = findValidTarget(
-          selectableViews,
-          windowPoint(point(event.clientX, event.clientY)),
-          preferAlreadySelected,
-        )
+      const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
+      const mouseUpSelectionAllowed =
+        !hadInteractionSessionThatWasCancelled &&
+        (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
-        const isMultiselect = event.shiftKey
-        const isDeselect = foundTarget == null && !isMultiselect
-        let editorActions: Array<EditorAction> = []
+      if (event.type === 'mouseup') {
+        // Clear the interaction session tracking flag
+        interactionSessionHappened.current = false
 
-        if (foundTarget != null || isDeselect) {
-          if (foundTarget != null && draggingAllowed) {
-            if (isFeatureEnabled('Canvas Strategies')) {
-              const start = windowToCanvasCoordinates(
-                windowPoint(point(event.clientX, event.clientY)),
-              ).canvasPositionRounded
-              if (event.button !== 2 && event.type !== 'mouseup') {
-                editorActions.push(
-                  CanvasActions.createInteractionSession(
-                    createInteractionViaMouse(
-                      start,
-                      Modifier.modifiersForEvent(event),
-                      boundingArea(),
-                    ),
-                  ),
-                )
-              }
-            } else {
-              startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
-            }
-          }
+        if (!mouseUpSelectionAllowed) {
+          // We should skip this mouseup
+          return
+        }
+      }
 
-          let updatedSelection: Array<ElementPath>
-          if (isMultiselect) {
-            updatedSelection = EP.addPathIfMissing(
-              foundTarget!.elementPath,
-              selectedViewsRef.current,
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+        // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
+        return
+      }
+
+      const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
+      const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
+      const foundTarget = findValidTarget(
+        selectableViews,
+        windowPoint(point(event.clientX, event.clientY)),
+        preferAlreadySelected,
+      )
+
+      const isMultiselect = event.shiftKey
+      const isDeselect = foundTarget == null && !isMultiselect
+      let editorActions: Array<EditorAction> = []
+
+      if (foundTarget != null || isDeselect) {
+        if (foundTarget != null && draggingAllowed) {
+          const start = windowToCanvasCoordinates(
+            windowPoint(point(event.clientX, event.clientY)),
+          ).canvasPositionRounded
+          if (event.button !== 2 && event.type !== 'mouseup') {
+            editorActions.push(
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
+              ),
             )
-          } else {
-            updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
-          }
-
-          const foundTargetIsSelected = foundTarget?.isSelected ?? false
-
-          if (foundTarget != null && foundTargetIsSelected && doubleClick) {
-            // for components without passed children doubleclicking enters focus mode
-            const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
-              foundTarget.elementPath,
-              editorStoreRef.current.editor.jsxMetadata,
-            )
-            if (isFocusableLeaf) {
-              editorActions.push(setFocusedElement(foundTarget.elementPath))
-            }
-          }
-
-          if (!foundTargetIsSelected) {
-            // first we only set the selected views for the canvas controls
-            setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
-            // In either case cancel insert mode.
-            if (isInsertMode(editorStoreRef.current.editor.mode)) {
-              editorActions.push(...cancelInsertModeActions('apply-changes'))
-            }
-
-            // then we set the selected views for the editor state, 1 frame later
-            if (updatedSelection.length === 0) {
-              const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-                'Click on empty canvas unfocuses',
-              )
-                ? [setFocusedElement(null)]
-                : []
-
-              editorActions.push(clearSelection())
-              editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
-            } else {
-              editorActions.push(selectComponents(updatedSelection, event.shiftKey))
-            }
           }
         }
-        dispatch(editorActions)
+
+        let updatedSelection: Array<ElementPath>
+        if (isMultiselect) {
+          updatedSelection = EP.addPathIfMissing(foundTarget!.elementPath, selectedViewsRef.current)
+        } else {
+          updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
+        }
+
+        const foundTargetIsSelected = foundTarget?.isSelected ?? false
+
+        if (foundTarget != null && foundTargetIsSelected && doubleClick) {
+          // for components without passed children doubleclicking enters focus mode
+          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+            foundTarget.elementPath,
+            editorStoreRef.current.editor.jsxMetadata,
+          )
+          if (isFocusableLeaf) {
+            editorActions.push(setFocusedElement(foundTarget.elementPath))
+          }
+        }
+
+        if (!foundTargetIsSelected) {
+          // first we only set the selected views for the canvas controls
+          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
+          // In either case cancel insert mode.
+          if (isInsertMode(editorStoreRef.current.editor.mode)) {
+            editorActions.push(...cancelInsertModeActions('apply-changes'))
+          }
+
+          // then we set the selected views for the editor state, 1 frame later
+          if (updatedSelection.length === 0) {
+            editorActions.push(clearSelection(), setFocusedElement(null))
+          } else {
+            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+          }
+        }
       }
+      dispatch(editorActions)
     },
     [
       dispatch,
       selectedViewsRef,
       findValidTarget,
-      startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
       windowToCanvasCoordinates,
+      active,
     ],
   )
 
@@ -743,7 +772,7 @@ export function useSelectAndHover(
 
   if (hasInteractionSession) {
     return {
-      onMouseMove: Utils.NO_OP,
+      onMouseMove: selectModeCallbacks.onMouseMove,
       onMouseDown: Utils.NO_OP,
       onMouseUp: selectModeCallbacks.onMouseUp,
     }
@@ -767,32 +796,29 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }) {
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
-    if (!isFeatureEnabled('Keyboard up clears interaction')) {
+    if (keyboardTimeoutHandler.current != null) {
+      clearTimeout(keyboardTimeoutHandler.current)
+      keyboardTimeoutHandler.current = null
+    }
+
+    const clearKeyboardInteraction = () => {
+      window.removeEventListener('mousedown', clearKeyboardInteraction)
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
       }
-
-      const clearKeyboardInteraction = () => {
-        window.removeEventListener('mousedown', clearKeyboardInteraction)
-        if (keyboardTimeoutHandler.current != null) {
-          clearTimeout(keyboardTimeoutHandler.current)
-          keyboardTimeoutHandler.current = null
-        }
-        if (
-          editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-          'KEYBOARD'
-        ) {
-          editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-        }
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
+      ) {
+        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }
-
-      keyboardTimeoutHandler.current = setTimeout(
-        clearKeyboardInteraction,
-        KeyboardInteractionTimeout,
-      )
-
-      window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
     }
+
+    keyboardTimeoutHandler.current = setTimeout(
+      clearKeyboardInteraction,
+      KeyboardInteractionTimeout,
+    )
+
+    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [editorStoreRef])
 }

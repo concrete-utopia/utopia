@@ -137,16 +137,24 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+    case 'SET_REFRESHING_DEPENDENCIES':
+      return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
     case 'UPDATE_GITHUB_CHECKSUMS':
       return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
+    case 'SET_ASSET_CHECKSUM':
+      return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':
       return UPDATE_FNS.SET_HIGHLIGHTED_VIEW(action, state)
+    case 'SET_HOVERED_VIEW':
+      return UPDATE_FNS.SET_HOVERED_VIEW(action, state)
     case 'CLEAR_HIGHLIGHTED_VIEWS':
       return UPDATE_FNS.CLEAR_HIGHLIGHTED_VIEWS(action, state)
+    case 'CLEAR_HOVERED_VIEWS':
+      return UPDATE_FNS.CLEAR_HOVERED_VIEWS(action, state)
     case 'UPDATE_KEYS_PRESSED':
       return UPDATE_FNS.UPDATE_KEYS_PRESSED(action, state)
     case 'UPDATE_MOUSE_BUTTONS_PRESSED':
@@ -207,6 +215,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
     case 'UPDATE_GITHUB_DATA':
       return UPDATE_FNS.UPDATE_GITHUB_DATA(action, state)
+    case 'REMOVE_FILE_CONFLICT':
+      return UPDATE_FNS.REMOVE_FILE_CONFLICT(action, state)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
@@ -320,8 +330,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
     case 'SET_FORKED_FROM_PROJECT_ID':
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
-    case 'SET_CURRENT_THEME':
-      return UPDATE_FNS.SET_CURRENT_THEME(action, state)
     case 'FOCUS_CLASS_NAME_INPUT':
       return UPDATE_FNS.FOCUS_CLASS_NAME_INPUT(state)
     case 'FOCUS_FORMULA_BAR':
@@ -347,7 +355,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     case 'SEND_CODE_EDITOR_INITIALISATION':
-      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state)
+      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state, userState)
     case 'HIDE_VSCODE_LOADING_SCREEN':
       return UPDATE_FNS.HIDE_VSCODE_LOADING_SCREEN(action, state)
     case 'SET_INDEXED_DB_FAILED':
