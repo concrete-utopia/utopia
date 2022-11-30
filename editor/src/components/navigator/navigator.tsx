@@ -26,6 +26,9 @@ import {
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { when } from '../../utils/react-conditionals'
+import { codeOutlineModel, CodeOutlineView } from './code-outline'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -128,6 +131,12 @@ export const NavigatorComponent = React.memo(() => {
     },
     'NavigatorComponent',
   )
+
+  const projectContents = useEditorState(
+    (store) => store.editor.projectContents,
+    'NavigatorComponent projectContents',
+  )
+  const outlineModel = codeOutlineModel(0, projectContents)
 
   const itemListRef = React.createRef<FixedSizeList>()
 
@@ -239,6 +248,29 @@ export const NavigatorComponent = React.memo(() => {
           </AutoSizer>
         </FlexColumn>
       </SectionBodyArea>
+      {when(
+        isFeatureEnabled('Code outline'),
+        <React.Fragment>
+          <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
+            Code Outline
+          </SectionTitleRow>
+          <SectionBodyArea
+            minimised={minimised}
+            flexGrow={1}
+            style={{
+              flexGrow: 1,
+              overscrollBehavior: 'contain',
+              display: 'flex',
+              alignItems: 'stretch',
+              justifyContent: 'stretch',
+            }}
+          >
+            {outlineModel.map((entry) => (
+              <CodeOutlineView key={entry.key} entry={entry} />
+            ))}
+          </SectionBodyArea>
+        </React.Fragment>,
+      )}
     </Section>
   )
 })
