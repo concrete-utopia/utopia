@@ -211,10 +211,38 @@ export async function saveProjectToGithub(
   dispatch: EditorDispatch,
   options: SaveProjectToGithubOptions,
 ): Promise<void> {
-  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
-
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
+  const { branchName, commitMessage } = options
+  const { targetRepository } = persistentModel.githubSettings
+
+  // If this is a straight push, load the repo before saving
+  // in order to retrieve the head origin commit hash
+  // and avoid a fast forward error.
+  let originCommit = persistentModel.githubSettings.originCommit
+  if (originCommit == null && targetRepository != null && branchName != null) {
+    const getBranchResponse = await getBranchContentFromServer(
+      targetRepository,
+      branchName,
+      null,
+      null,
+    )
+    if (getBranchResponse.ok) {
+      const content: GetBranchContentResponse = await getBranchResponse.json()
+      if (content.type === 'SUCCESS' && content.branch != null) {
+        originCommit = content.branch.originCommit
+      }
+    }
+  }
+
+  const patchedModel: PersistentModel = {
+    ...persistentModel,
+    githubSettings: {
+      ...persistentModel.githubSettings,
+      originCommit: originCommit,
+    },
+  }
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
@@ -231,7 +259,7 @@ export async function saveProjectToGithub(
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-  const postBody = JSON.stringify(persistentModel)
+  const postBody = JSON.stringify(patchedModel)
   const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
