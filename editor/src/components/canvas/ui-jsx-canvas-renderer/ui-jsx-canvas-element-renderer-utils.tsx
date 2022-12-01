@@ -41,7 +41,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { createIndexedUid, isPathValid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -57,7 +57,7 @@ export function createLookupRender(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -152,7 +152,7 @@ export function renderCoreElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -327,7 +327,7 @@ function renderJSXElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -419,8 +419,7 @@ function renderJSXElement(
 
   const pathIsValid =
     elementPath != null &&
-    (isFeatureEnabled('Disable Path Validation') ||
-      validPaths.has(EP.makeLastPartOfPathStatic(elementPath)))
+    (isFeatureEnabled('Disable Path Validation') || isPathValid(elementPath, validPaths))
 
   if (pathIsValid) {
     return buildSpyWrappedElement(

@@ -320,18 +320,22 @@ export function filterValidPaths(
 ): Array<PathWithString> {
   const result = pathsToFilter.filter((pathWithString) => {
     // if the path's immediate parent or instantiator component contains SCENE_LIKE_BEHAVIOR_KEY, treat them as valid path
-    const anyParentSceneLike =
-      pathWithString.path.parts.at(-1)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
-    const instantiatorSceneLike =
-      pathWithString.path.parts.at(-2)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
-
-    if (anyParentSceneLike || instantiatorSceneLike) {
-      return true
-    }
-
-    // otherwise fallback to validPaths
-    const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-    return validPaths.has(staticPath)
+    isPathValid(pathWithString.path, validPaths)
   })
   return result
+}
+
+export function isPathValid(pathToCheck: ElementPath, validPaths: Set<string>): boolean {
+  const anyParentSceneLike =
+    pathToCheck.parts.at(-1)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
+  const instantiatorSceneLike =
+    pathToCheck.parts.at(-2)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
+
+  if (anyParentSceneLike || instantiatorSceneLike) {
+    return true
+  }
+
+  // otherwise fallback to validPaths
+  const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathToCheck))
+  return validPaths.has(staticPath)
 }
