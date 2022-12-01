@@ -606,7 +606,9 @@ export function updateFramesOfScenesAndComponents(
         parentFrame = optionalParentFrame
       }
       const parentOffset =
-        parentFrame == null
+        parentFrame == null ||
+        Math.abs(parentFrame.x) === Infinity ||
+        Math.abs(parentFrame.y) === Infinity
           ? ({ x: 0, y: 0 } as CanvasPoint)
           : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
 
