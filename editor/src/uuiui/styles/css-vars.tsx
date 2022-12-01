@@ -5,28 +5,13 @@ import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
 import { getPreferredColorScheme, Theme } from './theme'
 import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
 
-export const useColorThemeVariables = (): any => {
-  const currentTheme: Theme = useEditorState(
-    (store) => getCurrentTheme(store.userState),
-    'currentTheme',
-  )
-
-  return currentTheme === 'dark' ? darkColorThemeCssVariables : colorThemeCssVariables
-}
-
-export const useColorThemeAlternateVariables = (): any => {
-  const currentTheme: Theme = useEditorState(
-    (store) => getCurrentTheme(store.userState),
-    'currentTheme',
-  )
-  return currentTheme === 'light' ? darkColorThemeCssVariables : colorThemeCssVariables
-}
-
-// TODO: Include alternate themes for the given primary theme
-// and include CSS classes/variables for those
 export const ColorThemeComponent = React.memo(() => {
   const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
-  const colorTheme = useColorThemeVariables()
+  const currentTheme: Theme = useEditorState(
+    (store) => getCurrentTheme(store.userState),
+    'currentTheme',
+  )
+  const colorTheme = currentTheme === 'dark' ? darkColorThemeCssVariables : colorThemeCssVariables
 
   // a dummy state used to force a re-render when the system preferred color scheme
   // change event fires
@@ -39,13 +24,13 @@ export const ColorThemeComponent = React.memo(() => {
       setTheme(preferredColorScheme)
     }
 
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
     if (themeSetting === 'system') {
-      const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
       colorSchemeQuery.addEventListener('change', handlePreferredColorSchemeChange)
-      return () => colorSchemeQuery.removeEventListener('change', handlePreferredColorSchemeChange)
-    } else {
-      return
     }
+
+    return () => colorSchemeQuery.removeEventListener('change', handlePreferredColorSchemeChange)
   }, [themeSetting, theme])
 
   return (
