@@ -4,11 +4,17 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
-import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_PATH_KEY } from '../core/model/utopia-constants'
+import {
+  UtopiaKeys,
+  UTOPIA_UID_KEY,
+  UTOPIA_PATH_KEY,
+  SCENE_LIKE_BEHAVIOR_KEY,
+} from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { isFeatureEnabled } from './feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
 import { ElementSeparator, SceneSeparator } from '../core/shared/element-path'
+import { Outlet, Route, RouterProvider, Routes } from 'react-router'
 
 const realCreateElement = React.createElement
 
@@ -541,6 +547,10 @@ export function patchedCreateReactElement(type: any, props: any, ...children: an
     updatedProps = filterDataProps(updatedProps)
   }
 
+  if (shouldAppendSceneLikeFlag(type)) {
+    updatedProps = appendSceneLikeFlagToUid(updatedProps)
+  }
+
   if (typeof type === 'string') {
     // We cannot create a mangled type for this as that would break libraries like ReactDND that rely
     // on the type remaining intrinsic, so we have to add the paths upfront during the createElement
@@ -562,4 +572,23 @@ export function isHooksErrorMessage(message: string): boolean {
       'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.' ||
     message === 'Should have a queue. This is likely a bug in React. Please file an issue.'
   )
+}
+
+function typeOrWrappedTypeEquals(type: React.ComponentType, equalTo: React.ComponentType): boolean {
+  return type === equalTo || (type as any).theOriginalType === equalTo
+}
+
+function shouldAppendSceneLikeFlag(type: React.ComponentType) {
+  return (
+    typeOrWrappedTypeEquals(type, Route) ||
+    typeOrWrappedTypeEquals(type, Outlet) ||
+    // typeOrWrappedTypeEquals(type, RouterProvider as any) ||
+    typeOrWrappedTypeEquals(type, Routes as any)
+  )
+}
+
+function appendSceneLikeFlagToUid(props: any) {
+  const existingUid = props?.[UTOPIA_UID_KEY] ?? ''
+  const appendedUid = `${existingUid}${SCENE_LIKE_BEHAVIOR_KEY}`
+  return { ...props, [UTOPIA_UID_KEY]: appendedUid }
 }

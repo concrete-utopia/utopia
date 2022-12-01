@@ -16,3 +16,5 @@ export const UtopiaKeys: Array<string> = [
   UTOPIA_UID_PARENTS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 ]
+
+export const SCENE_LIKE_BEHAVIOR_KEY = '<<<SCENELIKE>>>'

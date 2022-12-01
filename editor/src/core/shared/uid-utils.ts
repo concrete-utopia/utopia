@@ -24,7 +24,7 @@ import * as PP from './property-path'
 import * as EP from './element-path'
 import { objectMap, objectValues } from './object-utils'
 import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../model/utopia-constants'
+import { SCENE_LIKE_BEHAVIOR_KEY, UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../model/utopia-constants'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
 
@@ -312,4 +312,26 @@ export function findElementWithUID(
     case 'IMPORT_STATEMENT':
       return null
   }
+}
+
+export function filterValidPaths(
+  validPaths: Set<string>,
+  pathsToFilter: Array<PathWithString>,
+): Array<PathWithString> {
+  const result = pathsToFilter.filter((pathWithString) => {
+    // if the path's immediate parent or instantiator component contains SCENE_LIKE_BEHAVIOR_KEY, treat them as valid path
+    const anyParentSceneLike =
+      pathWithString.path.parts.at(-1)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
+    const instantiatorSceneLike =
+      pathWithString.path.parts.at(-2)?.some((id) => id.includes(SCENE_LIKE_BEHAVIOR_KEY)) ?? false
+
+    if (anyParentSceneLike || instantiatorSceneLike) {
+      return true
+    }
+
+    // otherwise fallback to validPaths
+    const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+    return validPaths.has(staticPath)
+  })
+  return result
 }

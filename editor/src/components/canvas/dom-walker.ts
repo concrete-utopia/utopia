@@ -67,6 +67,7 @@ import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import {
+  filterValidPaths,
   getDeepestPathOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
@@ -381,10 +382,7 @@ function runSelectiveDomWalker(
 
       if (element != null) {
         const pathsWithStrings = getPathWithStringsOnDomElement(element)
-        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-          return validPaths.has(staticPath)
-        })
+        const foundValidPaths = filterValidPaths(validPaths, pathsWithStrings)
 
         const { collectedMetadata } = collectAndCreateMetadataForElement(
           element,
@@ -1003,9 +1001,8 @@ function walkCanvasRootFragment(
     EP.fromString,
     canvasRoot.getAttribute('data-utopia-root-element-path'),
   )
-  const validPaths: Array<ElementPath> | null = optionalMap(
-    (paths) => paths.split(' ').map(EP.fromString),
-    canvasRoot.getAttribute('data-utopia-valid-paths'),
+  const validPaths: Set<string> | null = new Set(
+    optionalMap((paths) => paths.split(' '), canvasRoot.getAttribute('data-utopia-valid-paths')),
   )
 
   if (canvasRootPath == null || validPaths == null) {
@@ -1067,7 +1064,7 @@ function walkCanvasRootFragment(
 
 function walkScene(
   scene: HTMLElement,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<string>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
@@ -1143,7 +1140,7 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   closestOffsetParentPath: ElementPath,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<string>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
@@ -1200,7 +1197,7 @@ function walkElements(
   element: Node,
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<string>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
@@ -1259,12 +1256,7 @@ function walkElements(
     // Check this is a path we're interested in, otherwise skip straight to the children
     const foundValidPaths = isFeatureEnabled('Disable Path Validation')
       ? pathsWithStrings
-      : pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-          return validPaths.some((validPath) => {
-            return EP.pathsEqual(staticPath, validPath)
-          })
-        })
+      : filterValidPaths(validPaths, pathsWithStrings)
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
