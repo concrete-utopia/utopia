@@ -1,23 +1,23 @@
 import React from 'react'
-import { stripNulls } from '../../core/shared/array-utils'
+import { Size } from 'react-virtualized-auto-sizer'
 import {
   ArbitraryJSBlock,
   ElementsWithin,
   getJSXElementNameAsString,
-  isJSXElement,
   JSXAttributesPart,
   JSXElement,
   JSXElementChild,
   TopLevelElement,
 } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ParseSuccess, ParsedTextFile } from '../../core/shared/project-file-types'
+import { ParseSuccess, ParsedTextFile, ProjectContents } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { ProjectContentTreeRoot } from '../assets'
+import { contentsToTree, ProjectContentTreeRoot, treeToContents } from '../assets'
 
 interface CodeOutlineEntryBase {
   depth: number
   key: string
+  path?: string
 }
 
 type CodeOutlineEntryModel =
@@ -60,13 +60,15 @@ function jsxElementChildToModel(
     return jsxElementToModel(depth, key, child)
   }
 
+  const fullKey = key + ':' + child.uniqueID
+
   if (child.type === 'JSX_FRAGMENT') {
     if (child.children.length === 0) {
       return [
         {
           type: 'text',
           depth: depth + 1,
-          key: key + child.uniqueID + 'uni',
+          key: fullKey,
           content: '</>',
         },
       ]
@@ -76,14 +78,14 @@ function jsxElementChildToModel(
       {
         type: 'text',
         depth: depth + 1,
-        key: key + child.uniqueID + 'open',
+        key: fullKey,
         content: '<>',
       },
-      ...child.children.flatMap((c) => jsxElementChildToModel(depth + 1, key + child.uniqueID, c)),
+      ...child.children.flatMap((c) => jsxElementChildToModel(depth + 1, fullKey, c)),
       {
         type: 'text',
         depth: depth + 1,
-        key: key + child.uniqueID + 'close',
+        key: fullKey,
         content: '</>',
       },
     ]
@@ -94,7 +96,7 @@ function jsxElementChildToModel(
       {
         type: 'text',
         depth: depth + 1,
-        key: key + child.uniqueID,
+        key: fullKey,
         content: child.text,
       },
     ]
@@ -105,7 +107,7 @@ function jsxElementChildToModel(
       {
         type: 'text',
         depth: depth + 1,
-        key: key + child.uniqueID,
+        key: fullKey,
         content: '{' + child.originalJavascript + '}',
       },
     ]
@@ -118,6 +120,7 @@ function jsxElementToModel(
   key: string,
   jsxElement: JSXElement,
 ): Array<CodeOutlineEntryModel> {
+  const fullKey = key + ':' + jsxElement.uid
   const elementsWithin: Array<CodeOutlineEntryModel> = jsxElement.props
     .map((p) => elementsWithinProp(p))
     .filter(notNull)
@@ -125,7 +128,7 @@ function jsxElementToModel(
       Object.entries(p).map(([kkey, t]) => ({
         type: 'text',
         depth: depth + 2,
-        key: key + jsxElement.uid + kkey,
+        key: fullKey + kkey,
         content: formatAsOpenCloseTag(getJSXElementNameAsString(t.name)),
       })),
     )
@@ -136,7 +139,7 @@ function jsxElementToModel(
         type: 'jsxTag',
         depth: depth + 1,
         half: 'uni',
-        key: key + jsxElement.uid,
+        key: fullKey,
         name: getJSXElementNameAsString(jsxElement.name),
       },
     ]
@@ -147,14 +150,14 @@ function jsxElementToModel(
       {
         type: 'text',
         depth: depth + 1,
-        key: key + jsxElement.uid,
+        key: fullKey,
         content: '<' + getJSXElementNameAsString(jsxElement.name),
       },
       ...elementsWithin,
       {
         type: 'text',
         depth: depth + 1,
-        key: key + jsxElement.uid,
+        key: fullKey,
         content: '/>',
       },
     ]
@@ -164,18 +167,16 @@ function jsxElementToModel(
     {
       type: 'jsxTag',
       depth: depth + 1,
-      key: key + jsxElement.uid + 'open',
+      key: fullKey,
       half: 'open',
       name: getJSXElementNameAsString(jsxElement.name),
     },
     ...elementsWithin,
-    ...jsxElement.children.flatMap((c) =>
-      jsxElementChildToModel(depth + 1, key + jsxElement.uid, c),
-    ),
+    ...jsxElement.children.flatMap((c) => jsxElementChildToModel(depth + 1, fullKey, c)),
     {
       type: 'jsxTag',
       depth: depth + 1,
-      key: key + jsxElement.uid + 'close',
+      key: fullKey + 'close',
       half: 'close',
       name: getJSXElementNameAsString(jsxElement.name),
     },
@@ -192,7 +193,6 @@ function arbitraryJsBlockModel(
   }
 
   return [
-    { type: 'placeholder', depth: depth, key: key + block.uniqueID, value: 'Elements within' },
     ...Object.entries(block.elementsWithin).flatMap(([k, e]) =>
       jsxElementToModel(depth + 1, k + key, e),
     ),
@@ -217,10 +217,13 @@ function topLevelElementToModel(
   }
 
   const name = topLevelElement.name ?? 'name'
+
+  const fullName = key + ':' + name
+
   return [
-    { type: 'jsxTag', half: 'open', depth: depth, key: key + name, name: name },
-    ...jsxElementChildToModel(depth + 1, key + name, topLevelElement.rootElement),
-    { type: 'jsxTag', half: 'close', depth: depth, key: key + name, name: name },
+    { type: 'jsxTag', half: 'open', depth: depth, key: fullName, name: name },
+    ...jsxElementChildToModel(depth + 1, fullName, topLevelElement.rootElement),
+    { type: 'jsxTag', half: 'close', depth: depth, key: fullName, name: name },
   ]
 }
 
@@ -231,7 +234,10 @@ function codeFileToModel(
 ): Array<CodeOutlineEntryModel> {
   return [
     ...success.topLevelElements.flatMap((t) =>
-      topLevelElementToModel(depth + 1, key + 'topLevelElements', t),
+      topLevelElementToModel(depth + 1, key + 'topLevelElements', t).map((e) => ({
+        ...e,
+        path: (e.path ?? '') + e.key,
+      })),
     ),
     ...(optionalMap(
       (a): Array<CodeOutlineEntryModel> => arbitraryJsBlockModel(depth + 1, key, a),
@@ -241,44 +247,53 @@ function codeFileToModel(
 }
 
 export function codeOutlineToModel(
-  depth: number,
-  contents: ProjectContentTreeRoot,
+  path: string,
+  root: ProjectContentTreeRoot,
 ): Array<CodeOutlineEntryModel> {
-  return Object.entries(contents).flatMap(([key, branch]): Array<CodeOutlineEntryModel> => {
-    if (branch.type === 'PROJECT_CONTENT_DIRECTORY') {
-      return [
-        { type: 'directory', name: branch.fullPath, key: key, depth: depth },
-        ...codeOutlineToModel(depth + 1, branch.children),
-      ]
+  const contents = treeToContents(root)
+  return Object.keys(contents).flatMap((key) => {
+    const entry = contents[key]
+    const depth = key.split('/').length
+    switch (entry.type) {
+      case 'ASSET_FILE':
+        return [{ type: 'assetFile', name: key, key: key, depth: depth }]
+      case 'DIRECTORY':
+        if (key === path) {
+          return []
+        }
+        const childrenKeys = Object.keys(contents).filter(
+          (e) => e !== key && e.startsWith(key + '/'),
+        )
+        if (childrenKeys.length === 0) {
+          return []
+        }
+        const childrenTree: ProjectContents = {}
+        childrenKeys.forEach((k) => {
+          childrenTree[k] = contents[k]
+        })
+        return [
+          { type: 'directory', name: key, key: key, depth: depth },
+          ...codeOutlineToModel(key, contentsToTree(childrenTree)),
+        ]
+      case 'IMAGE_FILE':
+        return [{ type: 'imageFile', name: key, key: key, depth: depth }]
+      case 'TEXT_FILE':
+        const parsed = parsedTextFile(entry.fileContents.parsed)
+        return [
+          {
+            type: 'codeFile',
+            name: key,
+            depth: depth,
+            key: key,
+            parsed: parsed != null ? 'parsed' : 'unparsed',
+          },
+          ...(optionalMap((p) => codeFileToModel(depth + 1, key, p), parsed) ?? []),
+        ]
     }
-
-    if (branch.content.type === 'ASSET_FILE') {
-      return [{ type: 'assetFile', name: branch.fullPath, key: key, depth: depth }]
-    }
-
-    if (branch.content.type === 'IMAGE_FILE') {
-      return [{ type: 'imageFile', name: branch.fullPath, key: key, depth: depth }]
-    }
-
-    if (branch.content.type === 'TEXT_FILE') {
-      const parsed = parsedTextFile(branch.content.fileContents.parsed)
-      return [
-        {
-          type: 'codeFile',
-          name: branch.fullPath,
-          depth: depth,
-          key: key,
-          parsed: parsed != null ? 'parsed' : 'unparsed',
-        },
-        ...(optionalMap((p) => codeFileToModel(depth + 1, key, p), parsed) ?? []),
-      ]
-    }
-
-    return []
   })
 }
 
-function renderCodeOutlineEntry(entry: CodeOutlineEntryModel) {
+function renderCodeOutlineEntry(entry: CodeOutlineEntryModel, collapsed: boolean) {
   switch (entry.type) {
     case 'directory':
       return `Directory: ${entry.name}`
@@ -296,7 +311,7 @@ function renderCodeOutlineEntry(entry: CodeOutlineEntryModel) {
       return `JSXElement: ${entry.name}`
     case 'jsxTag':
       if (entry.half === 'uni') {
-        return `<${entry.name}/>`
+        return `<${entry.name} />`
       }
       return entry.half === 'open' ? `<${entry.name}>` : `</${entry.name}>`
     case 'text':
@@ -308,7 +323,50 @@ function renderCodeOutlineEntry(entry: CodeOutlineEntryModel) {
 
 interface CodeOutlineViewProps {
   entry: CodeOutlineEntryModel
+  collapsed: boolean
 }
+
+export const CodeOutlineList = React.memo(
+  ({ outlineModel, size }: { outlineModel: CodeOutlineEntryModel[]; size: Size }) => {
+    const [collapsed, setCollapsed] = React.useState<Array<string>>([])
+
+    const collapseEntry = React.useCallback(
+      (entry: CodeOutlineEntryModel) => () => {
+        if (entry.path == null) {
+          return
+        }
+        if (collapsed.includes(entry.path)) {
+          setCollapsed(collapsed.filter((c) => c !== entry.path))
+        } else {
+          setCollapsed(collapsed.concat(entry.path))
+        }
+      },
+      [collapsed],
+    )
+    const isEntryOpen = (entry: CodeOutlineEntryModel) => {
+      return !collapsed.some((c) => entry.path?.startsWith(c + ':'))
+    }
+
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: size.height,
+          overflowX: 'hidden',
+        }}
+      >
+        {outlineModel.filter(isEntryOpen).map((entry, i) => (
+          <div key={i} onClick={collapseEntry(entry)}>
+            <CodeOutlineView
+              entry={entry}
+              collapsed={entry.path != null && collapsed.includes(entry.path)}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  },
+)
 
 export const CodeOutlineView = React.memo<CodeOutlineViewProps>((props) => {
   return (
@@ -317,7 +375,7 @@ export const CodeOutlineView = React.memo<CodeOutlineViewProps>((props) => {
         paddingLeft: props.entry.depth * 12,
       }}
     >
-      {renderCodeOutlineEntry(props.entry)}
+      {renderCodeOutlineEntry(props.entry, props.collapsed)}
     </div>
   )
 })

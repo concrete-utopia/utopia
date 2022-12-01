@@ -15,20 +15,12 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import {
-  Section,
-  SectionTitleRow,
-  FlexRow,
-  Title,
-  SectionBodyArea,
-  FlexColumn,
-  InspectorSectionHeader,
-} from '../../uuiui'
+import { Section, SectionTitleRow, FlexRow, Title, SectionBodyArea, FlexColumn } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { when } from '../../utils/react-conditionals'
-import { codeOutlineToModel, CodeOutlineView } from './code-outline'
+import { CodeOutlineList, codeOutlineToModel, CodeOutlineView } from './code-outline'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -136,7 +128,7 @@ export const NavigatorComponent = React.memo(() => {
     (store) => store.editor.projectContents,
     'NavigatorComponent projectContents',
   )
-  const outlineModel = codeOutlineToModel(0, projectContents)
+  const outlineModel = codeOutlineToModel('/', projectContents)
 
   const itemListRef = React.createRef<FixedSizeList>()
 
@@ -195,19 +187,7 @@ export const NavigatorComponent = React.memo(() => {
     if (size.height == null) {
       return null
     } else {
-      return (
-        <div
-          style={{
-            width: '100%',
-            height: size.height,
-            overflowX: 'hidden',
-          }}
-        >
-          {outlineModel.map((entry, i) => (
-            <CodeOutlineView key={i} entry={entry} />
-          ))}
-        </div>
-      )
+      return <CodeOutlineList size={size} outlineModel={outlineModel} />
     }
   }
 
