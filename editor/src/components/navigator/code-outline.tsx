@@ -2,6 +2,7 @@ import React from 'react'
 import { Size } from 'react-virtualized-auto-sizer'
 import {
   ArbitraryJSBlock,
+  childOrBlockIsChild,
   ElementsWithin,
   getJSXElementNameAsString,
   JSXAttributesPart,
@@ -108,8 +109,27 @@ function jsxElementChildToModel(
         type: 'text',
         depth: depth + 1,
         key: fullKey,
-        content: '{' + child.originalJavascript + '}',
+        content: '{[' + child.originalJavascript + ']}',
       },
+    ]
+  }
+
+  if (child.type === 'JSX_CONDITIONAL_EXPRESSION') {
+    const thenBranch = childOrBlockIsChild(child.whenTrue)
+      ? jsxElementChildToModel(depth + 1, fullKey + '~true', child.whenTrue)
+      : []
+    const elseBranch = childOrBlockIsChild(child.whenFalse)
+      ? jsxElementChildToModel(depth + 1, fullKey + '~false', child.whenFalse)
+      : []
+    return [
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: fullKey,
+        content: 'Condition',
+      },
+      ...thenBranch,
+      ...elseBranch,
     ]
   }
   assertNever(child)
@@ -373,6 +393,9 @@ export const CodeOutlineView = React.memo<CodeOutlineViewProps>((props) => {
     <div
       style={{
         paddingLeft: props.entry.depth * 12,
+        paddingTop: 4,
+        paddingBottom: 4,
+        fontFamily: '',
       }}
     >
       {renderCodeOutlineEntry(props.entry, props.collapsed)}
