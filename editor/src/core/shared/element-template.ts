@@ -811,8 +811,8 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
       return element.children.some(elementReferencesElsewhere)
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
-        elementReferencesElsewhere(element.whenTrue) ||
-        elementReferencesElsewhere(element.whenFalse)
+        (childOrBlockIsChild(element.whenTrue) && elementReferencesElsewhere(element.whenTrue)) ||
+        (childOrBlockIsChild(element.whenFalse) && elementReferencesElsewhere(element.whenFalse))
       )
     default:
       const _exhaustiveCheck: never = element
@@ -1051,15 +1051,15 @@ export interface JSXConditionalExpression {
   type: 'JSX_CONDITIONAL_EXPRESSION'
   condition: JSXAttribute
   overriddenCondition: boolean | null
-  whenTrue: JSXElementChild
-  whenFalse: JSXElementChild
+  whenTrue: ChildOrAttribute
+  whenFalse: ChildOrAttribute
   uniqueID: string
 }
 
 export function jsxConditionalExpression(
   condition: JSXAttribute,
-  whenTrue: JSXElementChild,
-  whenFalse: JSXElementChild,
+  whenTrue: ChildOrAttribute,
+  whenFalse: ChildOrAttribute,
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
@@ -1838,4 +1838,28 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
+}
+
+export type ChildOrAttribute = JSXElementChild | JSXAttribute
+
+export function childOrBlockIsChild(
+  childOrBlock: ChildOrAttribute,
+): childOrBlock is JSXElementChild {
+  switch (childOrBlock.type) {
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'JSX_ELEMENT':
+    case 'JSX_ARBITRARY_BLOCK':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+      return true
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return false
+    default:
+      const _exhaustiveCheck: never = childOrBlock
+      throw new Error(`Unhandled type ${JSON.stringify(childOrBlock)}`)
+  }
 }

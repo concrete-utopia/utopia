@@ -20,6 +20,7 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
   emptyComments,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -310,34 +311,38 @@ export function renderCoreElement(
         jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
-      const childPath = optionalMap(
-        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
-        elementPath,
-      )
+      if (childOrBlockIsChild(actualElement)) {
+        const childPath = optionalMap(
+          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+          elementPath,
+        )
 
-      return renderCoreElement(
-        actualElement,
-        childPath,
-        rootScope,
-        inScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-      )
+        return renderCoreElement(
+          actualElement,
+          childPath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+        )
+      } else {
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+      }
     }
     default:
       const _exhaustiveCheck: never = element

@@ -61,6 +61,7 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
+  childOrBlockIsChild,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -705,8 +706,12 @@ function walkElements(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkElements(jsxElementChild.whenTrue, walkWith)
-      walkElements(jsxElementChild.whenFalse, walkWith)
+      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
+        walkElements(jsxElementChild.whenTrue, walkWith)
+      }
+      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
+        walkElements(jsxElementChild.whenFalse, walkWith)
+      }
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild
@@ -739,8 +744,12 @@ function walkAllJSXElementChilds(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
-      walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
+      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
+        walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
+      }
+      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
+        walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
+      }
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild

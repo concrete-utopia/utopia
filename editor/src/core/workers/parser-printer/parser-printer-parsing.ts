@@ -8,6 +8,7 @@ import {
   traverseArray,
 } from '../../shared/array-utils'
 import {
+  alternativeEither,
   applicative2Either,
   applicative3Either,
   bimapEither,
@@ -1462,17 +1463,17 @@ function parseElementProps(
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
 
-type LiteralLikeTypes = TS.StringLiteral | TS.NumericLiteral | TS.BigIntLiteral | TS.BooleanLiteral
+type LiteralLikeTypes =
+  | TS.StringLiteral
+  | TS.NumericLiteral
+  | TS.BigIntLiteral
+  | TS.BooleanLiteral
+  | TS.NullLiteral
 
 type TSTextOrExpression = TS.JsxText | TS.JsxExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement
 type ElementsToParse = Array<
-  | TSJSXElement
-  | TSTextOrExpression
-  | TS.JsxOpeningFragment
-  | TS.JsxClosingFragment
-  | TS.JsxFragment
-  | LiteralLikeTypes
+  TSJSXElement | TSTextOrExpression | TS.JsxOpeningFragment | TS.JsxClosingFragment | TS.JsxFragment
 >
 
 export function isTrueLiteral(node: TS.Node): node is TS.TrueLiteral {
@@ -1481,6 +1482,10 @@ export function isTrueLiteral(node: TS.Node): node is TS.TrueLiteral {
 
 export function isFalseLiteral(node: TS.Node): node is TS.FalseLiteral {
   return node.kind === TS.SyntaxKind.FalseKeyword
+}
+
+export function isNullLiteral(node: TS.Node): node is TS.NullLiteral {
+  return node.kind === TS.SyntaxKind.NullKeyword
 }
 
 function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsToParse> {
@@ -1492,12 +1497,7 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxSelfClosingElement(node) ||
       TS.isJsxText(node) ||
       TS.isJsxExpression(node) ||
-      TS.isJsxFragment(node) ||
-      TS.isStringLiteral(node) ||
-      TS.isNumericLiteral(node) ||
-      TS.isBigIntLiteral(node) ||
-      isTrueLiteral(node) ||
-      isFalseLiteral(node)
+      TS.isJsxFragment(node)
     ) {
       result.push(node)
     } else {
@@ -1889,19 +1889,6 @@ export function parseOutJSXElements(
             }
             break
           }
-          case TS.SyntaxKind.StringLiteral:
-          case TS.SyntaxKind.NumericLiteral:
-          case TS.SyntaxKind.BigIntLiteral:
-          case TS.SyntaxKind.TrueKeyword:
-          case TS.SyntaxKind.FalseKeyword: {
-            const possibleText = produceArbitraryBlockFromJsxExpression(elem)
-            if (isLeft(possibleText)) {
-              return possibleText
-            } else {
-              addParsedElement(possibleText.value)
-            }
-            break
-          }
           default:
             const _exhaustiveCheck: never = elem
             throw new Error(`Unhandled elem type ${JSON.stringify(elem)}`)
@@ -2055,27 +2042,38 @@ export function parseOutJSXElements(
       )
     }
 
+    function parseClause(
+      clauseExpression: TS.Expression,
+    ): Either<string, SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>> {
+      const elementParseResult = mapEither((arr) => arr[0], innerParse([clauseExpression]))
+      const attributeParseResult = parseAttribute(clauseExpression)
+      return alternativeEither<
+        string,
+        SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>
+      >(elementParseResult, attributeParseResult)
+    }
+
     const innerWhenTrue = TS.isParenthesizedExpression(expression.whenTrue)
       ? expression.whenTrue.expression
       : expression.whenTrue
-    const whenTrueBlock = innerParse([innerWhenTrue])
+    const whenTrueBlock = parseClause(innerWhenTrue)
     const innerWhenFalse = TS.isParenthesizedExpression(expression.whenFalse)
       ? expression.whenFalse.expression
       : expression.whenFalse
-    const whenFalseBlock = innerParse([innerWhenFalse])
+    const whenFalseBlock = parseClause(innerWhenFalse)
 
     return applicative3Either<
       string,
       WithParserMetadata<JSXAttribute>,
-      SuccessfullyParsedElement[],
-      SuccessfullyParsedElement[],
+      SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>,
+      SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>,
       WithParserMetadata<SuccessfullyParsedElement>
     >(
       (condition, whenTrue, whenFalse) => {
         const conditionalExpression = jsxConditionalExpression(
           condition.value,
-          whenTrue[0].value,
-          whenFalse[0].value,
+          whenTrue.value,
+          whenFalse.value,
         )
         return withParserMetadata(
           successfullyParsedElement(sourceFile, expression, conditionalExpression),

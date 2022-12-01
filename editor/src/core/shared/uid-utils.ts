@@ -13,6 +13,7 @@ import {
   TopLevelElement,
   jsxElement,
   emptyComments,
+  childOrBlockIsChild,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -282,7 +283,19 @@ export function findElementWithUID(
         }
         return null
       case 'JSX_CONDITIONAL_EXPRESSION':
-        return findForJSXElementChild(element.whenTrue) ?? findForJSXElementChild(element.whenFalse)
+        if (childOrBlockIsChild(element.whenTrue)) {
+          const findResult = findForJSXElementChild(element.whenTrue)
+          if (findResult != null) {
+            return findResult
+          }
+        }
+        if (childOrBlockIsChild(element.whenFalse)) {
+          const findResult = findForJSXElementChild(element.whenFalse)
+          if (findResult != null) {
+            return findResult
+          }
+        }
+        return null
       default:
         const _exhaustiveCheck: never = element
         throw new Error(`Unhandled element type ${JSON.stringify(element)}`)

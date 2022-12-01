@@ -35,6 +35,7 @@ import {
   isJSXConditionalExpression,
   isSpreadAssignment,
   isJSXAttributeOtherJavaScript,
+  childOrBlockIsChild,
 } from '../shared/element-template'
 import {
   Imports,
@@ -337,8 +338,12 @@ function transformAtPathOptionally<T extends JSXElementChild>(
         }
       } else if (isJSXConditionalExpression(element)) {
         if (getUtopiaID(element) === firstUIDOrIndex) {
-          const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
-          const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
+          const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
+            ? findAndTransformAtPathInner(element.whenTrue, tailPath)
+            : null
+          const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
+            ? findAndTransformAtPathInner(element.whenFalse, tailPath)
+            : null
           if (updatedWhenTrue != null) {
             return {
               ...element,
@@ -352,7 +357,10 @@ function transformAtPathOptionally<T extends JSXElementChild>(
             }
           }
         }
-        if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+        if (
+          childOrBlockIsChild(element.whenTrue) &&
+          getUtopiaID(element.whenTrue) === firstUIDOrIndex
+        ) {
           const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
           if (updated != null && isJSXElement(updated)) {
             return {
@@ -361,7 +369,10 @@ function transformAtPathOptionally<T extends JSXElementChild>(
             }
           }
         }
-        if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+        if (
+          childOrBlockIsChild(element.whenFalse) &&
+          getUtopiaID(element.whenFalse) === firstUIDOrIndex
+        ) {
           const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
           if (updated != null && isJSXElement(updated)) {
             return {
@@ -466,20 +477,28 @@ export function findJSXElementChildAtPath(
         } else {
           const children = [element.whenTrue, element.whenFalse]
           for (const child of children) {
-            const childResult = findAtPathInner(child, tailPath)
-            if (childResult != null) {
-              return childResult
+            if (childOrBlockIsChild(child)) {
+              const childResult = findAtPathInner(child, tailPath)
+              if (childResult != null) {
+                return childResult
+              }
             }
           }
         }
       }
-      if (firstUIDOrIndex === getUtopiaID(element.whenTrue)) {
+      if (
+        childOrBlockIsChild(element.whenTrue) &&
+        firstUIDOrIndex === getUtopiaID(element.whenTrue)
+      ) {
         const whenTrueResult = findAtPathInner(element.whenTrue, workingPath)
         if (whenTrueResult != null) {
           return whenTrueResult
         }
       }
-      if (firstUIDOrIndex === getUtopiaID(element.whenFalse)) {
+      if (
+        childOrBlockIsChild(element.whenFalse) &&
+        firstUIDOrIndex === getUtopiaID(element.whenFalse)
+      ) {
         const whenFalseResult = findAtPathInner(element.whenFalse, workingPath)
         if (whenFalseResult != null) {
           return whenFalseResult
@@ -926,8 +945,10 @@ export function elementUsesProperty(
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
         attributeUsesProperty(element.condition, propsParam, property) ||
-        elementUsesProperty(element.whenTrue, propsParam, property) ||
-        elementUsesProperty(element.whenFalse, propsParam, property)
+        (childOrBlockIsChild(element.whenTrue) &&
+          elementUsesProperty(element.whenTrue, propsParam, property)) ||
+        (childOrBlockIsChild(element.whenFalse) &&
+          elementUsesProperty(element.whenFalse, propsParam, property))
       )
     default:
       const _exhaustiveCheck: never = element
