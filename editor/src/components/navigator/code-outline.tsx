@@ -1,8 +1,11 @@
 import React from 'react'
+import { stripNulls } from '../../core/shared/array-utils'
 import {
   ArbitraryJSBlock,
+  ElementsWithin,
   getJSXElementNameAsString,
   isJSXElement,
+  JSXAttributesPart,
   JSXElement,
   JSXElementChild,
   TopLevelElement,
@@ -115,7 +118,19 @@ function jsxElementToModel(
   key: string,
   jsxElement: JSXElement,
 ): Array<CodeOutlineEntryModel> {
-  if (jsxElement.children.length === 0) {
+  const elementsWithin: Array<CodeOutlineEntryModel> = jsxElement.props
+    .map((p) => elementsWithinProp(p))
+    .filter(notNull)
+    .flatMap((p) =>
+      Object.entries(p).map(([kkey, t]) => ({
+        type: 'text',
+        depth: depth + 2,
+        key: key + jsxElement.uid + kkey,
+        content: formatAsOpenCloseTag(getJSXElementNameAsString(t.name)),
+      })),
+    )
+
+  if (jsxElement.children.length === 0 && elementsWithin.length === 0) {
     return [
       {
         type: 'jsxTag',
@@ -123,6 +138,24 @@ function jsxElementToModel(
         half: 'uni',
         key: key + jsxElement.uid,
         name: getJSXElementNameAsString(jsxElement.name),
+      },
+    ]
+  }
+
+  if (jsxElement.children.length === 0) {
+    return [
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + jsxElement.uid,
+        content: '<' + getJSXElementNameAsString(jsxElement.name),
+      },
+      ...elementsWithin,
+      {
+        type: 'text',
+        depth: depth + 1,
+        key: key + jsxElement.uid,
+        content: '/>',
       },
     ]
   }
@@ -135,6 +168,7 @@ function jsxElementToModel(
       half: 'open',
       name: getJSXElementNameAsString(jsxElement.name),
     },
+    ...elementsWithin,
     ...jsxElement.children.flatMap((c) =>
       jsxElementChildTodModel(depth + 1, key + jsxElement.uid, c),
     ),
@@ -200,15 +234,7 @@ function codeFileModel(
       topLevelElementToModel(depth + 1, key + 'topLevelElements', t),
     ),
     ...(optionalMap(
-      (a): Array<CodeOutlineEntryModel> => [
-        {
-          type: 'placeholder',
-          depth: depth,
-          key: key + 'combinedTopLevelArbitraryBlock',
-          value: 'Combined top-level arbitrary block:',
-        },
-        ...arbitraryJsBlockModel(depth + 1, key, a),
-      ],
+      (a): Array<CodeOutlineEntryModel> => arbitraryJsBlockModel(depth + 1, key, a),
       success.combinedTopLevelArbitraryBlock,
     ) ?? []),
   ]
@@ -301,4 +327,23 @@ function parsedTextFile(file: ParsedTextFile): ParseSuccess | null {
     return file
   }
   return null
+}
+
+function elementsWithinProp(attribute: JSXAttributesPart): ElementsWithin | null {
+  if (
+    attribute.type === 'JSX_ATTRIBUTES_SPREAD' ||
+    attribute.value.type !== 'ATTRIBUTE_OTHER_JAVASCRIPT'
+  ) {
+    return null
+  }
+
+  return attribute.value.elementsWithin
+}
+
+function notNull<T>(t: T | null): t is T {
+  return t != null
+}
+
+function formatAsOpenCloseTag(name: string): string {
+  return '<' + name + '/>'
 }
