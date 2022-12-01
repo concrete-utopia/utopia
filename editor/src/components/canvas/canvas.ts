@@ -11,6 +11,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  zeroCanvasRect,
 } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -49,19 +50,7 @@ function getFramesInCanvasContextUncached(
     frames: Array<FrameWithPath>
   } {
     const component = MetadataUtils.findElementByElementPath(metadata, componentTree.path)
-    if (component == null) {
-      return {
-        boundingRect: null,
-        frames: [],
-      }
-    }
-    const globalFrame = component.globalFrame
-    if (globalFrame == null) {
-      return {
-        boundingRect: null,
-        frames: [],
-      }
-    }
+    const globalFrame = component?.globalFrame ?? null
 
     const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
     const includeClippedNext = useBoundingFrames && overflows
@@ -78,27 +67,32 @@ function getFramesInCanvasContextUncached(
 
     const childFrames = children.map((child) => {
       const recurseResults = recurseChildren(child)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const unfurledFrames = unfurledComponents.map((unfurledElement) => {
       const recurseResults = recurseChildren(unfurledElement)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const allFrames = [...childFrames, ...unfurledFrames]
     const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
     if (allFrames.length > 0 && allChildrenBounds != null) {
-      const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
-      const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
-      const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
+      const allChildrenFrames = allFrames.flatMap((frameDetails) => frameDetails.frames)
+      const boundingRect =
+        globalFrame == null
+          ? allChildrenBounds
+          : Utils.boundingRectangle(globalFrame, allChildrenBounds)
+      const toAppend: FrameWithPath = { path: componentTree.path, frame: boundingRect }
       return {
         boundingRect: boundingRect,
         frames: [toAppend].concat(allChildrenFrames),
       }
     } else {
-      const boundingRect = globalFrame
-      const toAppend = { path: component.elementPath, frame: boundingRect }
+      const boundingRect = globalFrame ?? zeroCanvasRect
+      const toAppend: FrameWithPath = { path: componentTree.path, frame: boundingRect }
       return { boundingRect: boundingRect, frames: [toAppend] }
     }
   }
@@ -127,20 +121,23 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 2 }),
-  jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
+  jumpToParent(
+    selectedViews: Array<ElementPath>,
+    metadata: ElementInstanceMetadataMap,
+  ): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
         // Nothing is selected, so do nothing.
         return null
       case 1:
         // Only a single element is selected...
-        const parentPath = EP.parentPath(selectedViews[0])
-        if (parentPath == null) {
+        const parent = MetadataUtils.getClosestParentWithMetadata(metadata, selectedViews[0])
+        if (parent == null) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
         } else {
           // ...the selected element has a parent, so select that.
-          return parentPath
+          return parent.elementPath
         }
       default:
         // Multiple elements are selected so select the topmost element amongst them.

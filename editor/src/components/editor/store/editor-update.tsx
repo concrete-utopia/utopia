@@ -237,6 +237,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'SET_OVERRIDE_PROP':
+      return UPDATE_FNS.SET_OVERRIDE_PROP(action, state)
+    case 'SET_OVERRIDE_CONDITIONAL':
+      return UPDATE_FNS.SET_OVERRIDE_CONDITIONAL(action, state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_PROP_WITH_ELEMENT_PATH':

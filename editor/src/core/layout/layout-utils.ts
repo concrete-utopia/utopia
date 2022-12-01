@@ -398,31 +398,36 @@ export function switchPinnedChildToFlex(
     })
   }
 
-  const updatedComponents = transformElementAtPath(components, target, (e: JSXElement) => {
-    // Remove the pinning props first...
-    const pinnedPropsRemoved = unsetJSXValuesAtPaths(e.props, [
-      stylePropPathMappingFn('left', propertyTarget),
-      stylePropPathMappingFn('top', propertyTarget),
-      stylePropPathMappingFn('bottom', propertyTarget),
-      stylePropPathMappingFn('right', propertyTarget),
-      stylePropPathMappingFn('width', propertyTarget),
-      stylePropPathMappingFn('height', propertyTarget),
-      stylePropPathMappingFn('position', propertyTarget),
-    ])
-    // ...Add in the flex properties.
-    const flexPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
-      pinnedPropsRemoved,
-    )
-    if (isLeft(flexPropsAdded)) {
-      return e
-    } else {
-      return {
-        ...e,
-        props: flexPropsAdded.value,
+  const updatedComponents = transformElementAtPath(
+    components,
+    target,
+    (e: JSXElement) => {
+      // Remove the pinning props first...
+      const pinnedPropsRemoved = unsetJSXValuesAtPaths(e.props, [
+        stylePropPathMappingFn('left', propertyTarget),
+        stylePropPathMappingFn('top', propertyTarget),
+        stylePropPathMappingFn('bottom', propertyTarget),
+        stylePropPathMappingFn('right', propertyTarget),
+        stylePropPathMappingFn('width', propertyTarget),
+        stylePropPathMappingFn('height', propertyTarget),
+        stylePropPathMappingFn('position', propertyTarget),
+      ])
+      // ...Add in the flex properties.
+      const flexPropsAdded = flatMapEither(
+        (props) => setJSXValuesAtPaths(props, propsToAdd),
+        pinnedPropsRemoved,
+      )
+      if (isLeft(flexPropsAdded)) {
+        return e
+      } else {
+        return {
+          ...e,
+          props: flexPropsAdded.value,
+        }
       }
-    }
-  })
+    },
+    isJSXElement,
+  )
 
   const updatedMetadata = switchLayoutMetadata(
     currentContextMetadata,
@@ -801,24 +806,29 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
 
   const propsToRemove: Array<StyleLayoutProp> = ['bottom', 'right', 'flexBasis']
 
-  return transformElementAtPath(components, target, (e: JSXElement) => {
-    const flexPropsRemoved = unsetJSXValuesAtPaths(
-      e.props,
-      propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
-    )
-    const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
-      flexPropsRemoved,
-    )
-    if (isLeft(pinnedPropsAdded)) {
-      return e
-    } else {
-      return {
-        ...e,
-        props: pinnedPropsAdded.value,
+  return transformElementAtPath(
+    components,
+    target,
+    (e: JSXElement) => {
+      const flexPropsRemoved = unsetJSXValuesAtPaths(
+        e.props,
+        propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
+      )
+      const pinnedPropsAdded = flatMapEither(
+        (props) => setJSXValuesAtPaths(props, propsToAdd),
+        flexPropsRemoved,
+      )
+      if (isLeft(pinnedPropsAdded)) {
+        return e
+      } else {
+        return {
+          ...e,
+          props: pinnedPropsAdded.value,
+        }
       }
-    }
-  })
+    },
+    isJSXElement,
+  )
 }
 
 function removeFlexAndAddPinnedPropsToComponent(
@@ -854,24 +864,29 @@ function removeFlexAndAddPinnedPropsToComponent(
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['flexBasis']
 
-  return transformElementAtPath(components, target, (e: JSXElement) => {
-    const flexPropsRemoved = unsetJSXValuesAtPaths(
-      e.props,
-      propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
-    )
-    const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
-      flexPropsRemoved,
-    )
-    if (isLeft(pinnedPropsAdded)) {
-      return e
-    } else {
-      return {
-        ...e,
-        props: pinnedPropsAdded.value,
+  return transformElementAtPath(
+    components,
+    target,
+    (e: JSXElement) => {
+      const flexPropsRemoved = unsetJSXValuesAtPaths(
+        e.props,
+        propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
+      )
+      const pinnedPropsAdded = flatMapEither(
+        (props) => setJSXValuesAtPaths(props, propsToAdd),
+        flexPropsRemoved,
+      )
+      if (isLeft(pinnedPropsAdded)) {
+        return e
+      } else {
+        return {
+          ...e,
+          props: pinnedPropsAdded.value,
+        }
       }
-    }
-  })
+    },
+    isJSXElement,
+  )
 }
 
 function changePinsToDefaultOnComponent(
@@ -902,24 +917,29 @@ function changePinsToDefaultOnComponent(
     },
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['bottom', 'right']
-  return transformElementAtPath(components, target, (e: JSXElement) => {
-    const pinPropsRemoved = unsetJSXValuesAtPaths(
-      e.props,
-      propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
-    )
-    const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
-      pinPropsRemoved,
-    )
-    if (isLeft(pinnedPropsAdded)) {
-      return e
-    } else {
-      return {
-        ...e,
-        props: pinnedPropsAdded.value,
+  return transformElementAtPath(
+    components,
+    target,
+    (e: JSXElement) => {
+      const pinPropsRemoved = unsetJSXValuesAtPaths(
+        e.props,
+        propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
+      )
+      const pinnedPropsAdded = flatMapEither(
+        (props) => setJSXValuesAtPaths(props, propsToAdd),
+        pinPropsRemoved,
+      )
+      if (isLeft(pinnedPropsAdded)) {
+        return e
+      } else {
+        return {
+          ...e,
+          props: pinnedPropsAdded.value,
+        }
       }
-    }
-  })
+    },
+    isJSXElement,
+  )
 }
 
 function propertiesToRound(propertyTarget: Array<string>): Array<PropertyPath> {

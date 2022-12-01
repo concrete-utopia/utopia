@@ -177,6 +177,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.top).toEqual(55)
@@ -205,6 +206,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.my.property.path).toEqual('hello')
@@ -222,6 +224,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.layout.left).toEqual(2000)
@@ -239,6 +242,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.layout.deep.path).toEqual('easy!')
@@ -256,6 +260,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.objectWithArray.array).toEqual([0, 1, 'wee'])
@@ -273,6 +278,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
@@ -290,6 +296,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
@@ -307,6 +314,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual({ 0: 0, 1: 1, 2: 2, wee: 'wee' })
@@ -325,6 +333,7 @@ describe('setJSXValueAtPath', () => {
         'test.js',
         { props: sampleParentProps },
         updatedAttributes,
+        [],
         {},
       )
     }).toThrow()
@@ -342,6 +351,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.style.backgroundColor).toEqual('wee')
@@ -366,6 +376,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes2,
+      [],
       {},
     )
     expect(compiledProps.my.property.path).toEqual('hello')
@@ -384,6 +395,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps.style.backgroundColor).toEqual('blue')
@@ -515,6 +527,7 @@ describe('setJSXValueAtPath', () => {
       'test.js',
       { props: sampleParentProps },
       updatedAttributes,
+      [],
       {},
     )
     expect(compiledProps).toEqual({ top: [55] })
@@ -527,6 +540,7 @@ describe('jsxAttributesToProps', () => {
       'test.js',
       { props: sampleParentProps },
       sampleJsxAttributes(),
+      [],
       {},
     )
     expect(compiledProps).toEqual(expectedCompiledProps)
@@ -548,7 +562,7 @@ describe('jsxAttributesToProps', () => {
         emptyComments,
       ),
     })
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {})
+    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, [], {})
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([
@@ -590,7 +604,7 @@ describe('jsxAttributesToProps', () => {
       ),
     })
 
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {})
+    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, [], {})
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([

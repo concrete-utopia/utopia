@@ -180,7 +180,7 @@ function collectSelectableSiblings(
     function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
       Utils.fastForEach(paths, (ancestor) => {
         const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponentsSkippingNoMetadataElements(
             ancestor,
             componentMetadata,
           )

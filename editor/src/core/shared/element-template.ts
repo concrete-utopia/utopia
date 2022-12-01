@@ -809,6 +809,11 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
       return false
     case 'JSX_FRAGMENT':
       return element.children.some(elementReferencesElsewhere)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return (
+        (childOrBlockIsChild(element.whenTrue) && elementReferencesElsewhere(element.whenTrue)) ||
+        (childOrBlockIsChild(element.whenFalse) && elementReferencesElsewhere(element.whenFalse))
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -970,6 +975,7 @@ export interface JSXElement {
   props: JSXAttributes
   children: JSXElementChildren
   uid: string
+  overriddenProps?: JSXAttributes // TODO: should be cleaned up, as we end up not using this
 }
 
 export interface JSXElementWithoutUID {
@@ -1041,7 +1047,36 @@ export function jsxFragment(children: JSXElementChildren, longForm: boolean): JS
   }
 }
 
-export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
+export interface JSXConditionalExpression {
+  type: 'JSX_CONDITIONAL_EXPRESSION'
+  condition: JSXAttribute
+  overriddenCondition: boolean | null
+  whenTrue: ChildOrAttribute
+  whenFalse: ChildOrAttribute
+  uniqueID: string
+}
+
+export function jsxConditionalExpression(
+  condition: JSXAttribute,
+  whenTrue: ChildOrAttribute,
+  whenFalse: ChildOrAttribute,
+): JSXConditionalExpression {
+  return {
+    type: 'JSX_CONDITIONAL_EXPRESSION',
+    condition: condition,
+    overriddenCondition: null,
+    whenTrue: whenTrue,
+    whenFalse: whenFalse,
+    uniqueID: UUID(),
+  }
+}
+
+export type JSXElementChild =
+  | JSXElement
+  | JSXArbitraryBlock
+  | JSXTextBlock
+  | JSXFragment
+  | JSXConditionalExpression
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
@@ -1057,6 +1092,12 @@ export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBloc
 
 export function isJSXFragment(element: JSXElementChild): element is JSXFragment {
   return element.type === 'JSX_FRAGMENT'
+}
+
+export function isJSXConditionalExpression(
+  element: JSXElementChild,
+): element is JSXConditionalExpression {
+  return element.type === 'JSX_CONDITIONAL_EXPRESSION'
 }
 
 export function isJSXElementLikeWithChildren(
@@ -1090,6 +1131,18 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       uniqueID: '',
       children: updatedChildren,
     }
+  } else if (isJSXConditionalExpression(element)) {
+    return {
+      ...element,
+      whenTrue: {
+        ...element.whenTrue,
+        uniqueID: '',
+      },
+      whenFalse: {
+        ...element.whenFalse,
+        uniqueID: '',
+      },
+    }
   } else {
     return {
       ...element,
@@ -1103,12 +1156,14 @@ export function jsxElement(
   uid: string,
   props: JSXAttributes,
   children: JSXElementChildren,
+  overriddenProps: JSXAttributes = [],
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     uid: uid,
     props: props,
+    overriddenProps: overriddenProps,
     children: children,
   }
 }
@@ -1118,12 +1173,14 @@ export function jsxTestElement(
   props: JSXAttributes,
   children: JSXElementChildren,
   uid: string = 'aaa',
+  overriddenProps: JSXAttributes = [],
 ): JSXElement {
   return jsxElement(
     name,
     uid,
     setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
     children,
+    overriddenProps,
   )
 }
 
@@ -1743,6 +1800,8 @@ export function walkElement(
         walkElement(element.elementsWithin[childKey], parentPath, depth + 1, forEach),
       )
       break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      break
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -1779,4 +1838,28 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
+}
+
+export type ChildOrAttribute = JSXElementChild | JSXAttribute
+
+export function childOrBlockIsChild(
+  childOrBlock: ChildOrAttribute,
+): childOrBlock is JSXElementChild {
+  switch (childOrBlock.type) {
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'JSX_ELEMENT':
+    case 'JSX_ARBITRARY_BLOCK':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+      return true
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return false
+    default:
+      const _exhaustiveCheck: never = childOrBlock
+      throw new Error(`Unhandled type ${JSON.stringify(childOrBlock)}`)
+  }
 }

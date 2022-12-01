@@ -45,7 +45,7 @@ import {
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
-import { fastForEach } from './utils'
+import { assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
 
@@ -234,10 +234,11 @@ export function jsxAttributesToProps(
   filePath: string,
   inScope: MapLike<any>,
   attributes: JSXAttributes,
+  overrides: JSXAttributes,
   requireResult: MapLike<any>,
 ): any {
   let result: any = {}
-  for (const entry of attributes) {
+  for (const entry of [...attributes, ...overrides]) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
@@ -249,10 +250,10 @@ export function jsxAttributesToProps(
         }
         break
       default:
-        const _exhaustiveCheck: never = entry
-        throw new Error(`Unhandled entry ${JSON.stringify(entry)}`)
+        assertNever(entry)
     }
   }
+
   return result
 }
 

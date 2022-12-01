@@ -87,6 +87,7 @@ export function fixParseSuccessUIDs(
           (element) => {
             return setUtopiaIDOnJSXElement(element, mapping.oldUID)
           },
+          isJSXElement,
         )
       } else {
         // this is awkward, there is already an element with this UID. it means we need to bail out from this update

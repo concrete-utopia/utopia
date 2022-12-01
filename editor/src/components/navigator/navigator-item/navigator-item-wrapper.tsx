@@ -17,12 +17,22 @@ import {
 } from './navigator-item-dnd-container'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  AllElementProps,
   defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
   TransientFileState,
 } from '../../editor/store/editor-state'
-import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  UtopiaJSXComponent,
+  isUtopiaJSXComponent,
+  isJSXArbitraryBlock,
+  JSXElementChild,
+  isJSXConditionalExpression,
+  ElementInstanceMetadataMap,
+  ElementInstanceMetadata,
+  JSXElementName,
+} from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
@@ -35,6 +45,7 @@ import {
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { getContentsTreeFileFromString } from '../../assets'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { findJSXElementChildAtPath } from '../../../core/model/element-template-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -98,12 +109,27 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         elementPath,
       )
       const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(
+
+      const staticPath = EP.dynamicPathToStaticPath(elementPath)
+
+      const jsxElement = optionalMap(
+        (p) => findJSXElementChildAtPath(componentsIncludingScenes, p),
+        staticPath,
+      )
+
+      const conditionalOverride =
+        jsxElement != null && isJSXConditionalExpression(jsxElement)
+          ? jsxElement.overriddenCondition
+          : null
+
+      const labelInner = getElementLabel(
+        jsxElement,
         allElementProps,
         elementPath,
         jsxMetadata,
         staticName,
       )
+
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
@@ -133,6 +159,8 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         supportsChildren: supportsChildren,
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+        isConditional: jsxElement != null && isJSXConditionalExpression(jsxElement),
+        conditionalOverride: conditionalOverride,
       }
     },
   )
@@ -157,6 +185,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     staticElementName,
     label,
     elementWarnings,
+    isConditional,
+    conditionalOverride,
   } = useEditorState(selector, 'NavigatorItemWrapper')
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
@@ -205,8 +235,27 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     renamingTarget: renamingTarget,
     elementWarnings: elementWarnings,
     windowStyle: props.windowStyle,
+    isConditional: isConditional,
+    conditionalOverride: conditionalOverride,
   }
 
   return <NavigatorItemContainer {...navigatorItemProps} />
 })
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'
+
+function getElementLabel(
+  jsxElement: JSXElementChild | null,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  staticName: JSXElementName | null,
+) {
+  if (jsxElement != null) {
+    if (isJSXArbitraryBlock(jsxElement)) {
+      return jsxElement.originalJavascript
+    } else if (isJSXConditionalExpression(jsxElement)) {
+      return 'Conditional expr'
+    }
+  }
+  return MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata, staticName)
+}

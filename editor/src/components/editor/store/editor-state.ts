@@ -13,6 +13,8 @@ import {
   emptyJsxMetadata,
   JSXAttribute,
   walkElements,
+  JSXConditionalExpression,
+  isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -1713,6 +1715,19 @@ export function modifyOpenJsxElementAtPath(
   )
 }
 
+export function modifyOpenJsxConditionalAtPath(
+  path: ElementPath,
+  transform: (element: JSXConditionalExpression) => JSXConditionalExpression,
+  model: EditorState,
+): EditorState {
+  return modifyUnderlyingConditional(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    transform,
+  )
+}
+
 export function modifyOpenJsxElementAtStaticPath(
   path: StaticElementPath,
   transform: (element: JSXElement) => JSXElement,
@@ -1904,16 +1919,17 @@ export function insertElementAtPath(
   )
 }
 
-export function transformElementAtPath(
+export function transformElementAtPath<T extends JSXElementChild>(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: T) => T,
+  guard: (elem: JSXElementChild) => elem is T,
 ): Array<UtopiaJSXComponent> {
   const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
-    return transformJSXComponentAtPath(components, staticTarget, transform)
+    return transformJSXComponentAtPath(components, staticTarget, transform, guard)
   }
 }
 
@@ -3018,6 +3034,64 @@ export function modifyParseSuccessAtPath(
   }
 }
 
+export function modifyUnderlyingConditional(
+  target: ElementPath | null,
+  currentFilePath: string,
+  editor: EditorState,
+  modifyElement: (
+    conditional: JSXConditionalExpression,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXConditionalExpression = (element) => element,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(
+    editor.projectContents,
+    editor.nodeModules.files,
+    currentFilePath,
+    target,
+  )
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the JSXElement level changes.
+    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(oldParseSuccess)
+    let elementModified: boolean = false
+    let updatedUtopiaJSXComponents: Array<UtopiaJSXComponent>
+    if (targetSuccess.normalisedPath == null) {
+      updatedUtopiaJSXComponents = oldUtopiaJSXComponents
+    } else {
+      const nonNullNormalisedPath = targetSuccess.normalisedPath
+      function innerModifyElement(element: JSXConditionalExpression): JSXConditionalExpression {
+        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
+        elementModified = updatedElement !== element
+        return updatedElement
+      }
+      updatedUtopiaJSXComponents = transformElementAtPath(
+        oldUtopiaJSXComponents,
+        targetSuccess.normalisedPath,
+        innerModifyElement,
+        isJSXConditionalExpression,
+      )
+    }
+    // Try to keep the old structures where possible.
+    if (elementModified) {
+      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
+        oldParseSuccess.topLevelElements,
+        updatedUtopiaJSXComponents,
+      )
+
+      return {
+        ...oldParseSuccess,
+        topLevelElements: newTopLevelElements,
+      }
+    } else {
+      return oldParseSuccess
+    }
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
 export function modifyUnderlyingTarget(
   target: ElementPath | null,
   currentFilePath: string,
@@ -3066,6 +3140,7 @@ export function modifyUnderlyingTarget(
         oldUtopiaJSXComponents,
         targetSuccess.normalisedPath,
         innerModifyElement,
+        isJSXElement,
       )
     }
     // Try to keep the old structures where possible.

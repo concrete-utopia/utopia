@@ -287,7 +287,13 @@ function createFakeMetadataForJSXElement(
       ),
       ...parentScope,
     }
-    const props = jsxAttributesToProps('test.js', inScope, element.props, Utils.NO_OP)
+    const props = jsxAttributesToProps(
+      'test.js',
+      inScope,
+      element.props,
+      element.overriddenProps ?? [],
+      Utils.NO_OP,
+    )
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(
         child,

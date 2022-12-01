@@ -66,6 +66,7 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   JSXAttributeValue,
+  JSXConditionalExpression,
   JSXElement,
   jsxElement,
   JSXElementChildren,
@@ -314,6 +315,8 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  SetOverrideProp,
+  SetOverrideConditional,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -382,6 +385,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
+  modifyOpenJsxConditionalAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -535,6 +539,21 @@ function applyUpdateToJSXElement(
   }
 }
 
+function applyOverrideToJSXElement(
+  element: JSXElement,
+  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
+): JSXElement {
+  const result = updateFn(element.props)
+  if (isLeft(result)) {
+    return element
+  } else {
+    return {
+      ...element,
+      overriddenProps: result.value,
+    }
+  }
+}
+
 function setPropertyOnTarget(
   editor: EditorModel,
   target: ElementPath,
@@ -547,14 +566,48 @@ function setPropertyOnTarget(
   )
 }
 
+function setOverridePropertyOnTargetAtElementPath(
+  editor: EditorModel,
+  target: ElementPath,
+  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
+): EditorModel {
+  return modifyOpenJsxElementAtPath(
+    target,
+    (e: JSXElement) => applyOverrideToJSXElement(e, updateFn),
+    editor,
+  )
+}
+
+function setOverrideConditionOnTargetAtElementPath(
+  editor: EditorModel,
+  target: ElementPath,
+  overriddenCondition: boolean | null,
+): EditorModel {
+  return modifyOpenJsxConditionalAtPath(
+    target,
+    (conditional: JSXConditionalExpression) => {
+      return {
+        ...conditional,
+        overriddenCondition: overriddenCondition,
+      }
+    },
+    editor,
+  )
+}
+
 function setPropertyOnTargetAtElementPath(
   editor: EditorModel,
   target: StaticElementPathPart,
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElement) =>
-      applyUpdateToJSXElement(e, updateFn),
+    return transformJSXComponentAtElementPath(
+      components,
+      target,
+      (e: JSXElement) => {
+        return applyUpdateToJSXElement(e, updateFn)
+      },
+      isJSXElement,
     )
   }, editor)
 }
@@ -2316,11 +2369,15 @@ export const UPDATE_FNS = {
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
                   staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
+                  (oldRoot) => {
+                    return jsxElement(
+                      elementToInsert.name,
+                      elementToInsert.uid,
+                      elementToInsert.props,
+                      [...elementToInsert.children, oldRoot],
+                    )
+                  },
+                  isJSXElement,
                 )
               }
 
@@ -2476,11 +2533,15 @@ export const UPDATE_FNS = {
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
                   staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
+                  (oldRoot) => {
+                    return jsxElement(
+                      elementToInsert.name,
+                      elementToInsert.uid,
+                      elementToInsert.props,
+                      [...elementToInsert.children, oldRoot],
+                    )
+                  },
+                  isJSXElement,
                 )
               }
 
@@ -4166,6 +4227,21 @@ export const UPDATE_FNS = {
       }
     }
   },
+  SET_OVERRIDE_PROP: (action: SetOverrideProp, editor: EditorModel): EditorModel => {
+    return setOverridePropertyOnTargetAtElementPath(editor, action.target, (props) => {
+      return mapEither(
+        (attrs) => roundAttributeLayoutValues(['style'], attrs),
+        setJSXValueAtPath(props, action.propertyPath, action.value),
+      )
+    })
+  },
+  SET_OVERRIDE_CONDITIONAL: (action: SetOverrideConditional, editor: EditorModel): EditorModel => {
+    return setOverrideConditionOnTargetAtElementPath(
+      editor,
+      action.target,
+      action.overriddenCondition,
+    )
+  },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
       return mapEither(
@@ -4801,6 +4877,7 @@ export const UPDATE_FNS = {
                 insertedElementChildren.push(...parentElement.children)
                 return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
               },
+              isJSXElement,
             )
           }
 
