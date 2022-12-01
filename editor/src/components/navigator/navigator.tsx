@@ -28,7 +28,7 @@ import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { when } from '../../utils/react-conditionals'
-import { codeOutlineModel, CodeOutlineView } from './code-outline'
+import { codeOutlineToModel, CodeOutlineView } from './code-outline'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -136,7 +136,7 @@ export const NavigatorComponent = React.memo(() => {
     (store) => store.editor.projectContents,
     'NavigatorComponent projectContents',
   )
-  const outlineModel = codeOutlineModel(0, projectContents)
+  const outlineModel = codeOutlineToModel(0, projectContents)
 
   const itemListRef = React.createRef<FixedSizeList>()
 

@@ -51,7 +51,7 @@ type CodeOutlineEntryModel =
       content: string
     })
 
-function jsxElementChildTodModel(
+function jsxElementChildToModel(
   depth: number,
   key: string,
   child: JSXElementChild,
@@ -79,7 +79,7 @@ function jsxElementChildTodModel(
         key: key + child.uniqueID + 'open',
         content: '<>',
       },
-      ...child.children.flatMap((c) => jsxElementChildTodModel(depth + 1, key + child.uniqueID, c)),
+      ...child.children.flatMap((c) => jsxElementChildToModel(depth + 1, key + child.uniqueID, c)),
       {
         type: 'text',
         depth: depth + 1,
@@ -170,7 +170,7 @@ function jsxElementToModel(
     },
     ...elementsWithin,
     ...jsxElement.children.flatMap((c) =>
-      jsxElementChildTodModel(depth + 1, key + jsxElement.uid, c),
+      jsxElementChildToModel(depth + 1, key + jsxElement.uid, c),
     ),
     {
       type: 'jsxTag',
@@ -219,12 +219,12 @@ function topLevelElementToModel(
   const name = topLevelElement.name ?? 'name'
   return [
     { type: 'jsxTag', half: 'open', depth: depth, key: key + name, name: name },
-    ...jsxElementChildTodModel(depth + 1, key + name, topLevelElement.rootElement),
+    ...jsxElementChildToModel(depth + 1, key + name, topLevelElement.rootElement),
     { type: 'jsxTag', half: 'close', depth: depth, key: key + name, name: name },
   ]
 }
 
-function codeFileModel(
+function codeFileToModel(
   depth: number,
   key: string,
   success: ParseSuccess,
@@ -240,7 +240,7 @@ function codeFileModel(
   ]
 }
 
-export function codeOutlineModel(
+export function codeOutlineToModel(
   depth: number,
   contents: ProjectContentTreeRoot,
 ): Array<CodeOutlineEntryModel> {
@@ -248,7 +248,7 @@ export function codeOutlineModel(
     if (branch.type === 'PROJECT_CONTENT_DIRECTORY') {
       return [
         { type: 'directory', name: branch.fullPath, key: key, depth: depth },
-        ...codeOutlineModel(depth + 1, branch.children),
+        ...codeOutlineToModel(depth + 1, branch.children),
       ]
     }
 
@@ -270,7 +270,7 @@ export function codeOutlineModel(
           key: key,
           parsed: parsed != null ? 'parsed' : 'unparsed',
         },
-        ...(optionalMap((p) => codeFileModel(depth + 1, key, p), parsed) ?? []),
+        ...(optionalMap((p) => codeFileToModel(depth + 1, key, p), parsed) ?? []),
       ]
     }
 
