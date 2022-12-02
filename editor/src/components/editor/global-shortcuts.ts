@@ -86,7 +86,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
-  OPEN_EYEDROPPPER,
+  OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -642,7 +642,7 @@ export function handleKeyDown(
           return []
         }
       },
-      [OPEN_EYEDROPPPER]: () => {
+      [OPEN_EYEDROPPER]: () => {
         const selectedViews = editor.selectedViews
         if (selectedViews.length === 0) {
           return []
