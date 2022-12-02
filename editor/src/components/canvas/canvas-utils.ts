@@ -604,9 +604,7 @@ export function updateFramesOfScenesAndComponents(
         parentFrame = optionalParentFrame
       }
       const parentOffset =
-        parentFrame == null ||
-        Math.abs(parentFrame.x) === Infinity ||
-        Math.abs(parentFrame.y) === Infinity
+        parentFrame == null || EP.isStoryboardChild(originalTarget)
           ? ({ x: 0, y: 0 } as CanvasPoint)
           : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
 
