@@ -284,16 +284,6 @@ function getLayoutFunction(
   }
 }
 
-export const PinningAndFlexPoints: Array<LayoutPinnedProp | 'flexBasis'> = [
-  ...LayoutPinnedProps,
-  // 'flexBasis',
-]
-
-export const PinningAndFlexPointsExceptSize: Array<LayoutPinnedProp | 'flexBasis'> = [
-  ...LayoutPinnedProps.filter((p) => p !== 'width' && p !== 'height'),
-  // 'flexBasis',
-]
-
 function keepLayoutProps(
   target: ElementPath,
   newParentPath: ElementPath,

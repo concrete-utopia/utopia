@@ -18,8 +18,6 @@ import {
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
-  PinningAndFlexPoints,
-  PinningAndFlexPointsExceptSize,
   roundJSXElementLayoutValues,
   roundAttributeLayoutValues,
 } from '../../core/layout/layout-utils'
@@ -795,24 +793,12 @@ export function updateFramesOfScenesAndComponents(
     }
 
     if (propsToSet.length > 0 || propsToUnset.length > 0) {
-      const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
-
       workingEditorState = modifyUnderlyingForOpenFile(
         originalTarget,
         workingEditorState,
         (elem) => {
           // Remove the pinning and flex props first...
-          const propsToMaybeRemove: Array<LayoutPinnedProp | 'flexBasis'> =
-            frameAndTarget.type === 'PIN_MOVE_CHANGE'
-              ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
-              : PinningAndFlexPoints
           let propsToRemove: Array<PropertyPath> = [...propsToUnset]
-          fastForEach(propsToMaybeRemove, (prop) => {
-            const propPath = stylePropPathMappingFn(prop, ['style'])
-            if (!PP.contains(propsToNotDelete, propPath)) {
-              propsToRemove.push(propPath)
-            }
-          })
           const layoutPropsRemoved = unsetJSXValuesAtPaths(elem.props, propsToRemove)
           // ...Add in the updated properties.
 
