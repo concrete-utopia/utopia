@@ -647,6 +647,10 @@ export function handleKeyDown(
         if (selectedElement == null) {
           return []
         }
+        if ((window as any).EyeDropper == null) {
+          return []
+        }
+
         ;(new (window as any).EyeDropper() as any).open().then((result: any) => {
           dispatch([
             EditorActions.setProperty(
