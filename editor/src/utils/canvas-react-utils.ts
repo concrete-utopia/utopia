@@ -575,7 +575,7 @@ export function isHooksErrorMessage(message: string): boolean {
 }
 
 function typeOrWrappedTypeEquals(type: React.ComponentType, equalTo: React.ComponentType): boolean {
-  return type === equalTo || (type as any).theOriginalType === equalTo
+  return type === equalTo // || (type as any).theOriginalType === equalTo
 }
 
 function shouldAppendSceneLikeFlag(type: React.ComponentType) {
