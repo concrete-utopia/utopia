@@ -86,6 +86,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
+  OPEN_EYEDROPPPER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -95,6 +96,7 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -639,6 +641,22 @@ export function handleKeyDown(
         } else {
           return []
         }
+      },
+      [OPEN_EYEDROPPPER]: () => {
+        const selectedElement = editor.selectedViews.at(0)
+        if (selectedElement == null) {
+          return []
+        }
+        ;(new (window as any).EyeDropper() as any).open().then((result: any) => {
+          dispatch([
+            EditorActions.setProperty(
+              selectedElement,
+              PP.create(['style', 'backgroundColor']),
+              jsxAttributeValue(result.sRGBHex as string, emptyComments),
+            ),
+          ])
+        })
+        return []
       },
     })
   }
