@@ -647,11 +647,12 @@ export function handleKeyDown(
         if (selectedElement == null) {
           return []
         }
-        if ((window as any).EyeDropper == null) {
+        const EyeDropper = window.EyeDropper
+        if (EyeDropper == null) {
           return []
         }
 
-        ;(new (window as any).EyeDropper() as any).open().then((result: any) => {
+        void new EyeDropper().open().then((result: any) => {
           dispatch([
             EditorActions.setProperty(
               selectedElement,
