@@ -643,8 +643,8 @@ export function handleKeyDown(
         }
       },
       [OPEN_EYEDROPPPER]: () => {
-        const selectedElement = editor.selectedViews.at(0)
-        if (selectedElement == null) {
+        const selectedViews = editor.selectedViews
+        if (selectedViews.length === 0) {
           return []
         }
         const EyeDropper = window.EyeDropper
@@ -653,13 +653,15 @@ export function handleKeyDown(
         }
 
         void new EyeDropper().open().then((result: any) => {
-          dispatch([
-            EditorActions.setProperty(
-              selectedElement,
-              PP.create(['style', 'backgroundColor']),
-              jsxAttributeValue(result.sRGBHex as string, emptyComments),
+          dispatch(
+            selectedViews.map((view) =>
+              EditorActions.setProperty(
+                view,
+                PP.create(['style', 'backgroundColor']),
+                jsxAttributeValue(result.sRGBHex as string, emptyComments),
+              ),
             ),
-          ])
+          )
         })
         return []
       },
