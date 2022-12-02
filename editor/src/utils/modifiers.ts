@@ -14,6 +14,13 @@ export const emptyModifiers: Modifiers = optionalDeepFreeze({
   shift: false,
 })
 
+export const ctrlModifier: Modifiers = {
+  alt: false,
+  cmd: false,
+  ctrl: true,
+  shift: false,
+}
+
 export const shiftModifier: Modifiers = {
   alt: false,
   cmd: false,
