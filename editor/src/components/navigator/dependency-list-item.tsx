@@ -182,28 +182,26 @@ export const DependencyListItem: React.FunctionComponent<
           </span>
           {isDefault ? (
             <Tooltip title='Dependency is required for Utopian projects'>
-              <AlternateColorThemeComponent>
-                <FlexRow
-                  css={{
-                    backgroundColor: colorTheme.bg0.value,
-                    boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
-                    color: colorTheme.fg0.value,
-                    borderRadius: 2,
-                    height: 14,
-                    padding: '0 3px',
-                    margin: 0,
-                    marginLeft: 6,
-                    display: 'none',
-                    '.dependency-item:hover &': {
-                      display: 'flex',
-                    },
-                    flexGrow: 0,
-                    flexShrink: 0,
-                  }}
-                >
-                  default
-                </FlexRow>
-              </AlternateColorThemeComponent>
+              <FlexRow
+                css={{
+                  backgroundColor: colorTheme.fg1.value,
+                  boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
+                  color: colorTheme.bg0.value,
+                  borderRadius: 2,
+                  height: 14,
+                  padding: '0 3px',
+                  margin: 0,
+                  marginLeft: 6,
+                  display: 'none',
+                  '.dependency-item:hover &': {
+                    display: 'flex',
+                  },
+                  flexGrow: 0,
+                  flexShrink: 0,
+                }}
+              >
+                default
+              </FlexRow>
             </Tooltip>
           ) : null}
           <a

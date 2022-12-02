@@ -41,18 +41,16 @@ export const ModeToggleButton = React.memo(() => {
       >
         CSS
       </Button>
-      <AlternateColorThemeComponent>
-        <Button
-          style={{
-            background: colorTheme.neutralForeground.value,
-          }}
-          selected={selectedMode === 'content'}
-          width={45}
-          onClick={contentButtonOnClick}
-        >
-          Content
-        </Button>
-      </AlternateColorThemeComponent>
+      <Button
+        style={{
+          background: colorTheme.bg2.value,
+        }}
+        selected={selectedMode === 'content'}
+        width={45}
+        onClick={contentButtonOnClick}
+      >
+        Content
+      </Button>
     </div>
   )
 })

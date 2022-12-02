@@ -80,6 +80,7 @@ const lightErrorStates = {
 const colorsWithOpacity = {
   bg0Opacity90: createUtopiColor('hsla(0,0%,100%,0.9)'),
   bg0Opacity10: createUtopiColor('hsla(0,0%,100%,0.1)'),
+  fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),

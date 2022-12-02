@@ -56,9 +56,9 @@ const getOptionColors = (
   isDisabled: boolean,
   data: any,
 ) => {
-  let color: string | undefined = colorTheme.textColor.value
+  let color: string | undefined = colorTheme.bg0.value
   let selectedColor = colorTheme.primary.value
-  let backgroundColor: string | undefined = colorTheme.bg1.value
+  let backgroundColor: string | undefined = colorTheme.fg1.value
   let activeBackgroundColor: string | undefined = colorTheme.primary.value
   if (isFocused) {
     backgroundColor = colorTheme.primary.value
@@ -110,11 +110,11 @@ const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
             css={{
               label: 'focusedElementMetadata',
               overflow: 'hidden',
-              boxShadow: `inset 0px 1px 0px 0px ${colorTheme.bg0Opacity10.value}`,
+              boxShadow: `inset 0px 1px 0px 0px ${colorTheme.fg0Opacity10.value}`,
               padding: '8px 8px',
               fontSize: '10px',
               pointerEvents: 'none',
-              color: colorTheme.textColor.value,
+              color: colorTheme.bg0.value,
             }}
           >
             <FlexColumn>
@@ -288,7 +288,7 @@ export const ClassNameSelect = React.memo(
             borderRadius: UtopiaTheme.inputBorderRadius,
             backgroundColor: (state.isFocused as boolean)
               ? colorTheme.primary.value
-              : colorTheme.bg1.value,
+              : colorTheme.fg1.value,
           }
         },
         multiValueLabel: () => ({
@@ -305,7 +305,7 @@ export const ClassNameSelect = React.memo(
           ':hover': {
             opacity: 1,
             backgroundColor: data.color,
-            color: colorTheme.textColor.value,
+            color: colorTheme.bg0.value,
           },
           '& > svg': {
             overflow: 'hidden',
@@ -314,7 +314,7 @@ export const ClassNameSelect = React.memo(
         input: () => {
           return {
             fontSize: 11,
-            color: colorTheme.textColor.value,
+            color: colorTheme.bg0.value,
             letterSpacing: 0.3,
             background: 'transparent',
             display: 'flex',
@@ -327,7 +327,7 @@ export const ClassNameSelect = React.memo(
         }),
         menu: (styles) => ({
           ...styles,
-          backgroundColor: colorTheme.bg1.value,
+          backgroundColor: colorTheme.fg1.value,
           zIndex: 100,
         }),
         option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
@@ -380,48 +380,46 @@ export const ClassNameSelect = React.memo(
     )
 
     return (
-      <AlternateColorThemeComponent>
-        <div
-          css={{
-            height: 22,
-            borderRadius: 3,
-            position: 'relative',
-            padding: 4,
-            flexGrow: 1,
-            display: 'flex',
-            alignItems: 'center',
-            '&:focus-within': { boxShadow: `0px 0px 0px 1px ${colorTheme.primary.value}` },
+      <div
+        css={{
+          height: 22,
+          borderRadius: 3,
+          position: 'relative',
+          padding: 4,
+          flexGrow: 1,
+          display: 'flex',
+          alignItems: 'center',
+          '&:focus-within': { boxShadow: `0px 0px 0px 1px ${colorTheme.primary.value}` },
+        }}
+        onKeyDown={handleKeyDown}
+      >
+        <WindowedSelect
+          ref={ref}
+          ariaLiveMessages={ariaLiveMessages}
+          filterOption={filterOption}
+          formatOptionLabel={formatOptionLabel}
+          options={filteredOptions}
+          onChange={onChange}
+          onInputChange={onInputChange}
+          inputValue={input}
+          onMenuClose={onMenuClose}
+          onMenuOpen={onMenuOpen}
+          value={selectedValues}
+          isMulti={true}
+          isDisabled={!isMenuEnabled}
+          maxMenuHeight={138}
+          styles={colourStyles}
+          components={{
+            DropdownIndicator,
+            ClearIndicator,
+            IndicatorSeparator,
+            NoOptionsMessage,
+            Menu,
+            ValueContainer,
+            Input,
           }}
-          onKeyDown={handleKeyDown}
-        >
-          <WindowedSelect
-            ref={ref}
-            ariaLiveMessages={ariaLiveMessages}
-            filterOption={filterOption}
-            formatOptionLabel={formatOptionLabel}
-            options={filteredOptions}
-            onChange={onChange}
-            onInputChange={onInputChange}
-            inputValue={input}
-            onMenuClose={onMenuClose}
-            onMenuOpen={onMenuOpen}
-            value={selectedValues}
-            isMulti={true}
-            isDisabled={!isMenuEnabled}
-            maxMenuHeight={138}
-            styles={colourStyles}
-            components={{
-              DropdownIndicator,
-              ClearIndicator,
-              IndicatorSeparator,
-              NoOptionsMessage,
-              Menu,
-              ValueContainer,
-              Input,
-            }}
-          />
-        </div>
-      </AlternateColorThemeComponent>
+        />
+      </div>
     )
   }),
 )
