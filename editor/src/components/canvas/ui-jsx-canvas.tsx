@@ -333,13 +333,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const maybeOldProjectContents = React.useRef(projectContents)
   if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    // console.log('maybeOldProjectContents')
     maybeOldProjectContents.current = projectContents
   }
 
   const maybeOldTransientFileState = React.useRef(transientFilesState)
   if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    // console.log('maybeOldTransientFileState')
     maybeOldTransientFileState.current = transientFilesState
   }
 
