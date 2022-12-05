@@ -777,9 +777,7 @@ class FileBrowserItemInner extends React.PureComponent<
               <div
                 style={{
                   ...flexRowStyle,
-                  overflowX: 'hidden',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
                 }}
               >
                 {this.renderIcon()}
