@@ -1,5 +1,5 @@
 /* eslint-disable jest/expect-expect */
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,

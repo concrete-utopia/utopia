@@ -7,8 +7,7 @@ import {
 } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act, fireEvent } from '@testing-library/react'
 import {
   emptyComments,
   getJSXAttribute,
