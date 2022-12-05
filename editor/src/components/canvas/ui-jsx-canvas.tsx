@@ -4,11 +4,8 @@ import { MapLike } from 'typescript'
 import '../../bundled-dependencies/babelHelpers'
 import * as EP from '../../core/shared/element-path'
 import {
-  ArbitraryJSBlock,
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isUtopiaJSXComponent,
-  TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
@@ -26,18 +23,14 @@ import {
   forEachRight,
   isRight,
   left,
-  mapEither,
   right,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import { CanvasVector } from '../../core/shared/math-utils'
 import {
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
-  UtopiaRequireFn,
 } from '../custom-code/code-file'
-import { importResultFromImports } from '../editor/npm-dependency/npm-dependency'
 import {
   DerivedState,
   EditorState,
@@ -59,30 +52,21 @@ import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
-import {
-  ComponentRendererComponent,
-  createComponentRendererComponent,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
   MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
-  updateMutableUtopiaCtxRefWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
-import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
-import {
-  createLookupRender,
-  utopiaCanvasJSXLookup,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
+import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
+import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
@@ -100,12 +84,9 @@ import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
-import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 
 applyUIDMonkeyPatch()
-
-const emptyFileBlobs: UIFileBase64Blobs = {}
 
 // The reason this is not in a React Context, and in a crummy global instead is that sometimes the user code
 // will need to bridge across react roots that erase context
@@ -350,27 +331,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
-  // Handle the imports changing, this needs to run _before_ any require function
-  // calls as it's modifying the underlying DOM elements. This is somewhat working
-  // like useEffect, except that runs after everything has rendered.
-  const cssImports = useKeepReferenceEqualityIfPossible(
-    normalizedCssImportsFromImports(uiFilePath, imports),
-  )
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
-  }
-
-  let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
-
-  let topLevelComponentRendererComponents = React.useRef<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >({})
-
-  let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
-  resolvedFiles.current = {}
-
-  // console.group()
-
   const maybeOldProjectContents = React.useRef(projectContents)
   if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
     // console.log('maybeOldProjectContents')
@@ -394,8 +354,24 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     [curriedResolveFn, projectContentsForRequireFn],
   )
 
-  // console.log('requireFn')
-  useEffectDebugger(NO_OP, [curriedRequireFn, projectContentsForRequireFn])
+  // Handle the imports changing, this needs to run _before_ any require function
+  // calls as it's modifying the underlying DOM elements. This is somewhat working
+  // like useEffect, except that runs after everything has rendered.
+  const cssImports = useKeepReferenceEqualityIfPossible(
+    normalizedCssImportsFromImports(uiFilePath, imports),
+  )
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
+  }
+
+  let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
+
+  let topLevelComponentRendererComponents = React.useRef<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >({})
+
+  let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
+  resolvedFiles.current = {}
 
   const transientFilesStateForCustomRequire = maybeOldTransientFileState.current
   const customRequire = React.useCallback(
@@ -455,23 +431,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       shouldIncludeCanvasRootInTheSpy,
     ],
   )
-
-  // console.log('customRequire')
-  useEffectDebugger(NO_OP, [
-    requireFn,
-    resolve,
-    projectContentsForRequireFn,
-    transientFilesStateForCustomRequire,
-    uiFilePath,
-    base64FileBlobs,
-    hiddenInstances,
-    displayNoneInstances,
-    metadataContext,
-    updateInvalidatedPaths,
-    shouldIncludeCanvasRootInTheSpy,
-  ])
-
-  // console.groupEnd()
 
   const { scope, topLevelJsxComponents } = React.useMemo(
     () =>
@@ -831,37 +790,3 @@ const CanvasContainer = React.forwardRef<
   )
 })
 CanvasContainer.displayName = 'CanvasContainer'
-
-const usePrevious = (value: any[], initialValue: any[]) => {
-  const ref = React.useRef(initialValue)
-  React.useEffect(() => {
-    ref.current = value
-  })
-  return ref.current
-}
-
-const useEffectDebugger = (effectHook: any, dependencies: any[], dependencyNames = []) => {
-  const previousDeps: any = usePrevious(dependencies, [])
-
-  const changedDeps = dependencies.reduce((accum, dependency, index) => {
-    if (dependency !== previousDeps[index]) {
-      const keyName = dependencyNames[index] || index
-      return {
-        ...accum,
-        [keyName]: {
-          before: previousDeps[index],
-          after: dependency,
-        },
-      }
-    }
-
-    return accum
-  }, {})
-
-  if (Object.keys(changedDeps).length > 0) {
-    // console.log('[use-effect-debugger] ', changedDeps)
-  }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(effectHook, dependencies)
-}
