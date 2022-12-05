@@ -29,7 +29,7 @@ interface GradientStopProps {
   setSelectedIndex: (index: number) => void
   unorderedIndex: number
   focusStopEditor: () => void
-  indexedUpdateStop: (newStop: CSSGradientStop, transient: boolean) => void
+  indexedUpdateStop: (newStop: CSSGradientStop, dragState: 'dragStart' | 'drag' | 'dragEnd') => void
   indexedDeleteStop: () => void
 }
 
@@ -73,7 +73,7 @@ const GradientStop = React.memo<GradientStopProps>(
               dragScreenOrigin.current.x,
               valueAtDragOrigin.current,
             ),
-            true,
+            'drag',
           )
         }
       },
@@ -96,7 +96,7 @@ const GradientStop = React.memo<GradientStopProps>(
                   dragScreenOrigin.current.x,
                   valueAtDragOrigin.current,
                 ),
-                false,
+                'dragEnd',
               )
             }
           }
@@ -300,11 +300,11 @@ function getIndexedUpdateStop(
   index: number,
   oldValue: Array<CSSGradientStop>,
   setStateStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>,
-): (newStop: CSSGradientStop, transient: boolean) => void {
-  return function updateStop(newStop, transient) {
+): (newStop: CSSGradientStop, dragState: 'dragStart' | 'drag' | 'dragEnd') => void {
+  return function updateStop(newStop, dragState) {
     const workingValue = [...oldValue]
     workingValue[index] = newStop
-    setStateStops(workingValue, transient)
+    setStateStops(workingValue, dragState)
   }
 }
 
@@ -351,7 +351,7 @@ function deleteStopAndUpdateIndex(
       },
     )
     if (isFinite(lowestDistance) && indexWithLowestDistance >= 0) {
-      setStops(newStops, false)
+      setStops(newStops, 'dragEnd')
       setSelectedStopUnorderedIndex(indexWithLowestDistance)
     }
   }
@@ -373,7 +373,7 @@ export const GradientStopsEditor = React.memo<GradientControlProps>(
             Number(((e.nativeEvent.offsetX / GradientPickerWidth) * 100).toFixed(2)),
             stops,
           )
-          setLocalAndEditorStops(newStops, false)
+          setLocalAndEditorStops(newStops, 'dragStart')
           setSelectedStopUnorderedIndex(newStops.length - 1)
         }
       },
@@ -394,14 +394,14 @@ export const GradientStopsEditor = React.memo<GradientControlProps>(
           // TODO: transient actions when holding
           setLocalAndEditorStops(
             incrementSelectedStopPosition(e.shiftKey ? -10 : -1, stops, selectedStopUnorderedIndex),
-            false,
+            'notDragging',
           )
           e.stopPropagation()
         } else if (e.key === 'ArrowRight') {
           // TODO: transient actions when holding
           setLocalAndEditorStops(
             incrementSelectedStopPosition(e.shiftKey ? 10 : 1, stops, selectedStopUnorderedIndex),
-            false,
+            'notDragging',
           )
           e.stopPropagation()
         }
