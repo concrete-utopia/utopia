@@ -73,6 +73,8 @@ export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
 export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 
+export const OPEN_EYEDROPPPER = 'open-eyedropper'
+
 export type ShortcutDetails = { [key: string]: Shortcut }
 
 const shortcutDetailsWithDefaults: ShortcutDetails = {
@@ -210,6 +212,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
+  [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }
