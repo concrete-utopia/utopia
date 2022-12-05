@@ -3,6 +3,7 @@ import '../utils/feature-switches'
 
 import React from 'react'
 import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
@@ -694,10 +695,11 @@ async function renderRootComponent(
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
     // as subsequent updates will be fed through Zustand
-    const rootElement = document.getElementById(EditorID)
-    if (rootElement != null) {
+    const container = document.getElementById(EditorID)
+    if (container != null) {
+      const root = createRoot(container)
       if (process.env.HOT_MODE != null) {
-        ReactDOM.render(
+        root.render(
           <HotRoot
             api={api}
             useStore={useStore}
@@ -706,10 +708,9 @@ async function renderRootComponent(
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
-          rootElement,
         )
       } else {
-        ReactDOM.render(
+        root.render(
           <EditorRoot
             api={api}
             useStore={useStore}
@@ -718,7 +719,6 @@ async function renderRootComponent(
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
-          rootElement,
         )
       }
     }
@@ -753,6 +753,7 @@ const renderProjectNotFound = () => renderProjectLoadError('Project could not be
 async function renderProjectLoadError(error: string): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
-    ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
+    const root = createRoot(rootElement)
+    root.render(<ProjectLoadError error={error} />)
   }
 }

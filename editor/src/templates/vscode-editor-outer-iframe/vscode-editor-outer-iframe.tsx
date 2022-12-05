@@ -1,5 +1,6 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { VSCODE_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
@@ -35,4 +36,6 @@ function VSCodeOuterIframe(): React.ReactElement {
   )
 }
 
-ReactDOM.render(<VSCodeOuterIframe />, document.getElementById('vscode-outer-root'))
+const container = document.getElementById('vscode-outer-root')
+const root = createRoot(container!)
+root.render(<VSCodeOuterIframe />)
