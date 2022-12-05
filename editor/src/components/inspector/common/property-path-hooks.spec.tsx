@@ -234,7 +234,6 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         }}
         callbackData={callbackData}
       />,
-      { legacyRoot: true },
     )
     rerender(
       <InspectorSectionProvider
@@ -278,7 +277,6 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         }}
         callbackData={callbackData}
       />,
-      { legacyRoot: true },
     )
     rerender(
       <InspectorSectionProvider
@@ -341,7 +339,6 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         }}
         callbackData={callbackData}
       />,
-      { legacyRoot: true },
     )
     rerender(
       <InspectorSectionProvider
@@ -402,7 +399,6 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         }}
         callbackData={callbackData}
       />,
-      { legacyRoot: true },
     )
     const renderedElement = getByText('0.9')
     expect(renderedElement).toBeDefined()
