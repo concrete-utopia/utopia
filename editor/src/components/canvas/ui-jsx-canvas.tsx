@@ -366,25 +366,38 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     MapLike<MapLike<ComponentRendererComponent>>
   >({})
 
-  const resolve = React.useMemo(
-    () => curriedResolveFn(projectContents),
-    [curriedResolveFn, projectContents],
-  )
-
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
 
+  // console.group()
+
   const maybeOldProjectContents = React.useRef(projectContents)
   if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    // console.log('maybeOldProjectContents')
     maybeOldProjectContents.current = projectContents
   }
 
-  const projectContentsForRequireFn = maybeOldProjectContents.current
-  const requireFn = React.useMemo(() => {
-    // console.log("aaaaaaa")
-    return curriedRequireFn(projectContentsForRequireFn)
-  }, [curriedRequireFn, projectContentsForRequireFn])
+  const maybeOldTransientFileState = React.useRef(transientFilesState)
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    // console.log('maybeOldTransientFileState')
+    maybeOldTransientFileState.current = transientFilesState
+  }
 
+  const projectContentsForRequireFn = maybeOldProjectContents.current
+  const requireFn = React.useMemo(
+    () => curriedRequireFn(projectContentsForRequireFn),
+    [curriedRequireFn, projectContentsForRequireFn],
+  )
+
+  const resolve = React.useMemo(
+    () => curriedResolveFn(projectContentsForRequireFn),
+    [curriedResolveFn, projectContentsForRequireFn],
+  )
+
+  // console.log('requireFn')
+  useEffectDebugger(NO_OP, [curriedRequireFn, projectContentsForRequireFn])
+
+  const transientFilesStateForCustomRequire = maybeOldTransientFileState.current
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -402,12 +415,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
         toImport,
-        projectContents,
+        projectContentsForRequireFn,
         customRequire,
         mutableContextRef,
         topLevelComponentRendererComponents,
         uiFilePath,
-        transientFilesState,
+        transientFilesStateForCustomRequire,
         base64FileBlobs,
         hiddenInstances,
         displayNoneInstances,
@@ -428,12 +441,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         resolvedParseSuccess,
       )
     },
-    // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
     [
       requireFn,
       resolve,
-      projectContents,
-      transientFilesState,
+      projectContentsForRequireFn,
+      transientFilesStateForCustomRequire,
       uiFilePath,
       base64FileBlobs,
       hiddenInstances,
@@ -444,20 +456,52 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     ],
   )
 
-  const { scope, topLevelJsxComponents } = createExecutionScope(
+  // console.log('customRequire')
+  useEffectDebugger(NO_OP, [
+    requireFn,
+    resolve,
+    projectContentsForRequireFn,
+    transientFilesStateForCustomRequire,
     uiFilePath,
-    customRequire,
-    mutableContextRef,
-    topLevelComponentRendererComponents,
-    props.projectContents,
-    uiFilePath, // this is the storyboard filepath
-    props.transientFilesState,
     base64FileBlobs,
     hiddenInstances,
     displayNoneInstances,
     metadataContext,
     updateInvalidatedPaths,
-    props.shouldIncludeCanvasRootInTheSpy,
+    shouldIncludeCanvasRootInTheSpy,
+  ])
+
+  // console.groupEnd()
+
+  const { scope, topLevelJsxComponents } = React.useMemo(
+    () =>
+      createExecutionScope(
+        uiFilePath,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        projectContentsForRequireFn,
+        uiFilePath, // this is the storyboard filepath
+        transientFilesStateForCustomRequire,
+        base64FileBlobs,
+        hiddenInstances,
+        displayNoneInstances,
+        metadataContext,
+        updateInvalidatedPaths,
+        props.shouldIncludeCanvasRootInTheSpy,
+      ),
+    [
+      base64FileBlobs,
+      customRequire,
+      displayNoneInstances,
+      hiddenInstances,
+      metadataContext,
+      projectContentsForRequireFn,
+      props.shouldIncludeCanvasRootInTheSpy,
+      transientFilesStateForCustomRequire,
+      uiFilePath,
+      updateInvalidatedPaths,
+    ],
   )
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
@@ -787,3 +831,37 @@ const CanvasContainer = React.forwardRef<
   )
 })
 CanvasContainer.displayName = 'CanvasContainer'
+
+const usePrevious = (value: any[], initialValue: any[]) => {
+  const ref = React.useRef(initialValue)
+  React.useEffect(() => {
+    ref.current = value
+  })
+  return ref.current
+}
+
+const useEffectDebugger = (effectHook: any, dependencies: any[], dependencyNames = []) => {
+  const previousDeps: any = usePrevious(dependencies, [])
+
+  const changedDeps = dependencies.reduce((accum, dependency, index) => {
+    if (dependency !== previousDeps[index]) {
+      const keyName = dependencyNames[index] || index
+      return {
+        ...accum,
+        [keyName]: {
+          before: previousDeps[index],
+          after: dependency,
+        },
+      }
+    }
+
+    return accum
+  }, {})
+
+  if (Object.keys(changedDeps).length > 0) {
+    // console.log('[use-effect-debugger] ', changedDeps)
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(effectHook, dependencies)
+}
