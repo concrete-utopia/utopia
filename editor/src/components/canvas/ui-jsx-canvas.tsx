@@ -373,10 +373,18 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
-  const requireFn = React.useMemo(
-    () => curriedRequireFn(projectContents),
-    [curriedRequireFn, projectContents],
-  )
+
+  const maybeOldProjectContents = React.useRef(projectContents)
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    maybeOldProjectContents.current = projectContents
+  }
+
+  const projectContentsForRequireFn = maybeOldProjectContents.current
+  const requireFn = React.useMemo(() => {
+    // console.log("aaaaaaa")
+    return curriedRequireFn(projectContentsForRequireFn)
+  }, [curriedRequireFn, projectContentsForRequireFn])
+
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
