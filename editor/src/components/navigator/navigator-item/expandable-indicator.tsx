@@ -25,7 +25,7 @@ export const ExpandableIndicator: React.FunctionComponent<
         color={props.selected ? 'on-highlight-main' : 'main'}
         style={{
           pointerEvents: props.visible ? 'all' : 'none',
-          opacity: props.visible ? 1 : 0,
+          visibility: props.visible ? 'visible' : 'hidden',
           cursor: 'pointer',
         }}
         onMouseDown={props.onMouseDown}
