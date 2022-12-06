@@ -464,6 +464,7 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import { forceTextEditorFocus, releaseTextEditorFocus } from '../../text-editor/utopia-slate-editor'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1911,6 +1912,10 @@ export const UPDATE_FNS = {
           : updateNavigatorCollapsedState(filteredNewlySelectedPaths, editor.navigator),
       pasteTargetsToIgnore: [],
     }
+    releaseTextEditorFocus()
+    if (action.target.length === 1) {
+      forceTextEditorFocus(action.target[0])
+    }
     if (filteredNewlySelectedPaths === newlySelectedPaths) {
       return updatedEditor
     } else {
@@ -1922,6 +1927,7 @@ export const UPDATE_FNS = {
     if (editor.selectedViews.length === 0) {
       return editor
     }
+    releaseTextEditorFocus()
 
     return {
       ...editor,

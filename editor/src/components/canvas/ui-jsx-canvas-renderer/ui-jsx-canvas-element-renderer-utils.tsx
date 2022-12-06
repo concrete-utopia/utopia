@@ -49,6 +49,9 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { createEditor, Element } from 'slate'
+import { DefaultElement, DefaultLeaf, Editable, ReactEditor, Slate, withReact } from 'slate-react'
+import { UtopiaSlateEditor } from '../../text-editor/utopia-slate-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -169,6 +172,7 @@ export function renderCoreElement(
   if (codeError != null) {
     throw codeError
   }
+
   switch (element.type) {
     case 'JSX_ELEMENT': {
       const elementsWithinProps = getAccumulatedElementsWithin(element.props)
@@ -309,7 +313,10 @@ export function renderCoreElement(
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      return element.text
+      if (elementPath == null) {
+        return element.text
+      }
+      return <UtopiaSlateEditor elementPath={EP.parentPath(elementPath)} text={element.text} />
     }
     default:
       const _exhaustiveCheck: never = element
