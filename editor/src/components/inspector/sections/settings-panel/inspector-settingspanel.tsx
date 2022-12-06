@@ -171,37 +171,3 @@ export const SettingsPanel = React.memo(() => {
     </FlexColumn>
   )
 })
-
-interface SimpleSliderProps {
-  id: string
-  initialValue: number
-  onChange: (_: number) => void
-  min: number
-  max: number
-}
-
-const SimpleSlider = React.memo<SimpleSliderProps>((props) => {
-  const [currentValue, setCurrentValue] = React.useState<number>(props.initialValue)
-  const onChange = React.useCallback(
-    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
-      const valueNumeric = parseFloat(value)
-      setCurrentValue(valueNumeric)
-      props.onChange(valueNumeric)
-    },
-    [props],
-  )
-  return (
-    <>
-      <input
-        type='range'
-        id={props.id}
-        name={props.id}
-        min={props.min}
-        max={props.max}
-        value={currentValue}
-        onChange={onChange}
-      />
-      <label htmlFor={props.id}>{currentValue}</label>
-    </>
-  )
-})
