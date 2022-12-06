@@ -362,13 +362,9 @@ const ClassNameControl = React.memo(() => {
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const enabledColor = (isFocused as boolean)
-        ? theme.inverted.textColor.value
-        : theme.inverted.primary.value
+      const enabledColor = (isFocused as boolean) ? theme.bg0.value : theme.primary.value
       const color = isMenuEnabled ? enabledColor : theme.fg8.value
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       return {
         ...base,
         label: 'multiValueLabel',
@@ -413,9 +409,7 @@ const ClassNameControl = React.memo(() => {
 
   const multiValue: styleFn = React.useCallback(
     (base, { isFocused, data }) => {
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       if (isFocused as boolean) {
         focusedValueRef.current = data.label
       }
@@ -471,10 +465,8 @@ const ClassNameControl = React.memo(() => {
         updateFocusedOption(value)
       }
 
-      const color = (isFocused as boolean) ? theme.inverted.textColor.value : theme.textColor.value
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const color = (isFocused as boolean) ? theme.bg0.value : theme.textColor.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       const borderRadius = (isFocused as boolean) ? 3 : 0
 
       return {

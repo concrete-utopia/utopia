@@ -5,7 +5,14 @@ import React from 'react'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
-import { useColorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
+import {
+  useColorTheme,
+  FlexRow,
+  UtopiaTheme,
+  Tooltip,
+  Icons,
+  AlternateColorThemeComponent,
+} from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
@@ -177,8 +184,9 @@ export const DependencyListItem: React.FunctionComponent<
             <Tooltip title='Dependency is required for Utopian projects'>
               <FlexRow
                 css={{
-                  backgroundColor: colorTheme.canvasControlsSizeBoxShadowColor50.value,
+                  backgroundColor: colorTheme.fg1.value,
                   boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
+                  color: colorTheme.bg0.value,
                   borderRadius: 2,
                   height: 14,
                   padding: '0 3px',
