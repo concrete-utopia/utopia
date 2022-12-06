@@ -1,5 +1,12 @@
 import { UtopiColor } from '../utopi-color-helpers'
-import { SubThemeObject } from './subthemes'
+
+export type SubThemeObject = {
+  name: string
+  bg0: UtopiColor
+  fg0: UtopiColor
+  fg1: UtopiColor
+  fg2: UtopiColor
+}
 
 type ThemeBase = {
   darkPrimary: UtopiColor

@@ -1,14 +1,7 @@
-import { createUtopiColor, UtopiColor } from '../utopi-color-helpers'
+import { createUtopiColor } from '../utopi-color-helpers'
+import { SubThemeObject } from './types'
 
-export type SubThemeObject = {
-  name: string
-  bg0: UtopiColor
-  fg0: UtopiColor
-  fg1: UtopiColor
-  fg2: UtopiColor
-}
-
-export const errorEmphasized = {
+export const errorEmphasized: SubThemeObject = {
   name: 'error-emphasized',
   bg0: createUtopiColor('#FF7759'),
   fg0: createUtopiColor('#FFFFFF'),
@@ -16,7 +9,7 @@ export const errorEmphasized = {
   fg2: createUtopiColor('#c9cCc3'),
 }
 
-export const warningEmphasized = {
+export const warningEmphasized: SubThemeObject = {
   name: 'warning-emphasized',
   bg0: createUtopiColor('#FFB859'),
   fg0: createUtopiColor('#FFFFFF'),
@@ -24,7 +17,7 @@ export const warningEmphasized = {
   fg2: createUtopiColor('#c9cCc3'),
 }
 
-export const pullLozenge = {
+export const pullLozenge: SubThemeObject = {
   name: 'pull-lozenge',
   bg0: createUtopiColor('#FFB859'),
   fg0: createUtopiColor('#FFFFFF'),
@@ -32,7 +25,7 @@ export const pullLozenge = {
   fg2: createUtopiColor('#c9cCc3'),
 }
 
-export const pushLozenge = {
+export const pushLozenge: SubThemeObject = {
   name: 'push-lozenge',
   bg0: createUtopiColor('#49B6FF'),
   fg0: createUtopiColor('#FFFFFF'),
@@ -40,7 +33,7 @@ export const pushLozenge = {
   fg2: createUtopiColor('#c9cCc3'),
 }
 
-export const mergeConflictLozenge = {
+export const mergeConflictLozenge: SubThemeObject = {
   ...errorEmphasized,
   name: 'merge-conflict-lozenge',
 }

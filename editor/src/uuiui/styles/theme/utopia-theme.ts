@@ -1,7 +1,7 @@
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
-import { generateCssVariablesFromThemeObject } from './theme-helpers'
+import { generateColorThemeObject, generateCssVariablesFromThemeObject } from './theme-helpers'
 import { ThemeObject } from './types'
 
 const inspectorXPadding = 8
@@ -10,12 +10,10 @@ const inspectorSmallWidth = 255
 const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 
-const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
-const [, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
+const lightThemeCssVariables = generateCssVariablesFromThemeObject(light)
+const darkThemeCssVariables = generateCssVariablesFromThemeObject(dark)
 
-export const colorTheme: ThemeObject = {
-  ...lightTheme,
-}
+export const colorTheme: ThemeObject = generateColorThemeObject(light)
 
 export const colorThemeCssVariables = {
   ...lightThemeCssVariables,
