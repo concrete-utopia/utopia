@@ -180,11 +180,21 @@ const TitleBar = React.memo(() => {
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
-          <Button primary style={{ paddingLeft: 8, paddingRight: 8 }} onClick={onClickLoginNewTab}>
+          <Button
+            primary
+            highlight
+            style={{ paddingLeft: 8, paddingRight: 8 }}
+            onClick={onClickLoginNewTab}
+          >
             Sign In To Save
           </Button>,
         )}
-        {when(loggedIn, <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />)}
+        {when(
+          loggedIn,
+          <a href='/projects' target='_blank'>
+            <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
+          </a>,
+        )}
       </div>
     </SimpleFlexRow>
   )
