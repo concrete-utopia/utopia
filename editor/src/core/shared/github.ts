@@ -314,11 +314,15 @@ export async function saveProjectToGithub(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -367,7 +371,9 @@ export async function getBranchesForGithubRepository(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -445,7 +451,9 @@ export async function updatePullRequestsForBranch(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -503,7 +511,10 @@ export async function updateProjectAgainstGithub(
                 ),
                 updateGithubData({ upstreamChanges: null }),
                 showToast(
-                  notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS'),
+                  notice(
+                    `Github: Updated the project against the branch ${branchName}.`,
+                    'SUCCESS',
+                  ),
                 ),
               ],
               'everyone',
@@ -521,7 +532,11 @@ export async function updateProjectAgainstGithub(
       ? specificCommitResponse.status
       : branchLatestResponse.status
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -574,17 +589,16 @@ export async function updateProjectWithBranchContent(
     switch (responseBody.type) {
       case 'FAILURE':
         dispatch(
-          [
-            showToast(
-              notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
-            ),
-          ],
+          [showToast(notice(`Error saving to Github: ${responseBody.failureReason}`, 'ERROR'))],
           'everyone',
         )
         break
       case 'SUCCESS':
         if (responseBody.branch == null) {
-          dispatch([showToast(notice(`Could not find branch ${branchName}.`, 'ERROR'))], 'everyone')
+          dispatch(
+            [showToast(notice(`Github: Could not find branch ${branchName}.`, 'ERROR'))],
+            'everyone',
+          )
         } else {
           const newGithubData: Partial<GithubData> = {
             upstreamChanges: null,
@@ -617,7 +631,10 @@ export async function updateProjectWithBranchContent(
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
-                notice(`Updated the project with the content from ${branchName}`, 'SUCCESS'),
+                notice(
+                  `Github: Updated the project with the content from ${branchName}`,
+                  'SUCCESS',
+                ),
               ),
             ],
             'everyone',
@@ -626,11 +643,15 @@ export async function updateProjectWithBranchContent(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -698,7 +719,9 @@ export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
-    throw new Error(`Unexpected status returned from user details endpoint: ${response.status}`)
+    throw new Error(
+      `Github: Unexpected status returned from user details endpoint: ${response.status}`,
+    )
   }
 }
 
@@ -739,7 +762,7 @@ export async function getUsersPublicGithubRepositories(
           const actions: EditorAction[] = [
             showToast(
               notice(
-                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                `Github: Error getting a user's repositories: ${responseBody.failureReason}`,
                 'ERROR',
               ),
             ),
@@ -759,11 +782,13 @@ export async function getUsersPublicGithubRepositories(
           ]
         default:
           const _exhaustiveCheck: never = responseBody
-          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
