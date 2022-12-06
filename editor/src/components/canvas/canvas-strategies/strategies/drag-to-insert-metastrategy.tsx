@@ -74,6 +74,9 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const { interactionData } = interactionSession
 
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  if (insertionSubjects.length === 0) {
+    return []
+  }
 
   const pointOnCanvas =
     interactionData.type === 'DRAG'

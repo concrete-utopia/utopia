@@ -72,6 +72,12 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   ) {
     return []
   }
+
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  if (insertionSubjects.length != 1) {
+    return []
+  }
+
   const pointOnCanvas =
     interactionSession.interactionData.type === 'DRAG'
       ? interactionSession.interactionData.originalDragStart
