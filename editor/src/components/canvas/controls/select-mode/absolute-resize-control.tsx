@@ -268,7 +268,7 @@ const SizeLabel = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'Resizelabel scale')
     const colorTheme = useColorTheme()
     const metadata = useEditorState((store) => getMetadata(store.editor), 'ResizeLabel metadata')
-    const bbox = boundingRectangleArray(
+    const boundingBox = boundingRectangleArray(
       targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
     )
     return (
@@ -292,7 +292,7 @@ const SizeLabel = React.memo(
             fontSize: 12 / scale,
           }}
         >
-          {bbox != null && `${bbox.width} x ${bbox.height}`}
+          {boundingBox != null ? `${boundingBox.width} x ${boundingBox.height}` : ''}
         </div>
       </div>
     )
