@@ -267,7 +267,7 @@ const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'Resizelabel scale')
     const colorTheme = useColorTheme()
-    const metadata = useEditorState((store) => getMetadata(store.editor), 'xxx')
+    const metadata = useEditorState((store) => getMetadata(store.editor), 'ResizeLabel metadata')
     const bbox = boundingRectangleArray(
       targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
     )
