@@ -24,13 +24,15 @@ export const ColorThemeComponent = React.memo(() => {
       setTheme(preferredColorScheme)
     }
 
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const colorSchemeQuery = window?.matchMedia?.('(prefers-color-scheme: dark)')
 
     if (themeSetting === 'system') {
-      colorSchemeQuery.addEventListener('change', handlePreferredColorSchemeChange)
+      colorSchemeQuery?.addEventListener('change', handlePreferredColorSchemeChange)
     }
 
-    return () => colorSchemeQuery.removeEventListener('change', handlePreferredColorSchemeChange)
+    return function cleanup() {
+      colorSchemeQuery?.removeEventListener('change', handlePreferredColorSchemeChange)
+    }
   }, [themeSetting, theme])
 
   return (

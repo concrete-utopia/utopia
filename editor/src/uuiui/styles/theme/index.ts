@@ -8,7 +8,7 @@ export const useColorTheme = (): ThemeObject => {
 }
 
 export function getPreferredColorScheme(): Theme {
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (window?.matchMedia?.('(prefers-color-scheme: dark)').matches) {
     return 'dark'
   } else {
     return 'light'
