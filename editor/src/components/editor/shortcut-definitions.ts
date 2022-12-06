@@ -66,8 +66,8 @@ export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
 export const FOCUS_CLASS_NAME_INPUT = 'focus-inspector-class-name-input'
 export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
-export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
-export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
+export const TOGGLE_NAVIGATOR = 'toggle-navigator'
+export const TOGGLE_INSPECTOR = 'toggle-inspector'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
@@ -114,7 +114,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BORDER_SHORTCUT]: shortcut(
     'Toggle the border of the currently selected text element.',
-    key('b', []),
+    key('forwardslash', ['shift']),
   ),
   [COPY_SELECTION_SHORTCUT]: shortcut(
     'Copy the current selection to the clipboard.',
@@ -126,7 +126,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BACKGROUND_SHORTCUT]: shortcut(
     'Toggle the background layers of the currently selected element.',
-    key('f', []),
+    key('forwardslash', ['alt']),
   ),
   [UNWRAP_ELEMENT_SHORTCUT]: shortcut(
     'Unwrap children of an element into their grandparent element.',
@@ -192,14 +192,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Focus the omnibox or toggle its current tab.',
     key('forwardslash', 'cmd'),
   ),
-  [TOGGLE_LEFT_MENU_SHORTCUT]: shortcut(
-    'Toggle the left hand menu panel.',
-    key('1', ['alt', 'cmd']),
-  ),
-  [TOGGLE_RIGHT_MENU_SHORTCUT]: shortcut(
-    'Toggle the right hand menu panel.',
-    key('2', ['alt', 'cmd']),
-  ),
+  [TOGGLE_NAVIGATOR]: shortcut('Toggle the navigator.', key('1', ['alt', 'cmd'])),
+  [TOGGLE_INSPECTOR]: shortcut('Toggle the inspector.', key('2', ['alt', 'cmd'])),
   [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: shortcut(
     'Toggle additional controls in the designer.',
     key('y', 'cmd'),
