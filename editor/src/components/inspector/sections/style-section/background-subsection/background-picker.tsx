@@ -452,14 +452,17 @@ export const BackgroundPicker: React.FunctionComponent<
     (newValue: CSSColor) =>
       onSubmitValueAndUpdateLocalStops(
         setColor(selectedStopUnorderedIndex, newValue, stops),
-        false,
+        'dragEnd',
       ),
     [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
   )
 
   const onTransientSubmitValueAndUpdateLocalColor = React.useCallback(
     (newValue: CSSColor) =>
-      onSubmitValueAndUpdateLocalStops(setColor(selectedStopUnorderedIndex, newValue, stops), true),
+      onSubmitValueAndUpdateLocalStops(
+        setColor(selectedStopUnorderedIndex, newValue, stops),
+        'drag',
+      ),
     [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
   )
 

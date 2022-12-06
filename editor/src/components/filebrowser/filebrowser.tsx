@@ -10,12 +10,7 @@ import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  getAllCodeEditorErrors,
-  getOpenFilename,
-  GithubChecksums,
-  GithubRepo,
-} from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenFilename, GithubRepo } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {

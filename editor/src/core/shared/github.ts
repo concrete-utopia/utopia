@@ -36,7 +36,7 @@ import {
   EditorStorePatched,
   emptyGithubData,
   emptyGithubSettings,
-  GithubChecksums,
+  FileChecksums,
   GithubData,
   GithubOperation,
   GithubRepo,
@@ -202,6 +202,7 @@ export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
+  assetChecksums: FileChecksums
 }
 
 export async function saveProjectToGithub(
@@ -210,10 +211,38 @@ export async function saveProjectToGithub(
   dispatch: EditorDispatch,
   options: SaveProjectToGithubOptions,
 ): Promise<void> {
-  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
-
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
+  const { branchName, commitMessage } = options
+  const { targetRepository } = persistentModel.githubSettings
+
+  // If this is a straight push, load the repo before saving
+  // in order to retrieve the head origin commit hash
+  // and avoid a fast forward error.
+  let originCommit = persistentModel.githubSettings.originCommit
+  if (originCommit == null && targetRepository != null && branchName != null) {
+    const getBranchResponse = await getBranchContentFromServer(
+      targetRepository,
+      branchName,
+      null,
+      null,
+    )
+    if (getBranchResponse.ok) {
+      const content: GetBranchContentResponse = await getBranchResponse.json()
+      if (content.type === 'SUCCESS' && content.branch != null) {
+        originCommit = content.branch.originCommit
+      }
+    }
+  }
+
+  const patchedModel: PersistentModel = {
+    ...persistentModel,
+    githubSettings: {
+      ...persistentModel.githubSettings,
+      originCommit: originCommit,
+    },
+  }
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
@@ -230,7 +259,7 @@ export async function saveProjectToGithub(
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-  const postBody = JSON.stringify(persistentModel)
+  const postBody = JSON.stringify(patchedModel)
   const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
@@ -254,7 +283,9 @@ export async function saveProjectToGithub(
       case 'SUCCESS':
         dispatch(
           [
-            updateGithubChecksums(getProjectContentsChecksums(persistentModel.projectContents)),
+            updateGithubChecksums(
+              getProjectContentsChecksums(persistentModel.projectContents, options.assetChecksums),
+            ),
             updateGithubSettings(
               projectGithubSettings(
                 persistentModel.githubSettings.targetRepository,
@@ -283,11 +314,15 @@ export async function saveProjectToGithub(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -336,7 +371,9 @@ export async function getBranchesForGithubRepository(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -414,7 +451,9 @@ export async function updatePullRequestsForBranch(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -462,7 +501,7 @@ export async function updateProjectAgainstGithub(
             dispatch(
               [
                 updateGithubChecksums(
-                  getProjectContentsChecksums(branchLatestContent.branch.content),
+                  getProjectContentsChecksums(branchLatestContent.branch.content, {}),
                 ),
                 updateBranchContents(branchLatestContent.branch.content),
                 updateAgainstGithub(
@@ -472,7 +511,10 @@ export async function updateProjectAgainstGithub(
                 ),
                 updateGithubData({ upstreamChanges: null }),
                 showToast(
-                  notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS'),
+                  notice(
+                    `Github: Updated the project against the branch ${branchName}.`,
+                    'SUCCESS',
+                  ),
                 ),
               ],
               'everyone',
@@ -490,7 +532,11 @@ export async function updateProjectAgainstGithub(
       ? specificCommitResponse.status
       : branchLatestResponse.status
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -543,17 +589,16 @@ export async function updateProjectWithBranchContent(
     switch (responseBody.type) {
       case 'FAILURE':
         dispatch(
-          [
-            showToast(
-              notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
-            ),
-          ],
+          [showToast(notice(`Error saving to Github: ${responseBody.failureReason}`, 'ERROR'))],
           'everyone',
         )
         break
       case 'SUCCESS':
         if (responseBody.branch == null) {
-          dispatch([showToast(notice(`Could not find branch ${branchName}.`, 'ERROR'))], 'everyone')
+          dispatch(
+            [showToast(notice(`Github: Could not find branch ${branchName}.`, 'ERROR'))],
+            'everyone',
+          )
         } else {
           const newGithubData: Partial<GithubData> = {
             upstreamChanges: null,
@@ -582,11 +627,14 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content)),
+              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content, {})),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
-                notice(`Updated the project with the content from ${branchName}`, 'SUCCESS'),
+                notice(
+                  `Github: Updated the project with the content from ${branchName}`,
+                  'SUCCESS',
+                ),
               ),
             ],
             'everyone',
@@ -595,11 +643,15 @@ export async function updateProjectWithBranchContent(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -667,7 +719,9 @@ export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
-    throw new Error(`Unexpected status returned from user details endpoint: ${response.status}`)
+    throw new Error(
+      `Github: Unexpected status returned from user details endpoint: ${response.status}`,
+    )
   }
 }
 
@@ -708,7 +762,7 @@ export async function getUsersPublicGithubRepositories(
           const actions: EditorAction[] = [
             showToast(
               notice(
-                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                `Github: Error getting a user's repositories: ${responseBody.failureReason}`,
                 'ERROR',
               ),
             ),
@@ -728,11 +782,13 @@ export async function getUsersPublicGithubRepositories(
           ]
         default:
           const _exhaustiveCheck: never = responseBody
-          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -745,16 +801,18 @@ const githubFileChangesSelector = createSelector(
   (store) => store.userState.githubState.authenticated,
   (store) => store.editor.githubChecksums,
   (store) => store.editor.githubData.treeConflicts,
+  (store) => store.editor.assetChecksums,
   (
     projectContents,
     githubAuthenticated,
     githubChecksums,
     treeConflicts,
+    assetChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents)
+    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
     return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
   },
 )
@@ -1188,7 +1246,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  branchChecksums: GithubChecksums | null,
+  localChecksums: FileChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {
@@ -1203,9 +1261,9 @@ export async function refreshGithubData(
     if (githubRepo != null) {
       promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, branchChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(branchName, localChecksums, githubRepo, previousCommitSha),
       )
-      if (branchName != null && branchChecksums != null) {
+      if (branchName != null && localChecksums != null) {
         promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
       }
     } else {
@@ -1236,13 +1294,13 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  branchChecksums: GithubChecksums | null,
+  localChecksums: FileChecksums | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
-  if (branchName != null && branchChecksums != null) {
+  if (branchName != null && localChecksums != null) {
     const branchContentResponse = await getBranchContentFromServer(
       githubRepo,
       branchName,
@@ -1253,8 +1311,11 @@ async function updateUpstreamChanges(
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
       if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
         upstreamChangesSuccess = true
-        const upstreamChecksums = getProjectContentsChecksums(branchLatestContent.branch.content)
-        const upstreamChanges = deriveGithubFileChanges(branchChecksums, upstreamChecksums, {})
+        const upstreamChecksums = getProjectContentsChecksums(
+          branchLatestContent.branch.content,
+          {},
+        )
+        const upstreamChanges = deriveGithubFileChanges(localChecksums, upstreamChecksums, {})
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,

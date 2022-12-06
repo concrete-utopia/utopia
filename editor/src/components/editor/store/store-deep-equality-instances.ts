@@ -315,7 +315,7 @@ import {
   FileUploadInfo,
   FileOverwriteModal,
   GithubOperation,
-  GithubChecksums,
+  FileChecksums,
   FileRevertModal,
   fileRevertModal,
   GithubData,
@@ -2470,7 +2470,7 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-const GithubChecksumsKeepDeepEquality: KeepDeepEqualityCall<GithubChecksums | null> = (
+const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> = (
   oldAttribute,
   newAttribute,
 ) => {
@@ -3582,7 +3582,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
-  const githubChecksumsResults = GithubChecksumsKeepDeepEquality(
+  const githubChecksumsResults = FileChecksumsKeepDeepEquality(
     oldValue.githubChecksums,
     newValue.githubChecksums,
   )
@@ -3597,6 +3597,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const refreshingDependenciesResults = BooleanKeepDeepEquality(
     oldValue.refreshingDependencies,
     newValue.refreshingDependencies,
+  )
+
+  const assetChecksumsResults = objectDeepEquality(StringKeepDeepEquality)(
+    oldValue.assetChecksums,
+    newValue.assetChecksums,
   )
 
   const areEqual =
@@ -3671,7 +3676,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubChecksumsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
-    refreshingDependenciesResults.areEqual
+    refreshingDependenciesResults.areEqual &&
+    assetChecksumsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3749,6 +3755,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,
+      assetChecksumsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

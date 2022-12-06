@@ -168,25 +168,6 @@ export interface InspectorInfo<T> {
   useSubmitValueFactory: UseSubmitValueFactory<T>
 }
 
-export function useMapInspectorInfoFromCSSNumberToNumber(
-  info: InspectorInfo<CSSNumber>,
-): InspectorInfo<number> {
-  const onSubmitValue = (rawNumber: number, transient?: boolean) =>
-    info.onSubmitValue({ value: rawNumber, unit: info.value.unit }, transient)
-
-  return {
-    value: info.value.value,
-    controlStatus: info.controlStatus,
-    propertyStatus: info.propertyStatus,
-    controlStyles: info.controlStyles,
-    onUnsetValues: info.onUnsetValues,
-    onSubmitValue: onSubmitValue,
-    onTransientSubmitValue: (rawNumber) =>
-      info.onTransientSubmitValue({ value: rawNumber, unit: info.value.unit }),
-    useSubmitValueFactory: useCallbackFactory(info.value.value, onSubmitValue),
-  }
-}
-
 function getSpiedValues<P extends string | number>(
   key: P,
   selectedProps: { [keyValue in P]: ReadonlyArray<any> },
