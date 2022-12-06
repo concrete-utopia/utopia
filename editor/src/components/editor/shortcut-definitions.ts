@@ -114,7 +114,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BORDER_SHORTCUT]: shortcut(
     'Toggle the border of the currently selected text element.',
-    key('b', []),
+    key('forwardslash', ['shift']),
   ),
   [COPY_SELECTION_SHORTCUT]: shortcut(
     'Copy the current selection to the clipboard.',
@@ -126,7 +126,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BACKGROUND_SHORTCUT]: shortcut(
     'Toggle the background layers of the currently selected element.',
-    key('f', []),
     key('forwardslash', ['alt']),
   ),
   [UNWRAP_ELEMENT_SHORTCUT]: shortcut(
