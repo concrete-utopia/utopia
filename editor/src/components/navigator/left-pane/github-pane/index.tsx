@@ -951,12 +951,14 @@ const PullRequestBlock = () => {
 }
 
 export const GithubPane = React.memo(() => {
-  const { isLoggedIn, githubUser } = useEditorState((store) => {
-    return {
-      isLoggedIn: User.isLoggedIn(store.userState.loginState),
-      githubUser: store.editor.githubData.githubUserDetails,
-    }
-  }, 'Github user details')
+  const githubUser = useEditorState(
+    (store) => store.editor.githubData.githubUserDetails,
+    'GithubPane githubUser',
+  )
+  const isLoggedIn = useEditorState((store) => {
+    return User.isLoggedIn(store.userState.loginState)
+  }, 'GithubPane isLoggedIn')
+
   const openGithubProfile = React.useCallback(() => {
     if (githubUser != null) {
       window.open(githubUser.htmlURL, '_blank')
