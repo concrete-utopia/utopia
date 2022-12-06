@@ -14,6 +14,7 @@ import {
   updateProjectWithBranchContent,
   useGithubFileChanges,
 } from '../../../../core/shared/github'
+import { User } from '../../../../uuiui-deps'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
@@ -27,6 +28,7 @@ import {
   SectionTitleRow,
   StringInput,
   Title,
+  UtopiaTheme,
 } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
@@ -951,8 +953,12 @@ const PullRequestBlock = () => {
 export const GithubPane = React.memo(() => {
   const githubUser = useEditorState(
     (store) => store.editor.githubData.githubUserDetails,
-    'Github user details',
+    'GithubPane githubUser',
   )
+  const isLoggedIn = useEditorState((store) => {
+    return User.isLoggedIn(store.userState.loginState)
+  }, 'GithubPane isLoggedIn')
+
   const openGithubProfile = React.useCallback(() => {
     if (githubUser != null) {
       window.open(githubUser.htmlURL, '_blank')
@@ -981,17 +987,31 @@ export const GithubPane = React.memo(() => {
             </Button>,
           )}
         </SectionTitleRow>
+        {unless(
+          isLoggedIn,
+          <FlexRow
+            style={{
+              paddingLeft: UtopiaTheme.layout.rowHorizontalPadding,
+              paddingRight: UtopiaTheme.layout.rowHorizontalPadding,
+            }}
+          >
+            <p>You need to be signed into Utopia to use the Github integration</p>
+          </FlexRow>,
+        )}
       </Section>
-      <Section style={{ padding: '10px' }}>
-        <AccountBlock />
-        <RepositoryBlock />
-        <BranchBlock />
-        <BranchNotLoadedBlock />
-        <RemoteChangesBlock />
-        <LocalChangesBlock />
-        <PullRequestBlock />
-        <PullRequestButton />
-      </Section>
+      {when(
+        isLoggedIn,
+        <Section style={{ padding: '10px' }}>
+          <AccountBlock />
+          <RepositoryBlock />
+          <BranchBlock />
+          <BranchNotLoadedBlock />
+          <RemoteChangesBlock />
+          <LocalChangesBlock />
+          <PullRequestBlock />
+          <PullRequestButton />
+        </Section>,
+      )}
     </>
   )
 })
