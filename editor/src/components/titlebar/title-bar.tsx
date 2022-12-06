@@ -191,7 +191,7 @@ const TitleBar = React.memo(() => {
         )}
         {when(
           loggedIn,
-          <a href='/projects'>
+          <a href='/projects' target='_blank'>
             <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
           </a>,
         )}
