@@ -1,17 +1,18 @@
 import { useColorThemeVariables } from './theme'
 import React from 'react'
+import { mapToArray } from '../../core/shared/object-utils'
 
 // TODO: Include alternate themes for the given primary theme
 // and include CSS classes/variables for those
 export const ColorThemeComponent = React.memo(() => {
-  const colorTheme = useColorThemeVariables()
+  const themeVariables = useColorThemeVariables()
 
   return (
     <style>
       {':root {'}
-      {Object.entries(colorTheme).map(([variable, value]) => {
+      {mapToArray((value, variable) => {
         return `${variable}:${value};`
-      })}
+      }, themeVariables)}
       {'}'}
     </style>
   )

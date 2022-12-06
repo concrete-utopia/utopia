@@ -1,6 +1,7 @@
-import { rgb } from 'chroma-js'
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
+import { errorEmphasized, pullLozenge, pushLozenge, warningEmphasized } from './subthemes'
+import { ThemeObject } from './types'
 
 const lightBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
@@ -36,6 +37,8 @@ const lightBase = {
   fg7: createUtopiColor('hsl(0,0%,70%)'),
   fg8: createUtopiColor('hsl(0,0%,80%)'),
   fg9: createUtopiColor('hsl(0,0%,90%)'),
+  fgError: createUtopiColor('#FF7759'),
+  fgWarning: createUtopiColor('#FFA858'),
   border0: createUtopiColor('hsl(0,0%,93%)'),
   border1: createUtopiColor('hsl(0,0%,91%)'),
   border2: createUtopiColor('hsl(0,0%,86%)'),
@@ -98,11 +101,17 @@ const colorsWithOpacity = {
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
 }
 
-export const light = {
+export const light: ThemeObject = {
   ...colorsWithOpacity,
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
+
+  errorEmphasized,
+  pullLozenge,
+  pushLozenge,
+  warningEmphasized,
+  // subThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
 
   textColor: base.almostBlack,
 

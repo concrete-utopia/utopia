@@ -1,7 +1,8 @@
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
-import { generateCssVariablesFromThemeObject, ThemeObject } from './theme-helpers'
+import { generateCssVariablesFromThemeObject } from './theme-helpers'
+import { ThemeObject } from './types'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38

@@ -23,7 +23,7 @@ import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { ThemeObject } from '../../../uuiui/styles/theme/types'
 
 interface ComputedLook {
   style: React.CSSProperties
