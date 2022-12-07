@@ -350,16 +350,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
-  // Handle the imports changing, this needs to run _before_ any require function
-  // calls as it's modifying the underlying DOM elements. This is somewhat working
-  // like useEffect, except that runs after everything has rendered.
-  const cssImports = useKeepReferenceEqualityIfPossible(
-    normalizedCssImportsFromImports(uiFilePath, imports),
-  )
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
-  }
-
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
   let topLevelComponentRendererComponents = React.useRef<
@@ -453,6 +443,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
+
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    // since rerender-all-elements means we did a full rebuild of the canvas scope,
+    // any CSS file that was not resolved during this rerender can be unimported
+    unimportAllButTheseCSSFiles(resolvedFileNames.current)
+  }
 
   const executionScope = scope
 
