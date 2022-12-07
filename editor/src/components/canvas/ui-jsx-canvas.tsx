@@ -352,16 +352,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     [curriedResolveFn, projectContentsForRequireFn],
   )
 
-  // Handle the imports changing, this needs to run _before_ any require function
-  // calls as it's modifying the underlying DOM elements. This is somewhat working
-  // like useEffect, except that runs after everything has rendered.
-  const cssImports = useKeepReferenceEqualityIfPossible(
-    normalizedCssImportsFromImports(uiFilePath, imports),
-  )
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
-  }
-
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
   let topLevelComponentRendererComponents = React.useRef<
@@ -430,36 +420,42 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     ],
   )
 
-  const { scope, topLevelJsxComponents } = React.useMemo(
-    () =>
-      createExecutionScope(
-        uiFilePath,
-        customRequire,
-        mutableContextRef,
-        topLevelComponentRendererComponents,
-        projectContentsForRequireFn,
-        uiFilePath, // this is the storyboard filepath
-        transientFilesStateForCustomRequire,
-        base64FileBlobs,
-        hiddenInstances,
-        displayNoneInstances,
-        metadataContext,
-        updateInvalidatedPaths,
-        props.shouldIncludeCanvasRootInTheSpy,
-      ),
-    [
-      base64FileBlobs,
-      customRequire,
-      displayNoneInstances,
-      hiddenInstances,
-      metadataContext,
-      projectContentsForRequireFn,
-      props.shouldIncludeCanvasRootInTheSpy,
-      transientFilesStateForCustomRequire,
+  const { scope, topLevelJsxComponents } = React.useMemo(() => {
+    const executionScope = createExecutionScope(
       uiFilePath,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      projectContentsForRequireFn,
+      uiFilePath, // this is the storyboard filepath
+      transientFilesStateForCustomRequire,
+      base64FileBlobs,
+      hiddenInstances,
+      displayNoneInstances,
+      metadataContext,
       updateInvalidatedPaths,
-    ],
-  )
+      props.shouldIncludeCanvasRootInTheSpy,
+    )
+
+    // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
+    if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+      // since rerender-all-elements means we did a full rebuild of the canvas scope,
+      // any CSS file that was not resolved during this rerender can be unimported
+      unimportAllButTheseCSSFiles(resolvedFileNames.current)
+    }
+    return executionScope
+  }, [
+    base64FileBlobs,
+    customRequire,
+    displayNoneInstances,
+    hiddenInstances,
+    metadataContext,
+    projectContentsForRequireFn,
+    props.shouldIncludeCanvasRootInTheSpy,
+    transientFilesStateForCustomRequire,
+    uiFilePath,
+    updateInvalidatedPaths,
+  ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
