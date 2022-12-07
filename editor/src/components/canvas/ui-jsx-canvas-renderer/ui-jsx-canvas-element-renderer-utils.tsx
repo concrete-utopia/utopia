@@ -316,7 +316,9 @@ export function renderCoreElement(
       if (elementPath == null) {
         return element.text
       }
-      return <UtopiaSlateEditor elementPath={EP.parentPath(elementPath)} text={element.text} />
+      return (
+        <UtopiaSlateEditor elementPath={EP.parentPath(elementPath)} text={element.text.trim()} />
+      )
     }
     default:
       const _exhaustiveCheck: never = element
