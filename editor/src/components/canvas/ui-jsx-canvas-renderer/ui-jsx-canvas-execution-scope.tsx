@@ -1,12 +1,21 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
-import { isUtopiaJSXComponent, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ArbitraryJSBlock,
+  isUtopiaJSXComponent,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
+import {
+  getContentsTreeFileFromString,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+} from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import {
   CanvasBase64Blobs,
   TransientFilesState,
+  TransientFileState,
   UIFileBase64Blobs,
 } from '../../editor/store/editor-state'
 import {
@@ -28,10 +37,13 @@ import {
   isParseSuccess,
   isTextFile,
 } from '../../../core/shared/project-file-types'
-import { defaultIfNull } from '../../../core/shared/optional-utils'
+import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
+import { useContextSelector } from 'use-context-selector'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { emptySet } from '../../../core/shared/set-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -55,7 +67,6 @@ export function createExecutionScope(
   scope: MapLike<any>
   topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
   requireResult: MapLike<any>
-  jsxFactoryFunction: string | null
 } {
   if (!(filePath in topLevelComponentRendererComponents.current)) {
     // we make sure that the ref has an entry for this filepath
@@ -162,7 +173,6 @@ export function createExecutionScope(
   return {
     scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
-    jsxFactoryFunction: jsxFactoryFunction,
     requireResult: requireResult,
   }
 }
