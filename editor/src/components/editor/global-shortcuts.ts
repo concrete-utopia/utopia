@@ -65,10 +65,10 @@ import {
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
   TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
-  TOGGLE_LEFT_MENU_SHORTCUT,
+  TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
-  TOGGLE_RIGHT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR,
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
@@ -86,6 +86,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
+  OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -95,6 +96,7 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -605,10 +607,10 @@ export function handleKeyDown(
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
       },
-      [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_NAVIGATOR]: () => {
+        return [EditorActions.togglePanel('navigator')]
       },
-      [TOGGLE_RIGHT_MENU_SHORTCUT]: () => {
+      [TOGGLE_INSPECTOR]: () => {
         return [EditorActions.togglePanel('rightmenu')]
       },
       [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: () => {
@@ -639,6 +641,29 @@ export function handleKeyDown(
         } else {
           return []
         }
+      },
+      [OPEN_EYEDROPPER]: () => {
+        const selectedViews = editor.selectedViews
+        if (selectedViews.length === 0) {
+          return []
+        }
+        const EyeDropper = window.EyeDropper
+        if (EyeDropper == null) {
+          return []
+        }
+
+        void new EyeDropper().open().then((result: any) => {
+          dispatch(
+            selectedViews.map((view) =>
+              EditorActions.setProperty(
+                view,
+                PP.create(['style', 'backgroundColor']),
+                jsxAttributeValue(result.sRGBHex as string, emptyComments),
+              ),
+            ),
+          )
+        })
+        return []
       },
     })
   }

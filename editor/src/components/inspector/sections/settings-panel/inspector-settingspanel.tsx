@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag */
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
@@ -19,14 +20,11 @@ import {
   CheckboxInput,
   FlexColumn,
   useColorTheme,
-  Button,
-  StringInput,
   HeadlessStringInput,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
-import { NO_OP } from '../../../../core/shared/utils'
 import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
 
 const StyledFlexRow = styled(FlexRow)({

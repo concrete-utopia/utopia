@@ -91,7 +91,7 @@ export type TransformedStateAndPropsEqualityTest<T> = (newStateValue: T, newProp
 
 export type OnSubmitValueAndUpdateLocalState<T> = (
   setStateAction: React.SetStateAction<T>,
-  transient: boolean,
+  dragState: 'dragStart' | 'drag' | 'dragEnd' | 'notDragging',
 ) => void
 
 /**
@@ -112,34 +112,41 @@ export function useModelControlledTransformableState<T>(
   onTransientSubmitValue?: OnSubmitValue<T>,
 ): [T, OnSubmitValueAndUpdateLocalState<T>] {
   const [localState, setLocalState] = React.useState<T>(propValue)
-
-  const [dirty, setDirty] = React.useState(false)
+  const [isDragging, setIsDragging] = React.useState(false)
 
   const onSubmitValueAndUpdateLocalState: OnSubmitValueAndUpdateLocalState<T> = React.useCallback(
-    (setStateAction, transient) => {
+    (setStateAction, dragState) => {
       const newValue =
         typeof setStateAction === 'function'
           ? (setStateAction as (prevState: T) => T)(localState)
           : setStateAction
-      if (transient && onTransientSubmitValue != null) {
+      if ((dragState === 'drag' || dragState === 'notDragging') && onTransientSubmitValue != null) {
         onTransientSubmitValue(newValue)
       } else {
         onSubmitValue(newValue)
       }
       setLocalState(newValue)
-      setDirty(true)
+
+      switch (dragState) {
+        case 'dragStart':
+        case 'drag':
+          setIsDragging(true)
+          break
+        case 'dragEnd':
+        case 'notDragging':
+        default:
+          setIsDragging(false)
+      }
     },
     [localState, onSubmitValue, onTransientSubmitValue],
   )
 
   React.useEffect(() => {
     const propsAndTransformedStateMatch = equalityTest(localState, propValue)
-    if (propsAndTransformedStateMatch) {
-      setDirty(false)
-    } else if (!propsAndTransformedStateMatch && !dirty) {
+    if (!propsAndTransformedStateMatch && !isDragging) {
       setLocalState(propValue)
     }
-  }, [localState, propValue, equalityTest, dirty])
+  }, [localState, propValue, equalityTest, isDragging])
   return [localState, onSubmitValueAndUpdateLocalState]
 }
 

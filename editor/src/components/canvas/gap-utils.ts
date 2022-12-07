@@ -36,10 +36,10 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
   switch (direction) {
     case 'column':
     case 'column-reverse':
-      return CSSCursor.RowResize
+      return CSSCursor.GapNS
     case 'row':
     case 'row-reverse':
-      return CSSCursor.ColResize
+      return CSSCursor.GapEW
     default:
       assertNever(direction)
   }

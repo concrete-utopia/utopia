@@ -274,6 +274,9 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
+
+    expect(renderResult.renderedDOM.getByTestId('parent-resize-label')).toBeTruthy()
+
     resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

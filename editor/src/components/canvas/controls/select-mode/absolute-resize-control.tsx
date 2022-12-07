@@ -1,11 +1,16 @@
 import React from 'react'
-import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  boundingRectangleArray,
+  CanvasVector,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { borderRadius, color, useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
-import { EditorStorePatched } from '../../../editor/store/editor-state'
+import { EditorStorePatched, getMetadata } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -63,6 +68,12 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       ref.current.style.top = boundingBox.height + 'px'
     })
 
+    const resizeRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.top = boundingBox.height + 'px'
+      ref.current.style.left = 0 + 'px'
+      ref.current.style.width = boundingBox.width + 'px'
+    })
+
     return (
       <CanvasOffsetWrapper>
         <div
@@ -108,6 +119,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
             position={{ x: 1, y: 1 }}
             cursor={CSSCursor.ResizeNWSE}
           />
+          <SizeLabel ref={resizeRef} targets={targets} />
         </div>
       </CanvasOffsetWrapper>
     )
@@ -243,6 +255,46 @@ const ResizeEdge = React.memo(
         onMouseMove={onMouseMove}
         data-testid={`resize-control-${props.position.x}-${props.position.y}`}
       />
+    )
+  }),
+)
+
+interface SizeLabelProps {
+  targets: Array<ElementPath>
+}
+
+const SizeLabel = React.memo(
+  React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'Resizelabel scale')
+    const colorTheme = useColorTheme()
+    const metadata = useEditorState((store) => getMetadata(store.editor), 'ResizeLabel metadata')
+    const boundingBox = boundingRectangleArray(
+      targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
+    )
+    return (
+      <div
+        ref={ref}
+        style={{
+          position: 'absolute',
+          pointerEvents: 'none',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+        data-testid='parent-resize-label'
+      >
+        <div
+          style={{
+            marginTop: 8 / scale,
+            padding: 4 / scale,
+            borderRadius: 4 / scale,
+            color: colorTheme.white.value,
+            backgroundColor: colorTheme.secondaryBlue.value,
+            fontSize: 12 / scale,
+          }}
+        >
+          {boundingBox != null ? `${boundingBox.width} x ${boundingBox.height}` : ''}
+        </div>
+      </div>
     )
   }),
 )
