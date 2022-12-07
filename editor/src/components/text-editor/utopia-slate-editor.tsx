@@ -1,5 +1,5 @@
 import React from 'react'
-import { createEditor } from 'slate'
+import { createEditor, Descendant, Node } from 'slate'
 import {
   DefaultElement,
   DefaultLeaf,
@@ -11,6 +11,8 @@ import {
 } from 'slate-react'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
+import { useEditorState } from '../editor/store/store-hook'
+import { updateChildText } from '../editor/actions/action-creators'
 
 interface UtopiaSlateEditorProps {
   elementPath: ElementPath
@@ -28,6 +30,7 @@ export const UtopiaSlateEditor: React.FC<UtopiaSlateEditorProps> = (
     (innerProps: RenderLeafProps) => <DefaultLeaf {...innerProps} />,
     [],
   )
+  const dispatch = useEditorState((store) => store.dispatch, 'useEditorState dispatch')
   const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       releaseTextEditorFocus()
@@ -35,16 +38,31 @@ export const UtopiaSlateEditor: React.FC<UtopiaSlateEditorProps> = (
       event.stopPropagation()
     }
   }, [])
+  const contentRef = React.useRef(props.text)
+  const onChange = React.useCallback(
+    (value: Array<Descendant>) => {
+      if (value.length !== 1) {
+        return
+      }
+      const content = Node.string(value[0])
+      if (content !== contentRef.current) {
+        contentRef.current = content
+        dispatch([updateChildText(props.elementPath, content)])
+      }
+    },
+    [props.elementPath, dispatch],
+  )
+
   const editor = withReact(createEditor())
-  const initialValue = [
+  const nodes = [
     {
       type: 'paragraph',
-      children: [{ text: props.text }],
+      children: [{ text: contentRef.current }],
     },
   ]
 
   return (
-    <Slate editor={editor} value={initialValue}>
+    <Slate editor={editor} value={nodes} onChange={onChange}>
       <Editable
         id={getSlateEditorId(props.elementPath)}
         renderElement={renderElement}
