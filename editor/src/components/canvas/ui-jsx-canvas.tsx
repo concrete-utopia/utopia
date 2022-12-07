@@ -335,7 +335,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   if (
     ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
     elementsToRerenderRef.current === 'rerender-all-elements' || // once we get here, we know that `ElementsToRerenderGLOBAL.current` is an array, and `elementsToRerenderRef.current` isn't
-    !pathArraysEqual(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current) // once we get here, we know that neither `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
+    !pathArraysEqual(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
   ) {
     elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
   }
