@@ -651,7 +651,7 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
     ])
   })
-  it('moving the element into a flex layout over a flex child with children will reparent to flex child near edge', async () => {
+  it('moving the element to the edge of a flex in flex layout will reparent to the outer flex container', async () => {
     // TODO THIS IS WRONG, IT SHOULD CHOSE THE OUTER FLEX DIV
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(complexProject('row')),
@@ -663,19 +663,18 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexSibling = await renderResult.renderedDOM.findByTestId('innerchild1')
-    const flexSiblingRect = flexSibling.getBoundingClientRect()
-    const flexSiblingEnd = {
-      x: flexSiblingRect.x + flexSiblingRect.width - PaddingThreshold / 2,
-      y: flexSiblingRect.y + flexSiblingRect.height / 2,
+    const flexInnerChild = await renderResult.renderedDOM.findByTestId('innerchild1')
+    const flexInnerChildRect = flexInnerChild.getBoundingClientRect()
+    const flexInnerChildLeft = {
+      x: flexInnerChildRect.x + PaddingThreshold / 2,
+      y: flexInnerChildRect.y + flexInnerChildRect.height / 2,
     }
 
     const dragDelta = windowPoint({
-      x: flexSiblingEnd.x - absoluteChildCenter.x,
-      y: flexSiblingEnd.y - absoluteChildCenter.y,
+      x: flexInnerChildLeft.x - absoluteChildCenter.x,
+      y: flexInnerChildLeft.y - absoluteChildCenter.y,
     })
     await dragElement(renderResult, 'targetdiv', dragDelta, cmdModifier)
-
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -687,13 +686,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/targetdiv',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
     ])
   })
-  it('moving the element to a flex layout to the middle of the flex child with children will reparent to flex grandchild', async () => {
+  it('moving the element to the center of a flex in flex layout will reparent to flex grandchild', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
@@ -704,16 +703,16 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexSibling = await renderResult.renderedDOM.findByTestId('innerchild1')
-    const flexSiblingRect = flexSibling.getBoundingClientRect()
-    const flexSiblingCenter = {
-      x: flexSiblingRect.x + flexSiblingRect.width / 2,
-      y: flexSiblingRect.y + flexSiblingRect.height / 2,
+    const flexInnerChild = await renderResult.renderedDOM.findByTestId('innerchild1')
+    const flexInnerChildRect = flexInnerChild.getBoundingClientRect()
+    const flexInnerChildCenter = {
+      x: flexInnerChildRect.x + flexInnerChildRect.width / 2,
+      y: flexInnerChildRect.y + flexInnerChildRect.height / 2,
     }
 
     const dragDelta = windowPoint({
-      x: flexSiblingCenter.x - absoluteChildCenter.x,
-      y: flexSiblingCenter.y - absoluteChildCenter.y,
+      x: flexInnerChildCenter.x - absoluteChildCenter.x,
+      y: flexInnerChildCenter.y - absoluteChildCenter.y,
     })
     await dragElement(renderResult, 'targetdiv', dragDelta, cmdModifier)
 
