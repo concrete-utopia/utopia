@@ -331,13 +331,22 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
+  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
+  if (
+    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
+    elementsToRerenderRef.current === 'rerender-all-elements' || // once we get here, we know that `ElementsToRerenderGLOBAL.current` is an array, and `elementsToRerenderRef.current` isn't
+    !pathArraysEqual(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current) // once we get here, we know that neither `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
+  ) {
+    elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
+  }
+
   const maybeOldProjectContents = React.useRef(projectContents)
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+  if (elementsToRerenderRef.current === 'rerender-all-elements') {
     maybeOldProjectContents.current = projectContents
   }
 
   const maybeOldTransientFileState = React.useRef(transientFilesState)
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+  if (elementsToRerenderRef.current === 'rerender-all-elements') {
     maybeOldTransientFileState.current = transientFilesState
   }
 
@@ -438,7 +447,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
-    if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    if (elementsToRerenderRef.current === 'rerender-all-elements') {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
       unimportAllButTheseCSSFiles(resolvedFileNames.current)
@@ -784,3 +793,16 @@ const CanvasContainer = React.forwardRef<
   )
 })
 CanvasContainer.displayName = 'CanvasContainer'
+
+function pathArraysEqual(one: Array<ElementPath>, other: Array<ElementPath>) {
+  if (one.length != other.length) {
+    return false
+  }
+
+  for (const path of one) {
+    if (other.find((p) => EP.pathsEqual(p, path)) == null) {
+      return false
+    }
+  }
+  return true
+}
