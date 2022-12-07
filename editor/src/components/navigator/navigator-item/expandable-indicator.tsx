@@ -19,15 +19,18 @@ export const ExpandableIndicator: React.FunctionComponent<
 > = React.memo((props) => {
   return (
     <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>
-      {props.visible ? (
-        <Icn
-          category='semantic'
-          type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-          color={props.selected ? 'on-highlight-main' : 'main'}
-          onMouseDown={props.onMouseDown}
-          onClick={props.onClick}
-        />
-      ) : null}
+      <Icn
+        category='semantic'
+        type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
+        color={props.selected ? 'on-highlight-main' : 'main'}
+        style={{
+          pointerEvents: props.visible ? 'all' : 'none',
+          visibility: props.visible ? 'visible' : 'hidden',
+          cursor: 'pointer',
+        }}
+        onMouseDown={props.onMouseDown}
+        onClick={props.onClick}
+      />
     </div>
   )
 })
