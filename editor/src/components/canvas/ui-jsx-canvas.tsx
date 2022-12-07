@@ -67,10 +67,7 @@ import {
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
-import {
-  createExecutionScope,
-  createExecutionScope2,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -462,22 +459,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       uiFilePath,
       updateInvalidatedPaths,
     ],
-  )
-
-  createExecutionScope2(
-    uiFilePath,
-    customRequire,
-    mutableContextRef,
-    topLevelComponentRendererComponents,
-    projectContentsForRequireFn,
-    uiFilePath, // this is the storyboard filepath
-    transientFilesStateForCustomRequire,
-    base64FileBlobs,
-    hiddenInstances,
-    displayNoneInstances,
-    metadataContext,
-    updateInvalidatedPaths,
-    props.shouldIncludeCanvasRootInTheSpy,
   )
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
