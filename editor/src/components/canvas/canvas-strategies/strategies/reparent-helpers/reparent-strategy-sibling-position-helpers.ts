@@ -63,7 +63,10 @@ export function drawTargetRectanglesForChildrenOfElement(
       return null
     }
 
-    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)
+    if (bounds == null) {
+      return null
+    }
     return {
       start: bounds[leftOrTop],
       size: bounds[widthOrHeight],
