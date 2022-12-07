@@ -703,7 +703,7 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexInnerChild = await renderResult.renderedDOM.findByTestId('innerchild1')
+    const flexInnerChild = await renderResult.renderedDOM.findByTestId('innerchild2')
     const flexInnerChildRect = flexInnerChild.getBoundingClientRect()
     const flexInnerChildCenter = {
       x: flexInnerChildRect.x + flexInnerChildRect.width / 2,
@@ -719,7 +719,7 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/targetdiv',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa',
@@ -728,8 +728,8 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/targetdiv',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
     ])
   })
