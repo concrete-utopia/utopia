@@ -152,10 +152,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
-        return strategyApplicationResult([
-          setCursorCommand(pickCursorFromEdge(edgePiece)),
-          updateHighlightedViews('mid-interaction', []),
-        ])
+        return emptyStrategyApplicationResult
       }
 
       const selectedElement = filteredSelectedElements[0]

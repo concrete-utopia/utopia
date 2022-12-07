@@ -9,6 +9,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
@@ -47,7 +48,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl hoveredViews',
   )
 
-  const [indicatorShown, setIndicatorShown] = useState<string | null>(null)
+  const [elementHovered, setElementHovered] = useState<boolean>(false)
 
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
   const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
@@ -60,14 +61,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
 
     if (hoveredViews.includes(selectedElement)) {
-      timeoutRef.current = setTimeout(() => setBackgroundShown(true), 200)
+      timeoutRef.current = setTimeout(() => setElementHovered(true), 200)
     } else {
-      setBackgroundShown(false)
+      setElementHovered(false)
     }
   }, [hoveredViews, selectedElement])
-
-  const handleHoverStart = React.useCallback((id: string) => setIndicatorShown(id), [])
-  const handleHoverEnd = React.useCallback(() => setIndicatorShown(null), [])
 
   const { dispatch, scale, metadata, isDragging } = useEditorState(
     (store) => ({
@@ -105,10 +103,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               key={path}
               hoverStart={controlHoverStart}
               hoverEnd={controlHoverEnd}
-              handleHoverStart={handleHoverStart}
-              handleHoverEnd={handleHoverEnd}
               onMouseDown={onMouseDown}
-              indicatorShown={indicatorShown}
+              elementHovered={elementHovered}
               path={path}
               bounds={bounds}
               flexDirection={flexDirection}
@@ -152,13 +148,11 @@ const gapControlSizeConstants = (
 interface GapControlSegmentProps {
   hoverStart: React.MouseEventHandler
   hoverEnd: React.MouseEventHandler
-  handleHoverStart: (_: string) => void
-  handleHoverEnd: () => void
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
   flexDirection: FlexDirection
   gapValue: CSSNumber
-  indicatorShown: string | null
+  elementHovered: boolean
   path: string
   indicatorColor: string
   scale: number
@@ -170,46 +164,40 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   const {
     hoverStart,
     hoverEnd,
-    handleHoverEnd,
-    handleHoverStart,
     onMouseDown,
-    indicatorShown,
     bounds,
     isDragging,
     gapValue,
     flexDirection,
     indicatorColor,
+    elementHovered,
     scale,
     path,
     backgroundShown,
   } = props
 
   const colorTheme = useColorTheme()
-  const [stripesShown, setStripesShown] = React.useState<boolean>(false)
+  const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
 
   const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
   const { width, height } = handleDimensions(flexDirection, scale)
 
   const handleHoverStartInner = React.useCallback(() => {
-    handleHoverStart(path)
-    setStripesShown(true)
-  }, [handleHoverStart, path])
+    setIndicatorShown(true)
+  }, [])
 
   const handleHoverEndInner = React.useCallback(
     (e: React.MouseEvent) => {
       hoverEnd(e)
-      setStripesShown(false)
+      setIndicatorShown(false)
     },
     [hoverEnd],
   )
 
-  const shouldShowIndicator = React.useCallback(
-    (p: string) => !isDragging && indicatorShown === p,
-    [indicatorShown, isDragging],
-  )
-
-  const shouldShowBackground = !isDragging && backgroundShown && stripesShown
+  const shouldShowIndicator = !isDragging && indicatorShown
+  const shouldShowHandle = !isDragging && elementHovered
+  const shouldShowBackground = !isDragging && backgroundShown
 
   return (
     <div
@@ -234,38 +222,38 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     >
       <div
         data-testid={FlexGapControlHandleTestId}
-        style={{ padding: hitAreaPadding, cursor: cursorFromFlexDirection(flexDirection) }}
+        style={{
+          visibility: shouldShowHandle ? 'visible' : 'hidden',
+          padding: hitAreaPadding,
+          cursor: cursorFromFlexDirection(flexDirection),
+        }}
         onMouseDown={onMouseDown}
         onMouseEnter={handleHoverStartInner}
-        onMouseLeave={handleHoverEnd}
       >
-        {when(
-          shouldShowIndicator(path),
-          <div
-            style={{
-              position: 'absolute',
-              paddingTop: paddingIndicatorOffset,
-              paddingLeft: paddingIndicatorOffset,
-              pointerEvents: 'none',
-            }}
-          >
+        <div
+          style={{
+            position: 'absolute',
+            paddingTop: paddingIndicatorOffset,
+            paddingLeft: paddingIndicatorOffset,
+            pointerEvents: 'none',
+          }}
+        >
+          {when(
+            shouldShowIndicator,
             <CanvasLabel
               value={printCSSNumber(gapValue, null)}
               scale={scale}
               color={colorTheme.brandNeonPink.value}
               textColor={colorTheme.white.value}
-            />
-          </div>,
-        )}
-        {when(
-          backgroundShown,
-          <PillHandle
-            width={width}
-            height={height}
-            pillColor={colorTheme.brandNeonPink.value}
-            borderWidth={borderWidth}
-          />,
-        )}
+            />,
+          )}
+        </div>
+        <PillHandle
+          width={width}
+          height={height}
+          pillColor={colorTheme.brandNeonPink.value}
+          borderWidth={borderWidth}
+        />
       </div>
     </div>
   )
