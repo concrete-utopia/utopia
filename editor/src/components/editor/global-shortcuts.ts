@@ -32,7 +32,7 @@ import {
   defaultRectangleElement,
   defaultViewElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
+import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
@@ -87,6 +87,7 @@ import {
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
   OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
+  TEXT_EDIT_MODE,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -401,6 +402,9 @@ export function handleKeyDown(
         if (isLiveMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
         }
+        if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
+        }
         return []
       },
       [CYCLE_HIERACHY_TARGETS_SHORTCUT]: () => {
@@ -663,6 +667,12 @@ export function handleKeyDown(
             ),
           )
         })
+        return []
+      },
+      [TEXT_EDIT_MODE]: () => {
+        if (editor.selectedViews.length > 0) {
+          return [EditorActions.switchEditorMode(EditorModes.textEditMode(editor.selectedViews[0]))]
+        }
         return []
       },
     })

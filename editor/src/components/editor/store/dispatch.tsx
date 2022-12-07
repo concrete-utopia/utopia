@@ -16,7 +16,7 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
-import { CanvasAction } from '../../canvas/canvas-types'
+import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
@@ -62,7 +62,9 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import * as EP from '../../../core/shared/element-path'
+import { forceTextEditorFocus, releaseTextEditorFocus } from '../../text-editor/utopia-slate-editor'
+import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -491,6 +493,16 @@ export function editorDispatch(
 
   const frozenEditorState = editorWithModelChecked.editorState
 
+  if (
+    isTextEditMode(patchedEditorState.mode) &&
+    (!isTextEditMode(storedState.patchedEditor.mode) ||
+      !EP.pathsEqual(storedState.patchedEditor.mode.editedText, patchedEditorState.mode.editedText))
+  ) {
+    forceTextEditorFocus(patchedEditorState.mode.editedText)
+  }
+  if (isTextEditMode(storedState.patchedEditor.mode) && !isTextEditMode(patchedEditorState.mode)) {
+    releaseTextEditorFocus()
+  }
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,

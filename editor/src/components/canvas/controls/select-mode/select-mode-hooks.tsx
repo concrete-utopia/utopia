@@ -709,8 +709,8 @@ function useSelectOrLiveModeSelectAndHover(
             editorActions.push(...cancelInsertModeActions('apply-changes'))
           }
 
-          // then we set the selected views for the editor state, 1 frame later
           if (updatedSelection.length === 0) {
+            // then we set the selected views for the editor state, 1 frame later
             editorActions.push(clearSelection(), setFocusedElement(null))
           } else {
             editorActions.push(selectComponents(updatedSelection, event.shiftKey))
@@ -769,6 +769,11 @@ export function useSelectAndHover(
     setSelectedViewsForCanvasControlsOnly,
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
+  const textEditModeCallbacks = {
+    onMouseMove: Utils.NO_OP,
+    onMouseDown: Utils.NO_OP,
+    onMouseUp: Utils.NO_OP,
+  }
 
   if (hasInteractionSession) {
     return {
@@ -784,6 +789,8 @@ export function useSelectAndHover(
         return insertModeCallbacks
       case 'live':
         return selectModeCallbacks
+      case 'textEdit':
+        return textEditModeCallbacks
       default:
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)

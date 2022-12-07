@@ -146,6 +146,8 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
       return CSSCursor.Insert
     case 'live':
       return CSSCursor.BrowserAuto
+    case 'textEdit':
+      return CSSCursor.Insert
     default:
       const _exhaustiveCheck: never = mode
       throw `Unable to get default cursor for unsupported mode ${(mode as any).type}`

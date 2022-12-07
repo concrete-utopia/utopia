@@ -452,6 +452,8 @@ import {
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
+  switchEditorMode,
+  updateEditorMode,
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
@@ -464,7 +466,11 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
-import { forceTextEditorFocus, releaseTextEditorFocus } from '../../text-editor/utopia-slate-editor'
+import {
+  forceTextEditorFocus,
+  getSlateEditorId,
+  releaseTextEditorFocus,
+} from '../../text-editor/utopia-slate-editor'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1911,10 +1917,6 @@ export const UPDATE_FNS = {
           ? editor.navigator
           : updateNavigatorCollapsedState(filteredNewlySelectedPaths, editor.navigator),
       pasteTargetsToIgnore: [],
-    }
-    releaseTextEditorFocus()
-    if (action.target.length === 1) {
-      forceTextEditorFocus(action.target[0])
     }
     if (filteredNewlySelectedPaths === newlySelectedPaths) {
       return updatedEditor

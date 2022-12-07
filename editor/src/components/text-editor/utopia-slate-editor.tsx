@@ -68,7 +68,6 @@ export const UtopiaSlateEditor: React.FC<UtopiaSlateEditorProps> = (
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         spellCheck
-        autoFocus
         onKeyDown={onKeyDown}
       />
     </Slate>
@@ -85,7 +84,7 @@ export function forceTextEditorFocus(elementPath: ElementPath): void {
   releaseTextEditorFocus()
   activeTextEditorElement = document.getElementById(getSlateEditorId(elementPath))
   if (activeTextEditorElement != null) {
-    activeTextEditorElement.addEventListener('blur', () => activeTextEditorElement?.focus())
+    activeTextEditorElement.addEventListener('blur', forceFocusCallback)
     activeTextEditorElement.focus()
   }
 }
@@ -97,6 +96,6 @@ export function releaseTextEditorFocus(): void {
   activeTextEditorElement?.blur()
 }
 
-function getSlateEditorId(elementPath: ElementPath) {
+export function getSlateEditorId(elementPath: ElementPath): string {
   return `slate-editor-${EP.toString(elementPath)}`
 }

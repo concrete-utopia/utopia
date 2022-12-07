@@ -408,6 +408,7 @@ import {
   targetedInsertionParent,
   TargetedInsertionParent,
   imageInsertionSubject,
+  TextEditMode,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2664,6 +2665,13 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
     EditorModes.liveMode,
   )
 
+export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
+  combine1EqualityCall(
+    (mode) => mode.editedText,
+    ElementPathKeepDeepEquality,
+    EditorModes.textEditMode,
+  )
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -2679,6 +2687,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'live':
       if (newValue.type === oldValue.type) {
         return LiveCanvasModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'textEdit':
+      if (newValue.type === oldValue.type) {
+        return TextEditModeKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
