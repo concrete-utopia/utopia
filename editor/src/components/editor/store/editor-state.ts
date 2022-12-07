@@ -170,7 +170,7 @@ import {
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github'
-import { getPreferredColorScheme, Theme } from '../../../uuiui'
+import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 
 const ObjectPathImmutable: any = OPI
 
