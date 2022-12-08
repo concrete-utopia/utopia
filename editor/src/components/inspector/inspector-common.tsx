@@ -58,9 +58,9 @@ export function detectFlexAlignJustifyContent(
   }
 
   const justifyContent: FlexJustifyContent =
-    getFlexJustifyContent(element.computedStyle?.['alignItems'] ?? null) ?? 'flex-start'
+    getFlexJustifyContent(element.computedStyle?.['justifyContent'] ?? null) ?? 'flex-start'
   const flexAlignment: FlexAlignment =
-    getFlexAlignment(element.computedStyle?.['justifyContent'] ?? null) ?? 'flex-start'
+    getFlexAlignment(element.computedStyle?.['alignItems'] ?? null) ?? 'flex-start'
 
   return [justifyContent, flexAlignment]
 }

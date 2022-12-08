@@ -412,6 +412,6 @@ export function aperture<T>(n: number, array: Array<T>): Array<Array<T>> {
   }
 }
 
-export function cartesianProducts<T, U>(one: T[], other: U[]): [T, U][] {
+export function cartesianProduct<T, U>(one: T[], other: U[]): [T, U][] {
   return one.flatMap((x) => other.map((y): [T, U] => [x, y]))
 }
