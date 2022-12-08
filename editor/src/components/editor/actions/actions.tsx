@@ -5163,8 +5163,9 @@ export const UPDATE_FNS = {
       imageDragSessionState: action.imageDragSessionState,
     }
   },
-  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel =>
-    foldAndApplyCommandsSimple(editor, action.commands),
+  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, action.commands)
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */

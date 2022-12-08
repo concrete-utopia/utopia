@@ -1695,6 +1695,6 @@ export function setImageDragSessionState(
 export function applyCommandsAction(commands: CanvasCommand[]): ApplyCommandsAction {
   return {
     action: 'APPLY_COMMANDS',
-    commands,
+    commands: commands,
   }
 }
