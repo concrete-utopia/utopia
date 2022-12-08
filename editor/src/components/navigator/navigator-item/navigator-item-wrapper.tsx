@@ -35,6 +35,7 @@ import {
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { getContentsTreeFileFromString } from '../../assets'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { targetPaths } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -107,10 +108,8 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
-      let noOfChildrenInner: number = 0
       let supportsChildren: boolean = false
       if (isInNavigatorTargets) {
-        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
         supportsChildren = MetadataUtils.targetSupportsChildren(
           projectContents,
           currentFilePath,
@@ -124,18 +123,27 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       return {
         staticElementName: staticName,
         label: labelInner,
-        isSelected: EP.containsPath(elementPath, transientState.selectedViews ?? selectedViews),
-        isHighlighted: EP.containsPath(
-          elementPath,
-          transientState.highlightedViews ?? highlightedViews,
-        ),
-        noOfChildren: noOfChildrenInner,
+
         supportsChildren: supportsChildren,
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
       }
     },
   )
+
+const noOfChildrenSelector = createSelector(
+  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  (_: EditorStorePatched, targetPath: ElementPath) => targetPath,
+  (navigatorTargets, targetPath) => {
+    let result = 0
+    for (const nt of navigatorTargets) {
+      if (EP.isChildOf(nt, targetPath)) {
+        result += 1
+      }
+    }
+    return result
+  },
+)
 
 const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
   JSXElementNameKeepDeepEqualityCall,
@@ -148,16 +156,21 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     () => navigatorItemWrapperSelectorFactory(props.elementPath),
     [props.elementPath],
   )
-  const {
-    isSelected,
-    isHighlighted,
-    noOfChildren,
-    supportsChildren,
-    elementOriginType,
-    staticElementName,
-    label,
-    elementWarnings,
-  } = useEditorState(selector, 'NavigatorItemWrapper')
+
+  const { isSelected, isHighlighted } = useEditorState(
+    (store) => ({
+      isSelected: EP.containsPath(props.elementPath, store.editor.selectedViews),
+      isHighlighted: EP.containsPath(props.elementPath, store.editor.highlightedViews),
+    }),
+    'NavigatorItemWrapper isSelected',
+  )
+
+  const noOfChildren = useEditorState((store) => {
+    return noOfChildrenSelector(store, props.elementPath)
+  }, 'NavigatorItemWrapper noOfChildren')
+
+  const { supportsChildren, elementOriginType, staticElementName, label, elementWarnings } =
+    useEditorState(selector, 'NavigatorItemWrapper')
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
     useEditorState((store) => {
