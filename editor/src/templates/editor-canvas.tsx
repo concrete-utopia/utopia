@@ -1,5 +1,6 @@
 import update from 'immutability-helper'
 import React from 'react'
+import { interactionInProgress } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
@@ -476,12 +477,14 @@ export function runLocalCanvasAction(
       }
     case 'CLEAR_INTERACTION_SESSION':
       clearInterval(interactionSessionTimerHandle)
+      const interactionWasInProgress = interactionInProgress(model.canvas.interactionSession)
       return {
         ...model,
         canvas: {
           ...model.canvas,
           interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
-          domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
+          domWalkerInvalidateCount:
+            model.canvas.domWalkerInvalidateCount + (interactionWasInProgress ? 1 : 0),
           controls: editorStateCanvasControls(
             [],
             [],
