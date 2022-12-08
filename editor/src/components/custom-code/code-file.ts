@@ -1,61 +1,54 @@
-import Utils from '../../utils/utils'
-import { EmitFileResult } from '../../core/workers/ts/ts-worker'
-import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
-  NodeModules,
-  esCodeFile,
-  ProjectContents,
-  isEsCodeFile,
   ElementPath,
-  TextFile,
-  isTextFile,
-  RevisionsState,
-  isParseSuccess,
-  StaticElementPath,
-  ParseSuccess,
+  esCodeFile,
+  getParsedContentsFromTextFile,
   Imports,
+  isEsCodeFile,
+  isParseSuccess,
+  isTextFile,
+  NodeModules,
+  ParseSuccess,
+  ProjectContents,
+  StaticElementPath,
+  TextFile,
 } from '../../core/shared/project-file-types'
+import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import { EmitFileResult } from '../../core/workers/ts/ts-worker'
+import Utils from '../../utils/utils'
 
-import { EditorDispatch } from '../editor/action-types'
+import { PropertyControls } from 'utopia-api/core'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import {
+  resolveModule,
+  resolveModulePath,
+} from '../../core/es-modules/package-manager/module-resolution'
 import {
   EvaluationCache,
   getCurriedEditorRequireFn,
 } from '../../core/es-modules/package-manager/package-manager'
-import { fastForEach } from '../../core/shared/utils'
-import { arrayToObject } from '../../core/shared/array-utils'
-import { objectMap } from '../../core/shared/object-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { Either, isRight, left, right } from '../../core/shared/either'
+import { Either } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
   getJSXAttribute,
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
-  isUtopiaJSXComponent,
   JSXElement,
   JSXElementWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
-import { findElementWithUID } from '../../core/shared/uid-utils'
-import { importedFromWhere } from '../editor/import-utils'
-import {
-  resolveModule,
-  resolveModulePath,
-} from '../../core/es-modules/package-manager/module-resolution'
+import { objectMap } from '../../core/shared/object-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
-import { optionalMap } from '../../core/shared/optional-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
+import { findElementWithUID } from '../../core/shared/uid-utils'
+import { fastForEach } from '../../core/shared/utils'
 import {
   ExportsInfo,
-  MultiFileBuildResult,
   ExportType,
-  BuildType,
+  MultiFileBuildResult,
 } from '../../core/workers/common/worker-types'
-import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
-import { ParseResult } from '../../utils/value-parser-utils'
-import { PropertyControls } from 'utopia-api/core'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot, treeToContents } from '../assets'
+import { EditorDispatch } from '../editor/action-types'
+import { importedFromWhere } from '../editor/import-utils'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -572,51 +565,117 @@ export function normalisePathToUnderlyingTargetForced(
 
 export function findUnderlyingTargetComponentImplementation(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  currentFilePath: string,
-  elementPath: ElementPath | null,
+  targetPath: ElementPath,
 ): UtopiaJSXComponent | null {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    projectContents,
-    nodeModules,
-    currentFilePath,
-    elementPath,
+  const projectContentsFlattened = treeToContents(projectContents)
+  const elementResult = findUnderlyingElementImplementation(projectContents, targetPath)
+  if (elementResult == null) {
+    return null
+  }
+  const { element, filePath, parsedFile } = elementResult
+  const importLookupResult = importedFromWhere(
+    filePath,
+    element.name.baseVariable,
+    parsedFile.topLevelElements,
+    parsedFile.imports,
   )
-  if (underlyingTarget.type === 'NORMALISE_PATH_SUCCESS') {
-    const parseResult = underlyingTarget.textFile.fileContents.parsed
-    if (isParseSuccess(parseResult) && underlyingTarget.normalisedPath != null) {
-      const element = findJSXElementAtStaticPath(
-        getUtopiaJSXComponentsFromSuccess(parseResult),
-        underlyingTarget.normalisedPath,
-      )
-      const elementName = element?.name.baseVariable
-      if (element != null && elementName != null) {
-        const innerUnderlyingTarget = lookupElementImport(
-          elementName,
-          underlyingTarget.filePath,
-          projectContents,
-          nodeModules,
-          element,
-          underlyingTarget.normalisedPath,
-          parseResult,
-          { droppedPathElements: null, newPath: null },
-        )
 
-        if (
-          innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-          isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)
-        ) {
-          return (
-            innerUnderlyingTarget.textFile.fileContents.parsed.topLevelElements.find(
-              (tle): tle is UtopiaJSXComponent => {
-                return isUtopiaJSXComponent(tle) && tle.name === elementName
-              },
-            ) ?? null
-          )
-        }
-      }
-    }
+  if (importLookupResult == null) {
+    return null
   }
 
+  const variableName = (() => {
+    if (importLookupResult.type === 'SAME_FILE_ORIGIN') {
+      return element.name.baseVariable
+    } else {
+      return importLookupResult.exportedName
+    }
+  })()
+
+  // we have to find the element based on the top level name
+  const file = projectContentsFlattened[importLookupResult.filePath]
+  const parsedContents = getParsedContentsFromTextFile(file)
+  if (parsedContents == null) {
+    return null
+  }
+
+  const foundTopLevelElement = parsedContents.topLevelElements.find(
+    (tle): tle is UtopiaJSXComponent =>
+      tle.type === 'UTOPIA_JSX_COMPONENT' && tle.name === variableName,
+  )
+
+  if (foundTopLevelElement == null) {
+    return null
+  }
+
+  return foundTopLevelElement
+}
+
+export function findTopLevelElementsForUID(
+  projectContents: ProjectContentTreeRoot,
+  componentUID: string,
+): {
+  filePath: string
+  parsedFile: ParseSuccess
+  component: UtopiaJSXComponent
+} | null {
+  // we have to look through all the files and see if any top level element matches this UID
+  const flatProjectContents: ProjectContents = treeToContents(projectContents)
+  for (const filePath in flatProjectContents) {
+    const projectFile = flatProjectContents[filePath]
+    const parsedContents = getParsedContentsFromTextFile(projectFile)
+    if (parsedContents == null) {
+      continue
+    }
+    const foundTopLevelElement = parsedContents.topLevelElements.find((tle) =>
+      findElementWithUID(tle, componentUID),
+    )
+    if (foundTopLevelElement == null || foundTopLevelElement.type !== 'UTOPIA_JSX_COMPONENT') {
+      continue
+    }
+    return {
+      filePath: filePath,
+      parsedFile: parsedContents,
+      component: foundTopLevelElement,
+    }
+  }
   return null
+}
+
+export function findUnderlyingElementImplementation(
+  projectContents: ProjectContentTreeRoot,
+  targetPath: ElementPath,
+): { element: JSXElement; filePath: string; parsedFile: ParseSuccess } | null {
+  const staticComponentPath = EP.dynamicElementPathToStaticElementPath(
+    forceNotNull('The targetPath did not contain any parts', EP.lastElementPathForPath(targetPath)),
+  )
+  const implementorComponentUID: string = forceNotNull(
+    'Found empty staticComponentPath',
+    staticComponentPath[0],
+  )
+  const actualTargetElementUID: string = forceNotNull(
+    'Found empty staticComponentPath',
+    staticComponentPath.at(-1),
+  )
+
+  const topLevelElementsResult = findTopLevelElementsForUID(
+    projectContents,
+    implementorComponentUID,
+  )
+
+  if (topLevelElementsResult == null) {
+    return null
+  }
+
+  const element = findElementWithUID(topLevelElementsResult.component, actualTargetElementUID)
+
+  if (element == null) {
+    return null
+  }
+
+  return {
+    filePath: topLevelElementsResult.filePath,
+    element: element,
+    parsedFile: topLevelElementsResult.parsedFile,
+  }
 }

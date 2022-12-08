@@ -818,8 +818,6 @@ export const MetadataUtils = {
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementation(
         projectContents,
-        {},
-        openFile,
         target,
       )
       if (underlyingComponent == null) {
@@ -840,8 +838,6 @@ export const MetadataUtils = {
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementation(
         projectContents,
-        {},
-        openFile,
         target,
       )
       if (underlyingComponent == null) {
@@ -862,8 +858,6 @@ export const MetadataUtils = {
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementation(
         projectContents,
-        {},
-        openFile,
         target,
       )
       if (underlyingComponent == null) {

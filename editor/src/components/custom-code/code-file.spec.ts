@@ -1,4 +1,5 @@
 import {
+  findUnderlyingTargetComponentImplementation,
   generateCodeResultCache,
   incorporateBuildResult,
   normalisePathEndsAtDependency,
@@ -558,5 +559,53 @@ describe('normalisePathToUnderlyingTarget', () => {
     )
     const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
     expect(actualResult).toEqual(expectedResult)
+  })
+})
+
+describe('findUnderlyingTargetComponentImplementation', () => {
+  const projectContents = defaultProjectContentsForNormalising()
+  it('handles finding the target within the same file', () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity'),
+    )
+    expect(actualResult?.name).toEqual('SameFileApp')
+  })
+  it('jumps across multiple files to reach the actual target', () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+    )
+    expect(actualResult?.name).toEqual('Card')
+  })
+  it('jumps across multiple files to reach the actual target 2', () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString('storyboard-entity/scene-1-entity/app-entity'),
+    )
+    expect(actualResult?.name).toEqual('App')
+  })
+  it('if the path points to an intrinsic element like div, returns null', () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString('card-outer-div/card-inner-div'),
+    )
+    expect(actualResult).toBeNull()
+  })
+  it("returns null when current file path doesn't exist", () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString('card-outer-div/card-inner-div'),
+    )
+    expect(actualResult).toBeNull()
+  })
+  it('handles hitting an external dependency', () => {
+    const actualResult = findUnderlyingTargetComponentImplementation(
+      projectContents,
+      EP.fromString(
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
+      ),
+    )
+    expect(actualResult).toBeNull()
   })
 })

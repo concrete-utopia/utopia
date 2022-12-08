@@ -891,7 +891,9 @@ export function isFromSameInstanceAs(a: ElementPath, b: ElementPath): boolean {
   return pathsEqual(dropLastPathPart(a), dropLastPathPart(b))
 }
 
-function dynamicElementPathToStaticElementPath(element: ElementPathPart): StaticElementPathPart {
+export function dynamicElementPathToStaticElementPath(
+  element: ElementPathPart,
+): StaticElementPathPart {
   const existing = dynamicElementPathToStaticElementPathCache.get(element)
   if (existing == null) {
     const result = element.map(extractOriginalUidFromIndexedUid) as StaticElementPathPart

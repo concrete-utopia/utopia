@@ -289,8 +289,6 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
           if (openStoryboardFile != null) {
             const component = findUnderlyingTargetComponentImplementation(
               store.editor.projectContents,
-              store.editor.nodeModules.files,
-              openStoryboardFile,
               path,
             )
             if (component != null) {
