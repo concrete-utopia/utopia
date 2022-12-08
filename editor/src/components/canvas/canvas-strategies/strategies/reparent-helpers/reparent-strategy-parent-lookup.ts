@@ -242,7 +242,6 @@ function findParentByPaddedInsertionZone(
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
 ) {
-  let targetParentWithPaddedInsertionZone: ReparentTarget | null = null
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
     const autolayoutDirection = singleAxisAutoLayoutContainerDirections(element, metadata)
     if (autolayoutDirection === 'non-single-axis-autolayout') {
@@ -287,8 +286,8 @@ function findParentByPaddedInsertionZone(
     const targetUnderMouseIndex = foundTarget?.insertionIndex
 
     if (targetUnderMouseIndex != null) {
-      // we found a target!
-      targetParentWithPaddedInsertionZone = {
+      // we found a first good target parent, early return
+      return {
         shouldReparent: true,
         shouldReorder: true,
         newParent: singleAxisAutoLayoutContainer.path,
@@ -299,7 +298,7 @@ function findParentByPaddedInsertionZone(
       }
     }
   }
-  return targetParentWithPaddedInsertionZone
+  return null
 }
 
 function findParentUnderPointByArea(

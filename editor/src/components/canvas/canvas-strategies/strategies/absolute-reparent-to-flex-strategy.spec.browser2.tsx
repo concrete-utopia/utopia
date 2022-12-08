@@ -653,7 +653,6 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
   })
   it('moving the element to the edge of a flex in flex layout will reparent to the outer flex container', async () => {
-    // TODO THIS IS WRONG, IT SHOULD CHOSE THE OUTER FLEX DIV
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
@@ -679,15 +678,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/targetdiv',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/targetdiv',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
