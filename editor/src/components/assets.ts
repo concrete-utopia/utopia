@@ -283,7 +283,7 @@ export function contentsToTree(projectContents: ProjectContents): ProjectContent
   return treeRoot
 }
 
-export const treeToContents = memoize((tree: ProjectContentTreeRoot): ProjectContents => {
+function treeToContentsInner(tree: ProjectContentTreeRoot): ProjectContents {
   const treeKeys = Object.keys(tree)
   return treeKeys.reduce((working, treeKey) => {
     const treePart = tree[treeKey]
@@ -297,14 +297,16 @@ export const treeToContents = memoize((tree: ProjectContentTreeRoot): ProjectCon
         return {
           ...working,
           [treePart.fullPath]: treePart.directory,
-          ...treeToContents(treePart.children),
+          ...treeToContentsInner(treePart.children),
         }
       default:
         const _exhaustiveCheck: never = treePart
         throw new Error(`Unhandled tree part ${JSON.stringify(treePart)}`)
     }
   }, {})
-})
+}
+
+export const treeToContents = memoize(treeToContentsInner)
 
 export function walkContentsTree(
   tree: ProjectContentTreeRoot,
