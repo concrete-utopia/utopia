@@ -6,7 +6,7 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import { EditorAction } from '../editor/action-types'
+import { EditorAction, EditorDispatch } from '../editor/action-types'
 import { setProperty } from '../editor/actions/action-creators'
 import { FlexAlignment, FlexJustifyContent } from './inspector-common'
 
@@ -42,3 +42,18 @@ export const setFlexAlignJustifyContentStrategies = (
     ])
   },
 ]
+
+export function runStrategies(
+  dispatch: EditorDispatch,
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  strategies: InspectorStrategy[],
+): void {
+  for (const strategy of strategies) {
+    const actions = strategy(metadata, selectedViews)
+    if (actions != null) {
+      dispatch(actions)
+    }
+    return
+  }
+}
