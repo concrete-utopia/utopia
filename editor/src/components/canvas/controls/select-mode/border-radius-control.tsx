@@ -21,6 +21,7 @@ import {
 } from '../../border-radius-control-utils'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { borderRadiusResizeHandle, disabledHandle } from '../../canvas-strategies/interaction-state'
+import { CSSCursor } from '../../canvas-types'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -151,7 +152,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
-  const size = BorderRadiusHandleSize(scale)
+  const { padding, size } = BorderRadiusHandleSize(scale)
   const position = handlePosition(
     isDragging
       ? borderRadius.renderedValuePx
@@ -170,6 +171,9 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         position: 'absolute',
         left: position.x,
         top: position.y,
+        padding: padding,
+        pointerEvents: 'all',
+        cursor: CSSCursor.Radius,
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
@@ -187,7 +191,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             }}
           >
             <CanvasLabel
-              value={`Radius ${printCSSNumber(borderRadius.value, null)}`}
+              value={`${printCSSNumber(borderRadius.value, null)}`}
               scale={scale}
               color={indicatorColor}
               textColor={colorTheme.white.value}
@@ -196,7 +200,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         )}
         <div
           style={{
-            pointerEvents: 'all',
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             width: size,
             height: size,

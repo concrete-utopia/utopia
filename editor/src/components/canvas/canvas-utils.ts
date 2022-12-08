@@ -3279,7 +3279,7 @@ export function getResizeOptions(
   }
 }
 
-export const MoveIntoDragThreshold = 3
+export const MoveIntoDragThreshold = 2
 
 export function dragExceededThreshold(
   canvasPosition: CanvasPoint,

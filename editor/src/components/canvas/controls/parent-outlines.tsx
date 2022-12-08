@@ -4,7 +4,8 @@ import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { ColorTheme, useColorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
+import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
@@ -70,7 +71,7 @@ export const ParentOutlines = controlForStrategyMemoized(
   },
 )
 
-function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ColorTheme) {
+function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ThemeObject) {
   return (
     <CanvasOffsetWrapper key={`parent-outlines`}>
       <div

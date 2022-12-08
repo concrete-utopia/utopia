@@ -191,6 +191,14 @@ describe('Padding resize strategy', () => {
       y: paddingResizeControlContainerBounds.y + 4,
     }
 
+    EdgePieces.forEach((edge) => {
+      const paddingControlHandle = editor.renderedDOM.getByTestId(
+        PaddingControlHandleTestId(edge, false),
+      )
+      expect(paddingControlHandle).toBeTruthy()
+      expect(paddingControlHandle.style.opacity).toEqual('0')
+    })
+
     mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
@@ -202,7 +210,7 @@ describe('Padding resize strategy', () => {
         PaddingControlHandleTestId(edge, false),
       )
       expect(paddingControlHandle).toBeTruthy()
-      expect(paddingControlHandle.style.visibility).toEqual('visible')
+      expect(paddingControlHandle.style.opacity).toEqual('1')
     })
   })
 
