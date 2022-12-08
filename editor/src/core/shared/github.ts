@@ -798,10 +798,10 @@ export async function getUsersPublicGithubRepositories(
 
 const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
-  (store) => store.userState.githubState.authenticated,
-  (store) => store.editor.githubChecksums,
-  (store) => store.editor.githubData.treeConflicts,
-  (store) => store.editor.assetChecksums,
+  (store: EditorStorePatched) => store.userState.githubState.authenticated,
+  (store: EditorStorePatched) => store.editor.githubChecksums,
+  (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
+  (store: EditorStorePatched) => store.editor.assetChecksums,
   (
     projectContents,
     githubAuthenticated,
