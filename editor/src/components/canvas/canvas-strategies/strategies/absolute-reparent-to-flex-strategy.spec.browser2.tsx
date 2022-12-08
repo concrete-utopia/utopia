@@ -15,6 +15,7 @@ import {
 } from '../../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { ExtraPadding } from './reparent-helpers/reparent-strategy-sibling-position-helpers'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -526,7 +527,7 @@ const complexProject = (flexDirection: 'row' | 'column' = 'row') => `
 </div>
 `
 
-const PaddingThreshold = 10 // ExtraPadding in drawTargetRectanglesForChildrenOfElement
+const PaddingThreshold = ExtraPadding(1)
 describe('Absolute Reparent To Flex Strategy with more complex flex layouts', () => {
   it('moving the element into a flex layout after the last child reparents to the end as a sibling', async () => {
     const renderResult = await renderTestEditorWithCode(
