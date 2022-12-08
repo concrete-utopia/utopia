@@ -118,7 +118,7 @@ export function createIndexedUid(originalUid: string, index: string | number): s
 export function extractOriginalUidFromIndexedUid(uid: string): string {
   const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
   if (separatorIndex >= 0) {
-    return uid.substr(0, separatorIndex)
+    return uid.substring(0, separatorIndex)
   } else {
     return uid
   }
