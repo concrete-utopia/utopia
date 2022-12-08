@@ -372,6 +372,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_AGAINST_GITHUB(action, state)
     case 'SET_IMAGE_DRAG_SESSION_STATE':
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
+    case 'APPLY_COMMANDS':
+      return UPDATE_FNS.APPLY_COMMANDS(action, state)
     default:
       return state
   }
