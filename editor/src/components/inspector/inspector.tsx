@@ -87,6 +87,7 @@ import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 import { NineBlockControl } from './nine-block-controls'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export interface ElementPathElement {
   name?: string
@@ -351,7 +352,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <NineBlockControl />
+          {when(isFeatureEnabled('Nine block control'), <NineBlockControl />)}
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
