@@ -1,11 +1,10 @@
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { EditorDispatch } from '../editor/action-types'
-import { FlexAlignment, FlexJustifyContent } from './inspector-common'
+import { filterKeepFlexContainers, FlexAlignment, FlexJustifyContent } from './inspector-common'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 
 export type InspectorStrategy = (
@@ -18,9 +17,7 @@ export const setFlexAlignJustifyContentStrategies = (
   justifyContent: FlexJustifyContent,
 ): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
-    const elements = elementPaths.filter((e) =>
-      MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
-    )
+    const elements = filterKeepFlexContainers(metadata, elementPaths)
 
     if (elements.length === 0) {
       return null

@@ -64,3 +64,12 @@ export function detectFlexAlignJustifyContent(
 
   return [justifyContent, flexAlignment]
 }
+
+export function filterKeepFlexContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): ElementPath[] {
+  return elementPaths.filter((e: ElementPath | null) =>
+    MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
+  )
+}

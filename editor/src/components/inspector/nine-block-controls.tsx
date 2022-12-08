@@ -8,6 +8,7 @@ import { useColorTheme } from '../../uuiui'
 import { useEditorState } from '../editor/store/store-hook'
 import {
   detectFlexAlignJustifyContent,
+  filterKeepFlexContainers,
   FlexAlignment,
   FlexJustifyContent,
 } from './inspector-common'
@@ -62,37 +63,40 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(() => {
 
   const [hovered, setHovered] = React.useState<number>(-1)
 
+  // TODO: detect if it's set via css only or code or jsx prop
   const [flexJustifyContent, flexAlignment] = detectFlexAlignJustifyContent(
     metadata,
     selectedViews[0],
   )
 
   const setAlignItemsJustifyContent = React.useCallback(
-    (intededFlexAlignment: FlexAlignment, intededJustifyContent: FlexJustifyContent) => {
+    (intendedFlexAlignment: FlexAlignment, intendedJustifyContent: FlexJustifyContent) => {
       const strategies = setFlexAlignJustifyContentStrategies(
-        intededFlexAlignment,
-        intededJustifyContent,
+        intendedFlexAlignment,
+        intendedJustifyContent,
       )
       runStrategies(dispatch, metadata, selectedViews, strategies)
     },
     [dispatch, metadata, selectedViews],
   )
 
-  if (selectedViews.length === 0) {
+  if (filterKeepFlexContainers(metadata, selectedViews).length === 0) {
     return null
   }
 
   return (
     <div
       style={{
-        display: 'grid',
+        gap: 3,
+        margin: 2,
         height: 100,
+        display: 'grid',
         aspectRatio: '1',
+        boxSizing: 'border-box',
         gridTemplateRows: '1fr 1fr 1fr',
         gridTemplateColumns: '1fr 1fr 1fr',
+        backgroundColor: colorTheme.bg0.value,
         border: `1px solid ${colorTheme.fg5.value}`,
-        boxSizing: 'border-box',
-        margin: 2,
       }}
     >
       {NineBlockSectors.map(([alignItems, justifyContent], index) => {
@@ -104,14 +108,13 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(() => {
             onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
             key={`${alignItems}-${justifyContent}`}
             style={{
-              gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
-              gridColumn: `${(index % 3) + 1} / ${(index % 3) + 2}`,
-              backgroundColor: colorTheme.bg0.value,
-              boxSizing: 'border-box',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
               position: 'relative',
+              boxSizing: 'border-box',
+              justifyContent: 'center',
+              gridColumn: `${(index % 3) + 1} / ${(index % 3) + 2}`,
+              gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
             }}
           >
             {hovered === index || isSelected ? (
