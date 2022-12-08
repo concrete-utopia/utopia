@@ -22,13 +22,19 @@ import {
   EditorStorePatched,
   TransientFileState,
 } from '../../editor/store/editor-state'
-import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  UtopiaJSXComponent,
+  isUtopiaJSXComponent,
+  isJSXElement,
+  jsxElementName,
+} from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import {
+  findUnderlyingElementImplementation,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../custom-code/code-file'
@@ -36,6 +42,8 @@ import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { getContentsTreeFileFromString } from '../../assets'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { targetPaths } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { isJsxElement } from 'typescript'
+import { foldEither, isLeft } from '../../../core/shared/either'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -47,11 +55,28 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
+const targetJsxElementSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.jsxMetadata,
+  (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
+  (metadata, targetPath) => {
+    return MetadataUtils.findElementByElementPath(metadata, targetPath)?.element
+  },
+)
+
+const staticNameSelector = createSelector(targetJsxElementSelector, (targetElement) => {
+  if (targetElement == null) {
+    return null
+  }
+  return foldEither(
+    (intrinsic) => jsxElementName(intrinsic, []),
+    (element) => (isJSXElement(element) ? element.name : null),
+    targetElement,
+  )
+})
+
 const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   createSelector(
     (store: EditorStorePatched) => store.editor.jsxMetadata,
-    (store: EditorStorePatched) => store.editor.selectedViews,
-    (store: EditorStorePatched) => store.editor.highlightedViews,
     (store: EditorStorePatched) => store.derived.transientState,
     (store: EditorStorePatched) => store.derived.navigatorTargets,
     (store: EditorStorePatched) => store.derived.elementWarnings,
@@ -61,8 +86,6 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
     (store: EditorStorePatched) => store.editor.allElementProps,
     (
       jsxMetadata,
-      selectedViews,
-      highlightedViews,
       transientState,
       navigatorTargets,
       elementWarnings,
@@ -98,13 +121,8 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         componentsIncludingScenes,
         elementPath,
       )
-      const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(
-        allElementProps,
-        elementPath,
-        jsxMetadata,
-        staticName,
-      )
+
+      const labelInner = MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata)
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
@@ -121,7 +139,6 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
 
       return {
-        staticElementName: staticName,
         label: labelInner,
 
         supportsChildren: supportsChildren,
@@ -169,8 +186,15 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     return noOfChildrenSelector(store, props.elementPath)
   }, 'NavigatorItemWrapper noOfChildren')
 
-  const { supportsChildren, elementOriginType, staticElementName, label, elementWarnings } =
-    useEditorState(selector, 'NavigatorItemWrapper')
+  const staticElementName = useEditorState(
+    (store) => staticNameSelector(store, props.elementPath),
+    'NavigatorItemWrapper staticName',
+  )
+
+  const { supportsChildren, elementOriginType, label, elementWarnings } = useEditorState(
+    selector,
+    'NavigatorItemWrapper',
+  )
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
     useEditorState((store) => {
