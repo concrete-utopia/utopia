@@ -188,6 +188,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RUN_ESCAPE_HATCH':
     case 'SET_IMAGE_DRAG_SESSION_STATE':
     case 'UPDATE_AGAINST_GITHUB':
+    case 'APPLY_COMMANDS':
       return false
     case 'SAVE_ASSET':
       return (
