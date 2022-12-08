@@ -55,11 +55,28 @@ export function getReparentTargetUnified(
     allowSmallerParent,
   )
 
+  // with current parent under cursor filter ancestors from reparent targets
+  const currentParentUnderCursor =
+    reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? validTargetparentsUnderPoint.find((targetParent) =>
+          EP.isParentOf(targetParent, reparentSubjects.elements[0]),
+        ) ?? null
+      : null
+  const validTargetparentsUnderPointFiltered = validTargetparentsUnderPoint.filter(
+    (targetParent) => {
+      if (currentParentUnderCursor != null) {
+        return !EP.isDescendantOf(currentParentUnderCursor, targetParent)
+      } else {
+        return true
+      }
+    },
+  )
+
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
-      validTargetparentsUnderPoint,
+      validTargetparentsUnderPointFiltered,
       canvasScale,
       pointOnCanvas,
     )
