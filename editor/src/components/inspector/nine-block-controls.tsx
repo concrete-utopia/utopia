@@ -3,20 +3,17 @@
 
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { cartesianProducts } from '../../core/shared/array-utils'
+import { cartesianProduct } from '../../core/shared/array-utils'
 import { useColorTheme } from '../../uuiui'
+import { useEditorState } from '../editor/store/store-hook'
+import {
+  detectFlexAlignJustifyContent,
+  FlexAlignment,
+  FlexJustifyContent,
+} from './inspector-common'
+import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
 
-type FlexJustifyContent =
-  | 'flex-start'
-  | 'center'
-  | 'flex-end'
-  | 'space-around'
-  | 'space-between'
-  | 'space-evenly'
-
-type FlexAlignment = 'auto' | 'flex-start' | 'center' | 'flex-end' | 'stretch'
-
-const NineBlockSectors = cartesianProducts<FlexAlignment, FlexJustifyContent>(
+const NineBlockSectors = cartesianProduct<FlexAlignment, FlexJustifyContent>(
   ['flex-start', 'center', 'flex-end'],
   ['flex-start', 'center', 'flex-end'],
 )
@@ -25,9 +22,10 @@ interface SlabsProps {
   flexDirection: 'row' | 'column'
   justifyContent: FlexJustifyContent
   alignItems: FlexAlignment
+  bgColor: string
 }
 
-const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyContent }) => {
+const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyContent, bgColor }) => {
   return (
     <div
       css={{
@@ -39,26 +37,50 @@ const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyConten
         padding: 1,
         width: '100%',
         height: '100%',
-        opacity: 0,
-        transition: 'opacity 16ms ease-in',
-        '&:hover': {
-          opacity: 0.5,
-        },
       }}
     >
-      <div style={{ width: '100%', height: '50%', borderRadius: 2, backgroundColor: 'white' }} />
-      <div style={{ width: '100%', height: '65%', borderRadius: 2, backgroundColor: 'white' }} />
-      <div style={{ width: '100%', height: '35%', borderRadius: 2, backgroundColor: 'white' }} />
+      <div style={{ width: '100%', height: '50%', borderRadius: 2, backgroundColor: bgColor }} />
+      <div style={{ width: '100%', height: '65%', borderRadius: 2, backgroundColor: bgColor }} />
+      <div style={{ width: '100%', height: '35%', borderRadius: 2, backgroundColor: bgColor }} />
     </div>
   )
 })
 
-const DotSize = 3
+const DotSize = 2
 
 interface NineBlockControlProps {}
 
 export const NineBlockControl = React.memo<NineBlockControlProps>(() => {
   const colorTheme = useColorTheme()
+
+  const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
+  const metadata = useEditorState((store) => store.editor.jsxMetadata, 'NineBlockControl metadata')
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'NineBlockControl selectedViews',
+  )
+
+  const [hovered, setHovered] = React.useState<number>(-1)
+
+  const [flexJustifyContent, flexAlignment] = detectFlexAlignJustifyContent(
+    metadata,
+    selectedViews[0],
+  )
+
+  const setAlignItemsJustifyContent = React.useCallback(
+    (intededFlexAlignment: FlexAlignment, intededJustifyContent: FlexJustifyContent) => {
+      const strategies = setFlexAlignJustifyContentStrategies(
+        intededFlexAlignment,
+        intededJustifyContent,
+      )
+      runStrategies(dispatch, metadata, selectedViews, strategies)
+    },
+    [dispatch, metadata, selectedViews],
+  )
+
+  if (selectedViews.length === 0) {
+    return null
+  }
 
   return (
     <div
@@ -68,26 +90,73 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(() => {
         aspectRatio: '1',
         gridTemplateRows: '1fr 1fr 1fr',
         gridTemplateColumns: '1fr 1fr 1fr',
-        boxShadow: '0px 0px 2px 1px rgba(0, 0, 0, 0.5)',
+        border: `1px solid ${colorTheme.fg5.value}`,
         boxSizing: 'border-box',
+        margin: 2,
       }}
     >
-      {NineBlockSectors.map(([alignItems, justifyContent], index) => (
-        <div
-          key={index}
-          style={{
-            gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
-            gridColumn: `${(index % 3) + 1} / ${(index % 3) + 2}`,
-            backgroundColor: colorTheme.darkPrimary.value,
-            boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Slabs flexDirection='row' alignItems={alignItems} justifyContent={justifyContent} />
-        </div>
-      ))}
+      {NineBlockSectors.map(([alignItems, justifyContent], index) => {
+        const isSelected = alignItems === flexAlignment && justifyContent === flexJustifyContent
+        return (
+          <div
+            onMouseEnter={() => setHovered(index)}
+            onMouseLeave={() => setHovered(-1)}
+            onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
+            key={`${alignItems}-${justifyContent}`}
+            style={{
+              gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
+              gridColumn: `${(index % 3) + 1} / ${(index % 3) + 2}`,
+              backgroundColor: colorTheme.bg0.value,
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            {hovered === index || isSelected ? (
+              <div
+                css={{
+                  position: 'absolute',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '100%',
+                  opacity: isSelected ? 1 : 0.5,
+                }}
+              >
+                <Slabs
+                  flexDirection='row'
+                  alignItems={alignItems}
+                  justifyContent={justifyContent}
+                  bgColor={colorTheme.fg5.value}
+                />
+              </div>
+            ) : (
+              <div
+                css={{
+                  position: 'absolute',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '100%',
+                }}
+              >
+                <div
+                  css={{
+                    backgroundColor: colorTheme.fg5.value,
+                    width: DotSize,
+                    height: DotSize,
+                    borderRadius: DotSize / 2,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 })
