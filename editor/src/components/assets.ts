@@ -19,6 +19,7 @@ import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
 import { FileChecksums } from './editor/store/editor-state'
+import { memoize } from '../core/shared/memoize'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -282,7 +283,7 @@ export function contentsToTree(projectContents: ProjectContents): ProjectContent
   return treeRoot
 }
 
-export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
+export const treeToContents = memoize((tree: ProjectContentTreeRoot): ProjectContents => {
   const treeKeys = Object.keys(tree)
   return treeKeys.reduce((working, treeKey) => {
     const treePart = tree[treeKey]
@@ -303,7 +304,7 @@ export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
         throw new Error(`Unhandled tree part ${JSON.stringify(treePart)}`)
     }
   }, {})
-}
+})
 
 export function walkContentsTree(
   tree: ProjectContentTreeRoot,
