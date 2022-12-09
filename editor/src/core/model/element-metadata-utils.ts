@@ -23,6 +23,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  isLeft,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -144,6 +145,26 @@ export const MetadataUtils = {
         } else {
           return 'unknown-element'
         }
+      }
+    }
+  },
+  getElementOriginTypeForElement(
+    elementMetadata: ElementInstanceMetadata | null,
+  ): ElementOriginType {
+    if (elementMetadata == null) {
+      return 'unknown-element'
+    }
+
+    const path = elementMetadata.elementPath
+    const staticPath = EP.dynamicPathToStaticPath(path)
+    if (EP.pathsEqual(path, staticPath)) {
+      return 'statically-defined'
+    } else {
+      const element = elementMetadata.element
+      if (isLeft(element) || isJSXElement(element.value)) {
+        return 'generated-static-definition-present'
+      } else {
+        return 'unknown-element'
       }
     }
   },
@@ -782,6 +803,42 @@ export const MetadataUtils = {
                 instance.importInfo,
                 'children',
               )
+            }
+          }
+          // We don't know at this stage
+          return true
+        }
+      },
+      instance.element,
+    )
+  },
+  targetElementSupportsChildrenForUnderlyingComponent(
+    instance: ElementInstanceMetadata,
+    underlyingComponent: UtopiaJSXComponent | null,
+  ): boolean {
+    return foldEither(
+      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (element) => {
+        if (elementOnlyHasTextChildren(element)) {
+          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
+          return false
+        } else {
+          if (isJSXElement(element)) {
+            if (isIntrinsicElement(element.name)) {
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+              // Explicitly prevent components / elements that we *know* don't support children
+              return (
+                isViewLikeFromMetadata(instance) ||
+                isSceneFromMetadata(instance) ||
+                EP.isStoryboardPath(instance.elementPath)
+              )
+            } else {
+              return underlyingComponent == null
+                ? false
+                : componentUsesProperty(underlyingComponent, 'children')
             }
           }
           // We don't know at this stage

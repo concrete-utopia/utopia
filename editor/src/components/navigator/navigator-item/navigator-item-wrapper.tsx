@@ -27,6 +27,8 @@ import {
   isUtopiaJSXComponent,
   isJSXElement,
   jsxElementName,
+  JSXElementChild,
+  ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
@@ -34,6 +36,7 @@ import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import {
+  findUnderlyingComponentImplementationBasedOnMetadata,
   findUnderlyingElementImplementation,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -43,7 +46,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { targetPaths } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isJsxElement } from 'typescript'
-import { foldEither, isLeft } from '../../../core/shared/either'
+import { Either, foldEither, isLeft } from '../../../core/shared/either'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -55,12 +58,60 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
-const targetJsxElementSelector = createSelector(
+const targetElementMetadataSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
-  (metadata, targetPath) => {
-    return MetadataUtils.findElementByElementPath(metadata, targetPath)?.element
+  (metadata, targetPath): ElementInstanceMetadata | null => {
+    return MetadataUtils.findElementByElementPath(metadata, targetPath)
   },
+)
+
+const targetJsxElementSelector = createSelector(
+  targetElementMetadataSelector,
+  (metadata): Either<string, JSXElementChild> | undefined => {
+    return metadata?.element
+  },
+)
+
+const targetUnderlyingImplementationSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.projectContents,
+  targetElementMetadataSelector,
+  (projectContents, elementMetadata): UtopiaJSXComponent | null => {
+    if (elementMetadata == null) {
+      return null
+    }
+    return findUnderlyingComponentImplementationBasedOnMetadata(
+      projectContents,
+      elementMetadata.importInfo,
+    )
+  },
+)
+
+const targetInNavigatorItemsSelector = createSelector(
+  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
+  (navigatorTargets, targetPath) => {
+    return EP.containsPath(targetPath, navigatorTargets)
+  },
+)
+
+const targetSupportsChildrenSelector = createSelector(
+  targetElementMetadataSelector,
+  targetUnderlyingImplementationSelector,
+  targetInNavigatorItemsSelector,
+  (elementMetadata, underlyingComponent, elementInNavigatorTargets) => {
+    if (!elementInNavigatorTargets) {
+      return false
+    }
+    return MetadataUtils.targetElementSupportsChildrenForUnderlyingComponent(
+      forceNotNull('found null element metadata', elementMetadata),
+      underlyingComponent,
+    )
+  },
+)
+
+const elementOriginTypeSelector = createSelector(targetElementMetadataSelector, (elementMetadata) =>
+  MetadataUtils.getElementOriginTypeForElement(elementMetadata),
 )
 
 const staticNameSelector = createSelector(targetJsxElementSelector, (targetElement) => {
@@ -77,71 +128,16 @@ const staticNameSelector = createSelector(targetJsxElementSelector, (targetEleme
 const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   createSelector(
     (store: EditorStorePatched) => store.editor.jsxMetadata,
-    (store: EditorStorePatched) => store.derived.transientState,
-    (store: EditorStorePatched) => store.derived.navigatorTargets,
     (store: EditorStorePatched) => store.derived.elementWarnings,
-    (store: EditorStorePatched) => store.editor.projectContents,
-    (store: EditorStorePatched) => store.editor.nodeModules.files,
-    (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
     (store: EditorStorePatched) => store.editor.allElementProps,
-    (
-      jsxMetadata,
-      transientState,
-      navigatorTargets,
-      elementWarnings,
-      projectContents,
-      nodeModules,
-      currentFilePath,
-      allElementProps,
-    ) => {
-      const underlying = normalisePathToUnderlyingTarget(
-        projectContents,
-        nodeModules,
-        forceNotNull('Should be a file path.', currentFilePath),
-        elementPath,
-      )
-      const elementFilePath =
-        underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-      const elementProjectFile =
-        elementFilePath == null
-          ? null
-          : getContentsTreeFileFromString(projectContents, elementFilePath)
-      const elementTextFile = isTextFile(elementProjectFile) ? elementProjectFile : null
-      let parsedElementFile: ParseSuccess | null = null
-      if (elementTextFile != null && isParseSuccess(elementTextFile.fileContents.parsed)) {
-        parsedElementFile = elementTextFile.fileContents.parsed
-      }
-      const fileState =
-        elementFilePath == null ? null : transientState.filesState?.[elementFilePath] ?? null
-      const topLevelElements =
-        fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
-      const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
-
-      const elementOriginType = MetadataUtils.getElementOriginType(
-        componentsIncludingScenes,
-        elementPath,
-      )
-
+    (jsxMetadata, elementWarnings, allElementProps) => {
       const labelInner = MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata)
-      // FIXME: This is a mitigation for a situation where somehow this component re-renders
-      // when the navigatorTargets indicate it shouldn't exist...
-      const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
-      let supportsChildren: boolean = false
-      if (isInNavigatorTargets) {
-        supportsChildren = MetadataUtils.targetSupportsChildren(
-          projectContents,
-          jsxMetadata,
-          elementPath,
-        )
-      }
 
       const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
 
       return {
         label: labelInner,
 
-        supportsChildren: supportsChildren,
-        elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
       }
     },
@@ -190,10 +186,17 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper staticName',
   )
 
-  const { supportsChildren, elementOriginType, label, elementWarnings } = useEditorState(
-    selector,
-    'NavigatorItemWrapper',
+  const supportsChildren = useEditorState(
+    (store) => targetSupportsChildrenSelector(store, props.elementPath),
+    'NavigatorItemWrapper targetSupportsChildrenSelector',
   )
+
+  const elementOriginType = useEditorState(
+    (store) => elementOriginTypeSelector(store, props.elementPath),
+    'NavigatorItemWrapper elementOriginType',
+  )
+
+  const { label, elementWarnings } = useEditorState(selector, 'NavigatorItemWrapper')
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
     useEditorState((store) => {
