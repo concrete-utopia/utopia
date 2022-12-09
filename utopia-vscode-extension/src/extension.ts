@@ -25,6 +25,7 @@ import {
   utopiaVSCodeConfigValues,
   vsCodeReady,
   clearLoadingScreen,
+  checkFSReady,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -73,9 +74,29 @@ function watchForFileDeletions() {
   })
 }
 
+async function wait(timeoutms: number): Promise<void> {
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), timeoutms))
+}
+
+async function waitForFSToBeReady(retries: number = 120): Promise<void> {
+  if (retries <= 0) {
+    // Gave up waiting, so let's just ensure the root directory exists and be done with it
+    await ensureDirectoryExists(RootDir)
+    return
+  }
+
+  if (await checkFSReady()) {
+    // All is well
+    return
+  }
+
+  await wait(100)
+  return waitForFSToBeReady(retries - 1)
+}
+
 async function initFS(projectID: string): Promise<void> {
   await initializeFS(projectID, 'VSCODE')
-  await ensureDirectoryExists(RootDir)
+  await waitForFSToBeReady()
 }
 
 function initUtopiaFSProvider(
@@ -431,7 +452,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   } else {
     // Just in case the message is processed before the file has been written to the FS
     if (retries > 0) {
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100))
+      await wait(100)
       return openFile(fileUri, retries - 1)
     } else {
       sendMessage(clearLoadingScreen())

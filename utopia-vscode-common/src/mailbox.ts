@@ -119,7 +119,7 @@ async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Pro
 }
 
 async function checkAndResetIfMailboxCleared(mailbox: Mailbox): Promise<void> {
-  const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(inbox)
+  const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(mailbox)
   if (mailboxClearedAtTimestamp > mailboxLastClearedTimestamp) {
     // The mailbox was cleared since we last polled it, meaning our last consumed message
     // count is now invalid, and we need to start consuming messages from the beginning again.
@@ -187,10 +187,15 @@ async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): P
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
   if (lastConsumedMessageValueExists) {
-    const lastConsumedMessageName = await readFileSavedContentAsUTF8(
-      lastConsumedMessageKey(mailbox),
-    )
-    return Number.parseInt(lastConsumedMessageName)
+    try {
+      const lastConsumedMessageName = await readFileSavedContentAsUTF8(
+        lastConsumedMessageKey(mailbox),
+      )
+      return Number.parseInt(lastConsumedMessageName)
+    } catch (e) {
+      // This can be cleared by the VSCode Bridge in between the above line and now, in which case we want to consume all messages from the start
+      return -1
+    }
   } else {
     return -1
   }
@@ -213,6 +218,7 @@ async function getMailboxClearedAtTimestamp(mailbox: Mailbox): Promise<number> {
 }
 
 export async function clearBothMailboxes(): Promise<void> {
+  await markFSNotReady()
   await ensureMailboxExists(UtopiaInbox)
   await clearMailbox(UtopiaInbox)
   await ensureMailboxExists(VSCodeInbox)
@@ -239,4 +245,18 @@ export async function initMailbox<T>(
 ): Promise<void> {
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, parseMessage, onMessage)
+}
+
+const FS_READY = 'FS_READY'
+
+async function markFSNotReady(): Promise<void> {
+  await deletePath(FS_READY, false)
+}
+
+export async function markFSReady(): Promise<void> {
+  await writeFileSavedContentAsUTF8(FS_READY, '')
+}
+
+export async function checkFSReady(): Promise<boolean> {
+  return await exists(FS_READY)
 }
