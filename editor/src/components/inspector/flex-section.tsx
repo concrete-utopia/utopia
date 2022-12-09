@@ -1,7 +1,8 @@
 import React from 'react'
 import { useEditorState } from '../editor/store/store-hook'
 import { FlexDirectionToggle } from './flex-direction-control'
-import { detectFlexDirection, metadataSelector, selectedViewsSelector } from './inspector-common'
+import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
+import { detectFlexDirection } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
 export const FlexSection = React.memo(() => {
