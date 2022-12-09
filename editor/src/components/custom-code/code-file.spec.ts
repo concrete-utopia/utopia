@@ -608,4 +608,5 @@ describe('findUnderlyingTargetComponentImplementation', () => {
     )
     expect(actualResult).toBeNull()
   })
+  xit('handles default exported component', () => {})
 })

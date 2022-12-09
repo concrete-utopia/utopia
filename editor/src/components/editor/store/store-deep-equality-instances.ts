@@ -129,7 +129,6 @@ import {
   JSXAttributesEntry,
   jsxAttributesEntry,
   ImportInfo,
-  FoundImportInfo,
   JSXAttributesSpread,
   jsxAttributesSpread,
   JSXAttributesPart,
@@ -166,6 +165,10 @@ import {
   unparsedCode,
   JSXElementWithoutUID,
   jsxElementWithoutUID,
+  SameFileOrigin,
+  sameFileOrigin,
+  ImportedOrigin,
+  importedOrigin,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -1183,27 +1186,45 @@ export function SidesKeepDeepEquality(
   }
 }
 
-export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = EitherKeepDeepEquality<
-  'NOT_IMPORTED',
-  FoundImportInfo
->(
+const SameFileOriginKeepDeepEquality: KeepDeepEqualityCall<SameFileOrigin> = combine2EqualityCalls(
+  (i) => i.filePath,
   createCallWithTripleEquals(),
-  combine3EqualityCalls(
-    (i) => i.variableName,
-    createCallWithTripleEquals(),
-    (info) => info.originalName,
-    createCallWithTripleEquals(),
-    (info) => info.path,
-    createCallWithTripleEquals(),
-    (variableName, originalName, path): FoundImportInfo => {
-      return {
-        variableName: variableName,
-        originalName: originalName,
-        path: path,
-      }
-    },
-  ),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  sameFileOrigin,
 )
+
+const ImportedOriginKeepDeepEquality: KeepDeepEqualityCall<ImportedOrigin> = combine3EqualityCalls(
+  (i) => i.filePath,
+  createCallWithTripleEquals(),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  (i) => i.exportedName,
+  createCallWithTripleEquals(),
+  importedOrigin,
+)
+
+export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SAME_FILE_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return SameFileOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMPORTED_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return ImportedOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {

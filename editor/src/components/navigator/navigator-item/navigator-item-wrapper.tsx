@@ -130,7 +130,6 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       if (isInNavigatorTargets) {
         supportsChildren = MetadataUtils.targetSupportsChildren(
           projectContents,
-          currentFilePath,
           jsxMetadata,
           elementPath,
         )

@@ -42,6 +42,7 @@ import {
   isIntrinsicHTMLElement,
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
+  ImportedFromWhereResult,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -98,7 +99,10 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
-import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import {
+  findUnderlyingComponentImplementationBasedOnMetadata,
+  findUnderlyingTargetComponentImplementation,
+} from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,
@@ -186,11 +190,9 @@ export const MetadataUtils = {
     return (
       element != null &&
       element.importInfo != null &&
-      foldEither(
-        (_) => false,
-        (info) => info.path === 'utopia-api' && info.originalName === 'Scene',
-        element.importInfo,
-      )
+      element.importInfo.type === 'IMPORTED_ORIGIN' &&
+      element.importInfo.filePath === 'utopia-api' &&
+      element.importInfo.exportedName === 'Scene'
     )
   },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
@@ -753,7 +755,6 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
@@ -778,8 +779,7 @@ export const MetadataUtils = {
             } else {
               return MetadataUtils.targetUsesProperty(
                 projectContents,
-                openFile,
-                instance.elementPath,
+                instance.importInfo,
                 'children',
               )
             }
@@ -793,7 +793,6 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
@@ -804,28 +803,23 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
         ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+        : MetadataUtils.targetElementSupportsChildren(projectContents, instance)
     }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    importInfo: ImportedFromWhereResult | null,
     property: string,
   ): boolean {
-    if (openFile == null) {
-      return false
+    const underlyingComponent = findUnderlyingComponentImplementationBasedOnMetadata(
+      projectContents,
+      importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
+      return true
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
-        projectContents,
-        target,
-      )
-      if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return true
-      } else {
-        return componentUsesProperty(underlyingComponent, property)
-      }
+      return componentUsesProperty(underlyingComponent, property)
     }
   },
   targetHonoursPropsSize(

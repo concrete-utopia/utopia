@@ -29,6 +29,7 @@ export function buildSpyWrappedElement(
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   imports: Imports,
+  filePath: string,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -52,7 +53,7 @@ export function buildSpyWrappedElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
-      importInfo: importInfoFromImportDetails(jsx.name, imports),
+      importInfo: importInfoFromImportDetails(jsx.name, imports, filePath),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

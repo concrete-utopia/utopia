@@ -5,8 +5,8 @@ import { InteractionCanvasState } from '../canvas-strategy-types'
 export function supportsStyle(canvasState: InteractionCanvasState, element: ElementPath): boolean {
   return MetadataUtils.targetUsesProperty(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element)?.importInfo ??
+      null,
     'style',
   )
 }

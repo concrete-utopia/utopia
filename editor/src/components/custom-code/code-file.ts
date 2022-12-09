@@ -29,7 +29,9 @@ import {
 import { Either } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
+  ElementInstanceMetadata,
   getJSXAttribute,
+  ImportInfo,
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
   JSXElement,
@@ -563,37 +565,21 @@ export function normalisePathToUnderlyingTargetForced(
   )
 }
 
-export function findUnderlyingTargetComponentImplementation(
+export function findUnderlyingComponentImplementationBasedOnMetadata(
   projectContents: ProjectContentTreeRoot,
-  targetPath: ElementPath,
+  importInfo: ImportInfo | null,
 ): UtopiaJSXComponent | null {
+  if (importInfo == null) {
+    return null
+  }
+
   const projectContentsFlattened = treeToContents(projectContents)
-  const elementResult = findUnderlyingElementImplementation(projectContents, targetPath)
-  if (elementResult == null) {
-    return null
-  }
-  const { element, filePath, parsedFile } = elementResult
-  const importLookupResult = importedFromWhere(
-    filePath,
-    element.name.baseVariable,
-    parsedFile.topLevelElements,
-    parsedFile.imports,
-  )
 
-  if (importLookupResult == null) {
-    return null
-  }
-
-  const variableName = (() => {
-    if (importLookupResult.type === 'SAME_FILE_ORIGIN') {
-      return element.name.baseVariable
-    } else {
-      return importLookupResult.exportedName
-    }
-  })()
+  const variableName =
+    importInfo.type === 'SAME_FILE_ORIGIN' ? importInfo.variableName : importInfo.exportedName
 
   // we have to find the element based on the top level name
-  const file = projectContentsFlattened[importLookupResult.filePath]
+  const file = projectContentsFlattened[importInfo.filePath]
   const parsedContents = getParsedContentsFromTextFile(file)
   if (parsedContents == null) {
     return null
@@ -609,6 +595,25 @@ export function findUnderlyingTargetComponentImplementation(
   }
 
   return foundTopLevelElement
+}
+
+export function findUnderlyingTargetComponentImplementation(
+  projectContents: ProjectContentTreeRoot,
+  targetPath: ElementPath,
+): UtopiaJSXComponent | null {
+  const elementResult = findUnderlyingElementImplementation(projectContents, targetPath)
+  if (elementResult == null) {
+    return null
+  }
+  const { element, filePath, parsedFile } = elementResult
+  const importLookupResult = importedFromWhere(
+    filePath,
+    element.name.baseVariable,
+    parsedFile.topLevelElements,
+    parsedFile.imports,
+  )
+
+  return findUnderlyingComponentImplementationBasedOnMetadata(projectContents, importLookupResult)
 }
 
 export function findTopLevelElementsForUID(
