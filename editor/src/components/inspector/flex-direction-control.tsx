@@ -3,9 +3,13 @@ import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import { filterKeepFlexContainers } from './inspector-common'
+import {
+  filterKeepFlexContainers,
+  metadataSelector,
+  selectedViewsSelector,
+} from './inspector-common'
 import {
   removeFlexDirectionStrategies,
   runStrategies,
@@ -18,30 +22,34 @@ interface FlexDirectionToggleProps {
 
 export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {
   const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'FlexDirectionToggle metadata',
-  )
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'FlexDirectionToggle selectedViews',
-  )
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const colorTheme = useColorTheme()
 
   const handleColumnClick = React.useCallback(
     (e: React.MouseEvent) =>
-      maybeSetFlexDirection(dispatch, metadata, selectedViews, e.button === 2 ? null : 'column'),
-    [dispatch, metadata, selectedViews],
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        e.button === 2 ? null : 'column',
+      ),
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
   const handleRowClick = React.useCallback(
     (e: React.MouseEvent) =>
-      maybeSetFlexDirection(dispatch, metadata, selectedViews, e.button === 2 ? null : 'row'),
-    [dispatch, metadata, selectedViews],
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        e.button === 2 ? null : 'row',
+      ),
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
-  if (filterKeepFlexContainers(metadata, selectedViews).length === 0) {
+  if (filterKeepFlexContainers(metadataRef.current, selectedViewsRef.current).length === 0) {
     return null
   }
 

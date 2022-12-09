@@ -6,14 +6,14 @@ import React from 'react'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import {
   detectFlexAlignJustifyContent,
   filterKeepFlexContainers,
-  FlexAlignment,
-  FlexJustifyContent,
   isFlexColumn,
+  metadataSelector,
+  selectedViewsSelector,
   StartCenterEnd,
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
@@ -102,31 +102,28 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
   const colorTheme = useColorTheme()
 
   const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
-  const metadata = useEditorState((store) => store.editor.jsxMetadata, 'NineBlockControl metadata')
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'NineBlockControl selectedViews',
+  const [flexJustifyContent, flexAlignment] = useEditorState(
+    (store) =>
+      detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)[0]),
+    'NineBlockControl [flexJustifyContent, flexAlignment]',
   )
+
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const [hovered, setHovered] = React.useState<number>(-1)
-
-  // TODO: detect if it's set via css only or code or jsx prop
-  const [flexJustifyContent, flexAlignment] = detectFlexAlignJustifyContent(
-    metadata,
-    selectedViews[0],
-  )
 
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
       const strategies = isFlexColumn(flexDirection)
         ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
         : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
-      runStrategies(dispatch, metadata, selectedViews, strategies)
+      runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategies)
     },
-    [dispatch, flexDirection, metadata, selectedViews],
+    [dispatch, flexDirection, metadataRef, selectedViewsRef],
   )
 
-  if (filterKeepFlexContainers(metadata, selectedViews).length === 0) {
+  if (filterKeepFlexContainers(metadataRef.current, selectedViewsRef.current).length === 0) {
     return null
   }
 

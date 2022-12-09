@@ -1,17 +1,17 @@
 import React from 'react'
 import { useEditorState } from '../editor/store/store-hook'
 import { FlexDirectionToggle } from './flex-direction-control'
-import { detectFlexDirection } from './inspector-common'
+import { detectFlexDirection, metadataSelector, selectedViewsSelector } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
 export const FlexSection = React.memo(() => {
-  const metadata = useEditorState((store) => store.editor.jsxMetadata, 'FlexSection metadata')
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'FlexSection selectedViews',
+  const flexDirection = useEditorState(
+    (store) =>
+      selectedViewsSelector(store).length === 0
+        ? 'row'
+        : detectFlexDirection(metadataSelector(store), selectedViewsSelector(store)[0]),
+    'FlexSection flexDirection',
   )
-
-  const flexDirection = detectFlexDirection(metadata, selectedViews[0])
 
   return (
     <div>

@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { FlexDirection } from './common/css-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -100,3 +101,9 @@ export function detectFlexDirection(
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
+
+export const metadataSelector = (store: EditorStorePatched): ElementInstanceMetadataMap =>
+  store.editor.jsxMetadata
+
+export const selectedViewsSelector = (store: EditorStorePatched): ElementPath[] =>
+  store.editor.selectedViews
