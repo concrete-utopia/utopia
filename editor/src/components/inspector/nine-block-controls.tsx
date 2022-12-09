@@ -108,6 +108,12 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
     'NineBlockControl [flexJustifyContent, flexAlignment]',
   )
 
+  const nFlexContainers = useEditorState(
+    (store) =>
+      filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
+    'FlexDirectionToggle, nFlexContainers',
+  )
+
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
@@ -121,7 +127,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
     [dispatch, flexDirection, metadataRef, selectedViewsRef],
   )
 
-  if (filterKeepFlexContainers(metadataRef.current, selectedViewsRef.current).length === 0) {
+  if (nFlexContainers === 0) {
     return null
   }
 

@@ -24,6 +24,11 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
   const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const nFlexContainers = useEditorState(
+    (store) =>
+      filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
+    'FlexDirectionToggle, nFlexContainers',
+  )
 
   const colorTheme = useColorTheme()
 
@@ -33,7 +38,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
-        e.button === 2 ? null : 'column',
+        e.button === 0 ? 'column' : null,
       ),
     [dispatch, metadataRef, selectedViewsRef],
   )
@@ -44,12 +49,12 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
-        e.button === 2 ? null : 'row',
+        e.button === 0 ? 'row' : null,
       ),
     [dispatch, metadataRef, selectedViewsRef],
   )
 
-  if (filterKeepFlexContainers(metadataRef.current, selectedViewsRef.current).length === 0) {
+  if (nFlexContainers === 0) {
     return null
   }
 
