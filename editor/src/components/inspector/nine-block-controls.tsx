@@ -8,12 +8,11 @@ import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   detectFlexAlignJustifyContent,
   filterKeepFlexContainers,
   isFlexColumn,
-  metadataSelector,
-  selectedViewsSelector,
   StartCenterEnd,
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'

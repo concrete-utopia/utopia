@@ -101,9 +101,3 @@ export function detectFlexDirection(
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
-
-export const metadataSelector = (store: EditorStorePatched): ElementInstanceMetadataMap =>
-  store.editor.jsxMetadata
-
-export const selectedViewsSelector = (store: EditorStorePatched): ElementPath[] =>
-  store.editor.selectedViews

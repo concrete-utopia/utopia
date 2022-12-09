@@ -5,11 +5,8 @@ import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import {
-  filterKeepFlexContainers,
-  metadataSelector,
-  selectedViewsSelector,
-} from './inspector-common'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { filterKeepFlexContainers } from './inspector-common'
 import {
   removeFlexDirectionStrategies,
   runStrategies,
