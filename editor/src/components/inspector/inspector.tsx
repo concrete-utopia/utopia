@@ -1,11 +1,10 @@
-import * as ObjectPath from 'object-path'
 import React from 'react'
 import {
   findElementAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { forEachRight, isRight, right } from '../../core/shared/either'
+import { isRight, right } from '../../core/shared/either'
 import {
   isJSXElement,
   JSXAttribute,
@@ -28,7 +27,6 @@ import {
   alignSelectedViews,
   distributeSelectedViews,
   setAspectRatioLock,
-  setProperty,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
@@ -65,19 +63,11 @@ import {
   TargetSelectorSectionProps,
 } from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
-import { arrayEquals } from '../../core/shared/utils'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import {
-  Icn,
-  useColorTheme,
-  InspectorSectionHeader,
-  UtopiaTheme,
-  FlexRow,
-  Button,
-} from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
@@ -86,9 +76,8 @@ import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
-import { NineBlockControl } from './nine-block-controls'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { FlexDirectionToggle } from './flex-direction-control'
+import { FlexSection } from './flex-section'
 
 export interface ElementPathElement {
   name?: string
@@ -353,13 +342,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          {when(
-            isFeatureEnabled('Nine block control'),
-            <div>
-              <FlexDirectionToggle />
-              <NineBlockControl />
-            </div>,
-          )}
+          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}

@@ -3,13 +3,9 @@ import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
 
-export type FlexJustifyContent =
-  | 'flex-start'
-  | 'center'
-  | 'flex-end'
-  | 'space-around'
-  | 'space-between'
-  | 'space-evenly'
+export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
+
+export type FlexJustifyContent = StartCenterEnd | 'space-around' | 'space-between' | 'space-evenly'
 
 function getFlexJustifyContent(value: string | null): FlexJustifyContent | null {
   switch (value) {
@@ -30,7 +26,7 @@ function getFlexJustifyContent(value: string | null): FlexJustifyContent | null 
   }
 }
 
-export type FlexAlignment = 'auto' | 'flex-start' | 'center' | 'flex-end' | 'stretch'
+export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
 
 function getFlexAlignment(value: string | null): FlexAlignment | null {
   switch (value) {
@@ -101,3 +97,6 @@ export function detectFlexDirection(
 
   return stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? 'row'
 }
+
+export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
+  flexDirection.startsWith('column')

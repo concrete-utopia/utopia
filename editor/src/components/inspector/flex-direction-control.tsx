@@ -1,18 +1,22 @@
 import React from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { Icons, UNSAFE_getIconURL, useColorTheme } from '../../uuiui'
+import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import { useEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import { detectFlexDirection, filterKeepFlexContainers } from './inspector-common'
+import { filterKeepFlexContainers } from './inspector-common'
 import {
   removeFlexDirectionStrategies,
   runStrategies,
   updateFlexDirectionStrategies,
 } from './inspector-strategies'
 
-export const FlexDirectionToggle: React.FC = React.memo(() => {
+interface FlexDirectionToggleProps {
+  flexDirection: FlexDirection
+}
+
+export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {
   const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
   const metadata = useEditorState(
     (store) => store.editor.jsxMetadata,
@@ -37,8 +41,6 @@ export const FlexDirectionToggle: React.FC = React.memo(() => {
     [dispatch, metadata, selectedViews],
   )
 
-  const flexDirection = detectFlexDirection(metadata, selectedViews[0])
-
   if (filterKeepFlexContainers(metadata, selectedViews).length === 0) {
     return null
   }
@@ -54,7 +56,7 @@ export const FlexDirectionToggle: React.FC = React.memo(() => {
       }}
     >
       <div
-        onClick={handleRowClick}
+        onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
           backgroundColor: (flexDirection === 'row' ? colorTheme.fg8 : colorTheme.fg9).value,
@@ -68,7 +70,7 @@ export const FlexDirectionToggle: React.FC = React.memo(() => {
         <Icons.FlexRow />
       </div>
       <div
-        onClick={handleColumnClick}
+        onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',
           backgroundColor: (flexDirection === 'column' ? colorTheme.fg8 : colorTheme.fg9).value,
