@@ -111,8 +111,6 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
-  const [hovered, setHovered] = React.useState<number>(-1)
-
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
       const strategies = isFlexColumn(flexDirection)
@@ -148,8 +146,6 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
           : alignItems === flexAlignment && justifyContent === flexJustifyContent
         return (
           <div
-            onMouseEnter={() => setHovered(index)}
-            onMouseLeave={() => setHovered(-1)}
             onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
             key={`${alignItems}-${justifyContent}`}
             style={{
@@ -162,45 +158,47 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
               gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
             }}
           >
-            {hovered === index || isSelected ? (
+            <div
+              css={{
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                backgroundColor: colorTheme.bg0.value,
+              }}
+            >
+              <Slabs
+                {...slabAlignment(justifyContent, alignItems, flexDirection)}
+                flexDirection={flexDirection}
+                bgColor={colorTheme.fg5.value}
+              />
+            </div>
+            <div
+              css={{
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: colorTheme.bg0.value,
+                width: '100%',
+                height: '100%',
+                opacity: isSelected ? 0 : 1,
+                '&:hover': {
+                  opacity: 0,
+                },
+              }}
+            >
               <div
                 css={{
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: '100%',
-                  opacity: isSelected ? 1 : 0.5,
+                  backgroundColor: colorTheme.fg5.value,
+                  width: DotSize,
+                  height: DotSize,
+                  borderRadius: DotSize / 2,
                 }}
-              >
-                <Slabs
-                  {...slabAlignment(justifyContent, alignItems, flexDirection)}
-                  flexDirection={flexDirection}
-                  bgColor={colorTheme.fg5.value}
-                />
-              </div>
-            ) : (
-              <div
-                css={{
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                <div
-                  css={{
-                    backgroundColor: colorTheme.fg5.value,
-                    width: DotSize,
-                    height: DotSize,
-                    borderRadius: DotSize / 2,
-                  }}
-                />
-              </div>
-            )}
+              />
+            </div>
           </div>
         )
       })}
