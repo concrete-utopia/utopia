@@ -92,7 +92,7 @@ describe('Reselect Investigation', () => {
     selectorFn()(store)
     expect(numberOfTimesCalled).toBe(4)
 
-    // uh oh!!! be very careful when craeting a selector with a curry function
+    // uh oh!!! be very careful when creating a selector with a curry function
   })
 
   it('selectors that take an argument are memoized', () => {

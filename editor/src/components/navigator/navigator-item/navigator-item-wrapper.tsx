@@ -125,23 +125,23 @@ const staticNameSelector = createSelector(targetJsxElementSelector, (targetEleme
   )
 })
 
-const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
-  createSelector(
-    (store: EditorStorePatched) => store.editor.jsxMetadata,
-    (store: EditorStorePatched) => store.derived.elementWarnings,
-    (store: EditorStorePatched) => store.editor.allElementProps,
-    (jsxMetadata, elementWarnings, allElementProps) => {
-      const labelInner = MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata)
+const navigatorItemWrapperSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.jsxMetadata,
+  (store: EditorStorePatched) => store.derived.elementWarnings,
+  (store: EditorStorePatched) => store.editor.allElementProps,
+  (sto_re: EditorStorePatched, elementPath: ElementPath) => elementPath,
+  (jsxMetadata, elementWarnings, allElementProps, elementPath) => {
+    const labelInner = MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata)
 
-      const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
+    const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
 
-      return {
-        label: labelInner,
+    return {
+      label: labelInner,
 
-        elementWarnings: elementWarningsInner ?? defaultElementWarnings,
-      }
-    },
-  )
+      elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+    }
+  },
+)
 
 const noOfChildrenSelector = createSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
@@ -164,11 +164,6 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
-  const selector = React.useMemo(
-    () => navigatorItemWrapperSelectorFactory(props.elementPath),
-    [props.elementPath],
-  )
-
   const { isSelected, isHighlighted } = useEditorState(
     (store) => ({
       isSelected: EP.containsPath(props.elementPath, store.editor.selectedViews),
@@ -196,7 +191,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementOriginType',
   )
 
-  const { label, elementWarnings } = useEditorState(selector, 'NavigatorItemWrapper')
+  const { label, elementWarnings } = useEditorState(
+    (store) => navigatorItemWrapperSelector(store, props.elementPath),
+    'NavigatorItemWrapper',
+  )
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
     useEditorState((store) => {

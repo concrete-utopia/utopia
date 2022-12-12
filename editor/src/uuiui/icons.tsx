@@ -1,4 +1,5 @@
 import React from 'react'
+import { FlexWrap } from 'utopia-api/core'
 import { Icn, IcnProps } from './icn'
 
 const makeIcon = (
@@ -179,6 +180,16 @@ export const Icons = {
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
+  FlexRow: makeIcon({
+    type: 'flexDirection-row-regular-nowrap',
+    color: 'main',
+    category: 'layout/flex',
+  }),
+  FlexColumn: makeIcon({
+    type: 'flexDirection-column-regular-nowrap',
+    color: 'main',
+    category: 'layout/flex',
+  }),
 
   Downloaded: makeIcon({ type: 'downloaded', color: 'main', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'main' }),
