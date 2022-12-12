@@ -49,8 +49,6 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { createEditor, Element } from 'slate'
-import { DefaultElement, DefaultLeaf, Editable, ReactEditor, Slate, withReact } from 'slate-react'
 import { TextEditor } from '../../text-editor/text-editor'
 
 export function createLookupRender(
