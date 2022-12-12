@@ -42,7 +42,7 @@ export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSXAttr
 export function defaultViewElementStyle(): JSXAttribute {
   return jsxAttributeValue(
     {
-      backgroundColor: '#0091FFAA',
+      backgroundColor: '#aaaaaa33',
       position: 'absolute',
     },
     emptyComments,
