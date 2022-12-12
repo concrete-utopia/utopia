@@ -17,11 +17,23 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   const myElement = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
-    // eslint-disable-next-line no-unused-expressions
-    myElement.current?.focus()
-    // eslint-disable-next-line no-unused-expressions
-    myElement.current?.addEventListener('blur', () => {
-      // eslint-disable-next-line no-unused-expressions
+    if (myElement.current == null) {
+      return
+    }
+
+    const range = document.createRange()
+    range.selectNodeContents(myElement.current)
+    range.collapse(false)
+
+    const selection = window.getSelection()
+    if (selection != null) {
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+
+    myElement.current.focus()
+
+    myElement.current.addEventListener('blur', () => {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     })
   }, [dispatch])
