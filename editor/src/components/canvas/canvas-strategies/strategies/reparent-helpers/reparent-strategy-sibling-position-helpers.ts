@@ -11,6 +11,7 @@ import {
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { Direction, ForwardOrReverse } from '../../../../inspector/common/css-utils'
 
+export const ExtraPadding = (canvasScale: number): number => 10 / canvasScale
 export function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
   singleAxisAutolayoutContainerPath: ElementPath,
@@ -19,8 +20,7 @@ export function drawTargetRectanglesForChildrenOfElement(
   simpleFlexDirection: Direction | null,
   forwardsOrBackwards: ForwardOrReverse | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
-  const ExtraPadding = 10 / canvasScale
-
+  const extraPadding = ExtraPadding(canvasScale)
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(
     singleAxisAutolayoutContainerPath,
     metadata,
@@ -63,7 +63,10 @@ export function drawTargetRectanglesForChildrenOfElement(
       return null
     }
 
-    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)
+    if (bounds == null) {
+      return null
+    }
     return {
       start: bounds[leftOrTop],
       size: bounds[widthOrHeight],
@@ -92,12 +95,12 @@ export function drawTargetRectanglesForChildrenOfElement(
           insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index : bounds.index + 1,
           rect: rectFromTwoPoints(
             {
-              [leftOrTop]: normalizedStart - ExtraPadding,
+              [leftOrTop]: normalizedStart - extraPadding,
               [leftOrTopComplement]: parentBounds[leftOrTopComplement],
             } as any as CanvasPoint, // TODO improve my type
             {
               [leftOrTop]: Math.min(
-                normalizedStart + ExtraPadding,
+                normalizedStart + extraPadding,
                 normalizedStart + bounds.size / 2,
               ),
               [leftOrTopComplement]:
@@ -109,11 +112,11 @@ export function drawTargetRectanglesForChildrenOfElement(
           insertionIndex: forwardsOrBackwards === 'forward' ? bounds.index + 1 : bounds.index,
           rect: rectFromTwoPoints(
             {
-              [leftOrTop]: Math.max(normalizedEnd - ExtraPadding, normalizedEnd - bounds.size / 2),
+              [leftOrTop]: Math.max(normalizedEnd - extraPadding, normalizedEnd - bounds.size / 2),
               [leftOrTopComplement]: parentBounds[leftOrTopComplement],
             } as any as CanvasPoint, // TODO improve my type
             {
-              [leftOrTop]: normalizedEnd + ExtraPadding,
+              [leftOrTop]: normalizedEnd + extraPadding,
               [leftOrTopComplement]:
                 parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
             } as any as CanvasPoint, // TODO improve my type

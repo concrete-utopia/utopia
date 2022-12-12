@@ -38,6 +38,7 @@ import type { CSSCursor } from '../../../uuiui-deps'
 import { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
+import { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
@@ -221,6 +222,7 @@ import type {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  ApplyCommandsAction,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1687,5 +1689,12 @@ export function setImageDragSessionState(
   return {
     action: 'SET_IMAGE_DRAG_SESSION_STATE',
     imageDragSessionState: imageDragSessionState,
+  }
+}
+
+export function applyCommandsAction(commands: CanvasCommand[]): ApplyCommandsAction {
+  return {
+    action: 'APPLY_COMMANDS',
+    commands: commands,
   }
 }

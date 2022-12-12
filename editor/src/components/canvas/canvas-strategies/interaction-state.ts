@@ -3,6 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import {
   CanvasPoint,
   CanvasVector,
+  magnitude,
   offsetPoint,
   pointDifference,
   roundPointTo,
@@ -10,9 +11,10 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { BorderRadiusCorner } from '../border-radius-control-utils'
 import { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
@@ -23,7 +25,6 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
-import type { ReparentTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -215,9 +216,7 @@ export function createHoverInteractionViaMouse(
 }
 
 function dragExceededThreshold(drag: CanvasVector): boolean {
-  const xDiff = Math.abs(drag.x)
-  const yDiff = Math.abs(drag.y)
-  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+  return magnitude(drag) > MoveIntoDragThreshold
 }
 
 export function updateInteractionViaDragDelta(

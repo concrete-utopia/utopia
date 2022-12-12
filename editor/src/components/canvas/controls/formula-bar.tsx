@@ -3,7 +3,7 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useColorTheme, SimpleFlexRow, HeadlessStringInput } from '../../../uuiui'
+import { SimpleFlexRow, HeadlessStringInput, colorTheme } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
@@ -59,7 +59,6 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
 
   const inputRef = useInputFocusOnCountIncrease<HTMLInputElement>(focusTriggerCount)
 
-  const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
 
@@ -163,7 +162,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
             border: '1px solid transparent',
             borderRadius: 3,
             backgroundColor: 'transparent',
-            color: colorTheme.inverted.fg1.value,
+            color: colorTheme.bg0.value,
             transition: 'background-color .1s ease-in-out',
             '&:hover': {
               outline: 'none',

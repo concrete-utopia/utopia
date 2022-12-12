@@ -359,6 +359,7 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
+  CanvasFrameAndTarget,
   CSSCursor,
   DragState,
   edgePosition,
@@ -1117,27 +1118,28 @@ function RectangleKeepDeepEquality<C extends CoordinateMarker>(
   }
 }
 
-export const CanvasRectangleKeepDeepEquality: (
-  oldValue: CanvasRectangle,
-  newValue: CanvasRectangle,
-) => KeepDeepEqualityResult<CanvasRectangle> = RectangleKeepDeepEquality
+export const CanvasRectangleKeepDeepEquality: KeepDeepEqualityCall<CanvasRectangle> =
+  RectangleKeepDeepEquality
 
-export function FrameAndTargetKeepDeepEquality<C extends CoordinateMarker>(
-  oldFrameAndTarget: FrameAndTarget<C>,
-  newFrameAndTarget: FrameAndTarget<C>,
-): KeepDeepEqualityResult<FrameAndTarget<C>> {
-  if (
-    nullableDeepEquality(RectangleKeepDeepEquality)(
-      oldFrameAndTarget.frame,
-      newFrameAndTarget.frame,
-    ).areEqual &&
-    ElementPathKeepDeepEquality(oldFrameAndTarget.target, newFrameAndTarget.target).areEqual
-  ) {
-    return keepDeepEqualityResult(oldFrameAndTarget, true)
-  } else {
-    return keepDeepEqualityResult(newFrameAndTarget, false)
-  }
+export function FrameAndTargetKeepDeepEqualityCall<
+  C extends CoordinateMarker,
+>(): KeepDeepEqualityCall<FrameAndTarget<C>> {
+  return combine2EqualityCalls(
+    (frameAndTarget) => frameAndTarget.frame,
+    RectangleKeepDeepEquality,
+    (frameAndTarget) => frameAndTarget.target,
+    ElementPathKeepDeepEquality,
+    (frame, target) => {
+      return {
+        frame: frame,
+        target: target,
+      }
+    },
+  )
 }
+
+export const CanvasFrameAndTargetKeepDeepEquality: KeepDeepEqualityCall<CanvasFrameAndTarget> =
+  FrameAndTargetKeepDeepEqualityCall<CanvasRectangle>()
 
 export function LocalRectangleKeepDeepEquality(
   oldRect: LocalRectangle,
@@ -1615,7 +1617,7 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
-    arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    arrayDeepEquality(CanvasFrameAndTargetKeepDeepEquality),
     (controls) => controls.flexReparentTargetLines,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.parentHighlightPaths,
@@ -2456,21 +2458,8 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> = (
-  oldAttribute,
-  newAttribute,
-) => {
-  if (oldAttribute == null && newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, true)
-  }
-  if (oldAttribute == null) {
-    return keepDeepEqualityResult(newAttribute, false)
-  }
-  if (newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, false)
-  }
-  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
-}
+export const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> =
+  nullableDeepEquality(objectDeepEquality(StringKeepDeepEquality))
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
@@ -3326,6 +3315,9 @@ export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = comb
   emptyGithubData,
 )
 
+export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
   newValue,
@@ -3556,15 +3548,14 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.forceParseFiles,
     newValue.forceParseFiles,
   )
-  const allElementPropsResults = createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+  const allElementPropsResults = AllElementPropsKeepDeepEquality(
     oldValue.allElementProps,
     newValue.allElementProps,
   )
-  const _currentAllElementProps_KILLME_Results =
-    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
-      oldValue._currentAllElementProps_KILLME,
-      newValue._currentAllElementProps_KILLME,
-    )
+  const _currentAllElementProps_KILLME_Results = AllElementPropsKeepDeepEquality(
+    oldValue._currentAllElementProps_KILLME,
+    newValue._currentAllElementProps_KILLME,
+  )
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,

@@ -65,10 +65,10 @@ import {
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
   TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
-  TOGGLE_LEFT_MENU_SHORTCUT,
+  TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
-  TOGGLE_RIGHT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR,
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
@@ -611,10 +611,10 @@ export function handleKeyDown(
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
       },
-      [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_NAVIGATOR]: () => {
+        return [EditorActions.togglePanel('navigator')]
       },
-      [TOGGLE_RIGHT_MENU_SHORTCUT]: () => {
+      [TOGGLE_INSPECTOR]: () => {
         return [EditorActions.togglePanel('rightmenu')]
       },
       [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: () => {

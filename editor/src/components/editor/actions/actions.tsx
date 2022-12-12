@@ -314,6 +314,7 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  ApplyCommandsAction,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -5161,6 +5162,9 @@ export const UPDATE_FNS = {
       ...editor,
       imageDragSessionState: action.imageDragSessionState,
     }
+  },
+  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, action.commands)
   },
 }
 

@@ -219,7 +219,7 @@ specifiers:
   react-vtree: 2.0.0
   react-window: 1.8.7
   react-windowed-select: 3.1.2
-  reselect: 4.0.0
+  reselect: 4.1.7
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   script-ext-html-webpack-plugin: 2.1.4
@@ -363,7 +363,7 @@ dependencies:
   react-vtree: 2.0.0_fc75b599a283ce88adf32a755f569cd4
   react-window: 1.8.7_react-dom@18.1.0+react@18.1.0
   react-windowed-select: 3.1.2_3b9cfa1ca2be6d0dc04583129899fdc5
-  reselect: 4.0.0
+  reselect: 4.1.7
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   semver: 7.3.2
@@ -13881,8 +13881,8 @@ packages:
     resolution: {integrity: sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=}
     dev: true
 
-  /reselect/4.0.0:
-    resolution: {integrity: sha512-qUgANli03jjAyGlnbYVAV5vvnOmJnODyABz51RdBN7M4WaVu8mecZWgyQNkG8Yqe3KRGRt0l4K4B3XVEULC4CA==}
+  /reselect/4.1.7:
+    resolution: {integrity: sha512-Zu1xbUt3/OPwsXL46hvOOoQrap2azE7ZQbokq61BQfiXvhewsKDwhMeZjTX9sX0nvw1t/U5Audyn1I9P/m9z0A==}
     dev: false
 
   /resize-observer-polyfill/1.5.0:

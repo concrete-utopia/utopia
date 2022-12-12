@@ -18,7 +18,7 @@ import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 export const LoggedOutPane = React.memo(() => {
   return (
     <Section data-name='Storyboards' tabIndex={-1}>
-      <SectionTitleRow minimised={false}>
+      <SectionTitleRow minimised={false} hideButton>
         <FlexRow flexGrow={1} style={{ position: 'relative' }}>
           <Title>Sign in to</Title>
         </FlexRow>
@@ -46,6 +46,7 @@ export const LoggedOutPane = React.memo(() => {
             <li>Design and code from anywhere</li>
             <li>Save and preview your projects</li>
             <li>Use custom assets, fonts, and more</li>
+            <li>Load and save projects on Github</li>
           </ul>
         </UIGridRow>
         <UIGridRow style={{ gap: 8 }} padded variant='<--1fr--><--1fr-->'>
