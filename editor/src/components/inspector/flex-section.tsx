@@ -1,9 +1,10 @@
 import React from 'react'
+import { when } from '../../utils/react-conditionals'
 import { useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
-import { detectFlexDirection } from './inspector-common'
+import { detectAreElementsInFlexLayout, detectFlexDirection } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
 export const FlexSection = React.memo(() => {
@@ -15,11 +16,21 @@ export const FlexSection = React.memo(() => {
     'FlexSection flexDirection',
   )
 
+  const allElementsInFlexLayout = useEditorState(
+    (store) => detectAreElementsInFlexLayout(metadataSelector(store), selectedViewsSelector(store)),
+    'FlexSection areAllElementsInFlexLayout',
+  )
+
   return (
-    <div>
-      <AddRemoveLayouSystemControl />
-      <FlexDirectionToggle flexDirection={flexDirection} />
-      <NineBlockControl flexDirection={flexDirection} />
-    </div>
+    <>
+      {when(
+        allElementsInFlexLayout,
+        <div>
+          <AddRemoveLayouSystemControl />
+          <FlexDirectionToggle flexDirection={flexDirection} />
+          <NineBlockControl flexDirection={flexDirection} />
+        </div>,
+      )}
+    </>
   )
 })
