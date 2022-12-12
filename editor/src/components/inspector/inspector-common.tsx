@@ -61,6 +61,11 @@ function stringToFlexDirection(str: string | null): FlexDirection | null {
   }
 }
 
+export interface JustifyContentFlexAlignemt {
+  justifyContent: FlexJustifyContent
+  alignItems: FlexAlignment
+}
+
 type Detect<T> = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
@@ -95,7 +100,7 @@ export const detectFlexDirection: Detect<FlexDirection> = (
 function detectFlexAlignJustifyContentOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): [FlexJustifyContent, FlexAlignment] | null {
+): JustifyContentFlexAlignemt | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
     return null
@@ -104,18 +109,18 @@ function detectFlexAlignJustifyContentOne(
   const justifyContent: FlexJustifyContent | null = getFlexJustifyContent(
     element.computedStyle?.['justifyContent'] ?? null,
   )
-  const flexAlignment: FlexAlignment | null = getFlexAlignment(
+  const alignItems: FlexAlignment | null = getFlexAlignment(
     element.computedStyle?.['alignItems'] ?? null,
   )
 
-  if (justifyContent == null || flexAlignment == null) {
+  if (justifyContent == null || alignItems == null) {
     return null
   }
 
-  return [justifyContent, flexAlignment]
+  return { justifyContent, alignItems }
 }
 
-export const detectFlexAlignJustifyContent: Detect<[FlexJustifyContent, FlexAlignment]> = (
+export const detectFlexAlignJustifyContent: Detect<JustifyContentFlexAlignemt> = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ) => {
@@ -128,7 +133,10 @@ export const detectFlexAlignJustifyContent: Detect<[FlexJustifyContent, FlexAlig
     return null
   }
 
-  return allElemsEqual(allDetectedMeasurements, (l, r) => l[0] === r[0] && l[1] === r[1])
+  return allElemsEqual(
+    allDetectedMeasurements,
+    (l, r) => l.alignItems === r.alignItems && l.justifyContent === r.justifyContent,
+  )
     ? allDetectedMeasurements[0]
     : null
 }
@@ -156,13 +164,13 @@ export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
-  left: [FlexJustifyContent, FlexAlignment],
-  right: [FlexJustifyContent, FlexAlignment],
+  left: JustifyContentFlexAlignemt,
+  right: JustifyContentFlexAlignemt,
 ): boolean {
-  const [justifyContent, alignItems] = left
+  const { justifyContent, alignItems } = left
   return isFlexColumn(flexDirection)
-    ? alignItems === right[0] && justifyContent === right[1]
-    : alignItems === right[1] && justifyContent === right[0]
+    ? alignItems === right.justifyContent && justifyContent === right.alignItems
+    : alignItems === right.alignItems && justifyContent === right.justifyContent
 }
 
 function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {

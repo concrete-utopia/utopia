@@ -152,7 +152,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
           detectedJustifyContentFlexAlignment != null &&
           justifyContentAlignItemsEquals(
             flexDirectionWithDefault,
-            [alignItems, justifyContent],
+            { alignItems, justifyContent },
             detectedJustifyContentFlexAlignment,
           )
         return (
