@@ -141,12 +141,18 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
   if (messagesToProcess.length > 0) {
-    const messages = await Promise.all(
-      messagesToProcess.map((m) => receiveMessage(m, parseMessage)),
-    )
-    lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
-    await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
-    messages.forEach(onMessageCallback)
+    try {
+      const messages = await Promise.all(
+        messagesToProcess.map((m) => receiveMessage(m, parseMessage)),
+      )
+      lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
+      await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
+      messages.forEach(onMessageCallback)
+    } catch (e) {
+      // It's possible that the mailbox was cleared whilst something was trying to read the messages.
+      // If that happens, we bail out of this poll, and the call `checkAndResetIfMailboxCleared` will
+      // correct things on the next poll
+    }
     resetPollingFrequency()
   } else {
     reducePollingFrequency()
@@ -218,7 +224,6 @@ async function getMailboxClearedAtTimestamp(mailbox: Mailbox): Promise<number> {
 }
 
 export async function clearBothMailboxes(): Promise<void> {
-  await markFSNotReady()
   await ensureMailboxExists(UtopiaInbox)
   await clearMailbox(UtopiaInbox)
   await ensureMailboxExists(VSCodeInbox)
@@ -245,18 +250,4 @@ export async function initMailbox<T>(
 ): Promise<void> {
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, parseMessage, onMessage)
-}
-
-const FS_READY = 'FS_READY'
-
-async function markFSNotReady(): Promise<void> {
-  await deletePath(FS_READY, false)
-}
-
-export async function markFSReady(): Promise<void> {
-  await writeFileSavedContentAsUTF8(FS_READY, '')
-}
-
-export async function checkFSReady(): Promise<boolean> {
-  return await exists(FS_READY)
 }

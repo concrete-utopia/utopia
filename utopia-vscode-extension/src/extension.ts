@@ -25,7 +25,7 @@ import {
   utopiaVSCodeConfigValues,
   vsCodeReady,
   clearLoadingScreen,
-  checkFSReady,
+  ProjectIDPlaceholderPrefix,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -36,6 +36,11 @@ const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
   const projectID = workspaceRootUri.scheme
+  if (projectID.startsWith(ProjectIDPlaceholderPrefix)) {
+    // We don't want the extension to do anything now. We'll restart it with the actual projectID
+    return
+  }
+
   /* eslint-disable-next-line react-hooks/rules-of-hooks */
   useFileSystemProviderErrors(projectID)
 
@@ -78,25 +83,9 @@ async function wait(timeoutms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), timeoutms))
 }
 
-async function waitForFSToBeReady(retries: number = 120): Promise<void> {
-  if (retries <= 0) {
-    // Gave up waiting, so let's just ensure the root directory exists and be done with it
-    await ensureDirectoryExists(RootDir)
-    return
-  }
-
-  if (await checkFSReady()) {
-    // All is well
-    return
-  }
-
-  await wait(100)
-  return waitForFSToBeReady(retries - 1)
-}
-
 async function initFS(projectID: string): Promise<void> {
   await initializeFS(projectID, 'VSCODE')
-  await waitForFSToBeReady()
+  await ensureDirectoryExists(RootDir)
 }
 
 function initUtopiaFSProvider(

@@ -246,7 +246,6 @@ export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
 }
 
 async function sendUtopiaReadyMessage(): Promise<void> {
-  await markFSReady()
   return sendMessage(utopiaReady())
 }
 
