@@ -4,7 +4,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
-import { detectAreElementsInFlexLayout, detectFlexDirection } from './inspector-common'
+import { detectAreElementsFlexContainers, detectFlexDirection } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
 export const FlexSection = React.memo(() => {
@@ -17,7 +17,8 @@ export const FlexSection = React.memo(() => {
   )
 
   const allElementsInFlexLayout = useEditorState(
-    (store) => detectAreElementsInFlexLayout(metadataSelector(store), selectedViewsSelector(store)),
+    (store) =>
+      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'FlexSection areAllElementsInFlexLayout',
   )
 

@@ -18,13 +18,14 @@ import {
   removeFlexLayoutStrategies,
   runStrategies,
 } from './inspector-strategies'
-import { detectAreElementsInFlexLayout } from './inspector-common'
+import { detectAreElementsFlexContainers } from './inspector-common'
 
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
   const isFlexLayoutedContainer = useEditorState(
-    (store) => detectAreElementsInFlexLayout(metadataSelector(store), selectedViewsSelector(store)),
+    (store) =>
+      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'AddRemoveLayouSystemControl, isFlexLayoutedContainer',
   )
 

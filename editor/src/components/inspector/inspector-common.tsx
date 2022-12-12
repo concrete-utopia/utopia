@@ -150,7 +150,7 @@ export function filterKeepFlexContainers(
   )
 }
 
-export function detectAreElementsInFlexLayout(
+export function detectAreElementsFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ): boolean {
