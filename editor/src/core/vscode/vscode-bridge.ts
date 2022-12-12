@@ -56,7 +56,6 @@ import {
   SelectedElementChanged,
   utopiaReady,
   setVSCodeTheme,
-  markFSReady,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
