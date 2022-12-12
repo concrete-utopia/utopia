@@ -61,7 +61,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       onKeyDown={onKeyDown}
       onKeyUp={onKeyDown}
       onKeyPress={onKeyDown}
-      contentEditable={'plaintext-only' as any}
+      contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
     >
       {firstTextProp}
