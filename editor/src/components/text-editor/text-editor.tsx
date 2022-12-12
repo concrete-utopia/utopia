@@ -3,7 +3,6 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { useEditorState } from '../editor/store/store-hook'
 import { updateChildText, updateEditorMode } from '../editor/actions/action-creators'
-import { getCodeEditorDecorations } from '../../core/vscode/vscode-bridge'
 import { EditorModes } from '../editor/editor-modes'
 
 interface TextEditorProps {
