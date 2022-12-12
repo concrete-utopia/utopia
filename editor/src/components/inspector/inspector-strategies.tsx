@@ -6,6 +6,8 @@ import { setProperty } from '../canvas/commands/set-property-command'
 import { EditorDispatch } from '../editor/action-types'
 import { filterKeepFlexContainers, FlexAlignment, FlexJustifyContent } from './inspector-common'
 import { applyCommandsAction } from '../editor/actions/action-creators'
+import { deleteProperties } from '../canvas/commands/delete-properties-command'
+import { FlexDirection } from './common/css-utils'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -27,6 +29,36 @@ export const setFlexAlignJustifyContentStrategies = (
       setProperty('always', path, PP.create(['style', 'alignItems']), flexAlignment),
       setProperty('always', path, PP.create(['style', 'justifyContent']), justifyContent),
     ])
+  },
+]
+
+export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
+  (metadata, elementPaths) => {
+    const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    return elements.map((path) =>
+      deleteProperties('always', path, [PP.create(['style', 'flexDirection'])]),
+    )
+  },
+]
+
+export const updateFlexDirectionStrategies = (
+  flexDirection: FlexDirection,
+): Array<InspectorStrategy> => [
+  (metadata, elementPaths) => {
+    const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    return elements.map((path) =>
+      setProperty('always', path, PP.create(['style', 'flexDirection']), flexDirection),
+    )
   },
 ]
 

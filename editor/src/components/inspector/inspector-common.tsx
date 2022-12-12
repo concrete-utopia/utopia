@@ -1,14 +1,12 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { EditorState, EditorStorePatched } from '../editor/store/editor-state'
+import { FlexDirection } from './common/css-utils'
 
-export type FlexJustifyContent =
-  | 'flex-start'
-  | 'center'
-  | 'flex-end'
-  | 'space-around'
-  | 'space-between'
-  | 'space-evenly'
+export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
+
+export type FlexJustifyContent = StartCenterEnd | 'space-around' | 'space-between' | 'space-evenly'
 
 function getFlexJustifyContent(value: string | null): FlexJustifyContent | null {
   switch (value) {
@@ -29,7 +27,7 @@ function getFlexJustifyContent(value: string | null): FlexJustifyContent | null 
   }
 }
 
-export type FlexAlignment = 'auto' | 'flex-start' | 'center' | 'flex-end' | 'stretch'
+export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
 
 function getFlexAlignment(value: string | null): FlexAlignment | null {
   switch (value) {
@@ -43,6 +41,21 @@ function getFlexAlignment(value: string | null): FlexAlignment | null {
       return 'flex-end'
     case 'stretch':
       return 'stretch'
+    default:
+      return null
+  }
+}
+
+function stringToFlexDirection(str: string | null): FlexDirection | null {
+  switch (str) {
+    case 'row':
+      return 'row'
+    case 'row-reverse':
+      return 'row-reverse'
+    case 'column':
+      return 'column'
+    case 'column-reverse':
+      return 'column-reverse'
     default:
       return null
   }
@@ -73,3 +86,18 @@ export function filterKeepFlexContainers(
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
   )
 }
+
+export function detectFlexDirection(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexDirection {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return 'row'
+  }
+
+  return stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? 'row'
+}
+
+export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
+  flexDirection.startsWith('column')
