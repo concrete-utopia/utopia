@@ -133,7 +133,6 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
   return (
     <div
       style={{
-        gap: 3,
         margin: 2,
         height: 100,
         display: 'grid',
@@ -155,6 +154,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
             key={`${alignItems}-${justifyContent}`}
             style={{
               display: 'flex',
+              padding: 1,
               alignItems: 'center',
               position: 'relative',
               boxSizing: 'border-box',
@@ -172,6 +172,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
                 width: '100%',
                 height: '100%',
                 backgroundColor: colorTheme.bg0.value,
+                opacity: isSelected ? 1 : 0.5,
               }}
             >
               <Slabs
