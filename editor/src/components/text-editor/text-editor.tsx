@@ -17,12 +17,13 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   const myElement = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
-    if (myElement.current == null) {
+    const currentElement = myElement.current
+    if (currentElement == null) {
       return
     }
 
     const range = document.createRange()
-    range.selectNodeContents(myElement.current)
+    range.selectNodeContents(currentElement)
     range.collapse(false)
 
     const selection = window.getSelection()
@@ -31,12 +32,19 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       selection.addRange(range)
     }
 
-    myElement.current.focus()
+    currentElement.focus()
 
-    myElement.current.addEventListener('blur', () => {
+    currentElement.addEventListener('blur', () => {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     })
-  }, [dispatch])
+
+    return () => {
+      const content = currentElement.textContent
+      if (content != null) {
+        dispatch([updateChildText(elementPath, content)])
+      }
+    }
+  }, [dispatch, elementPath])
 
   const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -47,35 +55,16 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [])
 
-  const contentRef = React.useRef(text)
-
-  const onChange = React.useCallback(() => {
-    const content = myElement.current?.textContent
-    if (content == null) {
-      return
-    }
-    if (content !== contentRef.current) {
-      contentRef.current = content
-      dispatch([updateChildText(elementPath, content)])
-    }
-  }, [elementPath, dispatch])
-
   return (
     <span
       ref={myElement}
-      id={getSlateEditorId(elementPath)}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyDown}
       onKeyPress={onKeyDown}
       contentEditable={true}
-      onInput={onChange}
       suppressContentEditableWarning={true}
     >
       {firstTextProp}
     </span>
   )
-}
-
-export function getSlateEditorId(elementPath: ElementPath): string {
-  return `slate-editor-${EP.toString(elementPath)}`
 }
