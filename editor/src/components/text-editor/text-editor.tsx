@@ -2,7 +2,11 @@ import React from 'react'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { useEditorState } from '../editor/store/store-hook'
-import { updateChildText, updateEditorMode } from '../editor/actions/action-creators'
+import {
+  clearSelection,
+  updateChildText,
+  updateEditorMode,
+} from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 
 interface TextEditorProps {
@@ -35,7 +39,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     currentElement.focus()
 
     currentElement.addEventListener('blur', () => {
-      dispatch([updateEditorMode(EditorModes.selectMode())])
+      dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
     })
 
     return () => {
@@ -46,7 +50,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [dispatch, elementPath])
 
-  const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
+  const onKeyEvent = React.useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       // eslint-disable-next-line no-unused-expressions
       myElement.current?.blur()
@@ -58,9 +62,9 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   return (
     <span
       ref={myElement}
-      onKeyDown={onKeyDown}
-      onKeyUp={onKeyDown}
-      onKeyPress={onKeyDown}
+      onKeyDown={onKeyEvent}
+      onKeyUp={onKeyEvent}
+      onKeyPress={onKeyEvent}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
     >

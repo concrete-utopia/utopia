@@ -688,7 +688,6 @@ export function handleKeyDown(
           EditorActions.switchEditorMode(
             EditorModes.textEditMode(firstSelectedViewWithoutChildren),
           ),
-          EditorActions.clearSelection(),
         ]
       },
     })
