@@ -1553,9 +1553,7 @@ export function importedOrigin(
   }
 }
 
-export type ImportedFromWhereResult = SameFileOrigin | ImportedOrigin
-
-export type ImportInfo = ImportedFromWhereResult
+export type ImportInfo = SameFileOrigin | ImportedOrigin
 
 export function createImportedFrom(
   variableName: string,
