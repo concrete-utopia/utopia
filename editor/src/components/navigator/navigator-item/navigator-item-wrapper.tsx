@@ -46,7 +46,7 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
-const navigatorItemWrapperSelectorFactory = createSelector(
+const navigatorItemWrapperSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched) => store.editor.selectedViews,
   (store: EditorStorePatched) => store.editor.highlightedViews,
@@ -155,7 +155,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     label,
     elementWarnings,
   } = useEditorState(
-    (store) => navigatorItemWrapperSelectorFactory(store, props.elementPath),
+    (store) => navigatorItemWrapperSelector(store, props.elementPath),
     'NavigatorItemWrapper',
   )
 
