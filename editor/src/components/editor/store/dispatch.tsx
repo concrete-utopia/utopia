@@ -63,7 +63,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { forceTextEditorFocus, releaseTextEditorFocus } from '../../text-editor/utopia-slate-editor'
+import { blurTextEditor, focusTextEditor } from '../../text-editor/text-editor'
 import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
@@ -498,10 +498,10 @@ export function editorDispatch(
     (!isTextEditMode(storedState.patchedEditor.mode) ||
       !EP.pathsEqual(storedState.patchedEditor.mode.editedText, patchedEditorState.mode.editedText))
   ) {
-    forceTextEditorFocus(patchedEditorState.mode.editedText)
+    focusTextEditor(patchedEditorState.mode.editedText)
   }
   if (isTextEditMode(storedState.patchedEditor.mode) && !isTextEditMode(patchedEditorState.mode)) {
-    releaseTextEditorFocus()
+    blurTextEditor(storedState.patchedEditor.mode.editedText)
   }
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,

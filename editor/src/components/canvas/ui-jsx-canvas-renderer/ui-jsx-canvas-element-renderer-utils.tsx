@@ -51,7 +51,7 @@ import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { createEditor, Element } from 'slate'
 import { DefaultElement, DefaultLeaf, Editable, ReactEditor, Slate, withReact } from 'slate-react'
-import { UtopiaSlateEditor } from '../../text-editor/utopia-slate-editor'
+import { TextEditor } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -316,9 +316,7 @@ export function renderCoreElement(
       if (elementPath == null) {
         return element.text
       }
-      return (
-        <UtopiaSlateEditor elementPath={EP.parentPath(elementPath)} text={element.text.trim()} />
-      )
+      return <TextEditor elementPath={EP.parentPath(elementPath)} text={element.text.trim()} />
     }
     default:
       const _exhaustiveCheck: never = element

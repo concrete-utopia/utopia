@@ -466,11 +466,7 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
-import {
-  forceTextEditorFocus,
-  getSlateEditorId,
-  releaseTextEditorFocus,
-} from '../../text-editor/utopia-slate-editor'
+import { focusTextEditor, getSlateEditorId, blurTextEditor } from '../../text-editor/text-editor'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1929,7 +1925,7 @@ export const UPDATE_FNS = {
     if (editor.selectedViews.length === 0) {
       return editor
     }
-    releaseTextEditorFocus()
+    blurTextEditor()
 
     return {
       ...editor,
