@@ -33,6 +33,7 @@ import {
   LocalProject,
 } from './generic/persistence-types'
 import { PersistentModel } from '../store/editor-state'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 let _lastThumbnailGenerated: number = 0
 const THUMBNAIL_THROTTLE = 300000
@@ -48,9 +49,11 @@ async function generateThumbnail(force: boolean): Promise<Buffer | null> {
 }
 
 export async function updateRemoteThumbnail(projectId: string, force: boolean): Promise<void> {
-  const buffer = await generateThumbnail(force)
-  if (buffer != null) {
-    await saveThumbnail(buffer, projectId)
+  if (isFeatureEnabled('Project Thumbnail Generation')) {
+    const buffer = await generateThumbnail(force)
+    if (buffer != null) {
+      await saveThumbnail(buffer, projectId)
+    }
   }
 }
 
