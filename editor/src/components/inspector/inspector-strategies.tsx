@@ -62,6 +62,28 @@ export const updateFlexDirectionStrategies = (
   },
 ]
 
+export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
+  (metadata, elementPaths) => {
+    return elementPaths.map((path) =>
+      setProperty('always', path, PP.create(['style', 'display']), 'flex'),
+    )
+  },
+]
+
+export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
+  (metadata, elementPaths) => {
+    const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    return elements.map((path) =>
+      deleteProperties('always', path, [PP.create(['style', 'display'])]),
+    )
+  },
+]
+
 export function runStrategies(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
