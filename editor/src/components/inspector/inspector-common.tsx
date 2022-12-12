@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { FlexDirection } from './common/css-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -130,6 +129,15 @@ export function detectFlexDirection(
   return allElemsEqual(allDetectedMeasurement, (l, r) => l === r)
     ? allDetectedMeasurement[0]
     : DefaultFlexDirection
+}
+
+export function detectAreElementsInFlexLayout(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return elementPaths.every((path) =>
+    MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
 }
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>

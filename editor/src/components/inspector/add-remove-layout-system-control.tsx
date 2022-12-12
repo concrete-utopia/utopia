@@ -2,7 +2,6 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   InspectorSectionIcons,
   Icons,
@@ -19,19 +18,15 @@ import {
   removeFlexLayoutStrategies,
   runStrategies,
 } from './inspector-strategies'
+import { detectAreElementsInFlexLayout } from './inspector-common'
 
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isFlexLayoutedContainer = useEditorState((store) => {
-    const selectedElements = selectedViewsSelector(store)
-    if (selectedElements.length === 0) {
-      return false
-    }
-    return MetadataUtils.isFlexLayoutedContainer(
-      MetadataUtils.findElementByElementPath(metadataSelector(store), selectedElements[0]),
-    )
-  }, 'AddRemoveLayouSystemControl, isFlexLayoutedContainer')
+  const isFlexLayoutedContainer = useEditorState(
+    (store) => detectAreElementsInFlexLayout(metadataSelector(store), selectedViewsSelector(store)),
+    'AddRemoveLayouSystemControl, isFlexLayoutedContainer',
+  )
 
   const dispatch = useEditorState((store) => store.dispatch, 'AddRemoveLayouSystemControl dispatch')
   const elementMetadataRef = useRefEditorState(metadataSelector)
