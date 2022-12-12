@@ -10,7 +10,7 @@ export const FlexSection = React.memo(() => {
     (store) =>
       selectedViewsSelector(store).length === 0
         ? 'row'
-        : detectFlexDirection(metadataSelector(store), selectedViewsSelector(store)[0]),
+        : detectFlexDirection(metadataSelector(store), selectedViewsSelector(store)),
     'FlexSection flexDirection',
   )
 

@@ -102,8 +102,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
 
   const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
   const [flexJustifyContent, flexAlignment] = useEditorState(
-    (store) =>
-      detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)[0]),
+    (store) => detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)),
     'NineBlockControl [flexJustifyContent, flexAlignment]',
   )
 
