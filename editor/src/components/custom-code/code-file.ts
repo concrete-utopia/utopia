@@ -584,17 +584,16 @@ export function findUnderlyingComponentImplementationBasedOnMetadata(
   if (parsedContents == null) {
     return null
   }
+  const topLevelElements = parsedContents.topLevelElements
 
-  const foundTopLevelElement = parsedContents.topLevelElements.find(
-    (tle): tle is UtopiaJSXComponent =>
-      tle.type === 'UTOPIA_JSX_COMPONENT' && tle.name === variableName,
-  )
-
-  if (foundTopLevelElement == null) {
-    return null
+  for (let index = 0; index < topLevelElements.length; index++) {
+    const tle = topLevelElements[index]
+    if (tle.type === 'UTOPIA_JSX_COMPONENT' && tle.name === variableName) {
+      return tle
+    }
   }
 
-  return foundTopLevelElement
+  return null
 }
 
 export function findUnderlyingTargetComponentImplementation(
