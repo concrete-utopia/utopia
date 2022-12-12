@@ -20,6 +20,7 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
   emptyComments,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -391,12 +392,19 @@ function renderJSXElement(
     )
   }
 
-  const childrenElements = jsx.children.map(createChildrenElement)
   const elementIsIntrinsic = isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
   const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
+  const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+  const elementIsTextEditedAndNoTextBlockChild =
+    elementIsTextEdited && jsx.children.every((c) => c.type !== 'JSX_TEXT_BLOCK')
+
+  const childrenWithNewTextBlock = elementIsTextEditedAndNoTextBlockChild
+    ? [...jsx.children, jsxTextBlock('')]
+    : jsx.children
+  const childrenElements = childrenWithNewTextBlock.map(createChildrenElement)
 
   // Not necessary to check the top level elements, as we'll use a comparison of the
   // elements from scope and import to confirm it's not a top level element.
