@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
@@ -60,40 +61,76 @@ function stringToFlexDirection(str: string | null): FlexDirection | null {
   }
 }
 
-const DefaultJustifyContentFlexAlign: [FlexJustifyContent, FlexAlignment] = [
-  'flex-start',
-  'flex-start',
-]
+type Detect<T> = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+) => T | null
+
+export const DefaultFlexDirection: FlexDirection = 'row'
+
+function detectFlexDirectionOne(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexDirection | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
+    return null
+  }
+
+  return (
+    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection
+  )
+}
+
+export const detectFlexDirection: Detect<FlexDirection> = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+) => {
+  const allDetectedMeasurements = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
+  return allElemsEqual(allDetectedMeasurements, (l, r) => l === r)
+    ? allDetectedMeasurements[0]
+    : null
+}
 
 function detectFlexAlignJustifyContentOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): [FlexJustifyContent, FlexAlignment] {
+): [FlexJustifyContent, FlexAlignment] | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
-    return DefaultJustifyContentFlexAlign
+    return null
   }
 
-  const justifyContent: FlexJustifyContent =
-    getFlexJustifyContent(element.computedStyle?.['justifyContent'] ?? null) ??
-    DefaultJustifyContentFlexAlign[0]
-  const flexAlignment: FlexAlignment =
-    getFlexAlignment(element.computedStyle?.['alignItems'] ?? null) ??
-    DefaultJustifyContentFlexAlign[1]
+  const justifyContent: FlexJustifyContent | null = getFlexJustifyContent(
+    element.computedStyle?.['justifyContent'] ?? null,
+  )
+  const flexAlignment: FlexAlignment | null = getFlexAlignment(
+    element.computedStyle?.['alignItems'] ?? null,
+  )
+
+  if (justifyContent == null || flexAlignment == null) {
+    return null
+  }
 
   return [justifyContent, flexAlignment]
 }
 
-export function detectFlexAlignJustifyContent(
+export const detectFlexAlignJustifyContent: Detect<[FlexJustifyContent, FlexAlignment]> = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
-): [FlexJustifyContent, FlexAlignment] {
-  const allDetectedMeasurements = elementPaths.map((path) =>
-    detectFlexAlignJustifyContentOne(metadata, path),
+) => {
+  const allDetectedMeasurements = mapDropNulls(
+    (path) => detectFlexAlignJustifyContentOne(metadata, path),
+    elementPaths,
   )
+
+  if (allDetectedMeasurements.length !== elementPaths.length) {
+    return null
+  }
+
   return allElemsEqual(allDetectedMeasurements, (l, r) => l[0] === r[0] && l[1] === r[1])
     ? allDetectedMeasurements[0]
-    : DefaultJustifyContentFlexAlign
+    : null
 }
 
 export function filterKeepFlexContainers(
@@ -103,32 +140,6 @@ export function filterKeepFlexContainers(
   return elementPaths.filter((e: ElementPath | null) =>
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
   )
-}
-
-const DefaultFlexDirection: FlexDirection = 'row'
-
-function detectFlexDirectionOne(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexDirection {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
-    return DefaultFlexDirection
-  }
-
-  return (
-    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection
-  )
-}
-
-export function detectFlexDirection(
-  metadata: ElementInstanceMetadataMap,
-  elementPaths: Array<ElementPath>,
-): FlexDirection {
-  const allDetectedMeasurement = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
-  return allElemsEqual(allDetectedMeasurement, (l, r) => l === r)
-    ? allDetectedMeasurement[0]
-    : DefaultFlexDirection
 }
 
 export function detectAreElementsInFlexLayout(
@@ -142,6 +153,17 @@ export function detectAreElementsInFlexLayout(
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
+
+export function justifyContentAlignItemsEquals(
+  flexDirection: FlexDirection,
+  left: [FlexJustifyContent, FlexAlignment],
+  right: [FlexJustifyContent, FlexAlignment],
+): boolean {
+  const [justifyContent, alignItems] = left
+  return isFlexColumn(flexDirection)
+    ? alignItems === right[0] && justifyContent === right[1]
+    : alignItems === right[1] && justifyContent === right[0]
+}
 
 function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
   if (objects.length === 0) {
