@@ -2,7 +2,9 @@ import React from 'react'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { useEditorState } from '../editor/store/store-hook'
-import { updateChildText } from '../editor/actions/action-creators'
+import { updateChildText, updateEditorMode } from '../editor/actions/action-creators'
+import { getCodeEditorDecorations } from '../../core/vscode/vscode-bridge'
+import { EditorModes } from '../editor/editor-modes'
 
 interface TextEditorProps {
   elementPath: ElementPath
@@ -13,16 +15,26 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   const dispatch = useEditorState((store) => store.dispatch, 'useEditorState dispatch')
   const [firstTextProp] = React.useState(text)
 
-  const onKeyDown = React.useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        blurTextEditor(elementPath)
-      } else {
-        event.stopPropagation()
-      }
-    },
-    [elementPath],
-  )
+  const myElement = React.useRef<HTMLSpanElement>(null)
+
+  React.useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    myElement.current?.focus()
+    // eslint-disable-next-line no-unused-expressions
+    myElement.current?.addEventListener('blur', () => {
+      // eslint-disable-next-line no-unused-expressions
+      dispatch([updateEditorMode(EditorModes.selectMode())])
+    })
+  }, [dispatch])
+
+  const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      // eslint-disable-next-line no-unused-expressions
+      myElement.current?.blur()
+    } else {
+      event.stopPropagation()
+    }
+  }, [])
 
   const contentRef = React.useRef(text)
 
@@ -36,7 +48,6 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       dispatch([updateChildText(elementPath, content)])
     }
   }, [elementPath, dispatch])
-  const myElement = React.useRef<HTMLSpanElement>(null)
 
   return (
     <span
@@ -52,18 +63,6 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       {firstTextProp}
     </span>
   )
-}
-
-export function focusTextEditor(elementPath: ElementPath): void {
-  const activeTextEditorElement = document.getElementById(getSlateEditorId(elementPath))
-  // eslint-disable-next-line no-unused-expressions
-  activeTextEditorElement?.focus()
-}
-
-export function blurTextEditor(elementPath: ElementPath): void {
-  const activeTextEditorElement = document.getElementById(getSlateEditorId(elementPath))
-  // eslint-disable-next-line no-unused-expressions
-  activeTextEditorElement?.blur()
 }
 
 export function getSlateEditorId(elementPath: ElementPath): string {

@@ -69,6 +69,7 @@ export function createLookupRender(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -122,6 +123,7 @@ export function createLookupRender(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 }
@@ -166,6 +168,7 @@ export function renderCoreElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -196,6 +199,7 @@ export function renderCoreElement(
             imports,
             code,
             highlightBounds,
+            editedText,
           )
         : NoOpLookupRender
 
@@ -243,6 +247,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -264,6 +269,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
 
       const blockScope = {
@@ -305,16 +311,18 @@ export function renderCoreElement(
           imports,
           code,
           highlightBounds,
+          editedText,
         )
         renderedChildren.push(renderResult)
       })
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      if (elementPath == null) {
+      const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
+      if (parentPath == null || !EP.pathsEqual(parentPath, editedText)) {
         return element.text
       }
-      return <TextEditor elementPath={EP.parentPath(elementPath)} text={element.text.trim()} />
+      return <TextEditor elementPath={parentPath} text={element.text.trim()} />
     }
     default:
       const _exhaustiveCheck: never = element
@@ -344,6 +352,7 @@ function renderJSXElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
@@ -378,6 +387,7 @@ function renderJSXElement(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 
