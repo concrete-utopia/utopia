@@ -51,7 +51,7 @@ export var Card = (props) => {
         >
           Zeus
           <View
-            style={{ backgroundColor: '#aaaaaa33', left: 46, top: 11, width: 82, height: 62 }}
+            style={{ backgroundColor: '#0091FFAA', left: 46, top: 11, width: 82, height: 62 }}
             layout={{ layoutSystem: 'pinSystem' }}
           />
         </h3>
@@ -171,7 +171,7 @@ export var ScrollablePhotoGrid = (props) => {
           hi
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               position: 'absolute',
               top: 8,
               height: 78,
@@ -182,7 +182,7 @@ export var ScrollablePhotoGrid = (props) => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 height: 40,
                 width: 76,
                 left: 6,

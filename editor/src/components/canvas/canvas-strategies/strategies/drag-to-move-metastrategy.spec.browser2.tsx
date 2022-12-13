@@ -7,16 +7,16 @@ import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../
 const TestProject1 = `
 <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
   <div
-    style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
+    style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
     data-uid='child-1'
     data-testid='child-1'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 100, top: 150, width: 200, height: 100 }}
+    style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 100, top: 150, width: 200, height: 100 }}
     data-uid='child-2'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', width: 200, height: 100, display: 'inline-flex' }}
+    style={{ backgroundColor: '#0091FFAA', width: 200, height: 100, display: 'inline-flex' }}
     data-uid='child-3'
   />
 </div>
@@ -24,16 +24,16 @@ const TestProject1 = `
 const TestProject2 = `
 <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
   <div
-    style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
+    style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
     data-uid='child-1'
     data-testid='child-1'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
+    style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
     data-uid='child-2'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', width: 200, height: 100, position: 'relative' }}
+    style={{ backgroundColor: '#0091FFAA', width: 200, height: 100, position: 'relative' }}
     data-uid='child-3'
   />
 </div>
@@ -204,7 +204,7 @@ describe('Drag To Move Strategy Indicator', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100, position: 'absolute' }}
+          style={{ backgroundColor: '#0091FFAA', width: 100, height: 100, position: 'absolute' }}
           data-uid='child-1'
           data-testid='child-1'
         />
@@ -250,7 +250,7 @@ describe('Drag To Move Strategy Indicator', () => {
       <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='aaa'>
         <div style={{ width: 100, height: 100, position: 'absolute' }} data-uid='bbb'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', width: 100, height: 100 }}
             data-uid='child-1'
             data-testid='child-1'
           />

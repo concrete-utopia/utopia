@@ -89,7 +89,7 @@ export var ${BakedInStoryboardVariableName} = (
       >
         <ChildrenHider
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             position: 'absolute',
             left: 41,
             top: 37,
@@ -103,7 +103,7 @@ export var ${BakedInStoryboardVariableName} = (
         </ChildrenHider>
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -127,7 +127,7 @@ describe('Absolute Reparent Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -166,7 +166,7 @@ describe('Absolute Reparent Strategy', () => {
           />
         </Scene>
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
           data-uid='bbb'
           data-testid='bbb'
         />
@@ -183,7 +183,7 @@ describe('Absolute Reparent Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: '30%', height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: '30%', height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -222,7 +222,7 @@ describe('Absolute Reparent Strategy', () => {
           />
         </Scene>
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 120, height: 120 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 120, height: 120 }}
           data-uid='bbb'
           data-testid='bbb'
         />
@@ -243,7 +243,7 @@ import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
     <div
-      style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+      style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
       data-uid='bbb'
       data-testid='bbb'
     />
@@ -263,7 +263,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         />
       </Scene>
       <div
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
         data-uid='ccc'
         data-testid='ccc'
       />
@@ -302,12 +302,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             />
           </Scene>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
             data-uid='ccc'
             data-testid='ccc'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -325,13 +325,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         <>  
           <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
             <div
-              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
               data-uid='bbb'
               data-testid='bbb'
             />
           </div>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
             data-uid='ccc'
             data-testid='ccc'
           />
@@ -356,13 +356,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       <>  
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
         </div>
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
           data-uid='ccc'
           data-testid='ccc'
         />
@@ -396,13 +396,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         <>  
           <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
             <div
-              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
               data-uid='bbb'
               data-testid='bbb'
             />
           </div>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
             data-uid='ccc'
             data-testid='ccc'
           />
@@ -427,12 +427,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       <>  
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa' />
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 50, height: 50 }}
           data-uid='ccc'
           data-testid='ccc'
         >
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 0, top: 0, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -467,13 +467,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         <>  
           <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
             <div
-              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
               data-uid='bbb'
               data-testid='bbb'
             />
           </div>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 300, height: 300 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 300, height: 300 }}
             data-uid='ccc'
             data-testid='ccc'
           />
@@ -498,12 +498,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       <>  
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa' />
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -960, top: -950, width: 300, height: 300 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: -960, top: -950, width: 300, height: 300 }}
           data-uid='ccc'
           data-testid='ccc'
         >
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 0, top: 0, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -537,12 +537,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 100 }}
             data-uid='bbb'
             data-testid='bbb'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
             data-uid='ccc'
           >
             Can't drop here
@@ -567,12 +567,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     return (
       <div style={{width: '100%', height: '100%'}} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 200, width: 200, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 200, width: 200, height: 100 }}
           data-uid='bbb'
           data-testid='bbb'
         />
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
           data-uid='ccc'
         >
           Can't drop here
@@ -613,7 +613,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     return (
       <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${left}, top: ${top}, width: elementWidth, height: 120 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${left}, top: ${top}, width: elementWidth, height: 120 }}
           data-uid='bbb'
           data-testid='bbb'
         />

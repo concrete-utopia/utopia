@@ -168,7 +168,7 @@ export var ${BakedInStoryboardVariableName} = (
         />
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -250,7 +250,7 @@ export var ${BakedInStoryboardVariableName} = (
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -384,7 +384,7 @@ export var ${BakedInStoryboardVariableName} = (
         />
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -546,7 +546,7 @@ export var ${BakedInStoryboardVariableName} = (
         </div>
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -681,7 +681,7 @@ export var ${BakedInStoryboardVariableName} = (
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             height: 65,
             width: 66,
             position: 'absolute',
@@ -747,7 +747,7 @@ export var ${BakedInStoryboardVariableName} = (
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               height: 65,
               width: 66,
               position: 'absolute',

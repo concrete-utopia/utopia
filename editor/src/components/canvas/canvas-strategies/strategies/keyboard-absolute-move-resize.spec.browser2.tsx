@@ -506,7 +506,7 @@ export var App = (props) => {
     >
       <View
         style={{
-          backgroundColor: '#aaaaaa33',
+          backgroundColor: '#0091FFAA',
           position: 'absolute',
 `
   const suffix = `        }}
@@ -515,7 +515,7 @@ export var App = (props) => {
       />
       <View
         style={{
-          backgroundColor: '#aaaaaa33',
+          backgroundColor: '#0091FFAA',
           position: 'absolute',
           left: 40,
           top: 300,

@@ -16,7 +16,7 @@ describe('updating style properties keeps the original order', () => {
       <div style={{ ...props.style, position: 'absolute' }} data-uid='aaa'>
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             width: 256,
             height: 202,
             paddingRight: 15,
@@ -43,7 +43,7 @@ describe('updating style properties keeps the original order', () => {
         `<div style={{ ...props.style, position: 'absolute' }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 256,
               height: 202,
               paddingRight: 30,

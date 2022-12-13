@@ -45,7 +45,7 @@ describe('Padding resize strategy', () => {
             data-uid='mydiv'
             data-testid='mydiv'
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               position: 'absolute',
               left: 28,
               top: 28,
@@ -84,7 +84,7 @@ describe('Padding resize strategy', () => {
           data-uid='mydiv'
           data-testid='mydiv'
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             position: 'absolute',
             left: 28,
             top: 28,
@@ -94,7 +94,7 @@ describe('Padding resize strategy', () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 22,
               height: 22,
             }}
@@ -128,7 +128,7 @@ describe('Padding resize strategy', () => {
       makeTestProjectCodeWithSnippet(`<div
       data-testid='mydiv'
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 28,
         top: 28,
@@ -660,7 +660,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#aaaaaa33',
+          backgroundColor: '#0091FFAA',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -671,7 +671,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             width: '100%',
             height: '100%',
           }}
@@ -690,7 +690,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#aaaaaa33',
+          backgroundColor: '#0091FFAA',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -701,7 +701,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             width: '100%',
             height: '100%',
           }}

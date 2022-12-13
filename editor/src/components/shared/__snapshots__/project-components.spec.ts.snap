@@ -69,7 +69,7 @@ Array [
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
-                  "backgroundColor": "#aaaaaa33",
+                  "backgroundColor": "#0091FFAA",
                   "position": "absolute",
                 },
               },
@@ -496,7 +496,7 @@ Array [
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
-                  "backgroundColor": "#aaaaaa33",
+                  "backgroundColor": "#0091FFAA",
                   "position": "absolute",
                 },
               },

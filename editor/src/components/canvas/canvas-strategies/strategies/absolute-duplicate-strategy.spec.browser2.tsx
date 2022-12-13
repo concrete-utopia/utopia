@@ -35,7 +35,7 @@ describe('Absolute Duplicate Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -54,12 +54,12 @@ describe('Absolute Duplicate Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='hello'
             data-testid='bbb'
           />
@@ -73,7 +73,7 @@ describe('Absolute Duplicate Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -92,12 +92,12 @@ describe('Absolute Duplicate Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='hello'
             data-testid='bbb'
           />

@@ -310,7 +310,7 @@ describe('Absolute Resize Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -330,7 +330,7 @@ describe('Absolute Resize Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 240, height: 95 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 240, height: 95 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -343,11 +343,11 @@ describe('Absolute Resize Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', width: 70, height: 30 }}
+            style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -367,11 +367,11 @@ describe('Absolute Resize Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', width: 70, height: 30 }}
+            style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 70, top: 30, width: 170, height: 140 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 70, top: 30, width: 170, height: 140 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -389,7 +389,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -420,7 +420,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: -42,
         top: 207,
@@ -443,7 +443,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -474,7 +474,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 133,
         top: 207,
@@ -601,7 +601,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -612,7 +612,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 174,
         top: 827,
@@ -646,7 +646,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: -9,
         top: 207,
@@ -657,7 +657,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 152,
         top: 799,
@@ -680,7 +680,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -691,7 +691,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 174,
         top: 827,
@@ -725,7 +725,7 @@ export var storyboard = (
     <div
       data-aspect-ratio-locked
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 133,
         top: 207,
@@ -736,7 +736,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 227,
         top: 799,
@@ -758,7 +758,7 @@ export var storyboard = (
   <Storyboard data-uid='storyboard'>
     <img
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -770,7 +770,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 174,
         top: 827,
@@ -803,7 +803,7 @@ export var storyboard = (
   <Storyboard data-uid='storyboard'>
     <img
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: -9,
         top: 207,
@@ -815,7 +815,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 152,
         top: 799,
@@ -837,7 +837,7 @@ export var storyboard = (
   <Storyboard data-uid='storyboard'>
     <img
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -849,7 +849,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 174,
         top: 827,
@@ -882,7 +882,7 @@ export var storyboard = (
   <Storyboard data-uid='storyboard'>
     <img
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 133,
         top: 207,
@@ -894,7 +894,7 @@ export var storyboard = (
     />
     <div
       style={{
-        backgroundColor: '#aaaaaa33',
+        backgroundColor: '#0091FFAA',
         position: 'absolute',
         left: 227,
         top: 799,
@@ -953,7 +953,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -983,11 +983,11 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#aaaaaa33', width: 70, height: 30 }}
+            style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />

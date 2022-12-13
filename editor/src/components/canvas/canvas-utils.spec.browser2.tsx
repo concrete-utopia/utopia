@@ -21,7 +21,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -40,7 +40,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -53,7 +53,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -72,7 +72,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -85,7 +85,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: '50%', height: '20%'  }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: '50%', height: '20%'  }}
           data-uid='bbb'
         />
       </View>
@@ -104,7 +104,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: '25%', height: '25%' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: '25%', height: '25%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -117,7 +117,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256 }}
           data-uid='bbb'
         />
       </View>
@@ -136,7 +136,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -149,7 +149,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
           data-uid='bbb'
         />
       </View>
@@ -168,7 +168,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           ${/** notice how the extraneous pins were removed automatically */ ''}
           data-uid='bbb'
         />
@@ -182,7 +182,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -201,7 +201,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
           data-uid='bbb'
         />
       </View>`,
@@ -214,7 +214,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33' }}
+          style={{ backgroundColor: '#0091FFAA' }}
           data-uid='bbb'
         />
       </View>
@@ -234,7 +234,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
-          style={{ backgroundColor: '#aaaaaa33', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -249,7 +249,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -268,7 +268,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -281,7 +281,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -300,7 +300,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -313,7 +313,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50, bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -332,7 +332,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 30, bottom: 30 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 30, bottom: 30 }}
             data-uid='bbb'
           />
         </View>`,
@@ -345,7 +345,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -364,7 +364,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 30, top: 20 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 30, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -377,7 +377,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', bottom: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -396,7 +396,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', bottom: 30, left: 20 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 30, left: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -409,7 +409,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', bottom: 50 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -428,7 +428,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', bottom: 30 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 30 }}
             data-uid='bbb'
           />
         </View>`,
@@ -441,7 +441,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: '50%', height: 25, left: 52, top: 61 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: 52, top: 61 }}
           data-uid='bbb'
         />
       </View>
@@ -460,7 +460,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: '50%', height: 25, left: 20, top: 20  }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: 20, top: 20  }}
           data-uid='bbb'
         />
       </View>`,
@@ -473,7 +473,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: '50%', height: 25, left: '10%', top: '5%' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: '10%', top: '5%' }}
           data-uid='bbb'
         />
       </View>
@@ -492,7 +492,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: '50%', height: 25, left: '2%', top: '16.3%' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: '2%', top: '16.3%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -505,7 +505,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -524,7 +524,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, right: 82, bottom: 61 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 82, bottom: 61 }}
           data-uid='bbb'
         />
       </View>`,
@@ -537,7 +537,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '10%', top: '15%', right: '10%', bottom: '25%' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '10%', top: '15%', right: '10%', bottom: '25%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -557,7 +557,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             position: 'absolute',
             left: '15%',
             top: '31.3%',
@@ -576,7 +576,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
           data-uid='bbb'
         />
       </View>
@@ -602,7 +602,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
                *  */ ''
             }
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               position: 'absolute',
               left: 20,
               top: 20,
@@ -623,7 +623,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50 }}
           data-uid='bbb'
         />
       </View>`,
@@ -642,7 +642,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, right: 82 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 82 }}
           data-uid='bbb'
         />
       </View>`,
@@ -657,7 +657,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -677,7 +677,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -690,7 +690,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, width: 100 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, width: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -712,7 +712,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, width: 100, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, width: 100, height: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -725,7 +725,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 150, bottom: 150 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 150, bottom: 150 }}
             data-uid='bbb'
           />
         </View>`,
@@ -745,7 +745,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
             data-uid='bbb'
           />
         </View>`,
@@ -760,7 +760,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 40, width: '50%', height: '20%'  }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 40, width: '50%', height: '20%'  }}
           data-uid='bbb'
         />
       </View>
@@ -780,7 +780,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 40, width: '45%', height: '17.5%' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 40, width: '45%', height: '17.5%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -792,7 +792,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33' }}
+          style={{ backgroundColor: '#0091FFAA' }}
           data-uid='bbb'
         />
       </View>
@@ -813,7 +813,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
-          style={{ backgroundColor: '#aaaaaa33', top: -60, height: 60, left: -50, width: 50 }}
+          style={{ backgroundColor: '#0091FFAA', top: -60, height: 60, left: -50, width: 50 }}
           data-uid='bbb'
         />
       </View>`,

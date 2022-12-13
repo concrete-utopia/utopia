@@ -227,7 +227,7 @@ describe('Inserting into absolute', () => {
           >
             <div              
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -307,7 +307,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -383,7 +383,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 15,
                 top: 5,
@@ -484,7 +484,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -45,
                 top: -45,
@@ -553,7 +553,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 5,
                 top: 5,
@@ -676,7 +676,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 width: 40,
                 height: 50,
                 contain: 'layout',
@@ -754,7 +754,7 @@ describe('Inserting into absolute', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 width: 100,
                 height: 100,
                 contain: 'layout',
@@ -853,7 +853,7 @@ describe('Forced inserting into Static', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 width: 20,
                 height: 20,
                 contain: 'layout',
@@ -933,7 +933,7 @@ describe('Forced inserting into Static', () => {
           >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               position: 'absolute',
               left: 5,
               top: 15,
@@ -1045,7 +1045,7 @@ describe('Inserting into flex row', () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 20,
               height: 300,
               contain: 'layout',
@@ -1124,7 +1124,7 @@ describe('Inserting into flex row', () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -1218,7 +1218,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 20,
               height: 300,
               contain: 'layout',
@@ -1296,7 +1296,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -1381,7 +1381,7 @@ describe('Inserting into flex row', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 20,
               height: 300,
               contain: 'layout',
@@ -1455,7 +1455,7 @@ describe('Inserting into flex row', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 10,
                 top: 10,
@@ -1528,7 +1528,7 @@ describe('Inserting into flex row', () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -40,
                 top: -40,
@@ -1605,7 +1605,7 @@ describe('Inserting into flex row', () => {
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             width: 20,
             height: 30,
             contain: 'layout',
@@ -1685,7 +1685,7 @@ describe('Inserting into flex row', () => {
       >
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
+            backgroundColor: '#0091FFAA',
             width: 100,
             height: 100,
             contain: 'layout',
@@ -1806,7 +1806,7 @@ describe('Inserting into flex column', () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 300,
               height: 20,
               contain: 'layout',
@@ -1887,7 +1887,7 @@ describe('Inserting into flex column', () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -1983,7 +1983,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 300,
               height: 20,
               contain: 'layout',
@@ -2064,7 +2064,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -2149,7 +2149,7 @@ describe('Inserting into flex column', () => {
           />
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
+              backgroundColor: '#0091FFAA',
               width: 300,
               height: 20,
               contain: 'layout',

@@ -71,7 +71,7 @@ describe('adjustNumberProperty', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(` <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 50, width: 250, height: 300 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 50, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`),
