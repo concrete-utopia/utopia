@@ -57,11 +57,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
           return (
             element.globalFrame != null &&
             isZeroSizedElement(element.globalFrame) &&
-            MetadataUtils.targetElementSupportsChildren(
-              store.editor.projectContents,
-              store.editor.canvas.openFile?.filename,
-              element,
-            )
+            MetadataUtils.targetElementSupportsChildren(store.editor.projectContents, element)
           )
         })
       } else {
