@@ -1290,10 +1290,6 @@ export const MetadataUtils = {
       ...spyOnlyElements,
     }
   },
-  isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
-    const originType = this.getElementOriginType(elements, target)
-    return originType === 'statically-defined'
-  },
   removeElementMetadataChild(
     target: ElementPath,
     metadata: ElementInstanceMetadataMap,

@@ -1800,7 +1800,7 @@ export const UPDATE_FNS = {
             editorForAction,
             derived,
           )
-          return MetadataUtils.isStaticElement(components, selectedView)
+          return !MetadataUtils.isElementGenerated(selectedView)
         })
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
