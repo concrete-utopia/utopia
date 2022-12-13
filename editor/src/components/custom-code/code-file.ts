@@ -580,13 +580,11 @@ export function findUnderlyingTargetComponentImplementationFromImportInfo(
     return null
   }
 
-  const projectContentsFlattened = treeToContents(projectContents)
-
   const variableName =
     importInfo.type === 'SAME_FILE_ORIGIN' ? importInfo.variableName : importInfo.exportedName
 
   // we have to find the element based on the top level name
-  const file = projectContentsFlattened[importInfo.filePath]
+  const file = getContentsTreeFileFromString(projectContents, importInfo.filePath)
   const parsedContents = getParsedContentsFromTextFile(file)
   if (parsedContents == null) {
     return null
