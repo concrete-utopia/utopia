@@ -168,13 +168,17 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
   }
 }
 
-function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return (
-    editor.focusedPanel === 'inspector' ||
-    editor.focusedPanel === 'dependencylist' ||
-    editor.floatingInsertMenu.insertMenuMode !== 'closed'
-  )
+function activeElementIsAnInput(): boolean {
+  const activeElement = document.activeElement
+  if (activeElement != null) {
+    const activeElementTag = activeElement.tagName.toLowerCase()
+    return activeElementTag === 'input' || activeElementTag === 'textarea'
+  }
+
+  return false
 }
+
+const activeElementIsNotAnInput = () => !activeElementIsAnInput()
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -185,7 +189,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 
   switch (key) {
     case 'tab':
-      if (!shouldTabBeHandledByBrowser(editor)) {
+      if (activeElementIsNotAnInput()) {
         event.preventDefault()
       }
       break
@@ -208,7 +212,9 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
     case 'left':
     case 'right':
       if (cmd) {
-        event.preventDefault()
+        if (activeElementIsNotAnInput()) {
+          event.preventDefault()
+        }
       }
       break
     case 'b':
@@ -340,7 +346,7 @@ export function handleKeyDown(
   }
 
   function getUIFileActions(): Array<EditorAction> {
-    if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
+    if (key === 'tab' && activeElementIsAnInput()) {
       return []
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
