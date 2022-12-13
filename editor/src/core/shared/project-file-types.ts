@@ -594,6 +594,18 @@ export function isParsedTextFile(projectFile: ProjectFile | null): projectFile i
   return isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
 }
 
+export function getParsedContentsFromTextFile(
+  projectFile: ProjectFile | null,
+): ParseSuccess | null {
+  if (!isTextFile(projectFile)) {
+    return null
+  }
+  if (!isParseSuccess(projectFile.fileContents.parsed)) {
+    return null
+  }
+  return projectFile.fileContents.parsed
+}
+
 interface EvalResult {
   module: {
     exports: unknown
