@@ -6,10 +6,12 @@ import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { PopupList } from '../../uuiui'
+import { FlexRow, PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+
+const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
 
 const hugContentsApplicable = (
   metadata: ElementInstanceMetadataMap,
@@ -17,14 +19,9 @@ const hugContentsApplicable = (
 ): boolean => MetadataUtils.getChildrenPaths(metadata, elementPath).length > 0
 
 const fillContainerApplicable = (elementPath: ElementPath): boolean =>
-  isStoryboardChild(elementPath)
+  !isStoryboardChild(elementPath)
 
 type FixedHugFill = 'fixed' | 'hug' | 'fill'
-
-interface Option {
-  value: 'fixed' | 'hug' | 'fill'
-  label: string
-}
 
 function selectOption(value: FixedHugFill): SelectOption {
   switch (value) {
@@ -105,12 +102,61 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   }
 
   return (
-    <PopupList
-      value={optionalMap(selectOption, currentValue) ?? undefined}
-      options={options}
-      onSubmitValue={NO_OP}
-      controlStyles={controlStylesRef.current}
-      containerMode='showBorderOnHover'
-    />
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 4,
+        padding: 4,
+      }}
+    >
+      <SimpleNumberInput
+        id={controlId('width')}
+        testId={controlId('width')}
+        value={4}
+        onSubmitValue={NO_OP}
+        onTransientSubmitValue={NO_OP}
+        onForcedSubmitValue={NO_OP}
+        controlStatus={undefined}
+        incrementControls={true}
+        stepSize={1}
+        minimum={0}
+        maximum={Infinity}
+        labelInner={'px'}
+        defaultUnitToHide={'px'}
+        focusOnMount={false}
+      />
+      <SimpleNumberInput
+        id={controlId('width')}
+        testId={controlId('width')}
+        value={4}
+        onSubmitValue={NO_OP}
+        onTransientSubmitValue={NO_OP}
+        onForcedSubmitValue={NO_OP}
+        controlStatus={undefined}
+        incrementControls={true}
+        stepSize={1}
+        minimum={0}
+        maximum={Infinity}
+        labelInner={'px'}
+        defaultUnitToHide={'px'}
+        focusOnMount={false}
+      />
+      <PopupList
+        value={optionalMap(selectOption, currentValue) ?? undefined}
+        options={options}
+        onSubmitValue={NO_OP}
+        controlStyles={controlStylesRef.current}
+        containerMode='showBorderOnHover'
+      />
+      <PopupList
+        value={optionalMap(selectOption, currentValue) ?? undefined}
+        options={options}
+        onSubmitValue={NO_OP}
+        controlStyles={controlStylesRef.current}
+        containerMode='showBorderOnHover'
+      />
+    </div>
   )
 })
