@@ -28,6 +28,8 @@ import {
   jsxArbitraryBlock,
   isJSXElement,
   JSXElement,
+  ImportInfo,
+  importedOrigin,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -322,6 +324,7 @@ function dummyInstanceDataForElementType(
   elementName: JSXElementName | string,
   elementPath: ElementPath,
   children: JSXElementChildren = [],
+  importInfo: ImportInfo | null = null,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -334,7 +337,7 @@ function dummyInstanceDataForElementType(
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
-    importInfo: null,
+    importInfo: importInfo,
   }
 }
 
@@ -668,6 +671,8 @@ export const App = (props) => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('App', []),
       EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+      [],
+      importedOrigin('/src/app.js', 'App', 'App'),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(false)
