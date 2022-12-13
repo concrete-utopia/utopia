@@ -60,6 +60,7 @@ export function getReparentTargetUnified(
     findParentByPaddedInsertionZone(
       metadata,
       validTargetparentsUnderPoint,
+      reparentSubjects,
       canvasScale,
       pointOnCanvas,
     )
@@ -239,9 +240,24 @@ function isTargetOutsideOfContainingComponentUnderMouse(
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
   validTargetparentsUnderPoint: ElementPath[],
+  reparentSubjects: ReparentSubjects,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
 ): ReparentTarget | null {
+  // with current parent under cursor filter ancestors from reparent targets
+  const currentParentUnderCursor =
+    reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? validTargetparentsUnderPoint.find((targetParent) =>
+          EP.isParentOf(targetParent, reparentSubjects.elements[0]),
+        ) ?? null
+      : null
+  const validTargetparentsUnderPointFiltered =
+    currentParentUnderCursor != null
+      ? validTargetparentsUnderPoint.filter(
+          (targetParent) => !EP.isDescendantOf(currentParentUnderCursor, targetParent),
+        )
+      : validTargetparentsUnderPoint
+
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
     const autolayoutDirection = singleAxisAutoLayoutContainerDirections(element, metadata)
     if (autolayoutDirection === 'non-single-axis-autolayout') {
@@ -260,7 +276,7 @@ function findParentByPaddedInsertionZone(
       path: element,
       directions: autolayoutDirection,
     }
-  }, [...validTargetparentsUnderPoint].reverse())
+  }, [...validTargetparentsUnderPointFiltered].reverse())
 
   // first try to find a flex element insertion area
   for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {

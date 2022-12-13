@@ -14,7 +14,7 @@ import {
 } from './inspector-strategies'
 
 interface FlexDirectionToggleProps {
-  flexDirection: FlexDirection
+  flexDirection: FlexDirection | null
 }
 
 export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {

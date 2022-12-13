@@ -8,7 +8,7 @@ import {
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
@@ -731,6 +731,88 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+    ])
+  })
+  it('moving one of the inner element over its parents edge while inside the parent area doesnt trigger reparent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(complexProject('row')),
+      'await-first-dom-report',
+    )
+    const child = await renderResult.renderedDOM.findByTestId('innerchild2')
+    const childRect = child.getBoundingClientRect()
+    const childCenter = {
+      x: childRect.x + childRect.width / 2,
+      y: childRect.y + childRect.height / 2,
+    }
+    const parent = await renderResult.renderedDOM.findByTestId('child1flex')
+    const parentRect = parent.getBoundingClientRect()
+    const parentRightEdge = {
+      x: parentRect.x + parentRect.width - PaddingThreshold / 3,
+      y: parentRect.y + parentRect.height / 2,
+    }
+
+    const dragDelta = windowPoint({
+      x: parentRightEdge.x - childCenter.x,
+      y: parentRightEdge.y - childCenter.y,
+    })
+    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+    ])
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+    ])
+  })
+  it('moving one of the inner element over its parents edge from the outside triggers reparent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(complexProject('row')),
+      'await-first-dom-report',
+    )
+    const child = await renderResult.renderedDOM.findByTestId('innerchild2')
+    const childRect = child.getBoundingClientRect()
+    const childCenter = {
+      x: childRect.x + childRect.width / 2,
+      y: childRect.y + childRect.height / 2,
+    }
+    const parent = await renderResult.renderedDOM.findByTestId('child1flex')
+    const parentRect = parent.getBoundingClientRect()
+    const parentRightEdge = {
+      x: parentRect.x + parentRect.width + PaddingThreshold / 3,
+      y: parentRect.y + parentRect.height / 2,
+    }
+
+    const dragDelta = windowPoint({
+      x: parentRightEdge.x - childCenter.x,
+      y: parentRightEdge.y - childCenter.y,
+    })
+    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
+    ])
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
     ])
   })
 })
