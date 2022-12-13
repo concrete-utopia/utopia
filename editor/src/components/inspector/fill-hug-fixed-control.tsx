@@ -115,17 +115,8 @@ function elementComputedDimension(
   elementPath: ElementPath | null,
 ): CSSNumber | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+  if (element == null) {
     return null
-  }
-
-  const property = defaultEither(
-    null,
-    getLayoutProperty(prop, right(element.element.value.props), ['style']),
-  )
-
-  if (property != null) {
-    return property
   }
 
   return defaultEither(null, parseCSSLengthPercent(element.computedStyle?.[prop]))
@@ -248,8 +239,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     return null
   }
 
-  const widthValue = optionalMap(pickAmount, widthCurrentValue) ?? undefined
-  const heightValue = optionalMap(pickAmount, heightCurrentValue) ?? undefined
+  const widthValue = optionalMap(pickFixedValue, widthCurrentValue) ?? undefined
+  const heightValue = optionalMap(pickFixedValue, heightCurrentValue) ?? undefined
 
   return (
     <div
@@ -328,7 +319,7 @@ function strategyForMode(
   }
 }
 
-function pickAmount(value: FixedHugFill): CSSNumber | undefined {
+function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
   if (value.type === 'fixed') {
     return value.amount
   }
