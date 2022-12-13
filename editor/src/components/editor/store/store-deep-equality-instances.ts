@@ -1669,7 +1669,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1688,6 +1688,8 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     CanvasPointKeepDeepEquality,
     (data) => data.spacePressed,
     BooleanKeepDeepEquality,
+    (data) => data.zeroDragPermitted,
+    BooleanKeepDeepEquality,
     (
       dragStart,
       drag,
@@ -1698,6 +1700,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       hasMouseMoved,
       accumulatedMovement,
       spacePressed,
+      zeroDragPermitted,
     ) => {
       return {
         type: 'DRAG',
@@ -1710,21 +1713,25 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         hasMouseMoved: hasMouseMoved,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: spacePressed,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
 
 export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (data) => data.point,
     CanvasPointKeepDeepEquality,
     (data) => data.modifiers,
     ModifiersKeepDeepEquality,
-    (point, modifiers) => {
+    (data) => data.zeroDragPermitted,
+    BooleanKeepDeepEquality,
+    (point, modifiers, zeroDragPermitted) => {
       return {
         type: 'HOVER',
         point: point,
         modifiers: modifiers,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )

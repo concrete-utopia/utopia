@@ -64,10 +64,15 @@ async function startDragUsingActions(
   dragDelta: CanvasVector,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
-  const startInteractionSession = createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
-    type: 'RESIZE_HANDLE',
-    edgePosition: edgePosition,
-  })
+  const startInteractionSession = createInteractionViaMouse(
+    zeroCanvasPoint,
+    emptyModifiers,
+    {
+      type: 'RESIZE_HANDLE',
+      edgePosition: edgePosition,
+    },
+    false,
+  )
   await renderResult.dispatch(
     [CanvasActions.createInteractionSession(startInteractionSession)],
     false,

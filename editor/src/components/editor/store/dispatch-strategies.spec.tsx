@@ -139,6 +139,7 @@ describe('interactionCancel', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        false,
       ),
     )
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
@@ -172,6 +173,7 @@ describe('interactionStart', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        false,
       ),
     )
     const actualResult = interactionStart(
@@ -225,6 +227,7 @@ describe('interactionStart', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": false,
       }
     `)
   })
@@ -266,6 +269,7 @@ describe('interactionUpdate', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      false,
     )
 
     const editorStore = createEditorStore(
@@ -367,6 +371,7 @@ describe('interactionUpdate', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": false,
       }
     `)
   })
@@ -409,6 +414,7 @@ describe('interactionHardReset', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      false,
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -507,6 +513,7 @@ describe('interactionHardReset', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": false,
       }
     `)
   })
@@ -548,6 +555,7 @@ describe('interactionUpdate with user changed strategy', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      false,
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -660,6 +668,7 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": false,
       }
     `)
   })
@@ -743,6 +752,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        false,
       ),
     )
 
@@ -806,7 +816,12 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch(
       [
         CanvasActions.createInteractionSession(
-          createInteractionViaMouse(canvasPoint({ x: 0, y: 0 }), emptyModifiers, boundingArea()),
+          createInteractionViaMouse(
+            canvasPoint({ x: 0, y: 0 }),
+            emptyModifiers,
+            boundingArea(),
+            false,
+          ),
         ),
       ],
       true,

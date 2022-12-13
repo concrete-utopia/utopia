@@ -199,10 +199,15 @@ function handleCanvasEvent(
       if (model.editorState.canvas.interactionSession == null) {
         optionalDragStateAction = [
           CanvasActions.createInteractionSession(
-            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-              type: 'RESIZE_HANDLE',
-              edgePosition: { x: 1, y: 1 },
-            }),
+            createInteractionViaMouse(
+              event.canvasPositionRounded,
+              event.modifiers,
+              {
+                type: 'RESIZE_HANDLE',
+                edgePosition: { x: 1, y: 1 },
+              },
+              false,
+            ),
           ),
         ]
       } else if (
@@ -912,6 +917,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               position.canvasPositionRounded,
               emptyModifiers,
               boundingArea(),
+              false,
             ),
           )
 
@@ -1327,8 +1333,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               null,
             ),
           })
-        }
-        if (
+        } else if (
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
         ) {

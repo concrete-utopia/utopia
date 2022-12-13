@@ -14,7 +14,7 @@ export function createMouseInteractionForTests(
   drag: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   return updateInteractionViaMouse(
-    createInteractionViaMouse(mouseDownPoint, modifiers, activeControl),
+    createInteractionViaMouse(mouseDownPoint, modifiers, activeControl, false),
     'DRAG',
     drag,
     modifiers,

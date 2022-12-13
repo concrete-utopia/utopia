@@ -449,7 +449,10 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   } else {
     switch (interactionSession.interactionData.type) {
       case 'DRAG':
-        return !isNotYetStartedDragInteraction(interactionSession.interactionData)
+        return (
+          !isNotYetStartedDragInteraction(interactionSession.interactionData) ||
+          interactionSession.interactionData.zeroDragPermitted
+        )
       case 'KEYBOARD':
       case 'HOVER':
         return true

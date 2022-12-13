@@ -61,7 +61,7 @@ function useEnterDrawToInsertForElement(
       dispatch([
         enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null),
         CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(CanvasMousePositionRaw!, modifiers, boundingArea()),
+          createHoverInteractionViaMouse(CanvasMousePositionRaw!, modifiers, boundingArea(), true),
         ),
       ])
     },

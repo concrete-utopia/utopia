@@ -138,6 +138,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             canvasPositions.canvasPositionRaw,
             Modifier.modifiersForEvent(event),
             boundingArea(),
+            false,
           ),
         )
         dispatch([selectAction, dragAction], 'canvas')
