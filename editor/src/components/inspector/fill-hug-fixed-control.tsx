@@ -100,9 +100,9 @@ function detectFillHugFixedState(
     return { type: 'fill' }
   }
 
-  const parsed = parseCSSLengthPercent(prop)
-  if (isRight(parsed)) {
-    return { type: 'fixed', amount: parsed.value }
+  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+  if (parsed != null) {
+    return { type: 'fixed', amount: parsed }
   }
 
   return null
