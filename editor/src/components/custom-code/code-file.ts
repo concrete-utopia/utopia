@@ -625,29 +625,16 @@ export function findUnderlyingTargetComponentImplementation(
       )
       const elementName = element?.name.baseVariable
       if (element != null && elementName != null) {
-        const innerUnderlyingTarget = lookupElementImport(
+        const importedInfo = importedFromWhere(
+          currentFilePath,
           elementName,
-          underlyingTarget.filePath,
-          projectContents,
-          nodeModules,
-          element,
-          underlyingTarget.normalisedPath,
-          parseResult,
-          { droppedPathElements: null, newPath: null },
+          parseResult.topLevelElements,
+          parseResult.imports,
         )
-
-        if (
-          innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-          isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)
-        ) {
-          return (
-            innerUnderlyingTarget.textFile.fileContents.parsed.topLevelElements.find(
-              (tle): tle is UtopiaJSXComponent => {
-                return isUtopiaJSXComponent(tle) && tle.name === elementName
-              },
-            ) ?? null
-          )
-        }
+        return findUnderlyingTargetComponentImplementationFromImportInfo(
+          projectContents,
+          importedInfo,
+        )
       }
     }
   }
