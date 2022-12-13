@@ -49,7 +49,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
-  elementOriginType: ElementOriginType
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
@@ -268,7 +267,6 @@ export class NavigatorItemDndWrapper extends PureComponent<
           renamingTarget={this.props.renamingTarget}
           collapsed={this.props.collapsed}
           selected={this.props.selected}
-          elementOriginType={this.props.elementOriginType}
           elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop

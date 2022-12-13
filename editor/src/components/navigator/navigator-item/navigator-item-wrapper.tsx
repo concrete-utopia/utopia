@@ -198,7 +198,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     appropriateDropTargetHint: appropriateDropTargetHint,
     supportsChildren: supportsChildren,
     noOfChildren: noOfChildren,
-    elementOriginType: elementOriginType,
     staticElementName: deepReferenceStaticElementName,
     label: label,
     isElementVisible: isElementVisible,

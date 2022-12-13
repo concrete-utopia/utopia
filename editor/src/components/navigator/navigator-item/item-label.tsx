@@ -17,7 +17,6 @@ interface ItemLabelProps {
   suffix?: string
   inputVisible: boolean
   style?: CSSProperties
-  elementOriginType: ElementOriginType
 }
 
 interface ItemLabelState {
