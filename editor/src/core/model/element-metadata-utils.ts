@@ -60,14 +60,7 @@ import {
   zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import {
-  ElementOriginType,
-  Imports,
-  isUnknownOrGeneratedElement,
-  NodeModules,
-  PropertyPath,
-  ElementPath,
-} from '../shared/project-file-types'
+import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {

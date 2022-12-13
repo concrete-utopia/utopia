@@ -1,6 +1,6 @@
 import React from 'react'
 import { Component, CSSProperties } from 'react'
-import { ElementPath, ElementOriginType } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
