@@ -1395,7 +1395,7 @@ function toastOnGeneratedElementsTargeted(
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets, editor)
+  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
@@ -2871,24 +2871,8 @@ export const UPDATE_FNS = {
     let insertionAllowed: boolean = true
     if (action.pasteInto != null) {
       const pasteInto = action.pasteInto
-      const parentOriginType = withUnderlyingTargetFromEditorState(
-        action.pasteInto,
-        editor,
-        'unknown-element',
-        (targetParentSuccess) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
-            pasteInto,
-          )
-        },
-      )
-      switch (parentOriginType) {
-        case 'unknown-element':
-          insertionAllowed = false
-          break
-        default:
-          insertionAllowed = true
-      }
+      const parentGenerated = MetadataUtils.isElementGenerated(pasteInto)
+      insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
       const existingIDs = getAllUniqueUids(editor.projectContents)

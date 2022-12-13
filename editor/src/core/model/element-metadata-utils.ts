@@ -144,28 +144,9 @@ export const MetadataUtils = {
       }
     }
   },
-  anyUnknownOrGeneratedElements(
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null,
-    targets: Array<ElementPath>,
-  ): boolean {
-    return targets.some((target) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        target,
-        projectContents,
-        nodeModules,
-        openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingDynamicTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+  isElementGenerated(target: ElementPath): boolean {
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    return EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
