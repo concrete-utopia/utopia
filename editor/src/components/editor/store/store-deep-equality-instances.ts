@@ -129,7 +129,6 @@ import {
   JSXAttributesEntry,
   jsxAttributesEntry,
   ImportInfo,
-  FoundImportInfo,
   JSXAttributesSpread,
   jsxAttributesSpread,
   JSXAttributesPart,
@@ -166,6 +165,10 @@ import {
   unparsedCode,
   JSXElementWithoutUID,
   jsxElementWithoutUID,
+  SameFileOrigin,
+  sameFileOrigin,
+  ImportedOrigin,
+  importedOrigin,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -356,6 +359,7 @@ import {
   resizeHandle,
   ResizeHandle,
   BorderRadiusResizeHandle,
+  ZeroDragPermitted,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -1184,27 +1188,45 @@ export function SidesKeepDeepEquality(
   }
 }
 
-export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = EitherKeepDeepEquality<
-  'NOT_IMPORTED',
-  FoundImportInfo
->(
+const SameFileOriginKeepDeepEquality: KeepDeepEqualityCall<SameFileOrigin> = combine2EqualityCalls(
+  (i) => i.filePath,
   createCallWithTripleEquals(),
-  combine3EqualityCalls(
-    (i) => i.variableName,
-    createCallWithTripleEquals(),
-    (info) => info.originalName,
-    createCallWithTripleEquals(),
-    (info) => info.path,
-    createCallWithTripleEquals(),
-    (variableName, originalName, path): FoundImportInfo => {
-      return {
-        variableName: variableName,
-        originalName: originalName,
-        path: path,
-      }
-    },
-  ),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  sameFileOrigin,
 )
+
+const ImportedOriginKeepDeepEquality: KeepDeepEqualityCall<ImportedOrigin> = combine3EqualityCalls(
+  (i) => i.filePath,
+  createCallWithTripleEquals(),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  (i) => i.exportedName,
+  createCallWithTripleEquals(),
+  importedOrigin,
+)
+
+export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SAME_FILE_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return SameFileOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMPORTED_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return ImportedOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
@@ -1649,7 +1671,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1668,6 +1690,8 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     CanvasPointKeepDeepEquality,
     (data) => data.spacePressed,
     BooleanKeepDeepEquality,
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
     (
       dragStart,
       drag,
@@ -1678,6 +1702,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       hasMouseMoved,
       accumulatedMovement,
       spacePressed,
+      zeroDragPermitted,
     ) => {
       return {
         type: 'DRAG',
@@ -1690,21 +1715,25 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         hasMouseMoved: hasMouseMoved,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: spacePressed,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
 
 export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (data) => data.point,
     CanvasPointKeepDeepEquality,
     (data) => data.modifiers,
     ModifiersKeepDeepEquality,
-    (point, modifiers) => {
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
+    (point, modifiers, zeroDragPermitted) => {
       return {
         type: 'HOVER',
         point: point,
         modifiers: modifiers,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )

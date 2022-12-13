@@ -801,7 +801,12 @@ function addCreateHoverInteractionActionToSwitchModeAction(
     ? [
         switchModeAction,
         CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(CanvasMousePositionRaw, modifiers, boundingArea()),
+          createHoverInteractionViaMouse(
+            CanvasMousePositionRaw,
+            modifiers,
+            boundingArea(),
+            'zero-drag-not-permitted',
+          ),
         ),
       ]
     : [switchModeAction]

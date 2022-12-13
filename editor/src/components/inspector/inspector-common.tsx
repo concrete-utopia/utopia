@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { FlexDirection } from './common/css-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -61,21 +61,84 @@ function stringToFlexDirection(str: string | null): FlexDirection | null {
   }
 }
 
-export function detectFlexAlignJustifyContent(
+export interface JustifyContentFlexAlignemt {
+  justifyContent: FlexJustifyContent
+  alignItems: FlexAlignment
+}
+
+type Detect<T> = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+) => T | null
+
+export const DefaultFlexDirection: FlexDirection = 'row'
+
+function detectFlexDirectionOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): [FlexJustifyContent, FlexAlignment] {
+): FlexDirection | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return ['flex-start', 'flex-start']
+  if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
+    return null
   }
 
-  const justifyContent: FlexJustifyContent =
-    getFlexJustifyContent(element.computedStyle?.['justifyContent'] ?? null) ?? 'flex-start'
-  const flexAlignment: FlexAlignment =
-    getFlexAlignment(element.computedStyle?.['alignItems'] ?? null) ?? 'flex-start'
+  return (
+    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection
+  )
+}
 
-  return [justifyContent, flexAlignment]
+export const detectFlexDirection: Detect<FlexDirection> = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+) => {
+  const allDetectedMeasurements = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
+  return allElemsEqual(allDetectedMeasurements, (l, r) => l === r)
+    ? allDetectedMeasurements[0]
+    : null
+}
+
+function detectFlexAlignJustifyContentOne(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): JustifyContentFlexAlignemt | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || !MetadataUtils.isFlexLayoutedContainer(element)) {
+    return null
+  }
+
+  const justifyContent: FlexJustifyContent | null = getFlexJustifyContent(
+    element.computedStyle?.['justifyContent'] ?? null,
+  )
+  const alignItems: FlexAlignment | null = getFlexAlignment(
+    element.computedStyle?.['alignItems'] ?? null,
+  )
+
+  if (justifyContent == null || alignItems == null) {
+    return null
+  }
+
+  return { justifyContent, alignItems }
+}
+
+export const detectFlexAlignJustifyContent: Detect<JustifyContentFlexAlignemt> = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+) => {
+  const allDetectedMeasurements = mapDropNulls(
+    (path) => detectFlexAlignJustifyContentOne(metadata, path),
+    elementPaths,
+  )
+
+  if (allDetectedMeasurements.length !== elementPaths.length) {
+    return null
+  }
+
+  return allElemsEqual(
+    allDetectedMeasurements,
+    (l, r) => l.alignItems === r.alignItems && l.justifyContent === r.justifyContent,
+  )
+    ? allDetectedMeasurements[0]
+    : null
 }
 
 export function filterKeepFlexContainers(
@@ -87,17 +150,33 @@ export function filterKeepFlexContainers(
   )
 }
 
-export function detectFlexDirection(
+export function detectAreElementsFlexContainers(
   metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexDirection {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return 'row'
-  }
-
-  return stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? 'row'
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return elementPaths.every((path) =>
+    MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
 }
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
+
+export function justifyContentAlignItemsEquals(
+  flexDirection: FlexDirection,
+  left: JustifyContentFlexAlignemt,
+  right: JustifyContentFlexAlignemt,
+): boolean {
+  const { justifyContent, alignItems } = left
+  return isFlexColumn(flexDirection)
+    ? alignItems === right.justifyContent && justifyContent === right.alignItems
+    : alignItems === right.alignItems && justifyContent === right.justifyContent
+}
+
+function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
+  if (objects.length === 0) {
+    return false
+  }
+
+  return objects.slice(1).every((obj) => areEqual(objects[0], obj))
+}

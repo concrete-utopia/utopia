@@ -84,7 +84,7 @@ export const ComponentInfoBox = () => {
       state.editor.jsxMetadata,
       target,
     )
-    return maybeEitherToMaybe(componentMetadata?.importInfo)?.path
+    return componentMetadata?.importInfo?.filePath
   }, 'ComponentSectionInner componentPackageName')
 
   const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`

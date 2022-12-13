@@ -119,7 +119,7 @@ async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Pro
 }
 
 async function checkAndResetIfMailboxCleared(mailbox: Mailbox): Promise<void> {
-  const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(inbox)
+  const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(mailbox)
   if (mailboxClearedAtTimestamp > mailboxLastClearedTimestamp) {
     // The mailbox was cleared since we last polled it, meaning our last consumed message
     // count is now invalid, and we need to start consuming messages from the beginning again.
@@ -141,12 +141,18 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
   if (messagesToProcess.length > 0) {
-    const messages = await Promise.all(
-      messagesToProcess.map((m) => receiveMessage(m, parseMessage)),
-    )
-    lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
-    await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
-    messages.forEach(onMessageCallback)
+    try {
+      const messages = await Promise.all(
+        messagesToProcess.map((m) => receiveMessage(m, parseMessage)),
+      )
+      lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
+      await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
+      messages.forEach(onMessageCallback)
+    } catch (e) {
+      // It's possible that the mailbox was cleared whilst something was trying to read the messages.
+      // If that happens, we bail out of this poll, and the call `checkAndResetIfMailboxCleared` will
+      // correct things on the next poll
+    }
     resetPollingFrequency()
   } else {
     reducePollingFrequency()
@@ -187,10 +193,15 @@ async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): P
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
   if (lastConsumedMessageValueExists) {
-    const lastConsumedMessageName = await readFileSavedContentAsUTF8(
-      lastConsumedMessageKey(mailbox),
-    )
-    return Number.parseInt(lastConsumedMessageName)
+    try {
+      const lastConsumedMessageName = await readFileSavedContentAsUTF8(
+        lastConsumedMessageKey(mailbox),
+      )
+      return Number.parseInt(lastConsumedMessageName)
+    } catch (e) {
+      // This can be cleared by the VSCode Bridge in between the above line and now, in which case we want to consume all messages from the start
+      return -1
+    }
   } else {
     return -1
   }

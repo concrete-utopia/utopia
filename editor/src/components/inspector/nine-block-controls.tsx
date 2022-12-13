@@ -10,9 +10,11 @@ import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
+  DefaultFlexDirection,
   detectFlexAlignJustifyContent,
   filterKeepFlexContainers,
   isFlexColumn,
+  justifyContentAlignItemsEquals,
   StartCenterEnd,
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
@@ -94,16 +96,15 @@ const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyConten
 const DotSize = 2
 
 interface NineBlockControlProps {
-  flexDirection: FlexDirection
+  flexDirection: FlexDirection | null
 }
 
 export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirection }) => {
   const colorTheme = useColorTheme()
 
   const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
-  const [flexJustifyContent, flexAlignment] = useEditorState(
-    (store) =>
-      detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)[0]),
+  const detectedJustifyContentFlexAlignment = useEditorState(
+    (store) => detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)),
     'NineBlockControl [flexJustifyContent, flexAlignment]',
   )
 
@@ -116,14 +117,16 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
+  const flexDirectionWithDefault: FlexDirection = flexDirection ?? DefaultFlexDirection
+
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
-      const strategies = isFlexColumn(flexDirection)
+      const strategies = isFlexColumn(flexDirectionWithDefault)
         ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
         : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategies)
     },
-    [dispatch, flexDirection, metadataRef, selectedViewsRef],
+    [dispatch, flexDirectionWithDefault, metadataRef, selectedViewsRef],
   )
 
   if (nFlexContainers === 0) {
@@ -145,9 +148,13 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
       }}
     >
       {NineBlockSectors.map(([alignItems, justifyContent], index) => {
-        const isSelected = isFlexColumn(flexDirection)
-          ? alignItems === flexJustifyContent && justifyContent === flexAlignment
-          : alignItems === flexAlignment && justifyContent === flexJustifyContent
+        const isSelected =
+          detectedJustifyContentFlexAlignment != null &&
+          justifyContentAlignItemsEquals(
+            flexDirectionWithDefault,
+            { alignItems, justifyContent },
+            detectedJustifyContentFlexAlignment,
+          )
         return (
           <div
             onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
@@ -176,8 +183,8 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
               }}
             >
               <Slabs
-                {...slabAlignment(justifyContent, alignItems, flexDirection)}
-                flexDirection={flexDirection}
+                {...slabAlignment(justifyContent, alignItems, flexDirectionWithDefault)}
+                flexDirection={flexDirectionWithDefault}
                 bgColor={colorTheme.fg5.value}
               />
             </div>

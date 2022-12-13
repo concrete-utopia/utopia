@@ -444,7 +444,6 @@ export function useGetSelectableViewsForSelectMode() {
       componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
-      focusedElementPath: store.editor.focusedElementPath,
       lockedElements: store.editor.lockedElements,
     }
   })
@@ -674,7 +673,12 @@ function useSelectOrLiveModeSelectAndHover(
           if (event.button !== 2 && event.type !== 'mouseup') {
             editorActions.push(
               CanvasActions.createInteractionSession(
-                createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
+                createInteractionViaMouse(
+                  start,
+                  Modifier.modifiersForEvent(event),
+                  boundingArea(),
+                  'zero-drag-not-permitted',
+                ),
               ),
             )
           }
@@ -696,6 +700,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
+            editorActions.push(CanvasActions.clearInteractionSession(false))
             editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
         }
