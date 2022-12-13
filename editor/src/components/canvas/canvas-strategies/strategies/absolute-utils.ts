@@ -26,7 +26,6 @@ export function honoursPropsPosition(
 ): boolean {
   return MetadataUtils.targetHonoursPropsPosition(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )
 }
