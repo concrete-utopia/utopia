@@ -38,10 +38,6 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
 
     currentElement.focus()
 
-    currentElement.addEventListener('blur', () => {
-      dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
-    })
-
     return () => {
       const content = currentElement.textContent
       if (content != null) {
@@ -59,12 +55,17 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [])
 
+  const onBlur = React.useCallback(() => {
+    dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
+  }, [dispatch])
+
   return (
     <span
       ref={myElement}
       onKeyDown={onKeyEvent}
       onKeyUp={onKeyEvent}
       onKeyPress={onKeyEvent}
+      onBlur={onBlur}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
     >
