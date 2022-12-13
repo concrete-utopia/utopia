@@ -1,8 +1,7 @@
 import React from 'react'
-import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
+import { defaultEither, isLeft, isRight, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -93,6 +92,18 @@ function detectFillHugFixedState(
   return null
 }
 
+function elementComputedDimension(
+  prop: 'width' | 'height',
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): number | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
+  }
+  return defaultEither(null, parseCSSLengthPercent(element.computedStyle?.[prop]))?.value ?? null
+}
+
 interface FillHugFixedControlProps {}
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
@@ -120,7 +131,17 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
-    'FillHugFixedControl currentValue',
+    'FillHugFixedControl widthCurrentValue',
+  )
+
+  const widthComputedValue = useEditorState(
+    (store) =>
+      elementComputedDimension(
+        'width',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      ) ?? 0,
+    'FillHugFixedControl widthComputedValue',
   )
 
   const heightCurrentValue = useEditorState(
@@ -130,16 +151,26 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
-    'FillHugFixedControl currentValue',
+    'FillHugFixedControl heightCurrentValue',
+  )
+
+  const heightComputedValue = useEditorState(
+    (store) =>
+      elementComputedDimension(
+        'height',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      ) ?? 0,
+    'FillHugFixedControl heightComputedValue',
   )
 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(cssNumber(420, 'px'), 'height', value)
+      const strategy = strategyForMode(cssNumber(heightComputedValue, 'px'), 'height', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [dispatch, heightComputedValue, metadataRef, selectedViewsRef],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -173,10 +204,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(cssNumber(420, 'px'), 'width', value)
+      const strategy = strategyForMode(cssNumber(widthComputedValue, 'px'), 'width', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [dispatch, metadataRef, selectedViewsRef, widthComputedValue],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
