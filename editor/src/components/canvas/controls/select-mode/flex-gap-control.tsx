@@ -288,7 +288,7 @@ function startInteraction(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
           flexGapHandle(),
-          false,
+          'zero-drag-not-permitted',
         ),
       ),
     ])

@@ -359,6 +359,7 @@ import {
   resizeHandle,
   ResizeHandle,
   BorderRadiusResizeHandle,
+  ZeroDragPermitted,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -1689,7 +1690,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     (data) => data.spacePressed,
     BooleanKeepDeepEquality,
     (data) => data.zeroDragPermitted,
-    BooleanKeepDeepEquality,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
     (
       dragStart,
       drag,
@@ -1725,7 +1726,7 @@ export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInt
     (data) => data.modifiers,
     ModifiersKeepDeepEquality,
     (data) => data.zeroDragPermitted,
-    BooleanKeepDeepEquality,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
     (point, modifiers, zeroDragPermitted) => {
       return {
         type: 'HOVER',

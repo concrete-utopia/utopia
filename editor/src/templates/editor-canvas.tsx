@@ -206,7 +206,7 @@ function handleCanvasEvent(
                 type: 'RESIZE_HANDLE',
                 edgePosition: { x: 1, y: 1 },
               },
-              false,
+              'zero-drag-not-permitted',
             ),
           ),
         ]
@@ -917,7 +917,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               position.canvasPositionRounded,
               emptyModifiers,
               boundingArea(),
-              false,
+              'zero-drag-not-permitted',
             ),
           )
 

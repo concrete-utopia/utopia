@@ -239,7 +239,7 @@ function startInteraction(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
           borderRadiusResizeHandle(corner),
-          false,
+          'zero-drag-not-permitted',
         ),
       ),
     ])

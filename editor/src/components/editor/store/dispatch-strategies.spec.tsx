@@ -139,7 +139,7 @@ describe('interactionCancel', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
-        false,
+        'zero-drag-not-permitted',
       ),
     )
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
@@ -173,7 +173,7 @@ describe('interactionStart', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
-        false,
+        'zero-drag-not-permitted',
       ),
     )
     const actualResult = interactionStart(
@@ -269,7 +269,7 @@ describe('interactionUpdate', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
-      false,
+      'zero-drag-not-permitted',
     )
 
     const editorStore = createEditorStore(
@@ -414,7 +414,7 @@ describe('interactionHardReset', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
-      false,
+      'zero-drag-not-permitted',
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -555,7 +555,7 @@ describe('interactionUpdate with user changed strategy', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
-      false,
+      'zero-drag-not-permitted',
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -752,7 +752,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
-        false,
+        'zero-drag-not-permitted',
       ),
     )
 
@@ -820,7 +820,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             canvasPoint({ x: 0, y: 0 }),
             emptyModifiers,
             boundingArea(),
-            false,
+            'zero-drag-not-permitted',
           ),
         ),
       ],

@@ -677,7 +677,7 @@ function useSelectOrLiveModeSelectAndHover(
                   start,
                   Modifier.modifiersForEvent(event),
                   boundingArea(),
-                  false,
+                  'zero-drag-not-permitted',
                 ),
               ),
             )

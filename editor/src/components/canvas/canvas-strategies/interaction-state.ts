@@ -26,6 +26,8 @@ import {
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
 
+export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
+
 export interface DragInteractionData {
   type: 'DRAG'
   dragStart: CanvasPoint
@@ -37,14 +39,14 @@ export interface DragInteractionData {
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
   spacePressed: boolean
-  zeroDragPermitted: boolean // Will still complete the interaction with no drag distance applied.
+  zeroDragPermitted: ZeroDragPermitted // Will still complete the interaction with no drag distance applied.
 }
 
 export interface HoverInteractionData {
   type: 'HOVER'
   point: CanvasPoint
   modifiers: Modifiers
-  zeroDragPermitted: boolean // Will still complete the interaction with no drag distance applied.
+  zeroDragPermitted: ZeroDragPermitted // Will still complete the interaction with no drag distance applied.
 }
 
 export interface KeyState {
@@ -174,7 +176,7 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-  zeroDragPermitted: boolean,
+  zeroDragPermitted: ZeroDragPermitted,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
@@ -203,7 +205,7 @@ export function createHoverInteractionViaMouse(
   mousePoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-  zeroDragPermitted: boolean,
+  zeroDragPermitted: ZeroDragPermitted,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {

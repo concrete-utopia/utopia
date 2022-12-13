@@ -451,7 +451,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
       case 'DRAG':
         return (
           !isNotYetStartedDragInteraction(interactionSession.interactionData) ||
-          interactionSession.interactionData.zeroDragPermitted
+          interactionSession.interactionData.zeroDragPermitted === 'zero-drag-permitted'
         )
       case 'KEYBOARD':
       case 'HOVER':

@@ -71,7 +71,7 @@ async function startDragUsingActions(
       type: 'RESIZE_HANDLE',
       edgePosition: edgePosition,
     },
-    false,
+    'zero-drag-not-permitted',
   )
   await renderResult.dispatch(
     [CanvasActions.createInteractionSession(startInteractionSession)],

@@ -239,7 +239,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
                 startPoint,
                 Modifier.modifiersForEvent(event),
                 reorderSlider(),
-                false,
+                'zero-drag-not-permitted',
               ),
             ),
           ],
