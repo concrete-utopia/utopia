@@ -99,10 +99,7 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
-import {
-  findUnderlyingTargetComponentImplementation,
-  findUnderlyingTargetComponentImplementationFromImportInfo,
-} from '../../components/custom-code/code-file'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,

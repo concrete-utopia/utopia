@@ -88,7 +88,6 @@ import {
 import { default as Utils } from '../../../utils/utils'
 import { descriptionParseError, ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
-import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
 import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
