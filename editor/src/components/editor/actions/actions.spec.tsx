@@ -1462,7 +1462,7 @@ describe('INSERT_INSERTABLE', () => {
               <div style={{ ...props.style }}>
                 <div
                   style={{
-                    backgroundColor: '#0091FFAA',
+                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                   }}
                 >
