@@ -15,7 +15,7 @@ interface TextEditorProps {
 }
 
 export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: TextEditorProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'useEditorState dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -26,15 +26,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       return
     }
 
-    const range = document.createRange()
-    range.selectNodeContents(currentElement)
-    range.collapse(false)
-
-    const selection = window.getSelection()
-    if (selection != null) {
-      selection.removeAllRanges()
-      selection.addRange(range)
-    }
+    setSelectionToEnd(currentElement)
 
     currentElement.focus()
 
@@ -72,4 +64,16 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       {firstTextProp}
     </span>
   )
+}
+
+function setSelectionToEnd(element: HTMLSpanElement) {
+  const range = document.createRange()
+  range.selectNodeContents(element)
+  range.collapse(false)
+
+  const selection = window.getSelection()
+  if (selection != null) {
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
 }
