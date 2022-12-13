@@ -30,6 +30,7 @@ import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-path
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { getUtopiaID } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
+import { InteractionLifecycle } from '../canvas-strategy-types'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -72,6 +73,7 @@ export function getReparentOutcome(
   toReparent: ToReparent,
   targetParent: ElementPath | null,
   whenToRun: 'always' | 'on-complete',
+  strategyLifecycle: InteractionLifecycle,
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
   let newParent: ElementPath
@@ -127,7 +129,7 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, newParent))
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent, strategyLifecycle))
       newPath = EP.appendToPath(newParent, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':

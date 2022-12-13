@@ -8,24 +8,28 @@ import {
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
   newParent: ElementPath
+  strategyLifecycle: InteractionLifecycle
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   newParent: ElementPath,
+  strategyLifecycle: InteractionLifecycle,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     newParent: newParent,
+    strategyLifecycle: strategyLifecycle,
   }
 }
 
@@ -49,7 +53,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
         ) => {
           if (underlyingFilePathTarget === underlyingFilePathNewParent) {
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, components)
+            const withElementRemoved =
+              command.strategyLifecycle === 'end-interaction'
+                ? removeElementAtPath(command.target, components)
+                : components
 
             const withElementInserted = insertElementAtPath(
               editorState.projectContents,

@@ -246,6 +246,7 @@ function collectSetLayoutPropCommands(
         pathToReparent(path),
         targetParent,
         'always',
+        'end-interaction',
       )
       if (outcomeResult != null) {
         commands.push(...outcomeResult.commands)

@@ -27,7 +27,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement('always', targetPath, newParentPath)
+    const reparentCommand = reparentElement('always', targetPath, newParentPath, 'end-interaction')
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
@@ -77,7 +77,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement('always', targetPath, newParentPath)
+    const reparentCommand = reparentElement('always', targetPath, newParentPath, 'end-interaction')
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 

@@ -27,6 +27,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionLifecycle,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
@@ -90,8 +91,13 @@ export function baseReparentAsStaticStrategy(
         }),
       ],
       fitness: fitness,
-      apply: () => {
-        return applyStaticReparent(canvasState, interactionSession, reparentTarget)
+      apply: (strategyLifecycle) => {
+        return applyStaticReparent(
+          canvasState,
+          interactionSession,
+          reparentTarget,
+          strategyLifecycle,
+        )
       },
     }
   }
@@ -121,6 +127,7 @@ function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   reparentResult: ReparentTarget,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -148,10 +155,8 @@ function applyStaticReparent(
             newParent,
           )
 
-          const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
-            newParent,
-            EP.parentPath(target),
-          )
+          const hasCommonAncestor = EP.getCommonParent([newParent, EP.parentPath(target)]) != null
+
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
             canvasState.builtInDependencies,
@@ -161,6 +166,7 @@ function applyStaticReparent(
             pathToReparent(target),
             newParent,
             'always',
+            strategyLifecycle,
           )
 
           if (outcomeResult != null) {
@@ -196,7 +202,7 @@ function applyStaticReparent(
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                newParentADescendantOfCurrentParent
+                hasCommonAncestor
                   ? wildcardPatch('mid-interaction', {
                       hiddenInstances: { $push: [target] },
                     })
