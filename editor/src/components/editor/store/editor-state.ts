@@ -143,7 +143,7 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { defaultConfig, UtopiaVSCodeConfig, ProjectIDPlaceholderPrefix } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
 import { MapLike } from 'typescript'
@@ -685,7 +685,7 @@ export type VSCodeBridgeId = VSCodeBridgeIdDefault | VSCodeBridgeIdProjectId
 export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
   switch (bridgeId.type) {
     case 'VSCODE_BRIDGE_ID_DEFAULT':
-      return bridgeId.defaultID
+      return `${ProjectIDPlaceholderPrefix}_${bridgeId.defaultID}`
     case 'VSCODE_BRIDGE_ID_PROJECT_ID':
       return bridgeId.projectID
     default:
