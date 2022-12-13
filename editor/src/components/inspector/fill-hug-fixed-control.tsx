@@ -26,6 +26,22 @@ const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
 type FixedHugFill = { type: 'fixed'; amount: CSSNumber } | { type: 'hug' } | { type: 'fill' }
 type FixedHugFillMode = FixedHugFill['type']
 
+function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
+  if (a === undefined && b === undefined) {
+    return true
+  }
+
+  if (a?.type !== b?.type) {
+    return false
+  }
+
+  if (a?.type === 'fixed' && b?.type === 'fixed') {
+    return a.amount.value === b.amount.value && a.amount.unit === b.amount.unit
+  }
+
+  return true
+}
+
 function selectOption(value: FixedHugFillMode): SelectOption {
   switch (value) {
     case 'fill':
@@ -36,7 +52,7 @@ function selectOption(value: FixedHugFillMode): SelectOption {
     case 'fixed':
       return {
         value: 'fixed',
-        label: 'Fixed width',
+        label: 'Fixed',
       }
     case 'hug':
       return {
@@ -107,8 +123,7 @@ function elementComputedDimension(
 interface FillHugFixedControlProps {}
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  // TODO: come up with better memo
-  const options = useEditorState((store) => {
+  const optionsRef = useRefEditorState((store) => {
     const selectedView = selectedViewsSelector(store).at(0)
     if (selectedView == null) {
       return null
@@ -118,7 +133,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       hugAvailable: hugContentsApplicable(metadata, selectedView),
       fillAvailable: fillContainerApplicable(selectedView),
     })
-  }, 'FillHugFixedControl options')
+  })
 
   const dispatch = useEditorState((store) => store.dispatch, 'FillHugFixedControl dispatch')
   const metadataRef = useRefEditorState(metadataSelector)
@@ -132,6 +147,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
     'FillHugFixedControl widthCurrentValue',
+    isFixedHugFillEqual,
   )
 
   const widthComputedValue = useEditorState(
@@ -152,6 +168,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
     'FillHugFixedControl heightCurrentValue',
+    isFixedHugFillEqual,
   )
 
   const heightComputedValue = useEditorState(
@@ -212,7 +229,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
 
-  if (options == null) {
+  if (optionsRef.current == null) {
     return null
   }
 
@@ -231,7 +248,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     >
       <PopupList
         value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
-        options={options}
+        options={optionsRef.current}
         onSubmitValue={onSubmitWidth}
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
@@ -254,7 +271,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       />
       <PopupList
         value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
-        options={options}
+        options={optionsRef.current}
         onSubmitValue={onSubmitHeight}
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
