@@ -670,6 +670,10 @@ export function handleKeyDown(
         return []
       },
       [TEXT_EDIT_MODE]: () => {
+        if (!isFeatureEnabled('Text editing')) {
+          return []
+        }
+
         if (editor.selectedViews.length == 0) {
           return []
         }
