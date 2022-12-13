@@ -72,6 +72,7 @@ import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
+import { CanvasCommand } from '../canvas/commands/commands'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1068,6 +1069,10 @@ export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   imageDragSessionState: ImageDragSessionState
 }
+export interface ApplyCommandsAction {
+  action: 'APPLY_COMMANDS'
+  commands: CanvasCommand[]
+}
 
 export type EditorAction =
   | ClearSelection
@@ -1242,6 +1247,7 @@ export type EditorAction =
   | UpdateBranchContents
   | SetRefreshingDependencies
   | SetAssetChecksum
+  | ApplyCommandsAction
 
 export type DispatchPriority =
   | 'everyone'

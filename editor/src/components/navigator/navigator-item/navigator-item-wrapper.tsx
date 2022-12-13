@@ -46,96 +46,97 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
-const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
-  createSelector(
-    (store: EditorStorePatched) => store.editor.jsxMetadata,
-    (store: EditorStorePatched) => store.editor.selectedViews,
-    (store: EditorStorePatched) => store.editor.highlightedViews,
-    (store: EditorStorePatched) => store.derived.transientState,
-    (store: EditorStorePatched) => store.derived.navigatorTargets,
-    (store: EditorStorePatched) => store.derived.elementWarnings,
-    (store: EditorStorePatched) => store.editor.projectContents,
-    (store: EditorStorePatched) => store.editor.nodeModules.files,
-    (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
-    (store: EditorStorePatched) => store.editor.allElementProps,
-    (
-      jsxMetadata,
-      selectedViews,
-      highlightedViews,
-      transientState,
-      navigatorTargets,
-      elementWarnings,
+const navigatorItemWrapperSelector = createSelector(
+  (store: EditorStorePatched) => store.editor.jsxMetadata,
+  (store: EditorStorePatched) => store.editor.selectedViews,
+  (store: EditorStorePatched) => store.editor.highlightedViews,
+  (store: EditorStorePatched) => store.derived.transientState,
+  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  (store: EditorStorePatched) => store.derived.elementWarnings,
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (store: EditorStorePatched) => store.editor.nodeModules.files,
+  (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
+  (store: EditorStorePatched) => store.editor.allElementProps,
+  (_: EditorStorePatched, elementPath: ElementPath) => elementPath,
+  (
+    jsxMetadata,
+    selectedViews,
+    highlightedViews,
+    transientState,
+    navigatorTargets,
+    elementWarnings,
+    projectContents,
+    nodeModules,
+    currentFilePath,
+    allElementProps,
+    elementPath,
+  ) => {
+    const underlying = normalisePathToUnderlyingTarget(
       projectContents,
       nodeModules,
-      currentFilePath,
+      forceNotNull('Should be a file path.', currentFilePath),
+      elementPath,
+    )
+    const elementFilePath =
+      underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
+    const elementProjectFile =
+      elementFilePath == null
+        ? null
+        : getContentsTreeFileFromString(projectContents, elementFilePath)
+    const elementTextFile = isTextFile(elementProjectFile) ? elementProjectFile : null
+    let parsedElementFile: ParseSuccess | null = null
+    if (elementTextFile != null && isParseSuccess(elementTextFile.fileContents.parsed)) {
+      parsedElementFile = elementTextFile.fileContents.parsed
+    }
+    const fileState =
+      elementFilePath == null ? null : transientState.filesState?.[elementFilePath] ?? null
+    const topLevelElements =
+      fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
+    const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
+
+    const elementOriginType = MetadataUtils.getElementOriginType(
+      componentsIncludingScenes,
+      elementPath,
+    )
+    const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
+    const labelInner = MetadataUtils.getElementLabel(
       allElementProps,
-    ) => {
-      const underlying = normalisePathToUnderlyingTarget(
+      elementPath,
+      jsxMetadata,
+      staticName,
+    )
+    // FIXME: This is a mitigation for a situation where somehow this component re-renders
+    // when the navigatorTargets indicate it shouldn't exist...
+    const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
+    let noOfChildrenInner: number = 0
+    let supportsChildren: boolean = false
+    if (isInNavigatorTargets) {
+      noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
+      supportsChildren = MetadataUtils.targetSupportsChildren(
         projectContents,
-        nodeModules,
-        forceNotNull('Should be a file path.', currentFilePath),
-        elementPath,
-      )
-      const elementFilePath =
-        underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-      const elementProjectFile =
-        elementFilePath == null
-          ? null
-          : getContentsTreeFileFromString(projectContents, elementFilePath)
-      const elementTextFile = isTextFile(elementProjectFile) ? elementProjectFile : null
-      let parsedElementFile: ParseSuccess | null = null
-      if (elementTextFile != null && isParseSuccess(elementTextFile.fileContents.parsed)) {
-        parsedElementFile = elementTextFile.fileContents.parsed
-      }
-      const fileState =
-        elementFilePath == null ? null : transientState.filesState?.[elementFilePath] ?? null
-      const topLevelElements =
-        fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
-      const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
-
-      const elementOriginType = MetadataUtils.getElementOriginType(
-        componentsIncludingScenes,
-        elementPath,
-      )
-      const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(
-        allElementProps,
-        elementPath,
+        currentFilePath,
         jsxMetadata,
-        staticName,
+        elementPath,
       )
-      // FIXME: This is a mitigation for a situation where somehow this component re-renders
-      // when the navigatorTargets indicate it shouldn't exist...
-      const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
-      let noOfChildrenInner: number = 0
-      let supportsChildren: boolean = false
-      if (isInNavigatorTargets) {
-        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
-        supportsChildren = MetadataUtils.targetSupportsChildren(
-          projectContents,
-          currentFilePath,
-          jsxMetadata,
-          elementPath,
-        )
-      }
+    }
 
-      const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
+    const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
 
-      return {
-        staticElementName: staticName,
-        label: labelInner,
-        isSelected: EP.containsPath(elementPath, transientState.selectedViews ?? selectedViews),
-        isHighlighted: EP.containsPath(
-          elementPath,
-          transientState.highlightedViews ?? highlightedViews,
-        ),
-        noOfChildren: noOfChildrenInner,
-        supportsChildren: supportsChildren,
-        elementOriginType: elementOriginType,
-        elementWarnings: elementWarningsInner ?? defaultElementWarnings,
-      }
-    },
-  )
+    return {
+      staticElementName: staticName,
+      label: labelInner,
+      isSelected: EP.containsPath(elementPath, transientState.selectedViews ?? selectedViews),
+      isHighlighted: EP.containsPath(
+        elementPath,
+        transientState.highlightedViews ?? highlightedViews,
+      ),
+      noOfChildren: noOfChildrenInner,
+      supportsChildren: supportsChildren,
+      elementOriginType: elementOriginType,
+      elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+    }
+  },
+)
 
 const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
   JSXElementNameKeepDeepEqualityCall,
@@ -144,10 +145,6 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
-  const selector = React.useMemo(
-    () => navigatorItemWrapperSelectorFactory(props.elementPath),
-    [props.elementPath],
-  )
   const {
     isSelected,
     isHighlighted,
@@ -157,7 +154,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     staticElementName,
     label,
     elementWarnings,
-  } = useEditorState(selector, 'NavigatorItemWrapper')
+  } = useEditorState(
+    (store) => navigatorItemWrapperSelector(store, props.elementPath),
+    'NavigatorItemWrapper',
+  )
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
     useEditorState((store) => {

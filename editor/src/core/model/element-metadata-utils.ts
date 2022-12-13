@@ -42,6 +42,7 @@ import {
   isIntrinsicHTMLElement,
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
+  isImportedOrigin,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -186,11 +187,9 @@ export const MetadataUtils = {
     return (
       element != null &&
       element.importInfo != null &&
-      foldEither(
-        (_) => false,
-        (info) => info.path === 'utopia-api' && info.originalName === 'Scene',
-        element.importInfo,
-      )
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === 'utopia-api' &&
+      element.importInfo.exportedName === 'Scene'
     )
   },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {

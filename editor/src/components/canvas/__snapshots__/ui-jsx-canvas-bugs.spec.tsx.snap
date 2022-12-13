@@ -140,12 +140,10 @@ Object {
     },
     "globalFrame": null,
     "importInfo": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "originalName": "Scene",
-        "path": "utopia-api",
-        "variableName": "Scene",
-      },
+      "exportedName": "Scene",
+      "filePath": "utopia-api",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "Scene",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -245,8 +243,9 @@ Object {
     },
     "globalFrame": null,
     "importInfo": Object {
-      "type": "LEFT",
-      "value": "NOT_IMPORTED",
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "App",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
