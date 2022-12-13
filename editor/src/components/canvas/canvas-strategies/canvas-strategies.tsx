@@ -47,6 +47,7 @@ import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
 import { getDragTargets } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
+import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -127,6 +128,19 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
   dragToMoveMetaStrategy,
 ])
 
+const metaStrategy =
+  (strategy: CanvasStrategyFactory): MetaCanvasStrategy =>
+  (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ): Array<CanvasStrategy> => {
+    return mapDropNulls(
+      (factory) => factory(canvasState, interactionSession, customStrategyState),
+      [strategy],
+    )
+  }
+
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
@@ -134,6 +148,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
+  metaStrategy(keyboardSetFontSizeStrategy),
 ]
 
 export function pickCanvasStateFromEditorState(
