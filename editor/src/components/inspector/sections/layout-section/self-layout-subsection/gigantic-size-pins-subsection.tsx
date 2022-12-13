@@ -45,6 +45,8 @@ import {
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+import { FillHugFixedControl } from '../../../fill-hug-fixed-control'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -600,15 +602,19 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
 
   return (
     <>
-      <WidthHeightRow
-        layoutType={layoutType}
-        togglePin={togglePin}
-        framePins={framePins}
-        toggleMinMax={toggleMinMax}
-        parentFlexDirection={parentFlexDirection}
-        aspectRatioLocked={aspectRatioLocked}
-        toggleAspectRatioLock={toggleAspectRatioLock}
-      />
+      {isFeatureEnabled('Nine block control') ? (
+        <FillHugFixedControl />
+      ) : (
+        <WidthHeightRow
+          layoutType={layoutType}
+          togglePin={togglePin}
+          framePins={framePins}
+          toggleMinMax={toggleMinMax}
+          parentFlexDirection={parentFlexDirection}
+          aspectRatioLocked={aspectRatioLocked}
+          toggleAspectRatioLock={toggleAspectRatioLock}
+        />
+      )}
       {minMaxToggled ? (
         <>
           <MinimumsRow />
