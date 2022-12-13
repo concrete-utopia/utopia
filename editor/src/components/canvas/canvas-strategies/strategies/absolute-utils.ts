@@ -16,8 +16,7 @@ export function honoursPropsSize(
 ): boolean {
   return MetadataUtils.targetHonoursPropsSize(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )
 }
 

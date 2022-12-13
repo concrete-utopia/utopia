@@ -824,17 +824,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsSize(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
