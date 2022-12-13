@@ -214,7 +214,7 @@ describe('Escape Hatch Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -236,7 +236,7 @@ describe('Escape Hatch Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -250,7 +250,7 @@ describe('Escape Hatch Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
           data-uid='bbb'
         />
       </View>`,
@@ -267,7 +267,7 @@ describe('Escape Hatch Strategy', () => {
       `
     <View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
       <div
-        style={{ backgroundColor: '#0091FFAA', width: '50%', height: '20%' }}
+        style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%' }}
         data-uid='bbb'
       />
     </View>
@@ -282,7 +282,7 @@ describe('Escape Hatch Strategy', () => {
         `<View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: '50%',
               height: '20%',
               position: 'absolute',
@@ -306,7 +306,7 @@ describe('Escape Hatch Strategy', () => {
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: '50%',
           height: '20%',
           right: 200,
@@ -327,7 +327,7 @@ describe('Escape Hatch Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+          style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
           data-uid='bbb'
         />
       </View>`,
@@ -345,15 +345,15 @@ describe('Escape Hatch Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
-        style={{ backgroundColor: '#0091FFAA', width: 250, height: 100 }}
+        style={{ backgroundColor: '#aaaaaa33', width: 250, height: 100 }}
         data-uid='bbb'
       />
       <div
-        style={{ backgroundColor: '#0091FFAA', width: 125, height: 150, margin: 15 }}
+        style={{ backgroundColor: '#aaaaaa33', width: 125, height: 150, margin: 15 }}
         data-uid='ccc'
       />
       <div
-        style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
+        style={{ backgroundColor: '#aaaaaa33', width: 100, height: 50 }}
         data-uid='ddd'
       />
     </View>
@@ -368,7 +368,7 @@ describe('Escape Hatch Strategy', () => {
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 250,
             height: 100,
             position: 'absolute',
@@ -379,7 +379,7 @@ describe('Escape Hatch Strategy', () => {
         />
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 125,
             height: 50,
             margin: 15,
@@ -391,7 +391,7 @@ describe('Escape Hatch Strategy', () => {
           />
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 100,
             height: 50,
             position: 'absolute',

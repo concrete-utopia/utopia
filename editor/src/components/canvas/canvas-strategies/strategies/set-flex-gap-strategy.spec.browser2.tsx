@@ -27,7 +27,7 @@ export var storyboard = (
     <div
       data-testid='${DivTestId}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 167,
         top: 180,
@@ -69,7 +69,7 @@ export var storyboard = (
     <div
       data-testid='${DivTestId}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 167,
         top: 180,
@@ -81,7 +81,7 @@ export var storyboard = (
     >
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 102,
           height: 80,
           contain: 'layout',
@@ -90,7 +90,7 @@ export var storyboard = (
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 187,
           height: 150,
           contain: 'layout',
@@ -129,7 +129,7 @@ export var storyboard = (
     <div
       data-testid='${DivTestId}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 167,
         top: 180,
@@ -142,7 +142,7 @@ export var storyboard = (
     >
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 102,
           height: 80,
           contain: 'layout',
@@ -151,7 +151,7 @@ export var storyboard = (
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 187,
           height: 150,
           contain: 'layout',
@@ -479,7 +479,7 @@ export var storyboard = (
     <div
       data-testid='${DivTestId}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 167,
         top: 180,
@@ -493,7 +493,7 @@ export var storyboard = (
     >
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 102,
           height: 80,
           contain: 'layout',
@@ -502,7 +502,7 @@ export var storyboard = (
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 187,
           height: 150,
           contain: 'layout',
@@ -526,7 +526,7 @@ export var storyboard = (
     <div
       data-testid='${DivTestId}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 167,
         top: 180,
@@ -539,7 +539,7 @@ export var storyboard = (
     >
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 102,
           height: 80,
           contain: 'layout',
@@ -548,7 +548,7 @@ export var storyboard = (
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 187,
           height: 150,
           contain: 'layout',
@@ -597,7 +597,7 @@ function projectWithWrappedLayout(wrap: boolean): string {
       <div
         data-testid='${DivTestId}'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           width: 307,
           height: 234,
@@ -611,7 +611,7 @@ function projectWithWrappedLayout(wrap: boolean): string {
       >
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 77,
             height: 51,
             contain: 'layout',
@@ -620,7 +620,7 @@ function projectWithWrappedLayout(wrap: boolean): string {
         />
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 51,
             height: 88,
             contain: 'layout',
@@ -629,7 +629,7 @@ function projectWithWrappedLayout(wrap: boolean): string {
         />
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 40,
             height: 59,
             contain: 'layout',
@@ -638,7 +638,7 @@ function projectWithWrappedLayout(wrap: boolean): string {
         />
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 36,
             height: 52,
             contain: 'layout',

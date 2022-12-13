@@ -44,7 +44,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -58,7 +58,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: ${
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: ${
             250 + deltaW
           }, height: ${300 + deltaH} }}
           data-uid='bbb'
@@ -94,7 +94,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '300px' }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '300px' }}
         data-uid='bbb'
       />
     </View>
@@ -108,7 +108,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '${
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '${
             250 + deltaW
           }px', height: '${300 + deltaH}px' }}
           data-uid='bbb'
@@ -144,7 +144,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -158,7 +158,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: ${50 - deltaW}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${50 - deltaW}
           , bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
@@ -193,7 +193,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -207,7 +207,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, right: ${
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: ${
             50 - deltaW
           }, bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
@@ -244,7 +244,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250 + props.width, height: 300 + 5 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250 + props.width, height: 300 + 5 }}
         data-uid='bbb'
       />
     </View>

@@ -57,7 +57,7 @@ describe('Select Mode Selection', () => {
             <div
               data-uid='b'
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 overflow: 'visible',
                 left: 50,
@@ -69,7 +69,7 @@ describe('Select Mode Selection', () => {
               <div
               data-uid='c'
                 style={{
-                  backgroundColor: '#0091FFAA',
+                  backgroundColor: '#aaaaaa33',
                   position: 'absolute',
                   left: 30,
                   top: 30,
@@ -80,7 +80,7 @@ describe('Select Mode Selection', () => {
                 <div
                   data-uid='d'
                   style={{
-                    backgroundColor: '#0091FFAA',
+                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                     height: 120,
                     width: 120,
@@ -91,7 +91,7 @@ describe('Select Mode Selection', () => {
                   <div
                     data-uid='e'
                     style={{
-                      backgroundColor: '#0091FFAA',
+                      backgroundColor: '#aaaaaa33',
                       position: 'absolute',
                       left: 30,
                       top: 30,
@@ -103,7 +103,7 @@ describe('Select Mode Selection', () => {
                       data-uid='targetdiv'
                       data-testid='targetdiv'
                       style={{
-                        backgroundColor: '#0091FFAA',
+                        backgroundColor: '#aaaaaa33',
                         position: 'absolute',
                         left: 30,
                         top: 30,
