@@ -227,7 +227,7 @@ describe('interactionStart', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
-        "zeroDragPermitted": false,
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -371,7 +371,7 @@ describe('interactionUpdate', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
-        "zeroDragPermitted": false,
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -513,7 +513,7 @@ describe('interactionHardReset', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
-        "zeroDragPermitted": false,
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -668,7 +668,7 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
-        "zeroDragPermitted": false,
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
