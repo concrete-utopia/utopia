@@ -124,26 +124,6 @@ export const getChildrenOfCollapsedViews = (
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
-  getElementOriginType(
-    elements: Array<UtopiaJSXComponent>,
-    target: ElementPath,
-  ): ElementOriginType {
-    const staticTarget = EP.dynamicPathToStaticPath(target)
-    if (staticTarget == null) {
-      return 'unknown-element'
-    } else {
-      if (EP.pathsEqual(target, staticTarget)) {
-        return 'statically-defined'
-      } else {
-        const element = findJSXElementChildAtPath(elements, staticTarget)
-        if (element != null && isJSXElement(element)) {
-          return 'generated-static-definition-present'
-        } else {
-          return 'unknown-element'
-        }
-      }
-    }
-  },
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
     return EP.pathsEqual(target, staticTarget)
