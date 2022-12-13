@@ -150,7 +150,7 @@ export var storyboard = (
         >
           <Rectangle
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               left: 92.5,
               top: 15,
               width: 63,

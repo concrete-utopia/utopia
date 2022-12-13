@@ -1583,7 +1583,7 @@ describe('RUN_ESCAPE_HATCH', () => {
         `
           <View style={{ ...(props.style || {}) }} data-uid='aaa'>
             <View
-              style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+              style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
               data-uid='bbb'
             />
           </View>
@@ -1618,7 +1618,7 @@ describe('RUN_ESCAPE_HATCH', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
           data-uid='bbb'
         />
       </View>`,

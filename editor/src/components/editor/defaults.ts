@@ -68,7 +68,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
         },
         emptyComments,
       ),
