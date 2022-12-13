@@ -346,6 +346,7 @@ function startResizeInteraction(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
           paddingResizeHandle(edge),
+          'zero-drag-not-permitted',
         ),
       ),
     ])

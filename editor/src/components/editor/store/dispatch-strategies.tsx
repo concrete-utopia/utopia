@@ -2,6 +2,7 @@ import {
   ApplicableStrategy,
   applyCanvasStrategy,
   findCanvasStrategy,
+  interactionInProgress,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   StrategyWithFitness,
@@ -64,13 +65,7 @@ export function interactionFinished(
     result.builtInDependencies,
   )
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
-  if (interactionSession == null) {
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: newEditorState,
-      newStrategyState: withClearedSession,
-    }
-  } else {
+  if (interactionSession != null && interactionInProgress(interactionSession)) {
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
       strategies,
@@ -111,6 +106,12 @@ export function interactionFinished(
     return {
       unpatchedEditorState: finalEditor,
       patchedEditorState: finalEditor,
+      newStrategyState: withClearedSession,
+    }
+  } else {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
     }
   }
@@ -362,15 +363,18 @@ export function interactionCancel(
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
+  const interactionWasInProgress = interactionInProgress(
+    storedState.unpatchedEditor.canvas.interactionSession,
+  )
   const updatedEditorState: EditorState = {
     ...result.unpatchedEditor,
     canvas: {
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
-    jsxMetadata: {},
-    domMetadata: {},
-    spyMetadata: {},
+    jsxMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.jsxMetadata,
+    domMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.domMetadata,
+    spyMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.spyMetadata,
   }
 
   return {

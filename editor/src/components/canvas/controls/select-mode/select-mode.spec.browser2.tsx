@@ -411,6 +411,11 @@ describe('Select Mode Double Clicking', () => {
     doubleClick()
     doubleClick()
     doubleClick()
+
+    expect(renderResult.getEditorState().editor.focusedElementPath).toEqual(
+      EP.parentPath(desiredPath),
+    )
+
     doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])

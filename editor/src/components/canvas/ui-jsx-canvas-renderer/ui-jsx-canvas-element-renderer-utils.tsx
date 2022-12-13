@@ -432,6 +432,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
       imports,
+      filePath,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

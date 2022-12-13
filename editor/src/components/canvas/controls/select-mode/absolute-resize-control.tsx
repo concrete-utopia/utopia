@@ -322,6 +322,7 @@ function startResizeInteraction(
             type: 'RESIZE_HANDLE',
             edgePosition: position,
           },
+          'zero-drag-not-permitted',
         ),
       ),
     ])
