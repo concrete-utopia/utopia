@@ -1,11 +1,12 @@
 import React from 'react'
+import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, isLeft, isRight, right } from '../../core/shared/either'
+import { defaultEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { create } from '../../core/shared/property-path'
+import * as PP from '../../core/shared/property-path'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
@@ -89,7 +90,7 @@ function detectFillHugFixedState(
 
   const prop = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), create(['style', property])),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
   if (prop == null || prop === 'min-content') {
@@ -112,12 +113,22 @@ function elementComputedDimension(
   prop: 'width' | 'height',
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
-): number | null {
+): CSSNumber | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
   }
-  return defaultEither(null, parseCSSLengthPercent(element.computedStyle?.[prop]))?.value ?? null
+
+  const property = defaultEither(
+    null,
+    getLayoutProperty(prop, right(element.element.value.props), ['style']),
+  )
+
+  if (property != null) {
+    return property
+  }
+
+  return defaultEither(null, parseCSSLengthPercent(element.computedStyle?.[prop]))
 }
 
 interface FillHugFixedControlProps {}
@@ -150,14 +161,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const widthComputedValue = useEditorState(
+  const widthComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
         'width',
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
-    'FillHugFixedControl widthComputedValue',
+      ) ?? cssNumber(0, null),
   )
 
   const heightCurrentValue = useEditorState(
@@ -171,23 +181,22 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const heightComputedValue = useEditorState(
+  const heightComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
         'height',
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
-    'FillHugFixedControl heightComputedValue',
+      ) ?? cssNumber(0, null),
   )
 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(cssNumber(heightComputedValue, 'px'), 'height', value)
+      const strategy = strategyForMode(heightComputedValueRef.current, 'height', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
-    [dispatch, heightComputedValue, metadataRef, selectedViewsRef],
+    [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -197,11 +206,14 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('height', cssNumber(value, 'px')),
+          setPropFixedStrategies(
+            'height',
+            cssNumber(value, heightComputedValueRef.current?.unit ?? null),
+          ),
         )
       }
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
   )
 
   const onAdjustWidth = React.useCallback(
@@ -211,20 +223,23 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('width', cssNumber(value, 'px')),
+          setPropFixedStrategies(
+            'width',
+            cssNumber(value, widthComputedValueRef.current?.unit ?? null),
+          ),
         )
       }
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(cssNumber(widthComputedValue, 'px'), 'width', value)
+      const strategy = strategyForMode(widthComputedValueRef.current, 'width', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValue],
+    [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
