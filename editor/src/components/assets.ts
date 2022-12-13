@@ -19,6 +19,7 @@ import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github'
 import { FileChecksums } from './editor/store/editor-state'
+import { memoize } from '../core/shared/memoize'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -282,7 +283,7 @@ export function contentsToTree(projectContents: ProjectContents): ProjectContent
   return treeRoot
 }
 
-export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
+function treeToContentsInner(tree: ProjectContentTreeRoot): ProjectContents {
   const treeKeys = Object.keys(tree)
   return treeKeys.reduce((working, treeKey) => {
     const treePart = tree[treeKey]
@@ -296,7 +297,7 @@ export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
         return {
           ...working,
           [treePart.fullPath]: treePart.directory,
-          ...treeToContents(treePart.children),
+          ...treeToContentsInner(treePart.children),
         }
       default:
         const _exhaustiveCheck: never = treePart
@@ -304,6 +305,7 @@ export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
     }
   }, {})
 }
+export const treeToContents = memoize(treeToContentsInner)
 
 export function walkContentsTree(
   tree: ProjectContentTreeRoot,
