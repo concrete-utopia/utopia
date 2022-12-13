@@ -11,7 +11,7 @@ import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CSSNumber, cssNumber, parseCSSLengthPercent } from './common/css-utils'
+import { CSSNumber, cssNumber, EmptyInputValue, parseCSSLengthPercent } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { fillContainerApplicable, hugContentsApplicable } from './inspector-common'
 import {
@@ -24,9 +24,10 @@ import {
 
 const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
 
-type FixedHugFill = 'fixed' | 'hug' | 'fill'
+type FixedHugFill = { type: 'fixed'; amount: CSSNumber } | { type: 'hug' } | { type: 'fill' }
+type FixedHugFillMode = FixedHugFill['type']
 
-function selectOption(value: FixedHugFill): SelectOption {
+function selectOption(value: FixedHugFillMode): SelectOption {
   switch (value) {
     case 'fill':
       return {
@@ -73,20 +74,20 @@ function detectFillHugFixedState(
 
   const prop = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), create(['style', 'width'])),
+    getSimpleAttributeAtPath(right(element.element.value.props), create(['style', property])),
   )
 
   if (prop == null || prop === 'min-content') {
-    return 'hug'
+    return { type: 'hug' }
   }
 
   if (prop === '100%') {
-    return 'fill'
+    return { type: 'fill' }
   }
 
   const parsed = parseCSSLengthPercent(prop)
   if (isRight(parsed)) {
-    return 'fixed'
+    return { type: 'fixed', amount: parsed.value }
   }
 
   return null
@@ -134,17 +135,45 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
-      const value = anyValue as FixedHugFill
-      const strategy = strategyForMode(cssNumber(42, 'px'), 'height', value)
+      const value = anyValue as FixedHugFillMode
+      const strategy = strategyForMode(cssNumber(420, 'px'), 'height', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
+    },
+    [dispatch, metadataRef, selectedViewsRef],
+  )
+
+  const onAdjustHeight = React.useCallback(
+    (value: number | EmptyInputValue) => {
+      if (typeof value === 'number') {
+        runStrategies(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          setPropFixedStrategies('height', cssNumber(value, 'px')),
+        )
+      }
+    },
+    [dispatch, metadataRef, selectedViewsRef],
+  )
+
+  const onAdjustWidth = React.useCallback(
+    (value: number | EmptyInputValue) => {
+      if (typeof value === 'number') {
+        runStrategies(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          setPropFixedStrategies('width', cssNumber(value, 'px')),
+        )
+      }
     },
     [dispatch, metadataRef, selectedViewsRef],
   )
 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
-      const value = anyValue as FixedHugFill
-      const strategy = strategyForMode(cssNumber(42, 'px'), 'width', value)
+      const value = anyValue as FixedHugFillMode
+      const strategy = strategyForMode(cssNumber(420, 'px'), 'width', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
     [dispatch, metadataRef, selectedViewsRef],
@@ -156,6 +185,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     return null
   }
 
+  const widthValue = optionalMap(pickAmount, widthCurrentValue) ?? undefined
+  const heightValue = optionalMap(pickAmount, heightCurrentValue) ?? undefined
+
   return (
     <div
       style={{
@@ -166,14 +198,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         padding: 4,
       }}
     >
+      <PopupList
+        value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
+        options={options}
+        onSubmitValue={onSubmitWidth}
+        controlStyles={controlStylesRef.current}
+        containerMode='showBorderOnHover'
+      />
       <SimpleNumberInput
         id={controlId('width')}
         testId={controlId('width')}
-        value={4}
-        onSubmitValue={NO_OP}
+        value={widthValue?.value}
+        onSubmitValue={onAdjustWidth}
         onTransientSubmitValue={NO_OP}
         onForcedSubmitValue={NO_OP}
-        controlStatus={undefined}
+        controlStatus={isNumberInputEnabled(widthCurrentValue) ? undefined : 'disabled'}
         incrementControls={true}
         stepSize={1}
         minimum={0}
@@ -182,14 +221,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         defaultUnitToHide={'px'}
         focusOnMount={false}
       />
+      <PopupList
+        value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
+        options={options}
+        onSubmitValue={onSubmitHeight}
+        controlStyles={controlStylesRef.current}
+        containerMode='showBorderOnHover'
+      />
       <SimpleNumberInput
         id={controlId('height')}
         testId={controlId('height')}
-        value={4}
-        onSubmitValue={NO_OP}
+        value={heightValue?.value}
+        onSubmitValue={onAdjustHeight}
         onTransientSubmitValue={NO_OP}
         onForcedSubmitValue={NO_OP}
-        controlStatus={undefined}
+        controlStatus={isNumberInputEnabled(heightCurrentValue) ? undefined : 'disabled'}
         incrementControls={true}
         stepSize={1}
         minimum={0}
@@ -198,20 +244,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         defaultUnitToHide={null}
         focusOnMount={false}
       />
-      <PopupList
-        value={optionalMap(selectOption, widthCurrentValue) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitHeight}
-        controlStyles={controlStylesRef.current}
-        containerMode='showBorderOnHover'
-      />
-      <PopupList
-        value={optionalMap(selectOption, heightCurrentValue) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitWidth}
-        controlStyles={controlStylesRef.current}
-        containerMode='showBorderOnHover'
-      />
     </div>
   )
 })
@@ -219,7 +251,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 function strategyForMode(
   fixedValue: CSSNumber,
   prop: 'width' | 'height',
-  mode: FixedHugFill,
+  mode: FixedHugFillMode,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
@@ -231,4 +263,15 @@ function strategyForMode(
     default:
       assertNever(mode)
   }
+}
+
+function pickAmount(value: FixedHugFill): CSSNumber | undefined {
+  if (value.type === 'fixed') {
+    return value.amount
+  }
+  return undefined
+}
+
+function isNumberInputEnabled(value: FixedHugFill | undefined): boolean {
+  return value?.type === 'fixed'
 }
