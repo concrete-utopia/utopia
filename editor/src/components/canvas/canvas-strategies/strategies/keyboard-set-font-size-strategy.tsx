@@ -8,6 +8,7 @@ import { defaultEither, isLeft, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import Keyboard from '../../../../utils/keyboard'
 import {
   cssNumber,
   CSSNumber,
@@ -23,7 +24,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { accumulatePresses } from './shared-keyboard-strategy-helpers'
+import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
@@ -41,7 +42,7 @@ export function keyboardSetFontSizeStrategy(
     id: 'set-font-size',
     name: 'Set font size',
     controlsToRender: [],
-    fitness: 1,
+    fitness: fitness(interactionSession),
     apply: () => {
       if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
         return emptyStrategyApplicationResult
@@ -87,8 +88,28 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   }
   return (
     elementOnlyHasTextChildren(element.element.value) ||
-    getFontSizeFromComputedStyle(metadata, elementPath) != null
+    getFontSizeFromProp(metadata, elementPath) != null
   )
+}
+
+function fitness(interactionSession: InteractionSession | null): number {
+  if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
+    return 0
+  }
+  const lastKeyState = getLastKeyPressState(
+    interactionSession.interactionData.keyStates,
+    Keyboard.keyTriggersFontSizeStrategy,
+  )
+  if (lastKeyState == null) {
+    return 0
+  }
+  return 1
+}
+
+const FontSizeProp = 'fontSize'
+
+function parseMaybeFontSize(maybeFontSize: unknown): CSSNumber | null {
+  return defaultEither(null, parseCSSLengthPercent(maybeFontSize))
 }
 
 function getFontSizeFromProp(
@@ -102,12 +123,13 @@ function getFontSizeFromProp(
 
   const attribute: string | null = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'fontSize'])),
+    getSimpleAttributeAtPath(
+      right(element.element.value.props),
+      PP.create(['style', FontSizeProp]),
+    ),
   )
 
-  const propFromStyle = defaultEither(null, parseCSSLengthPercent(attribute))
-
-  return propFromStyle
+  return parseMaybeFontSize(attribute)
 }
 
 function getFontSizeFromComputedStyle(
@@ -119,12 +141,7 @@ function getFontSizeFromComputedStyle(
     return null
   }
 
-  const size = defaultEither(null, parseCSSLengthPercent(element.computedStyle?.['fontSize']))
-  if (size != null) {
-    return size
-  }
-
-  return null
+  return parseMaybeFontSize(element.computedStyle?.['fontSize'])
 }
 
 function adjust(value: CSSNumber, delta: number): CSSNumber {
