@@ -86,20 +86,22 @@ const staticNameSelector = createSelector(targetJsxElementSelector, (targetEleme
   )
 })
 
-const navigatorItemWrapperSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched) => store.derived.elementWarnings,
+const labelSelector = createSelector(
+  targetElementMetadataSelector,
   (store: EditorStorePatched) => store.editor.allElementProps,
-  (sto_re: EditorStorePatched, elementPath: ElementPath) => elementPath,
-  (jsxMetadata, elementWarnings, allElementProps, elementPath) => {
-    const labelInner = MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata)
-
-    const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
-
-    return {
-      label: labelInner,
-      elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+  (elementMetadata, allElementProps) => {
+    if (elementMetadata == null) {
+      return 'Element 👻'
     }
+    return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
+  },
+)
+
+const elementWarningsSelector = createSelector(
+  (store: EditorStorePatched) => store.derived.elementWarnings,
+  (_: EditorStorePatched, elementPath: ElementPath) => elementPath,
+  (elementWarnings, elementPath) => {
+    return getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
   },
 )
 
@@ -146,9 +148,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper targetSupportsChildrenSelector',
   )
 
-  const { label, elementWarnings } = useEditorState(
-    (store) => navigatorItemWrapperSelector(store, props.elementPath),
-    'NavigatorItemWrapper',
+  const label = useEditorState(
+    (store) => labelSelector(store, props.elementPath),
+    'NavigatorItemWrapper labelSelector',
+  )
+
+  const elementWarnings = useEditorState(
+    (store) => elementWarningsSelector(store, props.elementPath),
+    'NavigatorItemWrapper elementWarningsSelector',
   )
 
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
