@@ -1,35 +1,171 @@
-import { fromString } from '../../../../core/shared/element-path'
-import { wait } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { keyDown, mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
+import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 describe('adjust font size with the keyboard', () => {
-  it('increase font size, no font size specified', async () => {
-    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
-    // const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    // const div = editor.renderedDOM.getByTestId('div')
-    // const divBounds = div.getBoundingClientRect()
-    // const divCorner = {
-    //   x: divBounds.x + 50,
-    //   y: divBounds.y + 40,
-    // }
+  describe('no font size specified', () => {
+    it('increase font size', async () => {
+      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-    // mouseClickAtPoint(canvasControlsLayer, divCorner)
-    await editor.dispatch([selectComponents([fromString('sb/39e')], false)], true)
-    await editor.getDispatchFollowUpActionsFinished()
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
 
-    pressKey('.', { modifiers: { shift: true, cmd: true, alt: false, ctrl: false } })
-    await editor.getDispatchFollowUpActionsFinished()
+      expect(div.style.fontSize).toEqual('17px')
+    })
 
-    await wait(10000)
+    it('increase font size multiple times', async () => {
+      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(``)
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 5, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('21px')
+    })
+
+    it('decrease font size', async () => {
+      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('15px')
+    })
+
+    it('decrease font size multiple times', async () => {
+      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 5 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('11px')
+    })
+  })
+
+  describe('font size already set', () => {
+    it('increase font size', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('20px'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('21px')
+    })
+
+    it('increase font size multiple times', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('20px'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 5, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('25px')
+    })
+
+    it('decrease font size', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('20px'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('19px')
+    })
+
+    it('decrease font size multiple times', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('20px'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 5 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('15px')
+    })
+  })
+  describe('font size in em units', () => {
+    it('increase font size', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('2em'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('2.1em')
+    })
+
+    it('decrease font size', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFontSize('2em'),
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.fontSize).toEqual('1.9em')
+    })
   })
 })
 
-const project = `import * as React from 'react'
+async function doSelect(editor: EditorRenderResult) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId('div')
+  const divBounds = div.getBoundingClientRect()
+  const divCorner = {
+    x: divBounds.x + 50,
+    y: divBounds.y + 40,
+  }
+
+  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await editor.getDispatchFollowUpActionsFinished()
+}
+
+async function doTestWithDelta(
+  editor: EditorRenderResult,
+  delta: { decreaseBy: number; increaseBy: number },
+) {
+  for (let i = 0; i < delta.increaseBy; i++) {
+    pressKey('.', { modifiers: { shift: true, cmd: true, alt: false, ctrl: false } })
+  }
+
+  for (let i = 0; i < delta.decreaseBy; i++) {
+    pressKey(',', { modifiers: { shift: true, cmd: true, alt: false, ctrl: false } })
+  }
+
+  await editor.getDispatchFollowUpActionsFinished()
+}
+
+const projectWithNoFontSize = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 
@@ -44,6 +180,31 @@ export var storyboard = (
         top: 271,
         width: 288,
         height: 362,
+      }}
+      data-uid='39e'
+    >
+      hello
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithFontSize = (fontSize: string) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 377,
+        top: 271,
+        width: 288,
+        height: 362,
+        fontSize: '${fontSize}'
       }}
       data-uid='39e'
     >
