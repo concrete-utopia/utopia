@@ -159,7 +159,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('s', []),
   ),
   [INSERT_VIEW_SHORTCUT]: shortcut('Insert a view.', key('v', [])),
-  [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', key('d', [])),
+  [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', [key('d', []), key('f', [])]),
   [CUT_SELECTION_SHORTCUT]: shortcut(
     'Cut the current selection to the clipboard.',
     key('x', 'cmd'),
