@@ -220,7 +220,7 @@ describe('set border radius strategy', () => {
           data-uid='mydiv'
           data-testid='mydiv'
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 28,
             top: 28,
@@ -255,7 +255,7 @@ describe('set border radius strategy', () => {
             data-uid='mydiv'
             data-testid='mydiv'
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               left: 28,
               top: 28,
@@ -383,7 +383,7 @@ function codeForDragTest(borderRadius: string): string {
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -399,7 +399,7 @@ function divWithDimensions(sizee: Size): string {
   return makeTestProjectCodeWithSnippet(`<div
     data-testid='mydiv'
     style={{
-      backgroundColor: '#0091FFAA',
+      backgroundColor: '#aaaaaa33',
       position: 'absolute',
       left: 28,
       top: 28,

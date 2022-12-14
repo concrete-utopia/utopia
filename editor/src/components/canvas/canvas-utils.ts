@@ -2062,7 +2062,6 @@ export function getReparentTarget(
   } else {
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       projectContents,
-      openFile ?? null,
       componentMeta,
       possibleNewParent,
     )

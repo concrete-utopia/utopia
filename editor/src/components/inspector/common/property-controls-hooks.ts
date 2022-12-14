@@ -61,7 +61,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { fastForEach } from '../../../core/shared/utils'
-import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../custom-code/code-file'
 import {
   ElementInstanceMetadataKeepDeepEquality,
   UtopiaJSXComponentKeepDeepEquality,
@@ -287,11 +287,10 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
         fastForEach(targets, (path) => {
           const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
           if (openStoryboardFile != null) {
-            const component = findUnderlyingTargetComponentImplementation(
+            const component = findUnderlyingTargetComponentImplementationFromImportInfo(
               store.editor.projectContents,
-              store.editor.nodeModules.files,
-              openStoryboardFile,
-              path,
+              MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)?.importInfo ??
+                null,
             )
             if (component != null) {
               components.push(component)

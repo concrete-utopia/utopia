@@ -444,7 +444,6 @@ export function useGetSelectableViewsForSelectMode() {
       componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
-      focusedElementPath: store.editor.focusedElementPath,
       lockedElements: store.editor.lockedElements,
     }
   })
@@ -674,7 +673,12 @@ function useSelectOrLiveModeSelectAndHover(
           if (event.button !== 2 && event.type !== 'mouseup') {
             editorActions.push(
               CanvasActions.createInteractionSession(
-                createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
+                createInteractionViaMouse(
+                  start,
+                  Modifier.modifiersForEvent(event),
+                  boundingArea(),
+                  'zero-drag-not-permitted',
+                ),
               ),
             )
           }
@@ -696,6 +700,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
+            editorActions.push(CanvasActions.clearInteractionSession(false))
             editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
         }
@@ -709,8 +714,8 @@ function useSelectOrLiveModeSelectAndHover(
             editorActions.push(...cancelInsertModeActions('apply-changes'))
           }
 
-          // then we set the selected views for the editor state, 1 frame later
           if (updatedSelection.length === 0) {
+            // then we set the selected views for the editor state, 1 frame later
             editorActions.push(clearSelection(), setFocusedElement(null))
           } else {
             editorActions.push(selectComponents(updatedSelection, event.shiftKey))
@@ -769,6 +774,11 @@ export function useSelectAndHover(
     setSelectedViewsForCanvasControlsOnly,
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
+  const textEditModeCallbacks = {
+    onMouseMove: Utils.NO_OP,
+    onMouseDown: Utils.NO_OP,
+    onMouseUp: Utils.NO_OP,
+  }
 
   if (hasInteractionSession) {
     return {
@@ -784,6 +794,8 @@ export function useSelectAndHover(
         return insertModeCallbacks
       case 'live':
         return selectModeCallbacks
+      case 'textEdit':
+        return textEditModeCallbacks
       default:
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)

@@ -26,6 +26,8 @@ import {
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
 
+export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
+
 export interface DragInteractionData {
   type: 'DRAG'
   dragStart: CanvasPoint
@@ -37,12 +39,14 @@ export interface DragInteractionData {
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
   spacePressed: boolean
+  zeroDragPermitted: ZeroDragPermitted // Will still complete the interaction with no drag distance applied.
 }
 
 export interface HoverInteractionData {
   type: 'HOVER'
   point: CanvasPoint
   modifiers: Modifiers
+  zeroDragPermitted: ZeroDragPermitted // Will still complete the interaction with no drag distance applied.
 }
 
 export interface KeyState {
@@ -172,6 +176,7 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
+  zeroDragPermitted: ZeroDragPermitted,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
@@ -185,6 +190,7 @@ export function createInteractionViaMouse(
       hasMouseMoved: false,
       _accumulatedMovement: zeroCanvasPoint,
       spacePressed: false,
+      zeroDragPermitted: zeroDragPermitted,
     },
     activeControl: activeControl,
     lastInteractionTime: Date.now(),
@@ -199,12 +205,14 @@ export function createHoverInteractionViaMouse(
   mousePoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
+  zeroDragPermitted: ZeroDragPermitted,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'HOVER',
       point: mousePoint,
       modifiers: modifiers,
+      zeroDragPermitted: zeroDragPermitted,
     },
     activeControl: activeControl,
     lastInteractionTime: Date.now(),
@@ -243,6 +251,7 @@ export function updateInteractionViaDragDelta(
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: currentState.interactionData.spacePressed,
+        zeroDragPermitted: currentState.interactionData.zeroDragPermitted,
       },
       activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
@@ -298,6 +307,7 @@ function updateInteractionDataViaMouse(
         type: 'HOVER',
         point: mousePoint,
         modifiers: modifiers,
+        zeroDragPermitted: currentData.zeroDragPermitted,
       }
 
     case 'DRAG':
@@ -315,6 +325,7 @@ function updateInteractionDataViaMouse(
             hasMouseMoved: true,
             _accumulatedMovement: currentData._accumulatedMovement,
             spacePressed: currentData.spacePressed,
+            zeroDragPermitted: currentData.zeroDragPermitted,
           }
         case 'HOVER':
           return {
@@ -328,6 +339,7 @@ function updateInteractionDataViaMouse(
             hasMouseMoved: false,
             _accumulatedMovement: zeroCanvasPoint,
             spacePressed: false,
+            zeroDragPermitted: currentData.zeroDragPermitted,
           }
         default:
           assertNever(currentData)
@@ -419,6 +431,7 @@ export function updateInteractionViaKeyboard(
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
           spacePressed: isSpacePressed,
+          zeroDragPermitted: currentState.interactionData.zeroDragPermitted,
         },
         activeControl: currentState.activeControl,
         lastInteractionTime: Date.now(),
@@ -434,6 +447,7 @@ export function updateInteractionViaKeyboard(
           type: 'HOVER',
           point: currentState.interactionData.point,
           modifiers: modifiers,
+          zeroDragPermitted: currentState.interactionData.zeroDragPermitted,
         },
         activeControl: currentState.activeControl,
         lastInteractionTime: Date.now(),

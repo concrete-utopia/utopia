@@ -60,7 +60,7 @@ import { Scene, Storyboard } from 'utopia-api'
     <div
       data-testid='${TestIdOne}'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 67,
         top: 128,

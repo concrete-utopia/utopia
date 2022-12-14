@@ -73,7 +73,6 @@ export function getActionsForClipboardItems(
   try {
     const possibleTarget = getTargetParentForPaste(
       projectContents,
-      openFile,
       selectedViews,
       componentMetadata,
       pasteTargetsToIgnore,
@@ -253,7 +252,6 @@ function filterMetadataForCopy(
 
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
@@ -266,28 +264,17 @@ export function getTargetParentForPaste(
       // we should not paste the source into itself
       const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
 
-      if (openFile == null) {
-        return null
+      if (
+        MetadataUtils.targetSupportsChildren(projectContents, metadata, parentTarget) &&
+        !insertingSourceIntoItself
+      ) {
+        return parentTarget
       } else {
-        if (
-          MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, parentTarget) &&
-          !insertingSourceIntoItself
-        ) {
-          return parentTarget
+        const parentOfSelected = EP.parentPath(parentTarget)
+        if (MetadataUtils.targetSupportsChildren(projectContents, metadata, parentOfSelected)) {
+          return parentOfSelected
         } else {
-          const parentOfSelected = EP.parentPath(parentTarget)
-          if (
-            MetadataUtils.targetSupportsChildren(
-              projectContents,
-              openFile,
-              metadata,
-              parentOfSelected,
-            )
-          ) {
-            return parentOfSelected
-          } else {
-            return null
-          }
+          return null
         }
       }
     }

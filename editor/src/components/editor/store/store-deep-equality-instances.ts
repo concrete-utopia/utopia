@@ -359,6 +359,7 @@ import {
   resizeHandle,
   ResizeHandle,
   BorderRadiusResizeHandle,
+  ZeroDragPermitted,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -412,6 +413,7 @@ import {
   targetedInsertionParent,
   TargetedInsertionParent,
   imageInsertionSubject,
+  TextEditMode,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -1669,7 +1671,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1688,6 +1690,8 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     CanvasPointKeepDeepEquality,
     (data) => data.spacePressed,
     BooleanKeepDeepEquality,
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
     (
       dragStart,
       drag,
@@ -1698,6 +1702,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       hasMouseMoved,
       accumulatedMovement,
       spacePressed,
+      zeroDragPermitted,
     ) => {
       return {
         type: 'DRAG',
@@ -1710,21 +1715,25 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         hasMouseMoved: hasMouseMoved,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: spacePressed,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
 
 export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (data) => data.point,
     CanvasPointKeepDeepEquality,
     (data) => data.modifiers,
     ModifiersKeepDeepEquality,
-    (point, modifiers) => {
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
+    (point, modifiers, zeroDragPermitted) => {
       return {
         type: 'HOVER',
         point: point,
         modifiers: modifiers,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
@@ -2674,6 +2683,13 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
     EditorModes.liveMode,
   )
 
+export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
+  combine1EqualityCall(
+    (mode) => mode.editedText,
+    ElementPathKeepDeepEquality,
+    EditorModes.textEditMode,
+  )
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -2689,6 +2705,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'live':
       if (newValue.type === oldValue.type) {
         return LiveCanvasModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'textEdit':
+      if (newValue.type === oldValue.type) {
+        return TextEditModeKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

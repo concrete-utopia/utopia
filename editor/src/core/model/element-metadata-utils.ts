@@ -60,14 +60,7 @@ import {
   zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import {
-  ElementOriginType,
-  Imports,
-  isUnknownOrGeneratedElement,
-  NodeModules,
-  PropertyPath,
-  ElementPath,
-} from '../shared/project-file-types'
+import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
@@ -99,7 +92,7 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
-import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,
@@ -124,48 +117,9 @@ export const getChildrenOfCollapsedViews = (
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
-  getElementOriginType(
-    elements: Array<UtopiaJSXComponent>,
-    target: ElementPath,
-  ): ElementOriginType {
+  isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    if (staticTarget == null) {
-      return 'unknown-element'
-    } else {
-      if (EP.pathsEqual(target, staticTarget)) {
-        return 'statically-defined'
-      } else {
-        const element = findJSXElementChildAtPath(elements, staticTarget)
-        if (element != null && isJSXElement(element)) {
-          return 'generated-static-definition-present'
-        } else {
-          return 'unknown-element'
-        }
-      }
-    }
-  },
-  anyUnknownOrGeneratedElements(
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null,
-    targets: Array<ElementPath>,
-  ): boolean {
-    return targets.some((target) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        target,
-        projectContents,
-        nodeModules,
-        openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingDynamicTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+    return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
@@ -752,7 +706,6 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
@@ -775,12 +728,7 @@ export const MetadataUtils = {
                 EP.isStoryboardPath(instance.elementPath)
               )
             } else {
-              return MetadataUtils.targetUsesProperty(
-                projectContents,
-                openFile,
-                instance.elementPath,
-                'children',
-              )
+              return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
             }
           }
           // We don't know at this stage
@@ -792,7 +740,6 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
@@ -803,23 +750,20 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
         ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+        : MetadataUtils.targetElementSupportsChildren(projectContents, instance)
     }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
     property: string,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -831,17 +775,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsSize(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -853,17 +794,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsPosition(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -1310,10 +1248,6 @@ export const MetadataUtils = {
       ...workingElements,
       ...spyOnlyElements,
     }
-  },
-  isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
-    const originType = this.getElementOriginType(elements, target)
-    return originType === 'statically-defined'
   },
   removeElementMetadataChild(
     target: ElementPath,

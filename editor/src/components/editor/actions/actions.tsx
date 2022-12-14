@@ -1397,7 +1397,7 @@ function toastOnGeneratedElementsTargeted(
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets, editor)
+  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
@@ -1419,12 +1419,7 @@ function toastOnUncopyableElementsSelected(
   dispatch: EditorDispatch,
 ): EditorState {
   const isReparentable = editor.selectedViews.every((target) => {
-    return isAllowedToReparent(
-      editor.projectContents,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      target,
-    )
+    return isAllowedToReparent(editor.projectContents, editor.jsxMetadata, target)
   })
   let result: EditorState = editor
   if (!isReparentable) {
@@ -1802,7 +1797,7 @@ export const UPDATE_FNS = {
             editorForAction,
             derived,
           )
-          return MetadataUtils.isStaticElement(components, selectedView)
+          return !MetadataUtils.isElementGenerated(selectedView)
         })
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
@@ -2873,24 +2868,8 @@ export const UPDATE_FNS = {
     let insertionAllowed: boolean = true
     if (action.pasteInto != null) {
       const pasteInto = action.pasteInto
-      const parentOriginType = withUnderlyingTargetFromEditorState(
-        action.pasteInto,
-        editor,
-        'unknown-element',
-        (targetParentSuccess) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
-            pasteInto,
-          )
-        },
-      )
-      switch (parentOriginType) {
-        case 'unknown-element':
-          insertionAllowed = false
-          break
-        default:
-          insertionAllowed = true
-      }
+      const parentGenerated = MetadataUtils.isElementGenerated(pasteInto)
+      insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
       const existingIDs = getAllUniqueUids(editor.projectContents)

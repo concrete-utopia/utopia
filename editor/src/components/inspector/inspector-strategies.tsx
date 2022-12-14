@@ -4,10 +4,16 @@ import * as PP from '../../core/shared/property-path'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { EditorDispatch } from '../editor/action-types'
-import { filterKeepFlexContainers, FlexAlignment, FlexJustifyContent } from './inspector-common'
+import {
+  fillContainerApplicable,
+  filterKeepFlexContainers,
+  FlexAlignment,
+  FlexJustifyContent,
+  hugContentsApplicable,
+} from './inspector-common'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import { FlexDirection } from './common/css-utils'
+import { CSSNumber, FlexDirection, printCSSNumber } from './common/css-utils'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -80,6 +86,47 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
 
     return elements.map((path) =>
       deleteProperties('always', path, [PP.create(['style', 'display'])]),
+    )
+  },
+]
+
+export const setPropFillStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+  (metadata, elementPaths) => {
+    const elements = elementPaths.filter(fillContainerApplicable)
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    return elements.map((path) => setProperty('always', path, PP.create(['style', prop]), '100%'))
+  },
+]
+
+export const setPropFixedStrategies = (
+  prop: 'width' | 'height',
+  value: CSSNumber,
+): Array<InspectorStrategy> => [
+  (metadata, elementPaths) => {
+    if (elementPaths.length === 0) {
+      return null
+    }
+
+    return elementPaths.map((path) =>
+      setProperty('always', path, PP.create(['style', prop]), printCSSNumber(value, null)),
+    )
+  },
+]
+
+export const setPropHugStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+  (metadata, elementPaths) => {
+    const elements = elementPaths.filter((path) => hugContentsApplicable(metadata, path))
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    return elements.map((path) =>
+      setProperty('always', path, PP.create(['style', prop]), 'min-content'),
     )
   },
 ]

@@ -10,6 +10,7 @@ import {
   editorModelFromPersistentModel,
   EditorState,
   EditorStorePatched,
+  StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
@@ -20,7 +21,9 @@ import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
+  ImportInfo,
   jsxElementWithoutUID,
+  sameFileOrigin,
 } from '../../../core/shared/element-template'
 import { PropertyControls } from 'utopia-api/core'
 
@@ -41,7 +44,10 @@ const propertyControlsForOtherComponent: PropertyControls = {
   },
 }
 
-function callPropertyControlsHook(selectedViews: ElementPath[]) {
+function callPropertyControlsHook(
+  selectedViews: ElementPath[],
+  importInfos: Array<ImportInfo | null> = [],
+) {
   const persistentModel = createTestProjectWithCode(`
   import * as React from 'react'
   import {
@@ -106,7 +112,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[0],
     ),
   }
   let allElementProps: AllElementProps = {
@@ -125,7 +131,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[1],
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -143,7 +149,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[2],
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }
@@ -228,7 +234,9 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
 describe('useGetPropertyControlsForSelectedComponents', () => {
   it('single select', () => {
     const selectedViews = [EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]])]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+    ])
 
     expect(result.length).toBe(1)
 
@@ -246,7 +254,9 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
     ]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+    ])
 
     expect(result.length).toBe(1)
 
@@ -265,7 +275,11 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestOtherComponentUID]]),
     ]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+      sameFileOrigin(StoryboardFilePath, 'App'),
+      sameFileOrigin(StoryboardFilePath, 'OtherComponent'),
+    ])
 
     expect(result.length).toBe(2)
 

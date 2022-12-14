@@ -563,7 +563,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       const snippet = `
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${bounding.left}, top: ${bounding.top}, width: ${bounding.width}, height: ${bounding.height} }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${bounding.left}, top: ${bounding.top}, width: ${bounding.width}, height: ${bounding.height} }}
             data-uid='bbb'
           />
         </View>
@@ -602,7 +602,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${expectedBounding.left}, top: ${expectedBounding.top}, width: ${expectedBounding.width}, height: ${expectedBounding.height} }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${expectedBounding.left}, top: ${expectedBounding.top}, width: ${expectedBounding.width}, height: ${expectedBounding.height} }}
             data-uid='bbb'
           />
         </View>
@@ -617,7 +617,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{ 
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -628,7 +628,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{ 
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -665,7 +665,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{ 
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 73,
                 left: 45,
@@ -676,7 +676,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{ 
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 65,
                 left: 99,
@@ -695,7 +695,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -706,7 +706,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -743,7 +743,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 61,
                 left: 45,
@@ -754,7 +754,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 52,
                 left: 99,
@@ -773,7 +773,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -784,7 +784,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -821,7 +821,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 52,
                 left: 30,
@@ -832,7 +832,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 40,
                 left: 96,
@@ -851,7 +851,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -862,7 +862,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -899,7 +899,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 52,
                 left: 30,
@@ -910,7 +910,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 40,
                 left: 102,
@@ -929,7 +929,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -940,7 +940,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -977,7 +977,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 50,
                 left: 30,
@@ -988,7 +988,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 40,
                 left: 96,
@@ -1007,7 +1007,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -1018,7 +1018,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -1055,7 +1055,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 45,
                 left: 30,
@@ -1066,7 +1066,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 34,
                 left: 96,
@@ -1085,7 +1085,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -1096,7 +1096,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -1133,7 +1133,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 73,
                 left: 30,
@@ -1144,7 +1144,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 65,
                 left: 90,
@@ -1163,7 +1163,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -1174,7 +1174,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -1211,7 +1211,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 73,
                 left: 45,
@@ -1222,7 +1222,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 65,
                 left: 94,
@@ -1244,7 +1244,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -1255,7 +1255,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -1298,7 +1298,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 71,
                 left: 45,
@@ -1309,7 +1309,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 65,
                 left: 94,
@@ -1328,7 +1328,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     <div style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 50,
           left: 30,
@@ -1339,7 +1339,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       />
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           top: 40,
           left: 90,
@@ -1382,7 +1382,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
           `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 29,
                 left: 30,
@@ -1393,7 +1393,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             />
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 15,
                 left: 90,
@@ -1416,7 +1416,7 @@ describe('Absolute Resize Strategy with missing props', () => {
   <div style={{ ...(props.style || {}) }} data-uid='aaa'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         top: 50,
         left: 30,
@@ -1471,7 +1471,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               top: 50,
               left: 30,
@@ -1493,7 +1493,7 @@ describe('Absolute Resize Strategy with missing props', () => {
   <div style={{ ...(props.style || {}) }} data-uid='aaa'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         top: 50,
         left: 30,
@@ -1546,7 +1546,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               top: 50,
               left: 45,
@@ -1567,7 +1567,7 @@ describe('Absolute Resize Strategy with missing props', () => {
   <div style={{ ...(props.style || {}) }} data-uid='aaa'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         display: 'flex',
        }}
@@ -1620,7 +1620,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               display: 'flex',
               height: 105,

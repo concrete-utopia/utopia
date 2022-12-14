@@ -143,7 +143,7 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { defaultConfig, UtopiaVSCodeConfig, ProjectIDPlaceholderPrefix } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
 import { MapLike } from 'typescript'
@@ -686,7 +686,7 @@ export type VSCodeBridgeId = VSCodeBridgeIdDefault | VSCodeBridgeIdProjectId
 export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
   switch (bridgeId.type) {
     case 'VSCODE_BRIDGE_ID_DEFAULT':
-      return bridgeId.defaultID
+      return `${ProjectIDPlaceholderPrefix}_${bridgeId.defaultID}`
     case 'VSCODE_BRIDGE_ID_PROJECT_ID':
       return bridgeId.projectID
     default:
@@ -2792,27 +2792,12 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
 }
 
 export function areGeneratedElementsSelected(editor: EditorState): boolean {
-  return areGeneratedElementsTargeted(editor.selectedViews, editor)
+  return areGeneratedElementsTargeted(editor.selectedViews)
 }
 
-export function areGeneratedElementsTargeted(
-  targets: Array<ElementPath>,
-  editor: EditorState,
-): boolean {
+export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
   return targets.some((target) => {
-    return withUnderlyingTargetFromEditorState(target, editor, false, (success) => {
-      const originType = MetadataUtils.getElementOriginType(
-        getUtopiaJSXComponentsFromSuccess(success),
-        target,
-      )
-      switch (originType) {
-        case 'unknown-element':
-        case 'generated-static-definition-present':
-          return true
-        default:
-          return false
-      }
-    })
+    return MetadataUtils.isElementGenerated(target)
   })
 }
 

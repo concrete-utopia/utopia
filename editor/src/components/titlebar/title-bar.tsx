@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
-import { secondaryErrorStyle } from 'src/third-party/react-error-overlay/styles'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'

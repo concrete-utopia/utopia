@@ -128,7 +128,7 @@ function findValidTargetsUnderPoint(
       return true
     }
 
-    if (!MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target)) {
+    if (!MetadataUtils.targetSupportsChildren(projectContents, metadata, target)) {
       // simply skip elements that do not support children
       return false
     }

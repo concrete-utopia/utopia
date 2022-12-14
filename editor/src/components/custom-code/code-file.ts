@@ -14,6 +14,7 @@ import {
   StaticElementPath,
   ParseSuccess,
   Imports,
+  getParsedContentsFromTextFile,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -24,11 +25,12 @@ import {
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot, treeToContents } from '../assets'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
   getJSXAttribute,
+  ImportInfo,
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
@@ -570,53 +572,32 @@ export function normalisePathToUnderlyingTargetForced(
   )
 }
 
-export function findUnderlyingTargetComponentImplementation(
+export function findUnderlyingTargetComponentImplementationFromImportInfo(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  currentFilePath: string,
-  elementPath: ElementPath | null,
+  importInfo: ImportInfo | null,
 ): UtopiaJSXComponent | null {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    projectContents,
-    nodeModules,
-    currentFilePath,
-    elementPath,
-  )
-  if (underlyingTarget.type === 'NORMALISE_PATH_SUCCESS') {
-    const parseResult = underlyingTarget.textFile.fileContents.parsed
-    if (isParseSuccess(parseResult) && underlyingTarget.normalisedPath != null) {
-      const element = findJSXElementAtStaticPath(
-        getUtopiaJSXComponentsFromSuccess(parseResult),
-        underlyingTarget.normalisedPath,
-      )
-      const elementName = element?.name.baseVariable
-      if (element != null && elementName != null) {
-        const innerUnderlyingTarget = lookupElementImport(
-          elementName,
-          underlyingTarget.filePath,
-          projectContents,
-          nodeModules,
-          element,
-          underlyingTarget.normalisedPath,
-          parseResult,
-          { droppedPathElements: null, newPath: null },
-        )
-
-        if (
-          innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-          isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)
-        ) {
-          return (
-            innerUnderlyingTarget.textFile.fileContents.parsed.topLevelElements.find(
-              (tle): tle is UtopiaJSXComponent => {
-                return isUtopiaJSXComponent(tle) && tle.name === elementName
-              },
-            ) ?? null
-          )
-        }
-      }
-    }
+  if (importInfo == null) {
+    return null
   }
 
-  return null
+  const variableName =
+    importInfo.type === 'SAME_FILE_ORIGIN' ? importInfo.variableName : importInfo.exportedName
+
+  // we have to find the element based on the top level name
+  const file = getContentsTreeFileFromString(projectContents, importInfo.filePath)
+  const parsedContents = getParsedContentsFromTextFile(file)
+  if (parsedContents == null) {
+    return null
+  }
+
+  const foundTopLevelElement = parsedContents.topLevelElements.find(
+    (tle): tle is UtopiaJSXComponent =>
+      tle.type === 'UTOPIA_JSX_COMPONENT' && tle.name === variableName,
+  )
+
+  if (foundTopLevelElement == null) {
+    return null
+  }
+
+  return foundTopLevelElement
 }

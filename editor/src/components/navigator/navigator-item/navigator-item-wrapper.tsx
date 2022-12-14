@@ -94,10 +94,6 @@ const navigatorItemWrapperSelector = createSelector(
       fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
     const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
 
-    const elementOriginType = MetadataUtils.getElementOriginType(
-      componentsIncludingScenes,
-      elementPath,
-    )
     const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
     const labelInner = MetadataUtils.getElementLabel(
       allElementProps,
@@ -114,7 +110,6 @@ const navigatorItemWrapperSelector = createSelector(
       noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
       supportsChildren = MetadataUtils.targetSupportsChildren(
         projectContents,
-        currentFilePath,
         jsxMetadata,
         elementPath,
       )
@@ -132,7 +127,6 @@ const navigatorItemWrapperSelector = createSelector(
       ),
       noOfChildren: noOfChildrenInner,
       supportsChildren: supportsChildren,
-      elementOriginType: elementOriginType,
       elementWarnings: elementWarningsInner ?? defaultElementWarnings,
     }
   },
@@ -150,7 +144,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     isHighlighted,
     noOfChildren,
     supportsChildren,
-    elementOriginType,
     staticElementName,
     label,
     elementWarnings,
@@ -198,7 +191,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     appropriateDropTargetHint: appropriateDropTargetHint,
     supportsChildren: supportsChildren,
     noOfChildren: noOfChildren,
-    elementOriginType: elementOriginType,
     staticElementName: deepReferenceStaticElementName,
     label: label,
     isElementVisible: isElementVisible,
