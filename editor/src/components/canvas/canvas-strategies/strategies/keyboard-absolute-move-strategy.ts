@@ -120,7 +120,10 @@ function isApplicable(canvasState: InteractionCanvasState, selectedElements: Arr
 
 function getFitness(interactionSession: InteractionSession | null): number {
   if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
-    const lastKeyState = getLastKeyPressState(interactionSession.interactionData.keyStates)
+    const lastKeyState = getLastKeyPressState(
+      interactionSession.interactionData.keyStates,
+      Keyboard.keyIsArrow,
+    )
     if (lastKeyState != null) {
       // 'Alt' determines if the distance guidelines should be shown.
       const shiftOrNoModifier = !lastKeyState.modifiers.cmd && !lastKeyState.modifiers.ctrl

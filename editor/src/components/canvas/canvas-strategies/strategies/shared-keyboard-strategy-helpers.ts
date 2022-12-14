@@ -19,10 +19,13 @@ export interface AccumulatedPresses extends KeyState {
   count: number
 }
 
-export function getLastKeyPressState(keyStates: Array<KeyState>): KeyState | null {
+export function getLastKeyPressState(
+  keyStates: Array<KeyState>,
+  checkKey: (key: KeyCharacter) => boolean,
+): KeyState | null {
   for (let index = keyStates.length - 1; index >= 0; index--) {
     const state = keyStates[index]
-    if (Array.from(state.keysPressed).some(Keyboard.keyIsArrow)) {
+    if (Array.from(state.keysPressed).some(checkKey)) {
       return state
     }
   }
