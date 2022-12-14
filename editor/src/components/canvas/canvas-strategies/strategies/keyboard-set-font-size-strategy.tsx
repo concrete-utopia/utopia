@@ -30,13 +30,7 @@ export function keyboardSetFontSizeStrategy(
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const validTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget).filter(
-    (path) => {
-      const element = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path)
-      if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-        return false
-      }
-      return elementOnlyHasTextChildren(element.element.value)
-    },
+    (path) => isValidTarget(canvasState.startingMetadata, path),
   )
 
   if (validTargets.length === 0) {
@@ -86,10 +80,21 @@ export function keyboardSetFontSizeStrategy(
   }
 }
 
-function getFontSize(
+function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: ElementPath): boolean {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return false
+  }
+  return (
+    elementOnlyHasTextChildren(element.element.value) ||
+    getFontSizeFromComputedStyle(metadata, elementPath) != null
+  )
+}
+
+function getFontSizeFromProp(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): [CSSNumber, ElementPath] | null {
+): CSSNumber | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
@@ -101,13 +106,22 @@ function getFontSize(
   )
 
   const propFromStyle = defaultEither(null, parseCSSLengthPercent(attribute))
-  if (propFromStyle != null) {
-    return [propFromStyle, elementPath]
+
+  return propFromStyle
+}
+
+function getFontSizeFromComputedStyle(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): CSSNumber | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
   }
 
   const size = defaultEither(null, parseCSSLengthPercent(element.computedStyle?.['fontSize']))
   if (size != null) {
-    return [size, elementPath]
+    return size
   }
 
   return null
@@ -115,5 +129,24 @@ function getFontSize(
 
 function adjust(value: CSSNumber, delta: number): CSSNumber {
   const scaleFactor = value.unit === 'em' ? 0.1 : 1
+  if (value.unit === 'em' && value.value < 1) {
+    return value
+  }
+  if (value.unit === 'px' && value.value < 5) {
+    return value
+  }
   return cssNumber(value.value + delta * scaleFactor, value.unit)
+}
+
+function getFontSize(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): [CSSNumber, ElementPath] | null {
+  const size =
+    getFontSizeFromProp(metadata, elementPath) ??
+    getFontSizeFromComputedStyle(metadata, elementPath)
+  if (size != null) {
+    return [size, elementPath]
+  }
+  return null
 }
