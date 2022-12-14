@@ -6,7 +6,7 @@ import {
   scaleVector,
   zeroRectangle,
 } from '../../../../core/shared/math-utils'
-import { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
@@ -75,7 +75,10 @@ function pressesToVectorAndEdges(
 
 function getFitness(interactionSession: InteractionSession | null): number {
   if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
-    const lastKeyState = getLastKeyPressState(interactionSession.interactionData.keyStates)
+    const lastKeyState = getLastKeyPressState(
+      interactionSession.interactionData.keyStates,
+      Keyboard.keyIsArrow,
+    )
     if (lastKeyState != null) {
       const cmdAndOptionallyShiftModifier =
         lastKeyState.modifiers.cmd && !lastKeyState.modifiers.alt && !lastKeyState.modifiers.ctrl
