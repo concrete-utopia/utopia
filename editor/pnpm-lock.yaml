@@ -46,7 +46,7 @@ specifiers:
   '@types/flat': 0.0.28
   '@types/fontfaceobserver': 0.0.6
   '@types/graphlib': 2.1.4
-  '@types/he': ^1.1.2
+  '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
   '@types/html-entities': 1.2.16
   '@types/immutability-helper': 2.0.15
@@ -138,7 +138,7 @@ specifiers:
   glslCanvas: 0.1.7
   got: 11.8.1
   graphlib: 2.1.1
-  he: ^1.2.0
+  he: 1.2.0
   hosted-git-info: 3.0.5
   html-entities: 1.2.1
   html-react-parser: 0.13.0
