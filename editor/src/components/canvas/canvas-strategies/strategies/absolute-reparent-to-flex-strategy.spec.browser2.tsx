@@ -7,13 +7,18 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import { Point, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+} from '../../event-helpers.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ExtraPadding } from './reparent-helpers/reparent-strategy-sibling-position-helpers'
 
@@ -22,6 +27,7 @@ async function dragElement(
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
+  skipMouseUp: boolean = false,
 ): Promise<void> {
   const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
   const targetElement = targetElements[0]
@@ -34,9 +40,30 @@ async function dragElement(
   })
 
   mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-    modifiers: modifiers,
-  })
+
+  if (skipMouseUp) {
+    mouseDownAtPoint(canvasControlsLayer, startPoint, {
+      modifiers: modifiers,
+    })
+    mouseMoveToPoint(
+      canvasControlsLayer,
+      {
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      },
+      {
+        eventOptions: {
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        },
+      },
+    )
+  } else {
+    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: modifiers,
+    })
+  }
 }
 
 const defaultTestCode = `
@@ -813,6 +840,40 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+    ])
+  })
+  it('moving the inner child element to reparent to the parent sibling visually keeps the original layout until mouseup', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(complexProject('row')),
+      'await-first-dom-report',
+    )
+    const child = await renderResult.renderedDOM.findByTestId('innerchild2')
+    const childRect = child.getBoundingClientRect()
+    const childCenter = {
+      x: childRect.x + childRect.width / 2,
+      y: childRect.y + childRect.height / 2,
+    }
+    const newParentTarget = await renderResult.renderedDOM.findByTestId('child2')
+    const newParentTargetRect = newParentTarget.getBoundingClientRect()
+    const newParentTargetCenter = {
+      x: newParentTargetRect.x + newParentTargetRect.width / 2,
+      y: newParentTargetRect.y + newParentTargetRect.height / 2,
+    }
+
+    const dragDelta = windowPoint({
+      x: newParentTargetCenter.x - childCenter.x,
+      y: newParentTargetCenter.y - childCenter.y,
+    })
+
+    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers, true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const newParentTargetRectDuringDrag = newParentTarget.getBoundingClientRect()
+    expect(newParentTargetRectDuringDrag?.x).toEqual(newParentTargetRect?.x)
+    expect(newParentTargetRectDuringDrag?.y).toEqual(newParentTargetRect?.y)
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/innerchild2',
     ])
   })
 })
