@@ -119,7 +119,7 @@ const ElementsToDrillIntoForTextContent = ['div', 'span']
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    return EP.pathsEqual(target, staticTarget)
+    return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
