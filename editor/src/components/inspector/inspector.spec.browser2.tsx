@@ -158,13 +158,13 @@ export var storyboard = (
     }
 
     // Click on the red div.
-    clickOnElementCheckTop('div-red', '50')
+    await clickOnElementCheckTop('div-red', '50')
 
     // Click on the green div.
-    clickOnElementCheckTop('div-red', '160')
+    await clickOnElementCheckTop('div-green', '160')
 
     // Click on the blue div.
-    clickOnElementCheckTop('div-blue', '270')
+    await clickOnElementCheckTop('div-blue', '270')
   })
 })
 
