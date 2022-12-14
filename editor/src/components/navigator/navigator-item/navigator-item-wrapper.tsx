@@ -101,7 +101,9 @@ const elementWarningsSelector = createSelector(
   (store: EditorStorePatched) => store.derived.elementWarnings,
   (_: EditorStorePatched, elementPath: ElementPath) => elementPath,
   (elementWarnings, elementPath) => {
-    return getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
+    return (
+      getValueFromComplexMap(EP.toString, elementWarnings, elementPath) ?? defaultElementWarnings
+    )
   },
 )
 
