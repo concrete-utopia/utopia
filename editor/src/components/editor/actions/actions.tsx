@@ -1417,12 +1417,7 @@ function toastOnUncopyableElementsSelected(
   dispatch: EditorDispatch,
 ): EditorState {
   const isReparentable = editor.selectedViews.every((target) => {
-    return isAllowedToReparent(
-      editor.projectContents,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      target,
-    )
+    return isAllowedToReparent(editor.projectContents, editor.jsxMetadata, target)
   })
   let result: EditorState = editor
   if (!isReparentable) {

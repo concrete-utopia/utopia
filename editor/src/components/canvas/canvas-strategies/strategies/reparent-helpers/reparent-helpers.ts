@@ -16,7 +16,6 @@ import { ProjectContentTreeRoot } from '../../../../assets'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined, // TODO delete me once #2994 is merged
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
@@ -48,12 +47,7 @@ export function ifAllowedToReparent(
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
   const allowed = targets.every((target) => {
-    return isAllowedToReparent(
-      canvasState.projectContents,
-      canvasState.openFile,
-      startingMetadata,
-      target,
-    )
+    return isAllowedToReparent(canvasState.projectContents, startingMetadata, target)
   })
   if (allowed) {
     return ifAllowed()

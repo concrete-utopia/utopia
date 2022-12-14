@@ -305,7 +305,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         const editorState = editorStateRef.current
         const result = isAllowedToReparent(
           editorState.projectContents,
-          editorState.canvas.openFile?.filename,
           editorState.jsxMetadata,
           props.elementPath,
         )
