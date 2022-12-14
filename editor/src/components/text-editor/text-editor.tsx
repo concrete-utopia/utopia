@@ -1,6 +1,5 @@
 import React from 'react'
 import { ElementPath } from '../../core/shared/project-file-types'
-import * as EP from '../../core/shared/element-path'
 import { useEditorState } from '../editor/store/store-hook'
 import {
   clearSelection,
@@ -8,10 +7,19 @@ import {
   updateEditorMode,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
+import { escape, unescape } from 'he'
 
 interface TextEditorProps {
   elementPath: ElementPath
   text: string
+}
+
+export function escapeHTML(s: string): string {
+  return escape(s)
+}
+
+export function unescapeHTML(s: string): string {
+  return unescape(s)
 }
 
 export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: TextEditorProps) => {
@@ -33,7 +41,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        dispatch([updateChildText(elementPath, content)])
+        dispatch([updateChildText(elementPath, escapeHTML(content))])
       }
     }
   }, [dispatch, elementPath])

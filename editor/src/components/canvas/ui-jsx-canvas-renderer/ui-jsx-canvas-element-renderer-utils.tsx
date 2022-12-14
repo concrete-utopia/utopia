@@ -50,7 +50,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditor } from '../../text-editor/text-editor'
+import { TextEditor, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -319,11 +319,12 @@ export function renderCoreElement(
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
+      const unescaped = unescapeHTML(element.text)
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
       if (parentPath == null || !EP.pathsEqual(parentPath, editedText)) {
-        return element.text
+        return unescaped
       }
-      return <TextEditor elementPath={parentPath} text={element.text.trim()} />
+      return <TextEditor elementPath={parentPath} text={unescaped.trim()} />
     }
     default:
       const _exhaustiveCheck: never = element
