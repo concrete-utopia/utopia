@@ -177,6 +177,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
       return insertionSubjects(editor.mode.subjects)
     case 'live':
     case 'select':
+    case 'textEdit':
       return targetPaths(editor.selectedViews)
     default:
       assertNever(editor.mode)

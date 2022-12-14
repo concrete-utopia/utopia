@@ -16,7 +16,7 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
-import { CanvasAction } from '../../canvas/canvas-types'
+import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
@@ -62,7 +62,8 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import * as EP from '../../../core/shared/element-path'
+import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
   nothingChanged: boolean

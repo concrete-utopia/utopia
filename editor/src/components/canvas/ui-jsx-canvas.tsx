@@ -46,7 +46,7 @@ import {
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
-import { isLiveMode } from '../editor/editor-modes'
+import { isLiveMode, isTextEditMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
@@ -149,6 +149,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  editedText: ElementPath | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -200,6 +201,9 @@ export function pickUiJsxCanvasProps(
     if (editedTextElement != null) {
       hiddenInstances = [...hiddenInstances, editedTextElement]
     }
+
+    const editedText = isTextEditMode(editor.mode) ? editor.mode.editedText : null
+
     return {
       uiFilePath: uiFilePath,
       curriedRequireFn: editor.codeResultCache.curriedRequireFn,
@@ -222,6 +226,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      editedText: editedText,
     }
   }
 }
@@ -292,6 +297,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     shouldIncludeCanvasRootInTheSpy,
     propertyControlsInfo,
     dispatch,
+    editedText,
   } = props
 
   clearListOfEvaluatedFiles()
@@ -400,6 +406,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         updateInvalidatedPaths,
         shouldIncludeCanvasRootInTheSpy,
         filePathResolveResult,
+        editedText,
       )
       return foldEither(
         () => {
@@ -425,6 +432,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       metadataContext,
       updateInvalidatedPaths,
       shouldIncludeCanvasRootInTheSpy,
+      editedText,
     ],
   )
 
@@ -443,6 +451,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       metadataContext,
       updateInvalidatedPaths,
       props.shouldIncludeCanvasRootInTheSpy,
+      editedText,
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
@@ -460,6 +469,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     metadataContext,
     projectContentsForRequireFn,
     props.shouldIncludeCanvasRootInTheSpy,
+    editedText,
     transientFilesStateForCustomRequire,
     uiFilePath,
     updateInvalidatedPaths,
@@ -500,6 +510,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+    editedText: props.editedText,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({
@@ -564,6 +575,7 @@ function attemptToResolveParsedComponents(
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
+  editedText: ElementPath | null,
 ): Either<string, MapLike<any>> {
   return flatMapEither((resolvedFilePath) => {
     resolvedFromThisOrigin.push(toImport)
@@ -594,6 +606,7 @@ function attemptToResolveParsedComponents(
           metadataContext,
           updateInvalidatedPaths,
           shouldIncludeCanvasRootInTheSpy,
+          editedText,
         )
         let filteredScope: MapLike<any> = {
           ...scope.module.exports,

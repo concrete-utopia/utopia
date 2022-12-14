@@ -63,6 +63,7 @@ export function createExecutionScope(
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  editedText: ElementPath | null,
 ): {
   scope: MapLike<any>
   topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
@@ -147,6 +148,7 @@ export function createExecutionScope(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
