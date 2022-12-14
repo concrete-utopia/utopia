@@ -265,7 +265,7 @@ export const Keyboard = {
         return false
     }
   },
-  keyIsPunctuation: function (keyChar: KeyCharacter): boolean {
+  keyTriggersFontSizeStrategy: function (keyChar: KeyCharacter): boolean {
     switch (keyChar) {
       case 'period':
       case 'comma':
@@ -276,7 +276,7 @@ export const Keyboard = {
   },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
-    return this.keyIsArrow(keyChar) || this.keyIsPunctuation(keyChar)
+    return this.keyIsArrow(keyChar) || this.keyTriggersFontSizeStrategy(keyChar)
   },
   keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (
