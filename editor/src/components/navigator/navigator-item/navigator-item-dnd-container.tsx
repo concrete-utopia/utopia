@@ -5,7 +5,7 @@ import React from 'react'
 import { PureComponent } from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import * as ReactDOM from 'react-dom'
-import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
@@ -49,7 +49,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
-  elementOriginType: ElementOriginType
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
@@ -268,7 +267,6 @@ export class NavigatorItemDndWrapper extends PureComponent<
           renamingTarget={this.props.renamingTarget}
           collapsed={this.props.collapsed}
           selected={this.props.selected}
-          elementOriginType={this.props.elementOriginType}
           elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop

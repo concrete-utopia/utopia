@@ -267,8 +267,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         aspectRatioLockedInner =
           aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
 
-        const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
-        if (elementOriginType === 'unknown-element') {
+        const metadataNotFound = MetadataUtils.findElementByElementPath(rootMetadata, view) == null
+        if (metadataNotFound) {
           anyUnknownElementsInner = true
         }
         if (isRight(possibleElement.element)) {

@@ -2780,27 +2780,12 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
 }
 
 export function areGeneratedElementsSelected(editor: EditorState): boolean {
-  return areGeneratedElementsTargeted(editor.selectedViews, editor)
+  return areGeneratedElementsTargeted(editor.selectedViews)
 }
 
-export function areGeneratedElementsTargeted(
-  targets: Array<ElementPath>,
-  editor: EditorState,
-): boolean {
+export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
   return targets.some((target) => {
-    return withUnderlyingTargetFromEditorState(target, editor, false, (success) => {
-      const originType = MetadataUtils.getElementOriginType(
-        getUtopiaJSXComponentsFromSuccess(success),
-        target,
-      )
-      switch (originType) {
-        case 'unknown-element':
-        case 'generated-static-definition-present':
-          return true
-        default:
-          return false
-      }
-    })
+    return MetadataUtils.isElementGenerated(target)
   })
 }
 
