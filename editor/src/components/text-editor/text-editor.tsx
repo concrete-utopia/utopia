@@ -38,7 +38,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [dispatch, elementPath])
 
-  const onKeyEvent = React.useCallback((event: React.KeyboardEvent) => {
+  const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       // eslint-disable-next-line no-unused-expressions
       myElement.current?.blur()
@@ -54,9 +54,9 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   return (
     <span
       ref={myElement}
-      onKeyDown={onKeyEvent}
-      onKeyUp={onKeyEvent}
-      onKeyPress={onKeyEvent}
+      onKeyDown={onKeyDown}
+      onKeyUp={stopPropagation}
+      onKeyPress={stopPropagation}
       onBlur={onBlur}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
@@ -76,4 +76,8 @@ function setSelectionToEnd(element: HTMLSpanElement) {
     selection.removeAllRanges()
     selection.addRange(range)
   }
+}
+
+function stopPropagation(e: React.KeyboardEvent) {
+  e.stopPropagation()
 }
