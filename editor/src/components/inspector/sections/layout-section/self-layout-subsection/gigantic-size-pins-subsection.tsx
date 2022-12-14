@@ -2,24 +2,12 @@ import React from 'react'
 import {
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
-  StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
-import { LocalRectangle } from '../../../../../core/shared/math-utils'
-import Utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { FullFrame, getFullFrame } from '../../../../frame'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import {
-  cssNumber,
-  CSSNumber,
-  cssNumberToFramePin,
-  framePinToCSSNumber,
-  isCSSNumber,
-  ParsedCSSPropertiesKeys,
-} from '../../../common/css-utils'
+import { cssNumber, isCSSNumber } from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
 import {
-  InspectorInfo,
   InspectorPropsContext,
   stylePropPathMappingFn,
   useGetLayoutControlStatus,
@@ -38,13 +26,12 @@ import {
   SimpleNumberInput,
   useColorTheme,
 } from '../../../../../uuiui'
-import {
-  InspectorInfoWithPropKeys,
-  useInspectorInfoLonghandShorthand,
-} from '../../../common/longhand-shorthand-hooks'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+import { unless } from '../../../../../utils/react-conditionals'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -600,15 +587,18 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
 
   return (
     <>
-      <WidthHeightRow
-        layoutType={layoutType}
-        togglePin={togglePin}
-        framePins={framePins}
-        toggleMinMax={toggleMinMax}
-        parentFlexDirection={parentFlexDirection}
-        aspectRatioLocked={aspectRatioLocked}
-        toggleAspectRatioLock={toggleAspectRatioLock}
-      />
+      {unless(
+        isFeatureEnabled('Nine block control'),
+        <WidthHeightRow
+          layoutType={layoutType}
+          togglePin={togglePin}
+          framePins={framePins}
+          toggleMinMax={toggleMinMax}
+          parentFlexDirection={parentFlexDirection}
+          aspectRatioLocked={aspectRatioLocked}
+          toggleAspectRatioLock={toggleAspectRatioLock}
+        />,
+      )}
       {minMaxToggled ? (
         <>
           <MinimumsRow />

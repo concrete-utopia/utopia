@@ -53,7 +53,7 @@ async function renderBasicModel(): Promise<EditorRenderResult> {
     makeTestProjectCodeWithSnippet(`
       <div style={{ width: '100%', height: '100%', position: 'relative' }}>
         <div
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
           data-testid='target'
         />
       </div>

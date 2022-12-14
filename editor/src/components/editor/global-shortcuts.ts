@@ -32,7 +32,7 @@ import {
   defaultRectangleElement,
   defaultViewElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
+import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
@@ -87,6 +87,7 @@ import {
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
   OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
+  TEXT_EDIT_MODE,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -168,13 +169,17 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
   }
 }
 
-function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return (
-    editor.focusedPanel === 'inspector' ||
-    editor.focusedPanel === 'dependencylist' ||
-    editor.floatingInsertMenu.insertMenuMode !== 'closed'
-  )
+function activeElementIsAnInput(): boolean {
+  const activeElement = document.activeElement
+  if (activeElement != null) {
+    const activeElementTag = activeElement.tagName.toLowerCase()
+    return activeElementTag === 'input' || activeElementTag === 'textarea'
+  }
+
+  return false
 }
+
+const activeElementIsNotAnInput = () => !activeElementIsAnInput()
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -185,7 +190,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 
   switch (key) {
     case 'tab':
-      if (!shouldTabBeHandledByBrowser(editor)) {
+      if (activeElementIsNotAnInput()) {
         event.preventDefault()
       }
       break
@@ -208,7 +213,9 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
     case 'left':
     case 'right':
       if (cmd) {
-        event.preventDefault()
+        if (activeElementIsNotAnInput()) {
+          event.preventDefault()
+        }
       }
       break
     case 'b':
@@ -340,7 +347,7 @@ export function handleKeyDown(
   }
 
   function getUIFileActions(): Array<EditorAction> {
-    if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
+    if (key === 'tab' && activeElementIsAnInput()) {
       return []
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
@@ -400,6 +407,9 @@ export function handleKeyDown(
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
+        }
+        if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
         }
         return []
       },
@@ -664,6 +674,31 @@ export function handleKeyDown(
           )
         })
         return []
+      },
+      [TEXT_EDIT_MODE]: () => {
+        if (!isFeatureEnabled('Text editing')) {
+          return []
+        }
+
+        if (editor.selectedViews.length == 0) {
+          return []
+        }
+
+        const firstSelectedViewWithoutChildren = editor.selectedViews.find((v) => {
+          const children = MetadataUtils.getChildrenPathsProjectContentsOrdered(
+            editor.jsxMetadata,
+            v,
+          )
+          return children.length === 0
+        })
+        if (firstSelectedViewWithoutChildren == null) {
+          return []
+        }
+        return [
+          EditorActions.switchEditorMode(
+            EditorModes.textEditMode(firstSelectedViewWithoutChildren),
+          ),
+        ]
       },
     })
   }

@@ -126,7 +126,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -149,7 +149,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 310, height: 340 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 310, height: 340 }}
           data-uid='bbb'
         />
       </View>`,
@@ -161,7 +161,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256 }}
         data-uid='bbb'
       />
     </View>
@@ -184,7 +184,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 296, height: 30 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 296, height: 30 }}
           data-uid='bbb'
         />
       </View>`,
@@ -196,7 +196,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
         data-uid='bbb'
       />
     </View>
@@ -220,7 +220,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 52,
             top: 61,
@@ -241,7 +241,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
         data-uid='bbb'
       />
     </View>
@@ -264,7 +264,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 2, top: 41, right: 50, bottom: 20 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 2, top: 41, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -276,7 +276,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
         data-uid='bbb'
       />
     </View>
@@ -299,7 +299,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: -30, bottom: 30 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: -30, bottom: 30 }}
           data-uid='bbb'
         />
       </View>`,
@@ -311,7 +311,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '350px' }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '350px' }}
         data-uid='bbb'
       />
     </View>
@@ -334,7 +334,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: 310, height: 390 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: 310, height: 390 }}
           data-uid='bbb'
         />
       </View>`,
@@ -346,7 +346,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
         data-uid='bbb'
       />
     </View>
@@ -369,7 +369,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '45%', height: '50%' }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '45%', height: '50%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -381,7 +381,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -404,7 +404,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 340 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 340 }}
           data-uid='bbb'
         />
       </View>`,
@@ -416,7 +416,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
         data-uid='bbb'
       />
     </View>
@@ -439,7 +439,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
           data-uid='bbb'
         />
       </View>`,
@@ -454,7 +454,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(`
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
         data-uid='bbb'
       />
     </View>
@@ -477,7 +477,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: '50%', height: '75%' }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: '50%', height: '75%' }}
           data-uid='bbb'
         />
       </View>`,

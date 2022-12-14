@@ -206,7 +206,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -229,7 +229,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX + dragDelta.x
             }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
@@ -247,7 +247,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -270,7 +270,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX + dragDelta.x
             }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
@@ -364,7 +364,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -397,7 +397,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX + dragDelta.x
             }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
@@ -421,7 +421,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -462,7 +462,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX1 + dragDelta.x
             }, top: ${startY1 + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
@@ -490,7 +490,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 60, height: 60 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 60, height: 60 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -537,7 +537,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX1 + dragDelta.x
             }, top: ${startY1 + dragDelta.y}, width: 60, height: 60 }}
             data-uid='bbb'
@@ -568,7 +568,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -601,7 +601,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
               startX1 + dragDelta.x
             }, top: ${startY1 + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
@@ -697,11 +697,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', width: 100, height: 30 }}
+            style={{ backgroundColor: '#aaaaaa33', width: 100, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -725,11 +725,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', width: 100, height: 30 }}
+            style={{ backgroundColor: '#aaaaaa33', width: 100, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 30, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 30, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -742,11 +742,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', width: 100, height: 30 }}
+            style={{ backgroundColor: '#aaaaaa33', width: 100, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -769,11 +769,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', width: 100, height: 30 }}
+            style={{ backgroundColor: '#aaaaaa33', width: 100, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 49, top: 27, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 49, top: 27, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -789,7 +789,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -828,7 +828,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -857,11 +857,11 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
+            style={{ backgroundColor: '#aaaaaa33', width: 70, height: 30 }}
             data-uid='ccc'
           />
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -887,11 +887,11 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       makeTestProjectCodeWithSnippet(`
           <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
             <div
-              style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
+              style={{ backgroundColor: '#aaaaaa33', width: 70, height: 30 }}
               data-uid='ccc'
             />
             <div
-              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
               data-uid='bbb'
               data-testid='bbb'
             />

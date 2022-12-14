@@ -54,7 +54,7 @@ export function interactionFinished(
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
-  const newEditorState = result.unpatchedEditor
+  let newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.latestAllElementProps ??
@@ -109,6 +109,14 @@ export function interactionFinished(
       newStrategyState: withClearedSession,
     }
   } else {
+    // Try to keep any updated metadata that may have been populated into here
+    // in the meantime.
+    newEditorState = {
+      ...newEditorState,
+      domMetadata: storedState.patchedEditor.domMetadata,
+      spyMetadata: storedState.patchedEditor.spyMetadata,
+      jsxMetadata: storedState.patchedEditor.jsxMetadata,
+    }
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,

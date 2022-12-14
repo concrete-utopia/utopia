@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -161,6 +162,14 @@ export function detectAreElementsFlexContainers(
 
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
+
+export const hugContentsApplicable = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean => MetadataUtils.getChildrenPaths(metadata, elementPath).length > 0
+
+export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
+  !isStoryboardChild(elementPath)
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,

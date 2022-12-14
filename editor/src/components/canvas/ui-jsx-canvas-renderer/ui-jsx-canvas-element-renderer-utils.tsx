@@ -20,6 +20,7 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
   emptyComments,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -49,6 +50,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { TextEditor } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -68,6 +70,7 @@ export function createLookupRender(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -121,6 +124,7 @@ export function createLookupRender(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 }
@@ -165,10 +169,12 @@ export function renderCoreElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
   }
+
   switch (element.type) {
     case 'JSX_ELEMENT': {
       const elementsWithinProps = getAccumulatedElementsWithin(element.props)
@@ -194,6 +200,7 @@ export function renderCoreElement(
             imports,
             code,
             highlightBounds,
+            editedText,
           )
         : NoOpLookupRender
 
@@ -241,6 +248,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -262,6 +270,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
 
       const blockScope = {
@@ -303,13 +312,18 @@ export function renderCoreElement(
           imports,
           code,
           highlightBounds,
+          editedText,
         )
         renderedChildren.push(renderResult)
       })
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      return element.text
+      const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
+      if (parentPath == null || !EP.pathsEqual(parentPath, editedText)) {
+        return element.text
+      }
+      return <TextEditor elementPath={parentPath} text={element.text.trim()} />
     }
     default:
       const _exhaustiveCheck: never = element
@@ -339,6 +353,7 @@ function renderJSXElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
@@ -373,15 +388,23 @@ function renderJSXElement(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 
-  const childrenElements = jsx.children.map(createChildrenElement)
   const elementIsIntrinsic = isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
   const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
+  const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+  const elementIsTextEditedAndNoTextBlockChild =
+    elementIsTextEdited && jsx.children.every((c) => c.type !== 'JSX_TEXT_BLOCK')
+
+  const childrenWithNewTextBlock = elementIsTextEditedAndNoTextBlockChild
+    ? [...jsx.children, jsxTextBlock('')]
+    : jsx.children
+  const childrenElements = childrenWithNewTextBlock.map(createChildrenElement)
 
   // Not necessary to check the top level elements, as we'll use a comparison of the
   // elements from scope and import to confirm it's not a top level element.

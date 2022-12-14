@@ -79,7 +79,7 @@ export var storyboard = (
         </div>
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             height: 111,
             width: 140,
             position: 'absolute',
@@ -218,7 +218,7 @@ export var storyboard = (
         </div>
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             height: 111,
             width: 140,
             position: 'absolute',
