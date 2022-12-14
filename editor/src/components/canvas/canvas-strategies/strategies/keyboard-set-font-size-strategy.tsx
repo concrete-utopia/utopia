@@ -1,10 +1,13 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
 import { elementOnlyHasTextChildren } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { defaultEither, isLeft } from '../../../../core/shared/either'
+import { defaultEither, isLeft, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { create } from '../../../../core/shared/property-path'
+import * as PP from '../../../../core/shared/property-path'
 import {
   cssNumber,
   CSSNumber,
@@ -66,8 +69,6 @@ export function keyboardSetFontSizeStrategy(
         })
       })
 
-      // console.log(fontSizeDelta, accumulatePresses)
-
       const commands = mapDropNulls(
         (path) => getFontSize(canvasState.startingMetadata, path),
         selectedElements,
@@ -75,8 +76,8 @@ export function keyboardSetFontSizeStrategy(
         setProperty(
           'always',
           path,
-          create(['style', 'fontSize']),
-          printCSSNumber(cssNumber(fontSize.value + fontSizeDelta, fontSize.unit), null),
+          PP.create(['style', 'fontSize']),
+          printCSSNumber(adjust(fontSize, fontSizeDelta), null),
         ),
       )
 
@@ -94,10 +95,25 @@ function getFontSize(
     return null
   }
 
-  const size = defaultEither(null, parseCSSLengthPercent(element.computedStyle?.['fontSize']))
-  if (size == null) {
-    return null
+  const attribute: string | null = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'fontSize'])),
+  )
+
+  const propFromStyle = defaultEither(null, parseCSSLengthPercent(attribute))
+  if (propFromStyle != null) {
+    return [propFromStyle, elementPath]
   }
 
-  return [size, elementPath]
+  const size = defaultEither(null, parseCSSLengthPercent(element.computedStyle?.['fontSize']))
+  if (size != null) {
+    return [size, elementPath]
+  }
+
+  return null
+}
+
+function adjust(value: CSSNumber, delta: number): CSSNumber {
+  const scaleFactor = value.unit === 'em' ? 0.1 : 1
+  return cssNumber(value.value + delta * scaleFactor, value.unit)
 }
