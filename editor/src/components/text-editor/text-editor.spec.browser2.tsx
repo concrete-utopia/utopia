@@ -110,6 +110,39 @@ describe('Use the text editor', () => {
         )`),
     )
   })
+  it('Escapes HTML entities', async () => {
+    const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+
+    await enterTextEditMode(editor)
+    typeText('this is a <test> with bells & whistles')
+    closeTextEditor()
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >this is a &lt;test&gt; with bells &amp; whistles</div>
+          </Storyboard>
+        )`),
+    )
+  })
 })
 
 async function enterTextEditMode(editor: EditorRenderResult) {
