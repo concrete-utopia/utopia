@@ -8,6 +8,24 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 
+describe('Entering text edit mode', () => {
+  before(() => {
+    setFeatureEnabled('Text editing', true)
+  })
+  it('Entering text edit mode', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+    await enterTextEditMode(editor)
+    expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+  })
+  it('Can not enter text edit mode when selected element has children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithDivWithChild, 'await-first-dom-report')
+
+    await enterTextEditMode(editor)
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+  })
+})
+
 describe('Use the text editor', () => {
   before(() => {
     setFeatureEnabled('Text editing', true)
@@ -210,6 +228,32 @@ export var storyboard = (
       }}
       data-uid='39e'
     />
+  </Storyboard>
+)
+`)
+
+const projectWithDivWithChild = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      <div>
+        Hello
+      </div>
+    </div>
   </Storyboard>
 )
 `)
