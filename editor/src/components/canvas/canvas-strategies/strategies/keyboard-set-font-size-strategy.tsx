@@ -29,17 +29,17 @@ export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(
-    canvasState.interactionTarget,
-  ).filter((path) => {
-    const element = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path)
-    if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-      return false
-    }
-    return elementOnlyHasTextChildren(element.element.value)
-  })
+  const validTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget).filter(
+    (path) => {
+      const element = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path)
+      if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+        return false
+      }
+      return elementOnlyHasTextChildren(element.element.value)
+    },
+  )
 
-  if (selectedElements.length === 0) {
+  if (validTargets.length === 0) {
     return null
   }
 
@@ -71,7 +71,7 @@ export function keyboardSetFontSizeStrategy(
 
       const commands = mapDropNulls(
         (path) => getFontSize(canvasState.startingMetadata, path),
-        selectedElements,
+        validTargets,
       ).map(([fontSize, path]) =>
         setProperty(
           'always',
