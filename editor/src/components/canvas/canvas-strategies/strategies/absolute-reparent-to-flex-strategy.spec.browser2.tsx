@@ -487,7 +487,7 @@ const complexProject = (flexDirection: 'row' | 'column' = 'row') => `
     >
       <div
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           width: 50,
           height: 50,
         }}

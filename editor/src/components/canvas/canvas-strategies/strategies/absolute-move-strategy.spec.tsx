@@ -168,7 +168,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -190,7 +190,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -204,7 +204,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -222,7 +222,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -236,7 +236,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -254,11 +254,11 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
         data-uid='ccc'
       />
     </View>
@@ -278,11 +278,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
           data-uid='ccc'
         />
       </View>`,
@@ -300,11 +300,11 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
         data-uid='ccc'
       />
     </View>
@@ -325,11 +325,11 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
           data-uid='ccc'
         />
       </View>`,
@@ -347,7 +347,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -361,7 +361,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 35, bottom: 35, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 35, bottom: 35, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -379,7 +379,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -393,7 +393,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, right: 35, bottom: 35, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, right: 35, bottom: 35, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -412,7 +412,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50 + 5, top: 50 + props.top, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50 + 5, top: 50 + props.top, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -437,7 +437,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '25%', top: '0%', width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '25%', top: '0%', width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -452,7 +452,7 @@ describe('Absolute Move Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '28.75%', top: '3.75%', width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '28.75%', top: '3.75%', width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -473,7 +473,7 @@ describe('Axis locked move', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -494,7 +494,7 @@ describe('Axis locked move', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 70, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 70, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -511,7 +511,7 @@ describe('Axis locked move', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, bottom: 250, right: 200 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, bottom: 250, right: 200 }}
         data-uid='bbb'
       />
     </View>
@@ -532,7 +532,7 @@ describe('Axis locked move', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 75, top: 50, bottom: 250, right: 175 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 75, top: 50, bottom: 250, right: 175 }}
           data-uid='bbb'
         />
       </View>`,
@@ -549,7 +549,7 @@ describe('Axis locked move', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       >
         <View
@@ -568,7 +568,7 @@ describe('Axis locked move', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         >
           <View
@@ -594,7 +594,7 @@ describe('Axis locked move', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
       <View
@@ -612,7 +612,7 @@ describe('Axis locked move', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         />
         <View
@@ -637,7 +637,7 @@ describe('Axis locked move', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       >
         <View
@@ -656,7 +656,7 @@ describe('Axis locked move', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         >
           <View

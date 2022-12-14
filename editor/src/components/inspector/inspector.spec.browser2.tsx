@@ -16,7 +16,7 @@ export var storyboard = (
   <Storyboard data-uid='0cd'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -39,7 +39,7 @@ export var storyboard = (
   <Storyboard data-uid='0cd'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 33,
         top: 307,
@@ -99,7 +99,7 @@ export var storyboard = (
   <Storyboard data-uid='0cd'>
     <div
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 33,
         top: 307,
