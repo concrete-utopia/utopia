@@ -346,7 +346,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         resizeStatus !== 'disabled',
         <>
           {when(isSelectMode(props.editor.mode) && !anyStrategyActive, <PinLines />)}
-          {when(isSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
           {when(isSelectMode(props.editor.mode), <InsertionControls />)}
           {renderHighlightControls()}
           {unless(dragging, <LayoutParentControl />)}
@@ -365,6 +364,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               ))}
             </>,
           )}
+          {when(isSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
         </>,
       )}
       <CursorComponent />
