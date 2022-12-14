@@ -965,6 +965,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     topmenu: {
       formulaBarMode: poppedEditor.topmenu.formulaBarMode,

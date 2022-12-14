@@ -586,6 +586,7 @@ export interface NavigatorState {
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
   highlightedTargets: Array<ElementPath>
+  hiddenInNavigator: Array<ElementPath>
 }
 
 export interface FloatingInsertMenuStateClosed {
@@ -2227,6 +2228,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       collapsedViews: [],
       renamingTarget: null,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     topmenu: {
       formulaBarMode: 'content',
@@ -2329,9 +2331,14 @@ type CacheableDerivedState = {
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
   collapsedViews: ElementPath[],
+  hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } =
-    MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
+    MetadataUtils.createOrderedElementPathsFromElements(
+      jsxMetadata,
+      collapsedViews,
+      hiddenInNavigator,
+    )
 
   const warnings = getElementWarnings(jsxMetadata)
 
@@ -2359,7 +2366,11 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
-  } = deriveCacheableState(editor.jsxMetadata, editor.navigator.collapsedViews)
+  } = deriveCacheableState(
+    editor.jsxMetadata,
+    editor.navigator.collapsedViews,
+    editor.navigator.hiddenInNavigator,
+  )
 
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
@@ -2549,6 +2560,7 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     fileBrowser: {
       renamingTarget: null,

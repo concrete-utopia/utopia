@@ -953,16 +953,22 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   ]
 
   it('with no collapsed paths', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
   })
 
   it('with the scene collapsed', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
-      testComponentSceneElement.elementPath,
-    ])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [testComponentSceneElement.elementPath],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
@@ -973,10 +979,11 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   })
 
   it('with collapsed roots', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
-      testComponentRoot1.elementPath,
-      testComponentSceneChildElement.elementPath,
-    ])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [testComponentRoot1.elementPath, testComponentSceneChildElement.elementPath],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([

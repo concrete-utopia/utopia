@@ -5,6 +5,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
+import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -198,18 +199,25 @@ function applyStaticReparent(
             ]
 
             function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
-              const commonPatches = [
+              let commonPatches: Array<CanvasCommand> = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                hasCommonAncestor
-                  ? wildcardPatch('mid-interaction', {
-                      hiddenInstances: { $push: [target] },
-                    })
-                  : wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [target] },
-                    }),
               ]
+              if (hasCommonAncestor) {
+                commonPatches.push(
+                  wildcardPatch('mid-interaction', {
+                    hiddenInstances: { $push: [target] },
+                  }),
+                )
+                commonPatches.push(hideInNavigatorCommand([target]))
+              } else {
+                commonPatches.push(
+                  wildcardPatch('mid-interaction', {
+                    displayNoneInstances: { $push: [target] },
+                  }),
+                )
+              }
               if (shouldReorder) {
                 return [
                   ...commonPatches,
