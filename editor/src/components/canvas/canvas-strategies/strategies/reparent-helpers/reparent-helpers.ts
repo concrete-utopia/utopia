@@ -26,7 +26,7 @@ export function isGeneratedElement(
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined,
+  openFile: string | null | undefined, // TODO delete me once #2994 is merged
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
@@ -42,7 +42,7 @@ export function isAllowedToReparent(
         (elementFromMetadata) => {
           return (
             !elementReferencesElsewhere(elementFromMetadata) &&
-            MetadataUtils.targetHonoursPropsPosition(projectContents, openFile, target)
+            MetadataUtils.targetHonoursPropsPosition(projectContents, metadata)
           )
         },
         metadata.element,

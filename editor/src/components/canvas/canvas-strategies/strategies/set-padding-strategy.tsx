@@ -82,7 +82,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const canShowPadding = canShowCanvasPropControl(
     canvasState.projectContents,
-    canvasState.openFile ?? null,
     element,
     canvasState.scale,
   ).has('padding')

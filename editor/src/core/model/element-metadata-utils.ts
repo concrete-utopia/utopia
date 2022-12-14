@@ -99,7 +99,7 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
-import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,
@@ -752,7 +752,6 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
@@ -775,12 +774,7 @@ export const MetadataUtils = {
                 EP.isStoryboardPath(instance.elementPath)
               )
             } else {
-              return MetadataUtils.targetUsesProperty(
-                projectContents,
-                openFile,
-                instance.elementPath,
-                'children',
-              )
+              return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
             }
           }
           // We don't know at this stage
@@ -792,7 +786,6 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
@@ -803,23 +796,20 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
         ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+        : MetadataUtils.targetElementSupportsChildren(projectContents, instance)
     }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
     property: string,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -831,17 +821,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsSize(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -853,17 +840,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsPosition(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
