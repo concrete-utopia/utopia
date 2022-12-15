@@ -48,6 +48,7 @@ import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy
 import { getDragTargets } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
+import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 
 export type CanvasStrategyFactory = (
@@ -129,18 +130,16 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
   dragToMoveMetaStrategy,
 ])
 
-const metaStrategy =
-  (strategy: CanvasStrategyFactory): MetaCanvasStrategy =>
-  (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    customStrategyState: CustomStrategyState,
-  ): Array<CanvasStrategy> => {
-    return mapDropNulls(
-      (factory) => factory(canvasState, interactionSession, customStrategyState),
-      [strategy],
-    )
-  }
+const keyboardShortcutStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardSetFontSizeStrategy, keyboardSetFontWeightStrategy, keyboardSetOpacityStrategy],
+  )
+}
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
@@ -149,8 +148,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
-  metaStrategy(keyboardSetFontSizeStrategy),
-  metaStrategy(keyboardSetOpacityStrategy), // TODO: merge with keyboardSetFontSizeStrategy
+  keyboardShortcutStrategies,
 ]
 
 export function pickCanvasStateFromEditorState(

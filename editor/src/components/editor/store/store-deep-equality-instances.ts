@@ -2686,7 +2686,7 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
   combine1EqualityCall(
     (mode) => mode.editedText,
-    ElementPathKeepDeepEquality,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     EditorModes.textEditMode,
   )
 

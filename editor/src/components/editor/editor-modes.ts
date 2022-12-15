@@ -88,7 +88,7 @@ export interface SelectMode {
 
 export interface TextEditMode {
   type: 'textEdit'
-  editedText: ElementPath
+  editedText: ElementPath | null
 }
 
 export interface LiveCanvasMode {
@@ -118,7 +118,7 @@ export const EditorModes = {
       controlId: controlId,
     }
   },
-  textEditMode: function (editedText: ElementPath): TextEditMode {
+  textEditMode: function (editedText: ElementPath | null): TextEditMode {
     return {
       type: 'textEdit',
       editedText: editedText,
@@ -137,6 +137,10 @@ export function isLiveMode(value: Mode): value is LiveCanvasMode {
 }
 export function isTextEditMode(value: Mode): value is TextEditMode {
   return value.type === 'textEdit'
+}
+
+export function isTextEditModeWithActiveTextEditing(value: Mode): value is TextEditMode {
+  return value.type === 'textEdit' && value.editedText != null
 }
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
