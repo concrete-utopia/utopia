@@ -489,13 +489,15 @@ function isSingleAxisAutoLayoutCompatibleWithReorder(
 ): boolean {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-  if (parentIsFlexLayout) {
-    return true
-  }
-
   const flowChildren = MetadataUtils.getChildren(metadata, parent).filter(
     (child) => child.specialSizeMeasurements.position !== 'absolute',
   )
+  if (flowChildren.length === 0) {
+    return false
+  }
+  if (parentIsFlexLayout || flowChildren.length > 1) {
+    return true
+  }
 
-  return flowChildren.length > 1
+  return false
 }
