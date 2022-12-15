@@ -1,8 +1,5 @@
-import { createEvent } from '@testing-library/react'
-import { ClipboardEvent } from 'react'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
-import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
@@ -239,86 +236,7 @@ describe('Use the text editor', () => {
       )
     })
   })
-
-  it('supports pasting content', async () => {
-    // test plan:
-    // 1. type 'Hello Utopia'
-    // 2. move the caret to the 5th position
-    // 3. type ', ' => the text is now 'Hello, Utopia'
-    // 4. paste 'dear' => the text is now 'Hello, dear Utopia'
-    // 5. type 'friendly ' => the text is finally 'Hello, dear friendly Utopia'
-
-    const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
-    await prepareTestModifierEditor(editor)
-
-    const textEditorElement = document.getElementById(TextEditorSpanId)
-    expect(textEditorElement).not.toBe(null)
-    if (textEditorElement != null) {
-      const sel = document.createRange()
-      sel.collapse()
-      sel.selectNodeContents(textEditorElement)
-      const range = document.createRange()
-      range.selectNodeContents(textEditorElement)
-      range.collapse(true)
-
-      if (textEditorElement.firstChild != null) {
-        range.setStart(textEditorElement.firstChild, 5)
-        range.setEnd(textEditorElement.firstChild, 5)
-
-        const selection = window.getSelection()
-        if (selection != null) {
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-      }
-    }
-
-    typeText(', ')
-
-    const pasteData = new DataTransfer()
-    pasteData.getData = () => 'dear'
-    const event = createEvent.paste(textEditorElement ?? document.body, {
-      clipboardData: pasteData,
-    } as ClipboardEvent)
-    if (textEditorElement != null) {
-      textEditorElement.dispatchEvent(event)
-    }
-    await editor.getDispatchFollowUpActionsFinished()
-
-    // ensure that the caret position is preserved
-    typeText(' friendly')
-
-    await closeTextEditor()
-    await editor.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      projectWithCustomText('Hello, dear friendly Utopia'),
-    )
-  })
 })
-
-function projectWithCustomText(text: string) {
-  return formatTestProjectCode(`
-        import * as React from 'react'
-        import { Storyboard } from 'utopia-api'
-
-
-        export var storyboard = (
-          <Storyboard data-uid='sb'>
-            <div
-              data-testid='div'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: 288,
-                height: 362,
-              }}
-              data-uid='39e'
-            >${text}</div>
-          </Storyboard>
-        )`)
-}
 
 function projectWithStyle(prop: string, value: string) {
   return formatTestProjectCode(`
