@@ -4836,10 +4836,12 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
   }
 }
 
-const parseMetadataValue = parseValueFactory(elementPropertiesParsers)
-const parseCSSValue = parseValueFactory(cssParsers)
-const parseOldLayoutValue = parseValueFactory(layoutParsers)
-const parseNewLayoutValue = parseValueFactory(layoutParsersNew)
+const parseMetadataValue = Utils.memoize(parseValueFactory(elementPropertiesParsers), {
+  maxSize: 1000,
+})
+const parseCSSValue = Utils.memoize(parseValueFactory(cssParsers), { maxSize: 1000 })
+const parseOldLayoutValue = Utils.memoize(parseValueFactory(layoutParsers), { maxSize: 1000 })
+const parseNewLayoutValue = Utils.memoize(parseValueFactory(layoutParsersNew), { maxSize: 1000 })
 
 function isMetadataProp(prop: unknown): prop is keyof ParsedElementProperties {
   return typeof prop === 'string' && prop in elementPropertiesEmptyValues
