@@ -24,6 +24,7 @@ import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -33,7 +34,7 @@ import { InteractionSession } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
-import { getReparentOutcome, pathToReparent } from './reparent-utils'
+import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseReparentAsStaticStrategy(
@@ -44,6 +45,7 @@ export function baseReparentAsStaticStrategy(
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
@@ -91,7 +93,12 @@ export function baseReparentAsStaticStrategy(
       ],
       fitness: fitness,
       apply: () => {
-        return applyStaticReparent(canvasState, interactionSession, reparentTarget)
+        return applyStaticReparent(
+          canvasState,
+          interactionSession,
+          customStrategyState,
+          reparentTarget,
+        )
       },
     }
   }
@@ -120,6 +127,7 @@ function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): 
 function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
   reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -148,10 +156,6 @@ function applyStaticReparent(
             newParent,
           )
 
-          const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
-            newParent,
-            EP.parentPath(target),
-          )
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
             canvasState.builtInDependencies,
@@ -162,7 +166,7 @@ function applyStaticReparent(
             newParent,
             'always',
           )
-
+          let duplicatedElementNewUids: { [elementPath: string]: string } = {}
           if (outcomeResult != null) {
             const { commands: reparentCommands, newPath } = outcomeResult
 
@@ -186,24 +190,28 @@ function applyStaticReparent(
 
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand([target, newPath]),
+              setElementsToRerenderCommand([target, newPath]), // TODO THIS LIST IS INCOMPLETE, KEEPS GHOSTS IN THE NAVIGATOR
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
 
             function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
-              const commonPatches = [
+              // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+              const placeholderResult = placeholderCloneCommands(
+                canvasState,
+                customStrategyState,
+                filteredSelectedElements,
+                newParent,
+              )
+
+              const commonPatches: Array<CanvasCommand> = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                newParentADescendantOfCurrentParent
-                  ? wildcardPatch('mid-interaction', {
-                      hiddenInstances: { $push: [target] },
-                    })
-                  : wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [target] },
-                    }),
+                ...placeholderResult.commands,
               ]
+              duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
+
               if (shouldReorder) {
                 return [
                   ...commonPatches,
@@ -243,7 +251,7 @@ function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
-              customStatePatch: {},
+              customStatePatch: { duplicatedElementNewUids: duplicatedElementNewUids },
               status: 'success',
             }
           }
