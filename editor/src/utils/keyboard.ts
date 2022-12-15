@@ -274,9 +274,22 @@ export const Keyboard = {
         return false
     }
   },
+  keyTriggersFontWeightStrategy: function (keyChar: KeyCharacter): boolean {
+    switch (keyChar) {
+      case 'period':
+      case 'comma':
+        return true
+      default:
+        return false
+    }
+  },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
-    return this.keyIsArrow(keyChar) || this.keyTriggersFontSizeStrategy(keyChar)
+    return (
+      this.keyIsArrow(keyChar) ||
+      this.keyTriggersFontSizeStrategy(keyChar) ||
+      this.keyTriggersFontWeightStrategy(keyChar)
+    )
   },
   keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (
