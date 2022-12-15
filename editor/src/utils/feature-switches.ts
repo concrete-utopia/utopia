@@ -5,6 +5,7 @@ import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 export type FeatureName =
   | 'Debug mode – Redux Devtools'
   | 'Debug mode – Performance Marks'
+  | 'Debug mode – Measure Selectors'
   | 'Dragging Reparents By Default'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
@@ -18,6 +19,7 @@ export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Debug mode – Redux Devtools',
   'Debug mode – Performance Marks',
+  'Debug mode – Measure Selectors',
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
@@ -29,6 +31,7 @@ export const AllFeatureNames: FeatureName[] = [
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug mode – Redux Devtools': false,
   'Debug mode – Performance Marks': false,
+  'Debug mode – Measure Selectors': false,
   'Dragging Reparents By Default': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),

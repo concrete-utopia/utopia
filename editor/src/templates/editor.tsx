@@ -59,6 +59,7 @@ import {
   CanvasStateContext,
   EditorStateContext,
   LowPriorityStateContext,
+  SelectorTimings,
   UtopiaStoreAPI,
   UtopiaStoreHook,
 } from '../components/editor/store/store-hook'
@@ -463,6 +464,7 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    const MeasureSelectors = isFeatureEnabled('Debug mode – Measure Selectors')
     const runDispatch = () => {
       const PerformanceMarks =
         isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
@@ -496,11 +498,13 @@ export class Editor {
           dispatchedActions,
         )
         ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+        const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateCanvasStore(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
           })
         })
+        const afterCanvasStore = MeasureSelectors ? performance.now() : 0
         if (PerformanceMarks) {
           performance.mark(`update canvas end ${updateId}`)
           performance.measure(
@@ -551,12 +555,29 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
+            const beforeMainStore = MeasureSelectors ? performance.now() : 0
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
+            const afterMainStore = MeasureSelectors ? performance.now() : 0
             if (
               shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
             ) {
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+              )
+            }
+            const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
+            if (MeasureSelectors) {
+              console.info(
+                'Dispatched actions:',
+                simpleStringifyActions(dispatchedActions),
+                'All stores',
+                afterStoreUpdate - beforeCanvasStore,
+                'Canvas store',
+                afterCanvasStore - beforeCanvasStore,
+                'main store',
+                afterMainStore - beforeMainStore,
+                'slow store',
+                afterStoreUpdate - afterMainStore,
               )
             }
           })
@@ -575,15 +596,13 @@ export class Editor {
         entireUpdateFinished: entireUpdateFinished,
       }
     }
-    if (PRODUCTION_ENV) {
-      return runDispatch()
-    } else {
-      return trace(
-        `action-${dispatchedActions.map((a) => a.action)}`,
-        performance.now(),
-        runDispatch,
-      )
+    SelectorTimings.current = {}
+    const result = runDispatch()
+    if (MeasureSelectors) {
+      // eslint-disable-next-line no-console
+      console.table(SelectorTimings.current)
     }
+    return result
   }
 
   private createNewProjectFromImportURL(importURL: string): void {
