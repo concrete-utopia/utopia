@@ -497,5 +497,5 @@ function isSingleAxisAutoLayoutCompatibleWithReorder(
     (child) => child.specialSizeMeasurements.position !== 'absolute',
   )
 
-  return flowChildren.length > 1
+  return flowChildren.length === 0 || flowChildren.length > 1
 }
