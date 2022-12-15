@@ -354,10 +354,13 @@ function findParentUnderPointByArea(
           pointOnCanvas,
         )
 
+      const hasStaticChildren =
+        MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, targetParentPath).length > 0
+
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldShowPositionIndicator: targetUnderMouseIndex !== -1,
+        shouldShowPositionIndicator: targetUnderMouseIndex !== -1 && hasStaticChildren,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
         defaultReparentType: 'REPARENT_AS_STATIC',
