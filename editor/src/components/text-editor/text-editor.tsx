@@ -16,6 +16,8 @@ import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import { ApplyCommandsAction } from '../editor/action-types'
 
+export const TextEditorSpanId = 'text-editor'
+
 interface TextEditorProps {
   elementPath: ElementPath
   text: string
@@ -132,6 +134,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   return (
     <span
       ref={myElement}
+      id={TextEditorSpanId}
       onKeyDown={onKeyDown}
       onKeyUp={stopPropagation}
       onKeyPress={stopPropagation}
