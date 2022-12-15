@@ -7,7 +7,7 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { Point, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,

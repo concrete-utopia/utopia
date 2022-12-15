@@ -196,12 +196,6 @@ function applyStaticReparent(
             ]
 
             function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
-              let commonPatches: Array<CanvasCommand> = [
-                wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-                }),
-              ]
-
               // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
               const placeholderResult = placeholderCloneCommands(
                 canvasState,
@@ -209,7 +203,13 @@ function applyStaticReparent(
                 filteredSelectedElements,
                 newParent,
               )
-              commonPatches.push(...placeholderResult.commands)
+
+              const commonPatches: Array<CanvasCommand> = [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
+                ...placeholderResult.commands,
+              ]
               duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
 
               if (shouldReorder) {

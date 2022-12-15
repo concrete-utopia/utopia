@@ -1,13 +1,7 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import * as EP from '../../../../core/shared/element-path'
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
-import { duplicateElement } from '../../commands/duplicate-element-command'
-import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
-import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import {
