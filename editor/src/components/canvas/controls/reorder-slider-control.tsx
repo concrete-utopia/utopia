@@ -46,10 +46,10 @@ export const ReorderSliderControl = controlForStrategyMemoized(
         store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
       'ReorderSliderControl isDragging',
     )
-    const isSelectedElementHovered = useEditorState((store) => {
-      const { hoveredViews, selectedViews } = store.editor
-      return hoveredViews.includes(selectedViews[0])
-    }, 'ReorderSliderControl isSelectedElementHovered')
+    const isTargetElementHovered = useEditorState((store) => {
+      const { hoveredViews } = store.editor
+      return target != null && hoveredViews.includes(target)
+    }, 'ReorderSliderControl isTargetElementHovered')
 
     const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
       (store) => {
@@ -114,7 +114,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       } as CanvasPoint
     }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
 
-    if (siblings.length > 1 && (isDragging || isSelectedElementHovered)) {
+    if (siblings.length > 1 && (isDragging || isTargetElementHovered)) {
       return (
         <CanvasOffsetWrapper>
           {when(
