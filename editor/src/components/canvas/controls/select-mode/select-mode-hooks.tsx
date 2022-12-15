@@ -600,6 +600,8 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
+  const innerAnimationFrameRef = React.useRef<number | null>(null)
+
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       // Do not handle the mouse move in the regular style if 'space' is pressed.
@@ -663,7 +665,6 @@ function useSelectOrLiveModeSelectAndHover(
 
       const isMultiselect = event.shiftKey
       const isDeselect = foundTarget == null && !isMultiselect
-      let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
@@ -671,7 +672,7 @@ function useSelectOrLiveModeSelectAndHover(
             windowPoint(point(event.clientX, event.clientY)),
           ).canvasPositionRounded
           if (event.button !== 2 && event.type !== 'mouseup') {
-            editorActions.push(
+            dispatch([
               CanvasActions.createInteractionSession(
                 createInteractionViaMouse(
                   start,
@@ -680,7 +681,7 @@ function useSelectOrLiveModeSelectAndHover(
                   'zero-drag-not-permitted',
                 ),
               ),
-            )
+            ])
           }
         }
 
@@ -700,29 +701,39 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
-            editorActions.push(CanvasActions.clearInteractionSession(false))
-            editorActions.push(setFocusedElement(foundTarget.elementPath))
+            dispatch([
+              CanvasActions.clearInteractionSession(false),
+              setFocusedElement(foundTarget.elementPath),
+            ])
           }
         }
 
         if (!foundTargetIsSelected) {
-          // first we only set the selected views for the canvas controls
-          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          requestAnimationFrame(() => {
+            if (innerAnimationFrameRef.current != null) {
+              window.cancelAnimationFrame(innerAnimationFrameRef.current)
+            }
+            innerAnimationFrameRef.current = requestAnimationFrame(() => {
+              let editorActions: Array<EditorAction> = []
+              // first we only set the selected views for the canvas controls
+              setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
-          // In either case cancel insert mode.
-          if (isInsertMode(editorStoreRef.current.editor.mode)) {
-            editorActions.push(...cancelInsertModeActions('apply-changes'))
-          }
+              // In either case cancel insert mode.
+              if (isInsertMode(editorStoreRef.current.editor.mode)) {
+                editorActions.push(...cancelInsertModeActions('apply-changes'))
+              }
 
-          if (updatedSelection.length === 0) {
-            // then we set the selected views for the editor state, 1 frame later
-            editorActions.push(clearSelection(), setFocusedElement(null))
-          } else {
-            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
-          }
+              if (updatedSelection.length === 0) {
+                // then we set the selected views for the editor state, 1 frame later
+                editorActions.push(clearSelection(), setFocusedElement(null))
+              } else {
+                editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+              }
+              dispatch(editorActions)
+            })
+          })
         }
       }
-      dispatch(editorActions)
     },
     [
       dispatch,
