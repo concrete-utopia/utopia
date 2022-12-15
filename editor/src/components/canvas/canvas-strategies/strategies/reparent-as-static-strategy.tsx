@@ -5,7 +5,6 @@ import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
-import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -25,17 +24,17 @@ import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
-  InteractionLifecycle,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
-import { getReparentOutcome, pathToReparent } from './reparent-utils'
+import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseReparentAsStaticStrategy(
@@ -46,6 +45,7 @@ export function baseReparentAsStaticStrategy(
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
@@ -92,12 +92,12 @@ export function baseReparentAsStaticStrategy(
         }),
       ],
       fitness: fitness,
-      apply: (strategyLifecycle) => {
+      apply: () => {
         return applyStaticReparent(
           canvasState,
           interactionSession,
+          customStrategyState,
           reparentTarget,
-          strategyLifecycle,
         )
       },
     }
@@ -127,8 +127,8 @@ function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): 
 function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
   reparentResult: ReparentTarget,
-  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
@@ -156,8 +156,6 @@ function applyStaticReparent(
             newParent,
           )
 
-          const hasCommonAncestor = EP.getCommonParent([newParent, EP.parentPath(target)]) != null
-
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
             canvasState.builtInDependencies,
@@ -167,9 +165,8 @@ function applyStaticReparent(
             pathToReparent(target),
             newParent,
             'always',
-            strategyLifecycle,
           )
-
+          let duplicatedElementNewUids: { [elementPath: string]: string } = {}
           if (outcomeResult != null) {
             const { commands: reparentCommands, newPath } = outcomeResult
 
@@ -193,7 +190,7 @@ function applyStaticReparent(
 
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand([target, newPath]),
+              setElementsToRerenderCommand([target, newPath]), // TODO THIS LIST IS INCOMPLETE, KEEPS GHOSTS IN THE NAVIGATOR
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
@@ -204,20 +201,17 @@ function applyStaticReparent(
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
               ]
-              if (hasCommonAncestor) {
-                commonPatches.push(
-                  wildcardPatch('mid-interaction', {
-                    hiddenInstances: { $push: [target] },
-                  }),
-                )
-                commonPatches.push(hideInNavigatorCommand([target]))
-              } else {
-                commonPatches.push(
-                  wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [target] },
-                  }),
-                )
-              }
+
+              // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+              const placeholderResult = placeholderCloneCommands(
+                canvasState,
+                customStrategyState,
+                filteredSelectedElements,
+                newParent,
+              )
+              commonPatches.push(...placeholderResult.commands)
+              duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
+
               if (shouldReorder) {
                 return [
                   ...commonPatches,
@@ -257,7 +251,7 @@ function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
-              customStatePatch: {},
+              customStatePatch: { duplicatedElementNewUids: duplicatedElementNewUids },
               status: 'success',
             }
           }

@@ -114,7 +114,6 @@ export function baseAbsoluteReparentStrategy(
                   pathToReparent(selectedElement),
                   newParent,
                   'always',
-                  'end-interaction',
                 )
 
                 if (reparentResult == null) {

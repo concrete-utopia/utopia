@@ -795,7 +795,6 @@ export function editorMoveMultiSelectedTemplates(
       pathToReparent(target),
       newParentPath,
       'on-complete', // TODO make sure this is the right pick here
-      'end-interaction',
     )
     if (outcomeResult == null) {
       return working
@@ -2883,7 +2882,6 @@ export const UPDATE_FNS = {
           elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           action.pasteInto,
           'always', // TODO Before merge make sure this is the right pick here
-          'end-interaction',
         )
 
         if (outcomeResult == null) {
