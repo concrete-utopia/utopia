@@ -62,8 +62,6 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
       return
     }
 
-    setSelectionToEnd(currentElement)
-
     currentElement.focus()
 
     return () => {
@@ -79,6 +77,7 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
       return
     }
     myElement.current.textContent = firstTextProp
+    setSelectionToEnd(myElement.current)
   }, [firstTextProp])
 
   const onKeyDown = React.useCallback(
