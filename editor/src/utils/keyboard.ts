@@ -274,6 +274,15 @@ export const Keyboard = {
         return false
     }
   },
+  keyTriggersFontWeightStrategy: function (keyChar: KeyCharacter): boolean {
+    switch (keyChar) {
+      case 'period':
+      case 'comma':
+        return true
+      default:
+        return false
+    }
+  },
   keyTriggersOpacityStrategy: function (keyChar: KeyCharacter): boolean {
     return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(keyChar)
   },
@@ -282,6 +291,7 @@ export const Keyboard = {
     return (
       this.keyIsArrow(keyChar) ||
       this.keyTriggersFontSizeStrategy(keyChar) ||
+      this.keyTriggersFontWeightStrategy(keyChar) ||
       this.keyTriggersOpacityStrategy(keyChar)
     )
   },
