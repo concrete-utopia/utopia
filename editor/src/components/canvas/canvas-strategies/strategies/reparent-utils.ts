@@ -190,6 +190,7 @@ export function placeholderCloneCommands(
       elementPath,
     )
     // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+    // change this if you don't need keep the starting layout
     const hasCommonAncestor =
       EP.getCommonParent([newParent, EP.parentPath(elementPath)]) != null &&
       !MetadataUtils.isPositionAbsolute(element)
