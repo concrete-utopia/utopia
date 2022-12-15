@@ -210,6 +210,9 @@ function applyStaticReparent(
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
+                wildcardPatch('mid-interaction', {
+                  displayNoneInstances: { $push: [newPath] },
+                }),
                 ...placeholderResult.commands,
               ]
               duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
@@ -217,6 +220,7 @@ function applyStaticReparent(
               if (shouldShowPositionIndicator) {
                 return [...commonPatches, showReorderIndicator(newParent, newIndex)]
               } else {
+                // TODO add nice parent highlight here
                 return commonPatches
               }
             }
