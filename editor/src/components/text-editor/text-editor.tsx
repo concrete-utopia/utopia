@@ -63,6 +63,7 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
     }
 
     setSelectionToEnd(currentElement)
+
     currentElement.focus()
 
     return () => {
