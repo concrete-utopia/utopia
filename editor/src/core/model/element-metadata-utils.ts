@@ -474,7 +474,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
   getRootViews(
@@ -512,7 +512,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleChildren
   },
   getChildren(
@@ -811,6 +811,13 @@ export const MetadataUtils = {
       }
     }
   },
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null) {
+    if (target == null) {
+      return false
+    }
+    const children = MetadataUtils.getChildren(metadata, target)
+    return children.length === 0
+  },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
       if (element.element.value.children.length === 1) {
@@ -887,6 +894,7 @@ export const MetadataUtils = {
     (
       metadata: ElementInstanceMetadataMap,
       collapsedViews: Array<ElementPath>,
+      hiddenInNavigator: Array<ElementPath>,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
@@ -906,13 +914,14 @@ export const MetadataUtils = {
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
           const path = subTree.path
+          const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           navigatorTargets.push(path)
-          if (!collapsedAncestor) {
+          if (!collapsedAncestor && !isHiddenInNavigator) {
             visibleNavigatorTargets.push(path)
           }
 
           const isCollapsed = EP.containsPath(path, collapsedViews)
-          const newCollapsedAncestor = collapsedAncestor || isCollapsed
+          const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
           let unfurledComponents: Array<ElementPathTree> = []
           fastForEach(subTree.children, (child) => {

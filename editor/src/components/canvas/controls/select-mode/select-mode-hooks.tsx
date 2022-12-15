@@ -36,7 +36,7 @@ import {
 } from '../../canvas-utils'
 import { getSelectionOrValidTargetAtPoint, getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
-import { useInsertModeSelectAndHover } from './insert-mode-hooks'
+import { useInsertModeSelectAndHover } from '../insert-mode/insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
@@ -49,6 +49,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
 import { isInsertMode } from '../../../editor/editor-modes'
+import { useTextEditModeSelectAndHover } from '../text-edit-mode/text-edit-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -256,7 +257,7 @@ export function getSelectableViews(
   return filterNonSelectableElements(nonSelectableElements, candidateViews)
 }
 
-function useFindValidTarget(): (
+export function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
   preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
@@ -571,16 +572,18 @@ function getPreferredSelectionForEvent(
   }
 }
 
+export interface MouseCallbacks {
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+}
+
 function useSelectOrLiveModeSelectAndHover(
   active: boolean,
   draggingAllowed: boolean,
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
-): {
-  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
+): MouseCallbacks {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
@@ -774,11 +777,7 @@ export function useSelectAndHover(
     setSelectedViewsForCanvasControlsOnly,
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
-  const textEditModeCallbacks = {
-    onMouseMove: Utils.NO_OP,
-    onMouseDown: Utils.NO_OP,
-    onMouseUp: Utils.NO_OP,
-  }
+  const textEditModeCallbacks = useTextEditModeSelectAndHover(modeType === 'textEdit')
 
   if (hasInteractionSession) {
     return {

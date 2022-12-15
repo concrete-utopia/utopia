@@ -1,11 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import * as EP from '../../../../core/shared/element-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
-import { useHighlightCallbacks } from './select-mode-hooks'
+import { MouseCallbacks, useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
@@ -34,14 +33,7 @@ function useGetHighlightableViewsForInsertMode() {
   }, [storeRef])
 }
 
-export function useInsertModeSelectAndHover(
-  active: boolean,
-  cmdPressed: boolean,
-): {
-  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
+export function useInsertModeSelectAndHover(active: boolean, cmdPressed: boolean): MouseCallbacks {
   const getHiglightableViewsForInsertMode = useGetHighlightableViewsForInsertMode()
   const { onMouseMove } = useHighlightCallbacks(
     active,

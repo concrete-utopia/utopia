@@ -1,17 +1,7 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import {
-  appendToPath,
-  isDescendantOf,
-  parentPath,
-  toString,
-} from '../../../../core/shared/element-path'
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
-import { duplicateElement } from '../../commands/duplicate-element-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
-import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -34,6 +24,7 @@ import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
+import { placeholderCloneCommands } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
@@ -94,36 +85,13 @@ export function baseFlexReparentToAbsoluteStrategy(
 
             const newParent = reparentTarget.newParent
 
-            let duplicatedElementNewUids = {
-              ...customStrategyState.duplicatedElementNewUids,
-            }
-
-            const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
-              const newParentADescendantOfCurrentParent = isDescendantOf(
-                newParent,
-                parentPath(element),
-              )
-
-              if (newParentADescendantOfCurrentParent) {
-                // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
-                const selectedElementString = toString(element)
-                const newUid =
-                  duplicatedElementNewUids[selectedElementString] ??
-                  generateUidWithExistingComponents(canvasState.projectContents)
-                duplicatedElementNewUids[selectedElementString] = newUid
-
-                const newPath = appendToPath(parentPath(element), newUid)
-
-                return [
-                  duplicateElement('mid-interaction', element, newUid),
-                  wildcardPatch('mid-interaction', {
-                    hiddenInstances: { $push: [newPath] },
-                  }),
-                ]
-              } else {
-                return []
-              }
-            })
+            // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+            const placeholderCommands = placeholderCloneCommands(
+              canvasState,
+              customStrategyState,
+              filteredSelectedElements,
+              newParent,
+            )
 
             const escapeHatchCommands = getEscapeHatchCommands(
               filteredSelectedElements,
@@ -132,36 +100,41 @@ export function baseFlexReparentToAbsoluteStrategy(
               canvasPoint({ x: 0, y: 0 }),
             ).commands
 
-            return strategyApplicationResult([
-              ...placeholderCloneCommands,
-              ...escapeHatchCommands,
-              updateFunctionCommand(
-                'always',
-                (editorState, commandLifecycle): Array<EditorStatePatch> => {
-                  const updatedCanvasState = pickCanvasStateFromEditorState(
-                    editorState,
-                    canvasState.builtInDependencies,
-                  )
-                  const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
-                    reparentTarget,
-                    0,
-                  )
-                  const reparentCommands =
-                    absoluteReparentStrategyToUse(
-                      updatedCanvasState,
-                      interactionSession,
-                      customStrategyState,
-                    )?.apply(strategyLifecycle).commands ?? []
+            return strategyApplicationResult(
+              [
+                ...placeholderCommands.commands,
+                ...escapeHatchCommands,
+                updateFunctionCommand(
+                  'always',
+                  (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                    const updatedCanvasState = pickCanvasStateFromEditorState(
+                      editorState,
+                      canvasState.builtInDependencies,
+                    )
+                    const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
+                      reparentTarget,
+                      0,
+                    )
+                    const reparentCommands =
+                      absoluteReparentStrategyToUse(
+                        updatedCanvasState,
+                        interactionSession,
+                        customStrategyState,
+                      )?.apply(strategyLifecycle).commands ?? []
 
-                  return foldAndApplyCommandsInner(
-                    editorState,
-                    [],
-                    reparentCommands,
-                    commandLifecycle,
-                  ).statePatches
-                },
-              ),
-            ])
+                    return foldAndApplyCommandsInner(
+                      editorState,
+                      [],
+                      reparentCommands,
+                      commandLifecycle,
+                    ).statePatches
+                  },
+                ),
+              ],
+              {
+                duplicatedElementNewUids: placeholderCommands.duplicatedElementNewUids,
+              },
+            )
           },
         )
       },
