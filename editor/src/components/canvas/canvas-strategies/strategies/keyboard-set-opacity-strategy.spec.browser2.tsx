@@ -28,6 +28,18 @@ describe('adjust font size with the keyboard', () => {
       expect(div.style.opacity).toEqual('0.4')
     })
 
+    it('entering digit and character', async () => {
+      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor)
+      pressKey('4')
+      pressKey('u')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.opacity).toEqual('0.4')
+    })
+
     it('entering 3-4', async () => {
       const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 

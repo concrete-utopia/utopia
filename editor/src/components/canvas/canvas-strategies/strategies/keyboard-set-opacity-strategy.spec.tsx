@@ -7,6 +7,10 @@ describe('set opacity from keyboard', () => {
   describe('parseOpacity', () => {
     it('edge cases', () => {
       expect(parseOpacityFromKeyboard('')).toEqual(null)
+      expect(parseOpacityFromKeyboard('1a')).toEqual(null)
+      expect(parseOpacityFromKeyboard('a1')).toEqual(null)
+      expect(parseOpacityFromKeyboard('a33')).toEqual('33%')
+      expect(parseOpacityFromKeyboard('a0')).toEqual('100%')
       expect(parseOpacityFromKeyboard('0')).toEqual('100%')
       expect(parseOpacityFromKeyboard('100')).toEqual('100%')
     })

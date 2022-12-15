@@ -51,6 +51,8 @@ function getKeySequence(keyStates: Array<KeyState>): string {
   return keyStates.flatMap((s) => Array.from(s.keysPressed.values())).join('')
 }
 
+const isDigit = (c: string) => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(c)
+
 export function parseOpacityFromKeyboard(keys: string): string | null {
   let tail = keys.slice(-3)
   if (tail === '0' || tail === '100') {
@@ -58,11 +60,11 @@ export function parseOpacityFromKeyboard(keys: string): string | null {
   }
 
   tail = tail.slice(-2)
-  if (tail.length === 1) {
+  if (tail.length === 1 && isDigit(tail[0])) {
     return tail + '0%'
   }
 
-  if (tail.length === 2) {
+  if (tail.length === 2 && isDigit(tail[0]) && isDigit(tail[1])) {
     return tail + '%'
   }
 
