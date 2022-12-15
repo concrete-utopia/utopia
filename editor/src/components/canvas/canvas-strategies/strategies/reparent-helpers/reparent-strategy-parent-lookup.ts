@@ -263,8 +263,8 @@ function findParentByPaddedInsertionZone(
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
-    const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
-    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
     const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(metadata, element)
@@ -324,14 +324,17 @@ function findParentUnderPointByArea(
   pointOnCanvas: CanvasPoint,
 ) {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
-  const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
+  const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+    metadata,
+    targetParentPath,
+  )
   const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
     metadata,
     targetParentPath,
   )
 
   const targetParentUnderPoint: ReparentTarget = (() => {
-    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
