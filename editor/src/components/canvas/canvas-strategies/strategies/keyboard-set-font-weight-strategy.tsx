@@ -1,20 +1,13 @@
-import {
-  getSimpleAttributeAtPath,
-  MetadataUtils,
-} from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { elementOnlyHasTextChildren } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { defaultEither, isLeft, right } from '../../../../core/shared/either'
+import { isLeft } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../../../core/shared/element-template'
+import { clamp, safeParseInt } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import Keyboard from '../../../../utils/keyboard'
-import {
-  cssNumber,
-  CSSNumber,
-  parseCSSLengthPercent,
-  printCSSNumber,
-} from '../../../inspector/common/css-utils'
 import { setProperty } from '../../commands/set-property-command'
 import {
   InteractionCanvasState,
@@ -25,6 +18,8 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
+
+const FontWeightProp = 'fontWeight'
 
 export function keyboardSetFontWeightStrategy(
   canvasState: InteractionCanvasState,
@@ -39,8 +34,8 @@ export function keyboardSetFontWeightStrategy(
   }
 
   return {
-    id: 'set-font-size',
-    name: 'Set font size',
+    id: 'set-font-weight',
+    name: 'Set font weight',
     controlsToRender: [],
     fitness: fitness(interactionSession),
     apply: () => {
@@ -53,7 +48,7 @@ export function keyboardSetFontWeightStrategy(
       const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
       accumulatedPresses.forEach((accumulatedPress) => {
         accumulatedPress.keysPressed.forEach((key) => {
-          if (accumulatedPress.modifiers.cmd && accumulatedPress.modifiers.shift) {
+          if (accumulatedPress.modifiers.alt && accumulatedPress.modifiers.cmd) {
             if (key === 'period') {
               fontSizeDelta += accumulatedPress.count
             }
@@ -65,14 +60,18 @@ export function keyboardSetFontWeightStrategy(
       })
 
       const commands = mapDropNulls(
-        (path) => getFontSize(canvasState.startingMetadata, path),
+        (path) =>
+          optionalMap(
+            (w): [number, ElementPath] => [w, path],
+            getFontWeightFromComputedStyle(canvasState.startingMetadata, path),
+          ),
         validTargets,
-      ).map(([fontSize, path]) =>
+      ).map(([fontWeight, path]) =>
         setProperty(
           'always',
           path,
-          PP.create(['style', 'fontSize']),
-          printCSSNumber(adjust(fontSize, fontSizeDelta), null),
+          PP.create(['style', FontWeightProp]),
+          adjust(fontWeight, fontSizeDelta),
         ),
       )
 
@@ -88,7 +87,7 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   }
   return (
     elementOnlyHasTextChildren(element.element.value) ||
-    getFontWeightFromProp(metadata, elementPath) != null
+    getFontWeightFromComputedStyle(metadata, elementPath) != null
   )
 }
 
@@ -98,7 +97,7 @@ function fitness(interactionSession: InteractionSession | null): number {
   }
   const lastKeyState = getLastKeyPressState(
     interactionSession.interactionData.keyStates,
-    Keyboard.keyTriggersFontSizeStrategy,
+    Keyboard.keyTriggersFontWeightStrategy,
   )
   if (lastKeyState == null) {
     return 0
@@ -106,36 +105,14 @@ function fitness(interactionSession: InteractionSession | null): number {
   return 1
 }
 
-const FontWeightProp = 'fontSize'
-
-function parseMaybeFontWeight(maybeFontSize: unknown): CSSNumber | null {
-  return defaultEither(null, parseCSSLengthPercent(maybeFontSize))
-}
-
-function getFontWeightFromProp(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): CSSNumber | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return null
-  }
-
-  const attribute: string | null = defaultEither(
-    null,
-    getSimpleAttributeAtPath(
-      right(element.element.value.props),
-      PP.create(['style', FontWeightProp]),
-    ),
-  )
-
-  return parseMaybeFontWeight(attribute)
+function parseMaybeFontWeight(maybeFontSize: unknown): number | null {
+  return safeParseInt(maybeFontSize as string)
 }
 
 function getFontWeightFromComputedStyle(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): CSSNumber | null {
+): number | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null) {
     return null
@@ -144,26 +121,6 @@ function getFontWeightFromComputedStyle(
   return parseMaybeFontWeight(element.computedStyle?.[FontWeightProp])
 }
 
-function adjust(value: CSSNumber, delta: number): CSSNumber {
-  const scaleFactor = value.unit === 'em' ? 0.1 : 1
-  if (value.unit === 'em' && value.value < 1) {
-    return value
-  }
-  if (value.unit === 'px' && value.value < 5) {
-    return value
-  }
-  return cssNumber(value.value + delta * scaleFactor, value.unit)
-}
-
-function getFontSize(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): [CSSNumber, ElementPath] | null {
-  const size =
-    getFontWeightFromProp(metadata, elementPath) ??
-    getFontWeightFromComputedStyle(metadata, elementPath)
-  if (size != null) {
-    return [size, elementPath]
-  }
-  return null
+function adjust(value: number, delta: number): number {
+  return clamp(100, 900, value + delta * 100)
 }
