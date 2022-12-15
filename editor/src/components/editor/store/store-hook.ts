@@ -7,6 +7,10 @@ import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
 
+export const SelectorTimings: {
+  current: { [selectorName: string]: { accumulatedTime: number; calledNumberOfTimes: number } }
+} = { current: {} }
+
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
  * useEditorState will only trigger re-render if the return value of your state selector changes (using shallow equality)
@@ -48,9 +52,22 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
       const LogSelectorPerformance =
         isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
+      const MeasureSelectors = isFeatureEnabled('Debug mode – Measure Selectors')
+
       if (LogSelectorPerformance) {
         window.performance.mark('selector_begin')
       }
+
+      const beforeSelector = MeasureSelectors ? performance.now() : 0
+
+      let calledNumberOfTimes = 1
+
+      // Uncomment this to stress-test selectors
+      for (let index = 0; index < 99; index++) {
+        calledNumberOfTimes++
+        selector(state)
+      }
+
       const result = selector(state)
       if (LogSelectorPerformance) {
         window.performance.mark('selector_end')
@@ -60,6 +77,19 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
           'selector_end',
         )
       }
+
+      const afterSelector = MeasureSelectors ? performance.now() : 0
+
+      if (MeasureSelectors) {
+        const currentValue = SelectorTimings.current[selectorName] ?? {
+          accumulatedTime: 0,
+          calledNumberOfTimes: 0,
+        }
+        currentValue.accumulatedTime += afterSelector - beforeSelector
+        currentValue.calledNumberOfTimes += calledNumberOfTimes
+        SelectorTimings.current[selectorName] = currentValue
+      }
+
       return result
     }
     previousSelectorRef.current = selector
