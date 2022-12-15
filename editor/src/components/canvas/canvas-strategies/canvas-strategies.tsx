@@ -48,6 +48,7 @@ import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy
 import { getDragTargets } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
+import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -149,6 +150,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   metaStrategy(keyboardSetFontSizeStrategy),
+  metaStrategy(keyboardSetOpacityStrategy), // TODO: merge with keyboardSetFontSizeStrategy
 ]
 
 export function pickCanvasStateFromEditorState(
