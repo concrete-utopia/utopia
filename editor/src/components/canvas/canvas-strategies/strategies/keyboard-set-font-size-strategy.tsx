@@ -100,7 +100,7 @@ function fitness(interactionSession: InteractionSession | null): number {
     interactionSession.interactionData.keyStates,
     Keyboard.keyTriggersFontSizeStrategy,
   )
-  if (lastKeyState == null) {
+  if (lastKeyState == null || !lastKeyState.modifiers.cmd || !lastKeyState.modifiers.shift) {
     return 0
   }
   return 1
