@@ -305,7 +305,7 @@ function findParentByPaddedInsertionZone(
       // we found a first good target parent, early return
       return {
         shouldReparent: true,
-        shouldReorder: true,
+        shouldShowPositionIndicator: true,
         newParent: singleAxisAutoLayoutContainer.path,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
@@ -336,7 +336,7 @@ function findParentUnderPointByArea(
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: false,
+        shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
         defaultReparentType: 'REPARENT_AS_ABSOLUTE',
@@ -354,7 +354,7 @@ function findParentUnderPointByArea(
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: targetUnderMouseIndex !== -1,
+        shouldShowPositionIndicator: targetUnderMouseIndex !== -1,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
         defaultReparentType: 'REPARENT_AS_STATIC',
@@ -364,7 +364,7 @@ function findParentUnderPointByArea(
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: false,
+        shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
         defaultReparentType: 'REPARENT_AS_STATIC',

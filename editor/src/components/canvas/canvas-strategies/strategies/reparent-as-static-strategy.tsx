@@ -195,7 +195,9 @@ function applyStaticReparent(
               setCursorCommand(CSSCursor.Move),
             ]
 
-            function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
+            function midInteractionCommandsForTarget(
+              shouldShowPositionIndicator: boolean,
+            ): Array<CanvasCommand> {
               // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
               const placeholderResult = placeholderCloneCommands(
                 canvasState,
@@ -212,14 +214,8 @@ function applyStaticReparent(
               ]
               duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
 
-              if (shouldReorder) {
-                return [
-                  ...commonPatches,
-                  showReorderIndicator(newParent, newIndex),
-                  wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [newPath] },
-                  }),
-                ]
+              if (shouldShowPositionIndicator) {
+                return [...commonPatches, showReorderIndicator(newParent, newIndex)]
               } else {
                 return commonPatches
               }
@@ -228,8 +224,10 @@ function applyStaticReparent(
             let interactionFinishCommands: Array<CanvasCommand>
             let midInteractionCommands: Array<CanvasCommand>
 
-            if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-              midInteractionCommands = midInteractionCommandsForTarget(reparentResult.shouldReorder)
+            if (reparentResult.shouldShowPositionIndicator && siblingsOfTarget.length > 0) {
+              midInteractionCommands = midInteractionCommandsForTarget(
+                reparentResult.shouldShowPositionIndicator,
+              )
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
@@ -239,7 +237,7 @@ function applyStaticReparent(
             } else {
               if (parentRect != null) {
                 midInteractionCommands = midInteractionCommandsForTarget(
-                  reparentResult.shouldReorder,
+                  reparentResult.shouldShowPositionIndicator,
                 )
               } else {
                 // this should be an error because parentRect should never be null
