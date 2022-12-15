@@ -52,10 +52,12 @@ function getKeySequence(keyStates: Array<KeyState>): string {
 }
 
 export function parseOpacityFromKeyboard(keys: string): string | null {
-  const tail = keys.slice(-2)
-  if (tail === '0' || tail === '00') {
+  let tail = keys.slice(-3)
+  if (tail === '0' || tail === '100') {
     return '100%'
   }
+
+  tail = tail.slice(-2)
   if (tail.length === 1) {
     return tail + '0%'
   }
