@@ -1,11 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import * as EP from '../../../../core/shared/element-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
-import { useHighlightCallbacks } from '../select-mode/select-mode-hooks'
+import { MouseCallbacks, useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
@@ -21,16 +20,11 @@ function useGetHighlightableViewsForInsertMode() {
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, mode, projectContents, openFile } = storeRef.current
+    const { componentMetadata, mode, projectContents } = storeRef.current
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata)
       const insertTargets = allPaths.filter((path) => {
-        return MetadataUtils.targetSupportsChildren(
-          projectContents,
-          openFile,
-          componentMetadata,
-          path,
-        )
+        return MetadataUtils.targetSupportsChildren(projectContents, componentMetadata, path)
       })
       return insertTargets
     } else {
