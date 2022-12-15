@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -709,14 +710,17 @@ function useSelectOrLiveModeSelectAndHover(
         }
 
         if (!foundTargetIsSelected) {
+          // first we only set the selected views for the canvas controls
+          ReactDOM.flushSync(() => {
+            setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          })
+
           requestAnimationFrame(() => {
             if (innerAnimationFrameRef.current != null) {
               window.cancelAnimationFrame(innerAnimationFrameRef.current)
             }
             innerAnimationFrameRef.current = requestAnimationFrame(() => {
               let editorActions: Array<EditorAction> = []
-              // first we only set the selected views for the canvas controls
-              setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
               // In either case cancel insert mode.
               if (isInsertMode(editorStoreRef.current.editor.mode)) {
