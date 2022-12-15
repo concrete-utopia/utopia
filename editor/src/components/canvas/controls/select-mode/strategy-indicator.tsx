@@ -41,9 +41,7 @@ export const StrategyIndicator = React.memo(() => {
       data-testid='drag-strategy-indicator'
     >
       <MoveIndicatorItem dragType={indicatorFlagsInfo.indicatorFlags.dragType} />
-      <Divider />
       <ReparentIndicatorItem status={indicatorFlagsInfo.indicatorFlags.reparent} />
-      <Divider />
       <AncestorIndicatorItem enabled={indicatorFlagsInfo.indicatorFlags.ancestor} />
     </FlexRow>
   )
@@ -161,11 +159,6 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
       </div>
     </FlexColumn>
   )
-})
-
-const Divider = React.memo(() => {
-  const colorTheme = useColorTheme()
-  return <div style={{ height: '100%', width: 1, backgroundColor: colorTheme.fg8.value }} />
 })
 
 interface VisibilityWrapperProps {
