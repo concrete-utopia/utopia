@@ -2,12 +2,21 @@ import React from 'react'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { useEditorState } from '../editor/store/store-hook'
 import {
+  applyCommandsAction,
   clearSelection,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { escape, unescape } from 'he'
+import { AllElementProps } from '../editor/store/editor-state'
+import { Modifier } from '../../utils/modifiers'
+import { setProperty } from '../canvas/commands/set-property-command'
+import * as EP from '../../core/shared/element-path'
+import * as PP from '../../core/shared/property-path'
+import { ApplyCommandsAction } from '../editor/action-types'
+
+export const TextEditorSpanId = 'text-editor'
 
 interface TextEditorProps {
   elementPath: ElementPath
@@ -22,8 +31,27 @@ export function unescapeHTML(s: string): string {
   return unescape(s)
 }
 
+const handleShortcut = (
+  cond: boolean,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  prop: string,
+  value: string,
+  defaultValue: string,
+): Array<ApplyCommandsAction> => {
+  if (!cond) {
+    return []
+  }
+  const { style } = allElementProps[EP.toString(elementPath)]
+  const newValue = style != null && style[prop] === value ? defaultValue : value
+  return [
+    applyCommandsAction([setProperty('always', elementPath, PP.create(['style', prop]), newValue)]),
+  ]
+}
+
 export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: TextEditorProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
+  const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -46,14 +74,58 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [dispatch, elementPath])
 
-  const onKeyDown = React.useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      // eslint-disable-next-line no-unused-expressions
-      myElement.current?.blur()
-    } else {
-      event.stopPropagation()
-    }
-  }, [])
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent) => {
+      const modifiers = Modifier.modifiersForEvent(event)
+      const meta = modifiers.cmd || modifiers.ctrl
+      const shortcuts = [
+        ...handleShortcut(
+          meta && event.key === 'b', // Meta+b = bold
+          allElementProps,
+          elementPath,
+          'fontWeight',
+          'bold',
+          'normal',
+        ),
+        ...handleShortcut(
+          meta && event.key === 'i', // Meta+i = italic
+          allElementProps,
+          elementPath,
+          'fontStyle',
+          'italic',
+          'normal',
+        ),
+        ...handleShortcut(
+          meta && event.key === 'u', // Meta+u = underline
+          allElementProps,
+          elementPath,
+          'textDecoration',
+          'underline',
+          'none',
+        ),
+        ...handleShortcut(
+          meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
+          allElementProps,
+          elementPath,
+          'textDecoration',
+          'line-through',
+          'none',
+        ),
+      ]
+      if (shortcuts.length > 0) {
+        event.stopPropagation()
+        dispatch(shortcuts)
+      }
+
+      if (event.key === 'Escape') {
+        // eslint-disable-next-line no-unused-expressions
+        myElement.current?.blur()
+      } else {
+        event.stopPropagation()
+      }
+    },
+    [dispatch, elementPath, allElementProps],
+  )
 
   const onBlur = React.useCallback(() => {
     dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
@@ -62,6 +134,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
   return (
     <span
       ref={myElement}
+      id={TextEditorSpanId}
       onKeyDown={onKeyDown}
       onKeyUp={stopPropagation}
       onKeyPress={stopPropagation}
