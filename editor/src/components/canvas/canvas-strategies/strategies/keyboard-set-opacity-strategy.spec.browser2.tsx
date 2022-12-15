@@ -2,10 +2,10 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
-describe('adjust font size with the keyboard', () => {
-  describe('no font size specified', () => {
+describe('adjust opacity with the keyboard', () => {
+  describe('no opacity specified', () => {
     it('entering characters', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -17,7 +17,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering character and digit', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -29,7 +29,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering digit and character', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -41,7 +41,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering 3-4', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -53,7 +53,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering 3-0', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -65,7 +65,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering 0-0', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -77,7 +77,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('entering 1-0-0', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -90,7 +90,7 @@ describe('adjust font size with the keyboard', () => {
     })
 
     it('enter 4-2-0', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
@@ -117,7 +117,7 @@ async function doSelect(editor: EditorRenderResult) {
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-const projectWithNoFontSize = `import * as React from 'react'
+const project = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 
