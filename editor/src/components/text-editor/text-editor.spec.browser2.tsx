@@ -218,8 +218,6 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
     await prepareTestModifierEditor(editor)
 
-    await wait(500) // ensure that the caret is correctly placed at the first load
-
     const textEditorElement = document.getElementById(TextEditorSpanId)
     expect(textEditorElement).not.toBe(null)
     if (textEditorElement != null) {
