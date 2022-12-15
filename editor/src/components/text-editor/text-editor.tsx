@@ -53,7 +53,6 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
   const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
-  const [loaded, setLoaded] = React.useState(false)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
 
@@ -73,13 +72,6 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
       }
     }
   }, [dispatch, elementPath])
-
-  React.useEffect(() => {
-    if (loaded || myElement.current?.firstChild == null) {
-      return
-    }
-    setLoaded(true)
-  }, [loaded, myElement.current?.firstChild])
 
   React.useEffect(() => {
     if (myElement.current == null) {
