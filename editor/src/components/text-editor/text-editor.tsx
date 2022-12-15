@@ -49,20 +49,27 @@ const handleShortcut = (
   ]
 }
 
-export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: TextEditorProps) => {
+export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
   const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
+  const [loaded, setLoaded] = React.useState(false)
+  const [caretPosition, setCaretPosition] = React.useState(firstTextProp.length)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
+
+  function setCaretPositionToCurrent() {
+    if (myElement.current == null) {
+      return
+    }
+    setCaretPosition(getCaretPosition(myElement.current) ?? 0)
+  }
 
   React.useEffect(() => {
     const currentElement = myElement.current
     if (currentElement == null) {
       return
     }
-
-    setSelectionToEnd(currentElement)
 
     currentElement.focus()
 
@@ -74,8 +81,32 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     }
   }, [dispatch, elementPath])
 
+  React.useEffect(() => {
+    if (loaded || myElement.current?.firstChild == null) {
+      return
+    }
+    setLoaded(true)
+    moveCaretToEnd(myElement.current)
+  }, [loaded, myElement.current?.firstChild])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      return
+    }
+    myElement.current.textContent = firstTextProp
+  }, [firstTextProp])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      return
+    }
+    setCaretPositionToCurrent()
+  }, [myElement.current?.textContent])
+
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
+      setCaretPositionToCurrent()
+
       const modifiers = Modifier.modifiersForEvent(event)
       const meta = modifiers.cmd || modifiers.ctrl
       const shortcuts = [
@@ -127,6 +158,25 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     [dispatch, elementPath, allElementProps],
   )
 
+  const onPaste = React.useCallback(
+    (e: React.ClipboardEvent) => {
+      if (myElement.current == null || myElement.current.textContent == null) {
+        return
+      }
+
+      const pastedText = e.clipboardData.getData('text')
+
+      const before = myElement.current.textContent.slice(0, caretPosition)
+      const after = myElement.current.textContent.slice(caretPosition)
+      myElement.current.textContent = before + pastedText + after
+
+      const newCaretPosition = caretPosition + pastedText.length
+      moveCaret(myElement.current, newCaretPosition)
+      setCaretPosition(newCaretPosition)
+    },
+    [caretPosition],
+  )
+
   const onBlur = React.useCallback(() => {
     dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
   }, [dispatch])
@@ -135,19 +185,39 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     <span
       ref={myElement}
       id={TextEditorSpanId}
+      onPaste={onPaste}
       onKeyDown={onKeyDown}
       onKeyUp={stopPropagation}
       onKeyPress={stopPropagation}
+      onInput={() => {
+        setCaretPositionToCurrent()
+      }}
       onBlur={onBlur}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
-    >
-      {firstTextProp}
-    </span>
+    />
   )
+})
+
+function moveCaret(element: HTMLSpanElement, position: number) {
+  const { firstChild } = element
+  if (firstChild == null) {
+    return
+  }
+
+  const range = document.createRange()
+  range.setStart(firstChild, position)
+  range.setEnd(firstChild, position)
+
+  const sel = window.getSelection()
+  if (sel == null) {
+    return
+  }
+  sel.removeAllRanges()
+  sel.addRange(range)
 }
 
-function setSelectionToEnd(element: HTMLSpanElement) {
+function moveCaretToEnd(element: HTMLSpanElement) {
   const range = document.createRange()
   range.selectNodeContents(element)
   range.collapse(false)
@@ -157,6 +227,15 @@ function setSelectionToEnd(element: HTMLSpanElement) {
     selection.removeAllRanges()
     selection.addRange(range)
   }
+}
+
+function getCaretPosition(element: HTMLSpanElement) {
+  const sel = window.getSelection()
+  const range = sel?.getRangeAt(0)
+  if (range?.commonAncestorContainer.parentNode == element) {
+    return range?.endOffset
+  }
+  return null
 }
 
 function stopPropagation(e: React.KeyboardEvent) {
