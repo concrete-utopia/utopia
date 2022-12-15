@@ -680,24 +680,12 @@ export function handleKeyDown(
           return []
         }
 
-        if (editor.selectedViews.length == 0) {
-          return []
-        }
+        const firstTextEditableView = editor.selectedViews.find((v) =>
+          MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+        )
 
-        const firstSelectedViewWithoutChildren = editor.selectedViews.find((v) => {
-          const children = MetadataUtils.getChildrenPathsProjectContentsOrdered(
-            editor.jsxMetadata,
-            v,
-          )
-          return children.length === 0
-        })
-        if (firstSelectedViewWithoutChildren == null) {
-          return []
-        }
         return [
-          EditorActions.switchEditorMode(
-            EditorModes.textEditMode(firstSelectedViewWithoutChildren),
-          ),
+          EditorActions.switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null)),
         ]
       },
     })
