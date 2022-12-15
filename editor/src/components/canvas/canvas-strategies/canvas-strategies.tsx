@@ -49,6 +49,7 @@ import { getDragTargets } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
+import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -136,7 +137,7 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [keyboardSetFontSizeStrategy, keyboardSetFontWeightStrategy],
+    [keyboardSetFontSizeStrategy, keyboardSetFontWeightStrategy, keyboardSetOpacityStrategy],
   )
 }
 

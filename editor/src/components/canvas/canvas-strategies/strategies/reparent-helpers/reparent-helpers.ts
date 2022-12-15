@@ -14,23 +14,12 @@ import {
 } from '../../canvas-strategy-types'
 import { ProjectContentTreeRoot } from '../../../../assets'
 
-export function isGeneratedElement(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined,
-  target: ElementPath,
-): boolean {
-  return MetadataUtils.anyUnknownOrGeneratedElements(projectContents, {}, openFile ?? null, [
-    target,
-  ])
-}
-
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined, // TODO delete me once #2994 is merged
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
-  if (isGeneratedElement(projectContents, openFile, target)) {
+  if (MetadataUtils.isElementGenerated(target)) {
     return false
   } else {
     const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
@@ -58,12 +47,7 @@ export function ifAllowedToReparent(
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
   const allowed = targets.every((target) => {
-    return isAllowedToReparent(
-      canvasState.projectContents,
-      canvasState.openFile,
-      startingMetadata,
-      target,
-    )
+    return isAllowedToReparent(canvasState.projectContents, startingMetadata, target)
   })
   if (allowed) {
     return ifAllowed()

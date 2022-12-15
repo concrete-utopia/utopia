@@ -283,12 +283,16 @@ export const Keyboard = {
         return false
     }
   },
+  keyTriggersOpacityStrategy: function (keyChar: KeyCharacter): boolean {
+    return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(keyChar)
+  },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
     return (
       this.keyIsArrow(keyChar) ||
       this.keyTriggersFontSizeStrategy(keyChar) ||
-      this.keyTriggersFontWeightStrategy(keyChar)
+      this.keyTriggersFontWeightStrategy(keyChar) ||
+      this.keyTriggersOpacityStrategy(keyChar)
     )
   },
   keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {

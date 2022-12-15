@@ -7,7 +7,7 @@ import {
   isJSXElement,
   JSXElementName,
 } from '../../../core/shared/element-template'
-import { ElementOriginType, ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
@@ -49,7 +49,6 @@ export interface NavigatorItemInnerProps {
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
 }
 
@@ -261,7 +260,6 @@ export const NavigatorItem: React.FunctionComponent<
     isElementVisible,
     selected,
     collapsed,
-    elementOriginType,
     elementPath,
     getSelectedViewsInRange,
     index,
@@ -280,9 +278,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const childComponentCount = props.noOfChildren
 
-  const isDynamic =
-    elementOriginType === 'unknown-element' ||
-    elementOriginType === 'generated-static-definition-present'
+  const isDynamic = MetadataUtils.isElementGenerated(elementPath)
 
   const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
   const fullyVisible = useStyleFullyVisible(elementPath)
@@ -373,7 +369,6 @@ export const NavigatorItem: React.FunctionComponent<
           label={props.label}
           renamingTarget={props.renamingTarget}
           selected={props.selected}
-          elementOriginType={props.elementOriginType}
           dispatch={props.dispatch}
           isDynamic={isDynamic}
           iconColor={resultingStyle.iconColor}
@@ -401,7 +396,6 @@ interface NavigatorRowLabelProps {
   isDynamic: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  elementOriginType: ElementOriginType
   dispatch: EditorDispatch
 }
 
@@ -423,7 +417,6 @@ const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
-        elementOriginType={props.elementOriginType}
       />
       <ComponentPreview
         key={`preview-${props.label}`}

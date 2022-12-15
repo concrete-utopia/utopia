@@ -60,14 +60,7 @@ import {
   zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import {
-  ElementOriginType,
-  Imports,
-  isUnknownOrGeneratedElement,
-  NodeModules,
-  PropertyPath,
-  ElementPath,
-} from '../shared/project-file-types'
+import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
@@ -124,48 +117,9 @@ export const getChildrenOfCollapsedViews = (
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
-  getElementOriginType(
-    elements: Array<UtopiaJSXComponent>,
-    target: ElementPath,
-  ): ElementOriginType {
+  isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    if (staticTarget == null) {
-      return 'unknown-element'
-    } else {
-      if (EP.pathsEqual(target, staticTarget)) {
-        return 'statically-defined'
-      } else {
-        const element = findJSXElementChildAtPath(elements, staticTarget)
-        if (element != null && isJSXElement(element)) {
-          return 'generated-static-definition-present'
-        } else {
-          return 'unknown-element'
-        }
-      }
-    }
-  },
-  anyUnknownOrGeneratedElements(
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null,
-    targets: Array<ElementPath>,
-  ): boolean {
-    return targets.some((target) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        target,
-        projectContents,
-        nodeModules,
-        openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingDynamicTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+    return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
@@ -520,7 +474,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
   getRootViews(
@@ -558,7 +512,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleChildren
   },
   getChildren(
@@ -933,6 +887,7 @@ export const MetadataUtils = {
     (
       metadata: ElementInstanceMetadataMap,
       collapsedViews: Array<ElementPath>,
+      hiddenInNavigator: Array<ElementPath>,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
@@ -952,13 +907,14 @@ export const MetadataUtils = {
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
           const path = subTree.path
+          const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           navigatorTargets.push(path)
-          if (!collapsedAncestor) {
+          if (!collapsedAncestor && !isHiddenInNavigator) {
             visibleNavigatorTargets.push(path)
           }
 
           const isCollapsed = EP.containsPath(path, collapsedViews)
-          const newCollapsedAncestor = collapsedAncestor || isCollapsed
+          const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
           let unfurledComponents: Array<ElementPathTree> = []
           fastForEach(subTree.children, (child) => {
@@ -1292,10 +1248,6 @@ export const MetadataUtils = {
       ...workingElements,
       ...spyOnlyElements,
     }
-  },
-  isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
-    const originType = this.getElementOriginType(elements, target)
-    return originType === 'statically-defined'
   },
   removeElementMetadataChild(
     target: ElementPath,

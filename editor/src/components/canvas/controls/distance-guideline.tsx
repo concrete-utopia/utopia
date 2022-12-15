@@ -1,12 +1,12 @@
 import React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { Guideline, Guidelines, XAxisGuideline, YAxisGuideline } from '../guideline'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from '../../../uuiui'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-const StrokeColor = colorTheme.canvasLayoutStroke.value
+const StrokeColor = colorTheme.brandNeonPink.value
 const LineEndSegmentSize = 3.5
 
 type GuidelineWithDistance = {
@@ -93,7 +93,6 @@ interface DistanceGuidelineProps {
   boundingBox: CanvasRectangle
   guidelines: Array<Guideline>
 }
-
 export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
   getNewControlForDistance(
     distance: number,
@@ -121,45 +120,36 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
     isHorizontal: boolean,
     id: string,
   ): JSX.Element {
-    const fontSize = 11 / this.props.scale
-    let position: CanvasPoint
-    let width: undefined | number
-    if (isHorizontal) {
-      position = {
-        x: Math.min(from.x, to.x),
-        y: Math.min(from.y, to.y),
-      } as CanvasPoint
-      width = Math.abs(from.x - to.x)
-    } else {
-      const offset = {
-        x: 2 / this.props.scale,
-        y: -fontSize / 2,
-      } as CanvasPoint
-      const middle = {
-        x: (from.x + to.x) / 2,
-        y: (from.y + to.y) / 2,
-      } as CanvasPoint
-      position = Utils.offsetPoint(middle, offset)
-    }
-
     return (
-      <div
-        key={id}
-        style={{
-          position: 'absolute',
-          left: this.props.canvasOffset.x + position.x,
-          top: this.props.canvasOffset.y + position.y,
-          width: width,
-          textAlign: 'center',
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-          fontSize: fontSize,
-          color: StrokeColor,
-          pointerEvents: 'none',
-        }}
-      >
-        {`${distance.toFixed(0)}`}
-      </div>
+      <CanvasOffsetWrapper>
+        <div
+          key={id}
+          style={{
+            position: 'absolute',
+            top: Math.min(from.y, to.y),
+            left: Math.min(from.x, to.x),
+            width: isHorizontal ? Math.abs(from.x - to.x) : undefined,
+            height: isHorizontal ? undefined : Math.abs(from.y - to.y),
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: isHorizontal ? 'row' : 'column',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              margin: 4 / this.props.scale,
+              padding: 4 / this.props.scale,
+              borderRadius: 4 / this.props.scale,
+              color: colorTheme.white.value,
+              backgroundColor: StrokeColor,
+              fontSize: 12 / this.props.scale,
+            }}
+          >
+            {`${distance.toFixed(0)}`}
+          </div>
+        </div>
+      </CanvasOffsetWrapper>
     )
   }
 

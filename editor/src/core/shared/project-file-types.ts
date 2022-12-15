@@ -726,18 +726,3 @@ export type NodeModules = {
 
 // Key here is the full filename.
 export type ProjectContents = { [filepath: string]: ProjectFile }
-
-export type ElementOriginType =
-  // Completely statically defined element with a known single place in the hierarchy.
-  | 'statically-defined'
-  // An element generated from within some arbitrary code, but for which we have access to the definition.
-  | 'generated-static-definition-present'
-  // Something from somewhere, for which we probably have access to the bounds.
-  | 'unknown-element'
-
-export function isUnknownOrGeneratedElement(elementOriginType: ElementOriginType): boolean {
-  return (
-    elementOriginType === 'unknown-element' ||
-    elementOriginType === 'generated-static-definition-present'
-  )
-}
