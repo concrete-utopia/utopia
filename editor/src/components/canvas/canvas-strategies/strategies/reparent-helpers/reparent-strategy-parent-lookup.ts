@@ -267,7 +267,7 @@ function findParentByPaddedInsertionZone(
     if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
-    const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(metadata, element)
+    const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(metadata, element)
     if (!compatibleWith1DReorder) {
       return null
     }
@@ -325,7 +325,7 @@ function findParentUnderPointByArea(
 ) {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
   const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
-  const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(
+  const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
     metadata,
     targetParentPath,
   )
@@ -483,7 +483,7 @@ export function flowParentAbsoluteOrStatic(
   // should there be a DO_NOT_REPARENT return type here?
 }
 
-function isSingleAxisAutoLayoutComaptibleWithReorder(
+function isSingleAxisAutoLayoutCompatibleWithReorder(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
 ): boolean {
