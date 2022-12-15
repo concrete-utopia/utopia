@@ -158,7 +158,8 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   )
 
   if (
-    isTextEditMode(canvasControlProps.editor.mode) ||
+    (isTextEditMode(canvasControlProps.editor.mode) &&
+      canvasControlProps.editor.mode.editedText != null) ||
     (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd)
   ) {
     return null

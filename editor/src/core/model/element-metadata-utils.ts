@@ -811,6 +811,13 @@ export const MetadataUtils = {
       }
     }
   },
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null) {
+    if (target == null) {
+      return false
+    }
+    const children = MetadataUtils.getChildren(metadata, target)
+    return children.length === 0
+  },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
       if (element.element.value.children.length === 1) {
