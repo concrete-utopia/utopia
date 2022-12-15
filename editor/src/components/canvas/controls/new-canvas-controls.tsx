@@ -22,7 +22,13 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, isSelectMode, isTextEditMode, Mode } from '../../editor/editor-modes'
+import {
+  isLiveMode,
+  isSelectMode,
+  isTextEditMode,
+  isTextEditModeWithActiveTextEditing,
+  Mode,
+} from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { ResolveFn } from '../../custom-code/code-file'
@@ -158,8 +164,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   )
 
   if (
-    (isTextEditMode(canvasControlProps.editor.mode) &&
-      canvasControlProps.editor.mode.editedText != null) ||
+    isTextEditModeWithActiveTextEditing(canvasControlProps.editor.mode) ||
     (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd)
   ) {
     return null

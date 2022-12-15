@@ -139,6 +139,10 @@ export function isTextEditMode(value: Mode): value is TextEditMode {
   return value.type === 'textEdit'
 }
 
+export function isTextEditModeWithActiveTextEditing(value: Mode): value is TextEditMode {
+  return value.type === 'textEdit' && value.editedText != null
+}
+
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {
     case 'live':
