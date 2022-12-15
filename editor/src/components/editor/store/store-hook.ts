@@ -63,10 +63,12 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
       let calledNumberOfTimes = 1
 
       // Uncomment this to stress-test selectors
-      for (let index = 0; index < 99; index++) {
-        calledNumberOfTimes++
-        selector(state)
-      }
+      // if (MeasureSelectors) {
+      //   for (let index = 0; index < 99; index++) {
+      //     calledNumberOfTimes++
+      //     selector(state)
+      //   }
+      // }
 
       const result = selector(state)
       if (LogSelectorPerformance) {
