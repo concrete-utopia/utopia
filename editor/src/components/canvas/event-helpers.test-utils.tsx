@@ -541,6 +541,7 @@ export function pressKey(
   options: {
     modifiers?: Modifiers
     eventOptions?: KeyboardEventInit
+    targetElement?: HTMLElement
   } = {},
 ) {
   const modifiers = options.modifiers ?? emptyModifiers
@@ -553,9 +554,11 @@ export function pressKey(
     ...passedEventOptions,
   }
 
+  const target = options?.targetElement ?? document.body
+
   act(() => {
     fireEvent(
-      document.body,
+      target,
       new KeyboardEvent('keydown', {
         bubbles: true,
         cancelable: true,
@@ -566,7 +569,7 @@ export function pressKey(
     )
 
     fireEvent(
-      document.body,
+      target,
       new KeyboardEvent('keyup', {
         bubbles: true,
         cancelable: true,
