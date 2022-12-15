@@ -129,7 +129,7 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
   dragToMoveMetaStrategy,
 ])
 
-const keyboardTweakStrategy: MetaCanvasStrategy = (
+const keyboardShortcutStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
@@ -147,7 +147,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
-  keyboardTweakStrategy,
+  keyboardShortcutStrategies,
 ]
 
 export function pickCanvasStateFromEditorState(
