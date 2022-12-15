@@ -53,7 +53,7 @@ function getKeySequence(keyStates: Array<KeyState>): string {
 
 export function parseOpacityFromKeyboard(keys: string): string | null {
   const tail = keys.slice(-2)
-  if (tail === '0') {
+  if (tail === '0' || tail === '00') {
     return '100%'
   }
   if (tail.length === 1) {
