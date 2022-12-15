@@ -19,6 +19,7 @@ import {
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import { FlexReparentParentOutlineIndicator } from '../../controls/select-mode/reparent-parent-outline-indicator'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -88,6 +89,12 @@ export function baseReparentAsStaticStrategy(
           control: ZeroSizedElementControls,
           props: { showAllPossibleElements: true },
           key: 'zero-size-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: FlexReparentParentOutlineIndicator,
+          props: {},
+          key: 'parent-outline-highlight',
           show: 'visible-only-while-active',
         }),
       ],
@@ -220,8 +227,12 @@ function applyStaticReparent(
               if (shouldShowPositionIndicator) {
                 return [...commonPatches, showReorderIndicator(newParent, newIndex)]
               } else {
-                // TODO add nice parent highlight here
-                return commonPatches
+                return [
+                  ...commonPatches,
+                  wildcardPatch('mid-interaction', {
+                    canvas: { controls: { parentOutlineHighlight: { $set: newParent } } },
+                  }),
+                ]
               }
             }
 
