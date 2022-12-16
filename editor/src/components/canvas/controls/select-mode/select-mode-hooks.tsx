@@ -712,7 +712,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
             foundTarget.elementPath,
           )
-          if (isEditableText) {
+          if (isEditableText && isFeatureEnabled('Text editing')) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
             setTimeout(() =>
