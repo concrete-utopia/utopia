@@ -113,7 +113,7 @@ export const useRefEditorState = <U>(
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  const api = context.api
+  const api = context.useStore
 
   const selectorRef = React.useRef(selector)
   selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
@@ -158,17 +158,15 @@ export const useRefEditorState = <U>(
   return sliceRef
 }
 
-export type UtopiaStoreHook = UseBoundStore<EditorStorePatched>
+// export type UtopiaStoreHook = { () => EditorStorePatched }
 
-// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 3.6.0 https://github.com/pmndrs/zustand#using-subscribe-with-selector
-export type UtopiaStoreAPI = Mutate<
-  StoreApi<EditorStorePatched>,
-  [['zustand/subscribeWithSelector', never]]
+// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
+export type UtopiaStoreAPI = UseBoundStore<
+  Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
 >
 
 export type EditorStateContextData = {
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
+  useStore: UtopiaStoreAPI
 }
 
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
@@ -188,7 +186,7 @@ export function useSelectorWithCallback<U>(
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  const api = context.api
+  const api = context.useStore
 
   const selectorRef = React.useRef(selector)
   selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called

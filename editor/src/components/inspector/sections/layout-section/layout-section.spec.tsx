@@ -34,7 +34,7 @@ describe('Layout Section', () => {
 
     const { getByText } = render(
       <TestInspectorContextProvider
-        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+        selectedViews={storeHookForTest.useStore.getState().editor.selectedViews}
         editorStoreData={storeHookForTest}
       >
         <LayoutSection
