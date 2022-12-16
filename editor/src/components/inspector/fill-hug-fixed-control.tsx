@@ -93,7 +93,7 @@ function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
-  if (prop == null || prop === 'min-content') {
+  if (prop === 'min-content') {
     return { type: 'hug' }
   }
 
