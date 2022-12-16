@@ -49,7 +49,7 @@ const handleShortcut = (
   ]
 }
 
-export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: TextEditorProps) => {
+export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
   const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
@@ -62,8 +62,6 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       return
     }
 
-    setSelectionToEnd(currentElement)
-
     currentElement.focus()
 
     return () => {
@@ -73,6 +71,14 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
       }
     }
   }, [dispatch, elementPath])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      return
+    }
+    myElement.current.textContent = firstTextProp
+    setSelectionToEnd(myElement.current)
+  }, [firstTextProp])
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -135,17 +141,16 @@ export const TextEditor: React.FC<TextEditorProps> = ({ elementPath, text }: Tex
     <span
       ref={myElement}
       id={TextEditorSpanId}
+      onPaste={stopPropagation}
       onKeyDown={onKeyDown}
       onKeyUp={stopPropagation}
       onKeyPress={stopPropagation}
       onBlur={onBlur}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
-    >
-      {firstTextProp}
-    </span>
+    />
   )
-}
+})
 
 function setSelectionToEnd(element: HTMLSpanElement) {
   const range = document.createRange()
@@ -159,6 +164,6 @@ function setSelectionToEnd(element: HTMLSpanElement) {
   }
 }
 
-function stopPropagation(e: React.KeyboardEvent) {
+function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
   e.stopPropagation()
 }
