@@ -1,8 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
+import { EditorDispatch } from '../../../editor/action-types'
 import { switchEditorMode } from '../../../editor/actions/action-creators'
 import { EditorModes, isTextEditMode } from '../../../editor/editor-modes'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -66,4 +68,11 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
     onMouseDown: NO_OP,
     onMouseUp: onMouseUp,
   })
+}
+
+export function scheduleTextEditForNextFrame(
+  elementPath: ElementPath,
+  dispatch: EditorDispatch,
+): void {
+  setTimeout(() => dispatch([switchEditorMode(EditorModes.textEditMode(elementPath))]))
 }

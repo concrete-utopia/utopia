@@ -50,7 +50,10 @@ import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
 import { EditorModes, isInsertMode } from '../../../editor/editor-modes'
-import { useTextEditModeSelectAndHover } from '../text-edit-mode/text-edit-mode-hooks'
+import {
+  scheduleTextEditForNextFrame,
+  useTextEditModeSelectAndHover,
+} from '../text-edit-mode/text-edit-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -715,9 +718,7 @@ function useSelectOrLiveModeSelectAndHover(
           if (isEditableText && isFeatureEnabled('Text editing')) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
-            setTimeout(() =>
-              dispatch([switchEditorMode(EditorModes.textEditMode(foundTarget.elementPath))]),
-            )
+            scheduleTextEditForNextFrame(foundTarget.elementPath, dispatch)
           }
         }
 
