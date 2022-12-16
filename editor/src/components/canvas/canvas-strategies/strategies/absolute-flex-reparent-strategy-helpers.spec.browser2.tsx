@@ -2254,6 +2254,9 @@ describe('Reparent indicators', () => {
 
     // Check the indicator presence and position.
     await checkReparentIndicator(renderResult, 388, 610, 2, 123)
+    expect(renderResult.getEditorState().editor.displayNoneInstances).toEqual([
+      EP.fromString('storyboard/scene/parentsibling/seconddiv'),
+    ])
   })
 
   it(`shows the reparent indicator before all the elements in a 'row-reverse' container`, async () => {
@@ -2536,6 +2539,11 @@ describe('Reparent indicators', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
+    expect(renderResult.getEditorState().editor.displayNoneInstances).toEqual([
+      EP.fromString(
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/absolutechild',
+      ),
+    ])
     // Check that the indicator is not there.
     await expect(async () =>
       renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0'),
@@ -2611,6 +2619,11 @@ describe('Reparent indicators', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
+    expect(renderResult.getEditorState().editor.displayNoneInstances).toEqual([
+      EP.fromString(
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/flowcontainer/absolutechild',
+      ),
+    ])
     // Check that the indicator is not there.
     await expect(async () =>
       renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0'),
@@ -2702,6 +2715,11 @@ describe('Reparent indicators', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
+    expect(renderResult.getEditorState().editor.displayNoneInstances).toEqual([
+      EP.fromString(
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/flowcontainer/absolutechild',
+      ),
+    ])
     expect(renderResult.getEditorState().editor.canvas.controls.parentOutlineHighlight).toBeNull()
     await checkReparentIndicator(renderResult, 389, 227, 75, 2)
   })
