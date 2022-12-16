@@ -19,7 +19,7 @@ import {
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
-import { FlexReparentParentOutlineIndicator } from '../../controls/select-mode/reparent-parent-outline-indicator'
+import { StaticReparentTargetOutlineIndicator } from '../../controls/select-mode/static-reparent-target-outline'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
@@ -92,7 +92,7 @@ export function baseReparentAsStaticStrategy(
           show: 'visible-only-while-active',
         }),
         controlWithProps({
-          control: FlexReparentParentOutlineIndicator,
+          control: StaticReparentTargetOutlineIndicator,
           props: {},
           key: 'parent-outline-highlight',
           show: 'visible-only-while-active',

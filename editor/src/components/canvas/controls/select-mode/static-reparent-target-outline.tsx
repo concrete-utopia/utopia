@@ -5,7 +5,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { HighlightControl } from '../highlight-control'
 
-export const FlexReparentParentOutlineIndicator = controlForStrategyMemoized(() => {
+export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized(() => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(
     (store) => store.editor.canvas.scale,
@@ -22,7 +22,7 @@ export const FlexReparentParentOutlineIndicator = controlForStrategyMemoized(() 
     } else {
       return null
     }
-  }, 'FlexReparentParentOutlineIndicator')
+  }, 'StaticReparentTargetOutlineIndicator')
 
   if (parentFrame != null) {
     return (
