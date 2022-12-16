@@ -22,38 +22,52 @@ import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 
-export function findParentSceneValidPathsUncached(target: Element): Array<ElementPath> | null {
-  const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
-  if (validPaths != null) {
-    return validPaths.split(' ').map(EP.fromString)
-  } else {
-    if (target.parentElement != null) {
-      return findParentSceneValidPaths(target.parentElement)
+type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
+
+export function findParentSceneValidPaths(
+  target: Element,
+  mutableCache: FindParentSceneValidPathsCache,
+): Array<ElementPath> | null {
+  const cacheResult = mutableCache.get(target)
+  if (cacheResult === undefined) {
+    const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
+    if (validPaths != null) {
+      const result = validPaths.split(' ').map(EP.fromString)
+      mutableCache.set(target, result)
+      return result
     } else {
-      return null
+      if (target.parentElement != null) {
+        const result = findParentSceneValidPaths(target.parentElement, mutableCache)
+        mutableCache.set(target, result)
+        return result
+      } else {
+        return null
+      }
     }
+  } else {
+    return cacheResult
   }
 }
-
-export const findParentSceneValidPaths = memoize(findParentSceneValidPathsUncached, {
-  maxSize: 100,
-})
 
 // Take a DOM element, and try to find the nearest selectable path for it
 export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
 ): ElementPath | null {
+  const parentSceneValidPathsCache = new Map()
+
   const firstParentFromDom = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
     'search-dom-only',
+    parentSceneValidPathsCache,
   )
 
   const firstParentFromPath = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
     'allow-descendants-from-path',
+    parentSceneValidPathsCache,
   )
 
   if (firstParentFromDom == null || firstParentFromPath == null) {
@@ -70,6 +84,7 @@ export function findFirstParentWithValidElementPathInner(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
   allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
@@ -80,7 +95,7 @@ export function findFirstParentWithValidElementPathInner(
     }
   })
   const validStaticElementPathsForScene: Set<string> = new Set()
-  const parentSceneValidPaths = findParentSceneValidPaths(target)
+  const parentSceneValidPaths = findParentSceneValidPaths(target, parentSceneValidPathsCache)
   if (parentSceneValidPaths != null) {
     for (const validPath of parentSceneValidPaths) {
       validStaticElementPathsForScene.add(EP.toString(validPath))
@@ -149,6 +164,7 @@ export function findFirstParentWithValidElementPathInner(
         validDynamicElementPathsForLookup,
         target.parentElement,
         allowDescendantsFromPath,
+        parentSceneValidPathsCache,
       )
     }
   }
