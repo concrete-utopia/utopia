@@ -158,8 +158,6 @@ export const useRefEditorState = <U>(
   return sliceRef
 }
 
-// export type UtopiaStoreHook = { () => EditorStorePatched }
-
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 export type UtopiaStoreAPI = UseBoundStore<
   Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>

@@ -60,7 +60,6 @@ import {
   interactionUpdate,
 } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
-import { UtopiaStoreAPI } from './store-hook'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
