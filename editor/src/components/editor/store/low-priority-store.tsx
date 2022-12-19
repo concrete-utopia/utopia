@@ -5,9 +5,7 @@ export const LowPriorityStoreProvider = React.memo<React.PropsWithChildren<unkno
   const lowPriorityStore = React.useContext(LowPriorityStateContext)?.useStore
   return (
     <EditorStateContext.Provider
-      value={
-        lowPriorityStore == null ? null : { api: lowPriorityStore, useStore: lowPriorityStore }
-      }
+      value={lowPriorityStore == null ? null : { useStore: lowPriorityStore }}
     >
       {props.children}
     </EditorStateContext.Provider>

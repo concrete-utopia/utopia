@@ -109,6 +109,7 @@ import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from './canvas-strategies/canvas-strategies'
+import { UtopiaStoreAPI } from '../editor/store/store-hook'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -326,32 +327,21 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
-  const canvasStoreHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'canvas-store')))
+  const canvasStoreHook: UtopiaStoreAPI = create(
+    subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'canvas-store')),
+  )
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
-  const lowPriorityStoreHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(
+  const lowPriorityStoreHook: UtopiaStoreAPI = create(
     subscribeWithSelector((set) =>
       patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
     ),
   )
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'editor-store')))
+  const storeHook: UtopiaStoreAPI = create(
+    subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'editor-store')),
+  )
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
@@ -368,8 +358,7 @@ export async function renderTestEditorWithModel(
     >
       <FailJestOnCanvasError />
       <EditorRoot
-        api={storeHook}
-        useStore={storeHook}
+        mainStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
         lowPriorityStore={lowPriorityStoreHook}
