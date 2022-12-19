@@ -1,14 +1,20 @@
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
-  getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../../canvas/ui-jsx.test-utils'
 import { TextEditMode } from '../../../editor/editor-modes'
 import * as EP from '../../../../core/shared/element-path'
+import { wait } from '../../../../utils/utils.test-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { selectComponents } from '../../../editor/actions/action-creators'
 
 describe('Entering text edit mode', () => {
   before(() => {
@@ -24,9 +30,21 @@ describe('Entering text edit mode', () => {
   })
   it('Entering text edit mode with text editable selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
-    await selectElement(editor, 'div')
+    await selectElement(editor, EP.fromString('sb/39e'))
     pressKey('t')
     await editor.getDispatchFollowUpActionsFinished()
+
+    expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+    expect(EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!)).toEqual(
+      'sb/39e',
+    )
+  })
+  it('Entering text edit mode with double click on selected text editable element', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+    await selectElement(editor, EP.fromString('sb/39e'))
+    await clickOnElement(editor, 'div', 'double-click')
+    // wait for the next frame
+    await wait(1)
 
     expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
     expect(EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!)).toEqual(
@@ -36,7 +54,7 @@ describe('Entering text edit mode', () => {
   it('Entering text edit mode with non-text editable selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
 
-    await selectElement(editor, 'div')
+    await selectElement(editor, EP.fromString('sb/39e'))
     pressKey('t')
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -53,7 +71,7 @@ describe('Click to choose target text for editing', () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
     pressKey('t')
-    await selectElement(editor, 'div')
+    await clickOnElement(editor, 'div')
 
     expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
     expect(EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!)).toEqual(
@@ -64,14 +82,22 @@ describe('Click to choose target text for editing', () => {
     const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
 
     pressKey('t')
-    await selectElement(editor, 'div')
+    await clickOnElement(editor, 'div')
 
     expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
     expect((editor.getEditorState().editor.mode as TextEditMode).editedText).toBeNull()
   })
 })
 
-async function selectElement(editor: EditorRenderResult, testId: string) {
+async function selectElement(editor: EditorRenderResult, path: ElementPath) {
+  await editor.dispatch([selectComponents([path], false)], true)
+}
+
+async function clickOnElement(
+  editor: EditorRenderResult,
+  testId: string,
+  singleOrDoubleClick: 'single-click' | 'double-click' = 'single-click',
+) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
@@ -80,7 +106,11 @@ async function selectElement(editor: EditorRenderResult, testId: string) {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  if (singleOrDoubleClick === 'single-click') {
+    mouseClickAtPoint(canvasControlsLayer, divCorner)
+  } else {
+    mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+  }
   await editor.getDispatchFollowUpActionsFinished()
 }
 
