@@ -50,9 +50,9 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
     // let's create a new wrapped selector
     const wrappedSelector = (state: EditorStorePatched) => {
       const LogSelectorPerformance =
-        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+        isFeatureEnabled('Debug – Performance Marks (Slow)') && PERFORMANCE_MARKS_ALLOWED
 
-      const MeasureSelectors = isFeatureEnabled('Debug mode – Measure Selectors')
+      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
 
       if (LogSelectorPerformance) {
         window.performance.mark('selector_begin')

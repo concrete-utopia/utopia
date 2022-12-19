@@ -437,7 +437,9 @@ export function runDomWalker({
   }
 
   const LogDomWalkerPerformance =
-    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
+      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
+    PERFORMANCE_MARKS_ALLOWED
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
 
