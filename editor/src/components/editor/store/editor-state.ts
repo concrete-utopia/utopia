@@ -836,6 +836,7 @@ export interface EditorStateCanvasControls {
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
+  parentOutlineHighlight: ElementPath | null
 }
 
 export function editorStateCanvasControls(
@@ -846,6 +847,7 @@ export function editorStateCanvasControls(
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
+  parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -855,6 +857,7 @@ export function editorStateCanvasControls(
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
+    parentOutlineHighlight: parentOutlineHighlight,
   }
 }
 
@@ -2192,6 +2195,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
@@ -2511,6 +2515,7 @@ export function editorModelFromPersistentModel(
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
