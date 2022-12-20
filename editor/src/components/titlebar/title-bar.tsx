@@ -39,16 +39,18 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges, currentBranch } = useEditorState(
-    (store) => ({
-      dispatch: store.dispatch,
-      loginState: store.userState.loginState,
-      projectName: store.editor.projectName,
-      upstreamChanges: store.editor.githubData.upstreamChanges,
-      currentBranch: store.editor.githubSettings.branchName,
-    }),
-    'TitleBar',
-  )
+  const { dispatch, loginState, projectName, upstreamChanges, currentBranch, treeConflicts } =
+    useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        loginState: store.userState.loginState,
+        projectName: store.editor.projectName,
+        upstreamChanges: store.editor.githubData.upstreamChanges,
+        currentBranch: store.editor.githubSettings.branchName,
+        treeConflicts: store.editor.githubData.treeConflicts,
+      }),
+      'TitleBar',
+    )
 
   const userPicture = useGetUserPicture()
 
@@ -61,29 +63,23 @@ const TitleBar = React.memo(() => {
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-  const numberOfUpstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(upstreamChanges),
-    [upstreamChanges],
-  )
+
+  const hasMergeConflicts = React.useMemo(() => {
+    if (treeConflicts == null) {
+      return false
+    }
+    return Object.keys(treeConflicts).length > 0
+  }, [treeConflicts])
 
   const githubFileChanges = useGithubFileChanges()
   const hasDownstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges) > 0,
     [githubFileChanges],
   )
-  const numberOfDownstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(githubFileChanges),
-    [githubFileChanges],
-  )
 
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
-
-  const isLeftMenuExpanded = useEditorState(
-    (store) => store.editor.leftMenu.expanded,
-    'LeftPanelRoot isLeftMenuExpanded',
-  )
 
   const toggleLeftPanel = useCallback(() => {
     let actions: Array<EditorAction> = []
@@ -141,6 +137,18 @@ const TitleBar = React.memo(() => {
               >
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
+              </RoundButton>,
+            )}
+            {when(
+              hasMergeConflicts,
+              <RoundButton color={colorTheme.errorBgSolid.value} onClick={openLeftPaneltoGithubTab}>
+                {
+                  <Icons.WarningTriangle
+                    style={{ width: 19, height: 19 }}
+                    color={'on-light-main'}
+                  />
+                }
+                <>Merge Conflicts</>
               </RoundButton>,
             )}
             {when(
