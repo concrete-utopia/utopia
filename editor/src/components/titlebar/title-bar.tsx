@@ -15,7 +15,12 @@ import {
 } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setLeftMenuTab,
+  setPanelVisibility,
+  togglePanel,
+} from '../editor/actions/action-creators'
 import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
@@ -93,6 +98,21 @@ const TitleBar = React.memo(() => {
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
+  const openFile = React.useCallback(
+    (filename: string) => {
+      dispatch([openCodeEditorFile(filename, true)], 'everyone')
+    },
+    [dispatch],
+  )
+  const showMergeConflict = React.useCallback(() => {
+    if (Object.keys(treeConflicts).length < 1) {
+      return
+    }
+    const firstConflictFilename = Object.keys(treeConflicts)[0]
+    openLeftPaneltoGithubTab()
+    openFile(firstConflictFilename)
+  }, [openLeftPaneltoGithubTab, openFile, treeConflicts])
+
   return (
     <SimpleFlexRow
       style={{
@@ -141,7 +161,7 @@ const TitleBar = React.memo(() => {
             )}
             {when(
               hasMergeConflicts,
-              <RoundButton color={colorTheme.errorBgSolid.value} onClick={openLeftPaneltoGithubTab}>
+              <RoundButton color={colorTheme.errorBgSolid.value} onClick={showMergeConflict}>
                 {
                   <Icons.WarningTriangle
                     style={{ width: 19, height: 19 }}
