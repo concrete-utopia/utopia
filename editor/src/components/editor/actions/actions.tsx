@@ -1961,6 +1961,9 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
+    if (action.unlessMode === editor.mode.type) {
+      return clearDragState(editor, derived, false)
+    }
     return clearDragState(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {

@@ -684,8 +684,21 @@ export function handleKeyDown(
           MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
         )
 
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+
         return [
           EditorActions.switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null)),
+          EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null, {
+            textEdit: true,
+          }),
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              CanvasMousePositionRaw!,
+              modifiers,
+              boundingArea(),
+              'zero-drag-permitted',
+            ),
+          ),
         ]
       },
     })
