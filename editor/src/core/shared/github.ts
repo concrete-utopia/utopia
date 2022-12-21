@@ -1207,30 +1207,18 @@ export function mergeProjectContentsTree(
       return withTreeConflicts(originContents, {})
     } else {
       // There's a code change between the 3 places, perform a merge of the changes.
-      const mergeResult = mergeDiff3(currentCode, originCode, branchCode, {
+      const mergedResult = mergeDiff3(currentCode, originCode, branchCode, {
         label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
         stringSeparator: /\r?\n/,
-      })
-      const { result, conflict } = mergeResult
-
-      const newCode = result.join('\n')
+      }).result.join('\n')
       const updatedTextFile = textFile(
-        textFileContents(newCode, unparsed, RevisionsState.CodeAhead),
+        textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
         null,
         null,
         currentTime,
       )
 
-      const conflicts: TreeConflicts = {}
-      if (conflict) {
-        conflicts[fullPath] = differingTypesConflict(
-          currentContents,
-          originContents,
-          branchContents,
-        )
-      }
-
-      return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), conflicts)
+      return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), {})
     }
   } else if (
     isProjectContentDirectory(currentContents) &&
