@@ -44,12 +44,14 @@ export function getApplicableReparentFactories(
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
   allowSmallerParent: AllowSmallerParent,
+  allowWithOnlyTextChildren?: boolean,
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(
     canvasState,
     cmdPressed,
     pointOnCanvas,
     allowSmallerParent,
+    allowWithOnlyTextChildren,
   )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
@@ -110,6 +112,7 @@ export function getApplicableReparentFactories(
 function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  allowWithOnlyTextChildren?: boolean,
 ): ReparentTarget | null {
   if (isInsertionSubjects(canvasState.interactionTarget)) {
     return null
@@ -137,6 +140,7 @@ function getStartingTargetParentsToFilterOutInner(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     allowSmallerParent,
+    allowWithOnlyTextChildren,
   )
 }
 

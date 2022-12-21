@@ -55,6 +55,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           false,
           true,
           'allow-smaller-parent',
+          true,
         )
         if (applicableReparentFactories.length < 1) {
           return strategyApplicationResult([])
@@ -63,7 +64,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const factory = applicableReparentFactories[0]
 
         const { targetParent } = factory
-        const targetElement = EP.appendToPath(targetParent, insertionSubject.uid)
+
         const textEditable = MetadataUtils.targetTextEditable(
           canvasState.startingMetadata,
           targetParent,
@@ -90,6 +91,8 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         if (strategy == null) {
           return strategyApplicationResult([])
         }
+
+        const targetElement = EP.appendToPath(targetParent, insertionSubject.uid)
 
         const result = strategy.apply(s)
         result.commands.push(

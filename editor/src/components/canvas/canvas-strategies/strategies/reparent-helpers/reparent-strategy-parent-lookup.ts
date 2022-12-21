@@ -42,6 +42,7 @@ export function getReparentTargetUnified(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
+  allowWithOnlyTextChildren?: boolean,
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
@@ -53,6 +54,7 @@ export function getReparentTargetUnified(
     metadata,
     allElementProps,
     allowSmallerParent,
+    allowWithOnlyTextChildren,
   )
 
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
@@ -93,6 +95,7 @@ function findValidTargetsUnderPoint(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
+  allowWithOnlyTextChildren?: boolean,
 ): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -128,7 +131,14 @@ function findValidTargetsUnderPoint(
       return true
     }
 
-    if (!MetadataUtils.targetSupportsChildren(projectContents, metadata, target)) {
+    if (
+      !MetadataUtils.targetSupportsChildren(
+        projectContents,
+        metadata,
+        target,
+        allowWithOnlyTextChildren,
+      )
+    ) {
       // simply skip elements that do not support children
       return false
     }

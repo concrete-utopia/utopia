@@ -54,6 +54,7 @@ export function findReparentStrategies(
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
   allowSmallerParent: AllowSmallerParent,
+  allowWithOnlyTextChildren?: boolean,
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
@@ -65,6 +66,7 @@ export function findReparentStrategies(
     metadata,
     canvasState.startingAllElementProps,
     allowSmallerParent,
+    allowWithOnlyTextChildren,
   )
 
   if (targetParent == null) {

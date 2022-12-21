@@ -707,11 +707,15 @@ export const MetadataUtils = {
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     instance: ElementInstanceMetadata,
+    options?: {
+      allowWithOnlyTextChildren?: boolean
+    },
   ): boolean {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
       (element) => {
-        if (elementOnlyHasTextChildren(element)) {
+        const allowWithOnlyTextChildren = options?.allowWithOnlyTextChildren ?? false
+        if (!allowWithOnlyTextChildren && elementOnlyHasTextChildren(element)) {
           // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
           return false
         } else {
@@ -742,6 +746,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
+    allowWithOnlyTextChildren?: boolean,
   ): boolean {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
@@ -750,7 +755,9 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
         ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, instance)
+        : MetadataUtils.targetElementSupportsChildren(projectContents, instance, {
+            allowWithOnlyTextChildren,
+          })
     }
   },
   targetUsesProperty(
@@ -811,7 +818,7 @@ export const MetadataUtils = {
       }
     }
   },
-  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null) {
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
     if (target == null) {
       return false
     }
