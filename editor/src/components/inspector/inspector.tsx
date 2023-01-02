@@ -343,12 +343,26 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
           {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <StyleSection />
+          {isFeatureEnabled('Nine block control') ? (
+            <>
+              <StyleSection />
+              <LayoutSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+            </>
+          ) : (
+            <>
+              <LayoutSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+              <StyleSection />
+            </>
+          )}
+
           <WarningSubsection />
           <ImgSection />
           <EventHandlersSection />

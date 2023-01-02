@@ -1,10 +1,39 @@
-import { useColorThemeVariables } from './theme'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { getCurrentTheme } from '../../components/editor/store/editor-state'
+import { useEditorState } from '../../components/editor/store/store-hook'
+import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
+import { getPreferredColorScheme, Theme } from './theme'
+import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
 
-// TODO: Include alternate themes for the given primary theme
-// and include CSS classes/variables for those
 export const ColorThemeComponent = React.memo(() => {
-  const colorTheme = useColorThemeVariables()
+  const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
+  const currentTheme: Theme = useEditorState(
+    (store) => getCurrentTheme(store.userState),
+    'currentTheme',
+  )
+  const colorTheme = currentTheme === 'dark' ? darkColorThemeCssVariables : colorThemeCssVariables
+
+  // a dummy state used to force a re-render when the system preferred color scheme
+  // change event fires
+  const [theme, setTheme] = useState('')
+
+  useEffect(() => {
+    const handlePreferredColorSchemeChange = () => {
+      const preferredColorScheme = getPreferredColorScheme()
+      void sendSetVSCodeTheme(preferredColorScheme)
+      setTheme(preferredColorScheme)
+    }
+
+    const colorSchemeQuery = window?.matchMedia?.('(prefers-color-scheme: dark)')
+
+    if (themeSetting === 'system') {
+      colorSchemeQuery?.addEventListener('change', handlePreferredColorSchemeChange)
+    }
+
+    return function cleanup() {
+      colorSchemeQuery?.removeEventListener('change', handlePreferredColorSchemeChange)
+    }
+  }, [themeSetting, theme])
 
   return (
     <style>

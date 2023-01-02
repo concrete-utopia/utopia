@@ -23,15 +23,15 @@ export const FlexSection = React.memo(() => {
   )
 
   return (
-    <>
+    <div>
+      <AddRemoveLayouSystemControl />
       {when(
         allElementsInFlexLayout,
-        <div>
-          <AddRemoveLayouSystemControl />
+        <>
           <FlexDirectionToggle flexDirection={flexDirection} />
           <NineBlockControl flexDirection={flexDirection} />
-        </div>,
+        </>,
       )}
-    </>
+    </div>
   )
 })

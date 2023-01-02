@@ -4694,7 +4694,7 @@ export const UPDATE_FNS = {
     }
 
     // Side effect - update the setting in VS Code
-    void sendSetVSCodeTheme(action.theme)
+    void sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
 
     // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
