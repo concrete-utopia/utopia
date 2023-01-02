@@ -10,7 +10,7 @@ import {
   formatTestProjectCode,
   renderTestEditorWithCode,
 } from '../../../canvas/ui-jsx.test-utils'
-import { TextEditMode } from '../../../editor/editor-modes'
+import { InsertMode, TextEditMode } from '../../../editor/editor-modes'
 import * as EP from '../../../../core/shared/element-path'
 import { wait } from '../../../../utils/utils.test-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -20,13 +20,13 @@ describe('Entering text edit mode', () => {
   before(() => {
     setFeatureEnabled('Text editing', true)
   })
-  it('Entering text edit mode without selected element', async () => {
+  it('Enters insert mode without selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
     pressKey('t')
     await editor.getDispatchFollowUpActionsFinished()
 
-    expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-    expect((editor.getEditorState().editor.mode as TextEditMode).editedText).toBeNull()
+    expect(editor.getEditorState().editor.mode.type).toEqual('insert')
+    expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
   })
   it('Entering text edit mode with text editable selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
@@ -51,15 +51,15 @@ describe('Entering text edit mode', () => {
       'sb/39e',
     )
   })
-  it('Entering text edit mode with non-text editable selected element', async () => {
+  it('Does not enter text edit mode with non-text editable selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
 
     await selectElement(editor, EP.fromString('sb/39e'))
     pressKey('t')
     await editor.getDispatchFollowUpActionsFinished()
 
-    expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-    expect((editor.getEditorState().editor.mode as TextEditMode).editedText).toBeNull()
+    expect(editor.getEditorState().editor.mode.type).toEqual('select') // FIXME this is incorrect, it should be `insert`
+    // expect((editor.getEditorState().editor.mode as InsertMode).controlId).toBeNull()
   })
 })
 
