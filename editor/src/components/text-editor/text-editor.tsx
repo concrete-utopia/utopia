@@ -134,7 +134,7 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
   )
 
   const onBlur = React.useCallback(() => {
-    dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
+    dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
   return (
