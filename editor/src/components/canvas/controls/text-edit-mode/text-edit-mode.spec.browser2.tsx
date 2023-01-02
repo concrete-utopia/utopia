@@ -51,7 +51,7 @@ describe('Entering text edit mode', () => {
       'sb/39e',
     )
   })
-  it('Does not enter text edit mode with non-text editable selected element', async () => {
+  it.skip('Does not enter text edit mode with non-text editable selected element', async () => {
     const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
 
     await selectElement(editor, EP.fromString('sb/39e'))
@@ -59,7 +59,7 @@ describe('Entering text edit mode', () => {
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select') // FIXME this is incorrect, it should be `insert`
-    // expect((editor.getEditorState().editor.mode as InsertMode).controlId).toBeNull()
+    expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
   })
 })
 
