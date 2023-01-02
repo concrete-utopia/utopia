@@ -110,9 +110,12 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       return null
     }
 
-    return elements.map((path) =>
-      setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
-    )
+    return elements.map((path) => {
+      const instance = MetadataUtils.findElementByElementPath(metadata, path)
+      return MetadataUtils.isFlexLayoutedContainer(instance)
+        ? setProperty('always', path, PP.create(['style', 'flexGrow']), '1')
+        : setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%')
+    })
   },
 ]
 
