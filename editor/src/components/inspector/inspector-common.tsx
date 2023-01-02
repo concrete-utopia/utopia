@@ -75,7 +75,7 @@ type Detect<T> = (
 
 export const DefaultFlexDirection: FlexDirection = 'row'
 
-function detectFlexDirectionOne(
+export function detectFlexDirectionOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): FlexDirection | null {

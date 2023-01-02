@@ -1,8 +1,8 @@
 import React from 'react'
-import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, isLeft, right } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
+import { parentPath } from '../../core/shared/element-path'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -11,11 +11,22 @@ import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CSSNumber, cssNumber, EmptyInputValue, parseCSSLengthPercent } from './common/css-utils'
+import {
+  CSSNumber,
+  cssNumber,
+  EmptyInputValue,
+  parseCSSLengthPercent,
+  parseCSSNumber,
+} from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { fillContainerApplicable, hugContentsApplicable } from './inspector-common'
 import {
   Axis,
+  detectFlexDirectionOne,
+  fillContainerApplicable,
+  hugContentsApplicable,
+  widthHeightFromAxis,
+} from './inspector-common'
+import {
   InspectorStrategy,
   runStrategies,
   setPropFillStrategies,
@@ -25,7 +36,10 @@ import {
 
 const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
 
-type FixedHugFill = { type: 'fixed'; amount: CSSNumber } | { type: 'hug' } | { type: 'fill' }
+type FixedHugFill =
+  | { type: 'fixed'; amount: CSSNumber }
+  | { type: 'hug' }
+  | { type: 'fill'; value: CSSNumber }
 type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
@@ -80,7 +94,7 @@ const FillHugFixedControlOptions = ({
   ])
 
 function detectFillHugFixedState(
-  property: 'width' | 'height',
+  axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
 ): FixedHugFill | null {
@@ -88,6 +102,31 @@ function detectFillHugFixedState(
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
   }
+
+  const flexGrow = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'flexGrow'])),
+  )
+
+  if (flexGrow != null) {
+    const flexDirection = optionalMap(
+      (e) => detectFlexDirectionOne(metadata, parentPath(e)),
+      elementPath,
+    )
+
+    const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
+    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
+      return { type: 'fill', value: flexGrow }
+    }
+
+    const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
+    if (axis === 'vertical' && isFlexDirectionVertical) {
+      return { type: 'fill', value: flexGrow }
+    }
+  }
+
+  const property = widthHeightFromAxis(axis)
 
   const prop = defaultEither(
     null,
@@ -99,7 +138,7 @@ function detectFillHugFixedState(
   }
 
   if (prop === '100%') {
-    return { type: 'fill' }
+    return { type: 'fill', value: cssNumber(100, '%') }
   }
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
@@ -145,7 +184,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const widthCurrentValue = useEditorState(
     (store) =>
       detectFillHugFixedState(
-        'width',
+        'horizontal',
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
@@ -165,7 +204,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const heightCurrentValue = useEditorState(
     (store) =>
       detectFillHugFixedState(
-        'height',
+        'vertical',
         metadataSelector(store),
         selectedViewsSelector(store).at(0) ?? null,
       ) ?? undefined,
@@ -323,6 +362,9 @@ function strategyForMode(
 function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
   if (value.type === 'fixed') {
     return value.amount
+  }
+  if (value.type === 'fill') {
+    return value.value
   }
   return undefined
 }
