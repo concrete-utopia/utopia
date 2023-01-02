@@ -1,24 +1,26 @@
 import React from 'react'
+import { createSelector } from 'reselect'
 import { when } from '../../utils/react-conditionals'
 import { useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
-import { detectAreElementsFlexContainers, detectFlexDirection } from './inspector-common'
+import {
+  DefaultFlexDirection,
+  detectAreElementsFlexContainers,
+  detectFlexDirection,
+} from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
-export const FlexSection = React.memo(() => {
-  const flexDirection = useEditorState(
-    (store) =>
-      selectedViewsSelector(store).length === 0
-        ? 'row'
-        : detectFlexDirection(metadataSelector(store), selectedViewsSelector(store)),
-    'FlexSection flexDirection',
-  )
+const areElementsFlexContainersSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  detectAreElementsFlexContainers,
+)
 
+export const FlexSection = React.memo(() => {
   const allElementsInFlexLayout = useEditorState(
-    (store) =>
-      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
+    areElementsFlexContainersSelector,
     'FlexSection areAllElementsInFlexLayout',
   )
 
@@ -28,8 +30,8 @@ export const FlexSection = React.memo(() => {
         allElementsInFlexLayout,
         <div>
           <AddRemoveLayouSystemControl />
-          <FlexDirectionToggle flexDirection={flexDirection} />
-          <NineBlockControl flexDirection={flexDirection} />
+          <FlexDirectionToggle />
+          <NineBlockControl />
         </div>,
       )}
     </>

@@ -3,26 +3,26 @@
 
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { cartesianProduct } from '../../core/shared/array-utils'
+import { createSelector } from 'reselect'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
+import { EditorStorePatched } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
-  filterKeepFlexContainers,
+  detectFlexDirection,
   isFlexColumn,
   justifyContentAlignItemsEquals,
+  JustifyContentFlexAlignemt,
+  numberOfFlexContainers,
   StartCenterEnd,
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
 
-const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
-  ['flex-start', 'center', 'flex-end'],
-  ['flex-start', 'center', 'flex-end'],
-)
+type NineKey = `${StartCenterEnd}-${StartCenterEnd}`
 
 const slabSize = (desiredSize: Size, flexDirection: FlexDirection): Size => {
   if (isFlexColumn(flexDirection)) {
@@ -57,7 +57,7 @@ interface SlabsProps {
 const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyContent, bgColor }) => {
   return (
     <div
-      css={{
+      style={{
         display: 'flex',
         gap: 1,
         alignItems: alignItems,
@@ -95,38 +95,165 @@ const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyConten
 
 const DotSize = 2
 
-interface NineBlockControlProps {
-  flexDirection: FlexDirection | null
+const justifyAlignSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  detectFlexAlignJustifyContent,
+)
+
+const flexDirectionSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  detectFlexDirection,
+)
+
+const isSelectedSelector = createSelector(
+  justifyAlignSelector,
+  flexDirectionSelector,
+  (_: EditorStorePatched, x: JustifyContentFlexAlignemt) => x,
+  (detectedJustifyContentFlexAlignment, flexDirection, fixedJustifyContentFlexAlignment) =>
+    detectedJustifyContentFlexAlignment != null &&
+    justifyContentAlignItemsEquals(
+      flexDirection,
+      fixedJustifyContentFlexAlignment,
+      detectedJustifyContentFlexAlignment,
+    ),
+)
+
+interface NineBlockControlCellProps {
+  bgColor: string
+  fgColor: string
+  alignItems: StartCenterEnd
+  justifyContent: StartCenterEnd
+  onClick: () => void
 }
 
-export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirection }) => {
-  const colorTheme = useColorTheme()
+const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
+  const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
-  const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
-  const detectedJustifyContentFlexAlignment = useEditorState(
-    (store) => detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)),
-    'NineBlockControl [flexJustifyContent, flexAlignment]',
+  // TODO WIP - this makes the whole nine-block control re-render, figure out why
+  // const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+
+  const alignItemsJustifyContent = React.useMemo(
+    () => ({ alignItems, justifyContent }),
+    [alignItems, justifyContent],
   )
 
+  const isSelected = useEditorState(
+    (store) => isSelectedSelector(store, alignItemsJustifyContent),
+    'NineBlockControlCell isSelected',
+  )
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        padding: 1,
+        alignItems: 'center',
+        position: 'relative',
+        boxSizing: 'border-box',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        css={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          backgroundColor: bgColor,
+          opacity: isSelected ? 1 : 0.5,
+        }}
+      >
+        {/* <Slabs
+          // {...slabAlignment(justifyContent, alignItems, flexDirection)}
+          justifyContent={"flex-start"}
+          alignItems={"flex-start"}
+          flexDirection={flexDirection}
+          bgColor={fgColor}
+        /> */}
+      </div>
+      <div
+        css={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: bgColor,
+          width: '100%',
+          height: '100%',
+          opacity: isSelected ? 0 : 1,
+          '&:hover': {
+            opacity: 0,
+          },
+        }}
+      >
+        <div
+          css={{
+            backgroundColor: fgColor,
+            width: DotSize,
+            height: DotSize,
+            borderRadius: DotSize / 2,
+          }}
+        />
+      </div>
+    </div>
+  )
+})
+
+const numberOfFlexContainersSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  numberOfFlexContainers,
+)
+
+const dispatchSelector = createSelector(
+  (store: EditorStorePatched) => store.dispatch,
+  (d) => d,
+)
+
+export const NineBlockControl = React.memo(() => {
+  const colorTheme = useColorTheme()
+
+  const dispatch = useEditorState(dispatchSelector, 'NineBlockControl dispatch')
+
   const nFlexContainers = useEditorState(
-    (store) =>
-      filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
+    numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-
-  const flexDirectionWithDefault: FlexDirection = flexDirection ?? DefaultFlexDirection
+  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
 
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
-      const strategies = isFlexColumn(flexDirectionWithDefault)
+      const strategies = isFlexColumn(flexDirection ?? DefaultFlexDirection)
         ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
         : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategies)
     },
-    [dispatch, flexDirectionWithDefault, metadataRef, selectedViewsRef],
+    [dispatch, flexDirection, metadataRef, selectedViewsRef],
+  )
+
+  const callbacks: {
+    [key in NineKey]: () => void
+  } = React.useMemo(
+    () => ({
+      'flex-start-flex-start': () => setAlignItemsJustifyContent('flex-start', 'flex-start'),
+      'flex-start-center': () => setAlignItemsJustifyContent('flex-start', 'center'),
+      'flex-start-flex-end': () => setAlignItemsJustifyContent('flex-start', 'flex-end'),
+      'center-flex-start': () => setAlignItemsJustifyContent('center', 'flex-start'),
+      'center-center': () => setAlignItemsJustifyContent('center', 'center'),
+      'center-flex-end': () => setAlignItemsJustifyContent('center', 'flex-end'),
+      'flex-end-flex-start': () => setAlignItemsJustifyContent('flex-end', 'flex-start'),
+      'flex-end-center': () => setAlignItemsJustifyContent('flex-end', 'center'),
+      'flex-end-flex-end': () => setAlignItemsJustifyContent('flex-end', 'flex-end'),
+    }),
+    [setAlignItemsJustifyContent],
   )
 
   if (nFlexContainers === 0) {
@@ -147,74 +274,69 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
         border: `1px solid ${colorTheme.fg5.value}`,
       }}
     >
-      {NineBlockSectors.map(([alignItems, justifyContent], index) => {
-        const isSelected =
-          detectedJustifyContentFlexAlignment != null &&
-          justifyContentAlignItemsEquals(
-            flexDirectionWithDefault,
-            { alignItems, justifyContent },
-            detectedJustifyContentFlexAlignment,
-          )
-        return (
-          <div
-            onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
-            key={`${alignItems}-${justifyContent}`}
-            style={{
-              display: 'flex',
-              padding: 1,
-              alignItems: 'center',
-              position: 'relative',
-              boxSizing: 'border-box',
-              justifyContent: 'center',
-              gridColumn: `${(index % 3) + 1} / ${(index % 3) + 2}`,
-              gridRow: `${Math.floor(index / 3) + 1} / ${Math.floor(index / 3) + 2}`,
-            }}
-          >
-            <div
-              css={{
-                position: 'absolute',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '100%',
-                backgroundColor: colorTheme.bg0.value,
-                opacity: isSelected ? 1 : 0.5,
-              }}
-            >
-              <Slabs
-                {...slabAlignment(justifyContent, alignItems, flexDirectionWithDefault)}
-                flexDirection={flexDirectionWithDefault}
-                bgColor={colorTheme.fg5.value}
-              />
-            </div>
-            <div
-              css={{
-                position: 'absolute',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colorTheme.bg0.value,
-                width: '100%',
-                height: '100%',
-                opacity: isSelected ? 0 : 1,
-                '&:hover': {
-                  opacity: 0,
-                },
-              }}
-            >
-              <div
-                css={{
-                  backgroundColor: colorTheme.fg5.value,
-                  width: DotSize,
-                  height: DotSize,
-                  borderRadius: DotSize / 2,
-                }}
-              />
-            </div>
-          </div>
-        )
-      })}
+      <NineBlockControlCell
+        onClick={callbacks['flex-start-flex-start']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-start'}
+        justifyContent={'flex-start'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['flex-start-center']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-start'}
+        justifyContent={'center'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['flex-start-flex-end']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-start'}
+        justifyContent={'flex-end'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['center-flex-start']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'center'}
+        justifyContent={'flex-start'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['center-center']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'center'}
+        justifyContent={'center'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['center-flex-end']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'center'}
+        justifyContent={'flex-end'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['flex-end-flex-start']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-end'}
+        justifyContent={'flex-start'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['flex-end-center']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-end'}
+        justifyContent={'center'}
+      />
+      <NineBlockControlCell
+        onClick={callbacks['flex-end-flex-end']}
+        bgColor={colorTheme.bg0.value}
+        fgColor={colorTheme.fg0.value}
+        alignItems={'flex-end'}
+        justifyContent={'flex-end'}
+      />
     </div>
   )
 })
