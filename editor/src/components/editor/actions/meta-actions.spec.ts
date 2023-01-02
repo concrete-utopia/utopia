@@ -15,7 +15,7 @@ describe('cancelInsertModeActions', () => {
             "controlId": null,
             "type": "select",
           },
-          "unlessMode": "textEdit"
+          "unlessMode": "textEdit",
         },
         Object {
           "action": "SET_RIGHT_MENU_TAB",
@@ -45,7 +45,7 @@ describe('cancelInsertModeActions', () => {
             "controlId": null,
             "type": "select",
           },
-          "unlessMode": "textEdit"
+          "unlessMode": "textEdit",
         },
         Object {
           "action": "SET_RIGHT_MENU_TAB",
@@ -71,7 +71,7 @@ describe('cancelInsertModeActions', () => {
             "controlId": null,
             "type": "select",
           },
-          "unlessMode": "textEdit"
+          "unlessMode": "textEdit",
         },
         Object {
           "action": "SET_RIGHT_MENU_TAB",
