@@ -195,6 +195,57 @@ describe('draw-to-insert text', () => {
       )
     })
   })
+  describe('when the target is root', () => {
+    it('creates a new element', async () => {
+      const editor = await renderTestEditorWithCode(emptyProject, 'await-first-dom-report')
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      pressKey('t')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const insideDiv = {
+        x: 500,
+        y: 500,
+      }
+
+      mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
+        x: insideDiv.x + 50,
+        y: insideDiv.y + 50,
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('Hey root')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+        .find((k) => k.startsWith('sb/'))
+        ?.replace('sb/', '')
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 112,
+                    top: 391,
+                    width: 50,
+                    height: 50,
+                  }}
+                  data-uid='${newElementUID}'
+                >Hey root</div>
+              </Storyboard>
+            )`),
+      )
+    })
+  })
 })
 
 function typeText(text: string) {
@@ -225,6 +276,16 @@ export var storyboard = (
     >
       Hello
     </div>
+  </Storyboard>
+)
+`)
+
+const emptyProject = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
   </Storyboard>
 )
 `)
