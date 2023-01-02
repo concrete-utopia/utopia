@@ -54,11 +54,11 @@ import {
   ProjectGithubSettings,
   RightMenuTab,
   StoredEditorState,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -963,7 +963,7 @@ export interface SetFilebrowserDropTarget {
 
 export interface SetCurrentTheme {
   action: 'SET_CURRENT_THEME'
-  theme: Theme
+  theme: ThemeSetting
 }
 
 export interface FocusClassNameInput {

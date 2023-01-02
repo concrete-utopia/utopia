@@ -3,7 +3,8 @@ import React from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { useEditorState } from '../components/editor/store/store-hook'
-import { getCurrentTheme, Theme } from '../components/editor/store/editor-state'
+import { getCurrentTheme } from '../components/editor/store/editor-state'
+import { Theme } from './styles/theme'
 
 export type IcnColor =
   | 'main'

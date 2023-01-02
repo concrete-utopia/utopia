@@ -449,11 +449,13 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
-    const MeasureSelectors = isFeatureEnabled('Debug mode – Measure Selectors')
-    const runDispatch = () => {
-      const PerformanceMarks =
-        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+    const PerformanceMarks =
+      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
+        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
+      PERFORMANCE_MARKS_ALLOWED
 
+    const runDispatch = () => {
       const oldEditorState = this.storedState
 
       const dispatchResult = editorDispatch(
@@ -540,15 +542,32 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
+            if (PerformanceMarks) {
+              performance.mark(`update main store ${updateId}`)
+            }
             const beforeMainStore = MeasureSelectors ? performance.now() : 0
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
             const afterMainStore = MeasureSelectors ? performance.now() : 0
+
+            if (PerformanceMarks) {
+              performance.measure(`Update Main Store ${updateId}`, `update main store ${updateId}`)
+            }
+
             if (
               shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
             ) {
+              if (PerformanceMarks) {
+                performance.mark(`update low priority store ${updateId}`)
+              }
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
               )
+              if (PerformanceMarks) {
+                performance.measure(
+                  `Update Low Prio Store ${updateId}`,
+                  `update low priority store ${updateId}`,
+                )
+              }
             }
             const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
             if (MeasureSelectors) {
@@ -565,9 +584,16 @@ export class Editor {
                 afterStoreUpdate - afterMainStore,
               )
             }
+            if (PerformanceMarks) {
+              performance.mark(`react wrap up ${updateId}`)
+            }
           })
         })
         if (PerformanceMarks) {
+          performance.measure(
+            `Our Components Rendering + React Doing Stuff`,
+            `react wrap up ${updateId}`,
+          )
           performance.mark(`update editor end ${updateId}`)
           performance.measure(
             `Update Editor ${updateId}`,
@@ -582,10 +608,19 @@ export class Editor {
       }
     }
     SelectorTimings.current = {}
+    if (PerformanceMarks) {
+      performance.mark('beforeFullDispatch')
+    }
     const result = runDispatch()
     if (MeasureSelectors) {
       // eslint-disable-next-line no-console
       console.table(SelectorTimings.current)
+    }
+    if (PerformanceMarks) {
+      performance.measure(
+        `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
+        'beforeFullDispatch',
+      )
     }
     return result
   }

@@ -63,9 +63,9 @@ import {
   EditorState,
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
-  Theme,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+import { Theme } from '../../uuiui'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 

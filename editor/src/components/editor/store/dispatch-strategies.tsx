@@ -613,7 +613,9 @@ export function handleStrategies(
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
   const MeasureDispatchTime =
-    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
+      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
+    PERFORMANCE_MARKS_ALLOWED
 
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
