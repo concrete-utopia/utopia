@@ -15,6 +15,8 @@ import { applyCommandsAction } from '../editor/actions/action-creators'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from './common/css-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { assertNever } from '../../core/shared/utils'
+import * as EP from '../../core/shared/element-path'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -63,9 +65,9 @@ export const updateFlexDirectionStrategies = (
       return null
     }
 
-    return elements.map((path) =>
+    return elements.flatMap((path) => [
       setProperty('always', path, PP.create(['style', 'flexDirection']), flexDirection),
-    )
+    ])
   },
 ]
 
@@ -99,6 +101,8 @@ function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
       return 'width'
     case 'vertical':
       return 'height'
+    default:
+      assertNever(axis)
   }
 }
 
@@ -110,11 +114,33 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       return null
     }
 
-    return elements.map((path) => {
-      const instance = MetadataUtils.findElementByElementPath(metadata, path)
-      return MetadataUtils.isFlexLayoutedContainer(instance)
-        ? setProperty('always', path, PP.create(['style', 'flexGrow']), '1')
-        : setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%')
+    const nukePropsCommand = (path: ElementPath) => {
+      switch (axis) {
+        case 'horizontal':
+          return deleteProperties('always', path, [
+            PP.create(['style', 'width']),
+            PP.create(['style', 'minWidth']),
+            PP.create(['style', 'maxWidth']),
+          ])
+        case 'vertical':
+          return deleteProperties('always', path, [
+            PP.create(['style', 'height']),
+            PP.create(['style', 'minHeight']),
+            PP.create(['style', 'maxHeight']),
+          ])
+        default:
+          assertNever(axis)
+      }
+    }
+
+    return elements.flatMap((path) => {
+      const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
+      return MetadataUtils.isFlexLayoutedContainer(parentInstance)
+        ? [
+            setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
+            nukePropsCommand(path),
+          ]
+        : [setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%')]
     })
   },
 ]

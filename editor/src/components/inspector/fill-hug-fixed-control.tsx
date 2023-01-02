@@ -15,6 +15,7 @@ import { CSSNumber, cssNumber, EmptyInputValue, parseCSSLengthPercent } from './
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { fillContainerApplicable, hugContentsApplicable } from './inspector-common'
 import {
+  Axis,
   InspectorStrategy,
   runStrategies,
   setPropFillStrategies,
@@ -184,7 +185,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(heightComputedValueRef.current, 'height', value)
+      const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
     [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
@@ -198,7 +199,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           metadataRef.current,
           selectedViewsRef.current,
           setPropFixedStrategies(
-            'height',
+            'vertical',
             cssNumber(value, heightComputedValueRef.current?.unit ?? null),
           ),
         )
@@ -215,7 +216,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           metadataRef.current,
           selectedViewsRef.current,
           setPropFixedStrategies(
-            'width',
+            'horizontal',
             cssNumber(value, widthComputedValueRef.current?.unit ?? null),
           ),
         )
@@ -227,7 +228,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(widthComputedValueRef.current, 'width', value)
+      const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
     },
     [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
@@ -304,16 +305,16 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
 function strategyForMode(
   fixedValue: CSSNumber,
-  prop: 'width' | 'height',
+  axis: Axis,
   mode: FixedHugFillMode,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(prop)
+      return setPropFillStrategies(axis)
     case 'hug':
-      return setPropHugStrategies(prop)
+      return setPropHugStrategies(axis)
     case 'fixed':
-      return setPropFixedStrategies(prop, fixedValue)
+      return setPropFixedStrategies(axis, fixedValue)
     default:
       assertNever(mode)
   }
