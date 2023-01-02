@@ -14,6 +14,7 @@ import {
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from './common/css-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -90,7 +91,18 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+export type Axis = 'horizontal' | 'vertical'
+
+function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
+  switch (axis) {
+    case 'horizontal':
+      return 'width'
+    case 'vertical':
+      return 'height'
+  }
+}
+
+export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     const elements = elementPaths.filter(fillContainerApplicable)
 
@@ -98,26 +110,30 @@ export const setPropFillStrategies = (prop: 'width' | 'height'): Array<Inspector
       return null
     }
 
-    return elements.map((path) => setProperty('always', path, PP.create(['style', prop]), '100%'))
+    return elements.map((path) =>
+      setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+    )
   },
 ]
 
-export const setPropFixedStrategies = (
-  prop: 'width' | 'height',
-  value: CSSNumber,
-): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     if (elementPaths.length === 0) {
       return null
     }
 
     return elementPaths.map((path) =>
-      setProperty('always', path, PP.create(['style', prop]), printCSSNumber(value, null)),
+      setProperty(
+        'always',
+        path,
+        PP.create(['style', widthHeightFromAxis(axis)]),
+        printCSSNumber(value, null),
+      ),
     )
   },
 ]
 
-export const setPropHugStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     const elements = elementPaths.filter((path) => hugContentsApplicable(metadata, path))
 
@@ -126,7 +142,7 @@ export const setPropHugStrategies = (prop: 'width' | 'height'): Array<InspectorS
     }
 
     return elements.map((path) =>
-      setProperty('always', path, PP.create(['style', prop]), 'min-content'),
+      setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
     )
   },
 ]
