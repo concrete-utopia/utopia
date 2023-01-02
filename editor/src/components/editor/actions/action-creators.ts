@@ -237,11 +237,11 @@ import type {
   OriginalFrame,
   ProjectGithubSettings,
   RightMenuTab,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1539,7 +1539,7 @@ export function setFilebrowserDropTarget(target: string | null): SetFilebrowserD
   }
 }
 
-export function setCurrentTheme(theme: Theme): SetCurrentTheme {
+export function setCurrentTheme(theme: ThemeSetting): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
