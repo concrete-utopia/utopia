@@ -1,7 +1,8 @@
 import { base } from './base'
 import { dark } from './dark'
 import { light } from './light'
-import { generateCssVariablesFromThemeObject, ThemeObject } from './theme-helpers'
+import { generateColorThemeObject, generateCssVariablesFromThemeObject } from './theme-helpers'
+import { ThemeObject } from './types'
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
@@ -9,20 +10,7 @@ const inspectorSmallWidth = 255
 const inspectorLargeWidth = 300
 const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 
-const [lightTheme, lightThemeCssVariables] = generateCssVariablesFromThemeObject(light)
-const [, darkThemeCssVariables] = generateCssVariablesFromThemeObject(dark)
-
-export const colorTheme: ThemeObject = {
-  ...lightTheme,
-}
-
-export const colorThemeCssVariables = {
-  ...lightThemeCssVariables,
-}
-
-export const darkColorThemeCssVariables = {
-  ...darkThemeCssVariables,
-}
+export const colorTheme: ThemeObject = generateColorThemeObject(light)
 
 export const UtopiaTheme = {
   layout: {

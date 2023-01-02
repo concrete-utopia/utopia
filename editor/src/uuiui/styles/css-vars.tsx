@@ -3,7 +3,12 @@ import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
 import { getPreferredColorScheme, Theme } from './theme'
-import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
+import { mapToArray, objectFilter } from '../../core/shared/object-utils'
+import { generateCssVariablesFromThemeObject, ThemeVariableObject } from './theme/theme-helpers'
+import { dark } from './theme/dark'
+import { light } from './theme/light'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { SubThemeObject } from './theme/types'
 
 export const ColorThemeComponent = React.memo(() => {
   const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
@@ -11,11 +16,14 @@ export const ColorThemeComponent = React.memo(() => {
     (store) => getCurrentTheme(store.userState),
     'currentTheme',
   )
-  const colorTheme = currentTheme === 'dark' ? darkColorThemeCssVariables : colorThemeCssVariables
 
   // a dummy state used to force a re-render when the system preferred color scheme
   // change event fires
-  const [theme, setTheme] = useState('')
+  const [theme, setTheme] = useState(currentTheme)
+
+  const colorTheme = currentTheme === 'dark' ? dark : light
+
+  const themeVariables = generateCssVariablesFromThemeObject(colorTheme)
 
   useEffect(() => {
     const handlePreferredColorSchemeChange = () => {
@@ -35,22 +43,54 @@ export const ColorThemeComponent = React.memo(() => {
     }
   }, [themeSetting, theme])
 
+  const mainThemeVars = objectFilter<ThemeVariableObject>(
+    (value) => typeof value === 'string',
+    themeVariables,
+  )
+  const subThemesObject = objectFilter<ThemeVariableObject>(
+    (value) => typeof value !== 'string',
+    themeVariables,
+  )
+
+  const subThemes = mapDropNulls(
+    (value) => (typeof value === 'string' ? null : value),
+    mapToArray((value, key) => value, subThemesObject),
+  )
+
   return (
     <style>
+      {/* Root variables based on the theme */}
       {':root {'}
-      {Object.entries(colorTheme).map(([variable, value]) => {
+      {mapToArray((value, variable) => {
         return `${variable}:${value};`
-      })}
+      }, mainThemeVars)}
       {'}'}
+      {/* Classes with variables based on the subthemes */}
+      {subThemes.map((subTheme) => {
+        return (
+          `.${subTheme.name} {` +
+          mapToArray((value, variable) => {
+            if (variable === 'name') {
+              return ''
+            } else {
+              return `${variable}:${value};`
+            }
+          }, subTheme).join('\n') +
+          `\n}`
+        )
+      }, subThemes)}
     </style>
   )
 })
 
-interface AlternateThemeProps {}
+interface AlternateThemeProps {
+  theme: SubThemeObject
+  active: boolean
+}
 
-// TODO: Extend this to work with multiple alternate "themes"
-export const AlternateColorThemeComponent = React.memo(
-  (props: React.PropsWithChildren<AlternateThemeProps>) => {
-    return <div className='utopitheme-alternate-colors'>{props.children}</div>
+// TODO: Add context containing icon color, etc.
+export const AltColorThemeProvider = React.memo(
+  ({ theme, active = true, children }: React.PropsWithChildren<AlternateThemeProps>) => {
+    return <div className={active ? theme.name : ''}>{children}</div>
   },
 )

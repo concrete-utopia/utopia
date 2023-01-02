@@ -1,6 +1,14 @@
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
-import { light } from './light'
+import {
+  errorEmphasized,
+  pullLozenge,
+  pushLozenge,
+  warningEmphasized,
+  navigatorItemHighlighted,
+  errorForeground,
+} from './subthemes'
+import { ThemeObject } from './types'
 
 const darkBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
@@ -29,13 +37,15 @@ const darkBase = {
   fg0: createUtopiColor('#ffffff'),
   fg1: createUtopiColor('#D9DCE3'),
   fg2: createUtopiColor('#c9cCc3'),
-  fg3: createUtopiColor('b9bCb3'),
-  fg4: createUtopiColor('a9aCa3'),
+  fg3: createUtopiColor('#b9bCb3'),
+  fg4: createUtopiColor('#a9aCa3'),
   fg5: createUtopiColor('#8B91A0'),
   fg6: createUtopiColor('#6F778B'),
   fg7: createUtopiColor('#525B72'),
   fg8: createUtopiColor('#2F374A'),
   fg9: createUtopiColor('#151A27'),
+  fgError: createUtopiColor('#FF7759'),
+  fgWarning: createUtopiColor('#FFA858'),
   border0: createUtopiColor('#181C20'),
   border1: createUtopiColor('#181C20'),
   border2: createUtopiColor('#181C20'),
@@ -98,11 +108,20 @@ const colorsWithOpacity = {
   subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
 }
 
-export const dark: typeof light = {
+export const dark: ThemeObject = {
   ...colorsWithOpacity,
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
+
+  errorEmphasized,
+  pullLozenge,
+  pushLozenge,
+  warningEmphasized,
+  navigatorItemHighlighted,
+  errorForegroundTheme: errorForeground,
+
+  // subThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
 
   textColor: base.white,
 

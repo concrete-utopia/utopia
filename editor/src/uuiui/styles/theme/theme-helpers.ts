@@ -1,25 +1,91 @@
-import { createUtopiColor } from '../utopi-color-helpers'
-import { light } from './light'
+import { objectFilter, forEachValue } from '../../../core/shared/object-utils'
+import { createUtopiColor, UtopiColor } from '../utopi-color-helpers'
+import { ThemeObject, FlatThemeObject, SubThemesParent, SubThemeObject } from './types'
 
-export type ThemeObject = typeof light
+export type SubThemeVariableObject = Record<string, string>
+export type ThemeVariableObject = Record<string, string | SubThemeVariableObject>
 
-export type ThemeVariableObject = Record<string, string>
+function UtopiColorOrNot(thing: UtopiColor | SubThemeObject | string): thing is UtopiColor {
+  if (typeof (thing as UtopiColor).cssValue === 'string') {
+    return true
+  }
+  return false
+}
 
-export function generateCssVariablesFromThemeObject(
-  themeObject: ThemeObject,
-  pathModifier: string = '',
-): [ThemeObject, ThemeVariableObject] {
-  const valuesObject = { ...themeObject }
-  const variablesObject: ThemeVariableObject = {}
+export function generateColorThemeObject(themeObject: ThemeObject): ThemeObject {
+  const valuesObject: ThemeObject = { ...themeObject }
 
-  Object.entries(themeObject).forEach((entry) => {
-    const [key, value] = entry
-    const finalPath = `--utopitheme${pathModifier}-${key}`
+  const mainThemeObject = objectFilter<FlatThemeObject>(
+    (value) => UtopiColorOrNot(value),
+    themeObject,
+  )
+
+  const subThemesObject: SubThemesParent = objectFilter<ThemeObject>(
+    (value) => !UtopiColorOrNot(value),
+    themeObject,
+  )
+
+  forEachValue((value, key) => {
+    const finalPath = `--utopitheme-${key}`
 
     const newValue = createUtopiColor(value.cssValue, finalPath)
-    valuesObject[key as keyof typeof light] = newValue
-    variablesObject[finalPath] = value.cssValue
-  })
+    valuesObject[key] = newValue
+  }, mainThemeObject)
 
-  return [valuesObject, variablesObject]
+  forEachValue((subTheme, name) => {
+    const subThemeValues: SubThemeObject = { ...subTheme }
+
+    forEachValue((value, key) => {
+      if (!UtopiColorOrNot(value)) {
+        subThemeValues[key as 'name' | 'iconColor'] = value
+      } else if (UtopiColorOrNot(value)) {
+        const finalPath = `--utopitheme-${key}`
+
+        const newValue = createUtopiColor(value.cssValue, finalPath)
+        subThemeValues[key as keyof Omit<SubThemeObject, 'name' | 'iconColor'>] = newValue
+      }
+    }, subTheme)
+
+    valuesObject[name] = subThemeValues
+  }, subThemesObject)
+
+  return valuesObject
+}
+
+export function generateCssVariablesFromThemeObject(themeObject: ThemeObject): ThemeVariableObject {
+  const variablesObject: ThemeVariableObject = {}
+
+  const mainThemeObject = objectFilter<FlatThemeObject>(
+    (value) => UtopiColorOrNot(value),
+    themeObject,
+  )
+
+  const subThemesObject: SubThemesParent = objectFilter<ThemeObject>(
+    (value) => !UtopiColorOrNot(value),
+    themeObject,
+  )
+
+  forEachValue((value, key) => {
+    const finalPath = `--utopitheme-${key}`
+    variablesObject[finalPath] = value.cssValue
+  }, mainThemeObject)
+
+  forEachValue((subTheme, name) => {
+    const subThemeVariables: SubThemeVariableObject = {}
+
+    forEachValue((value, key) => {
+      if (!UtopiColorOrNot(value) && key === 'name') {
+        subThemeVariables[key] = value
+      } else if (UtopiColorOrNot(value)) {
+        const finalPath = `--utopitheme-${key}`
+
+        const newValue = createUtopiColor(value.cssValue, finalPath)
+        subThemeVariables[finalPath] = newValue.cssValue
+      }
+    }, subTheme)
+
+    variablesObject[name] = subThemeVariables
+  }, subThemesObject)
+
+  return variablesObject
 }

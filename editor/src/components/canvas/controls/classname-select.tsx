@@ -29,13 +29,7 @@ import {
   useFilteredOptions,
   useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'
-import {
-  AlternateColorThemeComponent,
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  UtopiaTheme,
-} from '../../../uuiui'
+import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../uuiui'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 

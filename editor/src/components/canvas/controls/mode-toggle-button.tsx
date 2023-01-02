@@ -4,7 +4,7 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
-import { AlternateColorThemeComponent, useColorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()

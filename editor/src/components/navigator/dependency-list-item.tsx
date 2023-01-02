@@ -5,14 +5,7 @@ import React from 'react'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
-import {
-  useColorTheme,
-  FlexRow,
-  UtopiaTheme,
-  Tooltip,
-  Icons,
-  AlternateColorThemeComponent,
-} from '../../uuiui'
+import { useColorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
