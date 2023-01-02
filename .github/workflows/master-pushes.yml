@@ -97,6 +97,8 @@ jobs:
     needs: [test-editor, test-server]
     runs-on: ubuntu-latest
     steps:
+      - name: Add the repo as a safe directory
+        run: git config --add safe.directory /__w/utopia-deploy/utopia-deploy
       - name: Use repository dispatch event to trigger deploy
         uses: peter-evans/repository-dispatch@v1.1.0
         with:
