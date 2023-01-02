@@ -26,6 +26,7 @@ import {
   sameFileOrigin,
 } from '../../../core/shared/element-template'
 import { PropertyControls } from 'utopia-api/core'
+import { createTrackedSelector } from 'react-tracked'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -213,7 +214,9 @@ function callPropertyControlsHook(
   }
 
   const contextProvider = ({ children }: any) => (
-    <EditorStateContext.Provider value={{ useStore: storeHook }}>
+    <EditorStateContext.Provider
+      value={{ useStore: storeHook, useTrackedStore: createTrackedSelector(storeHook) }}
+    >
       <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
         {children}
       </InspectorCallbackContext.Provider>

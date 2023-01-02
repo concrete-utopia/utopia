@@ -8,6 +8,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createTrackedSelector } from 'react-tracked'
 
 function createEmptyEditorStoreHook() {
   let emptyEditorState = createEditorState(NO_OP)
@@ -35,7 +36,9 @@ const ContextProvider =
   (storeHook: UtopiaStoreAPI) =>
   ({ children }: { children: React.ReactNode }) => {
     return (
-      <EditorStateContext.Provider value={{ useStore: storeHook }}>
+      <EditorStateContext.Provider
+        value={{ useStore: storeHook, useTrackedStore: createTrackedSelector(storeHook) }}
+      >
         {children}
       </EditorStateContext.Provider>
     )

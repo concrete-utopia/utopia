@@ -32,10 +32,10 @@ export type IcnResultingColor =
   | 'colourful'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState(
-    (store) => getCurrentTheme(store.userState),
-    'currentTheme',
-  )
+  const currentTheme: Theme = useEditorState((store) => {
+    // console.log('useIconColor called')
+    return getCurrentTheme(store.userState)
+  }, 'currentTheme')
   if (currentTheme === 'light') {
     switch (intent) {
       case 'main':

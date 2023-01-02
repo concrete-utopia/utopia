@@ -1,4 +1,19 @@
+import React from 'react'
+import { act, render } from '@testing-library/react'
+import { createTrackedSelector } from 'react-tracked'
 import { createSelector } from 'reselect'
+import create from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
+import { NO_OP } from '../../../core/shared/utils'
+import { createEditorState, EditorStorePatched } from './editor-state'
+import {
+  EditorStateContext,
+  EditorStateContextData,
+  useEditorState,
+  useEditorStateOld,
+  UtopiaStoreAPI,
+} from './store-hook'
+import { fromString } from '../../../core/shared/element-path'
 
 interface ExampleStore {
   exNumber: number
@@ -192,5 +207,63 @@ describe('Reselect Investigation', () => {
     expect(numberOfTimesOuterCalled).toBe(1)
 
     // the inner selector's memoization prevents the outer selector from re-running
+  })
+})
+
+function createEditorStore(): EditorStateContextData {
+  const editorState = {
+    editor: createEditorState(NO_OP),
+  } as EditorStorePatched
+
+  const store: UtopiaStoreAPI = create(subscribeWithSelector((set) => editorState))
+
+  return {
+    useStore: store,
+    useTrackedStore: createTrackedSelector(store),
+  }
+}
+
+describe('React Tracked Investigation', () => {
+  it('works', () => {
+    let numberOfTimesRendered = 0
+    let numberOfTimesCalled = 0
+    const MyComponent = (props: any) => {
+      const somethingFromState = useEditorStateOld((store) => {
+        numberOfTimesCalled++
+        return store.editor.selectedViews
+      }, 'MyComponent selector')
+      numberOfTimesRendered++
+      return <div>{somethingFromState.length}</div>
+    }
+    const storeContext = createEditorStore()
+    render(
+      <EditorStateContext.Provider value={storeContext}>
+        <MyComponent />
+      </EditorStateContext.Provider>,
+    )
+    expect(numberOfTimesCalled).toBe(1)
+    expect(numberOfTimesRendered).toBe(1)
+    // change related part of editor state
+    act(() => {
+      storeContext.useStore.setState({
+        editor: {
+          ...storeContext.useStore.getState().editor,
+          selectedViews: [fromString('aaa/bbb')],
+        },
+      })
+    })
+    expect(numberOfTimesCalled).toBe(3)
+    expect(numberOfTimesRendered).toBe(2)
+    // change unrelated part of editor state
+    act(() => {
+      storeContext.useStore.setState({
+        editor: {
+          ...storeContext.useStore.getState().editor,
+          highlightedViews: [fromString('aaa/bbb')],
+        },
+      })
+    })
+    expect(numberOfTimesCalled).toBe(4)
+    expect(numberOfTimesRendered).toBe(2)
   })
 })

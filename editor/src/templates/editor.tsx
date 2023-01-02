@@ -115,6 +115,7 @@ import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
 import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { createTrackedSelector } from 'react-tracked'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -680,10 +681,19 @@ export const EditorRoot: React.FunctionComponent<{
   domWalkerMutableState: DomWalkerMutableStateData
 }> = ({ mainStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
   return (
-    <EditorStateContext.Provider value={{ useStore: mainStore }}>
+    <EditorStateContext.Provider
+      value={{ useStore: mainStore, useTrackedStore: createTrackedSelector(mainStore) }}
+    >
       <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-        <CanvasStateContext.Provider value={{ useStore: canvasStore }}>
-          <LowPriorityStateContext.Provider value={{ useStore: lowPriorityStore }}>
+        <CanvasStateContext.Provider
+          value={{ useStore: canvasStore, useTrackedStore: createTrackedSelector(canvasStore) }}
+        >
+          <LowPriorityStateContext.Provider
+            value={{
+              useStore: lowPriorityStore,
+              useTrackedStore: createTrackedSelector(lowPriorityStore),
+            }}
+          >
             <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
               <EditorComponent />
             </UiJsxCanvasCtxAtom.Provider>

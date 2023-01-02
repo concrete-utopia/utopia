@@ -30,10 +30,16 @@ import { when } from '../../utils/react-conditionals'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
-  const canvasStore = React.useContext(CanvasStateContext)?.useStore
+  const canvasStoreCtx = React.useContext(CanvasStateContext)
 
   return (
-    <EditorStateContext.Provider value={canvasStore == null ? null : { useStore: canvasStore }}>
+    <EditorStateContext.Provider
+      value={
+        canvasStoreCtx == null
+          ? null
+          : { useStore: canvasStoreCtx.useStore, useTrackedStore: canvasStoreCtx.useTrackedStore }
+      }
+    >
       <CanvasComponentEntryInner {...props} />
     </EditorStateContext.Provider>
   )

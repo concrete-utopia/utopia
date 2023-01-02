@@ -4,6 +4,7 @@ import { StoreApi, EqualityChecker, UseBoundStore, Mutate } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { createTrackedSelector } from 'react-tracked'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -21,7 +22,7 @@ export const SelectorTimings: {
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState = <U>(
+export const useEditorStateOld = <U>(
   selector: StateSelector<EditorStorePatched, U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
@@ -35,6 +36,30 @@ export const useEditorState = <U>(
   }
   return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
 }
+
+/* eslint-disable react-hooks/rules-of-hooks */
+
+export const useEditorStateNew = <U>(
+  selector: StateSelector<EditorStorePatched, U>,
+  selectorName: string,
+  equalityFn?: (oldSlice: U, newSlice: U) => boolean,
+): U => {
+  if (equalityFn != null) {
+    return useEditorStateOld(selector, selectorName, equalityFn)
+  }
+  const context = React.useContext(EditorStateContext)
+
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
+
+  if (context == null) {
+    throw new Error('useStore is missing from editor context')
+  }
+  return wrappedSelector(context.useTrackedStore())
+}
+
+/* eslint-enable react-hooks/rules-of-hooks */
+
+export const useEditorState = useEditorStateNew
 
 function useWrapSelectorInPerformanceMeasureBlock<U>(
   selector: StateSelector<EditorStorePatched, U>,
@@ -165,6 +190,7 @@ export type UtopiaStoreAPI = UseBoundStore<
 
 export type EditorStateContextData = {
   useStore: UtopiaStoreAPI
+  useTrackedStore: () => EditorStorePatched
 }
 
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)

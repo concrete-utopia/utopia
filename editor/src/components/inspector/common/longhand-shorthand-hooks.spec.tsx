@@ -20,6 +20,7 @@ import { EditorStateContext, UtopiaStoreAPI } from '../../editor/store/store-hoo
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
+import { createTrackedSelector } from 'react-tracked'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -65,7 +66,9 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
     const storeHook: UtopiaStoreAPI = create(subscribeWithSelector(() => initialEditorStore))
 
     return (
-      <EditorStateContext.Provider value={{ useStore: storeHook }}>
+      <EditorStateContext.Provider
+        value={{ useStore: storeHook, useTrackedStore: createTrackedSelector(storeHook) }}
+      >
         <InspectorContextProvider>{children}</InspectorContextProvider>
       </EditorStateContext.Provider>
     )

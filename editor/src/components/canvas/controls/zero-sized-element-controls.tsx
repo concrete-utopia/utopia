@@ -21,7 +21,7 @@ import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useEditorStateOld } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -51,7 +51,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
     )
     const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
 
-    const zeroSizeElements = useEditorState((store) => {
+    const zeroSizeElements = useEditorStateOld((store) => {
       if (showAllPossibleElements) {
         return Object.values(store.editor.jsxMetadata).filter((element) => {
           return (

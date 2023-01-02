@@ -36,6 +36,7 @@ import { mapValues } from '../../../core/shared/object-utils'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createTrackedSelector } from 'react-tracked'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
@@ -74,6 +75,7 @@ export function getStoreHook(
 
   return {
     useStore: storeHook,
+    useTrackedStore: createTrackedSelector(storeHook),
     updateStoreWithImmer: updateStoreWithImmer,
     updateStore: updateStore,
   }

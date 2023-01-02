@@ -16,7 +16,7 @@ import {
   parseFailureAsErrorMessages,
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useEditorStateOld } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -60,7 +60,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
-  const { dispatch, editorState, derivedState, userState } = useEditorState(
+  const { dispatch, editorState, derivedState, userState } = useEditorStateOld(
     (store) => ({
       dispatch: store.dispatch,
       editorState: store.editor,
