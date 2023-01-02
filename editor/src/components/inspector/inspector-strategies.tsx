@@ -5,11 +5,13 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { EditorDispatch } from '../editor/action-types'
 import {
+  Axis,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
   FlexJustifyContent,
   hugContentsApplicable,
+  widthHeightFromAxis,
 } from './inspector-common'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
@@ -92,19 +94,6 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
     )
   },
 ]
-
-export type Axis = 'horizontal' | 'vertical'
-
-function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
-  switch (axis) {
-    case 'horizontal':
-      return 'width'
-    case 'vertical':
-      return 'height'
-    default:
-      assertNever(axis)
-  }
-}
 
 export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
