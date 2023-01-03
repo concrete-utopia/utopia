@@ -70,8 +70,11 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           targetParent,
         )
 
-        const isRoot = targetParent.parts.length === 1
-        if (!isRoot && targetParent.parts.length > 0 && textEditable) {
+        const targetParentPathParts =
+          targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
+        const hasParts = targetParentPathParts > 0
+        const isRoot = targetParentPathParts === 1
+        if (!isRoot && hasParts && textEditable) {
           return strategyApplicationResult([
             wildcardPatch('on-complete', {
               mode: { $set: EditorModes.textEditMode(targetParent) },
@@ -86,7 +89,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           factory.factory,
           name,
           factory.fitness,
-          factory.targetParent,
+          targetParent,
           factory.targetIndex,
         )
         if (strategy == null) {
