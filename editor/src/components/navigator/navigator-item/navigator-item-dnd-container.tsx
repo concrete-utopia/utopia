@@ -250,9 +250,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
         key='navigatorItem'
         id={`navigator-item-${safeComponentId}`}
         data-testid={`navigator-item-${safeComponentId}`}
-        style={{
-          ...props.windowStyle,
-        }}
+        style={props.windowStyle}
       >
         <NavigatorItem
           elementPath={this.props.elementPath}
