@@ -1962,6 +1962,9 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (action.unlessMode === editor.mode.type) {
+      // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
+      // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
+      // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
       return clearDragState(editor, derived, false)
     }
     return clearDragState(setModeState(action.mode, editor), derived, false)
