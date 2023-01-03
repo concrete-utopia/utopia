@@ -51,109 +51,108 @@ const handleShortcut = (
   ]
 }
 
-export const TextEditorWrapper = React.memo(
-  ({ elementPath, text, component, passthroughProps }: TextEditorProps) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
-    const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
-    const [firstTextProp] = React.useState(text)
+export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+  const { elementPath, text, component, passthroughProps } = props
+  const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
+  const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
+  const [firstTextProp] = React.useState(text)
 
-    const myElement = React.useRef<HTMLSpanElement>(null)
+  const myElement = React.useRef<HTMLSpanElement>(null)
 
-    React.useEffect(() => {
-      const currentElement = myElement.current
-      if (currentElement == null) {
-        return
+  React.useEffect(() => {
+    const currentElement = myElement.current
+    if (currentElement == null) {
+      return
+    }
+
+    currentElement.focus()
+
+    return () => {
+      const content = currentElement.textContent
+      if (content != null) {
+        dispatch([updateChildText(elementPath, escapeHTML(content))])
+      }
+    }
+  }, [dispatch, elementPath])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      return
+    }
+    myElement.current.textContent = firstTextProp
+    setSelectionToEnd(myElement.current)
+  }, [firstTextProp])
+
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent) => {
+      const modifiers = Modifier.modifiersForEvent(event)
+      const meta = modifiers.cmd || modifiers.ctrl
+      const shortcuts = [
+        ...handleShortcut(
+          meta && event.key === 'b', // Meta+b = bold
+          allElementProps,
+          elementPath,
+          'fontWeight',
+          'bold',
+          'normal',
+        ),
+        ...handleShortcut(
+          meta && event.key === 'i', // Meta+i = italic
+          allElementProps,
+          elementPath,
+          'fontStyle',
+          'italic',
+          'normal',
+        ),
+        ...handleShortcut(
+          meta && event.key === 'u', // Meta+u = underline
+          allElementProps,
+          elementPath,
+          'textDecoration',
+          'underline',
+          'none',
+        ),
+        ...handleShortcut(
+          meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
+          allElementProps,
+          elementPath,
+          'textDecoration',
+          'line-through',
+          'none',
+        ),
+      ]
+      if (shortcuts.length > 0) {
+        event.stopPropagation()
+        dispatch(shortcuts)
       }
 
-      currentElement.focus()
-
-      return () => {
-        const content = currentElement.textContent
-        if (content != null) {
-          dispatch([updateChildText(elementPath, escapeHTML(content))])
-        }
+      if (event.key === 'Escape') {
+        // eslint-disable-next-line no-unused-expressions
+        myElement.current?.blur()
+      } else {
+        event.stopPropagation()
       }
-    }, [dispatch, elementPath])
+    },
+    [dispatch, elementPath, allElementProps],
+  )
 
-    React.useEffect(() => {
-      if (myElement.current == null) {
-        return
-      }
-      myElement.current.textContent = firstTextProp
-      setSelectionToEnd(myElement.current)
-    }, [firstTextProp])
+  const onBlur = React.useCallback(() => {
+    dispatch([updateEditorMode(EditorModes.selectMode())])
+  }, [dispatch])
 
-    const onKeyDown = React.useCallback(
-      (event: React.KeyboardEvent) => {
-        const modifiers = Modifier.modifiersForEvent(event)
-        const meta = modifiers.cmd || modifiers.ctrl
-        const shortcuts = [
-          ...handleShortcut(
-            meta && event.key === 'b', // Meta+b = bold
-            allElementProps,
-            elementPath,
-            'fontWeight',
-            'bold',
-            'normal',
-          ),
-          ...handleShortcut(
-            meta && event.key === 'i', // Meta+i = italic
-            allElementProps,
-            elementPath,
-            'fontStyle',
-            'italic',
-            'normal',
-          ),
-          ...handleShortcut(
-            meta && event.key === 'u', // Meta+u = underline
-            allElementProps,
-            elementPath,
-            'textDecoration',
-            'underline',
-            'none',
-          ),
-          ...handleShortcut(
-            meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
-            allElementProps,
-            elementPath,
-            'textDecoration',
-            'line-through',
-            'none',
-          ),
-        ]
-        if (shortcuts.length > 0) {
-          event.stopPropagation()
-          dispatch(shortcuts)
-        }
-
-        if (event.key === 'Escape') {
-          // eslint-disable-next-line no-unused-expressions
-          myElement.current?.blur()
-        } else {
-          event.stopPropagation()
-        }
-      },
-      [dispatch, elementPath, allElementProps],
-    )
-
-    const onBlur = React.useCallback(() => {
-      dispatch([updateEditorMode(EditorModes.selectMode())])
-    }, [dispatch])
-
-    return React.createElement(component, {
-      ...passthroughProps,
-      ref: myElement,
-      id: TextEditorSpanId,
-      onPaste: stopPropagation,
-      onKeyDown: onKeyDown,
-      onKeyUp: stopPropagation,
-      onKeyPress: stopPropagation,
-      onBlur: onBlur,
-      contentEditable: 'plaintext-only' as any, // note: not supported on firefo,
-      suppressContentEditableWarning: true,
-    })
-  },
-)
+  return React.createElement(component, {
+    ...passthroughProps,
+    ref: myElement,
+    id: TextEditorSpanId,
+    onPaste: stopPropagation,
+    onKeyDown: onKeyDown,
+    onKeyUp: stopPropagation,
+    onKeyPress: stopPropagation,
+    onBlur: onBlur,
+    contentEditable: 'plaintext-only' as any, // note: not supported on firefo,
+    suppressContentEditableWarning: true,
+  })
+})
 
 function setSelectionToEnd(element: HTMLSpanElement) {
   const range = document.createRange()
