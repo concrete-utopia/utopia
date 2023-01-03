@@ -140,8 +140,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
-  return React.createElement(component, {
-    ...passthroughProps,
+  const editorProps = {
     ref: myElement,
     id: TextEditorSpanId,
     onPaste: stopPropagation,
@@ -151,7 +150,15 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     onBlur: onBlur,
     contentEditable: 'plaintext-only' as any, // note: not supported on firefo,
     suppressContentEditableWarning: true,
-  })
+  }
+
+  if (typeof component === 'string') {
+    return React.createElement(component, {
+      ...passthroughProps,
+      ...editorProps,
+    })
+  }
+  return React.createElement(component, passthroughProps, <span {...editorProps} />)
 })
 
 function setSelectionToEnd(element: HTMLSpanElement) {
