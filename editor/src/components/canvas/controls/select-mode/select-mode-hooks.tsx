@@ -563,13 +563,12 @@ export function useHighlightCallbacks(
 function getPreferredSelectionForEvent(
   eventType: 'mousedown' | 'mouseup' | string,
   isDoubleClick: boolean,
-  mouseUpSelectionAllowed: boolean,
 ): 'prefer-selected' | 'dont-prefer-selected' {
   // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
   // with continuous clicking mousedown should select
   switch (eventType) {
     case 'mousedown':
-      return isDoubleClick || !mouseUpSelectionAllowed ? 'dont-prefer-selected' : 'prefer-selected'
+      return isDoubleClick ? 'dont-prefer-selected' : 'prefer-selected'
     case 'mouseup':
       return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
     default:
@@ -641,9 +640,7 @@ function useSelectOrLiveModeSelectAndHover(
         interactionSessionHappened.current && !hasInteractionSession
 
       const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
-      const isCurrentSelectionMultiselect = selectedViewsRef.current.length > 1
       const mouseUpSelectionAllowed =
-        isCurrentSelectionMultiselect &&
         !hadInteractionSessionThatWasCancelled &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
@@ -664,11 +661,7 @@ function useSelectOrLiveModeSelectAndHover(
 
       const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-      const preferAlreadySelected = getPreferredSelectionForEvent(
-        event.type,
-        doubleClick,
-        mouseUpSelectionAllowed,
-      )
+      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
       const foundTarget = findValidTarget(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
