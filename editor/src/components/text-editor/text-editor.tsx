@@ -21,7 +21,7 @@ export const TextEditorSpanId = 'text-editor'
 interface TextEditorProps {
   elementPath: ElementPath
   text: string
-  component: any
+  component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, unknown>
 }
 
