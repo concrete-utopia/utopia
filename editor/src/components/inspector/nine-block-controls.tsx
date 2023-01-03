@@ -26,7 +26,7 @@ export const NineBlockTestId = (
   justifyContent: FlexJustifyContent,
 ): string => `NineBlockTestId-${alignItems}-${justifyContent}`
 
-const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
+export const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
   ['flex-start', 'center', 'flex-end'],
   ['flex-start', 'center', 'flex-end'],
 )
