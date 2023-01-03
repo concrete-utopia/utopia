@@ -67,9 +67,9 @@ export const updateFlexDirectionStrategies = (
       return null
     }
 
-    return elements.flatMap((path) => [
+    return elements.map((path) =>
       setProperty('always', path, PP.create(['style', 'flexDirection']), flexDirection),
-    ])
+    )
   },
 ]
 
