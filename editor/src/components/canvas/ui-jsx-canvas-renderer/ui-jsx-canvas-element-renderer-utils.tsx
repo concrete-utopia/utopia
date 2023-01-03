@@ -326,8 +326,7 @@ export function renderCoreElement(
         return <></>
       }
 
-      const unescaped = unescapeHTML(element.text)
-      return unescaped
+      return unescapeHTML(element.text)
     }
     default:
       const _exhaustiveCheck: never = element
@@ -451,10 +450,10 @@ function renderJSXElement(
       const textBlock = childrenWithNewTextBlock.find(
         (c): c is JSXTextBlock => c.type === 'JSX_TEXT_BLOCK',
       )
-      const textContent = textBlock?.text ?? ''
+      const textContent = unescapeHTML(textBlock?.text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
-        text: textContent,
+        text: textContent.trim(),
         component: FinalElement,
         passthroughProps: finalPropsIcludingElementPath,
       }
