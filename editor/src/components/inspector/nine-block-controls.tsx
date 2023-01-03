@@ -131,8 +131,7 @@ interface NineBlockControlCellProps {
 const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
-  // TODO WIP - this makes the whole nine-block control re-render, figure out why
-  // const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
 
   const alignItemsJustifyContent = React.useMemo(
     () => ({ alignItems, justifyContent }),
@@ -168,13 +167,11 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           opacity: isSelected ? 1 : 0.5,
         }}
       >
-        {/* <Slabs
-          // {...slabAlignment(justifyContent, alignItems, flexDirection)}
-          justifyContent={"flex-start"}
-          alignItems={"flex-start"}
+        <Slabs
+          {...slabAlignment(justifyContent, alignItems, flexDirection)}
           flexDirection={flexDirection}
           bgColor={fgColor}
-        /> */}
+        />
       </div>
       <div
         css={{
