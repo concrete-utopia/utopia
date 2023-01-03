@@ -594,6 +594,7 @@ function useSelectOrLiveModeSelectAndHover(
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
+  const didWeHandleMouseDown = React.useRef(false) //  this is here to avoid selecting when closing text editing
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
@@ -641,12 +642,18 @@ function useSelectOrLiveModeSelectAndHover(
 
       const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
       const mouseUpSelectionAllowed =
+        didWeHandleMouseDown.current &&
         !hadInteractionSessionThatWasCancelled &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
+      if (event.type === 'mousedown') {
+        didWeHandleMouseDown.current = true
+      }
       if (event.type === 'mouseup') {
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false
+        // didWeHandleMouseDown is used to avoid selecting when closing text editing
+        didWeHandleMouseDown.current = false
 
         if (!mouseUpSelectionAllowed) {
           // We should skip this mouseup

@@ -22,16 +22,30 @@ import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 
-export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
-  const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
-  if (validPaths != null) {
-    return validPaths.split(' ').map(EP.fromString)
-  } else {
-    if (target.parentElement != null) {
-      return findParentSceneValidPaths(target.parentElement)
+type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
+
+export function findParentSceneValidPaths(
+  target: Element,
+  mutableCache: FindParentSceneValidPathsCache,
+): Array<ElementPath> | null {
+  const cacheResult = mutableCache.get(target)
+  if (cacheResult === undefined) {
+    const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
+    if (validPaths != null) {
+      const result = validPaths.split(' ').map(EP.fromString)
+      mutableCache.set(target, result)
+      return result
     } else {
-      return null
+      if (target.parentElement != null) {
+        const result = findParentSceneValidPaths(target.parentElement, mutableCache)
+        mutableCache.set(target, result)
+        return result
+      } else {
+        return null
+      }
     }
+  } else {
+    return cacheResult
   }
 }
 
@@ -40,20 +54,24 @@ export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
 ): ElementPath | null {
+  const parentSceneValidPathsCache = new Map()
+
   const firstParentFromDom = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
     'search-dom-only',
+    parentSceneValidPathsCache,
   )
 
   const firstParentFromPath = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
     'allow-descendants-from-path',
+    parentSceneValidPathsCache,
   )
 
   if (firstParentFromDom == null || firstParentFromPath == null) {
-    return firstParentFromDom ?? firstParentFromPath ?? null
+    return firstParentFromDom ?? firstParentFromPath
   }
 
   return EP.navigatorDepth(firstParentFromDom) < EP.navigatorDepth(firstParentFromPath)
@@ -66,6 +84,7 @@ export function findFirstParentWithValidElementPathInner(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
   allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
@@ -75,50 +94,68 @@ export function findFirstParentWithValidElementPathInner(
       dynamic: p,
     }
   })
-  const validStaticElementPathsForSceneArray =
-    findParentSceneValidPaths(target)?.map(EP.toString) ?? []
-  const validStaticElementPathsForScene = new Set(validStaticElementPathsForSceneArray)
+  const validStaticElementPathsForScene: Set<string> = new Set()
+  const parentSceneValidPaths = findParentSceneValidPaths(target, parentSceneValidPathsCache)
+  if (parentSceneValidPaths != null) {
+    for (const validPath of parentSceneValidPaths) {
+      validStaticElementPathsForScene.add(EP.toString(validPath))
+    }
+  }
 
-  const validStaticElementPaths =
-    validDynamicElementPathsForLookup === 'no-filter'
-      ? validStaticElementPathsForScene
-      : new Set(
-          [...validDynamicElementPathsForLookup].filter((p) =>
-            validStaticElementPathsForScene.has(p),
-          ),
-        )
-
-  const filteredValidPathsMappedToDynamic = mapDropNulls(
-    (validPath: string) => {
-      switch (allowDescendantsFromPath) {
-        case 'allow-descendants-from-path':
-          for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-            if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, EP.fromString(validPath))) {
-              const depthDiff =
-                EP.navigatorDepth(staticAndDynamic.staticPath) -
-                EP.navigatorDepth(EP.fromString(validPath))
-              return EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
-            }
-          }
-
-          return null
-        case 'search-dom-only':
-          return staticAndDynamicTargetElementPaths.find(
-            (staticAndDynamic) => staticAndDynamic.static === validPath,
-          )?.dynamic
-        default:
-          const _exhaustiveCheck: never = allowDescendantsFromPath
+  let validStaticElementPaths: Set<string>
+  if (validDynamicElementPathsForLookup === 'no-filter') {
+    validStaticElementPaths = validStaticElementPathsForScene
+  } else {
+    validStaticElementPaths = new Set()
+    for (const path of validDynamicElementPathsForLookup) {
+      if (validStaticElementPathsForScene.has(path)) {
+        validStaticElementPaths.add(path)
       }
-      return null
-    },
-    [...validStaticElementPaths],
-  )
+    }
+  }
+
+  let filteredValidPathsMappedToDynamic: Array<ElementPath> = []
+  switch (allowDescendantsFromPath) {
+    case 'allow-descendants-from-path':
+      for (const validPath of validStaticElementPaths) {
+        const validPathFromString = EP.fromString(validPath)
+        for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
+            const depthDiff =
+              EP.navigatorDepth(staticAndDynamic.staticPath) -
+              EP.navigatorDepth(validPathFromString)
+            filteredValidPathsMappedToDynamic.push(
+              EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
+            )
+          }
+        }
+      }
+      break
+    case 'search-dom-only':
+      for (const validPath of validStaticElementPaths) {
+        const pathToAdd = staticAndDynamicTargetElementPaths.find(
+          (staticAndDynamic) => staticAndDynamic.static === validPath,
+        )?.dynamic
+        if (pathToAdd != null) {
+          filteredValidPathsMappedToDynamic.push(pathToAdd)
+        }
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = allowDescendantsFromPath
+  }
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
-    const sortedFilteredPaths = filteredValidPathsMappedToDynamic.sort(
-      (l, r) => EP.navigatorDepth(l) - EP.navigatorDepth(r),
-    )
-    return last(sortedFilteredPaths) ?? null
+    let deepestDepth: number = -1
+    let deepestResult: ElementPath | null = null
+    for (const path of filteredValidPathsMappedToDynamic) {
+      const latestDepth = EP.navigatorDepth(path)
+      if (latestDepth > deepestDepth) {
+        deepestDepth = latestDepth
+        deepestResult = path
+      }
+    }
+    return deepestResult
   } else {
     if (target.parentElement == null) {
       return null
@@ -127,6 +164,7 @@ export function findFirstParentWithValidElementPathInner(
         validDynamicElementPathsForLookup,
         target.parentElement,
         allowDescendantsFromPath,
+        parentSceneValidPathsCache,
       )
     }
   }
@@ -255,16 +293,13 @@ export function getSelectionOrAllTargetsAtPoint(
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
-  const elementsFromDOM = stripNulls(
-    elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
-      if (foundValidElementPath != null) {
-        return foundValidElementPath
-      } else {
-        return null
-      }
-    }),
-  )
+  const elementsFromDOM: Array<ElementPath> = []
+  for (const element of elementsUnderPoint) {
+    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    if (foundValidElementPath != null) {
+      elementsFromDOM.push(foundValidElementPath)
+    }
+  }
 
   const inSelectionRectangle = isPointInSelectionRectangle(
     canvasScale,

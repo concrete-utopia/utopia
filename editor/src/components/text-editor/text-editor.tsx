@@ -137,7 +137,7 @@ export const TextEditorWrapper = React.memo(
     )
 
     const onBlur = React.useCallback(() => {
-      dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
+      dispatch([updateEditorMode(EditorModes.selectMode())])
     }, [dispatch])
 
     return React.createElement(component, {

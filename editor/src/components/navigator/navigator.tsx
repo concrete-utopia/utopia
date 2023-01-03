@@ -26,6 +26,7 @@ import {
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -94,6 +95,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 
   const targetPath = visibleNavigatorTargets[index]
   const componentKey = EP.toComponentId(targetPath)
+  const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
   return (
     <NavigatorItemWrapper
       key={componentKey}
@@ -103,7 +105,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
       getDragSelections={getDragSelections}
       getSelectedViewsInRange={getSelectedViewsInRange}
-      windowStyle={style}
+      windowStyle={deepKeptStyle}
     />
   )
 })
