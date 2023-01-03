@@ -1,4 +1,5 @@
 import React from 'react'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { JSXElement } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
@@ -8,13 +9,14 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { enableInsertModeForJSXElement } from './actions/action-creators'
+import { enableInsertModeForJSXElement, switchEditorMode } from './actions/action-creators'
 import {
   defaultButtonElement,
   defaultDivElement,
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
+import { EditorModes } from './editor-modes'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
@@ -35,8 +37,23 @@ export function useEnterDrawToInsertForDiv(): (event: React.MouseEvent<Element>)
   return useEnterDrawToInsertForElement(defaultDivElement)
 }
 
-export function useEnterDrawToInsertForSpan(): (event: React.MouseEvent<Element>) => void {
-  return useEnterDrawToInsertForElement(defaultSpanElement)
+export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => void {
+  const dispatch = useEditorState((store) => store.dispatch, 'useEnterTextEditMode dispatch')
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'useEnterTextEditMode selectedViews',
+  )
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  return React.useCallback(
+    (event: React.MouseEvent<Element>): void => {
+      const firstTextEditableView = selectedViews.find((v) =>
+        MetadataUtils.targetTextEditable(metadataRef.current, v),
+      )
+      dispatch([switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null))])
+    },
+    [dispatch, selectedViews, metadataRef],
+  )
 }
 
 export function useEnterDrawToInsertForImage(): (event: React.MouseEvent<Element>) => void {
