@@ -152,6 +152,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     suppressContentEditableWarning: true,
   }
 
+  // When the component to render is a simple html element we should make that contenteditable
   if (typeof component === 'string') {
     return React.createElement(component, {
       ...passthroughProps,
