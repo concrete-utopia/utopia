@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import {
+  ElementSupportsChildren,
+  MetadataUtils,
+} from '../../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
@@ -54,7 +57,7 @@ export function findReparentStrategies(
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
   allowSmallerParent: AllowSmallerParent,
-  allowWithOnlyTextChildren?: boolean,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
@@ -66,7 +69,7 @@ export function findReparentStrategies(
     metadata,
     canvasState.startingAllElementProps,
     allowSmallerParent,
-    allowWithOnlyTextChildren,
+    elementSupportsChildren,
   )
 
   if (targetParent == null) {

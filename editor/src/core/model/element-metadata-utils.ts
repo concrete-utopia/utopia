@@ -116,6 +116,11 @@ export const getChildrenOfCollapsedViews = (
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
+export type ElementSupportsChildren =
+  | 'supportsChildren'
+  | 'hasOnlyTextChildren'
+  | 'doesNotSupportChildren'
+
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
@@ -707,36 +712,47 @@ export const MetadataUtils = {
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     instance: ElementInstanceMetadata,
-    options?: {
-      allowWithOnlyTextChildren?: boolean
-    },
   ): boolean {
+    return (
+      this.targetElementSupportsChildrenAlsoText(projectContents, instance) === 'supportsChildren'
+    )
+  },
+  targetElementSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    instance: ElementInstanceMetadata,
+  ): ElementSupportsChildren {
     return foldEither(
-      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (elementString) =>
+        intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
+          ? 'supportsChildren'
+          : 'doesNotSupportChildren',
       (element) => {
-        const allowWithOnlyTextChildren = options?.allowWithOnlyTextChildren ?? false
-        if (!allowWithOnlyTextChildren && elementOnlyHasTextChildren(element)) {
+        if (elementOnlyHasTextChildren(element)) {
           // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
-          return false
+          return 'hasOnlyTextChildren'
         } else {
           if (isJSXElement(element)) {
             if (isIntrinsicElement(element.name)) {
               return intrinsicHTMLElementNamesThatSupportChildren.includes(
                 element.name.baseVariable,
               )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else if (isUtopiaAPIComponentFromMetadata(instance)) {
               // Explicitly prevent components / elements that we *know* don't support children
-              return (
-                isViewLikeFromMetadata(instance) ||
+              return isViewLikeFromMetadata(instance) ||
                 isSceneFromMetadata(instance) ||
                 EP.isStoryboardPath(instance.elementPath)
-              )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else {
               return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             }
           }
           // We don't know at this stage
-          return true
+          return 'supportsChildren'
         }
       },
       instance.element,
@@ -746,18 +762,25 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
-    allowWithOnlyTextChildren?: boolean,
   ): boolean {
+    return (
+      this.targetSupportsChildrenAlsoText(projectContents, metadata, target) !==
+      'doesNotSupportChildren'
+    )
+  },
+  targetSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
-      return true
+      return 'supportsChildren'
     } else {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
-        ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, instance, {
-            allowWithOnlyTextChildren,
-          })
+        ? 'doesNotSupportChildren'
+        : MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
     }
   },
   targetUsesProperty(

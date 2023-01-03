@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import {
+  ElementSupportsChildren,
+  MetadataUtils,
+} from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
@@ -42,7 +45,7 @@ export function getReparentTargetUnified(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
-  allowWithOnlyTextChildren?: boolean,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
@@ -54,7 +57,7 @@ export function getReparentTargetUnified(
     metadata,
     allElementProps,
     allowSmallerParent,
-    allowWithOnlyTextChildren,
+    elementSupportsChildren,
   )
 
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
@@ -95,7 +98,7 @@ function findValidTargetsUnderPoint(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
-  allowWithOnlyTextChildren?: boolean,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -132,11 +135,8 @@ function findValidTargetsUnderPoint(
     }
 
     if (
-      !MetadataUtils.targetSupportsChildren(
-        projectContents,
-        metadata,
-        target,
-        allowWithOnlyTextChildren,
+      !elementSupportsChildren.includes(
+        MetadataUtils.targetSupportsChildrenAlsoText(projectContents, metadata, target),
       )
     ) {
       // simply skip elements that do not support children

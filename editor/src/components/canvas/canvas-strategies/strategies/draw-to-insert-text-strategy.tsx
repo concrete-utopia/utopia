@@ -55,7 +55,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           false,
           true,
           'allow-smaller-parent',
-          true,
+          ['hasOnlyTextChildren', 'supportsChildren'],
         )
         if (applicableReparentFactories.length < 1) {
           return strategyApplicationResult([])
