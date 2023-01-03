@@ -4,7 +4,7 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { FlexDirection } from './common/css-utils'
+import { FlexDirection, FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { filterKeepFlexContainers } from './inspector-common'
 import {
@@ -12,6 +12,9 @@ import {
   runStrategies,
   updateFlexDirectionStrategies,
 } from './inspector-strategies'
+
+export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
+  `FlexDirectionToggle-${direction}`
 
 interface FlexDirectionToggleProps {
   flexDirection: FlexDirection | null
