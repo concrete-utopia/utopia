@@ -5,6 +5,7 @@ import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
 import {
+  AltColorThemeProvider,
   Avatar,
   Button,
   colorTheme,
@@ -161,7 +162,11 @@ const TitleBar = React.memo(() => {
             )}
             {when(
               hasMergeConflicts,
-              <RoundButton color={colorTheme.errorBgSolid.value} onClick={showMergeConflict}>
+              <RoundButton
+                color={colorTheme.errorBgSolid.value}
+                onClick={showMergeConflict}
+                theme={colorTheme.mergeConflictLozenge}
+              >
                 {
                   <Icons.WarningTriangle
                     style={{ width: 19, height: 19 }}

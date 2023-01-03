@@ -84,13 +84,13 @@ export const ColorThemeComponent = React.memo(() => {
 })
 
 interface AlternateThemeProps {
-  theme: SubThemeObject
-  active: boolean
+  theme?: SubThemeObject
+  active?: boolean
 }
 
 // TODO: Add context containing icon color, etc.
 export const AltColorThemeProvider = React.memo(
   ({ theme, active = true, children }: React.PropsWithChildren<AlternateThemeProps>) => {
-    return <div className={active ? theme.name : ''}>{children}</div>
+    return <div className={active && theme != null ? theme.name : ''}>{children}</div>
   },
 )

@@ -7,6 +7,8 @@ export type SubThemeObject = {
   fg0: UtopiColor
   fg1: UtopiColor
   fg2: UtopiColor
+  error: UtopiColor
+  warning: UtopiColor
 }
 
 type ThemeBase = {
@@ -231,12 +233,10 @@ export type FlatThemeObject = ThemeOpacities &
   }
 
 export type SubThemesParent = {
-  errorEmphasized: SubThemeObject
   pullLozenge: SubThemeObject
   pushLozenge: SubThemeObject
-  warningEmphasized: SubThemeObject
+  mergeConflictLozenge: SubThemeObject
   navigatorItemHighlighted: SubThemeObject
-  errorForegroundTheme: SubThemeObject
 }
 
 export type ThemeObject = FlatThemeObject & SubThemesParent

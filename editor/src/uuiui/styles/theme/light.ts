@@ -1,12 +1,10 @@
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 import {
-  errorEmphasized,
   pullLozenge,
   pushLozenge,
-  warningEmphasized,
+  mergeConflictLozenge,
   navigatorItemHighlighted,
-  errorForeground,
 } from './subthemes'
 import { ThemeObject } from './types'
 
@@ -114,12 +112,10 @@ export const light: ThemeObject = {
   ...lightPrimitives,
   ...lightErrorStates,
 
-  errorEmphasized,
   pullLozenge,
   pushLozenge,
-  warningEmphasized,
+  mergeConflictLozenge,
   navigatorItemHighlighted,
-  errorForegroundTheme: errorForeground,
   // subThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
 
   textColor: base.almostBlack,

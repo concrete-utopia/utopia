@@ -3,12 +3,14 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { Button } from '../../uuiui'
+import { AltColorThemeProvider, Button } from '../../uuiui'
 import { colorTheme } from '../../uuiui'
+import { SubThemeObject } from '../../uuiui/styles/theme/types'
 
 interface TitleButtonProps {
   onClick: () => void
   color?: string
+  theme?: SubThemeObject
 }
 
 const TitleButton = styled(Button)((props) => ({ fontWeight: 500, fontSize: 10 }))
@@ -46,6 +48,7 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
   onClick,
   color,
   children,
+  theme,
 }) => {
   const bgColor = color == null ? {} : { backgroundColor: color }
   const ButtonEl = styled(TitleButton)((props) => ({
@@ -58,16 +61,18 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
   }))
 
   return (
-    <ButtonEl
-      onClick={onClick}
-      css={{
-        '&:hover': {
-          background: color,
-          opacity: 0.7,
-        },
-      }}
-    >
-      {children}
-    </ButtonEl>
+    <AltColorThemeProvider theme={theme}>
+      <ButtonEl
+        onClick={onClick}
+        css={{
+          '&:hover': {
+            background: color,
+            opacity: 0.7,
+          },
+        }}
+      >
+        {children}
+      </ButtonEl>
+    </AltColorThemeProvider>
   )
 }
