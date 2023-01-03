@@ -116,12 +116,12 @@ export const ColorPropertyControl = React.memo(
 export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-    const dispatch = useEditorState(
+    const dispatch = useEditorState('restOfStore')(
       (store) => store.dispatch,
       'ExpressionInputPropertyControl dispatch',
     )
 
-    const targetFilePaths = useEditorState((store) => {
+    const targetFilePaths = useEditorState('fullOldStore')((store) => {
       const currentFilePath = forceNotNull(
         'Missing open file',
         store.editor.canvas.openFile?.filename,
@@ -227,16 +227,17 @@ export const PopUpListPropertyControl = React.memo(
 
 export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
-    const dispatch = useEditorState(
+    const dispatch = useEditorState('restOfStore')(
       (store) => store.dispatch,
       'ExpressionPopUpListPropertyControl dispatch',
     )
-    const selectedViews = useEditorState(
+    const selectedViews = useEditorState('selectedHighlightedViews')(
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )
 
-    const targetFilePaths = useEditorState((store) => {
+    const targetFilePaths = useEditorState('fullOldStore')((store) => {
+      // TODO probably make a store with selected views, projectContents and nodeModules.files ?
       const currentFilePath = forceNotNull(
         'Missing open file',
         store.editor.canvas.openFile?.filename,

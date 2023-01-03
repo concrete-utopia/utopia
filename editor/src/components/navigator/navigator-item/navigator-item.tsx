@@ -196,7 +196,7 @@ const computeResultingStyle = (
 }
 
 function useStyleFullyVisible(path: ElementPath): boolean {
-  return useEditorState((store) => {
+  return useEditorState('fullOldStore')((store) => {
     const metadata = store.editor.jsxMetadata
     const selectedViews = store.editor.selectedViews
     const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
@@ -245,7 +245,7 @@ function useStyleFullyVisible(path: ElementPath): boolean {
 }
 
 function useIsProbablyScene(path: ElementPath): boolean {
-  return useEditorState(
+  return useEditorState('metadata')(
     (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
@@ -267,12 +267,12 @@ export const NavigatorItem: React.FunctionComponent<
   } = props
 
   const colorTheme = useColorTheme()
-  const isFocusedComponent = useEditorState(
+  const isFocusedComponent = useEditorState('oldEditor')(
     (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
     'NavigatorItem isFocusedComponent',
   )
 
-  const isFocusableComponent = useEditorState((store) => {
+  const isFocusableComponent = useEditorState('metadata')((store) => {
     return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
   }, 'NavigatorItem isFocusable')
 
@@ -284,7 +284,7 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
-  const isHighlightedForInteraction = useEditorState((store) => {
+  const isHighlightedForInteraction = useEditorState('oldEditor')((store) => {
     return store.editor.navigator.highlightedTargets.some((target) =>
       EP.pathsEqual(target, props.elementPath),
     )

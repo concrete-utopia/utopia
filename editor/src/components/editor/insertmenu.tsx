@@ -76,7 +76,7 @@ interface InsertMenuProps {
 }
 
 export const InsertMenu = React.memo(() => {
-  const props = useEditorState((store) => {
+  const props = useEditorState('fullOldStore')((store) => {
     const openFileFullPath = getOpenFilename(store.editor)
 
     return {

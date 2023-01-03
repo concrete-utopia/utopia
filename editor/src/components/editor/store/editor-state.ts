@@ -380,7 +380,7 @@ export const defaultUserState: UserState = {
   },
 }
 
-type EditorStoreShared = {
+export type EditorStoreShared = {
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -1226,8 +1226,50 @@ export function emptyGithubData(): GithubData {
 
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
+export interface ProjectContentSubstate {
+  editor: {
+    projectContents: ProjectContentTreeRoot
+  }
+}
+
+export interface MetadataSubstate {
+  editor: {
+    selectedViews: Array<ElementPath> // duplicated from SelectedHighlightedViewsSubstate, for convenience!
+    spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
+    domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
+    jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
+    allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
+    _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  }
+}
+
+export interface SelectedHighlightedViewsSubstate {
+  editor: {
+    selectedViews: Array<ElementPath>
+    highlightedViews: Array<ElementPath>
+    hoveredViews: Array<ElementPath>
+  }
+}
+
+export interface CanvasSubstate {
+  editor: {
+    canvas: EditorStateCanvas
+  }
+}
+
+export interface DerivedSubstate {
+  derived: DerivedState
+}
+
+export type EditorSubStates = ProjectContentSubstate &
+  MetadataSubstate &
+  SelectedHighlightedViewsSubstate &
+  CanvasSubstate
+
 // FIXME We need to pull out ProjectState from here
-export interface EditorState {
+export type EditorState = EditorSubStates['editor'] & OldEditorState
+
+export interface OldEditorState {
   id: string | null
   vscodeBridgeId: VSCodeBridgeId
   forkedFromProjectId: string | null
@@ -1236,17 +1278,10 @@ export interface EditorState {
   projectDescription: string
   projectVersion: number
   isLoaded: boolean
-  spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
-  domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
-  jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
-  projectContents: ProjectContentTreeRoot
   branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
-  selectedViews: Array<ElementPath>
-  highlightedViews: Array<ElementPath>
-  hoveredViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
@@ -1261,7 +1296,7 @@ export interface EditorState {
   leftMenu: EditorStateLeftMenu
   rightMenu: EditorStateRightMenu
   interfaceDesigner: EditorStateInterfaceDesigner
-  canvas: EditorStateCanvas
+
   floatingInsertMenu: FloatingInsertMenuState
   inspector: EditorStateInspector
   fileBrowser: EditorStateFileBrowser
@@ -1292,8 +1327,6 @@ export interface EditorState {
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
-  allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
-  _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>

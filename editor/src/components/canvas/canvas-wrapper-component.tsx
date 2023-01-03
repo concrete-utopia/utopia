@@ -60,7 +60,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
-  const { dispatch, editorState, derivedState, userState } = useEditorState(
+  const { dispatch, editorState, derivedState, userState } = useEditorState('fullOldStore')(
     (store) => ({
       dispatch: store.dispatch,
       editorState: store.editor,
@@ -74,11 +74,11 @@ export const CanvasWrapperComponent = React.memo(() => {
     return getAllCodeEditorErrors(editorState, 'fatal', true)
   }, [editorState])
 
-  const safeMode = useEditorState((store) => {
+  const safeMode = useEditorState('oldEditor')((store) => {
     return store.editor.safeMode
   }, 'CanvasWrapperComponent safeMode')
 
-  const isNavigatorOverCanvas = useEditorState(
+  const isNavigatorOverCanvas = useEditorState('oldEditor')(
     (store) => !store.editor.navigator.minimised,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
@@ -143,14 +143,17 @@ export const CanvasWrapperComponent = React.memo(() => {
 })
 
 const ErrorOverlayComponent = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
-  const utopiaParserErrors = useEditorState((store) => {
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'ErrorOverlayComponent dispatch',
+  )
+  const utopiaParserErrors = useEditorState('fullOldStore')((store) => {
     return parseFailureAsErrorMessages(
       getOpenUIJSFileKey(store.editor),
       getOpenUIJSFile(store.editor),
     )
   }, 'ErrorOverlayComponent utopiaParserErrors')
-  const fatalCodeEditorErrors = useEditorState((store) => {
+  const fatalCodeEditorErrors = useEditorState('fullOldStore')((store) => {
     return getAllCodeEditorErrors(store.editor, 'error', true)
   }, 'ErrorOverlayComponent fatalCodeEditorErrors')
 
@@ -215,7 +218,10 @@ const ErrorOverlayComponent = React.memo(() => {
 })
 
 export const SafeModeErrorOverlay = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'SafeModeErrorOverlay dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'SafeModeErrorOverlay dispatch',
+  )
   const onTryAgain = React.useCallback(() => {
     dispatch([setSafeMode(false)], 'everyone')
   }, [dispatch])

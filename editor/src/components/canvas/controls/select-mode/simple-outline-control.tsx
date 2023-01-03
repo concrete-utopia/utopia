@@ -15,7 +15,7 @@ interface MultiSelectOutlineControlProps {
 }
 
 export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
-  const hiddenInstances = useEditorState(
+  const hiddenInstances = useEditorState('oldEditor')(
     (store) => store.editor.hiddenInstances,
     'MultiSelectOutlineControl hiddenInstances',
   )
@@ -46,9 +46,12 @@ interface OutlineControlProps {
 const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'OutlineControl scale',
+  )
 
-  const colors = useEditorState((store) => {
+  const colors = useEditorState('fullOldStore')((store) => {
     return targets.map((path) =>
       getSelectionColor(
         path,

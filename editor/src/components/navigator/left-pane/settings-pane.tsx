@@ -44,17 +44,21 @@ const themeOptions = [
 const defaultTheme = themeOptions[0]
 
 export const SettingsPane = React.memo(() => {
-  const { dispatch, userState, projectId, projectName, projectDescription, themeConfig } =
-    useEditorState((store) => {
-      return {
-        dispatch: store.dispatch,
-        userState: store.userState,
-        projectId: store.editor.id,
-        projectName: store.editor.projectName,
-        projectDescription: store.editor.projectDescription,
-        themeConfig: store.userState.themeConfig,
-      }
-    }, 'SettingsPane')
+  const { dispatch, userState, themeConfig } = useEditorState('restOfStore')((store) => {
+    return {
+      dispatch: store.dispatch,
+      userState: store.userState,
+      themeConfig: store.userState.themeConfig,
+    }
+  }, 'SettingsPane')
+
+  const { projectId, projectName, projectDescription } = useEditorState('oldEditor')((store) => {
+    return {
+      projectId: store.editor.id,
+      projectName: store.editor.projectName,
+      projectDescription: store.editor.projectDescription,
+    }
+  }, 'SettingsPane')
 
   const isMyProject = useIsMyProject(projectId)
 

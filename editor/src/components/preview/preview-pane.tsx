@@ -83,12 +83,15 @@ export interface PreviewColumnState {
 }
 
 export const PreviewColumn = React.memo(() => {
-  const { id, projectName, connected, mainJSFilename } = useEditorState((store) => {
+  const mainJSFilename = useEditorState('projectContents')(
+    (store) => getMainJSFilename(store.editor.projectContents),
+    'PreviewColumn mainJSFilename',
+  )
+  const { id, projectName, connected } = useEditorState('oldEditor')((store) => {
     return {
       id: store.editor.id,
       projectName: store.editor.projectName,
       connected: store.editor.preview.connected,
-      mainJSFilename: getMainJSFilename(store.editor.projectContents),
     }
   }, 'PreviewColumn')
   return (

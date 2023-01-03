@@ -108,16 +108,15 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    (store) => {
-      return {
-        packageStatus: store.editor.nodeModules.packageStatus,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
-      }
-    },
-    'RenderAsRow',
-  )
+    'fullOldStore',
+  )((store) => {
+    return {
+      packageStatus: store.editor.nodeModules.packageStatus,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
+      projectContents: store.editor.projectContents,
+      fullPath: store.editor.canvas.openFile?.filename ?? null,
+    }
+  }, 'RenderAsRow')
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {
@@ -429,7 +428,7 @@ export var FloatingMenu = React.memo(() => {
     }
   }, [])
 
-  const floatingMenuState = useEditorState(
+  const floatingMenuState = useEditorState('oldEditor')(
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -440,12 +439,16 @@ export var FloatingMenu = React.memo(() => {
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'FloatingMenu dispatch')
 
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
+  const projectContentsRef = useRefEditorState('projectContents')(
+    (store) => store.editor.projectContents,
+  )
+  const selectedViewsref = useRefEditorState('selectedHighlightedViews')(
+    (store) => store.editor.selectedViews,
+  )
   const insertableComponents = useGetInsertableComponents()
-  const shouldWrapContentsByDefault = useRefEditorState((store) => {
+  const shouldWrapContentsByDefault = useRefEditorState('metadata')((store) => {
     // We only care about this when the menu is first opened
     const firstSelectedView = store.editor.selectedViews[0]
     if (firstSelectedView != null) {
@@ -698,8 +701,11 @@ export var FloatingMenu = React.memo(() => {
 interface FloatingInsertMenuProps {}
 
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
-  const isVisible = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'FloatingInsertMenu dispatch',
+  )
+  const isVisible = useEditorState('oldEditor')(
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

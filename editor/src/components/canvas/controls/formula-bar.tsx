@@ -21,14 +21,14 @@ interface FormulaBarProps {
 
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
-  const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'FormulaBar dispatch')
 
-  const selectedMode = useEditorState(
+  const selectedMode = useEditorState('oldEditor')(
     (store) => store.editor.topmenu.formulaBarMode,
     'FormulaBar selectedMode',
   )
 
-  const selectedElementPath = useEditorState((store) => {
+  const selectedElementPath = useEditorState('selectedHighlightedViews')((store) => {
     if (store.editor.selectedViews.length === 1) {
       return store.editor.selectedViews[0]
     } else {
@@ -36,7 +36,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     }
   }, 'FormulaBar selectedElementPath')
 
-  const selectedElementTextContent = useEditorState((store) => {
+  const selectedElementTextContent = useEditorState('metadata')((store) => {
     if (store.editor.selectedViews.length === 1) {
       const metadata = MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,
@@ -52,7 +52,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     }
   }, 'FormulaBar selectedElementTextContent')
 
-  const focusTriggerCount = useEditorState(
+  const focusTriggerCount = useEditorState('oldEditor')(
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
   )
@@ -108,7 +108,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const classNameFieldVisible = selectedElementPath != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
-  const editorStoreRef = useRefEditorState((store) => store)
+  const editorStoreRef = useRefEditorState('fullOldStore')((store) => store)
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
       const namesByKey = applyShortcutConfigurationToDefaults(

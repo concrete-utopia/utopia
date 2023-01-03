@@ -35,7 +35,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     }),
   )
 
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
+  const dispatch = useEditorState('restOfStore')((state) => state.dispatch, 'ComponentSectionInner')
   const setGlobalCursor = React.useCallback(
     (cursor: CSSCursor | null) => {
       dispatch([setCursorOverlay(cursor)], 'everyone')

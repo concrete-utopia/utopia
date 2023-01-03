@@ -13,7 +13,11 @@ import {
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-state'
+import {
+  AllElementProps,
+  EditorStorePatched,
+  MetadataSubstate,
+} from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
@@ -26,12 +30,12 @@ export interface NameAndIconResult {
 }
 
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState((store) => store.editor.jsxMetadata, 'useMetadata')
+  return useEditorState('metadata')((store) => store.editor.jsxMetadata, 'useMetadata')
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate) => store.editor.allElementProps,
   (metadata, allElementProps) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
@@ -44,9 +48,13 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
-  return useEditorState(selector, 'useNamesAndIconsAllPaths', (oldResult, newResult) => {
-    return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
-  })
+  return useEditorState('metadata')(
+    selector,
+    'useNamesAndIconsAllPaths',
+    (oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    },
+  )
 }
 
 function getNameAndIconResult(

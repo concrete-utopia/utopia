@@ -438,7 +438,7 @@ export function immediatelyResolvableDependenciesWithEditorRequirements(
 }
 
 export function usePackageDependencies(): Array<RequestedNpmDependency> {
-  const packageJsonFile = useEditorState((store) => {
+  const packageJsonFile = useEditorState('projectContents')((store) => {
     return packageJsonFileFromProjectContents(store.editor.projectContents)
   }, 'usePackageDependencies')
 
@@ -453,8 +453,11 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
 
 export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
-  const { files, builtInDependencies } = useEditorState((store) => {
-    return { files: store.editor.nodeModules.files, builtInDependencies: store.builtInDependencies }
+  const { files } = useEditorState('oldEditor')((store) => {
+    return { files: store.editor.nodeModules.files }
+  }, 'usePossiblyResolvedPackageDependencies')
+  const { builtInDependencies } = useEditorState('restOfStore')((store) => {
+    return { builtInDependencies: store.builtInDependencies }
   }, 'usePossiblyResolvedPackageDependencies')
   return React.useMemo(() => {
     return resolvedDependencyVersions(basePackageDependencies, files, builtInDependencies)

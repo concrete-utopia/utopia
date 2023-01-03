@@ -202,22 +202,22 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [dispatch, elementPath],
   )
 
-  const isLockedElement = useEditorState((store) => {
+  const isLockedElement = useEditorState('oldEditor')((store) => {
     return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
   }, 'NavigatorItemActionSheet isLockedElement')
-  const isLockedHierarchy = useEditorState((store) => {
+  const isLockedHierarchy = useEditorState('oldEditor')((store) => {
     return store.editor.lockedElements.hierarchyLock.some((path) =>
       EP.pathsEqual(elementPath, path),
     )
   }, 'NavigatorItemActionSheet isLockedHierarchy')
 
-  const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
+  const jsxMetadataRef = useRefEditorState('fullOldStore')((store) => getMetadata(store.editor))
   const isSceneElement = React.useMemo(
     () => MetadataUtils.isProbablyScene(jsxMetadataRef.current, elementPath),
     [elementPath, jsxMetadataRef],
   )
 
-  const isDescendantOfLocked = useEditorState((store) => {
+  const isDescendantOfLocked = useEditorState('oldEditor')((store) => {
     return MetadataUtils.isDescendantOfHierarchyLockedElement(
       elementPath,
       store.editor.lockedElements,

@@ -25,14 +25,10 @@ export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
 
-  const { dispatch, zerothElementInstanceMetadata } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      zerothElementInstanceMetadata: MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        selectedViews[0],
-      ),
-    }
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+
+  const zerothElementInstanceMetadata = useEditorState('metadata')((store) => {
+    return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedViews[0])
   }, 'ImgSection')
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
     zerothElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements

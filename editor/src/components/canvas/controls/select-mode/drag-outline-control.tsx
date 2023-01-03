@@ -58,7 +58,10 @@ type DragOutlineControlProps =
   | DragTargetsFrames
 
 export const DragOutlineControl = controlForStrategyMemoized((props: DragOutlineControlProps) => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'OutlineControl scale',
+  )
   const frame = useFrameFromProps(props)
 
   const colorTheme = useColorTheme()
@@ -87,7 +90,7 @@ export const DragOutlineControl = controlForStrategyMemoized((props: DragOutline
 })
 
 function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | null {
-  const bounds = useEditorState((store) => {
+  const bounds = useEditorState('fullOldStore')((store) => {
     switch (props.type) {
       case 'frames':
         return boundingRectangleArray(props.frames)
@@ -104,7 +107,7 @@ function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | nu
     }
   }, 'GhostOutline frame')
 
-  const dragVector = useEditorState((store) => {
+  const dragVector = useEditorState('canvas')((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
       return null
     }

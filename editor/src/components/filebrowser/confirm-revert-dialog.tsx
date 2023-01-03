@@ -45,11 +45,14 @@ const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmRevertD
 const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRevertDialogProps>> = (
   props,
 ) => {
-  const projectContents = useEditorState(
+  const projectContents = useEditorState('projectContents')(
     (store) => store.editor.projectContents,
     'project contents',
   )
-  const branchContents = useEditorState((store) => store.editor.branchContents, 'branch contents')
+  const branchContents = useEditorState('oldEditor')(
+    (store) => store.editor.branchContents,
+    'branch contents',
+  )
   const clickButton = React.useCallback(() => {
     if (props.status == null) {
       return

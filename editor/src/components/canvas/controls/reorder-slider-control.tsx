@@ -38,20 +38,23 @@ interface ReorderSliderControlProps {
 
 export const ReorderSliderControl = controlForStrategyMemoized(
   ({ target }: ReorderSliderControlProps) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderSliderControl scale')
+    const scale = useEditorState('canvas')(
+      (store) => store.editor.canvas.scale,
+      'ReorderSliderControl scale',
+    )
     const colorTheme = useColorTheme()
-    const isDragging = useEditorState(
+    const isDragging = useEditorState('canvas')(
       (store) =>
         store.editor.canvas.interactionSession != null &&
         store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
       'ReorderSliderControl isDragging',
     )
-    const isTargetElementHovered = useEditorState((store) => {
+    const isTargetElementHovered = useEditorState('selectedHighlightedViews')((store) => {
       const { hoveredViews } = store.editor
       return target != null && hoveredViews.includes(target)
     }, 'ReorderSliderControl isTargetElementHovered')
 
-    const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
+    const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState('fullOldStore')(
       (store) => {
         if (target != null) {
           const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(
@@ -164,9 +167,12 @@ interface ReorderIndicatorProps {
 }
 
 const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'ReorderIndicator scale',
+  )
   const { startingIndex, siblings } = props
-  const indicatorOffset = useEditorState((store) => {
+  const indicatorOffset = useEditorState('canvas')((store) => {
     if (
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER' &&
@@ -197,7 +203,10 @@ const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
 
 const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'ReorderIndicator scale',
+  )
   return (
     <div
       style={{
@@ -215,13 +224,18 @@ const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) 
 
 const ReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderControl scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'ReorderControl scale',
+  )
   const ref = React.useRef<HTMLDivElement>(null)
   const ClickAreaSize = ControlSize(scale) + 6 / scale
 
-  const dispatch = useRefEditorState((store) => store.dispatch)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
+  const dispatch = useRefEditorState('restOfStore')((store) => store.dispatch)
+  const scaleRef = useRefEditorState('canvas')((store) => store.editor.canvas.scale)
+  const canvasOffsetRef = useRefEditorState('canvas')(
+    (store) => store.editor.canvas.realCanvasOffset,
+  )
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {

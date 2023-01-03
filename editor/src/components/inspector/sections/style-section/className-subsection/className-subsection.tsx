@@ -173,13 +173,16 @@ const Input = (props: InputProps) => {
 }
 
 const ClassNameControl = React.memo(() => {
-  const editorStoreRef = useRefEditorState((store) => store)
+  const editorStoreRef = useRefEditorState('fullOldStore')((store) => store)
   const theme = useColorTheme()
-  const targets = useEditorState(
+  const targets = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'ClassNameSubsection dispatch',
+  )
 
   const [filter, setFilter] = React.useState('')
   const isFocusedRef = React.useRef(false)
@@ -187,7 +190,7 @@ const ClassNameControl = React.memo(() => {
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
   const focusedValueRef = React.useRef<string | null>(null)
 
-  const focusTriggerCount = useEditorState(
+  const focusTriggerCount = useEditorState('oldEditor')(
     (store) => store.editor.inspector.classnameFocusCounter,
     'ClassNameSubsection classnameFocusCounter',
   )

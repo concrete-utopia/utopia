@@ -60,7 +60,10 @@ const TopMenuHeight = 35
 
 const NothingOpenCard = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'NothingOpenCard dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'NothingOpenCard dispatch',
+  )
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
@@ -129,8 +132,11 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
-  const interfaceDesigner = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'DesignPanelRoot dispatch',
+  )
+  const interfaceDesigner = useEditorState('oldEditor')(
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
@@ -139,27 +145,27 @@ const DesignPanelRootInner = React.memo(() => {
   const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
     interfaceDesigner.codePaneWidth,
   )
-  const navigatorVisible = useEditorState(
+  const navigatorVisible = useEditorState('oldEditor')(
     (store) => !store.editor.navigator.minimised,
     'DesignPanelRoot navigatorVisible',
   )
 
-  const isRightMenuExpanded = useEditorState(
+  const isRightMenuExpanded = useEditorState('oldEditor')(
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
 
-  const rightMenuSelectedTab = useEditorState(
+  const rightMenuSelectedTab = useEditorState('oldEditor')(
     (store) => store.editor.rightMenu.selectedTab,
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
-  const leftMenuExpanded = useEditorState(
+  const leftMenuExpanded = useEditorState('oldEditor')(
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
 
-  const isCanvasVisible = useEditorState(
+  const isCanvasVisible = useEditorState('canvas')(
     (store) => store.editor.canvas.visible,
     'design panel root',
   )

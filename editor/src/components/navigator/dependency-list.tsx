@@ -92,7 +92,7 @@ function packageDetailsFromDependencies(
 }
 
 export const DependencyList = React.memo(() => {
-  const props = useEditorState((store) => {
+  const props = useEditorState('fullOldStore')((store) => {
     return {
       editorDispatch: store.dispatch,
       minimised: store.editor.dependencyList.minimised,
@@ -464,7 +464,7 @@ interface AddTailwindButtonProps {
 }
 
 const AddTailwindButton = (props: AddTailwindButtonProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AddTailwindButton')
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'AddTailwindButton')
   const onButtonClicked = React.useCallback(() => {
     dispatch([EditorActions.addTailwindConfig()])
   }, [dispatch])

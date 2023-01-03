@@ -20,6 +20,7 @@ import {
   StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import {
+  createStoresAndState,
   EditorStateContext,
   EditorStateContextData,
   UtopiaStoreAPI,
@@ -66,14 +67,14 @@ export function getStoreHook(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook: UtopiaStoreAPI = create(subscribeWithSelector((set) => defaultState))
+  const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
   const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
-    storeHook.setState(produce(fn))
+    storeHook.setState(produce(fn)(storeHook.getState()))
   const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
-    storeHook.setState(fn)
+    storeHook.setState(fn(storeHook.getState()))
 
   return {
-    useStore: storeHook,
+    ...storeHook,
     updateStoreWithImmer: updateStoreWithImmer,
     updateStore: updateStore,
   }

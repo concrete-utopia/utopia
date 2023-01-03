@@ -59,9 +59,9 @@ export const GenericExternalResourcesList = React.memo(() => {
     setEditingIndexOrInserting(null)
   }, [])
 
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const { minimised, focusedPanel } = useEditorState('oldEditor')((store) => {
     return {
-      dispatch: store.dispatch,
       minimised: store.editor.genericExternalResources.minimised,
       focusedPanel: store.editor.focusedPanel,
     }

@@ -19,7 +19,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { safeIndex } from '../../../../core/shared/array-utils'
 
 function useComponentType(path: ElementPath | null): string | null {
-  return useEditorState((store) => {
+  return useEditorState('metadata')((store) => {
     const metadata = store.editor.jsxMetadata
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     if (path != null && MetadataUtils.isProbablyScene(metadata, path)) {
@@ -42,13 +42,16 @@ function useComponentType(path: ElementPath | null): string | null {
 }
 
 export const ComponentInfoBox = () => {
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentInfoBox dispatch')
-  const selectedViews = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (state) => state.dispatch,
+    'ComponentInfoBox dispatch',
+  )
+  const selectedViews = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.selectedViews,
     'ComponentInfoBox selectedViews',
   )
 
-  const focusedElementPath = useEditorState(
+  const focusedElementPath = useEditorState('oldEditor')(
     (store) => store.editor.focusedElementPath,
     'ComponentInfoBox focusedElementPath',
   )
@@ -62,7 +65,7 @@ export const ComponentInfoBox = () => {
     dispatch([setFocusedElement(isFocused ? null : target)])
   }, [dispatch, isFocused, target])
 
-  const locationOfComponentInstance = useEditorState((state) => {
+  const locationOfComponentInstance = useEditorState('fullOldStore')((state) => {
     const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
     const importResult = getFilePathForImportedComponent(element)
     if (importResult == null) {
@@ -79,7 +82,7 @@ export const ComponentInfoBox = () => {
     }
   }, 'ComponentSectionInner locationOfComponentInstance')
 
-  const componentPackageName = useEditorState((state) => {
+  const componentPackageName = useEditorState('metadata')((state) => {
     const componentMetadata = MetadataUtils.findElementByElementPath(
       state.editor.jsxMetadata,
       target,
@@ -89,12 +92,12 @@ export const ComponentInfoBox = () => {
 
   const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
-  const isFocusable = useEditorState((state) => {
+  const isFocusable = useEditorState('metadata')((state) => {
     return target == null
       ? false
       : MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
   }, 'ComponentSectionInner isFocusable')
-  const isImportedComponent = useEditorState((state) => {
+  const isImportedComponent = useEditorState('metadata')((state) => {
     const componentMetadata = MetadataUtils.findElementByElementPath(
       state.editor.jsxMetadata,
       target,

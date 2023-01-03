@@ -108,7 +108,7 @@ export function useInspectorInfoLonghandShorthand<
 ): {
   [longhand in LonghandKey]: InspectorInfoWithPropKeys<LonghandKey, ShorthandKey>
 } {
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch,
     'useInspectorInfoLonghandShorthand dispatch',
   )

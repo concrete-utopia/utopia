@@ -204,12 +204,12 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   const { layoutType, selfLayoutSectionOpen, toggleSection } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
 
-  const dispatch = useRefEditorState((store) => store.dispatch)
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
   const selectedViews = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.selectedViews
   })
   const onAbsoluteButtonClick = React.useCallback(() => {
-    dispatch.current([runEscapeHatch(selectedViews)], 'everyone')
+    dispatch([runEscapeHatch(selectedViews)], 'everyone')
   }, [dispatch, selectedViews])
 
   return (
@@ -260,7 +260,7 @@ interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
 const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
-  const parentPath = useEditorState((store) => {
+  const parentPath = useEditorState('selectedHighlightedViews')((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return null
     }
@@ -269,7 +269,10 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
     return EP.isStoryboardPath(parent) ? null : parent
   }, 'ParentIndicatorAndLink parentPath')
 
-  const dispatch = useEditorState((store) => store.dispatch, 'ParentIndicatorAndLink dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'ParentIndicatorAndLink dispatch',
+  )
 
   const handleClick = React.useCallback(() => {
     if (parentPath != null) {
@@ -299,7 +302,7 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
 }
 
 function useElementHasChildrenOrContent() {
-  return useEditorState((store) => {
+  return useEditorState('metadata')((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return {
         hasChildren: false,

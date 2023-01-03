@@ -27,10 +27,10 @@ interface PropertyTargetSelectorProps {
 export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
-    const { resizeOptions, dispatch } = useEditorState((editorState) => {
+    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+    const { resizeOptions } = useEditorState('canvas')((editorState) => {
       return {
         resizeOptions: editorState.editor.canvas.resizeOptions,
-        dispatch: editorState.dispatch,
       }
     }, 'PropertyTargetSelector resizeOptions')
 

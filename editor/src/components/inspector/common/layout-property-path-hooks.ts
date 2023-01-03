@@ -251,13 +251,16 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'usePinToggling dispatch',
+  )
   const selectedViewsRef = useRefSelectedViews()
-  const jsxMetadataRef = useRefEditorState((store) => {
+  const jsxMetadataRef = useRefEditorState('metadata')((store) => {
     return store.editor.jsxMetadata
   })
 
-  const elementsRef = useRefEditorState((store) =>
+  const elementsRef = useRefEditorState('metadata')((store) =>
     selectedViewsRef.current.map((e) =>
       MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
     ),
@@ -266,7 +269,7 @@ export function usePinToggling(): UsePinTogglingResult {
     return contextData.targetPath
   })
 
-  const elementFrames = useEditorState(
+  const elementFrames = useEditorState('fullOldStore')(
     (store): ReadonlyArray<Frame> => {
       const jsxElements = selectedViewsRef.current.map((path) => {
         const rootComponents = getJSXComponentsAndImportsForPathFromState(

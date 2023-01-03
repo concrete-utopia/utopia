@@ -14,10 +14,13 @@ import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 export const ForksGiven = React.memo(() => {
   const colorTheme = useColorTheme()
 
-  const { id, isLoggedIn, forkedFrom } = useEditorState((store) => {
+  const isLoggedIn = useEditorState('restOfStore')(
+    (store) => User.isLoggedIn(store.userState.loginState),
+    'ForksGiven isLoggedIn',
+  )
+  const { id, forkedFrom } = useEditorState('oldEditor')((store) => {
     return {
       id: store.editor.id,
-      isLoggedIn: User.isLoggedIn(store.userState.loginState),
       forkedFrom: store.editor.forkedFromProjectId,
     }
   }, 'ForkPanel')

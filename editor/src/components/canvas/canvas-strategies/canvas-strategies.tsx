@@ -251,7 +251,11 @@ const getApplicableStrategiesSelector = createSelector(
 )
 
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
-  return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
+  return useEditorState('fullOldStore')(
+    getApplicableStrategiesSelector,
+    'useGetApplicableStrategies',
+    arrayEquals,
+  )
 }
 
 export interface StrategyWithFitness {
@@ -407,8 +411,8 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback(selector, maybeDelayedCallback)
-  useSelectorWithCallback((store) => {
+  useSelectorWithCallback('fullOldStore')(selector, maybeDelayedCallback)
+  useSelectorWithCallback('fullOldStore')((store) => {
     if (
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
@@ -482,7 +486,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
-  const currentlyInProgress = useEditorState((store) => {
+  const currentlyInProgress = useEditorState('canvas')((store) => {
     return interactionInProgress(store.editor.canvas.interactionSession)
   }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {

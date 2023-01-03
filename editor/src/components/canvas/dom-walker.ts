@@ -50,7 +50,7 @@ import {
   parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { UtopiaStoreAPI } from '../editor/store/store-hook'
+import { StoresAndSetState, UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
@@ -304,7 +304,7 @@ export interface DomWalkerMutableStateData {
 }
 
 export function createDomWalkerMutableState(
-  editorStoreApi: UtopiaStoreAPI,
+  editorStoreApi: StoresAndSetState,
 ): DomWalkerMutableStateData {
   const mutableData: DomWalkerMutableStateData = {
     invalidatedPaths: emptySet(),
@@ -518,7 +518,7 @@ function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
 
 export function initDomWalkerObservers(
   domWalkerMutableState: DomWalkerMutableStateData,
-  editorStore: UtopiaStoreAPI,
+  editorStore: StoresAndSetState,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
   const resizeObserver = new ResizeObserver((entries: any) => {
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())

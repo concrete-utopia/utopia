@@ -17,7 +17,10 @@ export const FloatingIndicator = controlForStrategyMemoized<FloatingIndicatorPro
   const { value, position } = props
   const colorTheme = useColorTheme()
 
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'FloatingIndicator scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'FloatingIndicator scale',
+  )
 
   return (
     <CanvasOffsetWrapper>

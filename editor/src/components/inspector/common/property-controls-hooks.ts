@@ -215,7 +215,7 @@ type FullPropertyControlsAndTargets = {
 const emptyControls: PropertyControls = {}
 
 export function useGetPropertyControlsForSelectedComponents(): Array<FullPropertyControlsAndTargets> {
-  const selectedPropertyControls = useEditorState(
+  const selectedPropertyControls = useEditorState('fullOldStore')(
     (store) => {
       let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(store.editor.selectedViews, (path) => {
@@ -250,7 +250,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     },
   )
 
-  const selectedElementsProps = useEditorState(
+  const selectedElementsProps = useEditorState('metadata')(
     (store) => {
       let result: AllElementProps = {}
       fastForEach(selectedPropertyControls, ({ targets }) => {
@@ -265,7 +265,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     (a, b) => keepDeepReferenceEqualityIfPossible(a, b) === a,
   )
 
-  const selectedElementsFIXME = useEditorState(
+  const selectedElementsFIXME = useEditorState('metadata')(
     (store) => {
       return selectedPropertyControls.map(({ targets }) =>
         mapDropNulls(
@@ -279,7 +279,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
       arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality))(a, b).areEqual,
   )
 
-  const selectedComponentsFIXME = useEditorState(
+  const selectedComponentsFIXME = useEditorState('fullOldStore')(
     (store) => {
       return selectedPropertyControls.map(({ targets }) => {
         // TODO mapDropNulls

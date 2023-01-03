@@ -15,8 +15,11 @@ interface ImmediateParentBoundsProps {
 }
 export const ImmediateParentBounds = controlForStrategyMemoized(
   ({ targets }: ImmediateParentBoundsProps) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
-    const parentFrame = useEditorState((store) => {
+    const scale = useEditorState('canvas')(
+      (store) => store.editor.canvas.scale,
+      'ParentBounds canvas scale',
+    )
+    const parentFrame = useEditorState('fullOldStore')((store) => {
       const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
       if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
         return MetadataUtils.getFrameInCanvasCoords(
@@ -46,9 +49,12 @@ interface ParentBoundsProps {
   targetParent: ElementPath
 }
 export const ParentBounds = controlForStrategyMemoized(({ targetParent }: ParentBoundsProps) => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
+  const scale = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'ParentBounds canvas scale',
+  )
 
-  const parentFrame = useEditorState((store) => {
+  const parentFrame = useEditorState('fullOldStore')((store) => {
     if (store.editor.canvas.controls.parentOutlineHighlight != null) {
       return null
     }

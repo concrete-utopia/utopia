@@ -1,9 +1,14 @@
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { EditorStorePatched } from '../editor/store/editor-state'
+import {
+  EditorStorePatched,
+  MetadataSubstate,
+  SelectedHighlightedViewsSubstate,
+} from '../editor/store/editor-state'
 
-export const metadataSelector = (store: EditorStorePatched): ElementInstanceMetadataMap =>
+export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata
 
-export const selectedViewsSelector = (store: EditorStorePatched): ElementPath[] =>
-  store.editor.selectedViews
+export const selectedViewsSelector = (store: {
+  editor: { selectedViews: ElementPath[] }
+}): ElementPath[] => store.editor.selectedViews

@@ -50,8 +50,11 @@ const handleShortcut = (
 }
 
 export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
-  const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'TextEditor dispatch')
+  const allElementProps = useEditorState('metadata')(
+    (store) => store.editor.allElementProps,
+    'Editor',
+  )
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)

@@ -119,7 +119,10 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'AlignmentButtons dispatch',
+  )
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -244,7 +247,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
-  } = useEditorState((store) => {
+  } = useEditorState('fullOldStore')((store) => {
     const rootMetadata = store.editor.jsxMetadata
     let anyComponentsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
@@ -400,7 +403,7 @@ export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildre
 
 const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
   () => {
-    const selectedViews = useEditorState(
+    const selectedViews = useEditorState('selectedHighlightedViews')(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
@@ -453,14 +456,17 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   }>
 > = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadata: store.editor.jsxMetadata,
-      isUIJSFile: isOpenFileUiJs(store.editor),
-      allElementProps: store.editor.allElementProps,
-    }
-  }, 'SingleInspectorEntryPoint')
+  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState('fullOldStore')(
+    (store) => {
+      return {
+        dispatch: store.dispatch,
+        jsxMetadata: store.editor.jsxMetadata,
+        isUIJSFile: isOpenFileUiJs(store.editor),
+        allElementProps: store.editor.allElementProps,
+      }
+    },
+    'SingleInspectorEntryPoint',
+  )
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
@@ -590,7 +596,7 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, allElementProps } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, allElementProps } = useEditorState('fullOldStore')((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
@@ -599,7 +605,10 @@ export const InspectorContextProvider = React.memo<{
   }, 'InspectorContextProvider')
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),
+    useEditorState('fullOldStore')(
+      rootComponentsSelector,
+      'InspectorContextProvider rootComponents',
+    ),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []

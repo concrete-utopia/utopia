@@ -121,7 +121,7 @@ interface NewCanvasControlsProps {
 }
 
 export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
-  const canvasControlProps = useEditorState(
+  const canvasControlProps = useEditorState('fullOldStore')(
     (store) => ({
       dispatch: store.dispatch,
       editor: store.editor,
@@ -142,7 +142,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       canvasControlProps.transientCanvasState,
     )
 
-  const canvasScrollAnimation = useEditorState(
+  const canvasScrollAnimation = useEditorState('canvas')(
     (store) => store.editor.canvas.scrollAnimation,
     'NewCanvasControls scrollAnimation',
   )
@@ -236,7 +236,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const strategyControls = useGetApplicableStrategyControls()
 
-  const anyStrategyActive = useEditorState(
+  const anyStrategyActive = useEditorState('restOfStore')(
     (store) => store.strategyState.currentStrategy != null,
     'currentStrategy',
   )

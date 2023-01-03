@@ -78,7 +78,7 @@ const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const { setShownByParent } = props
-    const { scale, dispatch, isDragging } = useEditorState(
+    const { scale, dispatch, isDragging } = useEditorState('fullOldStore')(
       (store) => ({
         scale: scaleSelector(store),
         dispatch: dispatchSelector(store),
@@ -87,7 +87,9 @@ const PaddingResizeControlI = React.memo(
       'PaddingResizeControl scale, dispatch, isDragging',
     )
 
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const canvasOffsetRef = useRefEditorState('canvas')(
+      (store) => store.editor.canvas.roundedCanvasOffset,
+    )
     const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
     const [stripesShown, setStripesShown] = React.useState<boolean>(false)
 
@@ -203,9 +205,9 @@ interface PaddingControlProps {
 
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
   const selectedElements = props.targets
-  const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+  const elementMetadata = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
 
-  const hoveredViews = useEditorState(
+  const hoveredViews = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )

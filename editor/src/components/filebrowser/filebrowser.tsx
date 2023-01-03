@@ -144,9 +144,9 @@ function collectFileBrowserItems(
 }
 
 export const FileBrowser = React.memo(() => {
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const { minimised, focusedPanel } = useEditorState('oldEditor')((store) => {
     return {
-      dispatch: store.dispatch,
       minimised: store.editor.fileBrowser.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
@@ -254,7 +254,7 @@ const FileBrowserItems = React.memo(() => {
     conflicts,
     githubRepo,
     projectID,
-  } = useEditorState((store) => {
+  } = useEditorState('fullOldStore')((store) => {
     return {
       dispatch: store.dispatch,
       projectContents: store.editor.projectContents,
@@ -358,10 +358,6 @@ const FileBrowserItems = React.memo(() => {
 })
 
 const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) => {
-  const { dispatch } = useEditorState(
-    (store) => ({ dispatch: store.dispatch }),
-    'FileBrowserActionSheet dispatch',
-  )
   const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
   const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
   if (props.visible) {

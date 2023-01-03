@@ -125,7 +125,7 @@ function elementComputedDimension(
 interface FillHugFixedControlProps {}
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const optionsRef = useRefEditorState((store) => {
+  const optionsRef = useRefEditorState('metadata')((store) => {
     const selectedView = selectedViewsSelector(store).at(0)
     if (selectedView == null) {
       return null
@@ -137,11 +137,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     })
   })
 
-  const dispatch = useEditorState((store) => store.dispatch, 'FillHugFixedControl dispatch')
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'FillHugFixedControl dispatch',
+  )
+  // TODO probably use one generic ref editor state?
+  const metadataRef = useRefEditorState('metadata')(metadataSelector)
+  const selectedViewsRef = useRefEditorState('metadata')(selectedViewsSelector)
 
-  const widthCurrentValue = useEditorState(
+  const widthCurrentValue = useEditorState('metadata')(
     (store) =>
       detectFillHugFixedState(
         'width',
@@ -152,7 +156,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const widthComputedValueRef = useRefEditorState(
+  const widthComputedValueRef = useRefEditorState('metadata')(
     (store) =>
       elementComputedDimension(
         'width',
@@ -161,7 +165,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) ?? cssNumber(0, null),
   )
 
-  const heightCurrentValue = useEditorState(
+  const heightCurrentValue = useEditorState('metadata')(
     (store) =>
       detectFillHugFixedState(
         'height',
@@ -172,7 +176,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const heightComputedValueRef = useRefEditorState(
+  const heightComputedValueRef = useRefEditorState('metadata')(
     (store) =>
       elementComputedDimension(
         'height',

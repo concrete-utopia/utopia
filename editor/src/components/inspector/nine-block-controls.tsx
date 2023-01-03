@@ -102,20 +102,23 @@ interface NineBlockControlProps {
 export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirection }) => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState((store) => store.dispatch, 'NineBlockControl dispatch')
-  const detectedJustifyContentFlexAlignment = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'NineBlockControl dispatch',
+  )
+  const detectedJustifyContentFlexAlignment = useEditorState('metadata')(
     (store) => detectFlexAlignJustifyContent(metadataSelector(store), selectedViewsSelector(store)),
     'NineBlockControl [flexJustifyContent, flexAlignment]',
   )
 
-  const nFlexContainers = useEditorState(
+  const nFlexContainers = useEditorState('metadata')(
     (store) =>
       filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
     'FlexDirectionToggle, nFlexContainers',
   )
 
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const metadataRef = useRefEditorState('metadata')(metadataSelector)
+  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
 
   const flexDirectionWithDefault: FlexDirection = flexDirection ?? DefaultFlexDirection
 

@@ -18,7 +18,7 @@ import {
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
-  return useEditorState((store) => {
+  return useEditorState('oldEditor')((store) => {
     const mode = store.editor.mode
     return (
       mode.type === 'insert' &&
@@ -50,8 +50,13 @@ export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Elemen
 function useEnterDrawToInsertForElement(
   elementFactory: (newUID: string) => JSXElement,
 ): (event: React.MouseEvent<Element>) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'enterDrawToInsertForDiv dispatch')
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'enterDrawToInsertForDiv dispatch',
+  )
+  const projectContentsRef = useRefEditorState('projectContents')(
+    (store) => store.editor.projectContents,
+  )
 
   return React.useCallback(
     (event: React.MouseEvent<Element>): void => {

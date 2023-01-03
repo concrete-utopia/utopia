@@ -17,18 +17,18 @@ import { usePossiblyResolvedPackageDependencies } from '../../../components/edit
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export const RenderAsRow = React.memo(() => {
-  const dispatch = useEditorState((store) => {
+  const dispatch = useEditorState('restOfStore')((store) => {
     return store.dispatch
   }, 'RenderAsRow dispatch')
 
-  const selectedElementName = useEditorState((store) => {
+  const selectedElementName = useEditorState('metadata')((store) => {
     return MetadataUtils.getJSXElementNameFromMetadata(
       store.editor.jsxMetadata,
       store.editor.selectedViews[0],
     )
   }, 'RenderAsRow selectedElementName')
 
-  const refElementsToTargetForUpdates = useRefEditorState((store) => {
+  const refElementsToTargetForUpdates = useRefEditorState('selectedHighlightedViews')((store) => {
     return getElementsToTarget(store.editor.selectedViews)
   })
 
@@ -53,16 +53,15 @@ export const RenderAsRow = React.memo(() => {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    (store) => {
-      return {
-        packageStatus: store.editor.nodeModules.packageStatus,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
-      }
-    },
-    'RenderAsRow',
-  )
+    'fullOldStore',
+  )((store) => {
+    return {
+      packageStatus: store.editor.nodeModules.packageStatus,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
+      projectContents: store.editor.projectContents,
+      fullPath: store.editor.canvas.openFile?.filename ?? null,
+    }
+  }, 'RenderAsRow')
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {

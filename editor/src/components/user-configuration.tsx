@@ -27,7 +27,7 @@ interface DataSourceEntry {
 }
 
 export function UserConfiguration() {
-  const { dispatch, shortcutConfig } = useEditorState((store) => {
+  const { dispatch, shortcutConfig } = useEditorState('restOfStore')((store) => {
     return {
       dispatch: store.dispatch,
       shortcutConfig: store.userState.shortcutConfig,

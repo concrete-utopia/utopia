@@ -141,7 +141,7 @@ interface SelectableElementItemProps {
 const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
-  const isHighlighted = useEditorState(
+  const isHighlighted = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )
@@ -175,11 +175,11 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const { dispatch } = useEditorState((store) => {
+  const { dispatch } = useEditorState('restOfStore')((store) => {
     return { dispatch: store.dispatch }
   }, 'ElementContextMenu dispatch')
 
-  const editorSliceRef = useRefEditorState((store) => {
+  const editorSliceRef = useRefEditorState('fullOldStore')((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
       canvasOffset: store.editor.canvas.roundedCanvasOffset,

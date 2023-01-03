@@ -8,6 +8,7 @@ import { addToast, updateFile } from '../../components/editor/actions/action-cre
 import {
   defaultIndexHtmlFilePath,
   EditorStorePatched,
+  ProjectContentSubstate,
 } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
@@ -455,8 +456,8 @@ export function getExternalResourcesInfo(
 }
 
 const getExternalResourcesInfoSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
-  (store: EditorStorePatched) => store.dispatch,
+  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (_: ProjectContentSubstate, dispatch: EditorDispatch) => dispatch,
   getExternalResourcesInfo,
 )
 
@@ -465,8 +466,12 @@ export function useExternalResources(): {
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const externalResourcesInfo = useEditorState(
-    getExternalResourcesInfoSelector,
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'useExternalResources dispatch',
+  )
+  const externalResourcesInfo = useEditorState('projectContents')(
+    (state) => getExternalResourcesInfoSelector(state, dispatch),
     'useExternalResources externalResourcesInfo',
   )
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)

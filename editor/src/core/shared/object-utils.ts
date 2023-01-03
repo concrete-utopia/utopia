@@ -107,7 +107,7 @@ export function mapValues<U, V>(
 }
 
 type ValueOf<T> = T[keyof T]
-export function objectMap<T, K extends keyof T, U>(
+export function objectMap<T extends Record<string, unknown>, K extends keyof T, U>(
   transform: (t: ValueOf<T>, key: K) => U,
   obj: T,
 ): {

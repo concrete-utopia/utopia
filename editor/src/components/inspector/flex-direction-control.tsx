@@ -18,10 +18,13 @@ interface FlexDirectionToggleProps {
 }
 
 export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const nFlexContainers = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'FlexDirectionToggle dispatch',
+  )
+  const metadataRef = useRefEditorState('metadata')(metadataSelector)
+  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
+  const nFlexContainers = useEditorState('metadata')(
     (store) =>
       filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
     'FlexDirectionToggle, nFlexContainers',

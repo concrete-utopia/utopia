@@ -32,9 +32,9 @@ const Tile = styled.div<TileProps>((props) => ({
 }))
 
 export const TestMenu = React.memo(() => {
-  const entireStateRef = useRefEditorState((store) => store)
+  const entireStateRef = useRefEditorState('fullOldStore')((store) => store)
 
-  const jsxMetadata = useRefEditorState((store) => {
+  const jsxMetadata = useRefEditorState('metadata')((store) => {
     return store.editor.jsxMetadata
   })
 
@@ -44,7 +44,7 @@ export const TestMenu = React.memo(() => {
   }, [entireStateRef, jsxMetadata])
 
   function useRequestVSCodeStatus(): () => void {
-    const vscodeState = useEditorState(
+    const vscodeState = useEditorState('oldEditor')(
       (store) => ({
         vscodeReady: store.editor.vscodeReady,
         loadingScreenVisible: store.editor.vscodeLoadingScreenVisible,

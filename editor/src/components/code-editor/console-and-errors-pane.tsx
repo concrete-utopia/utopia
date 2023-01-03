@@ -7,11 +7,14 @@ import { useEditorState } from '../editor/store/store-hook'
 import { CodeEditorTabPane } from './code-problems'
 
 export const ConsoleAndErrorsPane = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'ConsoleAndErrorsPane dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'ConsoleAndErrorsPane dispatch',
+  )
 
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 
-  const errorMessages = useEditorState((store) => {
+  const errorMessages = useEditorState('fullOldStore')((store) => {
     return getAllCodeEditorErrors(store.editor, 'warning', false)
   }, 'ConsoleAndErrorsPane errorMessages')
 

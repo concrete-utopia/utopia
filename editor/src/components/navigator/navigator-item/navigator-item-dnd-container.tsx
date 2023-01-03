@@ -292,7 +292,7 @@ interface DropCollectedProps {
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
-  const editorStateRef = useRefEditorState((store) => store.editor)
+  const editorStateRef = useRefEditorState('fullOldStore')((store) => store.editor)
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',

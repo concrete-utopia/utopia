@@ -101,7 +101,7 @@ export function useMaybeHighlightElement(): {
   maybeHoverOnHover: (target: ElementPath) => void
   maybeClearHoveredViewsOnHoverEnd: () => void
 } {
-  const stateRef = useRefEditorState((store) => {
+  const stateRef = useRefEditorState('fullOldStore')((store) => {
     return {
       dispatch: store.dispatch,
       resizing: isResizing(store.editor),
@@ -269,7 +269,7 @@ export function useFindValidTarget(): (
   elementPath: ElementPath
   isSelected: boolean
 } | null {
-  const storeRef = useRefEditorState((store) => {
+  const storeRef = useRefEditorState('fullOldStore')((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
@@ -330,8 +330,11 @@ function useStartDragState(): (
   target: ElementPath,
   start: CanvasPoint | null,
 ) => (event: MouseEvent) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
-  const entireEditorStoreRef = useRefEditorState((store) => store)
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'useStartDragState dispatch',
+  )
+  const entireEditorStoreRef = useRefEditorState('fullOldStore')((store) => store)
 
   return React.useCallback(
     (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
@@ -444,7 +447,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 }
 
 export function useGetSelectableViewsForSelectMode() {
-  const storeRef = useRefEditorState((store) => {
+  const storeRef = useRefEditorState('fullOldStore')((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
@@ -588,8 +591,13 @@ function useSelectOrLiveModeSelectAndHover(
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
 ): MouseCallbacks {
-  const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'useSelectAndHover dispatch',
+  )
+  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
+    (store) => store.editor.selectedViews,
+  )
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
@@ -602,7 +610,7 @@ function useSelectOrLiveModeSelectAndHover(
     getSelectableViewsForSelectMode,
   )
 
-  const editorStoreRef = useRefEditorState((store) => ({
+  const editorStoreRef = useRefEditorState('fullOldStore')((store) => ({
     editor: store.editor,
     derived: store.derived,
   }))
@@ -775,12 +783,15 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
-  const isZoomMode = useEditorState(
+  const modeType = useEditorState('oldEditor')(
+    (store) => store.editor.mode.type,
+    'useSelectAndHover mode',
+  )
+  const isZoomMode = useEditorState('oldEditor')(
     (store) => store.editor.keysPressed['z'] ?? false,
     'useSelectAndHover isZoomMode',
   )
-  const hasInteractionSession = useEditorState(
+  const hasInteractionSession = useEditorState('canvas')(
     (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionSession',
   )

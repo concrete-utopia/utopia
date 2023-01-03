@@ -17,7 +17,7 @@ interface LayoutSectionProps {
 }
 
 export const LayoutSection = React.memo((props: LayoutSectionProps) => {
-  const specialSizeMeasurements = useEditorState(
+  const specialSizeMeasurements = useEditorState('metadata')(
     (state) => {
       let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
       fastForEach(state.editor.selectedViews, (path) => {
@@ -34,7 +34,10 @@ export const LayoutSection = React.memo((props: LayoutSectionProps) => {
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'LayoutSection dispatch',
+  )
 
   return (
     <div

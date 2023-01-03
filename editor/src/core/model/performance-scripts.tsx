@@ -172,15 +172,15 @@ async function loadProject(
 }
 
 export function useTriggerScrollPerformanceTest(): () => void {
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerScrollPerformanceTest dispatch',
   )
-  const builtInDependencies = useEditorState(
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerScrollPerformanceTest builtInDependencies',
   )
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState('derived')((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
@@ -219,17 +219,19 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 export function useTriggerResizePerformanceTest(): () => void {
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerResizePerformanceTest dispatch',
   )
-  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
-  const builtInDependencies = useEditorState(
+  const metadata = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
+  const selectedViews = useRefEditorState('selectedHighlightedViews')(
+    (store) => store.editor.selectedViews,
+  )
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerResizePerformanceTest builtInDependencies',
   )
-  const allPaths = useRefEditorState(
+  const allPaths = useRefEditorState('derived')(
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
   const trigger = React.useCallback(async () => {
@@ -298,14 +300,14 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState('derived')((store) => store.derived.navigatorTargets)
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerHighlightPerformanceTest dispatch',
   )
-  const builtInDependencies = useEditorState(
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
@@ -368,13 +370,15 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
   useTriggerHighlightPerformanceTest('all-elements')
 
 export function useTriggerSelectionPerformanceTest(): () => void {
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
   )
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
-  const builtInDependencies = useEditorState(
+  const allPaths = useRefEditorState('derived')((store) => store.derived.navigatorTargets)
+  const selectedViews = useRefEditorState('selectedHighlightedViews')(
+    (store) => store.editor.selectedViews,
+  )
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerSelectionPerformanceTest builtInDependencies',
   )
@@ -496,15 +500,17 @@ export const useTriggerAbsoluteMoveSmallPerformanceTest = () =>
 export function useTriggerAbsoluteMovePerformanceTest(
   projectContents: ProjectContentTreeRoot,
 ): () => void {
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerAbsoluteMovePerformanceTest dispatch',
   )
-  const allPaths = useRefEditorState(
+  const allPaths = useRefEditorState('derived')(
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
-  const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
-  const builtInDependencies = useEditorState(
+  const metadata = useRefEditorState('metadata')(
+    React.useCallback((store) => store.editor.jsxMetadata, []),
+  )
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerAbsoluteMovePerformanceTest builtInDependencies',
   )
@@ -683,15 +689,17 @@ export function useTriggerAbsoluteMovePerformanceTest(
 
 export function useTriggerSelectionChangePerformanceTest(): () => void {
   const projectContents = LargeProjectContents
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerSelectionChangePerformanceTest dispatch',
   )
-  const allPaths = useRefEditorState(
+  const allPaths = useRefEditorState('derived')(
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
-  const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
-  const builtInDependencies = useEditorState(
+  const metadata = useRefEditorState('metadata')(
+    React.useCallback((store) => store.editor.jsxMetadata, []),
+  )
+  const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerSelectionChangePerformanceTest builtInDependencies',
   )

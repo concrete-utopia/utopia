@@ -30,26 +30,29 @@ import { when } from '../../utils/react-conditionals'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
-  const canvasStore = React.useContext(CanvasStateContext)?.useStore
+  const canvasStore = React.useContext(CanvasStateContext)
 
   return (
-    <EditorStateContext.Provider value={canvasStore == null ? null : { useStore: canvasStore }}>
+    <EditorStateContext.Provider value={canvasStore == null ? null : canvasStore}>
       <CanvasComponentEntryInner {...props} />
     </EditorStateContext.Provider>
   )
 })
 
 const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'CanvasComponentEntry dispatch',
+  )
 
-  const canvasScrollAnimation = useEditorState(
+  const canvasScrollAnimation = useEditorState('canvas')(
     (store) => store.editor.canvas.scrollAnimation,
     'CanvasComponentEntry scrollAnimation',
   )
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
-  const canvasProps = useEditorState((store) => {
+  const canvasProps = useEditorState('fullOldStore')((store) => {
     return pickUiJsxCanvasProps(
       store.editor,
       store.derived,

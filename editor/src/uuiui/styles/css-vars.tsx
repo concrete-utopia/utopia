@@ -6,8 +6,11 @@ import { getPreferredColorScheme, Theme } from './theme'
 import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
 
 export const ColorThemeComponent = React.memo(() => {
-  const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
-  const currentTheme: Theme = useEditorState(
+  const themeSetting = useEditorState('restOfStore')(
+    (store) => store.userState.themeConfig,
+    'currentTheme',
+  )
+  const currentTheme: Theme = useEditorState('restOfStore')(
     (store) => getCurrentTheme(store.userState),
     'currentTheme',
   )

@@ -19,11 +19,10 @@ export interface LeftPaneProps {
 }
 
 export const InsertMenuPane = React.memo(() => {
-  const { dispatch, focusedPanel } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      focusedPanel: store.editor.focusedPanel,
-    }
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+
+  const focusedPanel = useEditorState('oldEditor')((store) => {
+    return store.editor.focusedPanel
   }, 'InsertMenuPane')
 
   const onFocus = React.useCallback(

@@ -18,11 +18,11 @@ interface ImmediateParentOutlinesProps {
 export const ImmediateParentOutlines = controlForStrategyMemoized(
   ({ targets }: ImmediateParentOutlinesProps) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState(
+    const scale = useEditorState('canvas')(
       (store) => store.editor.canvas.scale,
       'ImmediateParentOutlines canvas scale',
     )
-    const parentFrame = useEditorState((store) => {
+    const parentFrame = useEditorState('fullOldStore')((store) => {
       const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
       if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
         return MetadataUtils.getFrameInCanvasCoords(
@@ -54,12 +54,12 @@ interface ParentOutlinesProps {
 export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState(
+    const scale = useEditorState('canvas')(
       (store) => store.editor.canvas.scale,
       'ParentOutlines canvas scale',
     )
 
-    const parentFrame = useEditorState((store) => {
+    const parentFrame = useEditorState('metadata')((store) => {
       if (!EP.isStoryboardPath(targetParent)) {
         return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
       } else {

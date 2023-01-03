@@ -245,7 +245,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const [itemBeingRenamedId, setItemBeingRenamedId] = React.useState<number | null>(null)
   const [renameValue, setRenameValue] = React.useState<string | null>(null)
 
-  const { dispatch } = useEditorState(
+  const { dispatch } = useEditorState('restOfStore')(
     (store) => ({
       dispatch: store.dispatch,
     }),

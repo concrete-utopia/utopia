@@ -25,17 +25,17 @@ function getDistanceGuidelines(
 }
 
 export const DistanceGuidelineControl = React.memo(() => {
-  const isDisallowedInteractionActive = useEditorState((store) => {
+  const isDisallowedInteractionActive = useEditorState('canvas')((store) => {
     return (
       store.editor.canvas.interactionSession != null &&
       isDragInteractionData(store.editor.canvas.interactionSession.interactionData)
     )
   }, 'DistanceGuidelineControl isInteractionActive')
-  const altKeyPressed = useEditorState(
+  const altKeyPressed = useEditorState('oldEditor')(
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
   )
-  const selectedElements = useEditorState(
+  const selectedElements = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.selectedViews,
     'DistanceGuidelineControl selectedElements',
   )
@@ -47,15 +47,15 @@ export const DistanceGuidelineControl = React.memo(() => {
 })
 
 const DistanceGuidelineControlInner = React.memo(() => {
-  const scale = useEditorState(
+  const scale = useEditorState('canvas')(
     (store) => store.editor.canvas.scale,
     'DistanceGuidelineControl scale',
   )
-  const canvasOffset = useEditorState(
+  const canvasOffset = useEditorState('canvas')(
     (store) => store.editor.canvas.realCanvasOffset,
     'DistanceGuidelineControl canvasOffset',
   )
-  const boundingBoxes = useEditorState((store) => {
+  const boundingBoxes = useEditorState('metadata')((store) => {
     if (EP.areAllElementsInSameInstance(store.editor.selectedViews)) {
       const multiSelectBounds = getMultiselectBounds(
         store.editor.jsxMetadata,
@@ -73,7 +73,7 @@ const DistanceGuidelineControlInner = React.memo(() => {
     }
   }, 'DistanceGuidelineControl boundingBoxes')
 
-  const distanceGuidelines = useEditorState((store) => {
+  const distanceGuidelines = useEditorState('fullOldStore')((store) => {
     let guidelineInfo: Array<{ guidelines: Array<Guideline>; boundingBox: CanvasRectangle }> = []
     fastForEach(boundingBoxes, (boundingBox, index) => {
       if (store.editor.highlightedViews.length !== 0) {

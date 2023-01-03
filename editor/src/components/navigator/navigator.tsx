@@ -30,10 +30,10 @@ import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 interface ItemProps extends ListChildComponentProps {}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState((store) => {
+  const visibleNavigatorTargets = useEditorState('derived')((store) => {
     return store.derived.visibleNavigatorTargets
   }, 'Item visibleNavigatorTargets')
-  const editorSliceRef = useRefEditorState((store) => {
+  const editorSliceRef = useRefEditorState('fullOldStore')((store) => {
     const dragSelections = createDragSelections(
       store.derived.navigatorTargets,
       store.editor.selectedViews,
@@ -112,22 +112,21 @@ export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const { dispatch, minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
-    (store) => {
-      const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
-      const innerSelectionIndex =
-        selectedViews == null
-          ? -1
-          : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.navigator.minimised,
-        visibleNavigatorTargets: innerVisibleNavigatorTargets,
-        selectionIndex: innerSelectionIndex,
-      }
-    },
-    'NavigatorComponent',
-  )
+    'fullOldStore',
+  )((store) => {
+    const selectedViews = store.editor.selectedViews
+    const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+    const innerSelectionIndex =
+      selectedViews == null
+        ? -1
+        : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
+    return {
+      dispatch: store.dispatch,
+      minimised: store.editor.navigator.minimised,
+      visibleNavigatorTargets: innerVisibleNavigatorTargets,
+      selectionIndex: innerSelectionIndex,
+    }
+  }, 'NavigatorComponent')
 
   const itemListRef = React.createRef<FixedSizeList>()
 

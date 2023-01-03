@@ -21,7 +21,7 @@ interface LayoutIconResult {
 }
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
-  return useEditorState(
+  return useEditorState('metadata')(
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
@@ -37,7 +37,7 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 }
 
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
-  return useEditorState((store) => {
+  return useEditorState('metadata')((store) => {
     const metadata = store.editor.jsxMetadata
     return createComponentIconProps(path, metadata)
   }, 'useComponentIcon') // TODO Memoize Icon Result

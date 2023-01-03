@@ -14,9 +14,9 @@ interface ElementPathElement {
 }
 
 export const BreadcrumbTrail = React.memo(() => {
-  const { dispatch, jsxMetadata, selectedViews, allElementProps } = useEditorState((store) => {
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const { jsxMetadata, selectedViews, allElementProps } = useEditorState('metadata')((store) => {
     return {
-      dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       allElementProps: store.editor.allElementProps,

@@ -21,7 +21,12 @@ import {
   setPanelVisibility,
   togglePanel,
 } from '../editor/actions/action-creators'
-import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
+import {
+  EditorStorePatched,
+  EditorStoreShared,
+  githubRepoFullName,
+  LeftMenuTab,
+} from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
@@ -44,22 +49,28 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges, currentBranch, treeConflicts } =
-    useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        loginState: store.userState.loginState,
-        projectName: store.editor.projectName,
-        upstreamChanges: store.editor.githubData.upstreamChanges,
-        currentBranch: store.editor.githubSettings.branchName,
-        treeConflicts: store.editor.githubData.treeConflicts,
-      }),
-      'TitleBar',
-    )
+  const { dispatch, loginState } = useEditorState('restOfStore')(
+    (store) => ({
+      dispatch: store.dispatch,
+      loginState: store.userState.loginState,
+    }),
+    'TitleBar loginState',
+  )
+  const { projectName, upstreamChanges, currentBranch, treeConflicts } = useEditorState(
+    'oldEditor',
+  )(
+    (store) => ({
+      projectName: store.editor.projectName,
+      upstreamChanges: store.editor.githubData.upstreamChanges,
+      currentBranch: store.editor.githubSettings.branchName,
+      treeConflicts: store.editor.githubData.treeConflicts,
+    }),
+    'TitleBar projectName',
+  )
 
   const userPicture = useGetUserPicture()
 
-  const repoName = useEditorState(
+  const repoName = useEditorState('oldEditor')(
     (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
     'RepositoryBlock repo',
   )
@@ -230,9 +241,9 @@ const TitleBar = React.memo(() => {
 export default TitleBar
 
 const loginStateSelector = createSelector(
-  (store: EditorStorePatched) => store.userState.loginState,
+  (store: EditorStoreShared) => store.userState.loginState,
   (loginState: LoginState) => getUserPicture(loginState),
 )
 function useGetUserPicture(): string | null {
-  return useEditorState(loginStateSelector, 'useGetUserPicture')
+  return useEditorState('restOfStore')(loginStateSelector, 'useGetUserPicture')
 }

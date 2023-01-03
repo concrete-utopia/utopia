@@ -43,7 +43,10 @@ const DialogBody: React.FunctionComponent<
 const AcceptButton: React.FunctionComponent<
   React.PropsWithChildren<ConfirmRevertAllDialogProps>
 > = (props) => {
-  const branchContents = useEditorState((store) => store.editor.branchContents, 'branch contents')
+  const branchContents = useEditorState('oldEditor')(
+    (store) => store.editor.branchContents,
+    'branch contents',
+  )
   const clickButton = React.useCallback(() => {
     const actions = revertAllGithubFiles(branchContents)
     props.dispatch([...actions, EditorActions.hideModal()], 'everyone')

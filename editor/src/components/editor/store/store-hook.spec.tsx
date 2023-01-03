@@ -2,7 +2,12 @@ import React from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react'
-import { EditorStateContext, useSelectorWithCallback, UtopiaStoreAPI } from './store-hook'
+import {
+  createStoresAndState,
+  EditorStateContext,
+  useSelectorWithCallback,
+  UtopiaStoreAPI,
+} from './store-hook'
 import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
@@ -26,7 +31,7 @@ function createEmptyEditorStoreHook() {
     storeName: 'editor-store',
   }
 
-  const storeHook = create(subscribeWithSelector<EditorStorePatched>((set) => initialEditorStore))
+  const storeHook = createStoresAndState(initialEditorStore)
 
   return storeHook
 }
@@ -34,11 +39,7 @@ function createEmptyEditorStoreHook() {
 const ContextProvider =
   (storeHook: UtopiaStoreAPI) =>
   ({ children }: { children: React.ReactNode }) => {
-    return (
-      <EditorStateContext.Provider value={{ useStore: storeHook }}>
-        {children}
-      </EditorStateContext.Provider>
-    )
+    return <EditorStateContext.Provider value={storeHook}>{children}</EditorStateContext.Provider>
   }
 
 describe('useSelectorWithCallback', () => {
@@ -51,7 +52,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback(
+        return useSelectorWithCallback('selectedHighlightedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -79,7 +80,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback(
+        return useSelectorWithCallback('selectedHighlightedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -98,8 +99,8 @@ describe('useSelectorWithCallback', () => {
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
-    })
+      },
+    } as EditorStorePatched)
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
@@ -114,7 +115,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback(
+        return useSelectorWithCallback('oldEditor')(
           (store) => store.editor.focusedElementPath,
           (newFocusedElementPath) => {
             callCount++
@@ -136,15 +137,15 @@ describe('useSelectorWithCallback', () => {
       editor: {
         ...storeHook.getState().editor,
         focusedElementPath: EP.fromString('sb/scene:aaa'),
-      } as EditorState,
-    })
+      },
+    } as EditorStorePatched)
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
 
     storeHook.setState({
-      editor: { ...storeHook.getState().editor, focusedElementPath: null } as EditorState,
-    })
+      editor: { ...storeHook.getState().editor, focusedElementPath: null },
+    } as EditorStorePatched)
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
@@ -153,8 +154,8 @@ describe('useSelectorWithCallback', () => {
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
-    })
+      },
+    } as EditorStorePatched)
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
@@ -163,8 +164,8 @@ describe('useSelectorWithCallback', () => {
       editor: {
         ...storeHook.getState().editor,
         focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
-      } as EditorState,
-    })
+      },
+    } as EditorStorePatched)
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(3)
@@ -180,7 +181,7 @@ describe('useSelectorWithCallback', () => {
 
     let rerenderTestHook: () => void
 
-    storeHook.subscribe(
+    storeHook.stores.fullOldStore.subscribe(
       (store) => store.editor.selectedViews,
       (newSelectedViews) => {
         if (newSelectedViews != null) {
@@ -195,7 +196,7 @@ describe('useSelectorWithCallback', () => {
     const { result, rerender } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback(
+        return useSelectorWithCallback('selectedHighlightedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -218,10 +219,10 @@ describe('useSelectorWithCallback', () => {
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
-    })
+      },
+    } as EditorStorePatched)
 
-    storeHook.destroy()
+    Object.values(storeHook.stores).forEach((store) => store.destroy())
 
     expect(hookRenders).toEqual(2)
     expect(hookRendersWhenCallbackWasFired).toEqual(2)

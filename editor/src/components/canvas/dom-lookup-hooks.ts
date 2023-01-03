@@ -5,7 +5,7 @@ import { CanvasPositions } from './canvas-types'
 import { windowToCanvasCoordinates } from './dom-lookup'
 
 export function useWindowToCanvasCoordinates(): (screenPoint: WindowPoint) => CanvasPositions {
-  const canvasStateRef = useRefEditorState((store) => store.editor.canvas)
+  const canvasStateRef = useRefEditorState('canvas')((store) => store.editor.canvas)
   return React.useCallback(
     (screenPoint: WindowPoint) => {
       return windowToCanvasCoordinates(

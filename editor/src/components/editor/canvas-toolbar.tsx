@@ -37,10 +37,15 @@ import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './sto
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export const CanvasToolbar = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasToolbar dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'CanvasToolbar dispatch',
+  )
   const theme = useColorTheme()
 
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
+    (store) => store.editor.selectedViews,
+  )
 
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
@@ -51,7 +56,7 @@ export const CanvasToolbar = React.memo(() => {
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
-  const insertMenuMode = useEditorState(
+  const insertMenuMode = useEditorState('oldEditor')(
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
@@ -84,7 +89,7 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
   }, [dispatch, selectedViewsRef])
 
-  const insertMenuSelected = useEditorState(
+  const insertMenuSelected = useEditorState('oldEditor')(
     (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
     'CanvasToolbar insertMenuSelected',
   )
@@ -98,7 +103,10 @@ export const CanvasToolbar = React.memo(() => {
     dispatch(actions)
   }, [dispatch, insertMenuSelected])
 
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'CanvasToolbar zoomLevel')
+  const zoomLevel = useEditorState('canvas')(
+    (store) => store.editor.canvas.scale,
+    'CanvasToolbar zoomLevel',
+  )
 
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
@@ -109,7 +117,7 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch, zoomLevel],
   )
 
-  const isLiveMode = useEditorState(
+  const isLiveMode = useEditorState('oldEditor')(
     (store) => store.editor.mode.type === 'live',
     'TopMenu isLiveMode',
   )
@@ -125,7 +133,7 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch])
 
-  const isCodeEditorVisible = useEditorState(
+  const isCodeEditorVisible = useEditorState('oldEditor')(
     (store) => store.editor.interfaceDesigner.codePaneVisible,
     'CanvasToolbar isCodeEditorVisible',
   )
@@ -291,7 +299,7 @@ interface InsertModeButtonProps {
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
-  const canvasInLiveMode = useEditorState(
+  const canvasInLiveMode = useEditorState('oldEditor')(
     (store) => store.editor.mode.type === 'live',
     'CanvasToolbar canvasInLiveMode',
   )

@@ -33,25 +33,28 @@ interface ZeroSizedElementControlProps {
 
 export const ZeroSizedElementControls = controlForStrategyMemoized(
   ({ showAllPossibleElements }: ZeroSizedElementControlProps) => {
-    const highlightedViews = useEditorState(
+    const highlightedViews = useEditorState('selectedHighlightedViews')(
       (store) => store.editor.highlightedViews,
       'ZeroSizedElementControls highlightedViews',
     )
-    const selectedElements = useEditorState(
+    const selectedElements = useEditorState('selectedHighlightedViews')(
       (store) => store.editor.selectedViews,
       'ZeroSizedElementControls selectedElements',
     )
-    const canvasOffset = useEditorState(
+    const canvasOffset = useEditorState('canvas')(
       (store) => store.editor.canvas.realCanvasOffset,
       'ZeroSizedElementControls canvasOffset',
     )
-    const scale = useEditorState(
+    const scale = useEditorState('canvas')(
       (store) => store.editor.canvas.scale,
       'ZeroSizedElementControls scale',
     )
-    const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+    const dispatch = useEditorState('restOfStore')(
+      (store) => store.dispatch,
+      'ZeroSizedElementControls dispatch',
+    )
 
-    const zeroSizeElements = useEditorState((store) => {
+    const zeroSizeElements = useEditorState('fullOldStore')((store) => {
       if (showAllPossibleElements) {
         return Object.values(store.editor.jsxMetadata).filter((element) => {
           return (
@@ -217,7 +220,7 @@ interface ZeroSizeResizeControlWrapperProps {
 export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
   ({ targets }: ZeroSizeResizeControlWrapperProps) => {
     const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const zeroSizeElements = useEditorState((store) => {
+    const zeroSizeElements = useEditorState('metadata')((store) => {
       return mapDropNulls((path) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
@@ -229,11 +232,11 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
       }, targets)
     }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
 
-    const dispatch = useEditorState(
+    const dispatch = useEditorState('restOfStore')(
       (store) => store.dispatch,
       'ZeroSizeResizeControlWrapper dispatch',
     )
-    const scale = useEditorState(
+    const scale = useEditorState('canvas')(
       (store) => store.editor.canvas.scale,
       'ZeroSizeResizeControlWrapper scale',
     )

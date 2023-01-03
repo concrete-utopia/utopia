@@ -23,15 +23,18 @@ import { detectAreElementsFlexContainers } from './inspector-common'
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isFlexLayoutedContainer = useEditorState(
+  const isFlexLayoutedContainer = useEditorState('metadata')(
     (store) =>
       detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'AddRemoveLayouSystemControl, isFlexLayoutedContainer',
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'AddRemoveLayouSystemControl dispatch')
-  const elementMetadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'AddRemoveLayouSystemControl dispatch',
+  )
+  const elementMetadataRef = useRefEditorState('metadata')(metadataSelector)
+  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
 
   const addLayoutSystem = React.useCallback(
     () =>

@@ -31,16 +31,19 @@ const getFlexDirectionIcon = (
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutParentControl dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'LayoutParentControl dispatch',
+  )
 
-  const { canvasOffset, scale } = useEditorState((store) => {
+  const { canvasOffset, scale } = useEditorState('canvas')((store) => {
     return {
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
       scale: store.editor.canvas.scale,
     }
   }, 'LayoutParentControl canvas')
   const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
-    useEditorState((store) => {
+    useEditorState('fullOldStore')((store) => {
       if (
         store.editor.canvas.controls.flexReparentTargetLines != null ||
         store.editor.selectedViews.length !== 1 ||

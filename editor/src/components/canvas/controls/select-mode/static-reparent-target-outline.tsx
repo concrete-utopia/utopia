@@ -7,15 +7,15 @@ import { HighlightControl } from '../highlight-control'
 
 export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized(() => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState(
+  const scale = useEditorState('canvas')(
     (store) => store.editor.canvas.scale,
     'FlexReparentTargetIndicator scale',
   )
-  const canvasOffset = useEditorState(
+  const canvasOffset = useEditorState('canvas')(
     (store) => store.editor.canvas.realCanvasOffset,
     'FlexReparentTargetIndicator scale',
   )
-  const parentFrame = useEditorState((store) => {
+  const parentFrame = useEditorState('fullOldStore')((store) => {
     const parentPath = store.editor.canvas.controls.parentOutlineHighlight
     if (parentPath != null) {
       return MetadataUtils.getFrameInCanvasCoords(parentPath, store.editor.jsxMetadata)

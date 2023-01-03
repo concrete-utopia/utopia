@@ -74,21 +74,16 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
-  const interfaceDesigner = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'SettingsPanel dispatch',
+  )
+  const interfaceDesigner = useEditorState('oldEditor')(
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )
 
-  const entireStateRef = useRefEditorState((store) => store)
-
-  const openUiJsFile = useRefEditorState((store) => {
-    return getOpenUIJSFile(store.editor)
-  })
-
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
+  const entireStateRef = useRefEditorState('fullOldStore')((store) => store)
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
@@ -97,18 +92,6 @@ export const SettingsPanel = React.memo(() => {
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
-
-  const printEditorState = React.useCallback(() => {
-    console.info('Current Editor State:', entireStateRef.current)
-  }, [entireStateRef])
-
-  const printOpenUiJsFileModel = React.useCallback(() => {
-    console.info('Open UIJSFile:', openUiJsFile.current)
-  }, [openUiJsFile])
-
-  const printCanvasMetadata = React.useCallback(() => {
-    console.info('Latest metadata:', jsxMetadata.current)
-  }, [jsxMetadata])
 
   const loadProjectContentJson = React.useCallback(
     (value: string) => {

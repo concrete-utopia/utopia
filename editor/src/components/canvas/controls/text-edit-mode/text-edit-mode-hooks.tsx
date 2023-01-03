@@ -15,7 +15,7 @@ import {
 } from '../select-mode/select-mode-hooks'
 
 function useGetTextEditableViews() {
-  const storeRef = useRefEditorState((store) => {
+  const storeRef = useRefEditorState('fullOldStore')((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
       mode: store.editor.mode,
@@ -40,7 +40,7 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
 
   const { onMouseMove } = useHighlightCallbacks(active, true, true, getTextEditableViews)
 
-  const dispatch = useEditorState(
+  const dispatch = useEditorState('restOfStore')(
     (store) => store.dispatch,
     'useTextEditModeSelectAndHover dispatch',
   )

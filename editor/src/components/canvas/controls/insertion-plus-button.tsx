@@ -29,19 +29,22 @@ interface ButtonControlProps {
 
 export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
-    const isInteractionActive = useEditorState(
+    const isInteractionActive = useEditorState('canvas')(
       (store) => store.editor.canvas.interactionSession != null,
       'DistanceGuidelineControl isInteractionActive',
     )
-    const selectedViews = useEditorState(
+    const selectedViews = useEditorState('selectedHighlightedViews')(
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
     )
-    const jsxMetadata = useEditorState(
+    const jsxMetadata = useEditorState('metadata')(
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'InsertionControls scale')
+    const scale = useEditorState('canvas')(
+      (store) => store.editor.canvas.scale,
+      'InsertionControls scale',
+    )
     if (selectedViews.length !== 1 || isInteractionActive) {
       return null
     }
@@ -222,7 +225,7 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
   const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(

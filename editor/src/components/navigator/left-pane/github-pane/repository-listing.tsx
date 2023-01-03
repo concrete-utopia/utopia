@@ -36,16 +36,19 @@ interface RepositoryRowProps extends RepositoryEntry {
 }
 
 const RepositoryRow = (props: RepositoryRowProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'RepositoryRow dispatch')
+  const dispatch = useEditorState('restOfStore')(
+    (store) => store.dispatch,
+    'RepositoryRow dispatch',
+  )
 
   const [importing, setImporting] = React.useState(false)
 
-  const loadingRepos = useEditorState(
+  const loadingRepos = useEditorState('oldEditor')(
     (store) => isGithubLoadingRepositories(store.editor.githubOperations),
     'RepositoryRow loadingRepos',
   )
 
-  const importingThisBranch = useEditorState((store) => {
+  const importingThisBranch = useEditorState('oldEditor')((store) => {
     if (props.defaultBranch == null) {
       return false
     } else {
@@ -68,7 +71,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     }
   }
 
-  const currentRepo = useEditorState(
+  const currentRepo = useEditorState('oldEditor')(
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
@@ -166,7 +169,7 @@ export const RepositoryListing = React.memo(
       [setTargetRepository],
     )
 
-    const usersRepositories = useEditorState(
+    const usersRepositories = useEditorState('oldEditor')(
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -226,7 +229,7 @@ export const RepositoryListing = React.memo(
       }
     }, [filteredRepositories, targetRepository])
 
-    const githubOperations = useEditorState(
+    const githubOperations = useEditorState('oldEditor')(
       (store) => store.editor.githubOperations,
       'Github operations',
     )
@@ -234,7 +237,7 @@ export const RepositoryListing = React.memo(
       () => githubOperations.some((op) => op.name === 'loadRepositories'),
       [githubOperations],
     )
-    const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
+    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
 
     const refreshRepos = React.useCallback(() => {
       void getUsersPublicGithubRepositories(dispatch).then((actions) => {

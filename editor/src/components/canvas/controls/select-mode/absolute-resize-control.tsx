@@ -139,9 +139,11 @@ const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
+    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
+    const canvasOffsetRef = useRefEditorState('canvas')(
+      (store) => store.editor.canvas.roundedCanvasOffset,
+    )
 
     const onPointMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -214,9 +216,11 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
+    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
+    const canvasOffsetRef = useRefEditorState('canvas')(
+      (store) => store.editor.canvas.roundedCanvasOffset,
+    )
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -265,9 +269,15 @@ interface SizeLabelProps {
 
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'Resizelabel scale')
+    const scale = useEditorState('canvas')(
+      (store) => store.editor.canvas.scale,
+      'Resizelabel scale',
+    )
     const colorTheme = useColorTheme()
-    const metadata = useEditorState((store) => getMetadata(store.editor), 'ResizeLabel metadata')
+    const metadata = useEditorState('fullOldStore')(
+      (store) => getMetadata(store.editor),
+      'ResizeLabel metadata',
+    )
     const boundingBox = boundingRectangleArray(
       targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
     )

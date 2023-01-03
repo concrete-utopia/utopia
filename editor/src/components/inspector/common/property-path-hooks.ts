@@ -601,7 +601,7 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
     transient: boolean,
   ) => Array<EditorAction>,
 ): (newValue: T, transient?: boolean | undefined) => void {
-  const dispatch = useRefEditorState((store) => store.dispatch)
+  const dispatch = useRefEditorState('restOfStore')((store) => store.dispatch)
   return React.useCallback(
     (newValue, transient = false) => {
       const untransformedValue = untransformValue(newValue)
@@ -1020,7 +1020,7 @@ export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
 export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
-  return useEditorState((store) => {
+  return useEditorState('fullOldStore')((store) => {
     return selectedViews.current.every((view) => {
       const selectedViewType = withUnderlyingTarget(
         view,
@@ -1120,7 +1120,7 @@ export function filterUtopiaSpecificProps(props: MapLike<any>) {
 export function useInspectorWarningStatus(): boolean {
   const selectedViews = useSelectedViews()
 
-  return useEditorState((store) => {
+  return useEditorState('fullOldStore')((store) => {
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
       if (hasLayoutInCSSProp) {

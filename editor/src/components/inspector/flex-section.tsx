@@ -8,7 +8,7 @@ import { detectAreElementsFlexContainers, detectFlexDirection } from './inspecto
 import { NineBlockControl } from './nine-block-controls'
 
 export const FlexSection = React.memo(() => {
-  const flexDirection = useEditorState(
+  const flexDirection = useEditorState('metadata')(
     (store) =>
       selectedViewsSelector(store).length === 0
         ? 'row'
@@ -16,7 +16,7 @@ export const FlexSection = React.memo(() => {
     'FlexSection flexDirection',
   )
 
-  const allElementsInFlexLayout = useEditorState(
+  const allElementsInFlexLayout = useEditorState('metadata')(
     (store) =>
       detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'FlexSection areAllElementsInFlexLayout',

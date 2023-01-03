@@ -12,7 +12,7 @@ import {
   segmentIntersection,
 } from '../../../core/shared/math-utils'
 import { bold, useColorTheme } from '../../../uuiui'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { CanvasSubstate, EditorStorePatched } from '../../editor/store/editor-state'
 import {
   useEditorState,
   useRefEditorState,
@@ -25,8 +25,8 @@ import { assertNever } from '../../../core/shared/utils'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
-  const scale = useEditorState(scaleSelector, 'Guideline scale')
-  const strategyMovedSuccessfully = useEditorState((store) => {
+  const scale = useEditorState('canvas')(scaleSelector, 'Guideline scale')
+  const strategyMovedSuccessfully = useEditorState('fullOldStore')((store) => {
     return (
       store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
       store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
@@ -40,7 +40,7 @@ export const GuidelineControls = React.memo(() => {
     )
   }, 'GuidelineControls strategyMovedSuccessfully')
 
-  const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
+  const { strategyIntendedBounds, snappingGuidelines } = useEditorState('canvas')(
     (store) => store.editor.canvas.controls,
     'Strategy intended bounds and snapping guidelines',
   )
@@ -84,11 +84,11 @@ interface GuidelineProps {
 }
 
 const LineWidth = 1
-const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const scaleSelector = (store: CanvasSubstate) => store.editor.canvas.scale
 
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState(scaleSelector, 'Guideline scale')
+  const scale = useEditorState('canvas')(scaleSelector, 'Guideline scale')
   const controlRef = useGuideline(props.index, (result: { frame: CanvasRectangle } | null) => {
     if (controlRef.current != null) {
       if (result == null) {
@@ -141,7 +141,9 @@ function useGuideline<T = HTMLDivElement>(
   const guidelineCallbackRef = React.useRef(guidelineCallback)
   guidelineCallbackRef.current = guidelineCallback
 
-  const guidelineRef = useRefEditorState((store) => store.editor.canvas.controls.snappingGuidelines)
+  const guidelineRef = useRefEditorState('canvas')(
+    (store) => store.editor.canvas.controls.snappingGuidelines,
+  )
 
   const innerCallback = React.useCallback(() => {
     if (guidelineRef.current[index] != null) {
@@ -180,11 +182,11 @@ function useGuideline<T = HTMLDivElement>(
       guidelineCallbackRef.current(null)
     }
   }, [guidelineRef, guidelineCallbackRef, index])
-  useSelectorWithCallback(
+  useSelectorWithCallback('canvas')(
     (store) => store.editor.canvas.controls.snappingGuidelines[index],
     innerCallback,
   )
-  useSelectorWithCallback(
+  useSelectorWithCallback('canvas')(
     (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
   )

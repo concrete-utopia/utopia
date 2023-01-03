@@ -43,7 +43,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const colorTheme = useColorTheme()
   const indicatorColor = colorTheme.brandNeonPink.value
 
-  const hoveredViews = useEditorState(
+  const hoveredViews = useEditorState('selectedHighlightedViews')(
     (store) => store.editor.hoveredViews,
     'FlexGapControl hoveredViews',
   )
@@ -67,9 +67,9 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
   }, [hoveredViews, selectedElement])
 
-  const { dispatch, scale, metadata, isDragging } = useEditorState(
+  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const { scale, metadata, isDragging } = useEditorState('fullOldStore')(
     (store) => ({
-      dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
       metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
       isDragging: store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
@@ -77,7 +77,9 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl dispatch scale',
   )
 
-  const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const canvasOffset = useRefEditorState('canvas')(
+    (store) => store.editor.canvas.roundedCanvasOffset,
+  )
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,

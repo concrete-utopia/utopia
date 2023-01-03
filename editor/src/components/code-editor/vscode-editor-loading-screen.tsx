@@ -86,7 +86,7 @@ const JSIcon = () => (
 export const VSCodeLoadingScreenID = 'vscode-loading-screen'
 
 export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
-  const vscodeLoadingScreenVisible = useEditorState(
+  const vscodeLoadingScreenVisible = useEditorState('oldEditor')(
     (store) => store.editor.vscodeLoadingScreenVisible,
     'VSCodeIframeContainer',
   )

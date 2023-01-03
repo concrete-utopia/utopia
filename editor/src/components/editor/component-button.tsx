@@ -22,7 +22,12 @@ import { setFocusedElement } from './actions/action-creators'
 import { Interpolation } from '@emotion/serialize'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const { isComponent, focusedElementPath, selectedViews } = useEditorState((store) => {
+  const focusedElementPath = useEditorState('oldEditor')(
+    (store) => store.editor.focusedElementPath,
+    'focusedElementPath',
+  )
+
+  const { isComponent, selectedViews } = useEditorState('metadata')((store) => {
     const target = store.editor.selectedViews[0]
 
     const isFocusableComponent =
@@ -30,12 +35,15 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
 
     return {
       isComponent: isFocusableComponent,
-      focusedElementPath: store.editor.focusedElementPath,
+
       selectedViews: store.editor.selectedViews,
     }
   }, 'Component-button')
 
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentOrInstanceIndicator')
+  const dispatch = useEditorState('restOfStore')(
+    (state) => state.dispatch,
+    'ComponentOrInstanceIndicator',
+  )
   const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 
