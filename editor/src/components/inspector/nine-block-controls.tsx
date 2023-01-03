@@ -156,7 +156,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
       }}
     >
       <div
-        css={{
+        style={{
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
@@ -189,7 +189,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
         }}
       >
         <div
-          css={{
+          style={{
             backgroundColor: fgColor,
             width: DotSize,
             height: DotSize,
