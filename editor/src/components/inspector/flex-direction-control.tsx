@@ -4,7 +4,7 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { FlexDirection, FlexDirection } from './common/css-utils'
+import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { filterKeepFlexContainers } from './inspector-common'
 import {
@@ -69,6 +69,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
       }}
     >
       <div
+        data-testid={FlexDirectionToggleTestId('row')}
         onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
@@ -83,6 +84,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         <Icons.FlexRow />
       </div>
       <div
+        data-testid={FlexDirectionToggleTestId('column')}
         onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',
