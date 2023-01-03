@@ -21,6 +21,7 @@ import {
   getJSXAttribute,
   emptyComments,
   jsxTextBlock,
+  JSXTextBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -50,7 +51,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditor, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -319,12 +320,13 @@ export function renderCoreElement(
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      const unescaped = unescapeHTML(element.text)
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
-      if (parentPath == null || !EP.pathsEqual(parentPath, editedText)) {
-        return unescaped
+      // when the text is just edited its parent renders it in a text editor, so no need to render anything here
+      if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
+        return <></>
       }
-      return <TextEditor elementPath={parentPath} text={unescaped.trim()} />
+
+      return unescapeHTML(element.text)
     }
     default:
       const _exhaustiveCheck: never = element
@@ -444,6 +446,33 @@ function renderJSXElement(
   }
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+    if (elementIsTextEdited) {
+      const textBlock = childrenWithNewTextBlock.find(
+        (c): c is JSXTextBlock => c.type === 'JSX_TEXT_BLOCK',
+      )
+      const textContent = unescapeHTML(textBlock?.text ?? '')
+      const textEditorProps = {
+        elementPath: elementPath,
+        text: textContent.trim(),
+        component: FinalElement,
+        passthroughProps: finalPropsIcludingElementPath,
+      }
+
+      return buildSpyWrappedElement(
+        jsx,
+        textEditorProps,
+        elementPath,
+        metadataContext,
+        updateInvalidatedPaths,
+        childrenElements,
+        TextEditorWrapper,
+        inScope,
+        jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        filePath,
+      )
+    }
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,
