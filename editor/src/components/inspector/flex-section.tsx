@@ -5,11 +5,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
-import {
-  DefaultFlexDirection,
-  detectAreElementsFlexContainers,
-  detectFlexDirection,
-} from './inspector-common'
+import { detectAreElementsFlexContainers } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 
 const areElementsFlexContainersSelector = createSelector(
@@ -25,15 +21,15 @@ export const FlexSection = React.memo(() => {
   )
 
   return (
-    <>
+    <div>
+      <AddRemoveLayouSystemControl />
       {when(
         allElementsInFlexLayout,
-        <div>
-          <AddRemoveLayouSystemControl />
+        <>
           <FlexDirectionToggle />
           <NineBlockControl />
-        </div>,
+        </>,
       )}
-    </>
+    </div>
   )
 })

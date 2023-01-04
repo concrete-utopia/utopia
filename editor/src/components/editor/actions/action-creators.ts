@@ -237,11 +237,11 @@ import type {
   OriginalFrame,
   ProjectGithubSettings,
   RightMenuTab,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -340,10 +340,14 @@ export function updateEditorMode(mode: Mode): UpdateEditorMode {
   }
 }
 
-export function switchEditorMode(mode: Mode): SwitchEditorMode {
+export function switchEditorMode(
+  mode: Mode,
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit',
+): SwitchEditorMode {
   return {
     action: 'SWITCH_EDITOR_MODE',
     mode: mode,
+    unlessMode: unlessMode,
   }
 }
 
@@ -479,9 +483,14 @@ export function enableInsertModeForJSXElement(
   uid: string,
   importsToAdd: Imports,
   size: Size | null,
+  options?: {
+    textEdit?: boolean
+  },
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
+    EditorModes.insertMode([
+      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+    ]),
   )
 }
 
@@ -1539,7 +1548,7 @@ export function setFilebrowserDropTarget(target: string | null): SetFilebrowserD
   }
 }
 
-export function setCurrentTheme(theme: Theme): SetCurrentTheme {
+export function setCurrentTheme(theme: ThemeSetting): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,

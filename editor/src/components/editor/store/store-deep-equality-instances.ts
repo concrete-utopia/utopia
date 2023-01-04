@@ -1633,7 +1633,7 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1648,6 +1648,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     ElementPathArrayKeepDeepEquality,
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
+    (controls) => controls.parentOutlineHighlight,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     editorStateCanvasControls,
   )
 
@@ -2641,7 +2643,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 )
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2652,6 +2654,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
+    (subject) => subject.textEdit,
+    BooleanKeepDeepEquality,
     insertionSubject,
   )
 

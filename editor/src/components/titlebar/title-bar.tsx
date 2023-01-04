@@ -15,7 +15,12 @@ import {
 } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setLeftMenuTab,
+  setPanelVisibility,
+  togglePanel,
+} from '../editor/actions/action-creators'
 import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
@@ -39,16 +44,18 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges, currentBranch } = useEditorState(
-    (store) => ({
-      dispatch: store.dispatch,
-      loginState: store.userState.loginState,
-      projectName: store.editor.projectName,
-      upstreamChanges: store.editor.githubData.upstreamChanges,
-      currentBranch: store.editor.githubSettings.branchName,
-    }),
-    'TitleBar',
-  )
+  const { dispatch, loginState, projectName, upstreamChanges, currentBranch, treeConflicts } =
+    useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        loginState: store.userState.loginState,
+        projectName: store.editor.projectName,
+        upstreamChanges: store.editor.githubData.upstreamChanges,
+        currentBranch: store.editor.githubSettings.branchName,
+        treeConflicts: store.editor.githubData.treeConflicts,
+      }),
+      'TitleBar',
+    )
 
   const userPicture = useGetUserPicture()
 
@@ -61,29 +68,23 @@ const TitleBar = React.memo(() => {
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-  const numberOfUpstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(upstreamChanges),
-    [upstreamChanges],
-  )
+
+  const hasMergeConflicts = React.useMemo(() => {
+    if (treeConflicts == null) {
+      return false
+    }
+    return Object.keys(treeConflicts).length > 0
+  }, [treeConflicts])
 
   const githubFileChanges = useGithubFileChanges()
   const hasDownstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges) > 0,
     [githubFileChanges],
   )
-  const numberOfDownstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(githubFileChanges),
-    [githubFileChanges],
-  )
 
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
-
-  const isLeftMenuExpanded = useEditorState(
-    (store) => store.editor.leftMenu.expanded,
-    'LeftPanelRoot isLeftMenuExpanded',
-  )
 
   const toggleLeftPanel = useCallback(() => {
     let actions: Array<EditorAction> = []
@@ -96,6 +97,21 @@ const TitleBar = React.memo(() => {
   }, [dispatch])
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
+
+  const openFile = React.useCallback(
+    (filename: string) => {
+      dispatch([openCodeEditorFile(filename, true)], 'everyone')
+    },
+    [dispatch],
+  )
+  const showMergeConflict = React.useCallback(() => {
+    if (Object.keys(treeConflicts).length < 1) {
+      return
+    }
+    const firstConflictFilename = Object.keys(treeConflicts)[0]
+    openLeftPaneltoGithubTab()
+    openFile(firstConflictFilename)
+  }, [openLeftPaneltoGithubTab, openFile, treeConflicts])
 
   return (
     <SimpleFlexRow
@@ -141,6 +157,18 @@ const TitleBar = React.memo(() => {
               >
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
                 <>Pull Remote</>
+              </RoundButton>,
+            )}
+            {when(
+              hasMergeConflicts,
+              <RoundButton color={colorTheme.errorBgSolid.value} onClick={showMergeConflict}>
+                {
+                  <Icons.WarningTriangle
+                    style={{ width: 19, height: 19 }}
+                    color={'on-light-main'}
+                  />
+                }
+                <>Merge Conflicts</>
               </RoundButton>,
             )}
             {when(

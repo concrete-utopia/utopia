@@ -33,9 +33,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
   const canvasStore = React.useContext(CanvasStateContext)?.useStore
 
   return (
-    <EditorStateContext.Provider
-      value={canvasStore == null ? null : { api: canvasStore, useStore: canvasStore }}
-    >
+    <EditorStateContext.Provider value={canvasStore == null ? null : { useStore: canvasStore }}>
       <CanvasComponentEntryInner {...props} />
     </EditorStateContext.Provider>
   )

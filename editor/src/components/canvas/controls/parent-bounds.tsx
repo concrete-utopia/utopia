@@ -49,6 +49,9 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
 
   const parentFrame = useEditorState((store) => {
+    if (store.editor.canvas.controls.parentOutlineHighlight != null) {
+      return null
+    }
     if (!EP.isStoryboardPath(targetParent)) {
       return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
     } else {

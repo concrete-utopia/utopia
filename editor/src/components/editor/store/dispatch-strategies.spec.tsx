@@ -119,7 +119,7 @@ function createEditorStore(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStoreFull>(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = create(subscribeWithSelector<EditorStoreFull>(() => initialEditorStore))
 
   return initialEditorStore
 }

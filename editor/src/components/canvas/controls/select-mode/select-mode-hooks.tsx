@@ -23,6 +23,7 @@ import {
   selectComponents,
   setHoveredView,
   clearHoveredViews,
+  switchEditorMode,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
@@ -48,8 +49,11 @@ import {
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
-import { isInsertMode } from '../../../editor/editor-modes'
-import { useTextEditModeSelectAndHover } from '../text-edit-mode/text-edit-mode-hooks'
+import { EditorModes, isInsertMode } from '../../../editor/editor-modes'
+import {
+  scheduleTextEditForNextFrame,
+  useTextEditModeSelectAndHover,
+} from '../text-edit-mode/text-edit-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -590,6 +594,7 @@ function useSelectOrLiveModeSelectAndHover(
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
+  const didWeHandleMouseDown = React.useRef(false) //  this is here to avoid selecting when closing text editing
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
@@ -637,12 +642,18 @@ function useSelectOrLiveModeSelectAndHover(
 
       const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
       const mouseUpSelectionAllowed =
+        didWeHandleMouseDown.current &&
         !hadInteractionSessionThatWasCancelled &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
+      if (event.type === 'mousedown') {
+        didWeHandleMouseDown.current = true
+      }
       if (event.type === 'mouseup') {
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false
+        // didWeHandleMouseDown is used to avoid selecting when closing text editing
+        didWeHandleMouseDown.current = false
 
         if (!mouseUpSelectionAllowed) {
           // We should skip this mouseup
@@ -705,6 +716,16 @@ function useSelectOrLiveModeSelectAndHover(
           if (isFocusableLeaf) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             editorActions.push(setFocusedElement(foundTarget.elementPath))
+          }
+
+          const isEditableText = MetadataUtils.targetTextEditable(
+            editorStoreRef.current.editor.jsxMetadata,
+            foundTarget.elementPath,
+          )
+          if (isEditableText && isFeatureEnabled('Text editing')) {
+            editorActions.push(CanvasActions.clearInteractionSession(false))
+            // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
+            scheduleTextEditForNextFrame(foundTarget.elementPath, dispatch)
           }
         }
 

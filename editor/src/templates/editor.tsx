@@ -5,7 +5,7 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
-import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import '../utils/vite-hmr-config'
 import {
@@ -61,7 +61,6 @@ import {
   LowPriorityStateContext,
   SelectorTimings,
   UtopiaStoreAPI,
-  UtopiaStoreHook,
 } from '../components/editor/store/store-hook'
 import { RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { LinterResultMessage } from '../core/workers/linter/linter-worker'
@@ -217,12 +216,11 @@ export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI): void {
 
 export class Editor {
   storedState: EditorStoreFull
-  utopiaStoreHook: UtopiaStoreHook
-  utopiaStoreApi: UtopiaStoreAPI
+  utopiaStoreHook: UtopiaStoreAPI
   updateStore: (partialState: EditorStorePatched) => void
-  canvasStore: UtopiaStoreHook & UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
   updateCanvasStore: (partialState: EditorStorePatched) => void
-  lowPriorityStore: UtopiaStoreHook & UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   updateLowPriorityStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
@@ -246,7 +244,6 @@ export class Editor {
     const renderRootEditor = () =>
       renderRootComponent(
         this.utopiaStoreHook,
-        this.utopiaStoreApi,
         this.canvasStore,
         this.lowPriorityStore,
         this.spyCollector,
@@ -286,26 +283,15 @@ export class Editor {
       alreadySaved: false,
     }
 
-    const storeHook = create<
-      EditorStorePatched,
-      SetState<EditorStorePatched>,
-      GetState<EditorStorePatched>,
-      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'editor-store')))
+    const storeHook: UtopiaStoreAPI = create(
+      subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'editor-store')),
+    )
 
-    const canvasStoreHook = create<
-      EditorStorePatched,
-      SetState<EditorStorePatched>,
-      GetState<EditorStorePatched>,
-      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'canvas-store')))
+    const canvasStoreHook: UtopiaStoreAPI = create(
+      subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'canvas-store')),
+    )
 
-    const lowPriorityStoreHook = create<
-      EditorStorePatched,
-      SetState<EditorStorePatched>,
-      GetState<EditorStorePatched>,
-      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(
+    const lowPriorityStoreHook: UtopiaStoreAPI = create(
       subscribeWithSelector((set) =>
         patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
       ),
@@ -313,7 +299,6 @@ export class Editor {
 
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
-    this.utopiaStoreApi = storeHook
 
     this.canvasStore = canvasStoreHook
     this.updateCanvasStore = canvasStoreHook.setState
@@ -321,7 +306,7 @@ export class Editor {
     this.lowPriorityStore = lowPriorityStoreHook
     this.updateLowPriorityStore = lowPriorityStoreHook.setState
 
-    this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
+    this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreHook)
 
     void renderRootEditor()
 
@@ -464,11 +449,13 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
-    const MeasureSelectors = isFeatureEnabled('Debug mode – Measure Selectors')
-    const runDispatch = () => {
-      const PerformanceMarks =
-        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+    const PerformanceMarks =
+      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
+        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
+      PERFORMANCE_MARKS_ALLOWED
 
+    const runDispatch = () => {
       const oldEditorState = this.storedState
 
       const dispatchResult = editorDispatch(
@@ -555,15 +542,32 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
+            if (PerformanceMarks) {
+              performance.mark(`update main store ${updateId}`)
+            }
             const beforeMainStore = MeasureSelectors ? performance.now() : 0
             this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
             const afterMainStore = MeasureSelectors ? performance.now() : 0
+
+            if (PerformanceMarks) {
+              performance.measure(`Update Main Store ${updateId}`, `update main store ${updateId}`)
+            }
+
             if (
               shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
             ) {
+              if (PerformanceMarks) {
+                performance.mark(`update low priority store ${updateId}`)
+              }
               this.updateLowPriorityStore(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
               )
+              if (PerformanceMarks) {
+                performance.measure(
+                  `Update Low Prio Store ${updateId}`,
+                  `update low priority store ${updateId}`,
+                )
+              }
             }
             const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
             if (MeasureSelectors) {
@@ -580,9 +584,16 @@ export class Editor {
                 afterStoreUpdate - afterMainStore,
               )
             }
+            if (PerformanceMarks) {
+              performance.mark(`react wrap up ${updateId}`)
+            }
           })
         })
         if (PerformanceMarks) {
+          performance.measure(
+            `Our Components Rendering + React Doing Stuff`,
+            `react wrap up ${updateId}`,
+          )
           performance.mark(`update editor end ${updateId}`)
           performance.measure(
             `Update Editor ${updateId}`,
@@ -597,10 +608,19 @@ export class Editor {
       }
     }
     SelectorTimings.current = {}
+    if (PerformanceMarks) {
+      performance.mark('beforeFullDispatch')
+    }
     const result = runDispatch()
     if (MeasureSelectors) {
       // eslint-disable-next-line no-console
       console.table(SelectorTimings.current)
+    }
+    if (PerformanceMarks) {
+      performance.measure(
+        `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
+        'beforeFullDispatch',
+      )
     }
     return result
   }
@@ -653,20 +673,17 @@ export class Editor {
 let canvasUpdateId: number = 0
 
 export const EditorRoot: React.FunctionComponent<{
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
-  canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
+  mainStore: UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+}> = ({ mainStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
   return (
-    <EditorStateContext.Provider value={{ api, useStore }}>
+    <EditorStateContext.Provider value={{ useStore: mainStore }}>
       <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-        <CanvasStateContext.Provider value={{ api: canvasStore, useStore: canvasStore }}>
-          <LowPriorityStateContext.Provider
-            value={{ api: lowPriorityStore, useStore: lowPriorityStore }}
-          >
+        <CanvasStateContext.Provider value={{ useStore: canvasStore }}>
+          <LowPriorityStateContext.Provider value={{ useStore: lowPriorityStore }}>
             <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
               <EditorComponent />
             </UiJsxCanvasCtxAtom.Provider>
@@ -680,33 +697,28 @@ export const EditorRoot: React.FunctionComponent<{
 EditorRoot.displayName = 'Utopia Editor Root'
 
 export const HotRoot: React.FunctionComponent<{
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
-  canvasStore: UtopiaStoreAPI & UtopiaStoreHook
-  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook
+  mainStore: UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
-}> = hot(
-  ({ api, useStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
-    return (
-      <EditorRoot
-        api={api}
-        useStore={useStore}
-        spyCollector={spyCollector}
-        canvasStore={canvasStore}
-        lowPriorityStore={lowPriorityStore}
-        domWalkerMutableState={domWalkerMutableState}
-      />
-    )
-  },
-)
+}> = hot(({ mainStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+  return (
+    <EditorRoot
+      spyCollector={spyCollector}
+      mainStore={mainStore}
+      canvasStore={canvasStore}
+      lowPriorityStore={lowPriorityStore}
+      domWalkerMutableState={domWalkerMutableState}
+    />
+  )
+})
 HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
-  useStore: UtopiaStoreHook,
-  api: UtopiaStoreAPI,
-  canvasStore: UtopiaStoreAPI & UtopiaStoreHook,
-  lowPriorityStore: UtopiaStoreAPI & UtopiaStoreHook,
+  mainStore: UtopiaStoreAPI,
+  canvasStore: UtopiaStoreAPI,
+  lowPriorityStore: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
 ): Promise<void> {
@@ -718,8 +730,7 @@ async function renderRootComponent(
       if (process.env.HOT_MODE != null) {
         ReactDOM.render(
           <HotRoot
-            api={api}
-            useStore={useStore}
+            mainStore={mainStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
             lowPriorityStore={lowPriorityStore}
@@ -730,9 +741,8 @@ async function renderRootComponent(
       } else {
         ReactDOM.render(
           <EditorRoot
-            api={api}
-            useStore={useStore}
             spyCollector={spyCollector}
+            mainStore={mainStore}
             canvasStore={canvasStore}
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}

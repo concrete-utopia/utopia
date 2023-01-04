@@ -300,7 +300,11 @@ export function depth(path: ElementPath): number {
 }
 
 export function navigatorDepth(path: ElementPath): number {
-  return path.parts.reduce((working, next) => working + next.length, -2)
+  let result: number = -2
+  for (const pathPart of path.parts) {
+    result += pathPart.length
+  }
+  return result
 }
 
 export function isInsideFocusedComponent(path: ElementPath): boolean {
@@ -592,20 +596,27 @@ export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath):
   const targetElementPath = target.parts
   const maybeAncestorElementPath = maybeAncestor.parts
   if (targetElementPath.length >= maybeAncestorElementPath.length) {
-    const partsToCheck = targetElementPath.slice(0, maybeAncestorElementPath.length)
-    return partsToCheck.every((elementPathPart, i) => {
+    for (let pathPartIndex = 0; pathPartIndex < maybeAncestorElementPath.length; pathPartIndex++) {
+      const elementPathPart = targetElementPath[pathPartIndex]
       // all parts up to the last must match, and the last must be a descendant
-      if (i < maybeAncestorElementPath.length - 1) {
-        return elementPathPartsEqual(elementPathPart, maybeAncestorElementPath[i])
+      const maybeAncestorElementPathPart = maybeAncestorElementPath[pathPartIndex]
+      if (pathPartIndex < maybeAncestorElementPath.length - 1) {
+        if (!elementPathPartsEqual(elementPathPart, maybeAncestorElementPathPart)) {
+          return false
+        }
       } else {
-        const finalPartComparison =
-          targetElementPath.length === maybeAncestorElementPath.length
-            ? elementIsDescendant
-            : elementIsDescendantOrEqualTo
-
-        return finalPartComparison(elementPathPart, maybeAncestorElementPath[i])
+        if (targetElementPath.length === maybeAncestorElementPath.length) {
+          if (!elementIsDescendant(elementPathPart, maybeAncestorElementPathPart)) {
+            return false
+          }
+        } else {
+          if (!elementIsDescendantOrEqualTo(elementPathPart, maybeAncestorElementPathPart)) {
+            return false
+          }
+        }
       }
-    })
+    }
+    return true
   } else {
     return false
   }

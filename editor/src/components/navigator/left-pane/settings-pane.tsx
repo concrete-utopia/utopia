@@ -28,6 +28,10 @@ import { ForksGiven } from './forks-given'
 
 const themeOptions = [
   {
+    label: 'System',
+    value: 'system',
+  },
+  {
     label: 'Dark',
     value: 'dark',
   },
@@ -37,7 +41,7 @@ const themeOptions = [
   },
 ]
 
-const defaultTheme = themeOptions[1]
+const defaultTheme = themeOptions[0]
 
 export const SettingsPane = React.memo(() => {
   const { dispatch, userState, projectId, projectName, projectDescription, themeConfig } =

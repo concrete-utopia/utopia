@@ -21,6 +21,8 @@ export const TextEditorSpanId = 'text-editor'
 interface TextEditorProps {
   elementPath: ElementPath
   text: string
+  component: React.ComponentType<React.PropsWithChildren<any>>
+  passthroughProps: Record<string, unknown>
 }
 
 export function escapeHTML(s: string): string {
@@ -49,7 +51,8 @@ const handleShortcut = (
   ]
 }
 
-export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) => {
+export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+  const { elementPath, text, component, passthroughProps } = props
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
   const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
@@ -134,22 +137,29 @@ export const TextEditor = React.memo(({ elementPath, text }: TextEditorProps) =>
   )
 
   const onBlur = React.useCallback(() => {
-    dispatch([updateEditorMode(EditorModes.selectMode()), clearSelection()])
+    dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
-  return (
-    <span
-      ref={myElement}
-      id={TextEditorSpanId}
-      onPaste={stopPropagation}
-      onKeyDown={onKeyDown}
-      onKeyUp={stopPropagation}
-      onKeyPress={stopPropagation}
-      onBlur={onBlur}
-      contentEditable={'plaintext-only' as any} // note: not supported on firefox
-      suppressContentEditableWarning={true}
-    />
-  )
+  const editorProps = {
+    ref: myElement,
+    id: TextEditorSpanId,
+    onPaste: stopPropagation,
+    onKeyDown: onKeyDown,
+    onKeyUp: stopPropagation,
+    onKeyPress: stopPropagation,
+    onBlur: onBlur,
+    contentEditable: 'plaintext-only' as any, // note: not supported on firefo,
+    suppressContentEditableWarning: true,
+  }
+
+  // When the component to render is a simple html element we should make that contenteditable
+  if (typeof component === 'string') {
+    return React.createElement(component, {
+      ...passthroughProps,
+      ...editorProps,
+    })
+  }
+  return React.createElement(component, passthroughProps, <span {...editorProps} />)
 })
 
 function setSelectionToEnd(element: HTMLSpanElement) {

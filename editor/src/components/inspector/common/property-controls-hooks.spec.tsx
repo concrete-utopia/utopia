@@ -202,12 +202,7 @@ function callPropertyControlsHook(
     storeName: 'editor-store',
   }
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = create(subscribeWithSelector<EditorStorePatched>((set) => initialEditorStore))
 
   const inspectorCallbackContext: InspectorCallbackContextData = {
     selectedViewsRef: { current: selectedViews },
@@ -218,7 +213,7 @@ function callPropertyControlsHook(
   }
 
   const contextProvider = ({ children }: any) => (
-    <EditorStateContext.Provider value={{ useStore: storeHook, api: storeHook }}>
+    <EditorStateContext.Provider value={{ useStore: storeHook }}>
       <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
         {children}
       </InspectorCallbackContext.Provider>

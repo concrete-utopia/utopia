@@ -1,8 +1,8 @@
 import React from 'react'
-import create, { GetState, Mutate, SetState, StoreApi, UseStore } from 'zustand'
+import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react'
-import { EditorStateContext, useSelectorWithCallback } from './store-hook'
+import { EditorStateContext, useSelectorWithCallback, UtopiaStoreAPI } from './store-hook'
 import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
@@ -26,21 +26,16 @@ function createEmptyEditorStoreHook() {
     storeName: 'editor-store',
   }
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = create(subscribeWithSelector<EditorStorePatched>((set) => initialEditorStore))
 
   return storeHook
 }
 
 const ContextProvider =
-  (storeHook: UseStore<EditorStorePatched>) =>
+  (storeHook: UtopiaStoreAPI) =>
   ({ children }: { children: React.ReactNode }) => {
     return (
-      <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
+      <EditorStateContext.Provider value={{ useStore: storeHook }}>
         {children}
       </EditorStateContext.Provider>
     )
@@ -53,7 +48,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
+    const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -81,7 +76,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
+    const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -116,7 +111,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
+    const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -197,7 +192,7 @@ describe('useSelectorWithCallback', () => {
       },
     )
 
-    const { result, rerender } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
+    const { result, rerender } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(

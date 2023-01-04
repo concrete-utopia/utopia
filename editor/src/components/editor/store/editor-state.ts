@@ -170,6 +170,7 @@ import {
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github'
+import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 
 const ObjectPathImmutable: any = OPI
 
@@ -236,7 +237,7 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
-  themeConfig: Theme | null
+  themeConfig: ThemeSetting | null
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
@@ -373,7 +374,7 @@ export function isGithubListingPullRequestsForBranch(
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
-  themeConfig: 'light',
+  themeConfig: 'system',
   githubState: {
     authenticated: false,
   },
@@ -570,8 +571,8 @@ export function designerFile(filename: string): DesignerFile {
   }
 }
 
-export type Theme = 'light' | 'dark'
-export const DefaultTheme: Theme = 'light'
+export type ThemeSetting = 'light' | 'dark' | 'system'
+export const DefaultTheme: ThemeSetting = 'system'
 
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
@@ -836,6 +837,7 @@ export interface EditorStateCanvasControls {
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
+  parentOutlineHighlight: ElementPath | null
 }
 
 export function editorStateCanvasControls(
@@ -846,6 +848,7 @@ export function editorStateCanvasControls(
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
+  parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -855,6 +858,7 @@ export function editorStateCanvasControls(
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
+    parentOutlineHighlight: parentOutlineHighlight,
   }
 }
 
@@ -2192,6 +2196,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
@@ -2511,6 +2516,7 @@ export function editorModelFromPersistentModel(
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
@@ -3212,7 +3218,12 @@ export function getElementFromProjectContents(
 }
 
 export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
-  return userConfiguration.themeConfig ?? DefaultTheme
+  const currentTheme = userConfiguration.themeConfig ?? DefaultTheme
+  if (currentTheme === 'system') {
+    return getPreferredColorScheme()
+  } else {
+    return currentTheme
+  }
 }
 
 export function getNewSceneName(editor: EditorState): string {

@@ -1961,6 +1961,12 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
+    if (action.unlessMode === editor.mode.type) {
+      // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
+      // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
+      // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
+      return clearDragState(editor, derived, false)
+    }
     return clearDragState(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -4694,7 +4700,7 @@ export const UPDATE_FNS = {
     }
 
     // Side effect - update the setting in VS Code
-    void sendSetVSCodeTheme(action.theme)
+    void sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
 
     // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
