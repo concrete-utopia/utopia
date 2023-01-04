@@ -31,13 +31,25 @@ let currentKeyDownEventHandler: KeyboardHandlerUnknown | null = null
 let keyUpHandlers: Array<KeyboardHandlerActions> = []
 let currentKeyUpEventHandler: KeyboardHandlerUnknown | null = null
 
+function eventListenerOptionsForEvent(
+  eventName: keyof WindowEventMap,
+): boolean | EventListenerOptions | undefined {
+  switch (eventName) {
+    case 'mousedown':
+    case 'mouseup':
+      return true
+    default:
+      return undefined
+  }
+}
+
 // Removes an event handler if it exists.
 function removeHandler<K extends keyof WindowEventMap>(
   eventName: K,
   handler: EventHandler<K, unknown> | null,
 ): void {
   if (handler != null) {
-    window.removeEventListener(eventName, handler, true)
+    window.removeEventListener(eventName, handler, eventListenerOptionsForEvent(eventName))
   }
 }
 
@@ -48,17 +60,20 @@ function createHandler<K extends keyof WindowEventMap>(
   editorStoreRef: EditorStoreRef,
   eventName: K,
   handlers: Array<EventHandler<K, Array<EditorAction>>>,
-): EventHandler<K, unknown> {
-  const windowEventHandler = (event: WindowEventMap[K]) => {
-    const collatedActions = handlers.flatMap((handler) => {
-      return handler.bind(window)(event)
-    })
-    editorStoreRef.current.dispatch(collatedActions, 'everyone')
-  }
+): EventHandler<K, unknown> | null {
+  if (handlers.length === 0) {
+    return null
+  } else {
+    const windowEventHandler = (event: WindowEventMap[K]) => {
+      const collatedActions = handlers.flatMap((handler) => {
+        return handler.bind(window)(event)
+      })
+      editorStoreRef.current.dispatch(collatedActions, 'everyone')
+    }
 
-  const capture = eventName === 'mousedown' || eventName === 'mouseup' ? true : undefined
-  window.addEventListener(eventName, windowEventHandler, capture)
-  return windowEventHandler
+    window.addEventListener(eventName, windowEventHandler, eventListenerOptionsForEvent(eventName))
+    return windowEventHandler
+  }
 }
 
 // Whenever the global event handler arrays change, this should be invoked to remove
