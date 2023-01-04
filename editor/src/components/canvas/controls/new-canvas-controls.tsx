@@ -331,16 +331,21 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       return []
     }
     return Object.keys(props.editor.allElementProps)
-      .filter(
-        (p) =>
+      .filter((p) => {
+        const metadata = componentMetadata[p]
+        if (metadata == null) {
+          return false
+        }
+        return (
           MetadataUtils.targetTextEditable(componentMetadata, EP.fromString(p)) &&
           ['hasOnlyTextChildren', 'supportsChildren'].includes(
             MetadataUtils.targetElementSupportsChildrenAlsoText(
               props.editor.projectContents,
-              componentMetadata[p],
+              metadata,
             ),
-          ),
-      )
+          )
+        )
+      })
       .map((p) => {
         const elementPath = EP.fromString(p)
         const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, componentMetadata)
