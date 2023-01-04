@@ -1,11 +1,7 @@
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
-import {
-  pullLozenge,
-  pushLozenge,
-  mergeConflictLozenge,
-  navigatorItemHighlighted,
-} from './subthemes'
+import { darkInversePartial, darkNeutralPartial } from './darkPartials'
+import { luminousPartial } from './partialThemes'
 import { ThemeObject } from './types'
 
 const darkBase = {
@@ -112,12 +108,14 @@ export const dark: ThemeObject = {
   ...darkPrimitives,
   ...darkErrorStates,
 
-  pullLozenge,
-  pushLozenge,
-  mergeConflictLozenge,
-  navigatorItemHighlighted,
+  iconColor: createUtopiColor('main'),
+  error: createUtopiColor('rgba(253,26,79,1)'),
 
-  // subThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
+  neutral: darkNeutralPartial,
+  inverse: darkInversePartial,
+  luminous: luminousPartial,
+
+  // partialThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
 
   textColor: base.white,
 

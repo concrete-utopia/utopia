@@ -1,15 +1,6 @@
 import { UtopiColor } from '../utopi-color-helpers'
 
-export type SubThemeObject = {
-  name: string
-  iconColor: string
-  bg0: UtopiColor
-  fg0: UtopiColor
-  fg1: UtopiColor
-  fg2: UtopiColor
-  error: UtopiColor
-  warning: UtopiColor
-}
+export type PartialThemeObject = Partial<FlatThemeObject> & { name: string }
 
 type ThemeBase = {
   darkPrimary: UtopiColor
@@ -113,6 +104,8 @@ export type FlatThemeObject = ThemeOpacities &
   ThemeErrorStates &
   ThemePrimitives &
   ThemeBase & {
+    iconColor: UtopiColor
+    error: UtopiColor
     textColor: UtopiColor
 
     // big sections
@@ -232,11 +225,10 @@ export type FlatThemeObject = ThemeOpacities &
     codeEditorGrid: UtopiColor
   }
 
-export type SubThemesParent = {
-  pullLozenge: SubThemeObject
-  pushLozenge: SubThemeObject
-  mergeConflictLozenge: SubThemeObject
-  navigatorItemHighlighted: SubThemeObject
+export type PartialThemesParent = {
+  neutral: PartialThemeObject
+  inverse: PartialThemeObject
+  luminous: PartialThemeObject
 }
 
-export type ThemeObject = FlatThemeObject & SubThemesParent
+export type ThemeObject = FlatThemeObject & PartialThemesParent

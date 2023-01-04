@@ -4,11 +4,15 @@ import { useEditorState } from '../../components/editor/store/store-hook'
 import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
 import { getPreferredColorScheme, Theme } from './theme'
 import { mapToArray, objectFilter } from '../../core/shared/object-utils'
-import { generateCssVariablesFromThemeObject, ThemeVariableObject } from './theme/theme-helpers'
+import {
+  generateCssVariablesFromThemeObject,
+  ThemeVariableObject,
+  getIconColor,
+  IcnColorOrNot,
+} from './theme/theme-helpers'
 import { dark } from './theme/dark'
 import { light } from './theme/light'
 import { mapDropNulls } from '../../core/shared/array-utils'
-import { SubThemeObject } from './theme/types'
 
 export const ColorThemeComponent = React.memo(() => {
   const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
@@ -47,14 +51,14 @@ export const ColorThemeComponent = React.memo(() => {
     (value) => typeof value === 'string',
     themeVariables,
   )
-  const subThemesObject = objectFilter<ThemeVariableObject>(
+  const partialThemesObject = objectFilter<ThemeVariableObject>(
     (value) => typeof value !== 'string',
     themeVariables,
   )
 
-  const subThemes = mapDropNulls(
+  const partialThemes = mapDropNulls(
     (value) => (typeof value === 'string' ? null : value),
-    mapToArray((value, key) => value, subThemesObject),
+    mapToArray((value, key) => value, partialThemesObject),
   )
 
   return (
@@ -66,31 +70,25 @@ export const ColorThemeComponent = React.memo(() => {
       }, mainThemeVars)}
       {'}'}
       {/* Classes with variables based on the subthemes */}
-      {subThemes.map((subTheme) => {
+      {partialThemes.map((partialTheme) => {
         return (
-          `.${subTheme.name} {` +
+          `.${partialTheme.name} {` +
           mapToArray((value, variable) => {
             if (variable === 'name') {
               return ''
+            } else if (variable === 'iconColor') {
+              if (IcnColorOrNot(value)) {
+                return `${variable}:${getIconColor(value, currentTheme)}`
+              } else {
+                return `${variable}:main`
+              }
             } else {
               return `${variable}:${value};`
             }
-          }, subTheme).join('\n') +
+          }, partialTheme).join('\n') +
           `\n}`
         )
-      }, subThemes)}
+      }, partialThemes)}
     </style>
   )
 })
-
-interface AlternateThemeProps {
-  theme?: SubThemeObject
-  active?: boolean
-}
-
-// TODO: Add context containing icon color, etc.
-export const AltColorThemeProvider = React.memo(
-  ({ theme, active = true, children }: React.PropsWithChildren<AlternateThemeProps>) => {
-    return <div className={active && theme != null ? theme.name : ''}>{children}</div>
-  },
-)

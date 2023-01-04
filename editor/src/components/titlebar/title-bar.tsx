@@ -5,7 +5,6 @@ import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
 import { unless, when } from '../../utils/react-conditionals'
 import {
-  AltColorThemeProvider,
   Avatar,
   Button,
   colorTheme,
@@ -24,8 +23,10 @@ import {
 } from '../editor/actions/action-creators'
 import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { RoundButton } from './buttons'
+import { RoundButton, PartialThemeButton } from './buttons'
 import { TestMenu } from './test-menu'
+import { ThemeProvider } from '../../uuiui/styles/theme-provider'
+import { luminousPartial } from '../../uuiui/styles/theme/partialThemes'
 
 interface ProjectTitleProps {}
 
@@ -114,6 +115,27 @@ const TitleBar = React.memo(() => {
     openFile(firstConflictFilename)
   }, [openLeftPaneltoGithubTab, openFile, treeConflicts])
 
+  const SampleTextComponent = ({ children, primary }: any) => {
+    const fgColor = primary === true ? colorTheme.error.value : colorTheme.fg2.value
+    return (
+      <div style={{ color: fgColor }}>
+        Some Sample Text
+        <Icons.Branch />
+      </div>
+    )
+  }
+
+  const SampleComponent = ({ children, active }: any) => {
+    const currentTheme = active === true ? luminousPartial : undefined
+    return (
+      <ThemeProvider theme={currentTheme}>
+        <div style={{ backgroundColor: colorTheme.bg0.value, color: colorTheme.fg0.value }}>
+          {children}
+        </div>
+      </ThemeProvider>
+    )
+  }
+
   return (
     <SimpleFlexRow
       style={{
@@ -165,7 +187,7 @@ const TitleBar = React.memo(() => {
               <RoundButton
                 color={colorTheme.errorBgSolid.value}
                 onClick={showMergeConflict}
-                theme={colorTheme.mergeConflictLozenge}
+                theme={colorTheme.luminous}
               >
                 {
                   <Icons.WarningTriangle
@@ -176,6 +198,33 @@ const TitleBar = React.memo(() => {
                 <>Merge Conflicts</>
               </RoundButton>,
             )}
+
+            {/* *************** */}
+            {/* EXAMPLE CODE */}
+            {/* *************** */}
+            <PartialThemeButton
+              style={{ backgroundColor: colorTheme.warningBgSolid.value }}
+              onClick={showMergeConflict}
+              theme={colorTheme.luminous}
+            >
+              Pull Lozenge
+            </PartialThemeButton>
+            <PartialThemeButton
+              style={{ backgroundColor: colorTheme.primary.value }}
+              onClick={showMergeConflict}
+              theme={colorTheme.luminous}
+            >
+              Push Lozenge
+            </PartialThemeButton>
+            <SampleComponent active={true}>
+              <SampleTextComponent primary={true} />
+              <span style={{ color: colorTheme.error.value }}>Sample Span!</span>
+              <Icons.Branch />
+            </SampleComponent>
+            {/* *************** */}
+            {/* END EXAMPLE CODE */}
+            {/* *************** */}
+
             {when(
               hasDownstreamChanges,
               <RoundButton
