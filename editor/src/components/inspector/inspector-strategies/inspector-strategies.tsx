@@ -1,9 +1,5 @@
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasCommand } from '../../canvas/commands/commands'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { EditorDispatch } from '../../editor/action-types'
 import {
   fillContainerApplicable,
   filterKeepFlexContainers,
@@ -11,10 +7,10 @@ import {
   FlexJustifyContent,
   hugContentsApplicable,
 } from '../inspector-common'
-import { applyCommandsAction } from '../../editor/actions/action-creators'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { InspectorStrategy } from './inspector-strategy'
+import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -73,6 +69,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
 ]
 
 export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
+  removeFlexConvertToAbsolute,
   (metadata, elementPaths) => {
     const elements = filterKeepFlexContainers(metadata, elementPaths)
 
