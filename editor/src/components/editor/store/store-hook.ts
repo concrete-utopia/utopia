@@ -15,6 +15,8 @@ import {
   CanvasOffsetSubstate,
   CanvasSubstate,
   DerivedState,
+  EditorStateCanvas,
+  EditorStateWOScrollOffset,
   EditorStoreFull,
   EditorStorePatched,
   EditorStoreShared,
@@ -273,6 +275,8 @@ export const useSelectorWithCallback =
     }, [api, innerCallback, explainMe])
   }
 
+type FullStoreWOScrollOffset = Omit<EditorStorePatched, 'editor'> & EditorStateWOScrollOffset
+
 type Substates = {
   metadata: MetadataSubstate
   selectedHighlightedViews: SelectedHighlightedViewsSubstate
@@ -283,6 +287,7 @@ type Substates = {
   oldEditor: { editor: OldEditorState }
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   fullOldStore: EditorStorePatched
+  originalStore: EditorStorePatched
 }
 
 type StoreKey = keyof Substates
@@ -422,8 +427,18 @@ export const SubstatePickers: {
     )
   },
   fullOldStore: (store: EditorStorePatched): EditorStorePatched => {
-    return store
+    return {
+      ...store,
+      editor: {
+        ...store.editor,
+        canvas: omit(
+          ['realCanvasOffset', 'roundedCanvasOffset'],
+          store.editor.canvas,
+        ) as EditorStateCanvas,
+      },
+    }
   },
+  originalStore: (store) => store,
 }
 
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
@@ -456,14 +471,18 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
         // const debug = key === 'restOfStore'
         if (!twoLevelNestedEquals(substore.getState(), substates[key])) {
           // console.log('halal', key)
-          substore.setState(substates[key])
+          if (key === 'fullOldStore') {
+            substore.setState(substates['originalStore'])
+          } else {
+            substore.setState(substates[key])
+          }
         } else {
           // console.log('bingo', key)
         }
       }, substores)
     },
     getState: (): EditorStorePatched => {
-      return substores.fullOldStore.getState()
+      return substores.originalStore.getState()
     },
     stores: substores,
   }

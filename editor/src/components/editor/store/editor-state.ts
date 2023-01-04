@@ -1275,6 +1275,10 @@ export type EditorSubStates = ProjectContentSubstate &
 
 // FIXME We need to pull out ProjectState from here
 export type EditorState = EditorSubStates['editor'] & OldEditorState
+export type EditorStateWOScrollOffset = (ProjectContentSubstate &
+  MetadataSubstate &
+  SelectedHighlightedViewsSubstate &
+  CanvasSubstate) & { editor: OldEditorState }
 
 export interface OldEditorState {
   id: string | null
