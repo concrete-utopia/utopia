@@ -16,6 +16,7 @@ import {
   defaultDivElement,
   defaultImgElement,
   defaultSpanElement,
+  defaultSpanElementWithPlaceholder,
 } from './defaults'
 import { EditorModes } from './editor-modes'
 import { useEditorState, useRefEditorState } from './store/store-hook'
@@ -42,7 +43,10 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
   const dispatch = useEditorState((store) => store.dispatch, 'useEnterTextEditMode dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const textInsertCallback = useEnterDrawToInsertForElement(defaultSpanElement)
+  const textInsertCallbackWithoutTextEditing = useEnterDrawToInsertForElement(
+    defaultSpanElementWithPlaceholder,
+  )
+  const textInsertCallbackWithTextEditing = useEnterDrawToInsertForElement(defaultSpanElement)
 
   return React.useCallback(
     (event: React.MouseEvent<Element>): void => {
@@ -50,14 +54,20 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
         MetadataUtils.targetTextEditable(metadataRef.current, v),
       )
       if (!isFeatureEnabled('Text editing')) {
-        textInsertCallback(event, { textEdit: false })
+        textInsertCallbackWithoutTextEditing(event, { textEdit: false })
       } else if (firstTextEditableView == null) {
-        textInsertCallback(event, { textEdit: true })
+        textInsertCallbackWithTextEditing(event, { textEdit: true })
       } else {
         dispatch([switchEditorMode(EditorModes.textEditMode(firstTextEditableView))])
       }
     },
-    [dispatch, selectedViewsRef, metadataRef, textInsertCallback],
+    [
+      dispatch,
+      selectedViewsRef,
+      metadataRef,
+      textInsertCallbackWithoutTextEditing,
+      textInsertCallbackWithTextEditing,
+    ],
   )
 }
 
