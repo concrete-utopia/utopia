@@ -846,7 +846,16 @@ export const MetadataUtils = {
       return false
     }
     const children = MetadataUtils.getChildren(metadata, target)
-    return children.length === 0
+    const hasNonEditableChildren = children
+      .map((c) =>
+        foldEither(
+          () => null,
+          (v) => (isJSXElement(v) ? v.name.baseVariable : null),
+          c.element,
+        ),
+      )
+      .some((e) => e !== 'br')
+    return children.length === 0 || !hasNonEditableChildren
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
