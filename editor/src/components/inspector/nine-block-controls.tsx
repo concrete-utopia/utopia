@@ -26,20 +26,9 @@ type NineKey = `${StartCenterEnd}-${StartCenterEnd}`
 
 const slabSize = (desiredSize: Size, flexDirection: FlexDirection): Size => {
   if (isFlexColumn(flexDirection)) {
-    return size(desiredSize.height, desiredSize.height)
+    return size(desiredSize.height, desiredSize.width)
   }
   return desiredSize
-}
-
-const slabAlignment = (
-  justifyContent: StartCenterEnd,
-  alignItems: StartCenterEnd,
-  flexDirection: FlexDirection,
-): { justifyContent: StartCenterEnd; alignItems: StartCenterEnd } => {
-  if (isFlexColumn(flexDirection)) {
-    return { justifyContent: alignItems, alignItems: justifyContent }
-  }
-  return { justifyContent, alignItems }
 }
 
 const sizeCSSPercent = ({ width, height }: Size): React.CSSProperties => ({
@@ -120,6 +109,16 @@ const isSelectedSelector = createSelector(
     ),
 )
 
+const opacity = (isSelected: boolean, flexDirectionMatches: boolean): number => {
+  if (!flexDirectionMatches) {
+    return 0
+  }
+  if (!isSelected) {
+    return 0.5
+  }
+  return 1
+}
+
 interface NineBlockControlCellProps {
   bgColor: string
   fgColor: string
@@ -163,13 +162,31 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           justifyContent: 'center',
           width: '100%',
           height: '100%',
-          backgroundColor: bgColor,
-          opacity: isSelected ? 1 : 0.5,
+          opacity: opacity(isSelected, flexDirection === 'row'),
         }}
       >
         <Slabs
-          {...slabAlignment(justifyContent, alignItems, flexDirection)}
-          flexDirection={flexDirection}
+          justifyContent={justifyContent}
+          alignItems={alignItems}
+          flexDirection={'row'}
+          bgColor={fgColor}
+        />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          opacity: opacity(isSelected, flexDirection === 'column'),
+        }}
+      >
+        <Slabs
+          justifyContent={alignItems}
+          alignItems={justifyContent}
+          flexDirection={'column'}
           bgColor={fgColor}
         />
       </div>
@@ -224,16 +241,16 @@ export const NineBlockControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+  const flexDirectionRef = useRefEditorState(flexDirectionSelector)
 
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
-      const strategies = isFlexColumn(flexDirection ?? DefaultFlexDirection)
+      const strategies = isFlexColumn(flexDirectionRef.current ?? DefaultFlexDirection)
         ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
         : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
       runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategies)
     },
-    [dispatch, flexDirection, metadataRef, selectedViewsRef],
+    [dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
   )
 
   const callbacks: {
