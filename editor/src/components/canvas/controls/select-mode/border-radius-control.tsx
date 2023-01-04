@@ -54,7 +54,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     mode,
   } = props
 
-  const canvasOffset = useRefEditorState('canvas')(
+  const canvasOffset = useRefEditorState('canvasOffset')(
     (store) => store.editor.canvas.roundedCanvasOffset,
   )
   const { dispatch, scale, hoveredViews, isDragging } = useEditorState('fullOldStore')(

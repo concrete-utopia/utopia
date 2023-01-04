@@ -1253,7 +1253,13 @@ export interface SelectedHighlightedViewsSubstate {
 
 export interface CanvasSubstate {
   editor: {
-    canvas: EditorStateCanvas
+    canvas: Omit<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset'>
+  }
+}
+
+export interface CanvasOffsetSubstate {
+  editor: {
+    canvas: Pick<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset' | 'scale'>
   }
 }
 
@@ -1264,7 +1270,8 @@ export interface DerivedSubstate {
 export type EditorSubStates = ProjectContentSubstate &
   MetadataSubstate &
   SelectedHighlightedViewsSubstate &
-  CanvasSubstate
+  CanvasSubstate &
+  CanvasOffsetSubstate
 
 // FIXME We need to pull out ProjectState from here
 export type EditorState = EditorSubStates['editor'] & OldEditorState

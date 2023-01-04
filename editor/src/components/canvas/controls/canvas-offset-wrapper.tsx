@@ -14,7 +14,7 @@ export const CanvasOffsetWrapper = React.memo((props: { children?: React.ReactNo
 
 export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
-  const canvasOffsetRef = useRefEditorState('canvas')(
+  const canvasOffsetRef = useRefEditorState('canvasOffset')(
     (store) => store.editor.canvas.roundedCanvasOffset,
   )
   const scaleRef = useRefEditorState('canvas')((store) => store.editor.canvas.scale)
@@ -35,7 +35,7 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
     [elementRef, setScaleToo, scaleRef],
   )
 
-  useSelectorWithCallback('canvas')(
+  useSelectorWithCallback('canvasOffset')(
     (store) => store.editor.canvas.roundedCanvasOffset,
     applyCanvasOffset,
   )

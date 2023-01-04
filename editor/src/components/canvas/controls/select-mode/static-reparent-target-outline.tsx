@@ -11,7 +11,7 @@ export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized((
     (store) => store.editor.canvas.scale,
     'FlexReparentTargetIndicator scale',
   )
-  const canvasOffset = useEditorState('canvas')(
+  const canvasOffset = useEditorState('canvasOffset')(
     (store) => store.editor.canvas.realCanvasOffset,
     'FlexReparentTargetIndicator scale',
   )

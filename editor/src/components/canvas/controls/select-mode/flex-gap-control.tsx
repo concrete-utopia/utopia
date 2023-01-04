@@ -77,7 +77,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl dispatch scale',
   )
 
-  const canvasOffset = useRefEditorState('canvas')(
+  const canvasOffset = useRefEditorState('canvasOffset')(
     (store) => store.editor.canvas.roundedCanvasOffset,
   )
 

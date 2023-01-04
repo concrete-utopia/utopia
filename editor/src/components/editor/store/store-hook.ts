@@ -12,6 +12,7 @@ import {
 import { objectMap, omit } from '../../../core/shared/object-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
+  CanvasOffsetSubstate,
   CanvasSubstate,
   DerivedState,
   EditorStorePatched,
@@ -276,6 +277,7 @@ type Substates = {
   selectedHighlightedViews: SelectedHighlightedViewsSubstate
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
+  canvasOffset: CanvasOffsetSubstate
   derived: { derived: DerivedState }
   oldEditor: { editor: OldEditorState }
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
@@ -318,7 +320,18 @@ export const SubstatePickers: {
   canvas: (store: EditorStorePatched): CanvasSubstate => {
     return {
       editor: {
-        canvas: store.editor.canvas,
+        canvas: omit(['realCanvasOffset', 'roundedCanvasOffset'], store.editor.canvas),
+      },
+    }
+  },
+  canvasOffset: (store: EditorStorePatched): CanvasOffsetSubstate => {
+    return {
+      editor: {
+        canvas: {
+          realCanvasOffset: store.editor.canvas.realCanvasOffset,
+          roundedCanvasOffset: store.editor.canvas.roundedCanvasOffset,
+          scale: store.editor.canvas.scale,
+        },
       },
     }
   },

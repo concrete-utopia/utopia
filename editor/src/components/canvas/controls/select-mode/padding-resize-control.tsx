@@ -87,7 +87,7 @@ const PaddingResizeControlI = React.memo(
       'PaddingResizeControl scale, dispatch, isDragging',
     )
 
-    const canvasOffsetRef = useRefEditorState('canvas')(
+    const canvasOffsetRef = useRefEditorState('canvasOffset')(
       (store) => store.editor.canvas.roundedCanvasOffset,
     )
     const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)

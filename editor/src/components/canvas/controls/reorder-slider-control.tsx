@@ -233,7 +233,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
 
   const dispatch = useRefEditorState('restOfStore')((store) => store.dispatch)
   const scaleRef = useRefEditorState('canvas')((store) => store.editor.canvas.scale)
-  const canvasOffsetRef = useRefEditorState('canvas')(
+  const canvasOffsetRef = useRefEditorState('canvasOffset')(
     (store) => store.editor.canvas.realCanvasOffset,
   )
 

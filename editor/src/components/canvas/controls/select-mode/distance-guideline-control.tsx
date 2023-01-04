@@ -51,7 +51,7 @@ const DistanceGuidelineControlInner = React.memo(() => {
     (store) => store.editor.canvas.scale,
     'DistanceGuidelineControl scale',
   )
-  const canvasOffset = useEditorState('canvas')(
+  const canvasOffset = useEditorState('canvasOffset')(
     (store) => store.editor.canvas.realCanvasOffset,
     'DistanceGuidelineControl canvasOffset',
   )

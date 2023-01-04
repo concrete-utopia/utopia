@@ -141,7 +141,7 @@ const ResizePoint = React.memo(
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
-    const canvasOffsetRef = useRefEditorState('canvas')(
+    const canvasOffsetRef = useRefEditorState('canvasOffset')(
       (store) => store.editor.canvas.roundedCanvasOffset,
     )
 
@@ -218,7 +218,7 @@ const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
-    const canvasOffsetRef = useRefEditorState('canvas')(
+    const canvasOffsetRef = useRefEditorState('canvasOffset')(
       (store) => store.editor.canvas.roundedCanvasOffset,
     )
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()

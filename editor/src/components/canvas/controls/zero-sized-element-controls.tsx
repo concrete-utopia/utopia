@@ -41,7 +41,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
       (store) => store.editor.selectedViews,
       'ZeroSizedElementControls selectedElements',
     )
-    const canvasOffset = useEditorState('canvas')(
+    const canvasOffset = useEditorState('canvasOffset')(
       (store) => store.editor.canvas.realCanvasOffset,
       'ZeroSizedElementControls canvasOffset',
     )

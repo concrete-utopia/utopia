@@ -36,7 +36,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
     'LayoutParentControl dispatch',
   )
 
-  const { canvasOffset, scale } = useEditorState('canvas')((store) => {
+  const { canvasOffset, scale } = useEditorState('canvasOffset')((store) => {
     return {
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
       scale: store.editor.canvas.scale,

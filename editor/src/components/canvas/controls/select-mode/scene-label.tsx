@@ -68,7 +68,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel frame',
   )
 
-  const canvasOffset = useEditorState('canvas')(
+  const canvasOffset = useEditorState('canvasOffset')(
     (store) => store.editor.canvas.realCanvasOffset,
     'SceneLabel canvasOffset',
   )

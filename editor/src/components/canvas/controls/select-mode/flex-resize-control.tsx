@@ -113,7 +113,7 @@ const ResizeEdge = React.memo(
     const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
       (store) => store.editor.selectedViews,
     )
-    const canvasOffsetRef = useRefEditorState('canvas')(
+    const canvasOffsetRef = useRefEditorState('canvasOffset')(
       (store) => store.editor.canvas.roundedCanvasOffset,
     )
 
