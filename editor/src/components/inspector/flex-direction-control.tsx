@@ -1,17 +1,26 @@
+/** @jsxImportSource zustand-signal */
+
 import React from 'react'
+import { $ } from 'zustand-signal'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { EditorState, EditorStorePatched } from '../editor/store/editor-state'
+import { EditorStateContext, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { filterKeepFlexContainers } from './inspector-common'
+import { detectFlexDirection, filterKeepFlexContainers } from './inspector-common'
 import {
   removeFlexDirectionStrategies,
   runStrategies,
   updateFlexDirectionStrategies,
 } from './inspector-strategies'
+
+const flexDirectionSelector = (store: EditorStorePatched) =>
+  selectedViewsSelector(store).length === 0
+    ? 'row'
+    : detectFlexDirection(metadataSelector(store), selectedViewsSelector(store))
 
 export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
   `FlexDirectionToggle-${direction}`
@@ -20,8 +29,11 @@ interface FlexDirectionToggleProps {
   flexDirection: FlexDirection | null
 }
 
-export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {
+export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
+
+  const context = React.useContext(EditorStateContext)
+
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const nFlexContainers = useEditorState(
@@ -73,7 +85,11 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
-          backgroundColor: (flexDirection === 'row' ? colorTheme.fg8 : colorTheme.fg9).value,
+          backgroundColor: $(
+            context!.useStore,
+            (state) =>
+              (flexDirectionSelector(state) === 'row' ? colorTheme.fg8 : colorTheme.fg9).value,
+          ),
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'center',
@@ -88,7 +104,11 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',
-          backgroundColor: (flexDirection === 'column' ? colorTheme.fg8 : colorTheme.fg9).value,
+          backgroundColor: $(
+            context!.useStore,
+            (state) =>
+              (flexDirectionSelector(state) === 'column' ? colorTheme.fg8 : colorTheme.fg9).value,
+          ),
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'center',

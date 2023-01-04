@@ -264,6 +264,7 @@ specifiers:
   webpack-node-externals: 1.7.2
   xstate: 4.23.1
   zustand: 4.1.5
+  zustand-signal: ^0.1.0
 
 dependencies:
   '@babel/code-frame': 7.14.5
@@ -386,6 +387,7 @@ dependencies:
   uuid: 8.3.2
   xstate: 4.23.1
   zustand: 4.1.5_immer@3.2.0+react@18.1.0
+  zustand-signal: 0.1.0_react@18.1.0+zustand@4.1.5
 
 optionalDependencies:
   fsevents: 2.1.2
@@ -5936,7 +5938,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -16373,6 +16375,16 @@ packages:
       synchronous-promise: 2.0.15
       toposort: 2.0.2
     dev: true
+
+  /zustand-signal/0.1.0_react@18.1.0+zustand@4.1.5:
+    resolution: {integrity: sha512-gmO2X6PXxPtV+X2KJJrTwZ/sZK2Vo/nTfsy7/DiCFeFszzBKCGTDeuKHBnq6Cm5r5vEdQIfyUJqmSuJGW6ZlbQ==}
+    peerDependencies:
+      react: '>=17.0.0'
+      zustand: '>=4.0.0'
+    dependencies:
+      react: 18.1.0
+      zustand: 4.1.5_immer@3.2.0+react@18.1.0
+    dev: false
 
   /zustand/3.7.1_react@18.1.0:
     resolution: {integrity: sha512-wHBCZlKj+bg03/hP+Tzv24YhnqqP8MCeN9ECPDXoF01062SIbnfl3j9O0znkDw1lNTY0a8WN3F///a0UhhaEqg==}
