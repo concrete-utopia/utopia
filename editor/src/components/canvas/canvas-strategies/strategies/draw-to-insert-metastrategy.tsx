@@ -123,7 +123,16 @@ function getDrawToInsertStrategyName(
   }
 }
 
-function drawToInsertStrategyFactory(
+export function drawToInsertFitness(interactionSession: InteractionSession | null): boolean {
+  return (
+    interactionSession != null &&
+    ((interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
+      interactionSession.interactionData.type === 'HOVER')
+  )
+}
+
+export function drawToInsertStrategyFactory(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
@@ -168,13 +177,7 @@ function drawToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness:
-      interactionSession != null &&
-      ((interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
-        interactionSession.interactionData.type === 'HOVER')
-        ? fitness
-        : 0,
+    fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
