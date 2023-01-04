@@ -15,6 +15,7 @@ import {
   CanvasOffsetSubstate,
   CanvasSubstate,
   DerivedState,
+  EditorStoreFull,
   EditorStorePatched,
   EditorStoreShared,
   MetadataSubstate,
@@ -408,7 +409,17 @@ export const SubstatePickers: {
     }
   },
   restOfStore: (store: EditorStorePatched): Omit<EditorStorePatched, 'editor' | 'derived'> => {
-    return omit(['editor', 'derived'], store)
+    return omit(
+      [
+        'editor',
+        'derived',
+        'unpatchedEditor',
+        'patchedEditor',
+        'unpatchedDerived',
+        'patchedDerived',
+      ],
+      store as EditorStoreFull & EditorStorePatched,
+    )
   },
   fullOldStore: (store: EditorStorePatched): EditorStorePatched => {
     return store
@@ -439,8 +450,10 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
 
   return {
     setState: (editorStore: EditorStorePatched): void => {
+      // console.log('--------------')
       const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
+        // const debug = key === 'restOfStore'
         if (!twoLevelNestedEquals(substore.getState(), substates[key])) {
           // console.log('halal', key)
           substore.setState(substates[key])
