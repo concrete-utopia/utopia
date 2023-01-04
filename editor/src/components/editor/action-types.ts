@@ -180,6 +180,7 @@ export type UpdateEditorMode = {
 export type SwitchEditorMode = {
   action: 'SWITCH_EDITOR_MODE'
   mode: Mode
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit'
 }
 
 export interface ToggleCanvasIsLive {

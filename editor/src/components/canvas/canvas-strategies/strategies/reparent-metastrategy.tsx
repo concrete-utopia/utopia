@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  ElementSupportsChildren,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
@@ -44,12 +47,14 @@ export function getApplicableReparentFactories(
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
   allowSmallerParent: AllowSmallerParent,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(
     canvasState,
     cmdPressed,
     pointOnCanvas,
     allowSmallerParent,
+    elementSupportsChildren,
   )
 
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
@@ -110,6 +115,7 @@ export function getApplicableReparentFactories(
 function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): ReparentTarget | null {
   if (isInsertionSubjects(canvasState.interactionTarget)) {
     return null
@@ -137,6 +143,7 @@ function getStartingTargetParentsToFilterOutInner(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     allowSmallerParent,
+    elementSupportsChildren,
   )
 }
 

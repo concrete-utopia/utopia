@@ -340,10 +340,14 @@ export function updateEditorMode(mode: Mode): UpdateEditorMode {
   }
 }
 
-export function switchEditorMode(mode: Mode): SwitchEditorMode {
+export function switchEditorMode(
+  mode: Mode,
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit',
+): SwitchEditorMode {
   return {
     action: 'SWITCH_EDITOR_MODE',
     mode: mode,
+    unlessMode: unlessMode,
   }
 }
 
@@ -479,9 +483,14 @@ export function enableInsertModeForJSXElement(
   uid: string,
   importsToAdd: Imports,
   size: Size | null,
+  options?: {
+    textEdit?: boolean
+  },
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
+    EditorModes.insertMode([
+      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+    ]),
   )
 }
 

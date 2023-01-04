@@ -29,7 +29,7 @@ export function cancelInsertModeActions(
       throw new Error(`Unhandled ${handleInteractionSession}.`)
   }
   // Common actions across all cases.
-  result.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
+  result.push(EditorActions.switchEditorMode(EditorModes.selectMode(), 'textEdit'))
   result.push(EditorActions.setRightMenuTab(RightMenuTab.Inspector))
   result.push(EditorActions.clearHighlightedViews())
   result.push(CanvasActions.clearDragState(false))

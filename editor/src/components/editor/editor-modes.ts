@@ -15,6 +15,7 @@ export interface InsertionSubject {
   defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
+  textEdit: boolean
 }
 
 export function insertionSubject(
@@ -23,6 +24,7 @@ export function insertionSubject(
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
+  textEdit: boolean,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -30,6 +32,7 @@ export function insertionSubject(
     defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
+    textEdit: textEdit,
   }
 }
 
