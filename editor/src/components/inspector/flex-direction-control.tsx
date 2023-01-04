@@ -23,6 +23,8 @@ const nFlexContainersSelector = createSelector(
   selectedViewsSelector,
   numberOfFlexContainers,
 )
+export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
+  `FlexDirectionToggle-${direction}`
 
 export const FlexDirectionToggle = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
@@ -76,6 +78,7 @@ export const FlexDirectionToggle = React.memo(() => {
       }}
     >
       <div
+        data-testid={FlexDirectionToggleTestId('row')}
         onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
@@ -90,6 +93,7 @@ export const FlexDirectionToggle = React.memo(() => {
         <Icons.FlexRow />
       </div>
       <div
+        data-testid={FlexDirectionToggleTestId('column')}
         onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',

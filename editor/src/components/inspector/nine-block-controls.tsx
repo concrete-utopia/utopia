@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
+import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { EditorStorePatched } from '../editor/store/editor-state'
@@ -14,6 +15,8 @@ import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
   detectFlexDirection,
+  FlexAlignment,
+  FlexJustifyContent,
   isFlexColumn,
   justifyContentAlignItemsEquals,
   JustifyContentFlexAlignemt,
@@ -22,7 +25,17 @@ import {
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
 
+export const NineBlockTestId = (
+  alignItems: FlexAlignment,
+  justifyContent: FlexJustifyContent,
+): string => `NineBlockTestId-${alignItems}-${justifyContent}`
+
 type NineKey = `${StartCenterEnd}-${StartCenterEnd}`
+
+export const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
+  ['flex-start', 'center', 'flex-end'],
+  ['flex-start', 'center', 'flex-end'],
+)
 
 const slabSize = (desiredSize: Size, flexDirection: FlexDirection): Size => {
   if (isFlexColumn(flexDirection)) {
@@ -145,6 +158,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   return (
     <div
       onClick={onClick}
+      data-testid={NineBlockTestId(alignItems, justifyContent)}
       style={{
         display: 'flex',
         padding: 1,

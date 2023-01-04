@@ -30,6 +30,7 @@ import {
   defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
+  defaultSpanElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
@@ -693,7 +694,7 @@ export function handleKeyDown(
         if (firstTextEditableView == null) {
           actions.push(
             EditorActions.enableInsertModeForJSXElement(
-              defaultDivElement(newUID),
+              defaultSpanElement(newUID),
               newUID,
               {},
               null,

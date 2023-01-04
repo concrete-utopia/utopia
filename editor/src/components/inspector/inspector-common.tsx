@@ -4,6 +4,7 @@ import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
+import { assertNever } from '../../core/shared/utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -74,7 +75,7 @@ type Detect<T> = (
 
 export const DefaultFlexDirection: FlexDirection = 'row'
 
-function detectFlexDirectionOne(
+export function detectFlexDirectionOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): FlexDirection | null {
@@ -195,4 +196,17 @@ function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): bool
   }
 
   return objects.slice(1).every((obj) => areEqual(objects[0], obj))
+}
+
+export type Axis = 'horizontal' | 'vertical'
+
+export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
+  switch (axis) {
+    case 'horizontal':
+      return 'width'
+    case 'vertical':
+      return 'height'
+    default:
+      assertNever(axis)
+  }
 }
