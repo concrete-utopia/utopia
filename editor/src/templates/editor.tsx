@@ -607,6 +607,8 @@ export class Editor {
     const result = runDispatch()
     if (MeasureSelectors) {
       // eslint-disable-next-line no-console
+      console.log('Number of Selectors called', Object.keys(SelectorTimings.current).length)
+      // eslint-disable-next-line no-console
       console.table(SelectorTimings.current)
     }
     if (PerformanceMarks) {

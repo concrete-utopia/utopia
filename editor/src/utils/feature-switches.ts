@@ -7,6 +7,7 @@ export type FeatureName =
   | 'Debug – Performance Marks (Slow)'
   | 'Debug – Performance Marks (Fast)'
   | 'Debug – Measure Selectors'
+  | 'Selectors Split'
   | 'Dragging Reparents By Default'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
@@ -22,6 +23,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug – Performance Marks (Slow)',
   'Debug – Performance Marks (Fast)',
   'Debug – Measure Selectors',
+  'Selectors Split',
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
@@ -35,6 +37,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug – Performance Marks (Slow)': false,
   'Debug – Performance Marks (Fast)': false,
   'Debug – Measure Selectors': false,
+  'Selectors Split': true,
   'Dragging Reparents By Default': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),

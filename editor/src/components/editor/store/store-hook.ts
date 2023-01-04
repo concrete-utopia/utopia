@@ -4,7 +4,7 @@ import { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import create from 'zustand'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import { shallowEqual } from '../../../core/shared/equality-utils'
+import { oneLevelNestedEquals, shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap, omit } from '../../../core/shared/object-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
@@ -408,7 +408,11 @@ export interface StoresAndSetState {
 export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
   function createSubstates(editorStore: EditorStorePatched): Substates {
     return objectMap((picker, key) => {
-      return picker(editorStore)
+      if (isFeatureEnabled('Selectors Split')) {
+        return picker(editorStore)
+      } else {
+        return editorStore
+      }
     }, SubstatePickers) as Substates // bad type
   }
   const initialSubstates = createSubstates(initialEditorStore)
@@ -420,7 +424,9 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
     setState: (editorStore: EditorStorePatched): void => {
       const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
-        substore.setState(substates[key])
+        if (!oneLevelNestedEquals(substore.getState(), substates[key])) {
+          substore.setState(substates[key])
+        }
       }, substores)
     },
     getState: (): EditorStorePatched => {
