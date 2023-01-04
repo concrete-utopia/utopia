@@ -22,6 +22,7 @@ import {
   emptyComments,
   jsxTextBlock,
   JSXTextBlock,
+  JSXElementChildren,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -344,6 +345,10 @@ export function renderCoreElement(
   }
 }
 
+export function filterJSXElementChildIsTextOrNewline(c: JSXElementChild): c is JSXTextBlock {
+  return c.type === 'JSX_TEXT_BLOCK' || (c.type === 'JSX_ELEMENT' && c.name.baseVariable === 'br')
+}
+
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
@@ -458,11 +463,7 @@ function renderJSXElement(
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
       const text = childrenWithNewTextBlock
-        .filter(
-          (c): c is JSXTextBlock =>
-            c.type === 'JSX_TEXT_BLOCK' ||
-            (c.type === 'JSX_ELEMENT' && c.name.baseVariable === 'br'),
-        )
+        .filter(filterJSXElementChildIsTextOrNewline)
         .map((c) => (c.text != null ? c.text.trim() : '\n'))
         .join('')
       const textContent = unescapeHTML(text ?? '')
