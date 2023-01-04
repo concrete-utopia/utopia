@@ -59,6 +59,8 @@ import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canva
 import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
+import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
+import { TextEditableControl } from './text-editable-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -240,6 +242,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     (store) => store.strategyState.currentStrategy != null,
     'currentStrategy',
   )
+  const strategy = useEditorState((store) => store.strategyState, 'strategy')
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
@@ -323,6 +326,43 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       : []
   }
 
+  const renderTextEditableControls = () => {
+    if (strategy?.currentStrategy !== DRAW_TO_INSERT_TEXT_STRATEGY_ID) {
+      return []
+    }
+    return Object.keys(props.editor.allElementProps)
+      .filter((p) => {
+        const metadata = componentMetadata[p]
+        if (metadata == null) {
+          return false
+        }
+        return (
+          MetadataUtils.targetTextEditable(componentMetadata, EP.fromString(p)) &&
+          ['hasOnlyTextChildren', 'supportsChildren'].includes(
+            MetadataUtils.targetElementSupportsChildrenAlsoText(
+              props.editor.projectContents,
+              metadata,
+            ),
+          )
+        )
+      })
+      .map((p) => {
+        const elementPath = EP.fromString(p)
+        const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, componentMetadata)
+        if (frame == null) {
+          return null
+        }
+        return (
+          <TextEditableControl
+            key={`text-editable-control-${EP.toComponentId(elementPath)}`}
+            frame={frame}
+            scale={props.editor.canvas.scale}
+            canvasOffset={props.canvasOffset}
+          />
+        )
+      })
+  }
+
   const resizeStatus = getResizeStatus()
 
   return (
@@ -354,6 +394,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isSelectMode(props.editor.mode) && !anyStrategyActive, <PinLines />)}
           {when(isSelectMode(props.editor.mode), <InsertionControls />)}
           {renderHighlightControls()}
+          {renderTextEditableControls()}
           {unless(dragging, <LayoutParentControl />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
           <GuidelineControls />

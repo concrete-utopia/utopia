@@ -20,6 +20,8 @@ import {
 import { detectAreElementsFlexContainers } from './inspector-common'
 import { runStrategies } from './inspector-strategies/inspector-strategy'
 
+export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'
+
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
@@ -81,11 +83,19 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
         <span>New Layout System</span>
       </FlexRow>
       {isFlexLayoutedContainer ? (
-        <SquareButton highlight onClick={removeLayoutSystem}>
+        <SquareButton
+          data-testid={AddRemoveLayouSystemControlTestId()}
+          highlight
+          onClick={removeLayoutSystem}
+        >
           <FunctionIcons.Remove />
         </SquareButton>
       ) : (
-        <SquareButton highlight onClick={addLayoutSystem}>
+        <SquareButton
+          data-testid={AddRemoveLayouSystemControlTestId()}
+          highlight
+          onClick={addLayoutSystem}
+        >
           <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
         </SquareButton>
       )}

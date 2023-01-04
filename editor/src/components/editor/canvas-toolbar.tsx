@@ -31,7 +31,7 @@ import {
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
-  useEnterDrawToInsertForSpan,
+  useEnterTextEditMode,
 } from './insert-callbacks'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
@@ -47,7 +47,7 @@ export const CanvasToolbar = React.memo(() => {
   const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
   const spanInsertion = useCheckInsertModeForElementType('span')
-  const insertSpanCallback = useEnterDrawToInsertForSpan()
+  const insertSpanCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
