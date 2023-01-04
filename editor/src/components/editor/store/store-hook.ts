@@ -4,7 +4,11 @@ import { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import create from 'zustand'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import { oneLevelNestedEquals, shallowEqual } from '../../../core/shared/equality-utils'
+import {
+  oneLevelNestedEquals,
+  shallowEqual,
+  twoLevelNestedEquals,
+} from '../../../core/shared/equality-utils'
 import { objectMap, omit } from '../../../core/shared/object-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
@@ -424,8 +428,11 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
     setState: (editorStore: EditorStorePatched): void => {
       const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
-        if (!oneLevelNestedEquals(substore.getState(), substates[key])) {
+        if (!twoLevelNestedEquals(substore.getState(), substates[key])) {
+          // console.log('halal', key)
           substore.setState(substates[key])
+        } else {
+          // console.log('bingo', key)
         }
       }, substores)
     },
