@@ -9,9 +9,9 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { filterKeepFlexContainers } from './inspector-common'
 import {
   removeFlexDirectionStrategies,
-  runStrategies,
   updateFlexDirectionStrategies,
-} from './inspector-strategies'
+} from './inspector-strategies/inspector-strategies'
+import { runStrategies } from './inspector-strategies/inspector-strategy'
 
 interface FlexDirectionToggleProps {
   flexDirection: FlexDirection | null

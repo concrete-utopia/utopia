@@ -15,12 +15,11 @@ import { CSSNumber, cssNumber, EmptyInputValue, parseCSSLengthPercent } from './
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { fillContainerApplicable, hugContentsApplicable } from './inspector-common'
 import {
-  InspectorStrategy,
-  runStrategies,
   setPropFillStrategies,
   setPropFixedStrategies,
   setPropHugStrategies,
-} from './inspector-strategies'
+} from './inspector-strategies/inspector-strategies'
+import { runStrategies, InspectorStrategy } from './inspector-strategies/inspector-strategy'
 
 const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
 

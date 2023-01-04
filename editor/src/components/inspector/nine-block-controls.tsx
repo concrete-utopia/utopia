@@ -17,7 +17,8 @@ import {
   justifyContentAlignItemsEquals,
   StartCenterEnd,
 } from './inspector-common'
-import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
+import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
+import { runStrategies } from './inspector-strategies/inspector-strategy'
 
 const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
   ['flex-start', 'center', 'flex-end'],
