@@ -172,7 +172,7 @@ export const light = {
   canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
   inspectorControlledBackground: createUtopiColor('rgba(242,248,255,1)'),
 
-  textEditableFill: createUtopiColor('rgba(255,128,255,.1)'),
+  textEditableFill: createUtopiColor('rgba(255,128,255,.07)'),
   textEditableOutline: createUtopiColor('rgba(255,128,255,1)'),
 
   // interface elements: buttons, segment controls, checkboxes etc
