@@ -75,9 +75,6 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const targetParentPathParts =
           targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
         const isRoot = targetParentPathParts === 1
-        if (!isRoot && !textEditable) {
-          return strategyApplicationResult([])
-        }
         if (!isRoot && textEditable) {
           return strategyApplicationResult([
             wildcardPatch('on-complete', {
