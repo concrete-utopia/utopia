@@ -400,12 +400,17 @@ export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildre
 
 const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
   () => {
-    // const selectedViews = useEditorState(
-    //   (store) => store.editor.selectedViews,
-    //   'InspectorEntryPoint selectedViews',
-    // )
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
 
-    return <SingleInspectorEntryPoint key={'inspector-entry-selected-views'} selectedViews={[]} />
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
+    )
   },
 )
 
@@ -447,259 +452,126 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
     selectedViews: Array<ElementPath>
   }>
 > = React.memo((props) => {
-  // const { selectedViews } = props
-  // const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
-  //   return {
-  //     dispatch: store.dispatch,
-  //     jsxMetadata: store.editor.jsxMetadata,
-  //     isUIJSFile: isOpenFileUiJs(store.editor),
-  //     allElementProps: store.editor.allElementProps,
-  //   }
-  // }, 'SingleInspectorEntryPoint')
+  const { selectedViews } = props
+  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      jsxMetadata: store.editor.jsxMetadata,
+      isUIJSFile: isOpenFileUiJs(store.editor),
+      allElementProps: store.editor.allElementProps,
+    }
+  }, 'SingleInspectorEntryPoint')
 
-  // let targets: Array<CSSTarget> = [...DefaultStyleTargets]
+  let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
-  // Utils.fastForEach(selectedViews, (path) => {
-  //   const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  //   if (elementMetadata != null) {
-  //     if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
-  //       const jsxElement = elementMetadata.element.value
-  //       targets = updateTargets(jsxElement)
-  //     }
-  //   }
-  // })
+  Utils.fastForEach(selectedViews, (path) => {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    if (elementMetadata != null) {
+      if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+        const jsxElement = elementMetadata.element.value
+        targets = updateTargets(jsxElement)
+      }
+    }
+  })
 
-  // // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
-  // // in order to prevent a big rerender of the inspector
+  // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
+  // in order to prevent a big rerender of the inspector
 
-  // const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
+  const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
 
-  // const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
-  //   getElementsToTarget(selectedViews),
-  // )
-
-  // const elementPath = useKeepReferenceEqualityIfPossible(
-  //   React.useMemo(() => {
-  //     if (selectedViews.length === 0) {
-  //       return []
-  //     }
-
-  //     let elements: Array<ElementPathElement> = []
-  //     Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
-  //       const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  //       if (component != null) {
-  //         elements.push({
-  //           name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
-  //           path: path,
-  //         })
-  //       }
-  //     })
-  //     return elements
-  //   }, [selectedViews, jsxMetadata, allElementProps]),
-  // )
-
-  // // Memoized Callbacks
-  // const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
-  //   targetsReferentiallyStable[0].path,
-  // )
-
-  // const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
-  //   setSelectedTarget(targetPath)
-  // }, [])
-
-  // const onStyleSelectorRename = React.useCallback(
-  //   (renameTarget: CSSTarget, label: string) => {
-  //     const originalRenameTarget: CSSTarget = { ...renameTarget }
-  //     let newPath = [...renameTarget.path]
-  //     newPath[newPath.length - 1] = label
-  //     const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-  //       EditorActions.renamePropKey(elem, originalRenameTarget, newPath),
-  //     )
-  //     let newTargetPath = [...originalRenameTarget.path]
-  //     newTargetPath[newTargetPath.length - 1] = label
-  //     if (Utils.shallowEqual(originalRenameTarget, selectedTarget)) {
-  //       setSelectedTarget(newTargetPath)
-  //     }
-  //     dispatch(actions, 'everyone')
-  //   },
-  //   [refElementsToTargetForUpdates, dispatch, selectedTarget],
-  // )
-
-  // const onStyleSelectorDelete = React.useCallback(
-  //   (deleteTarget: CSSTarget) => {
-  //     const path = PP.create(deleteTarget.path)
-  //     const actions = Utils.flatMapArray(
-  //       (elem) => [EditorActions.unsetProperty(elem, path)],
-  //       refElementsToTargetForUpdates.current,
-  //     )
-  //     dispatch(actions, 'everyone')
-  //   },
-  //   [refElementsToTargetForUpdates, dispatch],
-  // )
-
-  // const onStyleSelectorInsert = React.useCallback(
-  //   (parent: CSSTarget | undefined, label: string) => {
-  //     const newPath = [...(parent?.path ?? []), label]
-  //     const newPropertyPath = PP.create(newPath)
-  //     const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-  //       EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
-  //     )
-  //     dispatch(actions, 'everyone')
-  //     setSelectedTarget(newPath)
-  //   },
-  //   [refElementsToTargetForUpdates, dispatch],
-  // )
-
-  // // const inspector = isUIJSFile ? (
-  // //   <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
-  // //     <Inspector
-  // //       selectedViews={selectedViews}
-  // //       targets={targetsReferentiallyStable}
-  // //       selectedTargetPath={selectedTarget}
-  // //       setSelectedTarget={setSelectedTarget}
-  // //       elementPath={elementPath}
-  // //       onSelectTarget={onSelectTarget}
-  // //       onStyleSelectorRename={onStyleSelectorRename}
-  // //       onStyleSelectorDelete={onStyleSelectorDelete}
-  // //       onStyleSelectorInsert={onStyleSelectorInsert}
-  // //     />
-  // //   </InspectorContextProvider>
-  // // ) : null
-
-  // // return inspector
-
-  return (
-    <>
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-      <FlexSection />
-    </>
+  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    getElementsToTarget(selectedViews),
   )
+
+  const elementPath = useKeepReferenceEqualityIfPossible(
+    React.useMemo(() => {
+      if (selectedViews.length === 0) {
+        return []
+      }
+
+      let elements: Array<ElementPathElement> = []
+      Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
+        const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+        if (component != null) {
+          elements.push({
+            name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
+            path: path,
+          })
+        }
+      })
+      return elements
+    }, [selectedViews, jsxMetadata, allElementProps]),
+  )
+
+  // Memoized Callbacks
+  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
+    targetsReferentiallyStable[0].path,
+  )
+
+  const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
+    setSelectedTarget(targetPath)
+  }, [])
+
+  const onStyleSelectorRename = React.useCallback(
+    (renameTarget: CSSTarget, label: string) => {
+      const originalRenameTarget: CSSTarget = { ...renameTarget }
+      let newPath = [...renameTarget.path]
+      newPath[newPath.length - 1] = label
+      const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
+        EditorActions.renamePropKey(elem, originalRenameTarget, newPath),
+      )
+      let newTargetPath = [...originalRenameTarget.path]
+      newTargetPath[newTargetPath.length - 1] = label
+      if (Utils.shallowEqual(originalRenameTarget, selectedTarget)) {
+        setSelectedTarget(newTargetPath)
+      }
+      dispatch(actions, 'everyone')
+    },
+    [refElementsToTargetForUpdates, dispatch, selectedTarget],
+  )
+
+  const onStyleSelectorDelete = React.useCallback(
+    (deleteTarget: CSSTarget) => {
+      const path = PP.create(deleteTarget.path)
+      const actions = Utils.flatMapArray(
+        (elem) => [EditorActions.unsetProperty(elem, path)],
+        refElementsToTargetForUpdates.current,
+      )
+      dispatch(actions, 'everyone')
+    },
+    [refElementsToTargetForUpdates, dispatch],
+  )
+
+  const onStyleSelectorInsert = React.useCallback(
+    (parent: CSSTarget | undefined, label: string) => {
+      const newPath = [...(parent?.path ?? []), label]
+      const newPropertyPath = PP.create(newPath)
+      const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
+      )
+      dispatch(actions, 'everyone')
+      setSelectedTarget(newPath)
+    },
+    [refElementsToTargetForUpdates, dispatch],
+  )
+
+  const inspector = isUIJSFile ? (
+    <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
+      <Inspector
+        selectedViews={selectedViews}
+        targets={targetsReferentiallyStable}
+        selectedTargetPath={selectedTarget}
+        setSelectedTarget={setSelectedTarget}
+        elementPath={elementPath}
+        onSelectTarget={onSelectTarget}
+        onStyleSelectorRename={onStyleSelectorRename}
+        onStyleSelectorDelete={onStyleSelectorDelete}
+        onStyleSelectorInsert={onStyleSelectorInsert}
+      />
+    </InspectorContextProvider>
+  ) : null
+
+  return inspector
 })
 
 const rootComponentsSelector = createSelector(
