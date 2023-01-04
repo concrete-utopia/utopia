@@ -94,7 +94,7 @@ export const detectFlexDirection = (
 ): FlexDirection => {
   const allDetectedMeasurements = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
   return allElemsEqual(allDetectedMeasurements, (l, r) => l === r)
-    ? allDetectedMeasurements[0] ?? 'row'
+    ? allDetectedMeasurements.at(0) ?? 'row'
     : 'row'
 }
 
