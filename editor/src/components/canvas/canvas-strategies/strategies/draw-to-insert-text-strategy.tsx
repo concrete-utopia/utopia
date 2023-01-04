@@ -14,6 +14,8 @@ import { InteractionSession } from '../interaction-state'
 import { drawToInsertFitness, drawToInsertStrategyFactory } from './draw-to-insert-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 
+export const DRAW_TO_INSERT_TEXT_STRATEGY_ID = 'draw-to-insert-text'
+
 export const drawToInsertTextStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -44,7 +46,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
   return [
     {
-      id: 'draw-to-insert-text',
+      id: DRAW_TO_INSERT_TEXT_STRATEGY_ID,
       name: name,
       controlsToRender: [],
       fitness: insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? 1 : 0,
