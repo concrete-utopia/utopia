@@ -65,9 +65,8 @@ describe('draw-to-insert text', () => {
                   }}
                   data-uid='39e'
                 >Hello</div>
-                <div
+                <span
                   style={{
-                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                     left: 389,
                     top: 101,
@@ -75,7 +74,7 @@ describe('draw-to-insert text', () => {
                     height: 250,
                   }}
                   data-uid='${newElementUID}'
-                >Utopia</div>
+                >Utopia</span>
               </Storyboard>
             )`),
       )
@@ -128,9 +127,8 @@ describe('draw-to-insert text', () => {
                   }}
                   data-uid='39e'
                 >Hello</div>
-                <div
+                <span
                   style={{
-                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                     left: 339,
                     top: 51,
@@ -138,7 +136,7 @@ describe('draw-to-insert text', () => {
                     height: 100,
                   }}
                   data-uid='${newElementUID}'
-                >Utopia</div>
+                >Utopia</span>
               </Storyboard>
             )`),
       )
@@ -230,9 +228,8 @@ describe('draw-to-insert text', () => {
 
             export var storyboard = (
               <Storyboard data-uid='sb'>
-                <div
+                <span
                   style={{
-                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                     left: 112,
                     top: 391,
@@ -240,7 +237,7 @@ describe('draw-to-insert text', () => {
                     height: 50,
                   }}
                   data-uid='${newElementUID}'
-                >Hey root</div>
+                >Hey root</span>
               </Storyboard>
             )`),
       )
