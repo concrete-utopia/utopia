@@ -13,13 +13,20 @@ import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
   filterKeepFlexContainers,
+  FlexAlignment,
+  FlexJustifyContent,
   isFlexColumn,
   justifyContentAlignItemsEquals,
   StartCenterEnd,
 } from './inspector-common'
 import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
 
-const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
+export const NineBlockTestId = (
+  alignItems: FlexAlignment,
+  justifyContent: FlexJustifyContent,
+): string => `NineBlockTestId-${alignItems}-${justifyContent}`
+
+export const NineBlockSectors = cartesianProduct<StartCenterEnd, StartCenterEnd>(
   ['flex-start', 'center', 'flex-end'],
   ['flex-start', 'center', 'flex-end'],
 )
@@ -159,6 +166,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
           <div
             onClick={() => setAlignItemsJustifyContent(alignItems, justifyContent)}
             key={`${alignItems}-${justifyContent}`}
+            data-testid={NineBlockTestId(alignItems, justifyContent)}
             style={{
               display: 'flex',
               padding: 1,

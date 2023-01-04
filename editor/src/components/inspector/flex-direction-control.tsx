@@ -13,6 +13,9 @@ import {
   updateFlexDirectionStrategies,
 } from './inspector-strategies'
 
+export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
+  `FlexDirectionToggle-${direction}`
+
 interface FlexDirectionToggleProps {
   flexDirection: FlexDirection | null
 }
@@ -66,6 +69,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
       }}
     >
       <div
+        data-testid={FlexDirectionToggleTestId('row')}
         onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
@@ -80,6 +84,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
         <Icons.FlexRow />
       </div>
       <div
+        data-testid={FlexDirectionToggleTestId('column')}
         onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',
