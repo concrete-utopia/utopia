@@ -6,7 +6,13 @@ import { FlexDirection } from './common/css-utils'
 import { FlexDirectionToggleTestId } from './flex-direction-control'
 
 describe('set flex direction', () => {
-  setFeatureEnabled('Nine block control', true)
+  before(() => {
+    setFeatureEnabled('Nine block control', true)
+  })
+
+  after(() => {
+    setFeatureEnabled('Nine block control', false)
+  })
 
   it('set flex direction to row from not set', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')

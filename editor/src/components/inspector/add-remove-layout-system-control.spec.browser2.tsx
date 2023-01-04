@@ -5,7 +5,13 @@ import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.t
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
-  setFeatureEnabled('Nine block control', true)
+  before(() => {
+    setFeatureEnabled('Nine block control', true)
+  })
+
+  after(() => {
+    setFeatureEnabled('Nine block control', false)
+  })
 
   it('add and then remove flex layout', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')

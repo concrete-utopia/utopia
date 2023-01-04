@@ -6,7 +6,13 @@ import { StartCenterEnd } from './inspector-common'
 import { NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {
-  setFeatureEnabled('Nine block control', true)
+  before(() => {
+    setFeatureEnabled('Nine block control', true)
+  })
+
+  after(() => {
+    setFeatureEnabled('Nine block control', false)
+  })
 
   describe('in flex row', () => {
     for (const [justifyContent, alignItems] of NineBlockSectors) {
