@@ -144,6 +144,8 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
 
   const context = React.useContext(EditorStateContext)
 
+  // console.log('NineBlockControlCell rerender')
+
   const alignItemsJustifyContent = React.useMemo(
     () => ({ alignItems, justifyContent }),
     [alignItems, justifyContent],
