@@ -192,70 +192,75 @@ interface BorderRadiusData<T> {
 function borderRadiusFromElement(
   element: ElementInstanceMetadata,
 ): BorderRadiusData<CSSNumberWithRenderedValue> | null {
-  const jsxElement: JSXElement | null = foldEither(
+  return foldEither(
     () => null,
-    (e) => (isJSXElement(e) ? e : null),
-    element.element,
-  )
+    (jsxElement) => {
+      if (isJSXElement(jsxElement)) {
+        const renderedValueSides = element.specialSizeMeasurements.borderRadius
+        if (renderedValueSides == null) {
+          return null
+        }
 
-  if (jsxElement == null) {
-    return null
-  }
+        const fromProps = borderRadiusFromProps(jsxElement.props)
+        const measurementsNonZero = AllSides.some((c) => {
+          const measurement = renderedValueSides[c]
+          if (measurement == null) {
+            return false
+          } else {
+            return measurement > 0
+          }
+        })
 
-  const renderedValueSides = element.specialSizeMeasurements.borderRadius
-  if (renderedValueSides == null) {
-    return null
-  }
+        const elementIsIntrinsicElementOrScene =
+          isIntrinsicElement(jsxElement.name) ||
+          jsxElementNameEquals(jsxElement.name, jsxElementName('Scene', []))
 
-  const fromProps = borderRadiusFromProps(jsxElement.props)
-  const measurementsNonZero = AllSides.some((c) => (renderedValueSides[c] ?? 0) > 0)
+        if (
+          !(
+            elementIsIntrinsicElementOrScene ||
+            shouldShowControls(fromProps != null, measurementsNonZero)
+          )
+        ) {
+          return null
+        }
 
-  const elementIsIntrinsicElementOrScene = foldEither(
-    () => false,
-    (e) =>
-      isJSXElement(e) &&
-      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
-    element.element,
-  )
+        const borderRadius = optionalMap(
+          (radius) => measurementFromBorderRadius(renderedValueSides, radius),
+          fromProps,
+        )
 
-  if (
-    !(
-      elementIsIntrinsicElementOrScene ||
-      shouldShowControls({
-        propAvailableFromStyle: fromProps != null,
-        measurementsNonZero: measurementsNonZero,
-      })
-    )
-  ) {
-    return null
-  }
+        if (borderRadius == null) {
+          if (elementIsIntrinsicElementOrScene) {
+            return null
+          } else {
+            return {
+              mode: 'all',
+              borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+            }
+          }
+        }
 
-  const borderRadius = optionalMap(
-    (radius) => measurementFromBorderRadius(renderedValueSides, radius),
-    fromProps,
-  )
+        const borderRadiusUpperLimit = maxBorderRadius(
+          size(
+            element.specialSizeMeasurements.clientWidth,
+            element.specialSizeMeasurements.clientHeight,
+          ),
+        )
 
-  if (borderRadius == null) {
-    if (!elementIsIntrinsicElementOrScene) {
-      return {
-        mode: 'all',
-        borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+        const borderRadiusMinMax = { min: 0, max: borderRadiusUpperLimit }
+        return {
+          mode: fromProps?.type === 'sides' ? 'individual' : 'all',
+          borderRadius: mapBorderRadiusSides(
+            (n) => adjustBorderRadius(borderRadiusMinMax, n),
+            borderRadius,
+          ),
+        }
+      } else {
+        return null
       }
-    }
-    return null
-  }
-
-  const borderRadiusUpperLimit = maxBorderRadius(
-    size(element.specialSizeMeasurements.clientWidth, element.specialSizeMeasurements.clientHeight),
+    },
+    element.element,
   )
-
-  return {
-    mode: fromProps?.type === 'sides' ? 'individual' : 'all',
-    borderRadius: mapBorderRadiusSides(
-      (n) => adjustBorderRadius({ min: 0, max: borderRadiusUpperLimit }, n),
-      borderRadius,
-    ),
-  }
 }
 
 interface BorderRadiusFromProps {
@@ -264,23 +269,36 @@ interface BorderRadiusFromProps {
 }
 
 function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | null {
-  const simpleBorderRadius = simpleBorderRadiusFromProps(props)
+  const wrappedProps = right(props)
+  const styleInArray = ['style']
 
+  const borderRadius = getLayoutProperty('borderRadius', wrappedProps, styleInArray)
+  const simpleBorderRadius = foldEither(
+    () => null,
+    (radius) => {
+      if (radius == null) {
+        return null
+      } else {
+        return foldEither(borderRadiusSidesFromValue, (value) => value, radius)
+      }
+    },
+    borderRadius,
+  )
   const borderTopLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopLeftRadius', right(props), ['style']),
+    getLayoutProperty('borderTopLeftRadius', wrappedProps, styleInArray),
   )
   const borderTopRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopRightRadius', right(props), ['style']),
+    getLayoutProperty('borderTopRightRadius', wrappedProps, styleInArray),
   )
   const borderBottomLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomLeftRadius', right(props), ['style']),
+    getLayoutProperty('borderBottomLeftRadius', wrappedProps, styleInArray),
   )
   const borderBottomRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomRightRadius', right(props), ['style']),
+    getLayoutProperty('borderBottomRightRadius', wrappedProps, styleInArray),
   )
 
   if (
@@ -310,16 +328,6 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
     }
   }
 
-  return null
-}
-
-function simpleBorderRadiusFromProps(props: JSXAttributes): BorderRadiusSides<CSSNumber> | null {
-  const borderRadius = getLayoutProperty('borderRadius', right(props), ['style'])
-  if (isRight(borderRadius) && borderRadius.value != null) {
-    return isLeft(borderRadius.value)
-      ? borderRadiusSidesFromValue(borderRadius.value.value)
-      : borderRadius.value.value
-  }
   return null
 }
 
