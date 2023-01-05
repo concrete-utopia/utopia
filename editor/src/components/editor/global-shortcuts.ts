@@ -697,7 +697,7 @@ export function handleKeyDown(
               defaultSpanElement(newUID),
               newUID,
               {},
-              null,
+              'skip-size-props',
               {
                 textEdit: true,
               },
