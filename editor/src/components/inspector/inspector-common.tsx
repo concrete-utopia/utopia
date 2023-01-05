@@ -89,14 +89,14 @@ export function detectFlexDirectionOne(
   )
 }
 
-export const detectFlexDirection: Detect<FlexDirection> = (
+export const detectFlexDirection = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
-) => {
+): FlexDirection => {
   const allDetectedMeasurements = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
   return allElemsEqual(allDetectedMeasurements, (l, r) => l === r)
-    ? allDetectedMeasurements[0]
-    : null
+    ? allDetectedMeasurements.at(0) ?? 'row'
+    : 'row'
 }
 
 function detectFlexAlignJustifyContentOne(
@@ -150,6 +150,13 @@ export function filterKeepFlexContainers(
   return elementPaths.filter((e: ElementPath | null) =>
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
   )
+}
+
+export function numberOfFlexContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): number {
+  return filterKeepFlexContainers(metadata, elementPaths).length
 }
 
 export function detectAreElementsFlexContainers(
