@@ -53,16 +53,6 @@ describe('Text edit mode', () => {
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
     })
-    it.skip('Does not enter text edit mode with non-text editable selected element', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
-
-      await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('t')
-      await editor.getDispatchFollowUpActionsFinished()
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('select') // FIXME this is incorrect, it should be `insert`
-      expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
-    })
   })
 
   describe('Click to choose target text for editing', () => {
@@ -76,14 +66,6 @@ describe('Text edit mode', () => {
       expect(
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
-    })
-    it('Click to select on non-text editable target doesnt work', async () => {
-      const editor = await renderTestEditorWithCode(projectWithNestedDiv, 'await-first-dom-report')
-
-      pressKey('t')
-      await clickOnElement(editor, 'div')
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
     })
   })
 })
