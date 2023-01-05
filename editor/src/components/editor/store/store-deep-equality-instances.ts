@@ -210,6 +210,7 @@ import {
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
+  unionDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -2649,7 +2650,14 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
     (subject) => subject.defaultSize,
-    nullableDeepEquality(SizeKeepDeepEquality),
+    nullableDeepEquality(
+      unionDeepEquality(
+        createCallWithTripleEquals<'skip-size-props'>(),
+        SizeKeepDeepEquality,
+        (p): p is 'skip-size-props' => p === 'skip-size-props',
+        (p): p is Size => p !== 'skip-size-props',
+      ),
+    ),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,

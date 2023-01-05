@@ -16,6 +16,7 @@ import {
   CanvasRectangle,
   canvasRectangle,
   offsetPoint,
+  size,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -147,15 +148,18 @@ function dragToInsertStrategyFactory(
     const pointOnCanvas = Utils.roundPointToNearestHalf(
       interactionSession.interactionData.dragStart,
     )
-    return insertionSubjects.map((s) => ({
-      subject: s,
-      frame: canvasRectangle({
-        x: pointOnCanvas.x - s.defaultSize.width / 2,
-        y: pointOnCanvas.y - s.defaultSize.height / 2,
-        width: s.defaultSize.width,
-        height: s.defaultSize.height,
-      }),
-    }))
+    return insertionSubjects.map((s) => {
+      const defaultSize = s.defaultSize === 'skip-size-props' ? size(0, 0) : s.defaultSize
+      return {
+        subject: s,
+        frame: canvasRectangle({
+          x: pointOnCanvas.x - defaultSize.width / 2,
+          y: pointOnCanvas.y - defaultSize.height / 2,
+          width: defaultSize.width,
+          height: defaultSize.height,
+        }),
+      }
+    })
   })()
 
   // we don't want outline for images for now

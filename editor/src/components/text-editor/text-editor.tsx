@@ -67,6 +67,13 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
+    // always show at least 1px wide area for the cursor
+    const frame = currentElement.getBoundingClientRect()
+    if (frame.width === 0) {
+      currentElement.style.minWidth = `1px`
+      currentElement.style.maxWidth = `none`
+    }
+
     return () => {
       const content = currentElement.textContent
       if (content != null) {

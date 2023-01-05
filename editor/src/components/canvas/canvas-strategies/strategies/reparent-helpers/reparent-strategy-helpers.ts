@@ -3,7 +3,7 @@ import {
   MetadataUtils,
 } from '../../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
-import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
+import { CanvasPoint, size, Size } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import {
   getTargetPathsFromInteractionTarget,
@@ -153,7 +153,11 @@ export function reparentSubjectsForInteractionTarget(
 ): ReparentSubjects {
   switch (interactionTarget.type) {
     case 'INSERTION_SUBJECTS':
-      return newReparentSubjects(interactionTarget.subjects[0].defaultSize)
+      const defaultSize =
+        interactionTarget.subjects[0].defaultSize === 'skip-size-props'
+          ? size(0, 0)
+          : interactionTarget.subjects[0].defaultSize
+      return newReparentSubjects(defaultSize)
     case 'TARGET_PATHS':
       return existingReparentSubjects(
         getDragTargets(getTargetPathsFromInteractionTarget(interactionTarget)),

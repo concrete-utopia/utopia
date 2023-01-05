@@ -56,7 +56,7 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
       if (!isFeatureEnabled('Text editing')) {
         textInsertCallbackWithoutTextEditing(event, { textEdit: false })
       } else if (firstTextEditableView == null) {
-        textInsertCallbackWithTextEditing(event, { textEdit: true })
+        textInsertCallbackWithTextEditing(event, { textEdit: true }, 'skip-size-props')
       } else {
         dispatch([switchEditorMode(EditorModes.textEditMode(firstTextEditableView))])
       }
@@ -84,6 +84,7 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
   insertOptions?: {
     textEdit?: boolean
   },
+  skipSize?: 'skip-size-props' | null,
 ) => void {
   const dispatch = useEditorState((store) => store.dispatch, 'enterDrawToInsertForDiv dispatch')
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
@@ -94,12 +95,13 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
       insertOptions: {
         textEdit?: boolean
       } = {},
+      skipSize: 'skip-size-props' | null = null,
     ): void => {
       const modifiers = Modifier.modifiersForEvent(event)
       const newUID = generateUidWithExistingComponents(projectContentsRef.current)
 
       dispatch([
-        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, insertOptions),
+        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, skipSize, insertOptions),
         CanvasActions.createInteractionSession(
           createHoverInteractionViaMouse(
             CanvasMousePositionRaw!,

@@ -12,7 +12,7 @@ export const DefaultInsertSize: Size = { width: 100, height: 100 }
 export interface InsertionSubject {
   uid: string
   element: JSXElement
-  defaultSize: Size
+  defaultSize: Size | 'skip-size-props'
   importsToAdd: Imports
   parent: InsertionParent
   textEdit: boolean
@@ -21,7 +21,7 @@ export interface InsertionSubject {
 export function insertionSubject(
   uid: string,
   element: JSXElement,
-  size: Size | null,
+  size: Size | null | 'skip-size-props',
   importsToAdd: Imports,
   parent: InsertionParent,
   textEdit: boolean,

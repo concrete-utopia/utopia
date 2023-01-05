@@ -482,7 +482,7 @@ export function enableInsertModeForJSXElement(
   element: JSXElement,
   uid: string,
   importsToAdd: Imports,
-  size: Size | null,
+  size: Size | null | 'skip-size-props',
   options?: {
     textEdit?: boolean
   },
