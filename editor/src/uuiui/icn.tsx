@@ -1,10 +1,11 @@
 import { Placement } from 'tippy.js'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { useEditorState } from '../components/editor/store/store-hook'
 import { getCurrentTheme } from '../components/editor/store/editor-state'
 import { Theme } from './styles/theme'
+import { getIconColor } from './styles/theme/theme-helpers'
 
 export type IcnColor =
   | 'main'
@@ -31,67 +32,6 @@ export type IcnResultingColor =
   | 'red'
   | 'orange'
   | 'colourful'
-
-function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState(
-    (store) => getCurrentTheme(store.userState),
-    'currentTheme',
-  )
-  if (currentTheme === 'light') {
-    switch (intent) {
-      case 'main':
-        return 'black'
-      case 'secondary':
-        return 'gray'
-      case 'subdued':
-        return 'lightgray'
-      case 'primary':
-        return 'blue'
-      case 'warning':
-        return 'orange'
-      case 'error':
-        return 'red'
-      case 'component':
-        return 'purple'
-      case 'on-highlight-main':
-        return 'white'
-      case 'on-highlight-secondary':
-        return 'lightgray'
-      case 'on-light-main':
-        return 'white'
-      default:
-        return 'white'
-    }
-  } else if (currentTheme === 'dark') {
-    switch (intent) {
-      case 'main':
-        return 'white'
-      case 'secondary':
-        return 'lightgray'
-      case 'subdued':
-        return 'gray'
-      case 'primary':
-        return 'blue'
-      case 'component':
-        return 'purple'
-      case 'error':
-        return 'red'
-      case 'warning':
-        return 'orange'
-      case 'on-highlight-main':
-        return 'white'
-      case 'on-highlight-secondary':
-        return 'lightgray'
-      case 'on-light-main':
-        return 'black'
-      case 'black':
-        return 'black'
-      default:
-        return 'white'
-    }
-  }
-  return 'black'
-}
 
 export interface IcnPropsBase {
   category?: string
@@ -144,11 +84,34 @@ export const Icn = React.memo(
     isDisabled = false,
     ...props
   }: IcnProps) => {
+    const currentTheme: Theme = useEditorState(
+      (store) => getCurrentTheme(store.userState),
+      'currentTheme',
+    )
+
+    const IcnRef = useRef<HTMLImageElement>(null)
+    const [IconColor, setIconColor] = useState<IcnColor>('main')
+
+    useEffect(() => {
+      if (IcnRef.current !== null) {
+        const cssVarColor = getComputedStyle(IcnRef.current).getPropertyValue(
+          '--utopitheme-iconColor',
+        )
+
+        setIconColor(cssVarColor as IcnColor)
+      }
+    }, [IcnRef])
+
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
 
-    const iconColor = useIconColor(props.color ?? 'main')
+    // TODO: Remove props.color and only use IconColor
+    const iconColor = getIconColor(
+      IconColor !== 'main' ? IconColor : props.color ?? 'main',
+      currentTheme,
+    )
 
     const { onMouseDown: propsOnMouseDown, onClick } = props
+
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLImageElement>) => {
         if (propsOnMouseDown != null) {
@@ -163,6 +126,7 @@ export const Icn = React.memo(
 
     const imageElement = (
       <img
+        ref={IcnRef}
         style={{
           userSelect: 'none',
           display: 'block',

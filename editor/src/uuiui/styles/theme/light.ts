@@ -1,6 +1,8 @@
-import { rgb } from 'chroma-js'
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
+import { lightInversePartial, lightNeutralPartial } from './lightPartials'
+import { luminousPartial } from './partialThemes'
+import { ThemeObject } from './types'
 
 const lightBase = {
   darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
@@ -36,6 +38,8 @@ const lightBase = {
   fg7: createUtopiColor('hsl(0,0%,70%)'),
   fg8: createUtopiColor('hsl(0,0%,80%)'),
   fg9: createUtopiColor('hsl(0,0%,90%)'),
+  fgError: createUtopiColor('#FF7759'),
+  fgWarning: createUtopiColor('#FFA858'),
   border0: createUtopiColor('hsl(0,0%,93%)'),
   border1: createUtopiColor('hsl(0,0%,91%)'),
   border2: createUtopiColor('hsl(0,0%,86%)'),
@@ -98,11 +102,19 @@ const colorsWithOpacity = {
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
 }
 
-export const light = {
+export const light: ThemeObject = {
   ...colorsWithOpacity,
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
+
+  iconColor: createUtopiColor('main'),
+  error: createUtopiColor('rgba(253,26,79,1)'),
+
+  neutral: lightNeutralPartial,
+  inverse: lightInversePartial,
+  luminous: luminousPartial,
+  // partialThemes: { errorEmphasized, warningEmphasized, pullLozenge, pushLozenge },
 
   textColor: base.almostBlack,
 
