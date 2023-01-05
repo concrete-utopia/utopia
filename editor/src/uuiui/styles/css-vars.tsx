@@ -66,7 +66,15 @@ export const ColorThemeComponent = React.memo(() => {
       {/* Root variables based on the theme */}
       {':root {'}
       {mapToArray((value, variable) => {
-        return `${variable}:${value};`
+        if (variable === 'iconColor') {
+          if (IcnColorOrNot(value)) {
+            return `${variable}:${getIconColor(value, currentTheme)}`
+          } else {
+            return `${variable}:main`
+          }
+        } else {
+          return `${variable}:${value};`
+        }
       }, mainThemeVars)}
       {'}'}
       {/* Classes with variables based on the subthemes */}

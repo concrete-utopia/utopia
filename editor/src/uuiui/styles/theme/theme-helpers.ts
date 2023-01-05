@@ -94,7 +94,9 @@ export function generateCssVariablesFromThemeObject(themeObject: ThemeObject): T
   return variablesObject
 }
 
-export function IcnColorOrNot(thing: IcnColor | string): thing is IcnColor {
+export function IcnColorOrNot(
+  thing: IcnColor | string | PartialThemeVariableObject,
+): thing is IcnColor {
   const IcnColors: IcnColor[] = [
     'main',
     'secondary',

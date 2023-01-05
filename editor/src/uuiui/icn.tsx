@@ -104,7 +104,7 @@ export const Icn = React.memo(
 
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
 
-    // TODO: Remove props.color and only use intendedColor
+    // TODO: Remove props.color and only use IconColor
     const iconColor = getIconColor(
       IconColor !== 'main' ? IconColor : props.color ?? 'main',
       currentTheme,

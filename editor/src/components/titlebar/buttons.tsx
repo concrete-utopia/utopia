@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, Icons } from '../../uuiui'
 import { colorTheme } from '../../uuiui'
 import { ThemeProvider } from '../../uuiui/styles/theme-provider'
@@ -84,6 +84,8 @@ export const PartialThemeButton: React.FC<React.PropsWithChildren<any>> = ({
   children,
   theme,
 }) => {
+  const [currentTheme, setCurrentTheme] = useState(theme)
+
   const ButtonEl = styled(TitleButton)((props) => ({
     padding: '3px 12px',
     gap: 5,
@@ -93,12 +95,18 @@ export const PartialThemeButton: React.FC<React.PropsWithChildren<any>> = ({
     ...style,
   }))
 
+  const toggleTheme = React.useCallback(() => {
+    const newTheme = currentTheme == null ? theme : null
+    setCurrentTheme(newTheme)
+  }, [currentTheme, theme])
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={currentTheme}>
       <ButtonEl
-        onClick={onClick}
+        onClick={toggleTheme}
         css={{
           '&:hover': {
+            ...style,
             opacity: 0.7,
           },
         }}

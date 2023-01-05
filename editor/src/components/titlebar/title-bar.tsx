@@ -204,12 +204,11 @@ const TitleBar = React.memo(() => {
             {/* *************** */}
             <PartialThemeButton
               style={{ backgroundColor: colorTheme.warningBgSolid.value }}
-              onClick={showMergeConflict}
               theme={colorTheme.luminous}
             >
               Pull Lozenge
             </PartialThemeButton>
-            <PartialThemeButton
+            {/* <PartialThemeButton
               style={{ backgroundColor: colorTheme.primary.value }}
               onClick={showMergeConflict}
               theme={colorTheme.luminous}
@@ -220,7 +219,7 @@ const TitleBar = React.memo(() => {
               <SampleTextComponent primary={true} />
               <span style={{ color: colorTheme.error.value }}>Sample Span!</span>
               <Icons.Branch />
-            </SampleComponent>
+            </SampleComponent> */}
             {/* *************** */}
             {/* END EXAMPLE CODE */}
             {/* *************** */}
