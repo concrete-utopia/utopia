@@ -1,4 +1,4 @@
-import { EditorModes } from '../../../../components/editor/editor-modes'
+import { EditorModes, InsertionSubject } from '../../../../components/editor/editor-modes'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
@@ -83,8 +83,12 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           ])
         }
 
+        const updatedCanvasState = EP.isStoryboardPath(targetParent)
+          ? setDefaultSizeForStoryboard(canvasState, insertionSubjects)
+          : canvasState
+
         const strategy = drawToInsertStrategyFactory(
-          canvasState,
+          updatedCanvasState,
           interactionSession,
           customStrategyState,
           factory.factory,
@@ -110,4 +114,24 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
       },
     },
   ]
+}
+
+function setDefaultSizeForStoryboard(
+  canvasState: InteractionCanvasState,
+  insertionSubjects: Array<InsertionSubject>,
+): InteractionCanvasState {
+  if (canvasState.interactionTarget.type === 'INSERTION_SUBJECTS') {
+    return {
+      ...canvasState,
+      interactionTarget: {
+        ...canvasState.interactionTarget,
+        subjects: insertionSubjects.map((subject) => ({
+          ...subject,
+          defaultSize: { width: 120, height: 40 },
+        })),
+      },
+    }
+  } else {
+    return canvasState
+  }
 }

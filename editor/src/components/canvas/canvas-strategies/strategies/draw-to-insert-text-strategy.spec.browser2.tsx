@@ -132,7 +132,13 @@ describe('draw-to-insert text', () => {
                   data-uid='39e'
                 >Hello</div>
                 <span
-                  style={{ position: 'absolute', left: 389, top: 101 }}
+                  style={{
+                    position: 'absolute',
+                    left: 329,
+                    top: 81,
+                    width: 120,
+                    height: 40,
+                  }}
                   data-uid='${newElementUID}'
                 >Utopia</span>
               </Storyboard>
@@ -245,7 +251,7 @@ describe('draw-to-insert text', () => {
                 >
                   <div data-uid='111' />
                   <span
-                    style={{ width: 50, height: 50, contain: 'layout' }}
+                    style={{ contain: 'layout', width: 50, height: 50 }}
                     data-uid='ddd'
                   >Hello Utopia</span>
                 </div>
