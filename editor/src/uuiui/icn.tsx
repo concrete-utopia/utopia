@@ -33,7 +33,7 @@ export type IcnResultingColor =
   | 'colourful'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState('restOfStore')(
+  const currentTheme: Theme = useEditorState('theme')(
     (store) => getCurrentTheme(store.userState),
     'currentTheme',
   )

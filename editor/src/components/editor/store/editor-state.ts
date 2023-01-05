@@ -1267,6 +1267,14 @@ export interface DerivedSubstate {
   derived: DerivedState
 }
 
+export interface DispatchSubstate {
+  dispatch: EditorDispatch
+}
+
+export interface ThemeSubstate {
+  userState: { themeConfig: ThemeSetting | null }
+}
+
 export type EditorSubStates = ProjectContentSubstate &
   MetadataSubstate &
   SelectedHighlightedViewsSubstate &
@@ -3261,7 +3269,7 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
+export function getCurrentTheme(userConfiguration: { themeConfig: ThemeSetting | null }): Theme {
   const currentTheme = userConfiguration.themeConfig ?? DefaultTheme
   if (currentTheme === 'system') {
     return getPreferredColorScheme()

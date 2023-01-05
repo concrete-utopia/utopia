@@ -245,7 +245,7 @@ export async function renderTestEditorWithModel(
     }
 
     flushSync(() => {
-      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'), [])
     })
 
     // run dom walker
@@ -281,7 +281,7 @@ export async function renderTestEditorWithModel(
     // update state with new metadata
 
     flushSync(() => {
-      storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
+      storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'), [])
       if (
         shouldInspectorUpdate(
           workingEditorState.strategyState,
@@ -290,6 +290,7 @@ export async function renderTestEditorWithModel(
       ) {
         lowPriorityStoreHook.setState(
           patchedStoreFromFullStore(workingEditorState, 'low-priority-store'),
+          [],
         )
       }
     })

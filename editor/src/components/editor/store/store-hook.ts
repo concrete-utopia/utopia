@@ -16,6 +16,7 @@ import {
   CanvasSubstate,
   DerivedState,
   DerivedSubstate,
+  DispatchSubstate,
   EditorStateCanvas,
   EditorStateWOScrollOffset,
   EditorStoreFull,
@@ -25,7 +26,9 @@ import {
   OldEditorState,
   ProjectContentSubstate,
   SelectedHighlightedViewsSubstate,
+  ThemeSubstate,
 } from './editor-state'
+import { EditorAction } from '../action-types'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -289,6 +292,8 @@ type Substates = {
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   fullOldStore: EditorStorePatched
   originalStore: EditorStorePatched
+  dispatch: DispatchSubstate
+  theme: ThemeSubstate
 }
 
 type StoreKey = keyof Substates
@@ -440,12 +445,14 @@ export const SubstatePickers: {
     }
   },
   originalStore: (store) => store,
+  dispatch: (store) => ({ dispatch: store.dispatch }),
+  theme: (store) => ({ userState: { themeConfig: store.userState.themeConfig } }),
 }
 
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
 export interface StoresAndSetState {
   stores: UtopiaStores
-  setState: (store: EditorStorePatched) => void
+  setState: (store: EditorStorePatched, dispatchedActions: ReadonlyArray<EditorAction>) => void
   getState: () => EditorStorePatched
 }
 
@@ -465,12 +472,15 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
   }, initialSubstates) as UtopiaStores // bad type
 
   return {
-    setState: (editorStore: EditorStorePatched): void => {
+    setState: (
+      editorStore: EditorStorePatched,
+      dispatchedActions: ReadonlyArray<EditorAction>,
+    ): void => {
       // console.log('--------------')
       const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
         // const debug = key === 'restOfStore'
-        if (!tailoredEqualFunctions(substates[key], substore.getState(), key)) {
+        if (!tailoredEqualFunctions(substates[key], substore.getState(), key, dispatchedActions)) {
           // console.log('halal', key)
           if (key === 'fullOldStore') {
             substore.setState(substates['originalStore'])
@@ -493,7 +503,12 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   editorStore: Substates[K],
   oldEditorStore: Substates[K],
   key: K,
+  dispatchedActions: ReadonlyArray<EditorAction>,
 ) {
+  if (dispatchedActions[0]?.action === 'SCROLL_CANVAS') {
+    return key === 'canvasOffset' ? false : true
+  }
+
   switch (key) {
     case 'canvas':
       return (
@@ -529,6 +544,15 @@ function tailoredEqualFunctions<K extends keyof Substates>(
       return shallowEqual(editorStore, oldEditorStore)
     case 'selectedHighlightedViews':
       return shallowEqual((editorStore as any).editor, (oldEditorStore as any).editor)
+    case 'dispatch':
+      return (
+        (editorStore as DispatchSubstate).dispatch === (oldEditorStore as DispatchSubstate).dispatch
+      )
+    case 'theme':
+      return (
+        (editorStore as ThemeSubstate).userState.themeConfig ===
+        (oldEditorStore as ThemeSubstate).userState.themeConfig
+      )
     default:
       const _exhaustiveCheck: never = key
       throw new Error(`Unhandled store ${JSON.stringify(key)}`)
