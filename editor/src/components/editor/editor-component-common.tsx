@@ -31,25 +31,13 @@ let currentKeyDownEventHandler: KeyboardHandlerUnknown | null = null
 let keyUpHandlers: Array<KeyboardHandlerActions> = []
 let currentKeyUpEventHandler: KeyboardHandlerUnknown | null = null
 
-function eventListenerOptionsForEvent(
-  eventName: keyof WindowEventMap,
-): boolean | EventListenerOptions | undefined {
-  switch (eventName) {
-    case 'mousedown':
-    case 'mouseup':
-      return true
-    default:
-      return undefined
-  }
-}
-
 // Removes an event handler if it exists.
 function removeHandler<K extends keyof WindowEventMap>(
   eventName: K,
   handler: EventHandler<K, unknown> | null,
 ): void {
   if (handler != null) {
-    window.removeEventListener(eventName, handler, eventListenerOptionsForEvent(eventName))
+    window.removeEventListener(eventName, handler)
   }
 }
 
@@ -71,7 +59,7 @@ function createHandler<K extends keyof WindowEventMap>(
       editorStoreRef.current.dispatch(collatedActions, 'everyone')
     }
 
-    window.addEventListener(eventName, windowEventHandler, eventListenerOptionsForEvent(eventName))
+    window.addEventListener(eventName, windowEventHandler)
     return windowEventHandler
   }
 }
