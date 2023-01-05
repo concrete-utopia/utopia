@@ -1,20 +1,17 @@
+import { escape, unescape } from 'he'
 import React from 'react'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { useEditorState } from '../editor/store/store-hook'
+import * as PP from '../../core/shared/property-path'
+import { Modifier } from '../../utils/modifiers'
+import { setProperty } from '../canvas/commands/set-property-command'
+import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
-  clearSelection,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
-import { escape, unescape } from 'he'
-import { AllElementProps } from '../editor/store/editor-state'
-import { Modifier } from '../../utils/modifiers'
-import { setProperty } from '../canvas/commands/set-property-command'
-import * as EP from '../../core/shared/element-path'
-import * as PP from '../../core/shared/property-path'
-import { ApplyCommandsAction } from '../editor/action-types'
+import { useEditorState } from '../editor/store/store-hook'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -22,7 +19,7 @@ interface TextEditorProps {
   elementPath: ElementPath
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
-  passthroughProps: Record<string, unknown>
+  passthroughProps: Record<string, any>
 }
 
 export function escapeHTML(s: string): string {
@@ -35,7 +32,7 @@ export function unescapeHTML(s: string): string {
 
 const handleShortcut = (
   cond: boolean,
-  allElementProps: AllElementProps,
+  style: { [key: string]: unknown } | null,
   elementPath: ElementPath,
   prop: string,
   value: string,
@@ -44,7 +41,6 @@ const handleShortcut = (
   if (!cond) {
     return []
   }
-  const { style } = allElementProps[EP.toString(elementPath)]
   const newValue = style != null && style[prop] === value ? defaultValue : value
   return [
     applyCommandsAction([setProperty('always', elementPath, PP.create(['style', prop]), newValue)]),
@@ -54,7 +50,6 @@ const handleShortcut = (
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
-  const allElementProps = useEditorState((store) => store.editor.allElementProps, 'Editor')
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -87,10 +82,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (event: React.KeyboardEvent) => {
       const modifiers = Modifier.modifiersForEvent(event)
       const meta = modifiers.cmd || modifiers.ctrl
+      const style = passthroughProps.style ?? {}
       const shortcuts = [
         ...handleShortcut(
           meta && event.key === 'b', // Meta+b = bold
-          allElementProps,
+          style,
           elementPath,
           'fontWeight',
           'bold',
@@ -98,7 +94,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && event.key === 'i', // Meta+i = italic
-          allElementProps,
+          style,
           elementPath,
           'fontStyle',
           'italic',
@@ -106,7 +102,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && event.key === 'u', // Meta+u = underline
-          allElementProps,
+          style,
           elementPath,
           'textDecoration',
           'underline',
@@ -114,7 +110,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
-          allElementProps,
+          style,
           elementPath,
           'textDecoration',
           'line-through',
@@ -133,7 +129,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         event.stopPropagation()
       }
     },
-    [dispatch, elementPath, allElementProps],
+    [dispatch, elementPath, passthroughProps],
   )
 
   const onBlur = React.useCallback(() => {
