@@ -10,14 +10,13 @@ import {
   widthHeightFromAxis,
 } from '../inspector-common'
 import * as EP from '../../../core/shared/element-path'
-import { FlexDirection } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, printCSSNumber } from '../common/css-utils'
+import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 
 export type InspectorStrategy = (
