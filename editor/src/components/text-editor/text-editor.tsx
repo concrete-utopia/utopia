@@ -26,11 +26,11 @@ interface TextEditorProps {
 }
 
 export function escapeHTML(s: string): string {
-  return escape(s)
+  return escape(s).replace(/\n/g, '<br />')
 }
 
 export function unescapeHTML(s: string): string {
-  return unescape(s)
+  return unescape(s).replace(/<br \/>/g, '\n')
 }
 
 const handleShortcut = (
@@ -77,7 +77,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        dispatch([updateChildText(elementPath, escapeHTML(content))])
+        dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
       }
     }
   }, [dispatch, elementPath])

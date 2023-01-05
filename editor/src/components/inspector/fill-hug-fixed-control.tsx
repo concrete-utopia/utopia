@@ -34,7 +34,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies'
 
-const controlId = (segment: 'width' | 'height') => `hug-fixed-fill-${segment}`
+export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 
 type FixedHugFill =
   | { type: 'fixed'; amount: CSSNumber }
