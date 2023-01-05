@@ -128,13 +128,7 @@ describe('draw-to-insert text', () => {
                   data-uid='39e'
                 >Hello</div>
                 <span
-                  style={{
-                    position: 'absolute',
-                    left: 339,
-                    top: 51,
-                    width: 100,
-                    height: 100,
-                  }}
+                  style={{ position: 'absolute', left: 389, top: 101 }}
                   data-uid='${newElementUID}'
                 >Utopia</span>
               </Storyboard>

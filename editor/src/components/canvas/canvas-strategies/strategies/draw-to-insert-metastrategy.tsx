@@ -433,12 +433,12 @@ function getStyleAttributesForPointInAbsolutePosition(
 ) {
   const propsToSet: Array<ValueAtPath> = [
     {
-      path: stylePropPathMappingFn('top', ['style']),
-      value: jsxAttributeValue(point.y, emptyComments),
-    },
-    {
       path: stylePropPathMappingFn('left', ['style']),
       value: jsxAttributeValue(point.x, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('top', ['style']),
+      value: jsxAttributeValue(point.y, emptyComments),
     },
   ]
 
