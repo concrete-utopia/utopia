@@ -1,14 +1,13 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
+/** @jsxImportSource zustand-signal */
 
-import { jsx } from '@emotion/react'
+import { $ } from 'zustand-signal'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { EditorStorePatched } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { EditorStateContext, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
@@ -143,16 +142,11 @@ interface NineBlockControlCellProps {
 const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
-  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+  const context = React.useContext(EditorStateContext)
 
   const alignItemsJustifyContent = React.useMemo(
     () => ({ alignItems, justifyContent }),
     [alignItems, justifyContent],
-  )
-
-  const isSelected = useEditorState(
-    (store) => isSelectedSelector(store, alignItemsJustifyContent),
-    'NineBlockControlCell isSelected',
   )
 
   return (
@@ -176,7 +170,12 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           justifyContent: 'center',
           width: '100%',
           height: '100%',
-          opacity: opacity(isSelected, flexDirection === 'row'),
+          opacity: $(context!.useStore, (store) =>
+            opacity(
+              isSelectedSelector(store, alignItemsJustifyContent),
+              flexDirectionSelector(store) === 'row',
+            ),
+          ),
         }}
       >
         <Slabs
@@ -194,7 +193,12 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           justifyContent: 'center',
           width: '100%',
           height: '100%',
-          opacity: opacity(isSelected, flexDirection === 'column'),
+          opacity: $(context!.useStore, (store) =>
+            opacity(
+              isSelectedSelector(store, alignItemsJustifyContent),
+              flexDirectionSelector(store) === 'column',
+            ),
+          ),
         }}
       >
         <Slabs
@@ -205,7 +209,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
         />
       </div>
       <div
-        css={{
+        style={{
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
@@ -213,10 +217,12 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           backgroundColor: bgColor,
           width: '100%',
           height: '100%',
-          opacity: isSelected ? 0 : 1,
-          '&:hover': {
-            opacity: 0,
-          },
+          opacity: $(context!.useStore, (store) =>
+            isSelectedSelector(store, alignItemsJustifyContent) ? 0 : 1,
+          ),
+          // '&:hover': {
+          //   opacity: 0,
+          // },
         }}
       >
         <div
