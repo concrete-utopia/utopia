@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import { FlexRow } from '../layout/flex-row'
 import React from 'react'
 
@@ -17,11 +14,6 @@ export const ActionSheet = (props: any) => {
         right: '0px',
         top: '0px',
         bottom: '0px',
-      }}
-      css={{
-        '& > div': {
-          marginRight: '4px',
-        },
       }}
       className='actionsheet'
       {...props}

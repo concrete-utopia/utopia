@@ -85,15 +85,7 @@ const HiddenControlLabel = React.memo((props: HiddenControlLabelProps): JSX.Elem
     [propName, showHiddenControl],
   )
   return (
-    <Subdued
-      css={{
-        ':hover': {
-          color: colorTheme.primary.value,
-        },
-      }}
-      style={{ cursor: 'pointer' }}
-      onClick={labelOnClick}
-    >
+    <Subdued style={{ cursor: 'pointer' }} onClick={labelOnClick}>
       {propName}
       {props.isLast ? '' : ', '}
     </Subdued>

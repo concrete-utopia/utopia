@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
@@ -489,15 +485,6 @@ const LockedOverlay = React.memo(() => {
     'EditorComponentInner refreshingDependencies',
   )
 
-  const anim = keyframes`
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 0.2;
-    }
-  `
-
   const locked = React.useMemo(() => {
     return editorLocked || refreshingDependencies
   }, [editorLocked, refreshingDependencies])
@@ -527,9 +514,6 @@ const LockedOverlay = React.memo(() => {
         alignItems: 'center',
         justifyContent: 'center',
       }}
-      css={css`
-        animation: ${anim} 0.3s ease-in-out;
-      `}
     >
       {when(
         refreshingDependencies,

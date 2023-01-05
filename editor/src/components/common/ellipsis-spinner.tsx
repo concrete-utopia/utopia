@@ -35,7 +35,7 @@ const ellipsis4Anim = keyframes`{
 // Don't even waste your time trying to type the `css` prop because it will haunt you forever
 const Ellipsis = (props: any) => (
   <div
-    css={{
+    style={{
       position: 'absolute',
       top: '27px',
       width: '11px',
@@ -52,7 +52,7 @@ export const EllipsisSpinner = React.memo(() => {
   return (
     <div
       id='spinner'
-      css={{
+      style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -62,35 +62,35 @@ export const EllipsisSpinner = React.memo(() => {
     >
       <div
         id='lds-ellipsis'
-        css={{
+        style={{
           position: 'relative',
           width: '64px',
           height: '64px',
         }}
       >
         <Ellipsis
-          css={{
+          style={{
             left: '6px',
             animation: `${ellipsis1Anim} 0.6s infinite`,
           }}
         ></Ellipsis>
 
         <Ellipsis
-          css={{
+          style={{
             left: '6px',
             animation: `${ellipsis2Anim} 0.6s infinite`,
           }}
         ></Ellipsis>
 
         <Ellipsis
-          css={{
+          style={{
             left: '26px',
             animation: `${ellipsis3Anim} 0.6s infinite`,
           }}
         ></Ellipsis>
 
         <Ellipsis
-          css={{
+          style={{
             left: '45px',
             animation: `${ellipsis4Anim} 0.6s infinite`,
           }}

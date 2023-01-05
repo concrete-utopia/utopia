@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { IcnProps, UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
@@ -75,16 +72,12 @@ export const OptionControl: React.FunctionComponent<
         placement={'top'}
       >
         <label
-          css={{
+          style={{
             // If just an option control:
             boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
             backgroundColor: props.value ? props.controlStyles.segmentSelectorColor : 'transparent',
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
-            '.option-chain-control-container &': {
-              borderRadius: 0,
-              boxShadow: 'none !important',
-            },
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -94,14 +87,6 @@ export const OptionControl: React.FunctionComponent<
             minWidth: controlOptions.width,
             height: controlOptions.height,
             color: props.controlStyles.mainColor,
-            '.option-chain-control-container .segment:first-of-type  &': {
-              borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-            },
-            '.option-chain-control-container .segment:last-child &': {
-              borderTopRightRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
-            },
             borderTopRightRadius:
               rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
                 ? UtopiaTheme.inputBorderRadius
@@ -119,12 +104,6 @@ export const OptionControl: React.FunctionComponent<
                 ? UtopiaTheme.inputBorderRadius
                 : undefined,
             opacity: controlOpacity,
-            '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
-            },
-            '&:active': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
-            },
           }}
           className={`option-control ${
             props.controlClassName != null ? props.controlClassName : ''

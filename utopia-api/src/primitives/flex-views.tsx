@@ -15,7 +15,7 @@ export const FlexRow: React.FunctionComponent<FlexRowProps> = (props: FlexRowPro
     <div
       {...props}
       // we use Emotion css prop here so that it is overwritable with both classNames and style props
-      css={[{ display: 'flex', flexDirection: 'row' }, props.css]}
+      style={{ display: 'flex', flexDirection: 'row' }}
     >
       {props.children}
     </div>
@@ -30,7 +30,7 @@ export const FlexCol: React.FunctionComponent<FlexColProps> = (props: FlexColPro
     <div
       {...props}
       // we use Emotion css prop here so that it is overwritable with both classNames and style props
-      css={[{ display: 'flex', flexDirection: 'column' }, props.css]}
+      style={{ display: 'flex', flexDirection: 'column' }}
     >
       {props.children}
     </div>

@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import { Table, Checkbox } from 'antd'
 import Column from 'antd/lib/table/Column'
 import 'antd/dist/antd.css'

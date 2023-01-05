@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import {
@@ -230,14 +226,10 @@ export const GithubFileChangesList: React.FC<{
               padded={false}
               variant='<----------1fr---------><-auto->'
               title={conflicting ? 'Potential conflicts' : i.filename}
-              css={{
+              style={{
                 paddingRight: 6,
                 color: conflicting ? colorTheme.errorForegroundSubdued.value : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
-                '&:hover': {
-                  cursor: !conflicting && clickable ? 'pointer' : undefined,
-                  background: clickable ? colorTheme.bg2.value : undefined,
-                },
               }}
             >
               <UIGridRow

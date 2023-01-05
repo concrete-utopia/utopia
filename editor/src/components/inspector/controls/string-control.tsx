@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import classNames from 'classnames'
 import React from 'react'
 import { StringInput } from '../../../uuiui'

@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import * as React from 'react'
-import { jsx } from '@emotion/react'
 import facepaint from 'facepaint'
 
 export interface BasicStyledComponent {
@@ -22,7 +19,7 @@ export const breakpoints = facepaint(breakpointLocations.map((bp) => `@media (mi
 export default class Team extends React.Component {
   TeamBox: React.FunctionComponent<BasicStyledComponent> = (props) => (
     <div
-      css={breakpoints({
+      style={breakpoints({
         textAlign: ['center', 'left', 'left'],
         width: ['100%', '100%', `33.33%`],
         margin: 'auto 0',
@@ -41,7 +38,7 @@ export default class Team extends React.Component {
 
   TeamName: React.FunctionComponent<BasicStyledComponent> = (props) => (
     <span
-      css={breakpoints({
+      style={breakpoints({
         ...props.emotion,
         fontWeight: 600,
       })}
@@ -52,7 +49,7 @@ export default class Team extends React.Component {
 
   TeamRole: React.FunctionComponent<BasicStyledComponent> = (props) => (
     <span
-      css={breakpoints({
+      style={breakpoints({
         color: '#157EFB',
         ...props.emotion,
       })}
@@ -63,7 +60,7 @@ export default class Team extends React.Component {
 
   TeamHeadshot: React.FunctionComponent<{ src: string }> = (props) => (
     <div
-      css={breakpoints({
+      style={breakpoints({
         backgroundColor: '#4524FB',
         borderRadius: '50%',
         width: 64,
@@ -78,7 +75,7 @@ export default class Team extends React.Component {
 
   TeamBio: React.FunctionComponent<BasicStyledComponent> = (props) => (
     <div
-      css={breakpoints({
+      style={breakpoints({
         ...bodyStyles,
         fontSize: [16, 18, 18],
         marginLeft: '1em',
@@ -92,13 +89,13 @@ export default class Team extends React.Component {
     return (
       <React.Fragment>
         <div
-          css={breakpoints({
+          style={breakpoints({
             maxWidth: 1200,
             margin: '3rem auto',
           })}
         >
           <div
-            css={breakpoints({
+            style={breakpoints({
               display: 'flex',
               flexWrap: 'wrap',
               justifyContent: ['center', 'left', 'left'],

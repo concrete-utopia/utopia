@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
 import { IcnProps, useColorTheme, UtopiaTheme } from '../../uuiui'
@@ -58,7 +55,7 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
   return (
     <Tile
       size={props.size}
-      css={{
+      style={{
         height: 44,
         transition: 'all .1s ease-in-out',
         // borderTop: props.selected
@@ -66,18 +63,6 @@ export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileP
         //   : '2px solid transparent',
 
         cursor: 'pointer',
-        '& > *': {
-          opacity: props.selected ? 1 : 0.5,
-          // transform: props.selected ? 'translateY(1px)' : 'inherit',
-        },
-        '&:hover > *': {
-          opacity: 1,
-          transform: props.selected ? 'translateY(1px)' : 'inherit',
-        },
-        '&:active > *': {
-          transform: 'translateY(1px)',
-          opacity: 1,
-        },
       }}
       onClick={props.onClick}
     >

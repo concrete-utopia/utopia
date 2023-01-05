@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { FlexColumn } from '../../../uuiui'
 import { FileBrowser } from '../../filebrowser/filebrowser'

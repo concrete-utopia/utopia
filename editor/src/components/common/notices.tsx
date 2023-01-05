@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import * as EditorActions from '../editor/actions/action-creators'
 import React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
@@ -76,7 +73,7 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
       </div>
 
       <div
-        css={{
+        style={{
           backgroundColor: 'hsl(0,0%,0%,3%)',
           display: 'flex',
           flex: '0 0 24px',
@@ -84,12 +81,6 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
           justifyContent: 'center',
           fontSize: 14,
           cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: 'hsl(0,0%,0%,5%)',
-          },
-          '&:active': {
-            backgroundColor: 'hsl(0,0%,0%,6%)',
-          },
         }}
         onClick={deleteToast}
         id='toast-button'

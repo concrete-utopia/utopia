@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { components, FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
@@ -145,8 +141,7 @@ const FooterSection = React.memo((props: { filter: string; options: Array<TailWi
 
   return (
     <div
-      css={{
-        label: 'focusedElementMetadata',
+      style={{
         overflow: 'hidden',
         boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground10.value}`,
         padding: '8px 8px',

@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import fastDeepEquals from 'fast-deep-equal'
 import React, { Component as ReactComponent } from 'react'
 import {
@@ -197,27 +194,9 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
       <div
         key={name}
         className={name + ' ' + (this.props.className ?? '')}
-        css={{
+        style={{
           width: '100%',
           ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          '--control-styles-interactive-unset-main-color': colorTheme.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': colorTheme.fg7.value,
-          '--control-styles-interactive-unset-track-color': colorTheme.bg5.value,
-          '--control-styles-interactive-unset-rail-color': colorTheme.bg3.value,
-          '&:hover': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
-          '&:focus-within': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
         }}
       >
         <React.Fragment>

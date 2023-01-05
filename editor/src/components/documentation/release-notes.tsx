@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import React from 'react'
@@ -15,8 +12,8 @@ export function ReleaseNotesContent() {
   return (
     <SimpleFlexColumn>
       <div
-        css={{
-          label: 'ReleaseNotesContainer',
+        style={{
+          // label: 'ReleaseNotesContainer',
           backgroundColor: colorTheme.emphasizedBackground.value,
           fontSize: '16px',
           lineHeight: '26px',
@@ -27,10 +24,6 @@ export function ReleaseNotesContent() {
           WebkitUserSelect: 'text',
           overflow: 'scroll',
           whiteSpace: 'pre-wrap',
-          '&  *': {
-            userSelect: 'text',
-            WebkitUserSelect: 'text',
-          },
         }}
       >
         <GettingStarted />

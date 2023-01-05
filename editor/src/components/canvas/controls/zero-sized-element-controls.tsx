@@ -150,12 +150,6 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
           height: frame.height + ZeroControlSize,
           borderRadius: ZeroControlSize / 2,
         }}
-        css={{
-          boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
-          '&:hover': {
-            boxShadow: `0px 0px 0px ${controlSize * 2}px ${colorTheme.primary.value}`,
-          },
-        }}
       />
     )
   }

@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import { NO_OP } from '../../../core/shared/utils'
 import {

@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
@@ -185,12 +182,9 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
   render() {
     const ColorButtonGroup = () => (
       <FlexRow
-        css={{
+        style={{
           marginLeft: 4,
           marginRight: 4,
-          '& > *': {
-            marginRight: 8,
-          },
         }}
       >
         {this.backgroundOptions.map((background: any, i: number) => (
@@ -269,14 +263,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       >
         <UIRow
           rowHeight={'normal'}
-          css={{
+          style={{
             flexShrink: 0,
             paddingLeft: 4,
             paddingRight: 4,
             overflowX: 'scroll',
-            '& > *': {
-              marginRight: 8,
-            },
           }}
         >
           <SquareButton highlight onClick={this.onRestartClick}>
@@ -285,7 +276,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           <input
             onKeyPress={this.handleKeyPress}
             value={popoutPreviewURL}
-            css={{
+            style={{
               fontSize: 11,
               borderRadius: '20px',
               height: 23,
@@ -295,10 +286,6 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               border: '1px solid transparent',
               background: colorTheme.secondaryBackground.value,
               minWidth: 240,
-              '&:focus': {
-                background: 'white',
-                border: `1px solid ${colorTheme.primary.value}`,
-              },
             }}
           />
           {this.props.editedFilename == null ? null : (
@@ -324,14 +311,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
         >
           <UIRow
             rowHeight={'normal'}
-            css={{
+            style={{
               flexShrink: 0,
               paddingLeft: 4,
               paddingRight: 4,
               overflowX: 'scroll',
-              '& > *': {
-                marginRight: 8,
-              },
             }}
           >
             <SquareButton

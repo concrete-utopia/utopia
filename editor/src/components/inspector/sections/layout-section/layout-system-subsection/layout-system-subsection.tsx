@@ -50,15 +50,10 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
   return (
     <React.Fragment>
       <InspectorSectionHeader
-        css={{
+        style={{
           marginTop: 8,
           transition: 'color .1s ease-in-out',
           color: layoutSectionOpen ? colorTheme.fg1.value : colorTheme.fg7.value,
-          '--buttonContentOpacity': 0.3,
-          '&:hover': {
-            color: colorTheme.fg1.value,
-            '--buttonContentOpacity': 1,
-          },
         }}
       >
         <FlexRow

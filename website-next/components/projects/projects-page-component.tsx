@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import React, { useState } from 'react'
-import { jsx } from '@emotion/react'
+import React from 'react'
 import styled from '@emotion/styled'
 
 import { layout, FlexRow, FlexColumn, FlexWrappingList } from './layout'
@@ -101,13 +98,12 @@ class ProjectCard extends React.Component<ProjectCardProps> {
       >
         <div
           className='projecttile-thumbnail'
-          style={{ zIndex: 0 }}
-          css={{
+          style={{
+            zIndex: 0,
             background: `url(${this.props.thumbnail}) no-repeat 50% 50%`,
             backgroundSize: '100%',
             height: cardLayout.imageHeight,
             transition: 'all 0.2s ease-in-out',
-            '&:hover': { backgroundSize: '120%' },
           }}
         ></div>
         <div
@@ -303,7 +299,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
     <div
       role='button'
       data-label='Create New Project'
-      css={{
+      style={{
         WebkitUserSelect: 'none',
         display: 'flex',
         alignItems: 'center',
@@ -319,17 +315,8 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
         WebkitTextStrokeWidth: '1px',
         color: '#00000005',
         transition: 'all .1s ease-in-out',
-        '&:hover': {
-          color: colors.default,
-        },
-        '&:active': {
-          transform: 'scale(.99)',
-        },
         borderRadius: '5px',
         overflow: 'hidden',
-        ['@media (prefers-color-scheme: dark)']: {
-          border: `1px solid ${darkColors.default}`,
-        },
         ...cardLayoutStyle,
       }}
       onMouseUp={this.createNewProject}
@@ -442,7 +429,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             <img
               src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_@2x.png?raw=true'
               alt='Utopia logo'
-              css={{ height: '35px' }}
+              style={{ height: '35px' }}
             ></img>
             Utopia
           </div>
@@ -486,15 +473,12 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               }}
             >
               <div
-                css={{
+                style={{
                   padding: 10,
                   background: '#ececec',
                   borderRadius: '5px',
                   width: '310px',
                   color: 'grey',
-                  ['@media (prefers-color-scheme: dark)']: {
-                    background: '#535353',
-                  },
                 }}
               >
                 <input

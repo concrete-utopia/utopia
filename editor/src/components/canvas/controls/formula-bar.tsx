@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { SimpleFlexRow, HeadlessStringInput, colorTheme } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -128,7 +125,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
 
   return (
     <SimpleFlexRow
-      css={{
+      style={{
         height: 24,
         flexGrow: 1,
         paddingLeft: 4,
@@ -138,12 +135,6 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
         backgroundColor: colorTheme.bg1.value,
         color: colorTheme.border1.value,
         border: '1px solid transparent',
-        '&:hover': {
-          outline: 'none',
-        },
-        '&:focus-within': {
-          background: colorTheme.bg1.value,
-        },
       }}
       onKeyDown={onKeyDown}
     >
@@ -152,7 +143,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
           ref={inputRef}
           type='text'
           placeholder=''
-          css={{
+          style={{
             paddingLeft: 4,
             paddingRight: 4,
             width: '100%',
@@ -164,12 +155,6 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
             backgroundColor: 'transparent',
             color: colorTheme.bg0.value,
             transition: 'background-color .1s ease-in-out',
-            '&:hover': {
-              outline: 'none',
-            },
-            '&:focus': {
-              outline: 'none',
-            },
           }}
           onChange={onInputChange}
           onBlur={onBlur}

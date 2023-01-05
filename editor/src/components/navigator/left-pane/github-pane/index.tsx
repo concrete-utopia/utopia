@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
@@ -80,11 +76,6 @@ const AccountBlock = () => {
           background: colorTheme.primary.value,
           borderRadius: 3,
           color: colorTheme.fg9.value,
-        }}
-        css={{
-          '&:hover': {
-            opacity: 0.7,
-          },
         }}
         onMouseUp={triggerAuthentication}
       >
@@ -311,18 +302,13 @@ const BranchBlock = () => {
                 key={index}
                 padded
                 variant='<----------1fr---------><-auto->'
-                css={{
+                style={{
                   cursor: loadingThisBranch
                     ? 'wait'
                     : isListingBranches
                     ? 'not-allowed'
                     : 'pointer',
                   opacity: isListingBranches && !loadingThisBranch ? 0.5 : 1,
-                  '&:hover': {
-                    background: colorTheme.primarySubdued.value,
-                    color: colorTheme.white.value,
-                    svg: { stroke: colorTheme.white.value },
-                  },
                   fontWeight: isCurrent ? 'bold' : 'normal',
                   color: branch.new === true ? colorTheme.primary.value : 'inherit',
                 }}
@@ -973,15 +959,7 @@ export const GithubPane = React.memo(() => {
           </FlexRow>
           {when(
             githubUser != null,
-            <Button
-              style={{ gap: 4, padding: '0 6px' }}
-              onClick={openGithubProfile}
-              css={{
-                '&:hover': {
-                  opacity: 0.6,
-                },
-              }}
-            >
+            <Button style={{ gap: 4, padding: '0 6px' }} onClick={openGithubProfile}>
               @{githubUser?.login}
               {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
             </Button>,

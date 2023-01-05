@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'

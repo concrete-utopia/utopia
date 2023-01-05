@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 // this is the expensive fully-loaded Prism. If you read this comment, and it's after the 7th of May, 2020,
@@ -56,13 +53,6 @@ const ProjectCard = React.memo((props: ProjectListing) => {
   const onClick = React.useCallback(() => window.open(projectURL, '_self'), [projectURL])
   return (
     <div
-      css={{
-        transition: 'all .2s ease-in-out',
-        scrollSnapAlign: 'start',
-        '&:hover': {
-          transform: 'scale(1.02)',
-        },
-      }}
       style={{
         position: 'relative',
         flex: '0 0 312px',

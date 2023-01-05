@@ -1,20 +1,7 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { css, jsx, keyframes } from '@emotion/react'
 import React from 'react'
 import { FlexColumn } from '../../../../uuiui'
 
 export const GithubSpinner: React.FC<{ stroke?: string }> = ({ stroke }) => {
-  const anim = keyframes`
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      `
-
   return (
     <FlexColumn>
       <svg
@@ -27,9 +14,6 @@ export const GithubSpinner: React.FC<{ stroke?: string }> = ({ stroke }) => {
         strokeWidth='2'
         strokeLinecap='round'
         strokeLinejoin='round'
-        css={css`
-          animation: ${anim} 1s linear infinite;
-        `}
       >
         <line x1='12' y1='2' x2='12' y2='6'></line>
         <line x1='12' y1='18' x2='12' y2='22'></line>

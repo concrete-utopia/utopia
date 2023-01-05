@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { colorTheme } from '../../../uuiui'
 import { User } from '../../../uuiui-deps'
@@ -101,8 +97,7 @@ export const LeftPaneComponent = React.memo(() => {
           <UIGridRow
             variant='<--1fr--><--1fr--><--1fr-->'
             padded={false}
-            css={{ gridColumnGap: 0 }}
-            style={{ alignItems: 'stretch', marginBottom: 10 }}
+            style={{ alignItems: 'stretch', marginBottom: 10, gridColumnGap: 0 }}
           >
             <MenuTab
               label={'Project'}

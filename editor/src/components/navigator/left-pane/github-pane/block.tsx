@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
@@ -64,12 +60,6 @@ export const Block = React.memo((props: BlockProps) => {
           gridColumnGap: 0,
           borderRadius: 3,
           color: colorTheme.fg1.value,
-        }}
-        css={{
-          '&:hover': {
-            background: props.onClick != null ? colorTheme.bg2.value : 'none',
-            cursor: props.onClick != null ? 'pointer' : 'default',
-          },
         }}
         padded={false}
       >

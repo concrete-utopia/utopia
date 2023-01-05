@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import TimeAgo from 'react-timeago'
 import { notice } from '../../../../components/common/notice'
@@ -101,18 +97,13 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       padded
       variant='<----------1fr---------><-auto->'
       tall={true}
-      css={{
+      style={{
         cursor: importing
           ? 'wait'
           : loadingRepos || !props.importPermitted
           ? 'not-allowed'
           : 'pointer',
         opacity: loadingRepos || !props.importPermitted ? 0.5 : 1,
-        '&:hover': {
-          background: colorTheme.primarySubdued.value,
-          color: colorTheme.white.value,
-          svg: { stroke: colorTheme.white.value },
-        },
       }}
       onClick={importRepository}
     >

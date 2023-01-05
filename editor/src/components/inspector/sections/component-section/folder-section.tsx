@@ -102,7 +102,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
   }
 
   return (
-    <div css={cssHoverEffect}>
+    <div>
       {unless(
         props.isRoot,
         <FolderLabel

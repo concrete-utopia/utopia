@@ -11,7 +11,7 @@ interface ControlledTextAreaProps {
   onClickSelectsAll: boolean
   onBlurOnCmdReturn?: boolean
   disabled: boolean
-  css?: Interpolation<any>
+  css?: React.CSSProperties
 }
 
 interface ControlledTextAreaState {
@@ -90,7 +90,6 @@ export class ControlledTextArea extends React.Component<
         autoCapitalize='off'
         autoComplete='off'
         autoCorrect='off'
-        css={this.props.css}
         spellCheck={false}
         disabled={this.props.disabled}
         className={this.props.className}

@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import styled from '@emotion/styled'
 import { FlexRow, SimpleFlexRow } from './widgets/layout/flex-row'
@@ -55,13 +52,13 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
       <SimpleFlexRow
         onClick={props.onClick}
         onMouseDown={props.onMouseDown}
-        css={{
+        style={{
           ...baseStyle,
           ...selectionHandlingStyle,
         }}
         className={props.className}
       >
-        <div css={{ flexGrow: 1, textAlign: 'center' }}>{label}</div>
+        <div style={{ flexGrow: 1, textAlign: 'center' }}>{label}</div>
       </SimpleFlexRow>
     )
   },

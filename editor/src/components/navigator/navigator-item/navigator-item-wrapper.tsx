@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'

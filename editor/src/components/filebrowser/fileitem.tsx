@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag */
-import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
@@ -670,6 +666,7 @@ class FileBrowserItemInner extends React.PureComponent<
     if (this.state.adding != null) {
       this.setState({
         adding: {
+          // eslint-disable-next-line react/no-access-state-in-setstate
           ...this.state.adding,
           filename: event.target.value,
         },

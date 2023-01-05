@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import { Placement } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
@@ -36,29 +33,6 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
   render() {
     return (
       <Tippy
-        css={{
-          fontWeight: 400,
-          fontSize: 11,
-          fontFamily:
-            "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-          backgroundColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          color: `${colorTheme.neutralInvertedForeground.value} !important`,
-          '& .tippy-content': {
-            padding: '4px 8px !important',
-          },
-          '&[data-placement^=top] .tippy-arrow::before': {
-            borderTopColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          },
-          '&[data-placement^=right] .tippy-arrow::before': {
-            borderRightColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          },
-          '&[data-placement^=bottom] .tippy-arrow::before': {
-            borderBottomColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          },
-          '&[data-placement^=left] .tippy-arrow::before': {
-            borderLeftColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          },
-        }}
         arrow
         disabled={this.props.disabled}
         content={this.props.title}

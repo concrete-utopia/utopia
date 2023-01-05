@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { revertAllGithubFiles } from '../../core/shared/github'
 import { Dialog, FormButton } from '../../uuiui'

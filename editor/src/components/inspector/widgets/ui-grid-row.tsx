@@ -100,7 +100,7 @@ export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowP
 }) => (
   <div
     {...props}
-    css={{
+    style={{
       padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
       minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,

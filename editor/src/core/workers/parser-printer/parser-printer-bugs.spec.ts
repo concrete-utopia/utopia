@@ -246,7 +246,7 @@ export var App = (props) => {
   return (
     <View
       data-uid='aaa'
-      css={{
+      style={{
         backgroundColor: 'regular propety, without quotes',
         '& :hover': { color: color },
       }}
@@ -267,7 +267,7 @@ import { Storyboard, View } from 'utopia-api'
 
 export var App = (props) => {
   return (
-    <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
+    <View data-uid='aaa' style={{ backgroundColor: 'red' }}>
       <View data-uid='bbb'>
         {elements.map((e) => null)}
       </View>
@@ -362,7 +362,7 @@ import { Storyboard, View } from 'utopia-api'
 
 export var App = (props) => {
   return (
-    <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
+    <View data-uid='aaa' style={{ backgroundColor: 'red' }}>
       <View data-uid='bbb'>
         {elements.map((e) => null)}
       </View>

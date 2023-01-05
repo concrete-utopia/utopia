@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import styled from '@emotion/styled'
 import { FlexRow } from '../layout/flex-row'
@@ -44,11 +41,6 @@ export const SectionTitleRow: React.FunctionComponent<
         minHeight: UtopiaTheme.layout.rowHeight.normal,
         color: colorTheme.fg0.value,
         cursor: 'pointer',
-      }}
-      css={{
-        '&:hover': {
-          background: colorTheme.neutralBackground.value,
-        },
       }}
       onClick={handleClick}
     >

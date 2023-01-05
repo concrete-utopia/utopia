@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import { Global } from '@emotion/react'
 import {
   PreviewReactSelectDeviceSelector,
@@ -176,7 +173,7 @@ export class PreviewWindow extends React.Component<PreviewWindowProps, PreviewWi
         >
           <div
             className='preview-topbar'
-            css={{
+            style={{
               backgroundColor: '#F5F5F5',
               height: TopBarHeight,
               width: '100%',

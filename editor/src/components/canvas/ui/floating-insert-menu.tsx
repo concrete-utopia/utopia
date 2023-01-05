@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, {
   ActionMeta,
@@ -369,20 +366,8 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
     )
 
     return (
-      <FlexRow css={{ height: 25, gap: 8, flex: 1 }}>
-        <input
-          type='checkbox'
-          checked={checked}
-          onChange={handleChange}
-          css={{
-            '&:focus': {
-              outline: 'auto',
-              outlineColor: colorTheme.primary.value,
-              outlineOffset: 0,
-            },
-          }}
-          id={id}
-        />
+      <FlexRow style={{ height: 25, gap: 8, flex: 1 }}>
+        <input type='checkbox' checked={checked} onChange={handleChange} style={{}} id={id} />
         <label htmlFor={id} tabIndex={1}>
           {children}
         </label>
@@ -632,7 +617,7 @@ export var FloatingMenu = React.memo(() => {
         {showInsertionControls ? (
           <FlexColumn>
             <FlexRow
-              css={{
+              style={{
                 height: UtopiaTheme.layout.rowHeight.smaller,
                 paddingLeft: 8,
                 paddingRight: 8,
@@ -648,7 +633,7 @@ export var FloatingMenu = React.memo(() => {
               </CheckboxRow>
             </FlexRow>
             <FlexRow
-              css={{
+              style={{
                 height: UtopiaTheme.layout.rowHeight.smaller,
                 paddingLeft: 8,
                 paddingRight: 8,
@@ -674,7 +659,7 @@ export var FloatingMenu = React.memo(() => {
         {when(
           showWrapControls,
           <FlexRow
-            css={{
+            style={{
               height: UtopiaTheme.layout.rowHeight.normal,
               paddingLeft: 8,
               paddingRight: 8,

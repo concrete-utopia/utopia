@@ -64,7 +64,7 @@ interface ButtonProps {
 
 const Button: React.FunctionComponent<React.PropsWithChildren<ButtonProps>> = (props) => (
   <span
-    css={{
+    style={{
       fontSize: 9,
       fontWeight: 700,
       borderRadius: 2,
@@ -79,12 +79,6 @@ const Button: React.FunctionComponent<React.PropsWithChildren<ButtonProps>> = (p
       color: props.selected ? 'black' : 'transparent',
       transitionDelay: '.1s',
       overflow: 'hidden',
-      '&:hover': {
-        color: 'black',
-        width: props.width,
-        transition: 'all .1s linear',
-        transitionDelay: '.1s',
-      },
       ...(props.style as any), // TODO Emotion and React 18 types don't like each other
     }}
     onClick={props.onClick}

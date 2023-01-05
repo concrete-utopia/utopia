@@ -25,22 +25,13 @@ export const OptionChainControl: React.FunctionComponent<
     throw new Error('OptionControl needs an array of `options`')
   }
 
-  const optionCSS: Interpolation<any> = React.useMemo(() => {
+  const optionCSS: React.CSSProperties = React.useMemo(() => {
     return {
       position: 'relative',
-      // This is the divider in between controls
-      '&:not(:first-of-type)::after': {
-        content: '""',
-        height: 10,
-        backgroundColor: props.controlStyles.borderColor,
-        position: 'absolute',
-        left: 0,
-        top: 6,
-      },
     }
-  }, [props.controlStyles.borderColor])
+  }, [])
 
-  const containerCSS: Interpolation<any> = React.useMemo(() => {
+  const containerCSS: React.CSSProperties = React.useMemo(() => {
     return {
       display: 'flex',
       flexDirection: 'column',
@@ -51,7 +42,7 @@ export const OptionChainControl: React.FunctionComponent<
   }, [style])
 
   return (
-    <div id={props.id} key={props.key} css={containerCSS}>
+    <div id={props.id} key={props.key} style={containerCSS}>
       <div
         style={{
           display: 'flex',
@@ -69,7 +60,7 @@ export const OptionChainControl: React.FunctionComponent<
         {options.map((option: OptionChainOption<number | string>, index) => (
           <OptionControl
             {...props}
-            css={optionCSS}
+            style={optionCSS}
             key={'option-' + index}
             DEPRECATED_controlOptions={{
               tooltip: option.tooltip,

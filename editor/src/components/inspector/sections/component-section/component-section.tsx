@@ -422,14 +422,6 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           width: '100%',
           position: 'absolute',
         }}
-        css={{
-          '& > .handle': {
-            opacity: 0,
-          },
-          '&:hover > .handle': {
-            opacity: 1,
-          },
-        }}
       >
         <RowForControl
           controlDescription={controlDescription.propertyControl}
@@ -600,18 +592,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   ])
 
   return (
-    <div
-      css={{
-        '&:hover': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-        '&:focus-within': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-      }}
-    >
+    <div style={{}}>
       <div onClick={handleOnClick}>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}

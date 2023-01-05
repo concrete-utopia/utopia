@@ -1254,7 +1254,7 @@ describe('inspector tests with real metadata', () => {
           data-uid={'aaa'}
         >
           <div
-            css={{
+            style={{
               position: 'absolute',
               backgroundColor: '#DDDDDD',
               width: 203,
@@ -1394,7 +1394,7 @@ describe('inspector tests with real metadata', () => {
           data-uid={'aaa'}
         >
           <div
-            css={{
+            style={{
               position: 'absolute',
               backgroundColor: '#DDDDDD',
               top: 'auto',

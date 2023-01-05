@@ -37,7 +37,7 @@ export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
 
   return (
     <div
-      css={{
+      style={{
         ...(props.style as any), // TODO Emotion and React 18 types don't like each other
         display: 'flex',
         alignItems: 'center',

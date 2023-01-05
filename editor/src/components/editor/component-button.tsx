@@ -92,7 +92,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
     }
   }, [target, isComponent, isFocused, colorTheme])
 
-  const flexRowTheme: Interpolation<Theme> = React.useMemo(() => {
+  const flexRowTheme: React.CSSProperties = React.useMemo(() => {
     return {
       flexGrow: 1,
       flexShrink: 1,
@@ -104,12 +104,6 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       cursor: 'pointer',
       transition: 'background-color .1s ease-in-out',
       ...(editContextStyle as any), // TODO Emotion and React 18 types don't like each other
-      '&:hover': {
-        filter: 'brightness(1.02  )',
-      },
-      '&:active': {
-        filter: 'brightness(1.03)',
-      },
     }
   }, [editContextStyle])
 
@@ -124,7 +118,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
         flexBasis: 38,
       }}
     >
-      <FlexRow role='button' onClick={toggleFocusMode} css={flexRowTheme}>
+      <FlexRow role='button' onClick={toggleFocusMode} style={flexRowTheme}>
         {isComponent ? (
           <Icons.Component color={editContextStyle.stroke as IcnColor} />
         ) : (
@@ -141,7 +135,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       <div
         className='ignore-react-onclickoutside'
         role='expansionButton'
-        css={{
+        style={{
           pointerEvents: popupEnabled ? 'initial' : 'none',
           display: 'flex',
           alignItems: 'center',

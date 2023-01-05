@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { useEditorState } from '../../../../components/editor/store/store-hook'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
@@ -38,12 +34,8 @@ export const PullRequestPane = React.memo(() => {
               key={`pull-request-${index}`}
               padded={true}
               variant='|--16px--|<--------auto-------->'
-              css={{
+              style={{
                 borderRadius: 3,
-                '&:hover': {
-                  backgroundColor: '#eee',
-                  cursor: 'pointer',
-                },
               }}
               onClick={openBlank(pr.htmlURL)}
             >

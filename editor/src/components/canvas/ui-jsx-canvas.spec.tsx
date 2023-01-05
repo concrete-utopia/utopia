@@ -926,7 +926,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         Storyboard,
         registerModule,
       } from 'utopia-api'
-      const MyComp = (props) => <div css={{ backgroundColor: 'blue', position: 'absolute', left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
+      const MyComp = (props) => <div style={{ backgroundColor: 'blue', position: 'absolute', left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
       export var App = (props) => {
         return (<MyComp data-uid={'aaa'}/>)
       }

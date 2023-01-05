@@ -141,21 +141,13 @@ export const DependencyListItem: React.FunctionComponent<
         key={name}
         tabIndex={0}
         className='dependency-item'
-        css={{
+        style={{
           ...textStyle,
           alignItems: 'center',
           height: UtopiaTheme.layout.rowHeight.smaller,
           paddingLeft: 8,
           paddingRight: 8,
           borderRadius: 2,
-          '&:focus': {
-            background: colorTheme.subtleBackground.value,
-            color: colorTheme.emphasizedForeground.value,
-          },
-          '&:hover': {
-            background: colorTheme.subtleBackground.value,
-            color: colorTheme.emphasizedForeground.value,
-          },
           ...(isNewlyLoaded
             ? {
                 animationName: `${FlashAnimation}`,
@@ -167,7 +159,7 @@ export const DependencyListItem: React.FunctionComponent<
         onDoubleClick={onVersionDoubleClick}
       >
         <FlexRow
-          css={{
+          style={{
             flexGrow: 1,
             flexShrink: 0,
           }}
@@ -183,7 +175,7 @@ export const DependencyListItem: React.FunctionComponent<
           {isDefault ? (
             <Tooltip title='Dependency is required for Utopian projects'>
               <FlexRow
-                css={{
+                style={{
                   backgroundColor: colorTheme.fg1.value,
                   boxShadow: `0 0 0 1px ${colorTheme.canvasControlsSizeBoxShadowColor50.value}`,
                   color: colorTheme.bg0.value,
@@ -193,9 +185,6 @@ export const DependencyListItem: React.FunctionComponent<
                   margin: 0,
                   marginLeft: 6,
                   display: 'none',
-                  '.dependency-item:hover &': {
-                    display: 'flex',
-                  },
                   flexGrow: 0,
                   flexShrink: 0,
                 }}
@@ -208,11 +197,8 @@ export const DependencyListItem: React.FunctionComponent<
             target='_blank'
             rel='noopener noreferrer'
             href={`https://www.npmjs.com/package/${name}`}
-            css={{
+            style={{
               display: 'none',
-              '.dependency-item:hover &': {
-                display: 'block',
-              },
               marginLeft: 4,
               marginTop: 4,
             }}

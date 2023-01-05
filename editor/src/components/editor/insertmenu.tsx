@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import {
   JSXElementName,
@@ -384,14 +381,11 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
   return (
     <UIRow
       rowHeight={'normal'}
-      css={{
+      style={{
         background: props.selected ? UtopiaStyles.backgrounds.blue : undefined,
         color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,
-        '&:hover': {
-          border: `1px solid ${colorTheme.primary.value}`,
-        },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
       onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}

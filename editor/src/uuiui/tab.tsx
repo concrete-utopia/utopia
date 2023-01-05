@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import styled from '@emotion/styled'
 import { FlexRow, SimpleFlexRow } from './widgets/layout/flex-row'
@@ -106,13 +103,9 @@ export const TabComponent: React.FunctionComponent<React.PropsWithChildren<TabCo
           <SimpleFlexRow style={{ marginLeft: 8 }}>{label}</SimpleFlexRow>
         </SimpleFlexRow>
         <Button
-          css={{
-            label: 'indicatorContainer',
+          style={{
             width: 18,
             height: 18,
-            '&:active': {
-              transform: 'scale(.92)',
-            },
           }}
           onMouseEnter={setIndicatorHoveredTrue}
           onMouseLeave={setIndicatorHoveredFalse}

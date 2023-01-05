@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
 import { Button } from '../../uuiui'
@@ -28,15 +25,7 @@ export const SquareButton: React.FC<React.PropsWithChildren<TitleButtonProps>> =
   }))
 
   return (
-    <ButtonEl
-      onClick={onClick}
-      css={{
-        '&:hover': {
-          background: color,
-          opacity: 0.7,
-        },
-      }}
-    >
+    <ButtonEl onClick={onClick} style={{}}>
       {children}
     </ButtonEl>
   )
@@ -58,15 +47,7 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
   }))
 
   return (
-    <ButtonEl
-      onClick={onClick}
-      css={{
-        '&:hover': {
-          background: color,
-          opacity: 0.7,
-        },
-      }}
-    >
+    <ButtonEl onClick={onClick} style={{}}>
       {children}
     </ButtonEl>
   )

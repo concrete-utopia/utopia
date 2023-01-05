@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import Utils from '../../utils/utils'

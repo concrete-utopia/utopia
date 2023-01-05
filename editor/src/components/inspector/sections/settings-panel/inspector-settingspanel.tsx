@@ -1,8 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-/** @jsxFrag */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -162,10 +158,6 @@ export const SettingsPanel = React.memo(() => {
       <HeadlessStringInput
         placeholder='Project Contents JSON'
         onSubmitValue={loadProjectContentJson}
-        css={InspectorInputEmotionStyle({
-          hasLabel: false,
-          controlStyles: getControlStyles('simple'),
-        })}
       />
       <FeatureSwitchesSection />
     </FlexColumn>

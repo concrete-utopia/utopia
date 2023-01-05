@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import {
   InspectorSectionIcons,
   Icons,
@@ -61,15 +58,10 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
 
   return (
     <InspectorSectionHeader
-      css={{
+      style={{
         marginTop: 8,
         transition: 'color .1s ease-in-out',
         color: colorTheme.fg1.value,
-        '--buttonContentOpacity': 0.3,
-        '&:hover': {
-          color: colorTheme.fg1.value,
-          '--buttonContentOpacity': 1,
-        },
       }}
     >
       <FlexRow

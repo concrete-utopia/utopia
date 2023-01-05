@@ -6,9 +6,7 @@
  */
 
 /* @flow */
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
+
 import React from 'react'
 import { PureComponent } from 'react'
 import ErrorOverlay from '../components/ErrorOverlay'
@@ -40,14 +38,10 @@ class CompileErrorContainer extends PureComponent<CompileErrorContainerProps, {}
             return (
               <div
                 key={`compile-error-${recordIndex}`}
-                css={{
+                style={{
                   marginBottom: 24,
                   padding: 8,
                   backgroundColor: colorTheme.neutralBackground.value,
-                  '&:hover': {
-                    backgroundColor: colorTheme.emphasizedBackground.value,
-                    borderRadius: 5,
-                  },
                 }}
               >
                 <h3>

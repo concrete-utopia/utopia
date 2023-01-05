@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { useColorTheme } from './styles/theme'
 
@@ -22,7 +19,7 @@ export const IconToggleButton = React.forwardRef<HTMLDivElement, IconToggleButto
         role='button'
         tabIndex={0}
         className={className}
-        css={{
+        style={{
           width: 22,
           height: 22,
           cursor: 'pointer',
@@ -33,16 +30,6 @@ export const IconToggleButton = React.forwardRef<HTMLDivElement, IconToggleButto
           outline: 'none',
           border: 'none',
           backgroundImage: value ? `url(${srcOn})` : `url(${srcOff})`,
-          '&:focus-within': {
-            outline: 'none',
-          },
-          '&:hover': {
-            backgroundColor: colorTheme.buttonHoverBackground.value,
-          },
-          '&:active': {
-            backgroundImage: value ? `url(${srcOff})` : `url(${srcOn})`,
-            filter: 'brightness(99%)',
-          },
         }}
         onClick={onToggle}
       />

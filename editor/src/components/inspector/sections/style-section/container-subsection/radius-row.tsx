@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { OptionsType } from 'react-select'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
