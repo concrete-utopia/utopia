@@ -77,7 +77,7 @@ export const ColorThemeComponent = React.memo(() => {
         }
       }, mainThemeVars)}
       {'}'}
-      {/* Classes with variables based on the subthemes */}
+      {/* Classes with variables based on partial themes */}
       {partialThemes.map((partialTheme) => {
         return (
           `.${partialTheme.name} {` +
