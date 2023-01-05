@@ -84,24 +84,28 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
           }}
         >
           <ResizeEdge
+            // onClick={() => alert('right')}
             ref={rightRef}
             position={{ x: 1, y: 0.5 }}
             cursor={CSSCursor.ResizeEW}
             direction='vertical'
           />
           <ResizeEdge
+            // onClick={() => alert('bottom')}
             ref={bottomRef}
             position={{ x: 0.5, y: 1 }}
             cursor={CSSCursor.ResizeNS}
             direction='horizontal'
           />
           <ResizeEdge
+            // onClick={() => alert('left')}
             ref={leftRef}
             position={{ x: 0, y: 0.5 }}
             cursor={CSSCursor.ResizeEW}
             direction='vertical'
           />
           <ResizeEdge
+            // onClick={() => alert('top')}
             ref={topRef}
             position={{ x: 0.5, y: 0 }}
             cursor={CSSCursor.ResizeNS}
