@@ -22,6 +22,7 @@ import {
   emptyComments,
   jsxTextBlock,
   JSXTextBlock,
+  JSXElementChildren,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -326,12 +327,26 @@ export function renderCoreElement(
         return <></>
       }
 
-      return unescapeHTML(element.text)
+      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
+      return (
+        <>
+          {lines.map((l, index) => (
+            <React.Fragment key={index}>
+              {l}
+              {index < lines.length - 1 ? <br /> : null}
+            </React.Fragment>
+          ))}
+        </>
+      )
     }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
+}
+
+export function filterJSXElementChildIsTextOrNewline(c: JSXElementChild): c is JSXTextBlock {
+  return c.type === 'JSX_TEXT_BLOCK' || (c.type === 'JSX_ELEMENT' && c.name.baseVariable === 'br')
 }
 
 function renderJSXElement(
@@ -447,10 +462,11 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const textBlock = childrenWithNewTextBlock.find(
-        (c): c is JSXTextBlock => c.type === 'JSX_TEXT_BLOCK',
-      )
-      const textContent = unescapeHTML(textBlock?.text ?? '')
+      const text = childrenWithNewTextBlock
+        .filter(filterJSXElementChildIsTextOrNewline)
+        .map((c) => (c.text != null ? c.text.trim() : '\n'))
+        .join('')
+      const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
         text: textContent.trim(),
