@@ -12,6 +12,7 @@ import { elementPath } from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   emptyComments,
+  JSXAttributes,
   jsxAttributeValue,
 } from '../../../../core/shared/element-template'
 import {
@@ -299,6 +300,20 @@ function getHighlightAndReorderIndicatorCommands(
   }
 }
 
+function updateInsertionSubjectWithAttributes(
+  subject: InsertionSubject,
+  updatedAttributes: JSXAttributes,
+): InsertionSubject {
+  return {
+    ...subject,
+    parent: subject.parent,
+    element: {
+      ...subject.element,
+      props: updatedAttributes,
+    },
+  }
+}
+
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionSession: InteractionSession,
@@ -310,41 +325,30 @@ function getInsertionCommands(
     (sizing === 'default-size' || interactionSession.interactionData.drag != null)
   ) {
     const pointOnCanvas = interactionSession.interactionData.dragStart
+    const zeroSizedInsertionFrame = canvasRectangle({
+      x: pointOnCanvas.x,
+      y: pointOnCanvas.y,
+      width: 0,
+      height: 0,
+    })
     if (insertionSubjectSize === 'skip-size-props') {
-      const frame = canvasRectangle({
-        x: pointOnCanvas.x,
-        y: pointOnCanvas.y,
-        width: 0,
-        height: 0,
-      })
-
-      const updatedAttributesWithPosition = getStyleAttributesForPointInAbsolutePosition(
+      const updatedAttributesWithPositionOnly = getStyleAttributesForPointInAbsolutePosition(
         subject,
         pointOnCanvas,
       )
-
-      const updatedInsertionSubject: InsertionSubject = {
-        ...subject,
-        parent: subject.parent,
-        element: {
-          ...subject.element,
-          props: updatedAttributesWithPosition,
-        },
-      }
+      const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
+        subject,
+        updatedAttributesWithPositionOnly,
+      )
 
       return {
         command: insertElementInsertionSubject('always', updatedInsertionSubject),
-        frame: frame,
+        frame: zeroSizedInsertionFrame,
       }
     } else {
       const frame =
         sizing === 'zero-size'
-          ? canvasRectangle({
-              x: pointOnCanvas.x,
-              y: pointOnCanvas.y,
-              width: 0,
-              height: 0,
-            })
+          ? zeroSizedInsertionFrame
           : canvasRectangle({
               x: pointOnCanvas.x - insertionSubjectSize.width / 2,
               y: pointOnCanvas.y - insertionSubjectSize.height / 2,
@@ -357,14 +361,10 @@ function getInsertionCommands(
         frame,
       )
 
-      const updatedInsertionSubject: InsertionSubject = {
-        ...subject,
-        parent: subject.parent,
-        element: {
-          ...subject.element,
-          props: updatedAttributesWithPosition,
-        },
-      }
+      const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
+        subject,
+        updatedAttributesWithPosition,
+      )
 
       return {
         command: insertElementInsertionSubject('always', updatedInsertionSubject),
