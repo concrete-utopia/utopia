@@ -198,7 +198,7 @@ describe('draw-to-insert text', () => {
     })
   })
   describe('when the target is not editable', () => {
-    it('just goes into text edit mode immediately', async () => {
+    it('inserts new text', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithNonTextEditableDiv,
         'await-first-dom-report',
