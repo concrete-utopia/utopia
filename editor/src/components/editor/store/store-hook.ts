@@ -15,6 +15,7 @@ import {
   CanvasOffsetSubstate,
   CanvasSubstate,
   DerivedState,
+  DerivedSubstate,
   EditorStateCanvas,
   EditorStateWOScrollOffset,
   EditorStoreFull,
@@ -469,7 +470,7 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
       const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
         // const debug = key === 'restOfStore'
-        if (!twoLevelNestedEquals(substore.getState(), substates[key])) {
+        if (!tailoredEqualFunctions(substates[key], substore.getState(), key)) {
           // console.log('halal', key)
           if (key === 'fullOldStore') {
             substore.setState(substates['originalStore'])
@@ -485,5 +486,51 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
       return substores.originalStore.getState()
     },
     stores: substores,
+  }
+}
+
+function tailoredEqualFunctions<K extends keyof Substates>(
+  editorStore: Substates[K],
+  oldEditorStore: Substates[K],
+  key: K,
+) {
+  switch (key) {
+    case 'canvas':
+      return (
+        (editorStore as CanvasSubstate).editor.canvas ===
+        (oldEditorStore as CanvasSubstate).editor.canvas
+      )
+    case 'canvasOffset':
+      return (
+        (editorStore as CanvasOffsetSubstate).editor.canvas ===
+        (oldEditorStore as CanvasOffsetSubstate).editor.canvas
+      )
+    case 'derived':
+      return (
+        (editorStore as DerivedSubstate).derived === (oldEditorStore as DerivedSubstate).derived
+      )
+    case 'fullOldStore':
+      return shallowEqual(editorStore, oldEditorStore)
+    case 'metadata':
+      return shallowEqual(
+        (editorStore as MetadataSubstate).editor,
+        (oldEditorStore as MetadataSubstate).editor,
+      )
+    case 'oldEditor':
+      return shallowEqual((editorStore as any).editor, (oldEditorStore as any).editor)
+    case 'originalStore':
+      return shallowEqual(editorStore, oldEditorStore)
+    case 'projectContents':
+      return (
+        (editorStore as ProjectContentSubstate).editor.projectContents ===
+        (oldEditorStore as ProjectContentSubstate).editor.projectContents
+      )
+    case 'restOfStore':
+      return shallowEqual(editorStore, oldEditorStore)
+    case 'selectedHighlightedViews':
+      return shallowEqual((editorStore as any).editor, (oldEditorStore as any).editor)
+    default:
+      const _exhaustiveCheck: never = key
+      throw new Error(`Unhandled store ${JSON.stringify(key)}`)
   }
 }
