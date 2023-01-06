@@ -200,6 +200,17 @@ function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): bool
 
 export type Axis = 'horizontal' | 'vertical'
 
+export function invert(axis: Axis): Axis {
+  switch (axis) {
+    case 'horizontal':
+      return 'vertical'
+    case 'vertical':
+      return 'horizontal'
+    default:
+      assertNever(axis)
+  }
+}
+
 export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   switch (axis) {
     case 'horizontal':
