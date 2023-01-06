@@ -1,5 +1,4 @@
 import React from 'react'
-import { windowPoint } from '../../../../core/shared/math-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { TextEditorSpanId } from '../../../text-editor/text-editor'
 
