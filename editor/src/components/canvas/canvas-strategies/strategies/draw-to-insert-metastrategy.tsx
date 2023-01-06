@@ -282,7 +282,7 @@ function getHighlightAndReorderIndicatorCommands(
   if (targetParent != null) {
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [targetParent])
 
-    if (targetIndex != null) {
+    if (targetIndex != null && targetIndex > -1) {
       return [highlightParentCommand, showReorderIndicator(targetParent, targetIndex)]
     } else {
       return [highlightParentCommand]
