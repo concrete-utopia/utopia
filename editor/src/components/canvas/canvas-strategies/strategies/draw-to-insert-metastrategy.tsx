@@ -242,7 +242,9 @@ export function drawToInsertStrategyFactory(
               ])
             }
           } else if (strategyLifecycle === 'end-interaction') {
-            const defaultSizeType = insertionSubject.textEdit ? 'only-width' : 'default-size'
+            const defaultSizeType = insertionSubject.textEdit
+              ? 'text-edit-only-width'
+              : 'default-size'
             const insertionCommand = getInsertionCommands(
               insertionSubject,
               interactionSession,
@@ -309,7 +311,7 @@ function getInsertionCommands(
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
-  sizing: 'zero-size' | 'default-size' | 'only-width',
+  sizing: 'zero-size' | 'default-size' | 'text-edit-only-width',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
     interactionSession.interactionData.type === 'DRAG' &&
@@ -346,7 +348,10 @@ function getInsertionCommands(
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
       frame: frame,
     }
-  } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'only-width') {
+  } else if (
+    interactionSession.interactionData.type === 'DRAG' &&
+    sizing === 'text-edit-only-width'
+  ) {
     const pointOnCanvas = interactionSession.interactionData.dragStart
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
