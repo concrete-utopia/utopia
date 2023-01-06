@@ -215,9 +215,6 @@ describe('Use the text editor', () => {
       const textEditorElement = document.getElementById(TextEditorSpanId)
       expect(textEditorElement).not.toBe(null)
       if (textEditorElement != null) {
-        const sel = document.createRange()
-        sel.collapse()
-        sel.selectNodeContents(textEditorElement)
         const range = document.createRange()
         range.selectNodeContents(textEditorElement)
         range.collapse(true)
