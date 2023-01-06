@@ -61,6 +61,7 @@ import { shallowEqual } from '../../../core/shared/equality-utils'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
 import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
 import { TextEditableControl } from './text-editable-control'
+import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -165,11 +166,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     [drop],
   )
 
-  if (
-    isTextEditModeWithActiveTextEditing(canvasControlProps.editor.mode) ||
-    (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd)
-  ) {
+  if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
     return null
+  } else if (isTextEditModeWithActiveTextEditing(canvasControlProps.editor.mode)) {
+    return <TextEditCanvasOverlay />
   } else {
     return (
       <div
