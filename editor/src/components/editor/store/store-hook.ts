@@ -457,19 +457,18 @@ export interface StoresAndSetState {
 }
 
 export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
-  function createSubstates(editorStore: EditorStorePatched): Substates {
-    return objectMap((picker, key) => {
-      if (isFeatureEnabled('Selectors Split')) {
-        return picker(editorStore)
-      } else {
-        return editorStore
-      }
-    }, SubstatePickers) as Substates // bad type
-  }
-  const initialSubstates = createSubstates(initialEditorStore)
-  let substores: UtopiaStores = objectMap((substateInitialValue, key) => {
-    return create(subscribeWithSelector((set) => substateInitialValue))
-  }, initialSubstates) as UtopiaStores // bad type
+  // function createSubstates(editorStore: EditorStorePatched): Substates {
+  //   return objectMap((picker, key) => {
+  //     if (isFeatureEnabled('Selectors Split')) {
+  //       return picker(editorStore)
+  //     } else {
+  //       return editorStore
+  //     }
+  //   }, SubstatePickers) as Substates // bad type
+  // }
+  let substores: UtopiaStores = objectMap((_, key) => {
+    return create(subscribeWithSelector((set) => initialEditorStore))
+  }, SubstatePickers) as UtopiaStores // bad type
 
   return {
     setState: (
@@ -477,16 +476,12 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
       dispatchedActions: ReadonlyArray<EditorAction>,
     ): void => {
       // console.log('--------------')
-      const substates = createSubstates(editorStore)
+      // const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
         // const debug = key === 'restOfStore'
-        if (!tailoredEqualFunctions(substates[key], substore.getState(), key, dispatchedActions)) {
+        if (!tailoredEqualFunctions(editorStore, substore.getState(), key, dispatchedActions)) {
           // console.log('halal', key)
-          if (key === 'fullOldStore') {
-            substore.setState(substates['originalStore'])
-          } else {
-            substore.setState(substates[key])
-          }
+          substore.setState(editorStore)
         } else {
           // console.log('bingo', key)
         }
