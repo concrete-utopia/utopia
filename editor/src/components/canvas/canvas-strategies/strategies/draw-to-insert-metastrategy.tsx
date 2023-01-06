@@ -1,15 +1,20 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
+import { LayoutHelpers, TopLeftWidthHeight } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { Either, foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  JSXAttributes,
+  jsxAttributeValue,
+} from '../../../../core/shared/element-template'
 import {
   canvasPoint,
   canvasRectangle,
@@ -57,6 +62,12 @@ import {
 import { boundingArea, InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
+import { omit } from '../../../../core/shared/object-utils'
+import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
+import { MapLike } from 'typescript'
+import { FullFrame } from '../../../frame'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -230,11 +241,12 @@ export function drawToInsertStrategyFactory(
               ])
             }
           } else if (strategyLifecycle === 'end-interaction') {
+            const defaultSizeType = insertionSubject.textEdit ? 'only-width' : 'default-size'
             const insertionCommand = getInsertionCommands(
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
-              'default-size',
+              defaultSizeType,
             )
 
             if (insertionCommand != null) {
@@ -296,7 +308,7 @@ function getInsertionCommands(
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
-  sizing: 'zero-size' | 'default-size',
+  sizing: 'zero-size' | 'default-size' | 'only-width',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
     interactionSession.interactionData.type === 'DRAG' &&
@@ -324,14 +336,33 @@ function getInsertionCommands(
       frame,
     )
 
-    const updatedInsertionSubject: InsertionSubject = {
-      ...subject,
-      parent: subject.parent,
-      element: {
-        ...subject.element,
-        props: updatedAttributesWithPosition,
-      },
+    const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
+      subject,
+      updatedAttributesWithPosition,
+    )
+
+    return {
+      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      frame: frame,
     }
+  } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'only-width') {
+    const pointOnCanvas = interactionSession.interactionData.dragStart
+    const frame = canvasRectangle({
+      x: pointOnCanvas.x,
+      y: pointOnCanvas.y,
+      width: 200,
+      height: 0,
+    })
+
+    const updatedAttributesWithPosition = getStyleAttributesForPartialFrame(
+      subject,
+      omit(['height'], frame),
+    )
+
+    const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
+      subject,
+      updatedAttributesWithPosition,
+    )
 
     return {
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
@@ -352,14 +383,10 @@ function getInsertionCommands(
       frame,
     )
 
-    const updatedInsertionSubject: InsertionSubject = {
-      ...subject,
-      parent: subject.parent,
-      element: {
-        ...subject.element,
-        props: updatedAttributesWithPosition,
-      },
-    }
+    const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
+      subject,
+      updatedAttributesWithPosition,
+    )
 
     return {
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
@@ -391,6 +418,53 @@ function getStyleAttributesForFrameInAbsolutePosition(
       ['style'],
     ),
   )
+}
+
+function getStyleAttributesForPartialFrame(
+  subject: InsertionSubject,
+  frame: Partial<CanvasRectangle>,
+): JSXAttributes {
+  const frameToPinnedProp = {
+    left: frame.x,
+    top: frame.y,
+    width: frame.width,
+    height: frame.height,
+  }
+  const propsToSet: Array<ValueAtPath> = mapDropNulls((pinnedProp) => {
+    const value = frameToPinnedProp[pinnedProp]
+    if (value != null) {
+      return {
+        path: stylePropPathMappingFn(pinnedProp, ['style']),
+        value: jsxAttributeValue(value, emptyComments),
+      }
+    } else {
+      return null
+    }
+  }, Object.keys(frameToPinnedProp) as Array<keyof TopLeftWidthHeight>)
+
+  const layoutProps = setJSXValuesAtPaths(subject.element.props, propsToSet)
+  // Assign the new properties
+  return foldEither(
+    (_) => {
+      throw new Error(`Problem setting frame on an element we just created.`)
+    },
+    (attr) => attr,
+    layoutProps,
+  )
+}
+
+function updateInsertionSubjectWithAttributes(
+  subject: InsertionSubject,
+  updatedAttributes: JSXAttributes,
+): InsertionSubject {
+  return {
+    ...subject,
+    parent: subject.parent,
+    element: {
+      ...subject.element,
+      props: updatedAttributes,
+    },
+  }
 }
 
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
