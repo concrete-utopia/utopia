@@ -57,6 +57,7 @@ import {
 import { boundingArea, InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -388,7 +389,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
         width: frame.width,
         height: frame.height,
       },
-      ['style'],
+      styleStringInArray,
     ),
   )
 }
