@@ -408,3 +408,27 @@ export function windowToCanvasCoordinates(
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
 }
+
+export function canvasPointToWindowPoint(
+  point: CanvasPoint,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): WindowPoint {
+  const canvasWrapper = document.getElementById('canvas-root')
+
+  if (canvasWrapper != null) {
+    const canvasWrapperRect = canvasWrapper.getBoundingClientRect()
+    const withoutOffset = {
+      x: point.x + canvasOffset.x,
+      y: point.y + canvasOffset.y,
+    } as WindowPoint
+    const scaledBack = scaleVector(withoutOffset, canvasScale)
+    const offsetByWrapper = {
+      x: scaledBack.x + canvasWrapperRect.left,
+      y: scaledBack.y + canvasWrapperRect.top,
+    }
+    return windowPoint(offsetByWrapper)
+  } else {
+    throw new Error('calling screenToElementCoordinates() before being mounted')
+  }
+}

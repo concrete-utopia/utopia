@@ -23,7 +23,6 @@ import {
   selectComponents,
   setHoveredView,
   clearHoveredViews,
-  switchEditorMode,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
@@ -725,7 +724,11 @@ function useSelectOrLiveModeSelectAndHover(
           if (isEditableText && isFeatureEnabled('Text editing')) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
-            scheduleTextEditForNextFrame(foundTarget.elementPath, dispatch)
+            scheduleTextEditForNextFrame(
+              foundTarget.elementPath,
+              { x: event.clientX, y: event.clientY },
+              dispatch,
+            )
           }
         }
 
