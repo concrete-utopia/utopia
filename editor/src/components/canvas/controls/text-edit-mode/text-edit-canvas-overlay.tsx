@@ -55,3 +55,4 @@ export const TextEditCanvasOverlay = React.memo(() => {
     />
   )
 })
+TextEditCanvasOverlay.displayName = 'TextEditCanvasOverlay'
