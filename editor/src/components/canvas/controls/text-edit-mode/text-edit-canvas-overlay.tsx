@@ -8,28 +8,24 @@ export const TextEditCanvasOverlay = React.memo(() => {
     'TextEditCanvasOverlay canvas scale',
   )
 
-  const textEditor = document.getElementById(TextEditorSpanId)
-  const textEditorBounds = textEditor?.getBoundingClientRect()
-
   const [visible, setVisible] = React.useState(false)
 
-  const checkMousePosition = React.useCallback(
-    (event: MouseEvent) => {
-      if (textEditorBounds == null) {
-        setVisible(false)
-      } else if (
-        event.clientX >= textEditorBounds.left &&
-        event.clientX <= textEditorBounds.right &&
-        event.clientY >= textEditorBounds.top &&
-        event.clientY <= textEditorBounds.bottom
-      ) {
-        setVisible(false)
-      } else {
-        setVisible(true)
-      }
-    },
-    [textEditorBounds],
-  )
+  const checkMousePosition = React.useCallback((event: MouseEvent) => {
+    const textEditor = document.getElementById(TextEditorSpanId)
+    const textEditorBounds = textEditor?.getBoundingClientRect()
+    if (textEditorBounds == null) {
+      setVisible(false)
+    } else if (
+      event.clientX >= textEditorBounds.left &&
+      event.clientX <= textEditorBounds.right &&
+      event.clientY >= textEditorBounds.top &&
+      event.clientY <= textEditorBounds.bottom
+    ) {
+      setVisible(false)
+    } else {
+      setVisible(true)
+    }
+  }, [])
 
   React.useEffect(() => {
     window.addEventListener('mousemove', (event) => checkMousePosition(event))
