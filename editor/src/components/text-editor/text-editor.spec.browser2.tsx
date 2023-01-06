@@ -1,7 +1,12 @@
+import { wait } from '../../utils/utils.test-utils'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -235,6 +240,52 @@ describe('Use the text editor', () => {
         projectWithStyle('fontWeight', 'bold'),
       )
     })
+  })
+  it('position cursor with double click', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('div')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 20,
+      y: divBounds.y + 10,
+    }
+
+    mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await wait(50) // give it time to adjust the caret position
+
+    typeText('--HEY--')
+
+    closeTextEditor()
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >He--HEY--llo</div>
+          </Storyboard>
+        )`),
+    )
   })
 })
 
