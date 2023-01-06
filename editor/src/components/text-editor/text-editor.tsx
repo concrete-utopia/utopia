@@ -211,17 +211,13 @@ async function setSelectionToOffset(
     // linear search is a tad slow, but it should be fine
     // and it's a lot easier when dealing with the scaling of the editor
     const targetX = cursorPosition.x / scale
+    const targetY = cursorPosition.y / scale
     for (let i = 0; i <= maxLength; i++) {
       const range = setRange(i)
       const rect = range.getBoundingClientRect()
       if (i > 0 && rect.x > targetX) {
         validX.push(i > 0 ? i - 1 : 0)
       }
-    }
-    const targetY = cursorPosition.y / scale
-    for (let i = 0; i <= maxLength; i++) {
-      const range = setRange(i)
-      const rect = range.getBoundingClientRect()
       if (rect.y <= targetY && targetY <= rect.y + rect.height) {
         validY.push(i)
       }
