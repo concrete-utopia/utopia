@@ -174,8 +174,8 @@ async function setSelectionToOffset(
   scale: number,
   cursorPosition: Coordinates | null,
 ) {
-  const sel = window.getSelection()
-  if (sel == null) {
+  const selection = window.getSelection()
+  if (selection == null) {
     return
   }
   if (element.childNodes.length != 1) {
@@ -187,14 +187,14 @@ async function setSelectionToOffset(
   }
 
   const setRange = (start: number | null) => {
-    sel.removeAllRanges()
+    selection.removeAllRanges()
     const range = document.createRange()
     range.selectNodeContents(textNode)
     range.collapse(start != null)
     if (start != null) {
       range.setStart(textNode, start)
     }
-    sel.addRange(range)
+    selection.addRange(range)
     return range
   }
 
