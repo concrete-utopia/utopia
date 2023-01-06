@@ -68,6 +68,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
+import { DefaultTextWidth } from '../../../editor/defaults'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -350,7 +351,7 @@ function getInsertionCommands(
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
       y: pointOnCanvas.y,
-      width: 200,
+      width: DefaultTextWidth,
       height: 0,
     })
 
