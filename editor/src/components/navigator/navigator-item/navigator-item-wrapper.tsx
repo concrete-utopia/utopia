@@ -20,12 +20,11 @@ import { getValueFromComplexMap } from '../../../utils/map'
 import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import {
   defaultElementWarnings,
-  DerivedSubstate,
   DropTargetHint,
   EditorStorePatched,
-  MetadataSubstate,
 } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
+import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-selectors'
 import {
   DragSelection,
   NavigatorItemContainer,

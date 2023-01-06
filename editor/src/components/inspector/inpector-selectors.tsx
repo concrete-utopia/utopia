@@ -1,10 +1,6 @@
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import {
-  EditorStorePatched,
-  MetadataSubstate,
-  SelectedHighlightedViewsSubstate,
-} from '../editor/store/editor-state'
+import { MetadataSubstate } from '../editor/store/store-hook-selectors'
 
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata

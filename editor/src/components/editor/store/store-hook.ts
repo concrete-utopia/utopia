@@ -12,23 +12,25 @@ import {
 import { objectMap, omit } from '../../../core/shared/object-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
-  CanvasOffsetSubstate,
-  CanvasSubstate,
   DerivedState,
-  DerivedSubstate,
-  DispatchSubstate,
   EditorStateCanvas,
-  EditorStateWOScrollOffset,
   EditorStoreFull,
   EditorStorePatched,
   EditorStoreShared,
+} from './editor-state'
+import { EditorAction } from '../action-types'
+import {
+  CanvasOffsetSubstate,
+  CanvasSubstate,
+  DerivedSubstate,
+  DispatchSubstate,
+  EditorStateWOScrollOffset,
   MetadataSubstate,
   OldEditorState,
   ProjectContentSubstate,
   SelectedHighlightedViewsSubstate,
   ThemeSubstate,
-} from './editor-state'
-import { EditorAction } from '../action-types'
+} from './store-hook-selectors'
 
 type StateSelector<T, U> = (state: T) => U
 

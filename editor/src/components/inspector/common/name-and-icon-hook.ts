@@ -13,14 +13,11 @@ import {
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import {
-  AllElementProps,
-  EditorStorePatched,
-  MetadataSubstate,
-} from '../../editor/store/editor-state'
+import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
+import { MetadataSubstate } from '../../editor/store/store-hook-selectors'
 
 export interface NameAndIconResult {
   path: ElementPath

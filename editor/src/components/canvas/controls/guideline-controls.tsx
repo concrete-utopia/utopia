@@ -12,7 +12,7 @@ import {
   segmentIntersection,
 } from '../../../core/shared/math-utils'
 import { bold, useColorTheme } from '../../../uuiui'
-import { CanvasSubstate, EditorStorePatched } from '../../editor/store/editor-state'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
   useEditorState,
   useRefEditorState,
@@ -22,6 +22,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { CanvasSubstate } from '../../editor/store/store-hook-selectors'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {

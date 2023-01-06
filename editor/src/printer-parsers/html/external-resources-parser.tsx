@@ -8,9 +8,9 @@ import { addToast, updateFile } from '../../components/editor/actions/action-cre
 import {
   defaultIndexHtmlFilePath,
   EditorStorePatched,
-  ProjectContentSubstate,
 } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
+import { ProjectContentSubstate } from '../../components/editor/store/store-hook-selectors'
 import {
   useCallbackFactory,
   UseSubmitValueFactory,
