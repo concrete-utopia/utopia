@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
@@ -205,7 +201,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
         />
       </div>
       <div
-        css={{
+        style={{
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
@@ -214,9 +210,6 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           width: '100%',
           height: '100%',
           opacity: isSelected ? 0 : 1,
-          '&:hover': {
-            opacity: 0,
-          },
         }}
       >
         <div
