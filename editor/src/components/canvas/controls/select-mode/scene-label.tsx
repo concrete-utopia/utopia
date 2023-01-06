@@ -81,11 +81,11 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
-  const isSelected = useEditorState('selectedHighlightedViews')(
+  const isSelected = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
-  const isHighlighted = useEditorState('selectedHighlightedViews')(
+  const isHighlighted = useEditorState('highlightedHoveredViews')(
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )

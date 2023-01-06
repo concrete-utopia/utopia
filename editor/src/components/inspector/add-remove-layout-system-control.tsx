@@ -34,7 +34,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
     'AddRemoveLayouSystemControl dispatch',
   )
   const elementMetadataRef = useRefEditorState('metadata')(metadataSelector)
-  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
+  const selectedViewsRef = useRefEditorState('selectedViews')(selectedViewsSelector)
 
   const addLayoutSystem = React.useCallback(
     () =>

@@ -260,7 +260,7 @@ interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
 const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
-  const parentPath = useEditorState('selectedHighlightedViews')((store) => {
+  const parentPath = useEditorState('selectedViews')((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return null
     }

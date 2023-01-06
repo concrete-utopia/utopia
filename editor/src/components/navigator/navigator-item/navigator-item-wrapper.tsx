@@ -129,12 +129,13 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
-  const { isSelected, isHighlighted } = useEditorState('selectedHighlightedViews')(
-    (store) => ({
-      isSelected: EP.containsPath(props.elementPath, store.editor.selectedViews),
-      isHighlighted: EP.containsPath(props.elementPath, store.editor.highlightedViews),
-    }),
+  const isSelected = useEditorState('selectedViews')(
+    (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
+  )
+  const isHighlighted = useEditorState('highlightedHoveredViews')(
+    (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
+    'NavigatorItemWrapper isHighlighted',
   )
 
   const noOfChildren = useEditorState('derived')((store) => {

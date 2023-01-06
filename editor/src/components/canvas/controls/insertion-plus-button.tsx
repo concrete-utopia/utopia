@@ -33,7 +33,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       (store) => store.editor.canvas.interactionSession != null,
       'DistanceGuidelineControl isInteractionActive',
     )
-    const selectedViews = useEditorState('selectedHighlightedViews')(
+    const selectedViews = useEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
     )

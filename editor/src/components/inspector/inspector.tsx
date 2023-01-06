@@ -403,7 +403,7 @@ export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildre
 
 const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
   () => {
-    const selectedViews = useEditorState('selectedHighlightedViews')(
+    const selectedViews = useEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )

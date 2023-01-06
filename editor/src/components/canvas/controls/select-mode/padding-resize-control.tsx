@@ -207,7 +207,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const selectedElements = props.targets
   const elementMetadata = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
 
-  const hoveredViews = useEditorState('selectedHighlightedViews')(
+  const hoveredViews = useEditorState('highlightedHoveredViews')(
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )

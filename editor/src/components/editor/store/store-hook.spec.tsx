@@ -52,7 +52,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedHighlightedViews')(
+        return useSelectorWithCallback('selectedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -80,7 +80,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedHighlightedViews')(
+        return useSelectorWithCallback('selectedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -211,7 +211,7 @@ describe('useSelectorWithCallback', () => {
     const { result, rerender } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedHighlightedViews')(
+        return useSelectorWithCallback('selectedViews')(
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++

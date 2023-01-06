@@ -23,7 +23,7 @@ export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexD
     'FlexDirectionToggle dispatch',
   )
   const metadataRef = useRefEditorState('metadata')(metadataSelector)
-  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
+  const selectedViewsRef = useRefEditorState('selectedViews')(selectedViewsSelector)
   const nFlexContainers = useEditorState('metadata')(
     (store) =>
       filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,

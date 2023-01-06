@@ -46,7 +46,7 @@ export const ComponentInfoBox = () => {
     (state) => state.dispatch,
     'ComponentInfoBox dispatch',
   )
-  const selectedViews = useEditorState('selectedHighlightedViews')(
+  const selectedViews = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'ComponentInfoBox selectedViews',
   )

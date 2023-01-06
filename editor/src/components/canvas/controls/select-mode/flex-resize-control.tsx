@@ -110,7 +110,7 @@ const ResizeEdge = React.memo(
     const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
     const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const jsxMetadataRef = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
-    const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
+    const selectedViewsRef = useRefEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
     )
     const canvasOffsetRef = useRefEditorState('canvasOffset')(

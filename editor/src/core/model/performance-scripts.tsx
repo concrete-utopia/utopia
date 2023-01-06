@@ -224,9 +224,7 @@ export function useTriggerResizePerformanceTest(): () => void {
     'useTriggerResizePerformanceTest dispatch',
   )
   const metadata = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
-  const selectedViews = useRefEditorState('selectedHighlightedViews')(
-    (store) => store.editor.selectedViews,
-  )
+  const selectedViews = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerResizePerformanceTest builtInDependencies',
@@ -375,9 +373,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     'useTriggerSelectionPerformanceTest dispatch',
   )
   const allPaths = useRefEditorState('derived')((store) => store.derived.navigatorTargets)
-  const selectedViews = useRefEditorState('selectedHighlightedViews')(
-    (store) => store.editor.selectedViews,
-  )
+  const selectedViews = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState('restOfStore')(
     (store) => store.builtInDependencies,
     'useTriggerSelectionPerformanceTest builtInDependencies',

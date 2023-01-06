@@ -35,7 +35,7 @@ export const DistanceGuidelineControl = React.memo(() => {
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
   )
-  const selectedElements = useEditorState('selectedHighlightedViews')(
+  const selectedElements = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'DistanceGuidelineControl selectedElements',
   )

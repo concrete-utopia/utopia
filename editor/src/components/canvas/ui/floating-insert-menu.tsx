@@ -444,9 +444,7 @@ export var FloatingMenu = React.memo(() => {
   const projectContentsRef = useRefEditorState('projectContents')(
     (store) => store.editor.projectContents,
   )
-  const selectedViewsref = useRefEditorState('selectedHighlightedViews')(
-    (store) => store.editor.selectedViews,
-  )
+  const selectedViewsref = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
   const shouldWrapContentsByDefault = useRefEditorState('metadata')((store) => {
     // We only care about this when the menu is first opened

@@ -26,12 +26,13 @@ import {
   DerivedSubstate,
   DispatchSubstate,
   EditorStateWOScrollOffset,
+  HighlightedViewsSubstate,
   MetadataSubstate,
   OldEditorState,
   oldEditorStateKeys,
   ProjectContentSubstate,
   restOfStoreKeys,
-  SelectedHighlightedViewsSubstate,
+  SelectedViewsSubstate,
   ThemeSubstate,
 } from './store-hook-selectors'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
@@ -289,7 +290,8 @@ type FullStoreWOScrollOffset = Omit<EditorStorePatched, 'editor'> & EditorStateW
 
 type Substates = {
   metadata: MetadataSubstate
-  selectedHighlightedViews: SelectedHighlightedViewsSubstate
+  selectedViews: SelectedViewsSubstate
+  highlightedHoveredViews: HighlightedViewsSubstate
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
@@ -317,12 +319,10 @@ export const SubstateEqualityFns: {
       // a.editor._currentAllElementProps_KILLME === b.editor._currentAllElementProps_KILLME // do we need to check this here?
     )
   },
-  selectedHighlightedViews: (
-    a: SelectedHighlightedViewsSubstate,
-    b: SelectedHighlightedViewsSubstate,
-  ): boolean => {
+  selectedViews: (a, b) => a.editor.selectedViews === b.editor.selectedViews,
+  highlightedHoveredViews: (a: HighlightedViewsSubstate, b: HighlightedViewsSubstate): boolean => {
     return (
-      a.editor.selectedViews === b.editor.selectedViews &&
+      // a.editor.selectedViews === b.editor.selectedViews &&
       a.editor.highlightedViews === b.editor.highlightedViews &&
       a.editor.hoveredViews === b.editor.hoveredViews
     )

@@ -28,7 +28,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     'FormulaBar selectedMode',
   )
 
-  const selectedElementPath = useEditorState('selectedHighlightedViews')((store) => {
+  const selectedElementPath = useEditorState('selectedViews')((store) => {
     if (store.editor.selectedViews.length === 1) {
       return store.editor.selectedViews[0]
     } else {

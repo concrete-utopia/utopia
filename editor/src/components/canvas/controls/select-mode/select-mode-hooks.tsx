@@ -595,9 +595,7 @@ function useSelectOrLiveModeSelectAndHover(
     (store) => store.dispatch,
     'useSelectAndHover dispatch',
   )
-  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
-    (store) => store.editor.selectedViews,
-  )
+  const selectedViewsRef = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()

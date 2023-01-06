@@ -115,7 +115,7 @@ const TopMenuRightControls = React.memo(() => {
 })
 
 export const TopMenu = React.memo(() => {
-  const selectedElementPathString = useEditorState('selectedHighlightedViews')(
+  const selectedElementPathString = useEditorState('selectedViews')(
     (store) => Utils.optionalMap(toString, store.editor.selectedViews[0]) ?? 'empty',
     'First selected view or default',
   )

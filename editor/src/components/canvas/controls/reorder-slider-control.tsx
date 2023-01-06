@@ -49,7 +49,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
         store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
       'ReorderSliderControl isDragging',
     )
-    const isTargetElementHovered = useEditorState('selectedHighlightedViews')((store) => {
+    const isTargetElementHovered = useEditorState('highlightedHoveredViews')((store) => {
       const { hoveredViews } = store.editor
       return target != null && hoveredViews.includes(target)
     }, 'ReorderSliderControl isTargetElementHovered')

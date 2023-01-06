@@ -118,7 +118,7 @@ export const NineBlockControl = React.memo<NineBlockControlProps>(({ flexDirecti
   )
 
   const metadataRef = useRefEditorState('metadata')(metadataSelector)
-  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(selectedViewsSelector)
+  const selectedViewsRef = useRefEditorState('selectedViews')(selectedViewsSelector)
 
   const flexDirectionWithDefault: FlexDirection = flexDirection ?? DefaultFlexDirection
 

@@ -28,7 +28,7 @@ export const RenderAsRow = React.memo(() => {
     )
   }, 'RenderAsRow selectedElementName')
 
-  const refElementsToTargetForUpdates = useRefEditorState('selectedHighlightedViews')((store) => {
+  const refElementsToTargetForUpdates = useRefEditorState('selectedViews')((store) => {
     return getElementsToTarget(store.editor.selectedViews)
   })
 

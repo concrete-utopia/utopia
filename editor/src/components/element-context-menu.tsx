@@ -141,7 +141,7 @@ interface SelectableElementItemProps {
 const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
-  const isHighlighted = useEditorState('selectedHighlightedViews')(
+  const isHighlighted = useEditorState('highlightedHoveredViews')(
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )

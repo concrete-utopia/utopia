@@ -43,9 +43,7 @@ export const CanvasToolbar = React.memo(() => {
   )
   const theme = useColorTheme()
 
-  const selectedViewsRef = useRefEditorState('selectedHighlightedViews')(
-    (store) => store.editor.selectedViews,
-  )
+  const selectedViewsRef = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
 
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()

@@ -175,7 +175,7 @@ const Input = (props: InputProps) => {
 const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState('fullOldStore')((store) => store)
   const theme = useColorTheme()
-  const targets = useEditorState('selectedHighlightedViews')(
+  const targets = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )

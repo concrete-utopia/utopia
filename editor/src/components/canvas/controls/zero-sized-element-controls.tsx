@@ -33,11 +33,11 @@ interface ZeroSizedElementControlProps {
 
 export const ZeroSizedElementControls = controlForStrategyMemoized(
   ({ showAllPossibleElements }: ZeroSizedElementControlProps) => {
-    const highlightedViews = useEditorState('selectedHighlightedViews')(
+    const highlightedViews = useEditorState('highlightedHoveredViews')(
       (store) => store.editor.highlightedViews,
       'ZeroSizedElementControls highlightedViews',
     )
-    const selectedElements = useEditorState('selectedHighlightedViews')(
+    const selectedElements = useEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
       'ZeroSizedElementControls selectedElements',
     )

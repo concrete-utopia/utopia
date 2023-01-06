@@ -43,7 +43,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const colorTheme = useColorTheme()
   const indicatorColor = colorTheme.brandNeonPink.value
 
-  const hoveredViews = useEditorState('selectedHighlightedViews')(
+  const hoveredViews = useEditorState('highlightedHoveredViews')(
     (store) => store.editor.hoveredViews,
     'FlexGapControl hoveredViews',
   )

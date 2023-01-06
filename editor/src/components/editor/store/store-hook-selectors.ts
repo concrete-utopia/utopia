@@ -29,9 +29,15 @@ export interface MetadataSubstate {
   }
 }
 
-export interface SelectedHighlightedViewsSubstate {
+export interface SelectedViewsSubstate {
   editor: {
     selectedViews: Array<ElementPath>
+  }
+}
+
+export interface HighlightedViewsSubstate {
+  editor: {
+    // selectedViews: Array<ElementPath>
     highlightedViews: Array<ElementPath>
     hoveredViews: Array<ElementPath>
   }

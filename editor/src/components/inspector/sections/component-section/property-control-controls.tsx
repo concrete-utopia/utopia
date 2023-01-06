@@ -231,7 +231,7 @@ export const ExpressionPopUpListPropertyControl = React.memo(
       (store) => store.dispatch,
       'ExpressionPopUpListPropertyControl dispatch',
     )
-    const selectedViews = useEditorState('selectedHighlightedViews')(
+    const selectedViews = useEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )

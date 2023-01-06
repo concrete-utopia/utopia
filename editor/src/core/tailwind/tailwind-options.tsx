@@ -294,7 +294,7 @@ export function useGetSelectedClasses(): {
     }
   }, 'ClassNameSelect elements')
 
-  const elementPaths = useEditorState('selectedHighlightedViews')(
+  const elementPaths = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'ClassNameSelect elementPaths',
   )
