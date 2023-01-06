@@ -18,13 +18,16 @@ import {
   WindowPoint,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   EdgePositionBottomRight,
   EdgePosition,
   EdgePositionLeft,
   EdgePositionTopLeft,
+  EdgePositionRight,
+  EdgePositionBottom,
+  EdgePositionTop,
 } from '../../canvas-types'
 import { wait } from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
@@ -32,7 +35,9 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { setFeatureEnabled } from '../../../../utils/feature-switches'
 
 function resizeElement(
   renderResult: EditorRenderResult,
@@ -267,6 +272,69 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 }
 `
 }
+
+async function doDblClickTest(editor: EditorRenderResult, testId: string): Promise<HTMLElement> {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const div = editor.renderedDOM.getByTestId('mydiv')
+  const divBounds = div.getBoundingClientRect()
+  const divCorner = {
+    x: divBounds.x + 50,
+    y: divBounds.y + 40,
+  }
+
+  mouseClickAtPoint(canvasControlsLayer, divCorner)
+
+  const nineBlockControlSegment = editor.renderedDOM.getByTestId(testId)
+
+  mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } })
+
+  return div
+}
+
+const projectForEdgeDblClick = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#3EA881FC',
+        position: 'absolute',
+        left: -231,
+        top: 221,
+        width: 637,
+        display: 'flex',
+        gap: 31,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 445,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#E91C1CC4',
+          width: 200,
+          height: 192,
+          contain: 'layout',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          flexDirection: 'column',
+        }}
+      ></div>
+      <div
+        style={{
+          backgroundColor: '#2C49C9B3',
+          width: 73,
+          height: 358,
+          contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
 
 describe('Absolute Resize Strategy', () => {
   it('resizes component instances that honour the size properties', async () => {
@@ -1003,5 +1071,42 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 
     expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
     expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
+  })
+})
+
+describe('Double click on resize edge', () => {
+  before(() => setFeatureEnabled('Nine block control', true))
+  after(() => setFeatureEnabled('Nine block control', false))
+
+  const edgeResizeControlTestId = (position: EdgePosition) =>
+    `resize-control-${position.x}-${position.y}`
+  const minContent = 'min-content'
+
+  it('double click left edge', async () => {
+    const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionLeft))
+    expect(div.style.height).toEqual('445px')
+    expect(div.style.width).toEqual(minContent)
+  })
+
+  it('double click right edge', async () => {
+    const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
+    expect(div.style.height).toEqual('445px')
+    expect(div.style.width).toEqual(minContent)
+  })
+
+  it('double click top edge', async () => {
+    const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionTop))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual(minContent)
+  })
+
+  it('double click bottom edge', async () => {
+    const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual(minContent)
   })
 })
