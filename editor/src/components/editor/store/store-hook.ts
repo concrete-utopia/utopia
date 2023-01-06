@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import create from 'zustand'
@@ -18,19 +18,23 @@ import {
   EditorStorePatched,
   EditorStoreShared,
 } from './editor-state'
-import { EditorAction } from '../action-types'
+import { EditorAction, EditorDispatch } from '../action-types'
 import {
   CanvasOffsetSubstate,
   CanvasSubstate,
+  canvasSubstateKeys,
   DerivedSubstate,
   DispatchSubstate,
   EditorStateWOScrollOffset,
   MetadataSubstate,
   OldEditorState,
+  oldEditorStateKeys,
   ProjectContentSubstate,
+  restOfStoreKeys,
   SelectedHighlightedViewsSubstate,
   ThemeSubstate,
 } from './store-hook-selectors'
+import { editorCursorPositionChanged } from 'utopia-vscode-common'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -300,155 +304,62 @@ type Substates = {
 
 type StoreKey = keyof Substates
 
-export const SubstatePickers: {
-  [key in StoreKey]: (store: EditorStorePatched) => Substates[key]
+export const SubstateEqualityFns: {
+  [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
 } = {
-  metadata: (store: EditorStorePatched): MetadataSubstate => {
-    return {
-      editor: {
-        selectedViews: store.editor.selectedViews,
-        spyMetadata: store.editor.spyMetadata,
-        domMetadata: store.editor.domMetadata,
-        jsxMetadata: store.editor.jsxMetadata,
-        allElementProps: store.editor.allElementProps,
-        _currentAllElementProps_KILLME: store.editor._currentAllElementProps_KILLME,
-      },
-    }
-  },
-  selectedHighlightedViews: (store: EditorStorePatched): SelectedHighlightedViewsSubstate => {
-    return {
-      editor: {
-        selectedViews: store.editor.selectedViews,
-        highlightedViews: store.editor.highlightedViews,
-        hoveredViews: store.editor.hoveredViews,
-      },
-    }
-  },
-  projectContents: (store: EditorStorePatched) => {
-    return {
-      editor: {
-        projectContents: store.editor.projectContents,
-      },
-    }
-  },
-  canvas: (store: EditorStorePatched): CanvasSubstate => {
-    return {
-      editor: {
-        canvas: omit(['realCanvasOffset', 'roundedCanvasOffset'], store.editor.canvas),
-      },
-    }
-  },
-  canvasOffset: (store: EditorStorePatched): CanvasOffsetSubstate => {
-    return {
-      editor: {
-        canvas: {
-          realCanvasOffset: store.editor.canvas.realCanvasOffset,
-          roundedCanvasOffset: store.editor.canvas.roundedCanvasOffset,
-          scale: store.editor.canvas.scale,
-        },
-      },
-    }
-  },
-  derived: (store: EditorStorePatched): { derived: DerivedState } => {
-    return { derived: store.derived }
-  },
-  oldEditor: (store: EditorStorePatched): { editor: OldEditorState } => {
-    return {
-      editor: {
-        id: store.editor.id,
-        vscodeBridgeId: store.editor.vscodeBridgeId,
-        forkedFromProjectId: store.editor.forkedFromProjectId,
-        appID: store.editor.appID,
-        projectName: store.editor.projectName,
-        projectDescription: store.editor.projectDescription,
-        projectVersion: store.editor.projectVersion,
-        isLoaded: store.editor.isLoaded,
-        branchContents: store.editor.branchContents,
-        codeResultCache: store.editor.codeResultCache,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        nodeModules: store.editor.nodeModules,
-        hiddenInstances: store.editor.hiddenInstances,
-        displayNoneInstances: store.editor.displayNoneInstances,
-        warnedInstances: store.editor.warnedInstances,
-        lockedElements: store.editor.lockedElements,
-        mode: store.editor.mode,
-        focusedPanel: store.editor.focusedPanel,
-        keysPressed: store.editor.keysPressed,
-        mouseButtonsPressed: store.editor.mouseButtonsPressed,
-        openPopupId: store.editor.openPopupId,
-        toasts: store.editor.toasts,
-        cursorStack: store.editor.cursorStack,
-        leftMenu: store.editor.leftMenu,
-        rightMenu: store.editor.rightMenu,
-        interfaceDesigner: store.editor.interfaceDesigner,
-        floatingInsertMenu: store.editor.floatingInsertMenu,
-        inspector: store.editor.inspector,
-        fileBrowser: store.editor.fileBrowser,
-        dependencyList: store.editor.dependencyList,
-        genericExternalResources: store.editor.genericExternalResources,
-        googleFontsResources: store.editor.googleFontsResources,
-        projectSettings: store.editor.projectSettings,
-        navigator: store.editor.navigator,
-        topmenu: store.editor.topmenu,
-        preview: store.editor.preview,
-        home: store.editor.home,
-        lastUsedFont: store.editor.lastUsedFont,
-        modal: store.editor.modal,
-        localProjectList: store.editor.localProjectList,
-        projectList: store.editor.projectList,
-        showcaseProjects: store.editor.showcaseProjects,
-        codeEditingEnabled: store.editor.codeEditingEnabled,
-        codeEditorErrors: store.editor.codeEditorErrors,
-        thumbnailLastGenerated: store.editor.thumbnailLastGenerated,
-        pasteTargetsToIgnore: store.editor.pasteTargetsToIgnore,
-        parseOrPrintInFlight: store.editor.parseOrPrintInFlight,
-        safeMode: store.editor.safeMode,
-        saveError: store.editor.saveError,
-        vscodeBridgeReady: store.editor.vscodeBridgeReady,
-        vscodeReady: store.editor.vscodeReady,
-        focusedElementPath: store.editor.focusedElementPath,
-        config: store.editor.config,
-        vscodeLoadingScreenVisible: store.editor.vscodeLoadingScreenVisible,
-        indexedDBFailed: store.editor.indexedDBFailed,
-        forceParseFiles: store.editor.forceParseFiles,
-        githubSettings: store.editor.githubSettings,
-        imageDragSessionState: store.editor.imageDragSessionState,
-        githubOperations: store.editor.githubOperations,
-        githubChecksums: store.editor.githubChecksums,
-        githubData: store.editor.githubData,
-        refreshingDependencies: store.editor.refreshingDependencies,
-        assetChecksums: store.editor.assetChecksums,
-      },
-    }
-  },
-  restOfStore: (store: EditorStorePatched): Omit<EditorStorePatched, 'editor' | 'derived'> => {
-    return omit(
-      [
-        'editor',
-        'derived',
-        'unpatchedEditor',
-        'patchedEditor',
-        'unpatchedDerived',
-        'patchedDerived',
-      ],
-      store as EditorStoreFull & EditorStorePatched,
+  metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
+    return (
+      a.editor.selectedViews === b.editor.selectedViews &&
+      a.editor.spyMetadata === b.editor.spyMetadata &&
+      a.editor.domMetadata === b.editor.spyMetadata &&
+      a.editor.jsxMetadata === b.editor.jsxMetadata &&
+      a.editor.allElementProps === b.editor.allElementProps
+      // a.editor._currentAllElementProps_KILLME === b.editor._currentAllElementProps_KILLME // do we need to check this here?
     )
   },
-  fullOldStore: (store: EditorStorePatched): EditorStorePatched => {
-    return {
-      ...store,
-      editor: {
-        ...store.editor,
-        canvas: omit(
-          ['realCanvasOffset', 'roundedCanvasOffset'],
-          store.editor.canvas,
-        ) as EditorStateCanvas,
-      },
-    }
+  selectedHighlightedViews: (
+    a: SelectedHighlightedViewsSubstate,
+    b: SelectedHighlightedViewsSubstate,
+  ): boolean => {
+    return (
+      a.editor.selectedViews === b.editor.selectedViews &&
+      a.editor.highlightedViews === b.editor.highlightedViews &&
+      a.editor.hoveredViews === b.editor.hoveredViews
+    )
   },
-  originalStore: (store) => store,
-  dispatch: (store) => ({ dispatch: store.dispatch }),
-  theme: (store) => ({ userState: { themeConfig: store.userState.themeConfig } }),
+  projectContents: (a: ProjectContentSubstate, b: ProjectContentSubstate) => {
+    return a.editor.projectContents === b.editor.projectContents
+  },
+  canvas: (a: CanvasSubstate, b: CanvasSubstate): boolean => {
+    return keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
+  },
+  canvasOffset: (a: CanvasOffsetSubstate, b: CanvasOffsetSubstate) => {
+    return keysEquality(
+      ['realCanvasOffset', 'roundedCanvasOffset', 'scale'],
+      a.editor.canvas,
+      b.editor.canvas,
+    )
+  },
+  derived: (a: { derived: DerivedState }, b: { derived: DerivedState }) => {
+    return a.derived === b.derived
+  },
+  oldEditor: (a: { editor: OldEditorState }, b: { editor: OldEditorState }) => {
+    return keysEquality(oldEditorStateKeys, a.editor, b.editor)
+  },
+  restOfStore: (
+    a: Omit<EditorStorePatched, 'editor' | 'derived'>,
+    b: Omit<EditorStorePatched, 'editor' | 'derived'>,
+  ) => {
+    return keysEquality(restOfStoreKeys, a, b)
+  },
+  fullOldStore: (a: EditorStateWOScrollOffset, b: EditorStateWOScrollOffset) => {
+    // TODO exclude scroll offset!!!!!!!
+    return a === b
+  },
+  originalStore: (a: EditorStorePatched, b: EditorStorePatched) => a === b,
+  dispatch: (a: DispatchSubstate, b: DispatchSubstate) => a.dispatch === b.dispatch,
+  theme: (a: ThemeSubstate, b: ThemeSubstate) =>
+    a.userState.themeConfig === b.userState.themeConfig,
 }
 
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
@@ -470,7 +381,7 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
   // }
   let substores: UtopiaStores = objectMap((_, key) => {
     return create(subscribeWithSelector((set) => initialEditorStore))
-  }, SubstatePickers) as UtopiaStores // bad type
+  }, SubstateEqualityFns) as UtopiaStores // bad type
 
   return {
     setState: (
@@ -503,55 +414,7 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   dispatchedActions: ReadonlyArray<EditorAction>,
 ) {
   function runTheEqualities() {
-    switch (key) {
-      case 'canvas':
-        return (
-          (editorStore as CanvasSubstate).editor.canvas ===
-          (oldEditorStore as CanvasSubstate).editor.canvas
-        )
-      case 'canvasOffset':
-        return (
-          (editorStore as CanvasOffsetSubstate).editor.canvas ===
-          (oldEditorStore as CanvasOffsetSubstate).editor.canvas
-        )
-      case 'derived':
-        return (
-          (editorStore as DerivedSubstate).derived === (oldEditorStore as DerivedSubstate).derived
-        )
-      case 'fullOldStore':
-        return shallowEqual(editorStore, oldEditorStore)
-      case 'metadata':
-        return shallowEqual(
-          (editorStore as MetadataSubstate).editor,
-          (oldEditorStore as MetadataSubstate).editor,
-        )
-      case 'oldEditor':
-        return shallowEqual((editorStore as any).editor, (oldEditorStore as any).editor)
-      case 'originalStore':
-        return shallowEqual(editorStore, oldEditorStore)
-      case 'projectContents':
-        return (
-          (editorStore as ProjectContentSubstate).editor.projectContents ===
-          (oldEditorStore as ProjectContentSubstate).editor.projectContents
-        )
-      case 'restOfStore':
-        return shallowEqual(editorStore, oldEditorStore)
-      case 'selectedHighlightedViews':
-        return shallowEqual((editorStore as any).editor, (oldEditorStore as any).editor)
-      case 'dispatch':
-        return (
-          (editorStore as DispatchSubstate).dispatch ===
-          (oldEditorStore as DispatchSubstate).dispatch
-        )
-      case 'theme':
-        return (
-          (editorStore as ThemeSubstate).userState.themeConfig ===
-          (oldEditorStore as ThemeSubstate).userState.themeConfig
-        )
-      default:
-        const _exhaustiveCheck: never = key
-        throw new Error(`Unhandled store ${JSON.stringify(key)}`)
-    }
+    return SubstateEqualityFns[key](oldEditorStore, editorStore)
   }
 
   if (dispatchedActions[0]?.action === 'SCROLL_CANVAS') {
@@ -559,4 +422,11 @@ function tailoredEqualFunctions<K extends keyof Substates>(
     return key === 'canvasOffset' ? false : true
   }
   return runTheEqualities()
+}
+
+function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
+  return a[key] === b[key]
+}
+function keysEquality<T>(keys: ReadonlyArray<keyof T>, a: T, b: T): boolean {
+  return keys.every((key) => keyEquality(key, a, b))
 }

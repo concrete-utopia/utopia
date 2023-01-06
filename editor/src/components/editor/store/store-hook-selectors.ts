@@ -8,6 +8,7 @@ import {
   EditorState,
   EditorStateCanvas,
   EditorStorePatched,
+  EditorStoreShared,
   ThemeSetting,
 } from './editor-state'
 
@@ -24,7 +25,7 @@ export interface MetadataSubstate {
     domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
     jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
     allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
-    _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+    // _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   }
 }
 
@@ -41,6 +42,28 @@ export interface CanvasSubstate {
     canvas: Omit<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset'>
   }
 }
+
+export const canvasSubstateKeys = [
+  'elementsToRerender',
+  'visible',
+  'dragState',
+  'interactionSession',
+  'snappingThreshold',
+  'textEditor',
+  'selectionControlsVisible',
+  'cursor',
+  'duplicationState',
+  'base64Blobs',
+  'mountCount',
+  'canvasContentInvalidateCount',
+  'domWalkerInvalidateCount',
+  'openFile',
+  'scrollAnimation',
+  'transientProperties',
+  'resizeOptions',
+  'domWalkerAdditionalElementsToUpdate',
+  'controls',
+] as const
 
 export interface CanvasOffsetSubstate {
   editor: {
@@ -79,3 +102,82 @@ export type OldEditorState = Omit<
   | 'hoveredViews'
   | '_currentAllElementProps_KILLME'
 > // not comprehensive
+
+export const oldEditorStateKeys: ReadonlyArray<keyof OldEditorState> = [
+  'id',
+  'vscodeBridgeId',
+  'forkedFromProjectId',
+  'appID',
+  'projectName',
+  'projectDescription',
+  'projectVersion',
+  'isLoaded',
+  'branchContents',
+  'codeResultCache',
+  'propertyControlsInfo',
+  'nodeModules',
+  'hiddenInstances',
+  'displayNoneInstances',
+  'warnedInstances',
+  'lockedElements',
+  'mode',
+  'focusedPanel',
+  'keysPressed',
+  'mouseButtonsPressed',
+  'openPopupId',
+  'toasts',
+  'cursorStack',
+  'leftMenu',
+  'rightMenu',
+  'interfaceDesigner',
+  'floatingInsertMenu',
+  'inspector',
+  'fileBrowser',
+  'dependencyList',
+  'genericExternalResources',
+  'googleFontsResources',
+  'projectSettings',
+  'navigator',
+  'topmenu',
+  'preview',
+  'home',
+  'lastUsedFont',
+  'modal',
+  'localProjectList',
+  'projectList',
+  'showcaseProjects',
+  'codeEditingEnabled',
+  'codeEditorErrors',
+  'thumbnailLastGenerated',
+  'pasteTargetsToIgnore',
+  'parseOrPrintInFlight',
+  'safeMode',
+  'saveError',
+  'vscodeBridgeReady',
+  'vscodeReady',
+  'focusedElementPath',
+  'config',
+  'vscodeLoadingScreenVisible',
+  'indexedDBFailed',
+  'forceParseFiles',
+  'githubSettings',
+  'imageDragSessionState',
+  'githubOperations',
+  'githubChecksums',
+  'githubData',
+  'refreshingDependencies',
+  'assetChecksums',
+] as const
+
+export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
+  [
+    'storeName',
+    'strategyState',
+    'history',
+    'userState',
+    'workers',
+    'persistence',
+    'dispatch',
+    'builtInDependencies',
+    'alreadySaved',
+  ]
