@@ -57,6 +57,8 @@ import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
+import { DispatchContext } from '../../editor/store/dispatch-context'
+import { NO_OP } from '../../../core/shared/utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 
 interface RenderTestHookProps<T> {
@@ -185,11 +187,13 @@ const InspectorSectionProvider = (props: {
   callbackData: InspectorCallbackContextData
 }) => {
   return (
-    <InspectorCallbackContext.Provider value={props.callbackData}>
-      <InspectorPropsContext.Provider value={props.propsData}>
-        <WellBehavedInspectorSubsection />
-      </InspectorPropsContext.Provider>
-    </InspectorCallbackContext.Provider>
+    <DispatchContext.Provider value={NO_OP}>
+      <InspectorCallbackContext.Provider value={props.callbackData}>
+        <InspectorPropsContext.Provider value={props.propsData}>
+          <WellBehavedInspectorSubsection />
+        </InspectorPropsContext.Provider>
+      </InspectorCallbackContext.Provider>
+    </DispatchContext.Provider>
   )
 }
 

@@ -10,6 +10,7 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { invert } from '../../../inspector/inspector-common'
@@ -142,7 +143,7 @@ const ResizePoint = React.memo(
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onPointMouseDown = React.useCallback(
@@ -217,7 +218,7 @@ const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)

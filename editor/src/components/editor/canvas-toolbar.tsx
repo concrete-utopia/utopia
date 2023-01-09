@@ -33,11 +33,12 @@ import {
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
 } from './insert-callbacks'
+import { useDispatch } from './store/dispatch-context'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export const CanvasToolbar = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasToolbar dispatch')
+  const dispatch = useDispatch()
   const theme = useColorTheme()
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)

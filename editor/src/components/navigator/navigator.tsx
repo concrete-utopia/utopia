@@ -27,6 +27,7 @@ import {
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -113,23 +114,20 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
-  const { dispatch, minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
-    (store) => {
-      const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
-      const innerSelectionIndex =
-        selectedViews == null
-          ? -1
-          : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.navigator.minimised,
-        visibleNavigatorTargets: innerVisibleNavigatorTargets,
-        selectionIndex: innerSelectionIndex,
-      }
-    },
-    'NavigatorComponent',
-  )
+  const dispatch = useDispatch()
+  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState((store) => {
+    const selectedViews = store.editor.selectedViews
+    const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+    const innerSelectionIndex =
+      selectedViews == null
+        ? -1
+        : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
+    return {
+      minimised: store.editor.navigator.minimised,
+      visibleNavigatorTargets: innerVisibleNavigatorTargets,
+      selectionIndex: innerSelectionIndex,
+    }
+  }, 'NavigatorComponent')
 
   const itemListRef = React.createRef<FixedSizeList>()
 

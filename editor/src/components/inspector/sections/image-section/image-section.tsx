@@ -17,6 +17,7 @@ import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
 import { useColorTheme, InspectorSectionHeader, InspectorSectionIcons } from '../../../../uuiui'
 import { ImageSourceControl } from './image-source-control'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
@@ -25,15 +26,11 @@ export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
 
-  const { dispatch, zerothElementInstanceMetadata } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      zerothElementInstanceMetadata: MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        selectedViews[0],
-      ),
-    }
-  }, 'ImgSection')
+  const dispatch = useDispatch()
+  const zerothElementInstanceMetadata = useEditorState(
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedViews[0]),
+    'ImgSection',
+  )
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
     zerothElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements
   const { value: srcValue, onUnsetValues: srcOnUnsetValues } = useInspectorElementInfo('src')

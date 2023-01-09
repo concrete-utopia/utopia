@@ -15,6 +15,7 @@ import {
   SectionBodyArea,
 } from '../../../uuiui'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
@@ -59,9 +60,10 @@ export const GenericExternalResourcesList = React.memo(() => {
     setEditingIndexOrInserting(null)
   }, [])
 
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
+  const dispatch = useDispatch()
+
+  const { minimised, focusedPanel } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       minimised: store.editor.genericExternalResources.minimised,
       focusedPanel: store.editor.focusedPanel,
     }

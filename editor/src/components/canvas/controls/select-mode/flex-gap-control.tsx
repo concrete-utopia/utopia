@@ -14,6 +14,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
@@ -67,9 +68,9 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
   }, [hoveredViews, selectedElement])
 
-  const { dispatch, scale, metadata, isDragging } = useEditorState(
+  const dispatch = useDispatch()
+  const { scale, metadata, isDragging } = useEditorState(
     (store) => ({
-      dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
       metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
       isDragging: store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',

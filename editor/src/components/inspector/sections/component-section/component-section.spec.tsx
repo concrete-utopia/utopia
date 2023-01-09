@@ -4,7 +4,6 @@ import { render, act } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
 
 import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector.test-utils'
-import utils from '../../../../utils/utils'
 import { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   setupReactWhyDidYouRender,
@@ -20,7 +19,7 @@ describe('Component Section', () => {
     expect((ComponentSection as any).whyDidYouRender).toBeTruthy()
   })
   xit('doesnt rerender on irrelevant changes', () => {
-    const storeHookForTest = getStoreHook(utils.NO_OP)
+    const storeHookForTest = getStoreHook()
     storeHookForTest.updateStoreWithImmer((store) => {
       store.editor.selectedViews = [
         EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'mycomponent']),

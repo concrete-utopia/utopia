@@ -1,7 +1,6 @@
 import React from 'react'
-import { EditorAction } from './action-types'
-import { EditorStorePatched } from './store/editor-state'
-import { useRefEditorState } from './store/store-hook'
+import { EditorAction, EditorDispatch } from './action-types'
+import { useDispatch } from './store/dispatch-context'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
 
@@ -16,8 +15,6 @@ type KeyboardHandler<R> = EventHandler<'keydown' | 'keyup', R>
 type KeyboardHandlerActions = KeyboardHandler<Array<EditorAction>>
 
 type KeyboardHandlerUnknown = KeyboardHandler<unknown>
-
-type EditorStoreRef = { current: EditorStorePatched }
 
 let mouseDownHandlers: Array<MouseHandlerActions> = []
 let currentMouseDownEventHandler: MouseHandlerUnknown | null = null
@@ -45,7 +42,7 @@ function removeHandler<K extends keyof WindowEventMap>(
 // which dispatches the actions produced by the functions. Assigns that handler to the window event
 // and then returns it.
 function createHandler<K extends keyof WindowEventMap>(
-  editorStoreRef: EditorStoreRef,
+  dispatch: EditorDispatch,
   eventName: K,
   handlers: Array<EventHandler<K, Array<EditorAction>>>,
 ): EventHandler<K, unknown> | null {
@@ -56,7 +53,7 @@ function createHandler<K extends keyof WindowEventMap>(
       const collatedActions = handlers.flatMap((handler) => {
         return handler.bind(window)(event)
       })
-      editorStoreRef.current.dispatch(collatedActions, 'everyone')
+      dispatch(collatedActions, 'everyone')
     }
 
     window.addEventListener(eventName, windowEventHandler)
@@ -66,16 +63,16 @@ function createHandler<K extends keyof WindowEventMap>(
 
 // Whenever the global event handler arrays change, this should be invoked to remove
 // and recreate the handlers attached to the window.
-function recreateEventHandlers(editorStoreRef: EditorStoreRef): void {
+function recreateEventHandlers(dispatch: EditorDispatch): void {
   removeHandler('mousedown', currentMouseDownEventHandler)
   removeHandler('mouseup', currentMouseUpEventHandler)
   removeHandler('keydown', currentKeyDownEventHandler)
   removeHandler('keyup', currentKeyUpEventHandler)
 
-  currentMouseDownEventHandler = createHandler(editorStoreRef, 'mousedown', mouseDownHandlers)
-  currentMouseUpEventHandler = createHandler(editorStoreRef, 'mouseup', mouseUpHandlers)
-  currentKeyDownEventHandler = createHandler(editorStoreRef, 'keydown', keyDownHandlers)
-  currentKeyUpEventHandler = createHandler(editorStoreRef, 'keyup', keyUpHandlers)
+  currentMouseDownEventHandler = createHandler(dispatch, 'mousedown', mouseDownHandlers)
+  currentMouseUpEventHandler = createHandler(dispatch, 'mouseup', mouseUpHandlers)
+  currentKeyDownEventHandler = createHandler(dispatch, 'keydown', keyDownHandlers)
+  currentKeyUpEventHandler = createHandler(dispatch, 'keyup', keyUpHandlers)
 }
 
 export interface EditorCommonProps {
@@ -88,20 +85,20 @@ export interface EditorCommonProps {
 // Component to be included when functions that produce editor actions from window
 // events need to be "stacked" up and only utilise a single instance of the event listener.
 export function EditorCommon(props: EditorCommonProps): React.ReactElement | null {
-  const editorStoreRef = useRefEditorState((store) => store)
+  const dispatch = useDispatch()
   React.useEffect(() => {
     mouseDownHandlers = [...mouseDownHandlers, props.mouseDown]
     mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
     keyDownHandlers = [...keyDownHandlers, props.keyDown]
     keyUpHandlers = [...keyUpHandlers, props.keyUp]
-    recreateEventHandlers(editorStoreRef)
+    recreateEventHandlers(dispatch)
 
     return function cleanup() {
       mouseDownHandlers = mouseDownHandlers.filter((handler) => handler !== props.mouseDown)
       mouseUpHandlers = mouseUpHandlers.filter((handler) => handler !== props.mouseUp)
       keyDownHandlers = keyDownHandlers.filter((handler) => handler !== props.keyDown)
       keyUpHandlers = keyUpHandlers.filter((handler) => handler !== props.keyUp)
-      recreateEventHandlers(editorStoreRef)
+      recreateEventHandlers(dispatch)
     }
   })
 

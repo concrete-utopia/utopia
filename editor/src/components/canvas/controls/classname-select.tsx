@@ -37,6 +37,7 @@ import {
   UtopiaTheme,
 } from '../../../uuiui'
 import * as EditorActions from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 
 const DropdownIndicator = React.memo((props: IndicatorProps<TailWindOption, true>) => (
@@ -155,7 +156,7 @@ let queuedDispatchTimeout: number | undefined = undefined
 export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
     const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
-    const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+    const dispatch = useDispatch()
     const [input, setInput] = React.useState('')
     const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)

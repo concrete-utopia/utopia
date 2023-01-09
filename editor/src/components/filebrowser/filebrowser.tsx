@@ -33,6 +33,7 @@ import {
   TreeConflicts,
   useGithubFileChanges,
 } from '../../core/shared/github'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -144,9 +145,9 @@ function collectFileBrowserItems(
 }
 
 export const FileBrowser = React.memo(() => {
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { minimised, focusedPanel } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       minimised: store.editor.fileBrowser.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
@@ -243,8 +244,8 @@ interface FileBrowserActionSheetProps {
 }
 
 const FileBrowserItems = React.memo(() => {
+  const dispatch = useDispatch()
   const {
-    dispatch,
     projectContents,
     editorSelectedFile,
     errorMessages,
@@ -256,7 +257,6 @@ const FileBrowserItems = React.memo(() => {
     projectID,
   } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
       errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
@@ -358,10 +358,7 @@ const FileBrowserItems = React.memo(() => {
 })
 
 const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) => {
-  const { dispatch } = useEditorState(
-    (store) => ({ dispatch: store.dispatch }),
-    'FileBrowserActionSheet dispatch',
-  )
+  const dispatch = useDispatch()
   const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
   const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
   if (props.visible) {

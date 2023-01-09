@@ -50,6 +50,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -898,7 +899,7 @@ class FileBrowserItemInner extends React.PureComponent<
 }
 
 export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
+  const dispatch = useDispatch()
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({

@@ -20,7 +20,6 @@ function createEmptyEditorStoreHook() {
     userState: null as any,
     workers: null as any,
     persistence: null as any,
-    dispatch: null as any,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
     storeName: 'editor-store',

@@ -15,11 +15,10 @@ import {
 } from '../../../components/shared/project-components'
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export const RenderAsRow = React.memo(() => {
-  const dispatch = useEditorState((store) => {
-    return store.dispatch
-  }, 'RenderAsRow dispatch')
+  const dispatch = useDispatch()
 
   const selectedElementName = useEditorState((store) => {
     return MetadataUtils.getJSXElementNameFromMetadata(
