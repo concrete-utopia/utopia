@@ -18,7 +18,7 @@ export const ForksGiven = React.memo(() => {
     (store) => User.isLoggedIn(store.userState.loginState),
     'ForksGiven isLoggedIn',
   )
-  const { id, forkedFrom } = useEditorState('oldEditor')((store) => {
+  const { id, forkedFrom } = useEditorState('restOfEditor')((store) => {
     return {
       id: store.editor.id,
       forkedFrom: store.editor.forkedFromProjectId,

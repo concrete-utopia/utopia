@@ -18,7 +18,7 @@ import {
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
-  return useEditorState('oldEditor')((store) => {
+  return useEditorState('restOfEditor')((store) => {
     const mode = store.editor.mode
     return (
       mode.type === 'insert' &&

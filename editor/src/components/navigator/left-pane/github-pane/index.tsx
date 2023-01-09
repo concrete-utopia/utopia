@@ -95,7 +95,7 @@ const AccountBlock = () => {
 }
 
 const RepositoryBlock = () => {
-  const repo = useEditorState('oldEditor')(
+  const repo = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.targetRepository,
     'RepositoryBlock repo',
   )
@@ -149,7 +149,7 @@ const RepositoryBlock = () => {
 const BranchBlock = () => {
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'BranchBlock dispatch')
   const { currentBranch, githubOperations, targetRepository, branchesForRepository } =
-    useEditorState('oldEditor')(
+    useEditorState('restOfEditor')(
       (store) => ({
         currentBranch: store.editor.githubSettings.branchName,
         githubOperations: store.editor.githubOperations,
@@ -158,7 +158,7 @@ const BranchBlock = () => {
       }),
       'Github branch',
     )
-  const repositoryData = useEditorState('oldEditor')(
+  const repositoryData = useEditorState('restOfEditor')(
     (store) =>
       store.editor.githubData.publicRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
@@ -416,7 +416,7 @@ const BranchBlock = () => {
 }
 
 const RemoteChangesBlock = () => {
-  const upstreamChanges = useEditorState('oldEditor')(
+  const upstreamChanges = useEditorState('restOfEditor')(
     (store) => store.editor.githubData.upstreamChanges,
     'Upstream changes',
   )
@@ -439,28 +439,28 @@ const RemoteChangesBlock = () => {
       hasUpstreamChanges ? (bothModified.length > 0 ? 'failed' : 'pending') : 'successful',
     [hasUpstreamChanges, bothModified],
   )
-  const githubOperations = useEditorState('oldEditor')(
+  const githubOperations = useEditorState('restOfEditor')(
     (store) => store.editor.githubOperations,
     'Github operations',
   )
-  const githubLastUpdatedAt = useEditorState('oldEditor')(
+  const githubLastUpdatedAt = useEditorState('restOfEditor')(
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
   )
-  const repo = useEditorState('oldEditor')(
+  const repo = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const branch = useEditorState('oldEditor')(
+  const branch = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchName,
     'Github branch',
   )
-  const branchLoaded = useEditorState('oldEditor')(
+  const branchLoaded = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branchLoaded',
   )
-  const commit = useEditorState('oldEditor')(
+  const commit = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
   )
@@ -537,17 +537,17 @@ const LocalChangesBlock = () => {
     (): IndicatorState => (hasLocalChanges ? 'incomplete' : 'successful'),
     [hasLocalChanges],
   )
-  const githubOperations = useEditorState('oldEditor')(
+  const githubOperations = useEditorState('restOfEditor')(
     (store) => store.editor.githubOperations,
     'Github operations',
   )
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const repo = useEditorState('oldEditor')(
+  const repo = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
 
-  const branch = useEditorState('oldEditor')(
+  const branch = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchName,
     'Github branch',
   )
@@ -577,7 +577,7 @@ const LocalChangesBlock = () => {
     return cleanupBranchName(rawCommitBranchName)
   }, [rawCommitBranchName])
 
-  const originCommit = useEditorState('oldEditor')(
+  const originCommit = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.originCommit,
     'Github origin commit',
   )
@@ -604,12 +604,12 @@ const LocalChangesBlock = () => {
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
-  const pullRequests = useEditorState('oldEditor')(
+  const pullRequests = useEditorState('restOfEditor')(
     (store) => store.editor.githubData.currentBranchPullRequests,
     'Branch PRs',
   )
 
-  const branchLoaded = useEditorState('oldEditor')(
+  const branchLoaded = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branchLoaded',
   )
@@ -698,11 +698,11 @@ const LocalChangesBlock = () => {
 }
 
 const PullRequestButton = () => {
-  const branch = useEditorState('oldEditor')(
+  const branch = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchName,
     'PullRequestButton branch',
   )
-  const repo = useEditorState('oldEditor')(
+  const repo = useEditorState('restOfEditor')(
     (store) =>
       store.editor.githubData.publicRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
@@ -723,7 +723,7 @@ const PullRequestButton = () => {
     }
   }, [repo, branch])
 
-  const branchLoaded = useEditorState('oldEditor')(
+  const branchLoaded = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branch loaded',
   )
@@ -746,7 +746,7 @@ const PullRequestButton = () => {
 const BranchNotLoadedBlock = () => {
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
   const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
-    'oldEditor',
+    'restOfEditor',
   )(
     (store) => ({
       branchName: store.editor.githubSettings.branchName,
@@ -940,7 +940,7 @@ const BranchNotLoadedBlock = () => {
 }
 
 const PullRequestBlock = () => {
-  const pullRequests = useEditorState('oldEditor')(
+  const pullRequests = useEditorState('restOfEditor')(
     (store) => store.editor.githubData.currentBranchPullRequests,
     'Branch PRs',
   )
@@ -961,7 +961,7 @@ const PullRequestBlock = () => {
 }
 
 export const GithubPane = React.memo(() => {
-  const githubUser = useEditorState('oldEditor')(
+  const githubUser = useEditorState('restOfEditor')(
     (store) => store.editor.githubData.githubUserDetails,
     'GithubPane githubUser',
   )

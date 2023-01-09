@@ -118,7 +118,7 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('oldEditor')(
+        return useSelectorWithCallback('restOfEditor')(
           (store) => store.editor.focusedElementPath,
           (newFocusedElementPath) => {
             callCount++

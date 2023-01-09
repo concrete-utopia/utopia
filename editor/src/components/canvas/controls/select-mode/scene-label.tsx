@@ -50,7 +50,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'SceneLabel dispatch')
 
-  const labelSelectable = useEditorState('oldEditor')(
+  const labelSelectable = useEditorState('restOfEditor')(
     (store) => !store.editor.keysPressed['z'],
     'SceneLabel Z key pressed',
   )

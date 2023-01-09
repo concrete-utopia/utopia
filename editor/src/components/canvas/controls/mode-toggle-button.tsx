@@ -8,7 +8,7 @@ import { AlternateColorThemeComponent, useColorTheme } from '../../../uuiui'
 
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
-  const selectedMode = useEditorState('oldEditor')(
+  const selectedMode = useEditorState('restOfEditor')(
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
   )

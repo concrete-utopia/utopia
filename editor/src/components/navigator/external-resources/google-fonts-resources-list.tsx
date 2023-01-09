@@ -10,7 +10,7 @@ import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-se
 export const GoogleFontsResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const { minimised, focusedPanel } = useEditorState('oldEditor')((store) => {
+  const { minimised, focusedPanel } = useEditorState('restOfEditor')((store) => {
     return {
       minimised: store.editor.googleFontsResources.minimised,
       focusedPanel: store.editor.focusedPanel,

@@ -267,7 +267,7 @@ export const NavigatorItem: React.FunctionComponent<
   } = props
 
   const colorTheme = useColorTheme()
-  const isFocusedComponent = useEditorState('oldEditor')(
+  const isFocusedComponent = useEditorState('restOfEditor')(
     (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
     'NavigatorItem isFocusedComponent',
   )
@@ -284,7 +284,7 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
-  const isHighlightedForInteraction = useEditorState('oldEditor')((store) => {
+  const isHighlightedForInteraction = useEditorState('restOfEditor')((store) => {
     return store.editor.navigator.highlightedTargets.some((target) =>
       EP.pathsEqual(target, props.elementPath),
     )

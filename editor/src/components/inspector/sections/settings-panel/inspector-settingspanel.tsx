@@ -78,7 +78,7 @@ export const SettingsPanel = React.memo(() => {
     (store) => store.dispatch,
     'SettingsPanel dispatch',
   )
-  const interfaceDesigner = useEditorState('oldEditor')(
+  const interfaceDesigner = useEditorState('restOfEditor')(
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )

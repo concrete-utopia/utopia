@@ -15,7 +15,7 @@ interface MultiSelectOutlineControlProps {
 }
 
 export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
-  const hiddenInstances = useEditorState('oldEditor')(
+  const hiddenInstances = useEditorState('restOfEditor')(
     (store) => store.editor.hiddenInstances,
     'MultiSelectOutlineControl hiddenInstances',
   )

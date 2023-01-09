@@ -31,7 +31,7 @@ export const DistanceGuidelineControl = React.memo(() => {
       isDragInteractionData(store.editor.canvas.interactionSession.interactionData)
     )
   }, 'DistanceGuidelineControl isInteractionActive')
-  const altKeyPressed = useEditorState('oldEditor')(
+  const altKeyPressed = useEditorState('restOfEditor')(
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
   )

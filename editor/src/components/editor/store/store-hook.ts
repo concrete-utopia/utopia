@@ -28,8 +28,8 @@ import {
   EditorStateWOScrollOffset,
   HighlightedViewsSubstate,
   MetadataSubstate,
-  OldEditorState,
-  oldEditorStateKeys,
+  RestOfEditorState,
+  restOfEditorStateKeys,
   ProjectContentSubstate,
   restOfStoreKeys,
   SelectedViewsSubstate,
@@ -312,7 +312,7 @@ type Substates = {
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
   derived: { derived: DerivedState }
-  oldEditor: { editor: OldEditorState }
+  restOfEditor: { editor: RestOfEditorState }
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   fullOldStore: EditorStorePatched
   originalStore: EditorStorePatched
@@ -363,8 +363,8 @@ export const SubstateEqualityFns: {
   derived: (a: { derived: DerivedState }, b: { derived: DerivedState }) => {
     return a.derived === b.derived
   },
-  oldEditor: (a: { editor: OldEditorState }, b: { editor: OldEditorState }) => {
-    return keysEquality(oldEditorStateKeys, a.editor, b.editor)
+  restOfEditor: (a: { editor: RestOfEditorState }, b: { editor: RestOfEditorState }) => {
+    return keysEquality(restOfEditorStateKeys, a.editor, b.editor)
   },
   restOfStore: (
     a: Omit<EditorStorePatched, 'editor' | 'derived'>,

@@ -74,11 +74,11 @@ export const CanvasWrapperComponent = React.memo(() => {
     return getAllCodeEditorErrors(editorState, 'fatal', true)
   }, [editorState])
 
-  const safeMode = useEditorState('oldEditor')((store) => {
+  const safeMode = useEditorState('restOfEditor')((store) => {
     return store.editor.safeMode
   }, 'CanvasWrapperComponent safeMode')
 
-  const isNavigatorOverCanvas = useEditorState('oldEditor')(
+  const isNavigatorOverCanvas = useEditorState('restOfEditor')(
     (store) => !store.editor.navigator.minimised,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )

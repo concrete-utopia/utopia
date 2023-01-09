@@ -202,10 +202,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [dispatch, elementPath],
   )
 
-  const isLockedElement = useEditorState('oldEditor')((store) => {
+  const isLockedElement = useEditorState('restOfEditor')((store) => {
     return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
   }, 'NavigatorItemActionSheet isLockedElement')
-  const isLockedHierarchy = useEditorState('oldEditor')((store) => {
+  const isLockedHierarchy = useEditorState('restOfEditor')((store) => {
     return store.editor.lockedElements.hierarchyLock.some((path) =>
       EP.pathsEqual(elementPath, path),
     )
@@ -217,7 +217,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [elementPath, jsxMetadataRef],
   )
 
-  const isDescendantOfLocked = useEditorState('oldEditor')((store) => {
+  const isDescendantOfLocked = useEditorState('restOfEditor')((store) => {
     return MetadataUtils.isDescendantOfHierarchyLockedElement(
       elementPath,
       store.editor.lockedElements,

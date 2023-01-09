@@ -24,7 +24,7 @@ export const LoginStatusBar = React.memo(() => {
     (store) => store.userState.loginState,
     'LoginStatusBar',
   )
-  const saveError = useEditorState('oldEditor')(
+  const saveError = useEditorState('restOfEditor')(
     (store) => store.editor.saveError,
     'EditorComponentInner saveError',
   )

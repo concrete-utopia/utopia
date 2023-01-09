@@ -87,7 +87,7 @@ export const PreviewColumn = React.memo(() => {
     (store) => getMainJSFilename(store.editor.projectContents),
     'PreviewColumn mainJSFilename',
   )
-  const { id, projectName, connected } = useEditorState('oldEditor')((store) => {
+  const { id, projectName, connected } = useEditorState('restOfEditor')((store) => {
     return {
       id: store.editor.id,
       projectName: store.editor.projectName,

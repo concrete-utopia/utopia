@@ -52,7 +52,7 @@ export const SettingsPane = React.memo(() => {
     }
   }, 'SettingsPane')
 
-  const { projectId, projectName, projectDescription } = useEditorState('oldEditor')((store) => {
+  const { projectId, projectName, projectDescription } = useEditorState('restOfEditor')((store) => {
     return {
       projectId: store.editor.id,
       projectName: store.editor.projectName,

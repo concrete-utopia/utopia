@@ -49,7 +49,7 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRever
     (store) => store.editor.projectContents,
     'project contents',
   )
-  const branchContents = useEditorState('oldEditor')(
+  const branchContents = useEditorState('restOfEditor')(
     (store) => store.editor.branchContents,
     'branch contents',
   )

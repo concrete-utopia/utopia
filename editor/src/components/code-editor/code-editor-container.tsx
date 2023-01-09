@@ -45,7 +45,7 @@ const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
 })
 
 export const CodeEditorWrapper = React.memo(() => {
-  const selectedProps = useEditorState('oldEditor')((store) => {
+  const selectedProps = useEditorState('restOfEditor')((store) => {
     return {
       vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
     }

@@ -428,7 +428,7 @@ export var FloatingMenu = React.memo(() => {
     }
   }, [])
 
-  const floatingMenuState = useEditorState('oldEditor')(
+  const floatingMenuState = useEditorState('restOfEditor')(
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -703,7 +703,7 @@ export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) =>
     (store) => store.dispatch,
     'FloatingInsertMenu dispatch',
   )
-  const isVisible = useEditorState('oldEditor')(
+  const isVisible = useEditorState('restOfEditor')(
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

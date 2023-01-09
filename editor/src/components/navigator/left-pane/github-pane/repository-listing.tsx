@@ -43,12 +43,12 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const [importing, setImporting] = React.useState(false)
 
-  const loadingRepos = useEditorState('oldEditor')(
+  const loadingRepos = useEditorState('restOfEditor')(
     (store) => isGithubLoadingRepositories(store.editor.githubOperations),
     'RepositoryRow loadingRepos',
   )
 
-  const importingThisBranch = useEditorState('oldEditor')((store) => {
+  const importingThisBranch = useEditorState('restOfEditor')((store) => {
     if (props.defaultBranch == null) {
       return false
     } else {
@@ -71,7 +71,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     }
   }
 
-  const currentRepo = useEditorState('oldEditor')(
+  const currentRepo = useEditorState('restOfEditor')(
     (store) => store.editor.githubSettings.targetRepository,
     'Current Github repository',
   )
@@ -169,7 +169,7 @@ export const RepositoryListing = React.memo(
       [setTargetRepository],
     )
 
-    const usersRepositories = useEditorState('oldEditor')(
+    const usersRepositories = useEditorState('restOfEditor')(
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -229,7 +229,7 @@ export const RepositoryListing = React.memo(
       }
     }, [filteredRepositories, targetRepository])
 
-    const githubOperations = useEditorState('oldEditor')(
+    const githubOperations = useEditorState('restOfEditor')(
       (store) => store.editor.githubOperations,
       'Github operations',
     )

@@ -453,7 +453,7 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
 
 export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
-  const { files } = useEditorState('oldEditor')((store) => {
+  const { files } = useEditorState('restOfEditor')((store) => {
     return { files: store.editor.nodeModules.files }
   }, 'usePossiblyResolvedPackageDependencies')
   const { builtInDependencies } = useEditorState('restOfStore')((store) => {

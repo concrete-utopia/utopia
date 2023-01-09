@@ -57,7 +57,7 @@ const TitleBar = React.memo(() => {
     'TitleBar loginState',
   )
   const { projectName, upstreamChanges, currentBranch, treeConflicts } = useEditorState(
-    'oldEditor',
+    'restOfEditor',
   )(
     (store) => ({
       projectName: store.editor.projectName,
@@ -70,7 +70,7 @@ const TitleBar = React.memo(() => {
 
   const userPicture = useGetUserPicture()
 
-  const repoName = useEditorState('oldEditor')(
+  const repoName = useEditorState('restOfEditor')(
     (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
     'RepositoryBlock repo',
   )

@@ -51,7 +51,7 @@ export const ComponentInfoBox = () => {
     'ComponentInfoBox selectedViews',
   )
 
-  const focusedElementPath = useEditorState('oldEditor')(
+  const focusedElementPath = useEditorState('restOfEditor')(
     (store) => store.editor.focusedElementPath,
     'ComponentInfoBox focusedElementPath',
   )

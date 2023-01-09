@@ -136,7 +136,7 @@ const DesignPanelRootInner = React.memo(() => {
     (store) => store.dispatch,
     'DesignPanelRoot dispatch',
   )
-  const interfaceDesigner = useEditorState('oldEditor')(
+  const interfaceDesigner = useEditorState('restOfEditor')(
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
@@ -145,22 +145,22 @@ const DesignPanelRootInner = React.memo(() => {
   const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
     interfaceDesigner.codePaneWidth,
   )
-  const navigatorVisible = useEditorState('oldEditor')(
+  const navigatorVisible = useEditorState('restOfEditor')(
     (store) => !store.editor.navigator.minimised,
     'DesignPanelRoot navigatorVisible',
   )
 
-  const isRightMenuExpanded = useEditorState('oldEditor')(
+  const isRightMenuExpanded = useEditorState('restOfEditor')(
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
 
-  const rightMenuSelectedTab = useEditorState('oldEditor')(
+  const rightMenuSelectedTab = useEditorState('restOfEditor')(
     (store) => store.editor.rightMenu.selectedTab,
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
-  const leftMenuExpanded = useEditorState('oldEditor')(
+  const leftMenuExpanded = useEditorState('restOfEditor')(
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )

@@ -8,7 +8,7 @@ import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import { FlexColumn } from '../../../../uuiui'
 
 export const PullRequestPane = React.memo(() => {
-  const pullRequests = useEditorState('oldEditor')((store) => {
+  const pullRequests = useEditorState('restOfEditor')((store) => {
     return store.editor.githubData.currentBranchPullRequests
   }, 'PullRequestPane pullRequest')
 

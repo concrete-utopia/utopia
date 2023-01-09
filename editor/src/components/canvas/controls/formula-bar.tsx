@@ -23,7 +23,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'FormulaBar dispatch')
 
-  const selectedMode = useEditorState('oldEditor')(
+  const selectedMode = useEditorState('restOfEditor')(
     (store) => store.editor.topmenu.formulaBarMode,
     'FormulaBar selectedMode',
   )
@@ -52,7 +52,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     }
   }, 'FormulaBar selectedElementTextContent')
 
-  const focusTriggerCount = useEditorState('oldEditor')(
+  const focusTriggerCount = useEditorState('restOfEditor')(
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
   )

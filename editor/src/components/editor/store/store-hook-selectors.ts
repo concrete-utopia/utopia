@@ -96,7 +96,7 @@ export type EditorStateWOScrollOffset = Omit<EditorStorePatched, 'editor'> & {
   }
 }
 
-export type OldEditorState = Omit<
+export type RestOfEditorState = Omit<
   EditorState,
   | 'projectContents'
   | 'canvas'
@@ -110,7 +110,7 @@ export type OldEditorState = Omit<
   | '_currentAllElementProps_KILLME'
 > // not comprehensive
 
-export const oldEditorStateKeys: ReadonlyArray<keyof OldEditorState> = [
+export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
   'id',
   'vscodeBridgeId',
   'forkedFromProjectId',

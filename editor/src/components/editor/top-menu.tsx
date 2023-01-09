@@ -27,7 +27,7 @@ const TopMenuLeftControls = React.memo(() => {
     (store) => store.dispatch,
     'TopMenuLeftControls dispatch',
   )
-  const navigatorVisible = useEditorState('oldEditor')(
+  const navigatorVisible = useEditorState('restOfEditor')(
     (store) => !store.editor.navigator.minimised,
     'TopMenuLeftControls navigatorVisible',
   )
@@ -66,7 +66,7 @@ const TopMenuRightControls = React.memo(() => {
   )
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
-  const rightMenuSelectedTab = useEditorState('oldEditor')(
+  const rightMenuSelectedTab = useEditorState('restOfEditor')(
     (store) => store.editor.rightMenu.selectedTab,
     'RightMenu rightMenuSelectedTab',
   )

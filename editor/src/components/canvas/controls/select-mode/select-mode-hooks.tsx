@@ -781,11 +781,11 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState('oldEditor')(
+  const modeType = useEditorState('restOfEditor')(
     (store) => store.editor.mode.type,
     'useSelectAndHover mode',
   )
-  const isZoomMode = useEditorState('oldEditor')(
+  const isZoomMode = useEditorState('restOfEditor')(
     (store) => store.editor.keysPressed['z'] ?? false,
     'useSelectAndHover isZoomMode',
   )

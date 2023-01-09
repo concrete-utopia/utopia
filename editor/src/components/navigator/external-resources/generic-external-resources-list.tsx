@@ -60,7 +60,7 @@ export const GenericExternalResourcesList = React.memo(() => {
   }, [])
 
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const { minimised, focusedPanel } = useEditorState('oldEditor')((store) => {
+  const { minimised, focusedPanel } = useEditorState('restOfEditor')((store) => {
     return {
       minimised: store.editor.genericExternalResources.minimised,
       focusedPanel: store.editor.focusedPanel,

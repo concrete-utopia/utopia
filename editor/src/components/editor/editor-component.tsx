@@ -232,19 +232,19 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.dispatch,
     'EditorComponentInner dispatch',
   )
-  const projectName = useEditorState('oldEditor')(
+  const projectName = useEditorState('restOfEditor')(
     (store) => store.editor.projectName,
     'EditorComponentInner projectName',
   )
-  const projectId = useEditorState('oldEditor')(
+  const projectId = useEditorState('restOfEditor')(
     (store) => store.editor.id,
     'EditorComponentInner projectId',
   )
-  const previewVisible = useEditorState('oldEditor')(
+  const previewVisible = useEditorState('restOfEditor')(
     (store) => store.editor.preview.visible,
     'EditorComponentInner previewVisible',
   )
-  const leftMenuExpanded = useEditorState('oldEditor')(
+  const leftMenuExpanded = useEditorState('restOfEditor')(
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
@@ -398,7 +398,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const { modal, currentBranch } = useEditorState('oldEditor')((store) => {
+  const { modal, currentBranch } = useEditorState('restOfEditor')((store) => {
     return {
       modal: store.editor.modal,
       currentBranch: store.editor.githubSettings.branchName,
@@ -431,7 +431,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
 })
 
 export function EditorComponent(props: EditorProps) {
-  const indexedDBFailed = useEditorState('oldEditor')(
+  const indexedDBFailed = useEditorState('restOfEditor')(
     (store) => store.editor.indexedDBFailed,
     'EditorComponent indexedDBFailed',
   )
@@ -446,7 +446,7 @@ export function EditorComponent(props: EditorProps) {
 }
 
 const ToastRenderer = React.memo(() => {
-  const toasts = useEditorState('oldEditor')((store) => store.editor.toasts, 'ToastRenderer')
+  const toasts = useEditorState('restOfEditor')((store) => store.editor.toasts, 'ToastRenderer')
 
   return (
     <FlexColumn
@@ -480,17 +480,17 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 }
 
 const LockedOverlay = React.memo(() => {
-  const leftMenuExpanded = useEditorState('oldEditor')(
+  const leftMenuExpanded = useEditorState('restOfEditor')(
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
 
-  const editorLocked = useEditorState('oldEditor')(
+  const editorLocked = useEditorState('restOfEditor')(
     (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
     'EditorComponentInner editorLocked',
   )
 
-  const refreshingDependencies = useEditorState('oldEditor')(
+  const refreshingDependencies = useEditorState('restOfEditor')(
     (store) => store.editor.refreshingDependencies,
     'EditorComponentInner refreshingDependencies',
   )
