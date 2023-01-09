@@ -586,6 +586,19 @@ export class Editor {
                 'slow store',
                 afterStoreUpdate - afterMainStore,
               )
+              // eslint-disable-next-line no-console
+              console.log(
+                'Number of Selectors called during store update phase',
+                Object.keys(SelectorTimings.current).length,
+              )
+              // eslint-disable-next-line no-console
+              console.table(SelectorTimings.current)
+              // eslint-disable-next-line no-console
+              console.log('Pre-Selectors during store update phase')
+              // eslint-disable-next-line no-console
+              console.table(SubstoreTimings.current)
+              SelectorTimings.current = {}
+              SubstoreTimings.current = {}
             }
             if (PerformanceMarks) {
               performance.mark(`react wrap up ${updateId}`)
@@ -618,11 +631,14 @@ export class Editor {
     const result = runDispatch()
     if (MeasureSelectors) {
       // eslint-disable-next-line no-console
-      console.log('Number of Selectors called', Object.keys(SelectorTimings.current).length)
+      console.log(
+        'Number of Selectors called during re-render phase',
+        Object.keys(SelectorTimings.current).length,
+      )
       // eslint-disable-next-line no-console
       console.table(SelectorTimings.current)
       // eslint-disable-next-line no-console
-      console.log('Pre-Selectors:')
+      console.log('Pre-Selectors during re-render phase')
       // eslint-disable-next-line no-console
       console.table(SubstoreTimings.current)
     }
