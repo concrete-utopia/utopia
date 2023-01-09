@@ -94,6 +94,7 @@ import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import fastDeepEquals from 'fast-deep-equal'
 import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 import { EditorAction } from '../../editor/action-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -601,7 +602,7 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
     transient: boolean,
   ) => Array<EditorAction>,
 ): (newValue: T, transient?: boolean | undefined) => void {
-  const dispatch = useRefEditorState((store) => store.dispatch)
+  const dispatch = useDispatch()
   return React.useCallback(
     (newValue, transient = false) => {
       const untransformedValue = untransformValue(newValue)
@@ -617,7 +618,7 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
         }
       })
 
-      dispatch.current(actions)
+      dispatch(actions)
     },
     [
       collectActionsToSubmitValue,

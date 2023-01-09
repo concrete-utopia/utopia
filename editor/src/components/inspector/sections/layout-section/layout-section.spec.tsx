@@ -5,7 +5,6 @@ import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
 } from '../../../../utils/react-memoize.test-utils'
-import utils from '../../../../utils/utils'
 import { CanvasRectangle, CanvasVector, LocalRectangle } from '../../../../core/shared/math-utils'
 import {
   editPropOfSelectedView,
@@ -24,7 +23,7 @@ describe('Layout Section', () => {
     expect((LayoutSection as any).whyDidYouRender).toBeTruthy()
   })
   it('doesnt rerender on irrelevant changes', () => {
-    const storeHookForTest = getStoreHook(utils.NO_OP)
+    const storeHookForTest = getStoreHook()
 
     storeHookForTest.updateStore((store) => {
       return editPropOfSelectedView(store, stylePropPathMappingFn('width', ['style']), 198)

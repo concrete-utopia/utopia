@@ -8,6 +8,7 @@ import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
@@ -31,7 +32,7 @@ const getFlexDirectionIcon = (
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutParentControl dispatch')
+  const dispatch = useDispatch()
 
   const { canvasOffset, scale } = useEditorState((store) => {
     return {

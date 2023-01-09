@@ -9,6 +9,7 @@ import { MenuTab } from '../../../uuiui/menu-tab'
 import { useIsMyProject } from '../../common/server-hooks'
 import { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
 import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   DerivedState,
   EditorState,
@@ -41,7 +42,7 @@ export const LeftPaneComponent = React.memo(() => {
     'LeftPaneComponent selectedTab',
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
+  const dispatch = useDispatch()
 
   const loggedIn = useEditorState(
     (store) => User.isLoggedIn(store.userState.loginState),

@@ -26,6 +26,7 @@ import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
 import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -74,7 +75,7 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
+  const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',

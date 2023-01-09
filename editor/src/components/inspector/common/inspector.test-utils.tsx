@@ -36,15 +36,15 @@ import { mapValues } from '../../../core/shared/object-utils'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { DispatchContext } from '../../editor/store/dispatch-context'
+import { NO_OP } from '../../../core/shared/utils'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
   updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
 }
 
-export function getStoreHook(
-  mockDispatch: EditorDispatch,
-): EditorStateContextData & UpdateFunctionHelpers {
+export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
@@ -61,7 +61,6 @@ export function getStoreHook(
     userState: defaultUserState,
     workers: null as any,
     persistence: null as any,
-    dispatch: mockDispatch,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
@@ -86,11 +85,13 @@ export const TestInspectorContextProvider: React.FunctionComponent<
   }>
 > = (props) => {
   return (
-    <EditorStateContext.Provider value={props.editorStoreData}>
-      <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>
-        {props.children}
-      </InspectorContextProvider>
-    </EditorStateContext.Provider>
+    <DispatchContext.Provider value={NO_OP}>
+      <EditorStateContext.Provider value={props.editorStoreData}>
+        <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>
+          {props.children}
+        </InspectorContextProvider>
+      </EditorStateContext.Provider>
+    </DispatchContext.Provider>
   )
 }
 

@@ -6,6 +6,7 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
@@ -70,7 +71,6 @@ const PaddingResizeControlHitAreaWidth = 3
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
 const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
-const dispatchSelector: StoreSelector<EditorDispatch> = (store) => store.dispatch
 const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
   store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
   store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
@@ -78,10 +78,10 @@ const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const { setShownByParent } = props
-    const { scale, dispatch, isDragging } = useEditorState(
+    const dispatch = useDispatch()
+    const { scale, isDragging } = useEditorState(
       (store) => ({
         scale: scaleSelector(store),
-        dispatch: dispatchSelector(store),
         isDragging: isDraggingSelector(store, props.edge),
       }),
       'PaddingResizeControl scale, dispatch, isDragging',

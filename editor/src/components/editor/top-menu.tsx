@@ -21,9 +21,10 @@ import { CanvasVector } from '../../core/shared/math-utils'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { toString } from '../../core/shared/element-path'
 import { stopPropagation } from '../inspector/common/inspector-utils'
+import { useDispatch } from './store/dispatch-context'
 
 const TopMenuLeftControls = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
+  const dispatch = useDispatch()
   const navigatorVisible = useEditorState(
     (store) => !store.editor.navigator.minimised,
     'TopMenuLeftControls navigatorVisible',
@@ -53,7 +54,7 @@ const TopMenuLeftControls = React.memo(() => {
 })
 
 const TopMenuRightControls = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuRightControls dispatch')
+  const dispatch = useDispatch()
   const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 

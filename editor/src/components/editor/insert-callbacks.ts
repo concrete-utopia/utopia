@@ -19,6 +19,7 @@ import {
   defaultSpanElementWithPlaceholder,
 } from './defaults'
 import { EditorModes } from './editor-modes'
+import { useDispatch } from './store/dispatch-context'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
@@ -40,7 +41,7 @@ export function useEnterDrawToInsertForDiv(): (event: React.MouseEvent<Element>)
 }
 
 export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useEnterTextEditMode dispatch')
+  const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const textInsertCallbackWithoutTextEditing = useEnterDrawToInsertForElement(
@@ -85,7 +86,7 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
     textEdit?: boolean
   },
 ) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'enterDrawToInsertForDiv dispatch')
+  const dispatch = useDispatch()
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   return React.useCallback(

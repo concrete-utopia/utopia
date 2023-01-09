@@ -21,6 +21,7 @@ import {
   setPanelVisibility,
   togglePanel,
 } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
@@ -44,18 +45,17 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges, currentBranch, treeConflicts } =
-    useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        loginState: store.userState.loginState,
-        projectName: store.editor.projectName,
-        upstreamChanges: store.editor.githubData.upstreamChanges,
-        currentBranch: store.editor.githubSettings.branchName,
-        treeConflicts: store.editor.githubData.treeConflicts,
-      }),
-      'TitleBar',
-    )
+  const dispatch = useDispatch()
+  const { loginState, projectName, upstreamChanges, currentBranch, treeConflicts } = useEditorState(
+    (store) => ({
+      loginState: store.userState.loginState,
+      projectName: store.editor.projectName,
+      upstreamChanges: store.editor.githubData.upstreamChanges,
+      currentBranch: store.editor.githubSettings.branchName,
+      treeConflicts: store.editor.githubData.treeConflicts,
+    }),
+    'TitleBar',
+  )
 
   const userPicture = useGetUserPicture()
 

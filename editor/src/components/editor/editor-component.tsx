@@ -52,6 +52,7 @@ import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
+import { useDispatch } from './store/dispatch-context'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -83,23 +84,18 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback(
     (event: MouseEvent) => {
-      editorStoreRef.current.dispatch(
-        [EditorActions.updateMouseButtonsPressed(null, event.button)],
-        'everyone',
-      )
+      dispatch([EditorActions.updateMouseButtonsPressed(null, event.button)], 'everyone')
     },
-    [editorStoreRef],
+    [dispatch],
   )
   const onWindowMouseDown = React.useCallback(
     (event: MouseEvent) => {
-      editorStoreRef.current.dispatch(
-        [EditorActions.updateMouseButtonsPressed(event.button, null)],
-        'everyone',
-      )
+      dispatch([EditorActions.updateMouseButtonsPressed(event.button, null)], 'everyone')
       const popupId = editorStoreRef.current.editor.openPopupId
       if (popupId != null) {
         const popupElement = document.getElementById(popupId)
@@ -112,7 +108,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           (clickOutsidePopup && triggerElement == null) ||
           (clickOutsidePopup && clickOutsideTrigger)
         ) {
-          editorStoreRef.current.dispatch([EditorActions.closePopup()], 'everyone')
+          dispatch([EditorActions.closePopup()], 'everyone')
         }
       }
       const activeElement = document.activeElement
@@ -127,7 +123,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         ;(activeElement as any).blur()
       }
     },
-    [editorStoreRef],
+    [dispatch, editorStoreRef],
   )
 
   const namesByKey = React.useMemo(() => {
@@ -148,7 +144,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           (Keyboard.keyIsModifier(key) || key === 'space') &&
           existingInteractionSession != null
         ) {
-          editorStoreRef.current.dispatch(
+          dispatch(
             [
               CanvasActions.createInteractionSession(
                 updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
@@ -172,7 +168,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                   }),
                 )
 
-          editorStoreRef.current.dispatch([action], 'everyone')
+          dispatch([action], 'everyone')
 
           setClearKeyboardInteraction()
         }
@@ -183,10 +179,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         editorStoreRef.current.editor,
         editorStoreRef.current.derived,
         namesByKey,
-        editorStoreRef.current.dispatch,
+        dispatch,
       )
     },
-    [editorStoreRef, namesByKey, setClearKeyboardInteraction],
+    [dispatch, editorStoreRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(
@@ -202,11 +198,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             { type: 'KEYBOARD_CATCHER_CONTROL' },
           ),
         )
-        editorStoreRef.current.dispatch([action], 'everyone')
+        dispatch([action], 'everyone')
       }
-      handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
+      handleKeyUp(event, editorStoreRef.current.editor, namesByKey, dispatch)
     },
-    [editorStoreRef, namesByKey],
+    [dispatch, editorStoreRef, namesByKey],
   )
 
   const preventDefault = React.useCallback((event: MouseEvent) => {
@@ -228,7 +224,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }
   }, [onWindowMouseDown, onWindowMouseUp, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
-  const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
   const projectName = useEditorState(
     (store) => store.editor.projectName,
     'EditorComponentInner projectName',
@@ -391,9 +386,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 })
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch, currentBranch } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { modal, currentBranch } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       modal: store.editor.modal,
       currentBranch: store.editor.githubSettings.branchName,
     }

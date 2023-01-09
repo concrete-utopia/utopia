@@ -1,10 +1,10 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
-import { createSelector } from 'reselect'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
+import { useDispatch } from '../../components/editor/store/dispatch-context'
 import {
   defaultIndexHtmlFilePath,
   EditorStorePatched,
@@ -400,8 +400,7 @@ export function updateHTMLExternalResourcesLinks(
     return parsedIndices
   }
 }
-
-export function getExternalResourcesInfo(
+function getExternalResourcesInfo(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Either<
@@ -454,21 +453,17 @@ export function getExternalResourcesInfo(
   }
 }
 
-const getExternalResourcesInfoSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
-  (store: EditorStorePatched) => store.dispatch,
-  getExternalResourcesInfo,
-)
-
 export function useExternalResources(): {
   values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const externalResourcesInfo = useEditorState(
-    getExternalResourcesInfoSelector,
-    'useExternalResources externalResourcesInfo',
+  const dispatch = useDispatch()
+  const projectContents = useEditorState(
+    (store: EditorStorePatched) => store.editor.projectContents,
+    'useExternalResources projectContents',
   )
+  const externalResourcesInfo = getExternalResourcesInfo(projectContents, dispatch)
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
     ? right(externalResourcesInfo.value.externalResources)
     : left(externalResourcesInfo.value)

@@ -14,6 +14,7 @@ import {
 } from '../../editor/shortcut-definitions'
 import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 interface FormulaBarProps {
   style: React.CSSProperties
@@ -21,7 +22,7 @@ interface FormulaBarProps {
 
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
-  const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+  const dispatch = useDispatch()
 
   const selectedMode = useEditorState(
     (store) => store.editor.topmenu.formulaBarMode,
