@@ -689,7 +689,7 @@ export function handleKeyDown(
 
         const actions: Array<EditorAction> = [
           EditorActions.switchEditorMode(
-            EditorModes.textEditMode(firstTextEditableView ?? null, null, false),
+            EditorModes.textEditMode(firstTextEditableView ?? null, null, 'existing'),
           ),
         ]
 
