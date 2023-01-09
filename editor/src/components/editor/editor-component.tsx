@@ -398,12 +398,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
-  const { modal, currentBranch } = useEditorState('restOfEditor')((store) => {
-    return {
-      modal: store.editor.modal,
-      currentBranch: store.editor.githubSettings.branchName,
-    }
-  }, 'ModalComponent')
+  const currentBranch = useEditorState('github')((store) => {
+    return store.editor.githubSettings.branchName
+  }, 'ModalComponent branchName')
+  const modal = useEditorState('restOfEditor')((store) => {
+    return store.editor.modal
+  }, 'ModalComponent modal')
   if (modal != null) {
     switch (modal.type) {
       case 'file-delete':
@@ -485,7 +485,7 @@ const LockedOverlay = React.memo(() => {
     'EditorComponentInner leftMenuExpanded',
   )
 
-  const editorLocked = useEditorState('restOfEditor')(
+  const editorLocked = useEditorState('github')(
     (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
     'EditorComponentInner editorLocked',
   )

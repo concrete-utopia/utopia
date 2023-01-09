@@ -9,6 +9,8 @@ import {
   EditorStateCanvas,
   EditorStorePatched,
   EditorStoreShared,
+  emptyGithubData,
+  emptyGithubSettings,
   ThemeSetting,
 } from './editor-state'
 
@@ -96,6 +98,27 @@ export interface ThemeSubstate {
   userState: { themeConfig: ThemeSetting | null }
 }
 
+export type GithubSubstateKeys =
+  | 'githubSettings'
+  | 'githubOperations'
+  | 'githubChecksums'
+  | 'githubData'
+  | 'assetChecksums'
+
+export type GithubSubstate = {
+  editor: Pick<EditorState, GithubSubstateKeys>
+}
+
+export const emptyGithubSubstate: GithubSubstate = {
+  editor: {
+    githubSettings: emptyGithubSettings(),
+    githubOperations: [],
+    githubChecksums: null,
+    githubData: emptyGithubData(),
+    assetChecksums: {},
+  },
+}
+
 export type EditorStateWOScrollOffset = Omit<EditorStorePatched, 'editor'> & {
   editor: Omit<EditorState, 'canvas'> & {
     canvas: Omit<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset'>
@@ -115,6 +138,7 @@ export type RestOfEditorState = Omit<
   | 'hoveredViews'
   | '_currentAllElementProps_KILLME'
   | 'focusedElementPath'
+  | GithubSubstateKeys
 > // not comprehensive
 
 export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
@@ -173,14 +197,9 @@ export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
   'vscodeLoadingScreenVisible',
   'indexedDBFailed',
   'forceParseFiles',
-  'githubSettings',
   'imageDragSessionState',
-  'githubOperations',
-  'githubChecksums',
-  'githubData',
   'refreshingDependencies',
-  'assetChecksums',
-]
+] as const
 
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   [

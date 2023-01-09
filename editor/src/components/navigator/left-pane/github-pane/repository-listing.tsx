@@ -2,7 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useMemo } from 'react'
 import TimeAgo from 'react-timeago'
 import { notice } from '../../../../components/common/notice'
 import {
@@ -43,22 +43,27 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const [importing, setImporting] = React.useState(false)
 
-  const loadingRepos = useEditorState('restOfEditor')(
-    (store) => isGithubLoadingRepositories(store.editor.githubOperations),
-    'RepositoryRow loadingRepos',
+  const githubOperations = useEditorState('github')(
+    (store) => store.editor.githubOperations,
+    'RepositoryRow githubOperations',
   )
 
-  const importingThisBranch = useEditorState('restOfEditor')((store) => {
+  const currentRepo = useEditorState('github')(
+    (store) => store.editor.githubSettings.targetRepository,
+    'RepositoryRow currentRepo',
+  )
+
+  const loadingRepos = useMemo(() => {
+    return isGithubLoadingRepositories(githubOperations)
+  }, [githubOperations])
+
+  const importingThisBranch = useMemo(() => {
     if (props.defaultBranch == null) {
       return false
     } else {
-      return isGithubLoadingBranch(
-        store.editor.githubOperations,
-        props.defaultBranch,
-        store.editor.githubSettings.targetRepository,
-      )
+      return isGithubLoadingBranch(githubOperations, props.defaultBranch, currentRepo)
     }
-  }, 'RepositoryRow importingThisBranch')
+  }, [props.defaultBranch, githubOperations, currentRepo])
 
   const [previousImportingThisBranch, setPreviousImportingThisBranch] =
     React.useState(importingThisBranch)
@@ -70,11 +75,6 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       setImporting(false)
     }
   }
-
-  const currentRepo = useEditorState('restOfEditor')(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Current Github repository',
-  )
 
   const importRepository = React.useCallback(() => {
     if (loadingRepos) {
@@ -169,7 +169,7 @@ export const RepositoryListing = React.memo(
       [setTargetRepository],
     )
 
-    const usersRepositories = useEditorState('restOfEditor')(
+    const usersRepositories = useEditorState('github')(
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -229,7 +229,7 @@ export const RepositoryListing = React.memo(
       }
     }, [filteredRepositories, targetRepository])
 
-    const githubOperations = useEditorState('restOfEditor')(
+    const githubOperations = useEditorState('github')(
       (store) => store.editor.githubOperations,
       'Github operations',
     )

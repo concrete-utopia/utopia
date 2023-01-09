@@ -56,24 +56,23 @@ const TitleBar = React.memo(() => {
     }),
     'TitleBar loginState',
   )
-  const { projectName, upstreamChanges, currentBranch, treeConflicts } = useEditorState(
-    'restOfEditor',
-  )(
-    (store) => ({
-      projectName: store.editor.projectName,
-      upstreamChanges: store.editor.githubData.upstreamChanges,
-      currentBranch: store.editor.githubSettings.branchName,
-      treeConflicts: store.editor.githubData.treeConflicts,
-    }),
-    'TitleBar projectName',
+  const projectName = useEditorState('restOfEditor')((store) => {
+    return store.editor.projectName
+  }, 'TitleBar projectName')
+
+  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState('github')(
+    (store) => {
+      return {
+        upstreamChanges: store.editor.githubData.upstreamChanges,
+        currentBranch: store.editor.githubSettings.branchName,
+        treeConflicts: store.editor.githubData.treeConflicts,
+        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+      }
+    },
+    'TitleBar github',
   )
 
   const userPicture = useGetUserPicture()
-
-  const repoName = useEditorState('restOfEditor')(
-    (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
-    'RepositoryBlock repo',
-  )
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,

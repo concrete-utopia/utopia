@@ -35,6 +35,9 @@ import {
   restOfStoreKeys,
   SelectedViewsSubstate,
   ThemeSubstate,
+  GithubSubstate,
+  GithubSubstateKeys,
+  emptyGithubSubstate,
 } from './store-hook-selectors'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
 
@@ -320,9 +323,14 @@ type Substates = {
   originalStore: EditorStorePatched
   dispatch: DispatchSubstate
   theme: ThemeSubstate
+  github: GithubSubstate
 }
 
 type StoreKey = keyof Substates
+
+const githubSubstateKeys: Array<GithubSubstateKeys> = Object.keys(
+  emptyGithubSubstate.editor,
+) as Array<GithubSubstateKeys>
 
 export const SubstateEqualityFns: {
   [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
@@ -383,6 +391,9 @@ export const SubstateEqualityFns: {
   dispatch: (a: DispatchSubstate, b: DispatchSubstate) => a.dispatch === b.dispatch,
   theme: (a: ThemeSubstate, b: ThemeSubstate) =>
     a.userState.themeConfig === b.userState.themeConfig,
+  github: (a: GithubSubstate, b: GithubSubstate) => {
+    return keysEquality(githubSubstateKeys, a.editor, b.editor)
+  },
 }
 
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
