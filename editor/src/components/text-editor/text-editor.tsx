@@ -170,7 +170,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     suppressContentEditableWarning: true,
   }
 
-  const filteredPassthroughProps = filterMouseHandlerProps(props)
+  const filteredPassthroughProps = filterMouseHandlerProps(passthroughProps)
 
   // When the component to render is a simple html element we should make that contenteditable
   if (typeof component === 'string') {
