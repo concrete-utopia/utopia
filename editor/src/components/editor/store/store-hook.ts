@@ -101,9 +101,12 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
 }
 
 class Getter<T> {
-  constructor(private getter: () => T) {}
+  public getter: (() => T) | null = null
 
-  get current() {
+  get current(): T {
+    if (this.getter == null) {
+      throw new Error('big mistake')
+    }
     return this.getter()
   }
 }
@@ -122,8 +125,10 @@ export const useRefEditorState = <U>(
     throw new Error('useStore is missing from editor context')
   }
   const api = context.useStore
+  const getterShell = React.useMemo(() => new Getter<U>(), [])
+  getterShell.getter = () => selector(api.getState())
 
-  return new Getter(() => selector(api.getState()))
+  return getterShell
 }
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
