@@ -297,10 +297,7 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
 
   if (
     !elementIsIntrinsicElement &&
-    shouldShowControls({
-      propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
-      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
-    })
+    shouldShowControls(elementHasNonzeroPaddingFromProps, elementHasNonzeroPaddingFromMeasurements)
   ) {
     return true
   }
