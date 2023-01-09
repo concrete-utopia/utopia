@@ -12,7 +12,10 @@ import {
   uniqBy,
   mapAndFilter,
 } from '../shared/array-utils'
-import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import {
+  intrinsicHTMLElementNamesThatSupportChildren,
+  VoidElementsToFilter,
+} from '../shared/dom-utils'
 import {
   alternativeEither,
   Either,
@@ -998,7 +1001,6 @@ export const MetadataUtils = {
     },
   ),
   isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const VoidElementsToFilter = ['br', 'wbr']
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     if (element == null) {
       return false
