@@ -109,21 +109,26 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           actions.push(EditorActions.closePopup())
         }
       }
-      const activeElement = document.activeElement
-      if (
-        event.target !== activeElement &&
-        activeElement != null &&
-        activeElement.getAttribute('data-inspector-input') != null &&
-        (activeElement as any).blur != null
-      ) {
-        // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
-        // is called before triggering a change that might change the selection
-        ;(activeElement as any).blur()
-      }
       return actions
     },
     [editorStoreRef],
   )
+
+  const inputBlurForce = React.useCallback((event: MouseEvent) => {
+    // Keep this outside of the common handling because it needs to be triggered with `capture` set to `true`,
+    // so that it fires before the inspector disappears.
+    const activeElement = document.activeElement
+    if (
+      event.target !== activeElement &&
+      activeElement != null &&
+      activeElement.getAttribute('data-inspector-input') != null &&
+      (activeElement as any).blur != null
+    ) {
+      // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
+      // is called before triggering a change that might change the selection
+      ;(activeElement as any).blur()
+    }
+  }, [])
 
   const namesByKey = React.useMemo(() => {
     return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
@@ -213,10 +218,19 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   React.useEffect(() => {
     window.addEventListener('contextmenu', preventDefault)
+    window.addEventListener('mousedown', inputBlurForce, true)
     return function cleanup() {
       window.removeEventListener('contextmenu', preventDefault)
+      window.removeEventListener('mousedown', inputBlurForce, true)
     }
-  }, [onWindowMouseDown, onWindowMouseUp, onWindowKeyDown, onWindowKeyUp, preventDefault])
+  }, [
+    onWindowMouseDown,
+    onWindowMouseUp,
+    onWindowKeyDown,
+    onWindowKeyUp,
+    preventDefault,
+    inputBlurForce,
+  ])
 
   const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
   const projectName = useEditorState(
