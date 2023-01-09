@@ -100,6 +100,14 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
   }
 }
 
+class Getter<T> {
+  constructor(private getter: () => T) {}
+
+  get current() {
+    return this.getter()
+  }
+}
+
 /**
  * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
  *
@@ -115,47 +123,7 @@ export const useRefEditorState = <U>(
   }
   const api = context.useStore
 
-  const selectorRef = React.useRef(selector)
-  selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
-
-  const sliceRef = React.useRef(selector(api.getState()))
-  // TODO CONCURRENT MODE: We should avoid mutation during the render phase and follow a pattern similar to
-  // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
-  sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
-  if (explainMe) {
-    console.info('useRefEditorState: reading editor state', sliceRef.current)
-  }
-  React.useEffect(() => {
-    sliceRef.current = selectorRef.current(api.getState()) // the state might have changed between the render and this Effect being called
-    if (explainMe) {
-      console.info(
-        'useRefEditorState: re-reading editor state in useEffect, just in case it changed since the hook was called',
-        sliceRef.current,
-      )
-    }
-    if (explainMe) {
-      console.info('useRefEditorState: subscribing to the zustand api')
-    }
-    const unsubscribe = api.subscribe(
-      (store: EditorStorePatched) => selectorRef.current(store),
-      (newSlice) => {
-        if (newSlice != null) {
-          if (explainMe) {
-            console.info('useRefEditorState: new state slice arrived', newSlice)
-          }
-          sliceRef.current = newSlice
-        }
-      },
-      { equalityFn: shallowEqual },
-    )
-    return function cleanup() {
-      if (explainMe) {
-        console.info('useRefEditorState: unsubscribing from the zustand api')
-      }
-      unsubscribe()
-    }
-  }, [api, explainMe])
-  return sliceRef
+  return new Getter(() => selector(api.getState()))
 }
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
