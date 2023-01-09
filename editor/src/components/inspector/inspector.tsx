@@ -79,6 +79,7 @@ import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export interface ElementPathElement {
   name?: string
@@ -276,7 +277,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           const elem = possibleElement.element.value
           if (isJSXElement(elem)) {
             if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
+              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                styleStringInArray,
+              )) {
                 const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
                 if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
                   hasNonDefaultPositionAttributesInner = true
@@ -387,7 +390,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 })
 Inspector.displayName = 'Inspector'
 
-const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
+const DefaultStyleTargets: Array<CSSTarget> = [
+  cssTarget(styleStringInArray, 0),
+  cssTarget(['css'], 0),
+]
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {

@@ -415,6 +415,7 @@ import {
   imageInsertionSubject,
   TextEditMode,
   Coordinates,
+  TextEditableElementState,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2696,12 +2697,23 @@ export const CoordinateKeepDeepEquality: KeepDeepEqualityCall<Coordinates> = com
   (x: number, y: number) => ({ x, y }),
 )
 
+export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
+  TextEditableElementState
+> = (oldValue, newValue) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(newValue, true)
+  }
+  return keepDeepEqualityResult(oldValue, false)
+}
+
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (mode) => mode.editedText,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     (mode) => mode.cursorPosition,
     nullableDeepEquality(CoordinateKeepDeepEquality),
+    (mode) => mode.elementState,
+    TextEditableElementStateKeepDeepEquality,
     EditorModes.textEditMode,
   )
 

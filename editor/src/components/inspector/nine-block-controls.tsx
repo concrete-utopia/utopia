@@ -1,8 +1,5 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-
-import { jsx } from '@emotion/react'
 import React from 'react'
+import { styled } from '@stitches/react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
@@ -133,6 +130,18 @@ const opacity = (isSelected: boolean, flexDirectionMatches: boolean): number => 
   return 1
 }
 
+const DotContainer = styled('div', {
+  position: 'absolute',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  height: '100%',
+  '&:hover': {
+    opacity: 0,
+  },
+})
+
 interface NineBlockControlCellProps {
   bgColor: string
   fgColor: string
@@ -205,19 +214,10 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           bgColor={fgColor}
         />
       </div>
-      <div
-        css={{
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+      <DotContainer
+        style={{
           backgroundColor: bgColor,
-          width: '100%',
-          height: '100%',
           opacity: isSelected ? 0 : 1,
-          '&:hover': {
-            opacity: 0,
-          },
         }}
       >
         <div
@@ -228,7 +228,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
             borderRadius: DotSize / 2,
           }}
         />
-      </div>
+      </DotContainer>
     </div>
   )
 })

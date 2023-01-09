@@ -59,7 +59,9 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
       } else if (firstTextEditableView == null) {
         textInsertCallbackWithTextEditing(event, { textEdit: true })
       } else {
-        dispatch([switchEditorMode(EditorModes.textEditMode(firstTextEditableView))])
+        dispatch([
+          switchEditorMode(EditorModes.textEditMode(firstTextEditableView, null, 'existing')),
+        ])
       }
     },
     [

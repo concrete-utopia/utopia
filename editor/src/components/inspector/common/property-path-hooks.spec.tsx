@@ -59,6 +59,7 @@ import {
 } from './property-path-hooks.test-utils'
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -399,7 +400,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         propsData={{
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
-          targetPath: ['style'],
+          targetPath: styleStringInArray,
           spiedProps: spiedProps,
           computedStyles: computedStyles,
           selectedAttributeMetadatas: [],
@@ -415,7 +416,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         propsData={{
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacityChanged],
-          targetPath: ['style'],
+          targetPath: styleStringInArray,
           spiedProps: spiedPropsChanged,
           computedStyles: computedStylesChanged,
           selectedAttributeMetadatas: [],
@@ -1019,13 +1020,13 @@ describe('useGetOrderedPropertyKeys', () => {
     attributeMetadatas: Array<StyleAttributeMetadata>,
   ) {
     const props = styleObjectExpressions.map(
-      (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
+      (styleExpression) => getPropsForStyleProp(styleExpression, styleStringInArray)!,
     )
 
     const contextProvider = makeInspectorHookContextProvider(
       [],
       props,
-      ['style'],
+      styleStringInArray,
       spiedProps,
       computedStyles,
       attributeMetadatas,

@@ -7,6 +7,7 @@ import { setProperty } from '../canvas/commands/set-property-command'
 import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
+  deleteView,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -55,6 +56,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
   )
+  const elementState = useEditorState(
+    (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
+    'TextEditor element state',
+  )
+
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
   const [firstTextProp] = React.useState(text)
 
@@ -71,10 +77,14 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+        if (elementState === 'new' && content === '') {
+          dispatch([deleteView(elementPath)])
+        } else {
+          dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+        }
       }
     }
-  }, [dispatch, elementPath])
+  }, [dispatch, elementPath, elementState])
 
   React.useEffect(() => {
     if (myElement.current == null) {

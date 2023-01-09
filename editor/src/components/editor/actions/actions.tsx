@@ -465,6 +465,7 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -3156,7 +3157,7 @@ export const UPDATE_FNS = {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
-          ['style'],
+          styleStringInArray,
         )
 
         if (isLeft(updatedAttributes)) {
@@ -4156,7 +4157,7 @@ export const UPDATE_FNS = {
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
       return mapEither(
-        (attrs) => roundAttributeLayoutValues(['style'], attrs),
+        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
     })

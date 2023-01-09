@@ -38,6 +38,7 @@ import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
@@ -87,7 +88,10 @@ export const TestInspectorContextProvider: React.FunctionComponent<
   return (
     <DispatchContext.Provider value={NO_OP}>
       <EditorStateContext.Provider value={props.editorStoreData}>
-        <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>
+        <InspectorContextProvider
+          selectedViews={props.selectedViews}
+          targetPath={styleStringInArray}
+        >
           {props.children}
         </InspectorContextProvider>
       </EditorStateContext.Provider>

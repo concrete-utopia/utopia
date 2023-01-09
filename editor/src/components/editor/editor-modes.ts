@@ -93,7 +93,10 @@ export interface TextEditMode {
   type: 'textEdit'
   editedText: ElementPath | null
   cursorPosition: Coordinates | null
+  elementState: TextEditableElementState
 }
+
+export type TextEditableElementState = 'existing' | 'new'
 
 export interface Coordinates {
   x: number
@@ -129,12 +132,14 @@ export const EditorModes = {
   },
   textEditMode: function (
     editedText: ElementPath | null,
-    cursorPosition: Coordinates | null = null,
+    cursorPosition: Coordinates | null,
+    elementState: TextEditableElementState,
   ): TextEditMode {
     return {
       type: 'textEdit',
       editedText: editedText,
       cursorPosition: cursorPosition,
+      elementState: elementState,
     }
   },
 }

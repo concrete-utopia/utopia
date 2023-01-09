@@ -53,6 +53,8 @@ import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-dis
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
 import { useDispatch } from './store/dispatch-context'
+import { EditorAction } from './action-types'
+import { EditorCommon } from './editor-component-common'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -87,15 +89,13 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
-  const onWindowMouseUp = React.useCallback(
-    (event: MouseEvent) => {
-      dispatch([EditorActions.updateMouseButtonsPressed(null, event.button)], 'everyone')
-    },
-    [dispatch],
-  )
+  const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
+    return [EditorActions.updateMouseButtonsPressed(null, event.button)]
+  }, [])
   const onWindowMouseDown = React.useCallback(
     (event: MouseEvent) => {
-      dispatch([EditorActions.updateMouseButtonsPressed(event.button, null)], 'everyone')
+      let actions: Array<EditorAction> = []
+      actions.push(EditorActions.updateMouseButtonsPressed(event.button, null))
       const popupId = editorStoreRef.current.editor.openPopupId
       if (popupId != null) {
         const popupElement = document.getElementById(popupId)
@@ -108,23 +108,29 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           (clickOutsidePopup && triggerElement == null) ||
           (clickOutsidePopup && clickOutsideTrigger)
         ) {
-          dispatch([EditorActions.closePopup()], 'everyone')
+          actions.push(EditorActions.closePopup())
         }
       }
-      const activeElement = document.activeElement
-      if (
-        event.target !== activeElement &&
-        activeElement != null &&
-        activeElement.getAttribute('data-inspector-input') != null &&
-        (activeElement as any).blur != null
-      ) {
-        // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
-        // is called before triggering a change that might change the selection
-        ;(activeElement as any).blur()
-      }
+      return actions
     },
-    [dispatch, editorStoreRef],
+    [editorStoreRef],
   )
+
+  const inputBlurForce = React.useCallback((event: MouseEvent) => {
+    // Keep this outside of the common handling because it needs to be triggered with `capture` set to `true`,
+    // so that it fires before the inspector disappears.
+    const activeElement = document.activeElement
+    if (
+      event.target !== activeElement &&
+      activeElement != null &&
+      activeElement.getAttribute('data-inspector-input') != null &&
+      (activeElement as any).blur != null
+    ) {
+      // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
+      // is called before triggering a change that might change the selection
+      ;(activeElement as any).blur()
+    }
+  }, [])
 
   const namesByKey = React.useMemo(() => {
     return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
@@ -134,6 +140,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
+      let actions: Array<EditorAction> = []
       if (editorIsTarget(event, editorStoreRef.current.editor)) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
         const modifiers = Modifier.modifiersForKeyboardEvent(event)
@@ -144,15 +151,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           (Keyboard.keyIsModifier(key) || key === 'space') &&
           existingInteractionSession != null
         ) {
-          dispatch(
-            [
-              CanvasActions.createInteractionSession(
-                updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
-                  type: 'KEYBOARD_CATCHER_CONTROL',
-                }),
-              ),
-            ],
-            'everyone',
+          actions.push(
+            CanvasActions.createInteractionSession(
+              updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
+                type: 'KEYBOARD_CATCHER_CONTROL',
+              }),
+            ),
           )
         } else if (Keyboard.keyIsInteraction(key)) {
           const action =
@@ -168,25 +172,29 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                   }),
                 )
 
-          dispatch([action], 'everyone')
+          actions.push(action)
 
           setClearKeyboardInteraction()
         }
       }
 
-      handleKeyDown(
-        event,
-        editorStoreRef.current.editor,
-        editorStoreRef.current.derived,
-        namesByKey,
-        dispatch,
+      actions.push(
+        ...handleKeyDown(
+          event,
+          editorStoreRef.current.editor,
+          editorStoreRef.current.derived,
+          namesByKey,
+          dispatch,
+        ),
       )
+      return actions
     },
     [dispatch, editorStoreRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(
     (event: KeyboardEvent) => {
+      let actions: Array<EditorAction> = []
       const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
       if (existingInteractionSession != null) {
         const action = CanvasActions.createInteractionSession(
@@ -198,11 +206,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             { type: 'KEYBOARD_CATCHER_CONTROL' },
           ),
         )
-        dispatch([action], 'everyone')
+        actions.push(action)
       }
-      handleKeyUp(event, editorStoreRef.current.editor, namesByKey, dispatch)
+      actions.push(...handleKeyUp(event, editorStoreRef.current.editor, namesByKey))
+      return actions
     },
-    [dispatch, editorStoreRef, namesByKey],
+    [editorStoreRef, namesByKey],
   )
 
   const preventDefault = React.useCallback((event: MouseEvent) => {
@@ -210,19 +219,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [])
 
   React.useEffect(() => {
-    window.addEventListener('mousedown', onWindowMouseDown, true)
-    window.addEventListener('mouseup', onWindowMouseUp, true)
-    window.addEventListener('keydown', onWindowKeyDown)
-    window.addEventListener('keyup', onWindowKeyUp)
     window.addEventListener('contextmenu', preventDefault)
+    window.addEventListener('mousedown', inputBlurForce, true)
     return function cleanup() {
-      window.removeEventListener('mousedown', onWindowMouseDown, true)
-      window.removeEventListener('mouseup', onWindowMouseUp, true)
-      window.removeEventListener('keydown', onWindowKeyDown)
-      window.removeEventListener('keyup', onWindowKeyUp)
       window.removeEventListener('contextmenu', preventDefault)
+      window.removeEventListener('mousedown', inputBlurForce, true)
     }
-  }, [onWindowMouseDown, onWindowMouseUp, onWindowKeyDown, onWindowKeyUp, preventDefault])
+  }, [
+    onWindowMouseDown,
+    onWindowMouseUp,
+    onWindowKeyDown,
+    onWindowKeyUp,
+    preventDefault,
+    inputBlurForce,
+  ])
 
   const projectName = useEditorState(
     (store) => store.editor.projectName,
@@ -381,6 +391,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <ToastRenderer />
         <LockedOverlay />
       </SimpleFlexRow>
+      <EditorCommon
+        mouseDown={onWindowMouseDown}
+        mouseUp={onWindowMouseUp}
+        keyDown={onWindowKeyDown}
+        keyUp={onWindowKeyUp}
+      />
     </>
   )
 })

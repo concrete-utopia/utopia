@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../utils/common-constants'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
@@ -42,7 +43,7 @@ describe('convertToAbsolute', () => {
       (success, element, underlyingTarget, underlyingFilePath) => {
         const jsxAttributeResult = getJSXAttributeAtPath(
           element.props,
-          stylePropPathMappingFn('position', ['style']),
+          stylePropPathMappingFn('position', styleStringInArray),
         )
         const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
         if (currentValue !== null && isRight(currentValue)) {
@@ -60,7 +61,7 @@ describe('convertToAbsolute', () => {
       (success, element, underlyingTarget, underlyingFilePath) => {
         const jsxAttributeResult = getJSXAttributeAtPath(
           element.props,
-          stylePropPathMappingFn('position', ['style']),
+          stylePropPathMappingFn('position', styleStringInArray),
         )
         const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
         if (currentValue !== null && isRight(currentValue)) {

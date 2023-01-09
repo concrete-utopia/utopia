@@ -37,11 +37,7 @@ import { fastForEach } from '../../shared/utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
 import { isDirectory } from '../../model/project-file-utils'
-import {
-  applyLoaders,
-  filenameWithoutJSSuffix,
-  loaderExistsForFile,
-} from '../../webpack-loaders/loaders'
+import { applyLoaders, filenameWithoutJSSuffix } from '../../webpack-loaders/loaders'
 import { isCssFile, isJsOrTsFile, isTsFile, isJsFile } from '../../shared/file-utils'
 import {
   ExportsInfo,
@@ -449,13 +445,12 @@ function isNodeExported(node: TS.Node): boolean {
 
 function existingFilenameToRead(filename: string): string | undefined {
   // Checks that a filename exists that we can load, and returns the filename
-  if (loaderExistsForFile(filename) && (fs.existsSync(filename) as boolean)) {
+  if (fs.existsSync(filename) as boolean) {
     return filename
   } else {
     const alternativeFilenameToTest = filenameWithoutJSSuffix(filename)
     if (
       alternativeFilenameToTest != null &&
-      loaderExistsForFile(alternativeFilenameToTest) &&
       (fs.existsSync(alternativeFilenameToTest) as boolean)
     ) {
       return alternativeFilenameToTest

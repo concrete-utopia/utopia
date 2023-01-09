@@ -1,4 +1,5 @@
 import React from 'react'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -99,7 +100,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('flexDirection', ['style']),
+              stylePropPathMappingFn('flexDirection', styleStringInArray),
               jsxAttributeValue(newValue, emptyComments),
             ),
           ],
@@ -117,7 +118,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('alignItems', ['style']),
+              stylePropPathMappingFn('alignItems', styleStringInArray),
               jsxAttributeValue(option.value, emptyComments),
             ),
           ],
