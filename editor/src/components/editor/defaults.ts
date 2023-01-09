@@ -169,6 +169,7 @@ export function defaultSpanElement(uid: string): JSXElement {
       style: jsxAttributeValue(
         {
           position: 'absolute',
+          wordBreak: 'break-word',
         },
         emptyComments,
       ),
@@ -177,6 +178,7 @@ export function defaultSpanElement(uid: string): JSXElement {
     [],
   )
 }
+export const DefaultTextWidth = 200
 
 export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(

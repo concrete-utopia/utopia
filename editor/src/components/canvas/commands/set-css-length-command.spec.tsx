@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../utils/common-constants'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
@@ -25,7 +26,7 @@ describe('setCssLengthProperty', () => {
     const setCSSPropertyCommand = setCssLengthProperty(
       'always',
       cardInstancePath,
-      stylePropPathMappingFn('height', ['style']),
+      stylePropPathMappingFn('height', styleStringInArray),
       valueToSet,
       400,
     )
@@ -46,7 +47,7 @@ describe('setCssLengthProperty', () => {
       (success, element, underlyingTarget, underlyingFilePath) => {
         return getNumberPropertyFromProps(
           element.props,
-          stylePropPathMappingFn('height', ['style']),
+          stylePropPathMappingFn('height', styleStringInArray),
         )
       },
     )

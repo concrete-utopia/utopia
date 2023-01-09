@@ -48,11 +48,12 @@ import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../com
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, generateUID } from '../shared/uid-utils'
 import { emptySet } from '../shared/set-utils'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
 export const PathForSceneDataLabel = PP.create(['data-label'])
-export const PathForSceneFrame = PP.create(['style'])
+export const PathForSceneFrame = PP.create(styleStringInArray)
 
 export const BakedInStoryboardUID = 'utopia-storyboard-uid'
 export const BakedInStoryboardVariableName = 'storyboard'
@@ -60,7 +61,7 @@ export const BakedInStoryboardVariableName = 'storyboard'
 export const EmptyUtopiaCanvasComponent = convertScenesToUtopiaCanvasComponent([])
 
 export const PathForSceneProps = PP.create(['props'])
-export const PathForSceneStyle = PP.create(['style'])
+export const PathForSceneStyle = PP.create(styleStringInArray)
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
@@ -101,7 +102,7 @@ export function unmapScene(element: JSXElementChild): SceneMetadata | null {
       },
       getSimpleAttributeAtPathCustom(element.props, PP.create(['component'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['props'])),
-      getSimpleAttributeAtPathCustom(element.props, PP.create(['style'])),
+      getSimpleAttributeAtPathCustom(element.props, PP.create(styleStringInArray)),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['layout'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['data-label'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['data-uid'])),

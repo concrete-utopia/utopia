@@ -1,4 +1,5 @@
 import React from 'react'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -118,10 +119,10 @@ const collectPinOutlines = (
   containingFrame: CanvasRectangle,
   scale: number,
 ): PinOutlineProps[] => {
-  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, ['style']))
-  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, ['style']))
-  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, ['style']))
-  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, ['style']))
+  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, styleStringInArray))
+  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, styleStringInArray))
+  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, styleStringInArray))
+  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, styleStringInArray))
   let pins: PinOutlineProps[] = []
   if (pinLeft != null) {
     pins.push({

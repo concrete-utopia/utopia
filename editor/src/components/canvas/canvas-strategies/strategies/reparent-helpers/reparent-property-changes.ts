@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../../core/layout/getLayoutProperty'
 import {
@@ -92,13 +93,13 @@ export function getAbsoluteReparentPropertyChanges(
     newValue: number,
     parentDimension: number | undefined,
   ): AdjustCssLengthProperty | null => {
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
       return adjustCssLengthProperty(
         'always',
         target,
-        stylePropPathMappingFn(pin, ['style']),
+        stylePropPathMappingFn(pin, styleStringInArray),
         newValue,
         parentDimension,
         true,
@@ -109,12 +110,12 @@ export function getAbsoluteReparentPropertyChanges(
   }
 
   const createConvertCssPercentToPx = (pin: LayoutPinnedProp): ConvertCssPercentToPx | null => {
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null && value.value.unit === '%') {
       return convertCssPercentToPx(
         'always',
         target,
-        stylePropPathMappingFn(pin, ['style']),
+        stylePropPathMappingFn(pin, styleStringInArray),
         isHorizontalPoint(framePointForPinnedProp(pin))
           ? currentParentContentBox.width
           : currentParentContentBox.height,

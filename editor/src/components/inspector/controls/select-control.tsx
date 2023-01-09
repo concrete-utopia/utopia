@@ -8,6 +8,7 @@ import { getControlStyles, ControlStatus, isControlledStatus } from '../common/c
 import { ValueType } from 'react-select/src/types'
 import { PortalTargetID } from '../../../core/shared/utils'
 import { IcnProps, Icons, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControlOptions {
   creatable?: boolean
@@ -183,7 +184,7 @@ export const SelectControl: React.FunctionComponent<
       }),
       option: (base: React.CSSProperties, state: any) => {
         const optionStyle = Utils.path(
-          ['style'],
+          styleStringInArray,
           options.find((option) => option.value === state.value),
         )
         return {

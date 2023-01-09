@@ -2,6 +2,7 @@ import { EditorModes } from '../../../../components/editor/editor-modes'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -78,7 +79,17 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         if (!isRoot && textEditable) {
           return strategyApplicationResult([
             wildcardPatch('on-complete', {
-              mode: { $set: EditorModes.textEditMode(targetParent) },
+              mode: {
+                $set: EditorModes.textEditMode(
+                  targetParent,
+                  canvasPointToWindowPoint(
+                    pointOnCanvas,
+                    canvasState.scale,
+                    canvasState.canvasOffset,
+                  ),
+                  'existing',
+                ),
+              },
             }),
           ])
         }
@@ -102,7 +113,9 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const result = strategy.apply(s)
         result.commands.push(
           wildcardPatch('on-complete', {
-            mode: { $set: EditorModes.textEditMode(targetElement) },
+            mode: {
+              $set: EditorModes.textEditMode(targetElement, null, 'new'),
+            },
           }),
         )
 

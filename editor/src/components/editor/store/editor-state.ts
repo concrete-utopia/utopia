@@ -66,6 +66,7 @@ import {
   bimapEither,
   Either,
   foldEither,
+  forEachRight,
   isLeft,
   isRight,
   left,
@@ -1739,21 +1740,29 @@ function getImportedUtopiaJSXComponents(
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
-      .map((toImport) => resolve(filePath, toImport))
-      .filter(isRight)
-      .map((r) => r.value)
-      .filter((v) => !pathsToFilter.includes(v))
+    let resolvedFilePaths: Array<string> = []
+    for (const toImport of Object.keys(file.fileContents.parsed.imports)) {
+      const resolveResult = resolve(filePath, toImport)
+      forEachRight(resolveResult, (path) => {
+        if (!pathsToFilter.includes(path)) {
+          resolvedFilePaths.push(path)
+        }
+      })
+    }
 
-    return [
-      ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
-      ...resolvedFilePaths.flatMap((path) =>
-        getImportedUtopiaJSXComponents(path, projectContents, resolve, [
-          ...pathsToFilter,
-          ...resolvedFilePaths,
-        ]),
-      ),
-    ]
+    let result: Array<UtopiaJSXComponent> = []
+    result.push(...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed))
+    const newPathsToFilter = [...pathsToFilter, ...resolvedFilePaths]
+    for (const resolvedFilePath of resolvedFilePaths) {
+      const resolvedPathResult = getImportedUtopiaJSXComponents(
+        resolvedFilePath,
+        projectContents,
+        resolve,
+        newPathsToFilter,
+      )
+      result.push(...resolvedPathResult)
+    }
+    return result
   } else {
     return []
   }

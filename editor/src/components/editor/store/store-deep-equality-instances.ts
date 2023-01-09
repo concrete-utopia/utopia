@@ -414,6 +414,8 @@ import {
   TargetedInsertionParent,
   imageInsertionSubject,
   TextEditMode,
+  Coordinates,
+  TextEditableElementState,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2687,10 +2689,31 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
     EditorModes.liveMode,
   )
 
+export const CoordinateKeepDeepEquality: KeepDeepEqualityCall<Coordinates> = combine2EqualityCalls(
+  (c) => c.x,
+  NumberKeepDeepEquality,
+  (c) => c.y,
+  NumberKeepDeepEquality,
+  (x: number, y: number) => ({ x, y }),
+)
+
+export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
+  TextEditableElementState
+> = (oldValue, newValue) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(newValue, true)
+  }
+  return keepDeepEqualityResult(oldValue, false)
+}
+
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
-  combine1EqualityCall(
+  combine3EqualityCalls(
     (mode) => mode.editedText,
     nullableDeepEquality(ElementPathKeepDeepEquality),
+    (mode) => mode.cursorPosition,
+    nullableDeepEquality(CoordinateKeepDeepEquality),
+    (mode) => mode.elementState,
+    TextEditableElementStateKeepDeepEquality,
     EditorModes.textEditMode,
   )
 

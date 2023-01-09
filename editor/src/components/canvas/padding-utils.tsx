@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../utils/common-constants'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, Either, isLeft, right } from '../../core/shared/either'
@@ -63,25 +64,25 @@ export function simplePaddingFromMetadata(
 
   const padding: CSSPadding | undefined = defaultEither(
     undefined,
-    getLayoutProperty('padding', right(element.element.value.props), ['style']),
+    getLayoutProperty('padding', right(element.element.value.props), styleStringInArray),
   )
 
   const paddingLonghands: CSSPaddingMappedValues<CSSNumber | undefined> = {
     paddingTop: defaultEither(
       undefined,
-      getLayoutProperty('paddingTop', right(element.element.value.props), ['style']),
+      getLayoutProperty('paddingTop', right(element.element.value.props), styleStringInArray),
     ),
     paddingBottom: defaultEither(
       undefined,
-      getLayoutProperty('paddingBottom', right(element.element.value.props), ['style']),
+      getLayoutProperty('paddingBottom', right(element.element.value.props), styleStringInArray),
     ),
     paddingLeft: defaultEither(
       undefined,
-      getLayoutProperty('paddingLeft', right(element.element.value.props), ['style']),
+      getLayoutProperty('paddingLeft', right(element.element.value.props), styleStringInArray),
     ),
     paddingRight: defaultEither(
       undefined,
-      getLayoutProperty('paddingRight', right(element.element.value.props), ['style']),
+      getLayoutProperty('paddingRight', right(element.element.value.props), styleStringInArray),
     ),
   }
 
