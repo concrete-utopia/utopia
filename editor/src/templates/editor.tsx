@@ -62,6 +62,7 @@ import {
   UtopiaStores,
   UtopiaStoreAPI,
   StoresAndSetState,
+  SubstoreTimings,
 } from '../components/editor/store/store-hook'
 import { RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { LinterResultMessage } from '../core/workers/linter/linter-worker'
@@ -441,6 +442,10 @@ export class Editor {
     entireUpdateFinished: Promise<any>
   } => {
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+    if (MeasureSelectors) {
+      // eslint-disable-next-line no-console
+      console.log('------------------')
+    }
     const PerformanceMarks =
       (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
         isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
@@ -606,6 +611,7 @@ export class Editor {
       }
     }
     SelectorTimings.current = {}
+    SubstoreTimings.current = {}
     if (PerformanceMarks) {
       performance.mark('beforeFullDispatch')
     }
@@ -615,6 +621,10 @@ export class Editor {
       console.log('Number of Selectors called', Object.keys(SelectorTimings.current).length)
       // eslint-disable-next-line no-console
       console.table(SelectorTimings.current)
+      // eslint-disable-next-line no-console
+      console.log('Pre-Selectors:')
+      // eslint-disable-next-line no-console
+      console.table(SubstoreTimings.current)
     }
     if (PerformanceMarks) {
       performance.measure(

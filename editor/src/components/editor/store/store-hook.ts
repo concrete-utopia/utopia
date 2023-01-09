@@ -43,6 +43,19 @@ export const SelectorTimings: {
   current: { [selectorName: string]: { accumulatedTime: number; calledNumberOfTimes: number } }
 } = { current: {} }
 
+export const SubstoreTimings: {
+  current: { [storeKey: string]: { updateTime: number | null; calledNumberOfTimes: number } }
+} = { current: {} }
+
+function ensureSubstoreTimingExists(storeKey: string) {
+  if (isFeatureEnabled('Debug – Measure Selectors') && SubstoreTimings.current[storeKey] == null) {
+    SubstoreTimings.current[storeKey] = {
+      updateTime: null,
+      calledNumberOfTimes: 0,
+    }
+  }
+}
+
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
  * useEditorState will only trigger re-render if the return value of your state selector changes (using shallow equality)
@@ -125,10 +138,13 @@ function useWrapSelectorInPerformanceMeasureBlock<K extends StoreKey, U>(
         const currentValue = SelectorTimings.current[selectorName] ?? {
           accumulatedTime: 0,
           calledNumberOfTimes: 0,
+          preSelectorName: storeKey,
         }
         currentValue.accumulatedTime += afterSelector - beforeSelector
         currentValue.calledNumberOfTimes += calledNumberOfTimes
         SelectorTimings.current[selectorName] = currentValue
+        ensureSubstoreTimingExists(storeKey)
+        SubstoreTimings.current[storeKey].calledNumberOfTimes += calledNumberOfTimes
       }
 
       return result
@@ -388,13 +404,21 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
       editorStore: EditorStorePatched,
       dispatchedActions: ReadonlyArray<EditorAction>,
     ): void => {
+      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
       // console.log('--------------')
       // const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
         // const debug = key === 'restOfStore'
+        const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
+        ensureSubstoreTimingExists(key)
         if (!tailoredEqualFunctions(editorStore, substore.getState(), key, dispatchedActions)) {
           // console.log('halal', key)
           substore.setState(editorStore)
+          const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
+          if (MeasureSelectors) {
+            SubstoreTimings.current[key].updateTime =
+              (SubstoreTimings.current[key].updateTime ?? 0) + afterStoreUpdate - beforeStoreUpdate
+          }
         } else {
           // console.log('bingo', key)
         }
