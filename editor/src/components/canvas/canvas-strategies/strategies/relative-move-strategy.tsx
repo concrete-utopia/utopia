@@ -18,6 +18,7 @@ import {
   getAdjustMoveCommands,
   getDragTargets,
 } from './shared-move-strategies-helpers'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -101,7 +102,7 @@ const getStyleOffsets = (metadata: ElementInstanceMetadata) => {
     return foldEither(
       (_) => null,
       (v) => (v != null ? v.value : null),
-      getLayoutProperty(name, attrs, ['style']),
+      getLayoutProperty(name, attrs, styleStringInArray),
     )
   }
 

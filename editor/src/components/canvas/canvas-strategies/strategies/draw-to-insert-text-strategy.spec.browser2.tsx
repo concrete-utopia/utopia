@@ -72,6 +72,7 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
+                    wordBreak: 'break-word',
                     left: 389,
                     top: 101,
                     width: 100,
@@ -134,10 +135,10 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
-                    left: 339,
-                    top: 51,
-                    width: 100,
-                    height: 100,
+                    wordBreak: 'break-word',
+                    left: 389,
+                    top: 101,
+                    width: 200,
                   }}
                   data-uid='${newElementUID}'
                 >Utopia</span>
@@ -251,7 +252,12 @@ describe('draw-to-insert text', () => {
                 >
                   <div data-uid='111' />
                   <span
-                    style={{ width: 50, height: 50, contain: 'layout' }}
+                    style={{
+                      wordBreak: 'break-word',
+                      width: 50,
+                      height: 50,
+                      contain: 'layout',
+                    }}
                     data-uid='ddd'
                   >Hello Utopia</span>
                 </div>
@@ -298,6 +304,7 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
+                    wordBreak: 'break-word',
                     left: 112,
                     top: 391,
                     width: 50,

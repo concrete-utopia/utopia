@@ -15,6 +15,7 @@ import {
 import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 interface PropertyTargetSelectorProps {
   targetComponentMetadata: ElementInstanceMetadata | null
@@ -60,7 +61,7 @@ export const PropertyTargetSelector = React.memo(
         eitherToMaybe(
           getSimpleAttributeAtPath(
             left(props.targetProps ?? {}),
-            stylePropPathMappingFn(option, ['style']),
+            stylePropPathMappingFn(option, styleStringInArray),
           ),
         ),
       )

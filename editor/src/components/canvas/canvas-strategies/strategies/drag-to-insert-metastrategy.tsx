@@ -55,6 +55,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -277,7 +278,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
       width: frame.width,
       height: frame.height,
     },
-    ['style'],
+    styleStringInArray,
   )
 
   if (isLeft(updatedAttributes)) {

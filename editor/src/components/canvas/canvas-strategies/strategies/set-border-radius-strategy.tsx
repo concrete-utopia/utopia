@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -270,9 +271,8 @@ interface BorderRadiusFromProps {
 
 function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | null {
   const wrappedProps = right(props)
-  const styleInArray = ['style']
 
-  const borderRadius = getLayoutProperty('borderRadius', wrappedProps, styleInArray)
+  const borderRadius = getLayoutProperty('borderRadius', wrappedProps, styleStringInArray)
   const simpleBorderRadius = foldEither(
     () => null,
     (radius) => {
@@ -286,19 +286,19 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
   )
   const borderTopLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopLeftRadius', wrappedProps, styleInArray),
+    getLayoutProperty('borderTopLeftRadius', wrappedProps, styleStringInArray),
   )
   const borderTopRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopRightRadius', wrappedProps, styleInArray),
+    getLayoutProperty('borderTopRightRadius', wrappedProps, styleStringInArray),
   )
   const borderBottomLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomLeftRadius', wrappedProps, styleInArray),
+    getLayoutProperty('borderBottomLeftRadius', wrappedProps, styleStringInArray),
   )
   const borderBottomRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomRightRadius', wrappedProps, styleInArray),
+    getLayoutProperty('borderBottomRightRadius', wrappedProps, styleStringInArray),
   )
 
   if (
@@ -529,7 +529,7 @@ function setBorderRadiusStrategyRunResult(
 }
 
 const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
-  stylePropPathMappingFn(p, ['style'])
+  stylePropPathMappingFn(p, styleStringInArray)
 
 const setStylePropertyCommand =
   <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>

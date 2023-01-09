@@ -10,7 +10,7 @@ import {
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
-import { EditorModes } from '../editor/editor-modes'
+import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 
 export const TextEditorSpanId = 'text-editor'
@@ -50,6 +50,11 @@ const handleShortcut = (
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
+  const cursorPosition = useEditorState(
+    (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
+    'TextEditor cursor position',
+  )
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -75,8 +80,14 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
       return
     }
     myElement.current.textContent = firstTextProp
-    setSelectionToEnd(myElement.current)
   }, [firstTextProp])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      return
+    }
+    void setSelectionToOffset(myElement.current, scale, cursorPosition)
+  }, [scale, cursorPosition])
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -144,7 +155,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
     onBlur: onBlur,
-    contentEditable: 'plaintext-only' as any, // note: not supported on firefo,
+    contentEditable: 'plaintext-only' as any, // note: not supported on firefox,
     suppressContentEditableWarning: true,
   }
 
@@ -158,15 +169,65 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   return React.createElement(component, passthroughProps, <span {...editorProps} />)
 })
 
-function setSelectionToEnd(element: HTMLSpanElement) {
-  const range = document.createRange()
-  range.selectNodeContents(element)
-  range.collapse(false)
-
+async function setSelectionToOffset(
+  element: HTMLSpanElement,
+  scale: number,
+  cursorPosition: Coordinates | null,
+) {
   const selection = window.getSelection()
-  if (selection != null) {
+  if (selection == null) {
+    return
+  }
+  if (element.childNodes.length != 1) {
+    return
+  }
+  const textNode = element.childNodes[0]
+  if (textNode.nodeType !== element.TEXT_NODE) {
+    return
+  }
+
+  const setRange = (start: number | null) => {
     selection.removeAllRanges()
+    const range = document.createRange()
+    range.selectNodeContents(textNode)
+    range.collapse(start != null)
+    if (start != null) {
+      range.setStart(textNode, start)
+    }
     selection.addRange(range)
+    return range
+  }
+
+  const maxLength = setRange(null).endOffset
+
+  if (cursorPosition != null) {
+    // to find the right target offset:
+    // 1. find the valid X points
+    // 2. find the valid Y points
+    // 3. either use the intersection of the two arrays, or the minimum possible
+    //    location if the intersection is empty
+    let validX: number[] = []
+    let validY: number[] = []
+    // linear search is a tad slow, but it should be fine
+    // and it's a lot easier when dealing with the scaling of the editor
+    const targetX = cursorPosition.x / scale
+    const targetY = cursorPosition.y / scale
+    for (let i = 0; i <= maxLength; i++) {
+      const range = setRange(i)
+      const rect = range.getBoundingClientRect()
+      if (i > 0 && rect.x > targetX) {
+        validX.push(i > 0 ? i - 1 : 0)
+      }
+      if (rect.y <= targetY && targetY <= rect.y + rect.height) {
+        validY.push(i)
+      }
+    }
+    const intersection = validX.filter((xx) => validY.includes(xx))
+    if (intersection.length > 0) {
+      setRange(intersection[0])
+    } else {
+      setRange(validY.length > 0 ? validY[validY.length - 1] : maxLength)
+    }
   }
 }
 

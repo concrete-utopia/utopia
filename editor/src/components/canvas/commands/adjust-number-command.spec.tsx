@@ -1,4 +1,5 @@
 import update from 'immutability-helper'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
@@ -33,7 +34,10 @@ describe('adjustNumberProperty', () => {
       originalEditorState,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          element.props,
+          stylePropPathMappingFn('left', styleStringInArray),
+        )
       },
     )!
 
@@ -42,7 +46,7 @@ describe('adjustNumberProperty', () => {
     const adjustNumberPropertyCommand = adjustNumberProperty(
       'always',
       cardInstancePath,
-      stylePropPathMappingFn('left', ['style']),
+      stylePropPathMappingFn('left', styleStringInArray),
       delta,
       true,
     )
@@ -61,7 +65,10 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          element.props,
+          stylePropPathMappingFn('left', styleStringInArray),
+        )
       },
     )
 
@@ -89,7 +96,7 @@ describe('adjustNumberProperty', () => {
     const adjustNumberPropertyCommand = adjustNumberProperty(
       'always',
       elementPath,
-      stylePropPathMappingFn('left', ['style']),
+      stylePropPathMappingFn('left', styleStringInArray),
       delta,
       true,
     )
@@ -108,7 +115,10 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          element.props,
+          stylePropPathMappingFn('left', styleStringInArray),
+        )
       },
     )
 

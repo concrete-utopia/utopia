@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
@@ -219,7 +220,7 @@ function createResizeCommandsFromFrame(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
     )
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     const rectangleDiff = rectangleDifference(originalFrame, newFrame)
     const delta = allPinsFromFrame(rectangleDiff)[pin]
     const roundedDelta = roundTo(delta, 0)
@@ -229,7 +230,7 @@ function createResizeCommandsFromFrame(
         return adjustCssLengthProperty(
           'always',
           selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
+          stylePropPathMappingFn(pin, styleStringInArray),
           roundedDelta * pinDirection,
           horizontal ? elementParentBounds?.width : elementParentBounds?.height,
           true,
@@ -239,7 +240,7 @@ function createResizeCommandsFromFrame(
         return setCssLengthProperty(
           'always',
           selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
+          stylePropPathMappingFn(pin, styleStringInArray),
           roundTo(valueToSet, 0),
           horizontal ? elementParentBounds?.width : elementParentBounds?.height,
         )

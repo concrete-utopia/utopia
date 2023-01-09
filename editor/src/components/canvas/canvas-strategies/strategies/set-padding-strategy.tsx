@@ -53,8 +53,9 @@ import {
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
-const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
+const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingTop',
   'paddingBottom',
@@ -199,10 +200,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
-            stylePropPathMappingFn(paddingPropInteractedWith, ['style']),
+            stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
           ]),
           ...nonZeroPropsToAdd.map(([p, value]) =>
-            setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
+            setProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(p, styleStringInArray),
+              value,
+            ),
           ),
         ])
       }
@@ -214,7 +220,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         return strategyApplicationResult([
           ...basicCommands,
           ...IndividualPaddingProps.map((p) =>
-            deleteProperties('always', selectedElement, [stylePropPathMappingFn(p, ['style'])]),
+            deleteProperties('always', selectedElement, [
+              stylePropPathMappingFn(p, styleStringInArray),
+            ]),
           ),
           setProperty('always', selectedElement, StylePaddingProp, paddingString),
         ])
@@ -224,10 +232,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ...basicCommands,
         deleteProperties('always', selectedElement, [
           StylePaddingProp,
-          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, ['style'])),
+          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
         ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
+          setProperty(
+            'always',
+            selectedElement,
+            stylePropPathMappingFn(p, styleStringInArray),
+            value,
+          ),
         ),
       ])
     },
