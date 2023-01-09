@@ -236,6 +236,15 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isPositionFixed(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'fixed'
+  },
+  isPositionSticky(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.position === 'sticky' ||
+      instance?.specialSizeMeasurements.position === '-webkit-sticky'
+    )
+  },
   isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'relative'
   },
