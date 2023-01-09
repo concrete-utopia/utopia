@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -268,19 +269,19 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
 
   const borderTopLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopLeftRadius', right(props), ['style']),
+    getLayoutProperty('borderTopLeftRadius', right(props), styleStringInArray),
   )
   const borderTopRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderTopRightRadius', right(props), ['style']),
+    getLayoutProperty('borderTopRightRadius', right(props), styleStringInArray),
   )
   const borderBottomLeftRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomLeftRadius', right(props), ['style']),
+    getLayoutProperty('borderBottomLeftRadius', right(props), styleStringInArray),
   )
   const borderBottomRightRadius = defaultEither(
     null,
-    getLayoutProperty('borderBottomRightRadius', right(props), ['style']),
+    getLayoutProperty('borderBottomRightRadius', right(props), styleStringInArray),
   )
 
   if (
@@ -314,7 +315,7 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
 }
 
 function simpleBorderRadiusFromProps(props: JSXAttributes): BorderRadiusSides<CSSNumber> | null {
-  const borderRadius = getLayoutProperty('borderRadius', right(props), ['style'])
+  const borderRadius = getLayoutProperty('borderRadius', right(props), styleStringInArray)
   if (isRight(borderRadius) && borderRadius.value != null) {
     return isLeft(borderRadius.value)
       ? borderRadiusSidesFromValue(borderRadius.value.value)
@@ -521,7 +522,7 @@ function setBorderRadiusStrategyRunResult(
 }
 
 const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
-  stylePropPathMappingFn(p, ['style'])
+  stylePropPathMappingFn(p, styleStringInArray)
 
 const setStylePropertyCommand =
   <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>

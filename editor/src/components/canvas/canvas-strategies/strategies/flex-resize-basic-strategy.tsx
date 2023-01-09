@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
@@ -166,7 +167,7 @@ export function flexResizeBasicStrategy(
               adjustCssLengthProperty(
                 'always',
                 selectedElement,
-                stylePropPathMappingFn(name, ['style']),
+                stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
                 true,
@@ -275,7 +276,7 @@ const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensi
     return foldEither(
       (_) => null,
       (v) => v?.value ?? null,
-      getLayoutProperty(name, attrs, ['style']),
+      getLayoutProperty(name, attrs, styleStringInArray),
     )
   }
 

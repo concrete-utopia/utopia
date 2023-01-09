@@ -16,6 +16,7 @@ import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../common/property-path-hooks'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -27,7 +28,7 @@ describe('Layout Section', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
 
     storeHookForTest.updateStore((store) => {
-      return editPropOfSelectedView(store, stylePropPathMappingFn('width', ['style']), 198)
+      return editPropOfSelectedView(store, stylePropPathMappingFn('width', styleStringInArray), 198)
     })
 
     const [getUpdateCount] = setupReactWhyDidYouRender(true)

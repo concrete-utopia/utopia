@@ -62,6 +62,7 @@ import {
 import { boundingArea, InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
 import { omit } from '../../../../core/shared/object-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -421,7 +422,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
         width: frame.width,
         height: frame.height,
       },
-      ['style'],
+      styleStringInArray,
     ),
   )
 }

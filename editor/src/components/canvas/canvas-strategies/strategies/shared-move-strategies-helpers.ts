@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
@@ -242,7 +243,7 @@ function createMoveCommandsForElement(
     return adjustCssLengthProperty(
       'always',
       selectedElement,
-      stylePropPathMappingFn(pin, ['style']),
+      stylePropPathMappingFn(pin, styleStringInArray),
       updatedPropValue,
       parentDimension,
       true,
@@ -336,11 +337,11 @@ function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
   extendedPins: Array<AbsolutePin>
 } {
   const existingHorizontalPins = horizontalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, ['style'])
+    const prop = getLayoutProperty(p, props, styleStringInArray)
     return isRight(prop) && prop.value != null
   })
   const existingVerticalPins = verticalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, ['style'])
+    const prop = getLayoutProperty(p, props, styleStringInArray)
     return isRight(prop) && prop.value != null
   })
 
