@@ -148,14 +148,16 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     suppressContentEditableWarning: true,
   }
 
+  const filteredPassthroughProps = filterMouseHandlerProps(props)
+
   // When the component to render is a simple html element we should make that contenteditable
   if (typeof component === 'string') {
     return React.createElement(component, {
-      ...passthroughProps,
+      ...filteredPassthroughProps,
       ...editorProps,
     })
   }
-  return React.createElement(component, passthroughProps, <span {...editorProps} />)
+  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
 })
 
 function setSelectionToEnd(element: HTMLSpanElement) {
@@ -172,4 +174,21 @@ function setSelectionToEnd(element: HTMLSpanElement) {
 
 function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
   e.stopPropagation()
+}
+
+function filterMouseHandlerProps(props: Record<string, any>) {
+  const {
+    onClick,
+    onContextMenu,
+    onDblClick,
+    onMouseDown,
+    onMouseEnter,
+    onMouseLeave,
+    onMouseMove,
+    onMouseOut,
+    onMouseOver,
+    onMouseUp,
+    ...filteredProps
+  } = props
+  return filteredProps
 }
