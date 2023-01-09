@@ -955,7 +955,11 @@ export const MetadataUtils = {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           navigatorTargets.push(path)
-          if (!collapsedAncestor && !isHiddenInNavigator) {
+          if (
+            !collapsedAncestor &&
+            !isHiddenInNavigator &&
+            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+          ) {
             visibleNavigatorTargets.push(path)
           }
 
@@ -993,6 +997,19 @@ export const MetadataUtils = {
       maxSize: 1,
     },
   ),
+  isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const VoidElementsToFilter = ['br', 'wbr']
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element == null) {
+      return false
+    } else {
+      return foldEither(
+        (l) => VoidElementsToFilter.includes(l),
+        (r) => (isJSXElement(r) ? VoidElementsToFilter.includes(r.name.baseVariable) : false),
+        element.element,
+      )
+    }
+  },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,
