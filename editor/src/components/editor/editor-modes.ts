@@ -92,6 +92,12 @@ export interface SelectMode {
 export interface TextEditMode {
   type: 'textEdit'
   editedText: ElementPath | null
+  cursorPosition: Coordinates | null
+}
+
+export interface Coordinates {
+  x: number
+  y: number
 }
 
 export interface LiveCanvasMode {
@@ -121,10 +127,14 @@ export const EditorModes = {
       controlId: controlId,
     }
   },
-  textEditMode: function (editedText: ElementPath | null): TextEditMode {
+  textEditMode: function (
+    editedText: ElementPath | null,
+    cursorPosition: Coordinates | null = null,
+  ): TextEditMode {
     return {
       type: 'textEdit',
       editedText: editedText,
+      cursorPosition: cursorPosition,
     }
   },
 }
