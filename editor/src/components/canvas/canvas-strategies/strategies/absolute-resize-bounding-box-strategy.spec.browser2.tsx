@@ -38,6 +38,7 @@ import {
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
+import { CSSProperties } from 'react'
 
 function resizeElement(
   renderResult: EditorRenderResult,
@@ -329,6 +330,56 @@ export var storyboard = (
           width: 73,
           height: 358,
           contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectForEdgeDblClickWithPosition = (
+  leftPos: CSSProperties['position'],
+  rightPos: CSSProperties['position'],
+) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#3EA881FC',
+        position: 'absolute',
+        left: -231,
+        top: 221,
+        width: 637,
+        display: 'flex',
+        gap: 31,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 445,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#E91C1CC4',
+          width: 200,
+          height: 192,
+          contain: 'layout',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          flexDirection: 'column',
+          position: '${leftPos}'
+        }}
+      ></div>
+      <div
+        style={{
+          backgroundColor: '#2C49C9B3',
+          width: 73,
+          height: 358,
+          contain: 'layout',
+          position: '${rightPos}'
         }}
       />
     </div>
@@ -1108,5 +1159,45 @@ describe('Double click on resize edge', () => {
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
     expect(div.style.width).toEqual('637px')
     expect(div.style.height).toEqual(minContent)
+  })
+
+  it("not applicable when children don't participate in the layout", async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithPosition('absolute', 'absolute'),
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual('445px')
+  })
+
+  it('not applicable when children are positioned absolute', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithPosition('absolute', 'absolute'),
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual('445px')
+  })
+
+  it('not applicable when children are positioned sticky', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithPosition('sticky', 'sticky'),
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual('445px')
+  })
+
+  it('not applicable when children are positioned fixed', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithPosition('fixed', 'fixed'),
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual('445px')
   })
 })
