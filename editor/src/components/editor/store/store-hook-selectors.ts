@@ -36,6 +36,12 @@ export interface SelectedViewsSubstate {
   }
 }
 
+export interface FocusedElementPathSubstate {
+  editor: {
+    focusedElementPath: ElementPath | null
+  }
+}
+
 export interface HighlightedViewsSubstate {
   editor: {
     // selectedViews: Array<ElementPath>
@@ -108,6 +114,7 @@ export type RestOfEditorState = Omit<
   | 'highlightedViews'
   | 'hoveredViews'
   | '_currentAllElementProps_KILLME'
+  | 'focusedElementPath'
 > // not comprehensive
 
 export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
@@ -162,7 +169,6 @@ export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
   'saveError',
   'vscodeBridgeReady',
   'vscodeReady',
-  'focusedElementPath',
   'config',
   'vscodeLoadingScreenVisible',
   'indexedDBFailed',
@@ -174,7 +180,7 @@ export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
   'githubData',
   'refreshingDependencies',
   'assetChecksums',
-] as const
+]
 
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   [

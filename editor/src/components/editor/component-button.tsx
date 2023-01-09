@@ -22,7 +22,7 @@ import { setFocusedElement } from './actions/action-creators'
 import { Interpolation } from '@emotion/serialize'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const focusedElementPath = useEditorState('restOfEditor')(
+  const focusedElementPath = useEditorState('focusedElement')(
     (store) => store.editor.focusedElementPath,
     'focusedElementPath',
   )

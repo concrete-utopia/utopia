@@ -26,6 +26,7 @@ import {
   DerivedSubstate,
   DispatchSubstate,
   EditorStateWOScrollOffset,
+  FocusedElementPathSubstate,
   HighlightedViewsSubstate,
   MetadataSubstate,
   RestOfEditorState,
@@ -307,6 +308,7 @@ type FullStoreWOScrollOffset = Omit<EditorStorePatched, 'editor'> & EditorStateW
 type Substates = {
   metadata: MetadataSubstate
   selectedViews: SelectedViewsSubstate
+  focusedElement: FocusedElementPathSubstate
   highlightedHoveredViews: HighlightedViewsSubstate
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
@@ -339,7 +341,8 @@ export const SubstateEqualityFns: {
       b.editor,
     )
   },
-  selectedViews: (a, b) => a.editor.selectedViews === b.editor.selectedViews,
+  selectedViews: (a, b) => keysEquality(['selectedViews'], a.editor, b.editor),
+  focusedElement: (a, b) => keysEquality(['focusedElementPath'], a.editor, b.editor),
   highlightedHoveredViews: (a: HighlightedViewsSubstate, b: HighlightedViewsSubstate): boolean => {
     return (
       // a.editor.selectedViews === b.editor.selectedViews &&
