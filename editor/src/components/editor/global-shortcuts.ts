@@ -688,7 +688,9 @@ export function handleKeyDown(
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
         const actions: Array<EditorAction> = [
-          EditorActions.switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null)),
+          EditorActions.switchEditorMode(
+            EditorModes.textEditMode(firstTextEditableView ?? null, null, false),
+          ),
         ]
 
         if (firstTextEditableView == null) {

@@ -5,6 +5,7 @@ import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-control
 import {
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  mouseDragFromPointToPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import {
@@ -284,6 +285,73 @@ describe('Use the text editor', () => {
         )`),
     )
   })
+  describe('blur', () => {
+    describe('when the element is empty', () => {
+      it('keeps existing elements', async () => {
+        const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+        await enterTextEditMode(editor, 'select-then-text-edit-mode')
+
+        deleteTypedText()
+
+        closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <div
+                  data-testid='div'
+                  style={{
+                    backgroundColor: '#0091FFAA',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 288,
+                    height: 362,
+                  }}
+                  data-uid='39e'
+                />
+              </Storyboard>
+            )`),
+        )
+      })
+      it('deletes new elements', async () => {
+        const editor = await renderTestEditorWithCode(emptyProject, 'await-first-dom-report')
+
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+        pressKey('t')
+        await editor.getDispatchFollowUpActionsFinished()
+        mouseDragFromPointToPoint(canvasControlsLayer, { x: 500, y: 200 }, { x: 600, y: 300 })
+
+        typeText('I will go away')
+
+        deleteTypedText()
+
+        closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+
+            export var storyboard = (
+              <Storyboard data-uid='sb' />
+            )`),
+        )
+      })
+    })
+  })
 })
 
 function projectWithStyle(prop: string, value: string) {
@@ -309,6 +377,17 @@ function projectWithStyle(prop: string, value: string) {
             >Hello Utopia</div>
           </Storyboard>
         )`)
+}
+
+function deleteTypedText() {
+  const range = document.createRange()
+  const selection = window.getSelection()
+  if (selection != null) {
+    selection.removeAllRanges()
+    range.selectNodeContents(document.getElementById(TextEditorSpanId) ?? document.body)
+    selection.addRange(range)
+  }
+  typeText('')
 }
 
 async function prepareTestModifierEditor(editor: EditorRenderResult) {
@@ -414,6 +493,16 @@ export var storyboard = (
       }}
       data-uid='39e'
     />
+  </Storyboard>
+)
+`)
+
+const emptyProject = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
   </Storyboard>
 )
 `)

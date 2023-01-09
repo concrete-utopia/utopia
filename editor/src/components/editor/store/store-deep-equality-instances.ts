@@ -2697,11 +2697,13 @@ export const CoordinateKeepDeepEquality: KeepDeepEqualityCall<Coordinates> = com
 )
 
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (mode) => mode.editedText,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     (mode) => mode.cursorPosition,
     nullableDeepEquality(CoordinateKeepDeepEquality),
+    (mode) => mode.isNewElement,
+    BooleanKeepDeepEquality,
     EditorModes.textEditMode,
   )
 

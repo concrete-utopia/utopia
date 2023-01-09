@@ -7,6 +7,7 @@ import { setProperty } from '../canvas/commands/set-property-command'
 import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
+  deleteView,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -49,10 +50,15 @@ const handleShortcut = (
 
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
-  const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
-  const cursorPosition = useEditorState(
-    (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
-    'TextEditor cursor position',
+
+  const { dispatch, cursorPosition, isNewElement } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      cursorPosition:
+        store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null,
+      isNewElement: store.editor.mode.type === 'textEdit' && store.editor.mode.isNewElement,
+    }),
+    'TextEditor dispatch',
   )
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
   const [firstTextProp] = React.useState(text)
@@ -70,10 +76,14 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+        if (isNewElement && content === '') {
+          dispatch([deleteView(elementPath)])
+        } else {
+          dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+        }
       }
     }
-  }, [dispatch, elementPath])
+  }, [dispatch, elementPath, isNewElement])
 
   React.useEffect(() => {
     if (myElement.current == null) {

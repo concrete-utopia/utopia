@@ -58,7 +58,7 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
       if (foundTarget == null) {
         return
       }
-      dispatch([switchEditorMode(EditorModes.textEditMode(foundTarget.elementPath))])
+      dispatch([switchEditorMode(EditorModes.textEditMode(foundTarget.elementPath, null, false))])
     },
     [findValidTarget, getTextEditableViews, dispatch],
   )
@@ -76,6 +76,6 @@ export function scheduleTextEditForNextFrame(
   dispatch: EditorDispatch,
 ): void {
   setTimeout(() =>
-    dispatch([switchEditorMode(EditorModes.textEditMode(elementPath, cursorPosition))]),
+    dispatch([switchEditorMode(EditorModes.textEditMode(elementPath, cursorPosition, false))]),
   )
 }
