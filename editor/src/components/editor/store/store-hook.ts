@@ -105,7 +105,7 @@ class Getter<T> {
 
   get current(): T {
     if (this.getter == null) {
-      throw new Error('big mistake')
+      throw new Error('Getter.getter is null')
     }
     return this.getter()
   }
