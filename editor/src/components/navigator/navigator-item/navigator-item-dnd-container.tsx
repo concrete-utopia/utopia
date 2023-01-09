@@ -47,7 +47,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   getSelectedViewsInRange: (index: number) => Array<ElementPath> // TODO remove me
   supportsChildren: boolean
   noOfChildren: number
-  staticElementName: JSXElementName | null
   label: string
   isElementVisible: boolean
   renamingTarget: ElementPath | null
@@ -257,7 +256,6 @@ export class NavigatorItemDndWrapper extends PureComponent<
           index={this.props.index}
           getSelectedViewsInRange={this.props.getSelectedViewsInRange}
           noOfChildren={this.props.noOfChildren}
-          staticElementName={this.props.staticElementName}
           label={this.props.label}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}

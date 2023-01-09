@@ -1502,16 +1502,16 @@ export const MetadataUtils = {
     }
   },
   isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (element?.isEmotionOrStyledComponent) {
-      return false
-    }
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
     }
     const isImported = isImportedComponent(element)
     if (isImported) {
+      return false
+    }
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
+    if (element?.isEmotionOrStyledComponent) {
       return false
     }
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
