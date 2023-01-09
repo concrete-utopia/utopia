@@ -21,6 +21,7 @@ export interface ProjectContentSubstate {
 export interface MetadataSubstate {
   editor: {
     selectedViews: Array<ElementPath> // duplicated from SelectedHighlightedViewsSubstate, for convenience!
+    focusedElementPath: ElementPath | null
     spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
     domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
     jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.

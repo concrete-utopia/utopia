@@ -326,13 +326,17 @@ export const SubstateEqualityFns: {
   [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
 } = {
   metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
-    return (
-      a.editor.selectedViews === b.editor.selectedViews &&
-      a.editor.spyMetadata === b.editor.spyMetadata &&
-      a.editor.domMetadata === b.editor.spyMetadata &&
-      a.editor.jsxMetadata === b.editor.jsxMetadata &&
-      a.editor.allElementProps === b.editor.allElementProps
-      // a.editor._currentAllElementProps_KILLME === b.editor._currentAllElementProps_KILLME // do we need to check this here?
+    return keysEquality(
+      [
+        'selectedViews',
+        'focusedElementPath',
+        'spyMetadata',
+        'domMetadata',
+        'jsxMetadata',
+        'allElementProps',
+      ],
+      a.editor,
+      b.editor,
     )
   },
   selectedViews: (a, b) => a.editor.selectedViews === b.editor.selectedViews,

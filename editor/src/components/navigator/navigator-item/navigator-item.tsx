@@ -196,7 +196,7 @@ const computeResultingStyle = (
 }
 
 function useStyleFullyVisible(path: ElementPath): boolean {
-  return useEditorState('fullOldStore')((store) => {
+  return useEditorState('metadata')((store) => {
     const metadata = store.editor.jsxMetadata
     const selectedViews = store.editor.selectedViews
     const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
