@@ -106,7 +106,8 @@ const handleSetFontWeightShortcut = (
     return []
   }
 
-  const direction: { [key: string]: number } = { comma: -1, period: 1 }
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
+
   const fontWeight = getFontWeightFromComputedStyle(metadata, elementPath)
   if (fontWeight == null) {
     return []
@@ -118,7 +119,7 @@ const handleSetFontWeightShortcut = (
         'always',
         elementPath,
         PP.create(['style', 'fontWeight']),
-        adjustFontWeight(fontWeight, direction[character]),
+        adjustFontWeight(fontWeight, delta),
       ),
     ]),
   ]
