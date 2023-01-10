@@ -17,7 +17,7 @@ import {
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { HighlightControl } from './highlight-control'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
@@ -147,14 +147,14 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     )
 
   const canvasScrollAnimation = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scrollAnimation,
     'NewCanvasControls scrollAnimation',
   )
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call
   // work properly in `editor-canvas.ts`. I blame React DnD for this.
-  const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
+  const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'canvas', unknown> = {
     accept: 'files',
     canDrop: () => true,
   }

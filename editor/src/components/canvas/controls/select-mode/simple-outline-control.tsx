@@ -5,7 +5,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -48,7 +48,7 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'OutlineControl scale',
   )

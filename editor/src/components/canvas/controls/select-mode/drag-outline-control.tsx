@@ -7,7 +7,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { getMultiselectBounds } from '../../canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -59,7 +59,7 @@ type DragOutlineControlProps =
 
 export const DragOutlineControl = controlForStrategyMemoized((props: DragOutlineControlProps) => {
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'OutlineControl scale',
   )
@@ -113,7 +113,7 @@ function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | nu
   )
 
   const dragVector = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => {
       if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
         return null

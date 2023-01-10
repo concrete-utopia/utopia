@@ -35,7 +35,7 @@ import {
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -102,7 +102,7 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch, insertMenuSelected])
 
   const zoomLevel = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'CanvasToolbar zoomLevel',
   )

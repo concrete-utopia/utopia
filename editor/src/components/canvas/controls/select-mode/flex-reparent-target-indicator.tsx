@@ -1,17 +1,17 @@
 import React from 'react'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 export const FlexReparentTargetIndicator = controlForStrategyMemoized(() => {
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'FlexReparentTargetIndicator scale',
   )
   const FlexReparentIndicatorSize = React.useMemo(() => 2 / scale, [scale])
   const reparentTargetLines = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.controls.flexReparentTargetLines,
     'FlexReparentTargetIndicator lines',
   )

@@ -1,14 +1,14 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { HighlightControl } from '../highlight-control'
 
 export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized(() => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'FlexReparentTargetIndicator scale',
   )

@@ -10,7 +10,7 @@ import {
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
 
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 
@@ -166,7 +166,7 @@ const DesignPanelRootInner = React.memo(() => {
   )
 
   const isCanvasVisible = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.visible,
     'design panel root',
   )

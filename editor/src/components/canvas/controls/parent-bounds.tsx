@@ -6,7 +6,7 @@ import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
@@ -16,7 +16,7 @@ interface ImmediateParentBoundsProps {
 export const ImmediateParentBounds = controlForStrategyMemoized(
   ({ targets }: ImmediateParentBoundsProps) => {
     const scale = useEditorState(
-      'canvas',
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ParentBounds canvas scale',
     )
@@ -55,7 +55,7 @@ interface ParentBoundsProps {
 }
 export const ParentBounds = controlForStrategyMemoized(({ targetParent }: ParentBoundsProps) => {
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'ParentBounds canvas scale',
   )

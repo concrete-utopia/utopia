@@ -11,11 +11,15 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPathKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { useColorTheme } from '../../../uuiui'
 import { CanvasRectangleKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const PinLines = React.memo(() => {
-  const scale = useEditorState('canvas', (store) => store.editor.canvas.scale, 'PinLines scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'PinLines scale',
+  )
   const elementsAndFrames = useEditorState(
     'fullOldStore',
     (store) => {

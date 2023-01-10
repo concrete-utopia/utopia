@@ -44,7 +44,7 @@ import {
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 

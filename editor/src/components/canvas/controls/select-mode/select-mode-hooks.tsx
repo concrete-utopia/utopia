@@ -26,7 +26,7 @@ import {
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { moveDragState } from '../../canvas-types'
 import {
@@ -795,7 +795,7 @@ export function useSelectAndHover(
     'useSelectAndHover isZoomMode',
   )
   const hasInteractionSession = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionSession',
   )

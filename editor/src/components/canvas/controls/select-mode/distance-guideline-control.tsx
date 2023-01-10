@@ -6,7 +6,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { isDragInteractionData } from '../../canvas-strategies/interaction-state'
 import { getMultiselectBounds } from '../../canvas-strategies/strategies/shared-move-strategies-helpers'
 import { Guideline, Guidelines } from '../../guideline'
@@ -26,7 +26,7 @@ function getDistanceGuidelines(
 
 export const DistanceGuidelineControl = React.memo(() => {
   const isDisallowedInteractionActive = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => {
       return (
         store.editor.canvas.interactionSession != null &&
@@ -54,7 +54,7 @@ export const DistanceGuidelineControl = React.memo(() => {
 
 const DistanceGuidelineControlInner = React.memo(() => {
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'DistanceGuidelineControl scale',
   )

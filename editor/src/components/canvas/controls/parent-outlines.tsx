@@ -7,7 +7,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isInsertMode } from '../../editor/editor-modes'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
@@ -19,7 +19,7 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
   ({ targets }: ImmediateParentOutlinesProps) => {
     const colorTheme = useColorTheme()
     const scale = useEditorState(
-      'canvas',
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ImmediateParentOutlines canvas scale',
     )
@@ -60,7 +60,7 @@ export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
     const scale = useEditorState(
-      'canvas',
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ParentOutlines canvas scale',
     )

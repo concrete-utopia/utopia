@@ -8,7 +8,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
@@ -78,7 +78,11 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     (store) => store.editor.canvas.realCanvasOffset,
     'SceneLabel canvasOffset',
   )
-  const scale = useEditorState('canvas', (store) => store.editor.canvas.scale, 'SceneLabel scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'SceneLabel scale',
+  )
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale

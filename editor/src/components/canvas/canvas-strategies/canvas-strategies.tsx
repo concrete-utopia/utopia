@@ -4,7 +4,7 @@ import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/arr
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
-import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -490,7 +490,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => {
       return interactionInProgress(store.editor.canvas.interactionSession)
     },

@@ -14,6 +14,7 @@ import {
 import { bold, useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
+  Substores,
   useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
@@ -26,7 +27,7 @@ import { CanvasSubstate } from '../../editor/store/store-hook-selectors'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
-  const scale = useEditorState('canvas', scaleSelector, 'Guideline scale')
+  const scale = useEditorState(Substores.canvas, scaleSelector, 'Guideline scale')
   const strategyMovedSuccessfully = useEditorState(
     'fullOldStore',
     (store) => {
@@ -49,7 +50,7 @@ export const GuidelineControls = React.memo(() => {
   )
 
   const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.controls,
     'Strategy intended bounds and snapping guidelines',
   )
@@ -97,7 +98,7 @@ const scaleSelector = (store: CanvasSubstate) => store.editor.canvas.scale
 
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState('canvas', scaleSelector, 'Guideline scale')
+  const scale = useEditorState(Substores.canvas, scaleSelector, 'Guideline scale')
   const controlRef = useGuideline(props.index, (result: { frame: CanvasRectangle } | null) => {
     if (controlRef.current != null) {
       if (result == null) {

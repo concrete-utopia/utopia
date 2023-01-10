@@ -15,7 +15,7 @@ import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme } from '../../../uuiui'
 import { CSSCursor } from '../../../uuiui-deps'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse, reorderSlider } from '../canvas-strategies/interaction-state'
@@ -40,13 +40,13 @@ interface ReorderSliderControlProps {
 export const ReorderSliderControl = controlForStrategyMemoized(
   ({ target }: ReorderSliderControlProps) => {
     const scale = useEditorState(
-      'canvas',
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ReorderSliderControl scale',
     )
     const colorTheme = useColorTheme()
     const isDragging = useEditorState(
-      'canvas',
+      Substores.canvas,
       (store) =>
         store.editor.canvas.interactionSession != null &&
         store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
@@ -176,13 +176,13 @@ interface ReorderIndicatorProps {
 
 const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'ReorderIndicator scale',
   )
   const { startingIndex, siblings } = props
   const indicatorOffset = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => {
       if (
         store.editor.canvas.interactionSession != null &&
@@ -217,7 +217,7 @@ const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
 const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'ReorderIndicator scale',
   )
@@ -239,7 +239,7 @@ const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) 
 const ReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'ReorderControl scale',
   )

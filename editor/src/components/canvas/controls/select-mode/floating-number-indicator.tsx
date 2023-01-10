@@ -1,7 +1,7 @@
 import React from 'react'
 import { CanvasPoint } from '../../../../core/shared/math-utils'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { CanvasLabel } from './controls-common'
@@ -18,7 +18,7 @@ export const FloatingIndicator = controlForStrategyMemoized<FloatingIndicatorPro
   const colorTheme = useColorTheme()
 
   const scale = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     'FloatingIndicator scale',
   )
