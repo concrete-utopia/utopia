@@ -91,12 +91,20 @@ interface ConflictButtonProps {
 const ConflictButton = React.memo((props: ConflictButtonProps) => {
   const menuId = `conflict-context-menu-${props.fullPath}`
   const dispatch = useDispatch()
-  const githubRepo = useEditorState('github')((store) => {
-    return store.editor.githubSettings.targetRepository
-  }, 'ConflictButton githubRepo')
-  const projectID = useEditorState('restOfEditor')((store) => {
-    return store.editor.id
-  }, 'ConflictButton projectID')
+  const githubRepo = useEditorState(
+    'github',
+    (store) => {
+      return store.editor.githubSettings.targetRepository
+    },
+    'ConflictButton githubRepo',
+  )
+  const projectID = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return store.editor.id
+    },
+    'ConflictButton projectID',
+  )
   const menuItems = React.useMemo(() => {
     if (githubRepo != null && projectID != null) {
       return getConflictMenuItems(
@@ -147,7 +155,8 @@ export const GithubFileChangesList: React.FC<{
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
   const dispatch = useDispatch()
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
-  const treeConflicts = useEditorState('github')(
+  const treeConflicts = useEditorState(
+    'github',
     (store) => store.editor.githubData.treeConflicts,
     'GithubFileChangesList treeConflicts',
   )
@@ -190,7 +199,8 @@ export const GithubFileChangesList: React.FC<{
     [dispatch],
   )
 
-  const githubOperations = useEditorState('github')(
+  const githubOperations = useEditorState(
+    'github',
     (store) => store.editor.githubOperations,
     'Github operations',
   )

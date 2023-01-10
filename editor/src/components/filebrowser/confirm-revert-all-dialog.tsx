@@ -43,7 +43,8 @@ const DialogBody: React.FunctionComponent<
 const AcceptButton: React.FunctionComponent<
   React.PropsWithChildren<ConfirmRevertAllDialogProps>
 > = (props) => {
-  const branchContents = useEditorState('restOfEditor')(
+  const branchContents = useEditorState(
+    'restOfEditor',
     (store) => store.editor.branchContents,
     'branch contents',
   )

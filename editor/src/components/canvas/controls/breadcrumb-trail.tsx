@@ -16,13 +16,17 @@ interface ElementPathElement {
 
 export const BreadcrumbTrail = React.memo(() => {
   const dispatch = useDispatch()
-  const { jsxMetadata, selectedViews, allElementProps } = useEditorState('metadata')((store) => {
-    return {
-      jsxMetadata: store.editor.jsxMetadata,
-      selectedViews: store.editor.selectedViews,
-      allElementProps: store.editor.allElementProps,
-    }
-  }, 'TopMenuContextProvider')
+  const { jsxMetadata, selectedViews, allElementProps } = useEditorState(
+    'metadata',
+    (store) => {
+      return {
+        jsxMetadata: store.editor.jsxMetadata,
+        selectedViews: store.editor.selectedViews,
+        allElementProps: store.editor.allElementProps,
+      }
+    },
+    'TopMenuContextProvider',
+  )
 
   const onSelect = React.useCallback(
     (path: ElementPath) => dispatch(selectComponents([path], false), 'everyone'),

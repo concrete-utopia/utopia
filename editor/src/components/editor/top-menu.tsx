@@ -25,7 +25,8 @@ import { useDispatch } from './store/dispatch-context'
 
 const TopMenuLeftControls = React.memo(() => {
   const dispatch = useDispatch()
-  const navigatorVisible = useEditorState('restOfEditor')(
+  const navigatorVisible = useEditorState(
+    'restOfEditor',
     (store) => !store.editor.navigator.minimised,
     'TopMenuLeftControls navigatorVisible',
   )
@@ -55,13 +56,15 @@ const TopMenuLeftControls = React.memo(() => {
 
 const TopMenuRightControls = React.memo(() => {
   const dispatch = useDispatch()
-  const zoomLevel = useEditorState('canvasOffset')(
+  const zoomLevel = useEditorState(
+    'canvasOffset',
     (store) => store.editor.canvas.scale,
     'RightMenu zoomLevel',
   )
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
-  const rightMenuSelectedTab = useEditorState('restOfEditor')(
+  const rightMenuSelectedTab = useEditorState(
+    'restOfEditor',
     (store) => store.editor.rightMenu.selectedTab,
     'RightMenu rightMenuSelectedTab',
   )
@@ -110,7 +113,8 @@ const TopMenuRightControls = React.memo(() => {
 })
 
 export const TopMenu = React.memo(() => {
-  const selectedElementPathString = useEditorState('selectedViews')(
+  const selectedElementPathString = useEditorState(
+    'selectedViews',
     (store) => Utils.optionalMap(toString, store.editor.selectedViews[0]) ?? 'empty',
     'First selected view or default',
   )

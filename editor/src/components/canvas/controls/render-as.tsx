@@ -20,12 +20,16 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 export const RenderAsRow = React.memo(() => {
   const dispatch = useDispatch()
 
-  const selectedElementName = useEditorState('metadata')((store) => {
-    return MetadataUtils.getJSXElementNameFromMetadata(
-      store.editor.jsxMetadata,
-      store.editor.selectedViews[0],
-    )
-  }, 'RenderAsRow selectedElementName')
+  const selectedElementName = useEditorState(
+    'metadata',
+    (store) => {
+      return MetadataUtils.getJSXElementNameFromMetadata(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+    },
+    'RenderAsRow selectedElementName',
+  )
 
   const refElementsToTargetForUpdates = useRefEditorState((store) => {
     return getElementsToTarget(store.editor.selectedViews)
@@ -53,14 +57,16 @@ export const RenderAsRow = React.memo(() => {
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
     'fullOldStore',
-  )((store) => {
-    return {
-      packageStatus: store.editor.nodeModules.packageStatus,
-      propertyControlsInfo: store.editor.propertyControlsInfo,
-      projectContents: store.editor.projectContents,
-      fullPath: store.editor.canvas.openFile?.filename ?? null,
-    }
-  }, 'RenderAsRow')
+    (store) => {
+      return {
+        packageStatus: store.editor.nodeModules.packageStatus,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        projectContents: store.editor.projectContents,
+        fullPath: store.editor.canvas.openFile?.filename ?? null,
+      }
+    },
+    'RenderAsRow',
+  )
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {

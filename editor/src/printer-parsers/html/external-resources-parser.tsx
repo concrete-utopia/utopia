@@ -460,7 +460,8 @@ export function useExternalResources(): {
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
   const dispatch = useDispatch()
-  const projectContents = useEditorState('projectContents')(
+  const projectContents = useEditorState(
+    'projectContents',
     (store) => store.editor.projectContents,
     'useExternalResources projectContents',
   )

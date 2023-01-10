@@ -23,23 +23,30 @@ import { Interpolation } from '@emotion/serialize'
 import { useDispatch } from './store/dispatch-context'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const focusedElementPath = useEditorState('focusedElement')(
+  const focusedElementPath = useEditorState(
+    'focusedElement',
     (store) => store.editor.focusedElementPath,
     'focusedElementPath',
   )
 
-  const { isComponent, selectedViews } = useEditorState('metadata')((store) => {
-    const target = store.editor.selectedViews[0]
+  const { isComponent, selectedViews } = useEditorState(
+    'metadata',
+    (store) => {
+      const target = store.editor.selectedViews[0]
 
-    const isFocusableComponent =
-      target == null ? false : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
+      const isFocusableComponent =
+        target == null
+          ? false
+          : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
 
-    return {
-      isComponent: isFocusableComponent,
+      return {
+        isComponent: isFocusableComponent,
 
-      selectedViews: store.editor.selectedViews,
-    }
-  }, 'Component-button')
+        selectedViews: store.editor.selectedViews,
+      }
+    },
+    'Component-button',
+  )
 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()

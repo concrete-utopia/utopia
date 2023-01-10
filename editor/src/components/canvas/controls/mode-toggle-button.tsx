@@ -9,7 +9,8 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
-  const selectedMode = useEditorState('restOfEditor')(
+  const selectedMode = useEditorState(
+    'restOfEditor',
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
   )

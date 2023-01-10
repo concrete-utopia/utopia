@@ -18,31 +18,36 @@ interface ImmediateParentOutlinesProps {
 export const ImmediateParentOutlines = controlForStrategyMemoized(
   ({ targets }: ImmediateParentOutlinesProps) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'ImmediateParentOutlines canvas scale',
     )
-    const parentFrame = useEditorState('fullOldStore')((store) => {
-      const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-      if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
-        return MetadataUtils.getFrameInCanvasCoords(
-          parentHighlightPaths[0],
-          store.editor.jsxMetadata,
-        )
-      }
-
-      if (!isInsertMode(store.editor.mode)) {
-        const targetParents = uniqBy(
-          stripNulls(targets.map((view) => EP.parentPath(view))),
-          EP.pathsEqual,
-        )
-        if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-          return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
-            ?.specialSizeMeasurements.immediateParentBounds
+    const parentFrame = useEditorState(
+      'fullOldStore',
+      (store) => {
+        const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
+        if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+          return MetadataUtils.getFrameInCanvasCoords(
+            parentHighlightPaths[0],
+            store.editor.jsxMetadata,
+          )
         }
-      }
-      return null
-    }, 'ImmediateParentOutlines frame')
+
+        if (!isInsertMode(store.editor.mode)) {
+          const targetParents = uniqBy(
+            stripNulls(targets.map((view) => EP.parentPath(view))),
+            EP.pathsEqual,
+          )
+          if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+            return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
+              ?.specialSizeMeasurements.immediateParentBounds
+          }
+        }
+        return null
+      },
+      'ImmediateParentOutlines frame',
+    )
 
     return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
   },
@@ -54,18 +59,23 @@ interface ParentOutlinesProps {
 export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'ParentOutlines canvas scale',
     )
 
-    const parentFrame = useEditorState('metadata')((store) => {
-      if (!EP.isStoryboardPath(targetParent)) {
-        return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
-      } else {
-        return null
-      }
-    }, 'ImmediateParentOutlines frame')
+    const parentFrame = useEditorState(
+      'metadata',
+      (store) => {
+        if (!EP.isStoryboardPath(targetParent)) {
+          return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
+        } else {
+          return null
+        }
+      },
+      'ImmediateParentOutlines frame',
+    )
 
     return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
   },

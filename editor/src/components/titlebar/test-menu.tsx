@@ -44,7 +44,8 @@ export const TestMenu = React.memo(() => {
   }, [entireStateRef, jsxMetadata])
 
   function useRequestVSCodeStatus(): () => void {
-    const vscodeState = useEditorState('restOfEditor')(
+    const vscodeState = useEditorState(
+      'restOfEditor',
       (store) => ({
         vscodeReady: store.editor.vscodeReady,
         loadingScreenVisible: store.editor.vscodeLoadingScreenVisible,

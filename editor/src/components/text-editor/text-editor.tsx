@@ -52,16 +52,19 @@ const handleShortcut = (
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
-  const cursorPosition = useEditorState('restOfEditor')(
+  const cursorPosition = useEditorState(
+    'restOfEditor',
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
   )
-  const elementState = useEditorState('restOfEditor')(
+  const elementState = useEditorState(
+    'restOfEditor',
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
 
-  const scale = useEditorState('canvasOffset')(
+  const scale = useEditorState(
+    'canvasOffset',
     (store) => store.editor.canvas.scale,
     'TextEditor scale',
   )

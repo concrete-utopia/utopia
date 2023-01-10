@@ -79,7 +79,8 @@ const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const { setShownByParent } = props
     const dispatch = useDispatch()
-    const { scale, isDragging } = useEditorState('fullOldStore')(
+    const { scale, isDragging } = useEditorState(
+      'fullOldStore',
       (store) => ({
         scale: scaleSelector(store),
         isDragging: isDraggingSelector(store, props.edge),
@@ -205,7 +206,8 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const selectedElements = props.targets
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const hoveredViews = useEditorState('highlightedHoveredViews')(
+  const hoveredViews = useEditorState(
+    'highlightedHoveredViews',
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )

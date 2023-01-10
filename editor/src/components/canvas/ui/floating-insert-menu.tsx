@@ -110,14 +110,16 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
     'fullOldStore',
-  )((store) => {
-    return {
-      packageStatus: store.editor.nodeModules.packageStatus,
-      propertyControlsInfo: store.editor.propertyControlsInfo,
-      projectContents: store.editor.projectContents,
-      fullPath: store.editor.canvas.openFile?.filename ?? null,
-    }
-  }, 'RenderAsRow')
+    (store) => {
+      return {
+        packageStatus: store.editor.nodeModules.packageStatus,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        projectContents: store.editor.projectContents,
+        fullPath: store.editor.canvas.openFile?.filename ?? null,
+      }
+    },
+    'RenderAsRow',
+  )
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {
@@ -429,7 +431,8 @@ export var FloatingMenu = React.memo(() => {
     }
   }, [])
 
-  const floatingMenuState = useEditorState('restOfEditor')(
+  const floatingMenuState = useEditorState(
+    'restOfEditor',
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -699,7 +702,8 @@ interface FloatingInsertMenuProps {}
 
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
   const dispatch = useDispatch()
-  const isVisible = useEditorState('restOfEditor')(
+  const isVisible = useEditorState(
+    'restOfEditor',
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

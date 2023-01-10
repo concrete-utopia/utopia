@@ -30,19 +30,23 @@ interface ButtonControlProps {
 
 export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
-    const isInteractionActive = useEditorState('canvas')(
+    const isInteractionActive = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.interactionSession != null,
       'DistanceGuidelineControl isInteractionActive',
     )
-    const selectedViews = useEditorState('selectedViews')(
+    const selectedViews = useEditorState(
+      'selectedViews',
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
     )
-    const jsxMetadata = useEditorState('metadata')(
+    const jsxMetadata = useEditorState(
+      'metadata',
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'InsertionControls scale',
     )

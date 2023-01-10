@@ -261,14 +261,18 @@ interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
 const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
-  const parentPath = useEditorState('selectedViews')((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return null
-    }
-    const target = store.editor.selectedViews[0]
-    const parent = EP.parentPath(target)
-    return EP.isStoryboardPath(parent) ? null : parent
-  }, 'ParentIndicatorAndLink parentPath')
+  const parentPath = useEditorState(
+    'selectedViews',
+    (store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return null
+      }
+      const target = store.editor.selectedViews[0]
+      const parent = EP.parentPath(target)
+      return EP.isStoryboardPath(parent) ? null : parent
+    },
+    'ParentIndicatorAndLink parentPath',
+  )
 
   const dispatch = useDispatch()
 
@@ -300,23 +304,27 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
 }
 
 function useElementHasChildrenOrContent() {
-  return useEditorState('metadata')((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return {
-        hasChildren: false,
-        hasContent: false,
+  return useEditorState(
+    'metadata',
+    (store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return {
+          hasChildren: false,
+          hasContent: false,
+        }
       }
-    }
-    const element = MetadataUtils.findElementByElementPath(
-      store.editor.jsxMetadata,
-      store.editor.selectedViews[0],
-    )
-    const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
-    return {
-      hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
-      hasContent: textContent != null && textContent.length > 0,
-    }
-  }, 'ChildrenLink children')
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
+      return {
+        hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
+        hasContent: textContent != null && textContent.length > 0,
+      }
+    },
+    'ChildrenLink children',
+  )
 }
 
 const ChildrenOrContentIndicator = () => {

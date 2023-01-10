@@ -41,12 +41,14 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const [importing, setImporting] = React.useState(false)
 
-  const githubOperations = useEditorState('github')(
+  const githubOperations = useEditorState(
+    'github',
     (store) => store.editor.githubOperations,
     'RepositoryRow githubOperations',
   )
 
-  const currentRepo = useEditorState('github')(
+  const currentRepo = useEditorState(
+    'github',
     (store) => store.editor.githubSettings.targetRepository,
     'RepositoryRow currentRepo',
   )
@@ -167,7 +169,8 @@ export const RepositoryListing = React.memo(
       [setTargetRepository],
     )
 
-    const usersRepositories = useEditorState('github')(
+    const usersRepositories = useEditorState(
+      'github',
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -227,7 +230,8 @@ export const RepositoryListing = React.memo(
       }
     }, [filteredRepositories, targetRepository])
 
-    const githubOperations = useEditorState('github')(
+    const githubOperations = useEditorState(
+      'github',
       (store) => store.editor.githubOperations,
       'Github operations',
     )

@@ -30,7 +30,8 @@ export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
 export const FlexDirectionToggle = React.memo(() => {
   const dispatch = useDispatch()
 
-  const flexDirection = useEditorState('metadata')(
+  const flexDirection = useEditorState(
+    'metadata',
     flexDirectionSelector,
     'FlexDirectionToggle flexDirection',
   )
@@ -38,7 +39,8 @@ export const FlexDirectionToggle = React.memo(() => {
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
-  const nFlexContainers = useEditorState('fullOldStore')(
+  const nFlexContainers = useEditorState(
+    'fullOldStore',
     nFlexContainersSelector,
     'FlexDirectionToggle nFlexContainers',
   )

@@ -11,14 +11,16 @@ import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()
-  const { allApplicableStrategies } = useEditorState('restOfStore')(
+  const { allApplicableStrategies } = useEditorState(
+    'restOfStore',
     (store) => ({
       allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
     }),
     'CanvasStrategyPicker strategyState.currentStrategy',
   )
   const activeStrategy = useDelayedCurrentStrategy()
-  const isStrategyFailure = useEditorState('restOfStore')(
+  const isStrategyFailure = useEditorState(
+    'restOfStore',
     (store) => store.strategyState?.status === 'failure',
     'Strategy failure',
   )

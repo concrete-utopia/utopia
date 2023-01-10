@@ -15,8 +15,9 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const PinLines = React.memo(() => {
-  const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'PinLines scale')
-  const elementsAndFrames = useEditorState('fullOldStore')(
+  const scale = useEditorState('canvas', (store) => store.editor.canvas.scale, 'PinLines scale')
+  const elementsAndFrames = useEditorState(
+    'fullOldStore',
     (store) => {
       const selectedViewsNotHidden = store.editor.selectedViews.filter(
         (sv) => !store.editor.hiddenInstances.includes(sv),
@@ -91,26 +92,34 @@ export const PositionOutline = React.memo((props: PositionOutlineProps) => {
 })
 
 const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
-  return useEditorState('metadata')((store) => {
-    const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      return right(element.element.value.props)
-    } else {
-      const elementProps = store.editor.allElementProps[EP.toString(path)]
-      return left(elementProps ?? {})
-    }
-  }, 'usePropsOrJSXAttributes')
+  return useEditorState(
+    'metadata',
+    (store) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+        return right(element.element.value.props)
+      } else {
+        const elementProps = store.editor.allElementProps[EP.toString(path)]
+        return left(elementProps ?? {})
+      }
+    },
+    'usePropsOrJSXAttributes',
+  )
 }
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
-  return useEditorState('metadata')((store) => {
-    const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (metadata != null && !EP.isStoryboardChild(path)) {
-      return metadata?.specialSizeMeasurements.coordinateSystemBounds
-    } else {
-      return null
-    }
-  }, 'useContainingFrameForElement')
+  return useEditorState(
+    'metadata',
+    (store) => {
+      const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      if (metadata != null && !EP.isStoryboardChild(path)) {
+        return metadata?.specialSizeMeasurements.coordinateSystemBounds
+      } else {
+        return null
+      }
+    },
+    'useContainingFrameForElement',
+  )
 }
 
 const collectPinOutlines = (

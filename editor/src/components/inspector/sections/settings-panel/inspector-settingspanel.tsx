@@ -76,7 +76,8 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
-  const interfaceDesigner = useEditorState('restOfEditor')(
+  const interfaceDesigner = useEditorState(
+    'restOfEditor',
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )

@@ -58,7 +58,8 @@ type DragOutlineControlProps =
   | DragTargetsFrames
 
 export const DragOutlineControl = controlForStrategyMemoized((props: DragOutlineControlProps) => {
-  const scale = useEditorState('canvas')(
+  const scale = useEditorState(
+    'canvas',
     (store) => store.editor.canvas.scale,
     'OutlineControl scale',
   )
@@ -90,29 +91,37 @@ export const DragOutlineControl = controlForStrategyMemoized((props: DragOutline
 })
 
 function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | null {
-  const bounds = useEditorState('fullOldStore')((store) => {
-    switch (props.type) {
-      case 'frames':
-        return boundingRectangleArray(props.frames)
-      case 'element-paths':
-        return getMultiselectBounds(store.strategyState.startingMetadata, props.targets)
-      case 'element-paths-live':
-        return getMultiselectBounds(
-          store.editor.canvas.interactionSession?.latestMetadata ??
-            store.strategyState.startingMetadata,
-          props.targets,
-        )
-      default:
-        assertNever(props)
-    }
-  }, 'GhostOutline frame')
+  const bounds = useEditorState(
+    'fullOldStore',
+    (store) => {
+      switch (props.type) {
+        case 'frames':
+          return boundingRectangleArray(props.frames)
+        case 'element-paths':
+          return getMultiselectBounds(store.strategyState.startingMetadata, props.targets)
+        case 'element-paths-live':
+          return getMultiselectBounds(
+            store.editor.canvas.interactionSession?.latestMetadata ??
+              store.strategyState.startingMetadata,
+            props.targets,
+          )
+        default:
+          assertNever(props)
+      }
+    },
+    'GhostOutline frame',
+  )
 
-  const dragVector = useEditorState('canvas')((store) => {
-    if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
-      return null
-    }
-    return store.editor.canvas.interactionSession.interactionData.drag
-  }, 'GhostOutline dragVector')
+  const dragVector = useEditorState(
+    'canvas',
+    (store) => {
+      if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
+        return null
+      }
+      return store.editor.canvas.interactionSession.interactionData.drag
+    },
+    'GhostOutline dragVector',
+  )
 
   if (bounds == null || dragVector == null) {
     return null

@@ -8,9 +8,13 @@ import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import { FlexColumn } from '../../../../uuiui'
 
 export const PullRequestPane = React.memo(() => {
-  const pullRequests = useEditorState('github')((store) => {
-    return store.editor.githubData.currentBranchPullRequests
-  }, 'PullRequestPane pullRequest')
+  const pullRequests = useEditorState(
+    'github',
+    (store) => {
+      return store.editor.githubData.currentBranchPullRequests
+    },
+    'PullRequestPane pullRequest',
+  )
 
   const openBlank = React.useCallback(
     (url: string) => () => {

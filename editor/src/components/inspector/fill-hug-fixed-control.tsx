@@ -182,7 +182,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
-  const widthCurrentValue = useEditorState('metadata')(
+  const widthCurrentValue = useEditorState(
+    'metadata',
     (store) =>
       detectFillHugFixedState(
         'horizontal',
@@ -202,7 +203,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) ?? cssNumber(0, null),
   )
 
-  const heightCurrentValue = useEditorState('metadata')(
+  const heightCurrentValue = useEditorState(
+    'metadata',
     (store) =>
       detectFillHugFixedState(
         'vertical',

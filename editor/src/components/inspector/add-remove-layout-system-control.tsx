@@ -26,7 +26,8 @@ export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSy
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isFlexLayoutedContainer = useEditorState('metadata')(
+  const isFlexLayoutedContainer = useEditorState(
+    'metadata',
     (store) =>
       detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'AddRemoveLayouSystemControl, isFlexLayoutedContainer',

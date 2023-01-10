@@ -51,17 +51,23 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 
 const TitleBar = React.memo(() => {
   const dispatch = useDispatch()
-  const { loginState } = useEditorState('restOfStore')(
+  const { loginState } = useEditorState(
+    'restOfStore',
     (store) => ({
       loginState: store.userState.loginState,
     }),
     'TitleBar loginState',
   )
-  const projectName = useEditorState('restOfEditor')((store) => {
-    return store.editor.projectName
-  }, 'TitleBar projectName')
+  const projectName = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return store.editor.projectName
+    },
+    'TitleBar projectName',
+  )
 
-  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState('github')(
+  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+    'github',
     (store) => {
       return {
         upstreamChanges: store.editor.githubData.upstreamChanges,
@@ -245,5 +251,5 @@ const loginStateSelector = createSelector(
   (loginState: LoginState) => getUserPicture(loginState),
 )
 function useGetUserPicture(): string | null {
-  return useEditorState('restOfStore')(loginStateSelector, 'useGetUserPicture')
+  return useEditorState('restOfStore', loginStateSelector, 'useGetUserPicture')
 }

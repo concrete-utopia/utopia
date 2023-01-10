@@ -130,60 +130,74 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
-  const isSelected = useEditorState('selectedViews')(
+  const isSelected = useEditorState(
+    'selectedViews',
     (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
-  const isHighlighted = useEditorState('highlightedHoveredViews')(
+  const isHighlighted = useEditorState(
+    'highlightedHoveredViews',
     (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
     'NavigatorItemWrapper isHighlighted',
   )
 
-  const noOfChildren = useEditorState('derived')((store) => {
-    return noOfChildrenSelector(store, props.elementPath)
-  }, 'NavigatorItemWrapper noOfChildren')
+  const noOfChildren = useEditorState(
+    'derived',
+    (store) => {
+      return noOfChildrenSelector(store, props.elementPath)
+    },
+    'NavigatorItemWrapper noOfChildren',
+  )
 
-  const staticElementName = useEditorState('metadata')(
+  const staticElementName = useEditorState(
+    'metadata',
     (store) => staticNameSelector(store, props.elementPath),
     'NavigatorItemWrapper staticName',
   )
 
-  const supportsChildren = useEditorState('fullOldStore')(
+  const supportsChildren = useEditorState(
+    'fullOldStore',
     // this is not good
     (store) => targetSupportsChildrenSelector(store, props.elementPath),
     'NavigatorItemWrapper targetSupportsChildrenSelector',
   )
 
-  const label = useEditorState('metadata')(
+  const label = useEditorState(
+    'metadata',
     (store) => labelSelector(store, props.elementPath),
     'NavigatorItemWrapper labelSelector',
   )
 
-  const elementWarnings = useEditorState('derived')(
+  const elementWarnings = useEditorState(
+    'derived',
     (store) => elementWarningsSelector(store, props.elementPath),
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
   const dispatch = useDispatch()
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
-    useEditorState('restOfEditor')((store) => {
-      // Only capture this if it relates to the current navigator item, as it may change while
-      // dragging around the navigator but we don't want the entire navigator to re-render each time.
-      let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
-      if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
-        possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
-      }
-      const elementIsCollapsed = EP.containsPath(
-        props.elementPath,
-        store.editor.navigator.collapsedViews,
-      )
-      return {
-        appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
-        renamingTarget: store.editor.navigator.renamingTarget,
-        isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
-        isCollapsed: elementIsCollapsed,
-      }
-    }, 'NavigatorItemWrapper')
+    useEditorState(
+      'restOfEditor',
+      (store) => {
+        // Only capture this if it relates to the current navigator item, as it may change while
+        // dragging around the navigator but we don't want the entire navigator to re-render each time.
+        let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
+        if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+          possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
+        }
+        const elementIsCollapsed = EP.containsPath(
+          props.elementPath,
+          store.editor.navigator.collapsedViews,
+        )
+        return {
+          appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
+          renamingTarget: store.editor.navigator.renamingTarget,
+          isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+          isCollapsed: elementIsCollapsed,
+        }
+      },
+      'NavigatorItemWrapper',
+    )
 
   const deepReferenceStaticElementName = useKeepDeepEqualityCall(
     staticElementName,

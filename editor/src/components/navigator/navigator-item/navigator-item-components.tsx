@@ -202,14 +202,22 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [dispatch, elementPath],
   )
 
-  const isLockedElement = useEditorState('restOfEditor')((store) => {
-    return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
-  }, 'NavigatorItemActionSheet isLockedElement')
-  const isLockedHierarchy = useEditorState('restOfEditor')((store) => {
-    return store.editor.lockedElements.hierarchyLock.some((path) =>
-      EP.pathsEqual(elementPath, path),
-    )
-  }, 'NavigatorItemActionSheet isLockedHierarchy')
+  const isLockedElement = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
+    },
+    'NavigatorItemActionSheet isLockedElement',
+  )
+  const isLockedHierarchy = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return store.editor.lockedElements.hierarchyLock.some((path) =>
+        EP.pathsEqual(elementPath, path),
+      )
+    },
+    'NavigatorItemActionSheet isLockedHierarchy',
+  )
 
   const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const isSceneElement = React.useMemo(
@@ -217,12 +225,16 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [elementPath, jsxMetadataRef],
   )
 
-  const isDescendantOfLocked = useEditorState('restOfEditor')((store) => {
-    return MetadataUtils.isDescendantOfHierarchyLockedElement(
-      elementPath,
-      store.editor.lockedElements,
-    )
-  }, 'NavigatorItemActionSheet descendant of locked')
+  const isDescendantOfLocked = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return MetadataUtils.isDescendantOfHierarchyLockedElement(
+        elementPath,
+        store.editor.lockedElements,
+      )
+    },
+    'NavigatorItemActionSheet descendant of locked',
+  )
 
   return (
     <SectionActionSheet>

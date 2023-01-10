@@ -70,26 +70,21 @@ function ensureSubstoreTimingExists(storeKey: string) {
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState =
-  <K extends StoreKey>(storeKey: K) =>
-  <U>(
-    selector: StateSelector<Substates[K], U>,
-    selectorName: string,
-    equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
-  ): U => {
-    const context = React.useContext(EditorStateContext)
+export const useEditorState = <K extends StoreKey, U>(
+  storeKey: K,
+  selector: StateSelector<Substates[K], U>,
+  selectorName: string,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
+): U => {
+  const context = React.useContext(EditorStateContext)
 
-    const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(
-      storeKey,
-      selector,
-      selectorName,
-    )
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
-    if (context == null) {
-      throw new Error('useStore is missing from editor context')
-    }
-    return context.stores[storeKey](wrappedSelector, equalityFn as EqualityChecker<U>)
+  if (context == null) {
+    throw new Error('useStore is missing from editor context')
   }
+  return context.stores[storeKey](wrappedSelector, equalityFn as EqualityChecker<U>)
+}
 
 function useWrapSelectorInPerformanceMeasureBlock<K extends StoreKey, U>(
   storeKey: K,

@@ -27,7 +27,8 @@ export const ImgSection = React.memo(() => {
   const selectedViews = useSelectedViews()
 
   const dispatch = useDispatch()
-  const zerothElementInstanceMetadata = useEditorState('metadata')(
+  const zerothElementInstanceMetadata = useEditorState(
+    'metadata',
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedViews[0]),
     'ImgSection',
   )

@@ -35,11 +35,15 @@ export const ImageSourceControl = React.memo(() => {
     onSubmitValue: srcOnSubmitValue,
   } = useInspectorElementInfo('src')
 
-  const { projectContents } = useEditorState('projectContents')((store) => {
-    return {
-      projectContents: store.editor.projectContents,
-    }
-  }, 'ImgSection')
+  const { projectContents } = useEditorState(
+    'projectContents',
+    (store) => {
+      return {
+        projectContents: store.editor.projectContents,
+      }
+    },
+    'ImgSection',
+  )
 
   const localImageFilenames = React.useMemo(() => {
     return getProjectImageFileNames(treeToContents(projectContents)).map(imagePathURL)

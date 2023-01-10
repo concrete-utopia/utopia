@@ -24,36 +24,46 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useDispatch()
 
-  const selectedMode = useEditorState('restOfEditor')(
+  const selectedMode = useEditorState(
+    'restOfEditor',
     (store) => store.editor.topmenu.formulaBarMode,
     'FormulaBar selectedMode',
   )
 
-  const selectedElementPath = useEditorState('selectedViews')((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      return store.editor.selectedViews[0]
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementPath')
-
-  const selectedElementTextContent = useEditorState('metadata')((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      if (metadata == null) {
-        return null
+  const selectedElementPath = useEditorState(
+    'selectedViews',
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        return store.editor.selectedViews[0]
       } else {
-        return MetadataUtils.getTextContentOfElement(metadata)
+        return null
       }
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementTextContent')
+    },
+    'FormulaBar selectedElementPath',
+  )
 
-  const focusTriggerCount = useEditorState('restOfEditor')(
+  const selectedElementTextContent = useEditorState(
+    'metadata',
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const metadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (metadata == null) {
+          return null
+        } else {
+          return MetadataUtils.getTextContentOfElement(metadata)
+        }
+      } else {
+        return null
+      }
+    },
+    'FormulaBar selectedElementTextContent',
+  )
+
+  const focusTriggerCount = useEditorState(
+    'restOfEditor',
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
   )

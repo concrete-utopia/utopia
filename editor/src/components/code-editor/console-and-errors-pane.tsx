@@ -12,9 +12,13 @@ export const ConsoleAndErrorsPane = React.memo(() => {
 
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 
-  const errorMessages = useEditorState('fullOldStore')((store) => {
-    return getAllCodeEditorErrors(store.editor, 'warning', false)
-  }, 'ConsoleAndErrorsPane errorMessages')
+  const errorMessages = useEditorState(
+    'fullOldStore',
+    (store) => {
+      return getAllCodeEditorErrors(store.editor, 'warning', false)
+    },
+    'ConsoleAndErrorsPane errorMessages',
+  )
 
   const onOpenFile = React.useCallback(
     (path: string) => {

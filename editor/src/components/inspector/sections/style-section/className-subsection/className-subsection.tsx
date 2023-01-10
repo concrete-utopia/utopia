@@ -176,7 +176,8 @@ const Input = (props: InputProps) => {
 const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
-  const targets = useEditorState('selectedViews')(
+  const targets = useEditorState(
+    'selectedViews',
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )
@@ -188,7 +189,8 @@ const ClassNameControl = React.memo(() => {
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
   const focusedValueRef = React.useRef<string | null>(null)
 
-  const focusTriggerCount = useEditorState('restOfEditor')(
+  const focusTriggerCount = useEditorState(
+    'restOfEditor',
     (store) => store.editor.inspector.classnameFocusCounter,
     'ClassNameSubsection classnameFocusCounter',
   )

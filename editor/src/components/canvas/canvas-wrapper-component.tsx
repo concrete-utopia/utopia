@@ -62,7 +62,8 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { editorState, derivedState, userState } = useEditorState('fullOldStore')(
+  const { editorState, derivedState, userState } = useEditorState(
+    'fullOldStore',
     (store) => ({
       editorState: store.editor,
       derivedState: store.derived,
@@ -75,11 +76,16 @@ export const CanvasWrapperComponent = React.memo(() => {
     return getAllCodeEditorErrors(editorState, 'fatal', true)
   }, [editorState])
 
-  const safeMode = useEditorState('restOfEditor')((store) => {
-    return store.editor.safeMode
-  }, 'CanvasWrapperComponent safeMode')
+  const safeMode = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return store.editor.safeMode
+    },
+    'CanvasWrapperComponent safeMode',
+  )
 
-  const isNavigatorOverCanvas = useEditorState('restOfEditor')(
+  const isNavigatorOverCanvas = useEditorState(
+    'restOfEditor',
     (store) => !store.editor.navigator.minimised,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
@@ -145,15 +151,23 @@ export const CanvasWrapperComponent = React.memo(() => {
 
 const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const utopiaParserErrors = useEditorState('fullOldStore')((store) => {
-    return parseFailureAsErrorMessages(
-      getOpenUIJSFileKey(store.editor),
-      getOpenUIJSFile(store.editor),
-    )
-  }, 'ErrorOverlayComponent utopiaParserErrors')
-  const fatalCodeEditorErrors = useEditorState('fullOldStore')((store) => {
-    return getAllCodeEditorErrors(store.editor, 'error', true)
-  }, 'ErrorOverlayComponent fatalCodeEditorErrors')
+  const utopiaParserErrors = useEditorState(
+    'fullOldStore',
+    (store) => {
+      return parseFailureAsErrorMessages(
+        getOpenUIJSFileKey(store.editor),
+        getOpenUIJSFile(store.editor),
+      )
+    },
+    'ErrorOverlayComponent utopiaParserErrors',
+  )
+  const fatalCodeEditorErrors = useEditorState(
+    'fullOldStore',
+    (store) => {
+      return getAllCodeEditorErrors(store.editor, 'error', true)
+    },
+    'ErrorOverlayComponent fatalCodeEditorErrors',
+  )
 
   const runtimeErrors = useReadOnlyRuntimeErrors()
 

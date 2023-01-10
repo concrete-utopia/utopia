@@ -11,12 +11,16 @@ import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-se
 export const GoogleFontsResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
   const dispatch = useDispatch()
-  const { minimised, focusedPanel } = useEditorState('restOfEditor')((store) => {
-    return {
-      minimised: store.editor.googleFontsResources.minimised,
-      focusedPanel: store.editor.focusedPanel,
-    }
-  }, 'GoogleFontsResourcesList')
+  const { minimised, focusedPanel } = useEditorState(
+    'restOfEditor',
+    (store) => {
+      return {
+        minimised: store.editor.googleFontsResources.minimised,
+        focusedPanel: store.editor.focusedPanel,
+      }
+    },
+    'GoogleFontsResourcesList',
+  )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('googleFontsResources')], 'leftpane')

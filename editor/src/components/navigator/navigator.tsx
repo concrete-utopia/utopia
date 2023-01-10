@@ -32,9 +32,13 @@ import { useDispatch } from '../editor/store/dispatch-context'
 interface ItemProps extends ListChildComponentProps {}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState('derived')((store) => {
-    return store.derived.visibleNavigatorTargets
-  }, 'Item visibleNavigatorTargets')
+  const visibleNavigatorTargets = useEditorState(
+    'derived',
+    (store) => {
+      return store.derived.visibleNavigatorTargets
+    },
+    'Item visibleNavigatorTargets',
+  )
   const editorSliceRef = useRefEditorState((store) => {
     const dragSelections = createDragSelections(
       store.derived.navigatorTargets,
@@ -115,7 +119,8 @@ export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState('fullOldStore')(
+  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
+    'fullOldStore',
     (store) => {
       const selectedViews = store.editor.selectedViews
       const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets

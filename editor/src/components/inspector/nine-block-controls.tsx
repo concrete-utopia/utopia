@@ -154,7 +154,8 @@ interface NineBlockControlCellProps {
 const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
-  const flexDirection = useEditorState('metadata')(
+  const flexDirection = useEditorState(
+    'metadata',
     flexDirectionSelector,
     'FlexDirectionToggle flexDirection',
   )
@@ -164,7 +165,8 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
     [alignItems, justifyContent],
   )
 
-  const isSelected = useEditorState('metadata')(
+  const isSelected = useEditorState(
+    'metadata',
     (store) => isSelectedSelector(store, alignItemsJustifyContent),
     'NineBlockControlCell isSelected',
   )
@@ -248,7 +250,8 @@ export const NineBlockControl = React.memo(() => {
 
   const dispatch = useDispatch()
 
-  const nFlexContainers = useEditorState('metadata')(
+  const nFlexContainers = useEditorState(
+    'metadata',
     numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )

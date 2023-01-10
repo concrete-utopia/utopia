@@ -142,7 +142,7 @@ const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
+    const scale = useEditorState('canvas', (store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
@@ -217,7 +217,8 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState('canvasOffset')(
+    const scale = useEditorState(
+      'canvasOffset',
       (store) => store.editor.canvas.scale,
       'ResizeEdge scale',
     )
@@ -290,12 +291,14 @@ interface SizeLabelProps {
 
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'Resizelabel scale',
     )
     const colorTheme = useColorTheme()
-    const metadata = useEditorState('fullOldStore')(
+    const metadata = useEditorState(
+      'fullOldStore',
       (store) => getMetadata(store.editor),
       'ResizeLabel metadata',
     )

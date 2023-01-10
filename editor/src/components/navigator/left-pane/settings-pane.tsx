@@ -48,15 +48,17 @@ export const SettingsPane = React.memo(() => {
   const dispatch = useDispatch()
   const { userState, projectId, projectName, projectDescription, themeConfig } = useEditorState(
     'fullOldStore',
-  )((store) => {
-    return {
-      userState: store.userState,
-      projectId: store.editor.id,
-      projectName: store.editor.projectName,
-      projectDescription: store.editor.projectDescription,
-      themeConfig: store.userState.themeConfig,
-    }
-  }, 'SettingsPane')
+    (store) => {
+      return {
+        userState: store.userState,
+        projectId: store.editor.id,
+        projectName: store.editor.projectName,
+        projectDescription: store.editor.projectDescription,
+        themeConfig: store.userState.themeConfig,
+      }
+    },
+    'SettingsPane',
+  )
 
   const isMyProject = useIsMyProject(projectId)
 

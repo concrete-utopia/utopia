@@ -21,7 +21,8 @@ interface LayoutIconResult {
 }
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
-  return useEditorState('metadata')(
+  return useEditorState(
+    'metadata',
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
@@ -37,10 +38,14 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 }
 
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
-  return useEditorState('metadata')((store) => {
-    const metadata = store.editor.jsxMetadata
-    return createComponentIconProps(path, metadata)
-  }, 'useComponentIcon') // TODO Memoize Icon Result
+  return useEditorState(
+    'metadata',
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      return createComponentIconProps(path, metadata)
+    },
+    'useComponentIcon',
+  ) // TODO Memoize Icon Result
 }
 
 export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {

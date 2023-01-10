@@ -35,46 +35,54 @@ interface ZeroSizedElementControlProps {
 
 export const ZeroSizedElementControls = controlForStrategyMemoized(
   ({ showAllPossibleElements }: ZeroSizedElementControlProps) => {
-    const highlightedViews = useEditorState('highlightedHoveredViews')(
+    const highlightedViews = useEditorState(
+      'highlightedHoveredViews',
       (store) => store.editor.highlightedViews,
       'ZeroSizedElementControls highlightedViews',
     )
-    const selectedElements = useEditorState('selectedViews')(
+    const selectedElements = useEditorState(
+      'selectedViews',
       (store) => store.editor.selectedViews,
       'ZeroSizedElementControls selectedElements',
     )
-    const canvasOffset = useEditorState('canvasOffset')(
+    const canvasOffset = useEditorState(
+      'canvasOffset',
       (store) => store.editor.canvas.realCanvasOffset,
       'ZeroSizedElementControls canvasOffset',
     )
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'ZeroSizedElementControls scale',
     )
     const dispatch = useDispatch()
 
-    const zeroSizeElements = useEditorState('fullOldStore')((store) => {
-      if (showAllPossibleElements) {
-        return Object.values(store.editor.jsxMetadata).filter((element) => {
-          return (
-            element.globalFrame != null &&
-            isZeroSizedElement(element.globalFrame) &&
-            MetadataUtils.targetElementSupportsChildren(store.editor.projectContents, element)
-          )
-        })
-      } else {
-        return selectedElements.flatMap((view) => {
-          const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
-          return children.filter((child) => {
-            if (child.globalFrame == null) {
-              return false
-            } else {
-              return isZeroSizedElement(child.globalFrame)
-            }
+    const zeroSizeElements = useEditorState(
+      'fullOldStore',
+      (store) => {
+        if (showAllPossibleElements) {
+          return Object.values(store.editor.jsxMetadata).filter((element) => {
+            return (
+              element.globalFrame != null &&
+              isZeroSizedElement(element.globalFrame) &&
+              MetadataUtils.targetElementSupportsChildren(store.editor.projectContents, element)
+            )
           })
-        })
-      }
-    }, 'ZeroSizedElementControls zeroSizeElements')
+        } else {
+          return selectedElements.flatMap((view) => {
+            const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+            return children.filter((child) => {
+              if (child.globalFrame == null) {
+                return false
+              } else {
+                return isZeroSizedElement(child.globalFrame)
+              }
+            })
+          })
+        }
+      },
+      'ZeroSizedElementControls zeroSizeElements',
+    )
 
     return (
       <React.Fragment>
@@ -219,20 +227,25 @@ interface ZeroSizeResizeControlWrapperProps {
 export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
   ({ targets }: ZeroSizeResizeControlWrapperProps) => {
     const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const zeroSizeElements = useEditorState('metadata')((store) => {
-      return mapDropNulls((path) => {
-        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-        if (frame != null && isZeroSizedElement(frame)) {
-          return element
-        } else {
-          return null
-        }
-      }, targets)
-    }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
+    const zeroSizeElements = useEditorState(
+      'metadata',
+      (store) => {
+        return mapDropNulls((path) => {
+          const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+          const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+          if (frame != null && isZeroSizedElement(frame)) {
+            return element
+          } else {
+            return null
+          }
+        }, targets)
+      },
+      'ZeroSizeResizeControlWrapper zeroSizeElements',
+    )
 
     const dispatch = useDispatch()
-    const scale = useEditorState('canvasOffset')(
+    const scale = useEditorState(
+      'canvasOffset',
       (store) => store.editor.canvas.scale,
       'ZeroSizeResizeControlWrapper scale',
     )

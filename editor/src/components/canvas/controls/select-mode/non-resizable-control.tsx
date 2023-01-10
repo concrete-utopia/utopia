@@ -13,7 +13,8 @@ const selectedElementsSelector = (store: { editor: { selectedViews: ElementPath[
   store.editor.selectedViews
 
 export const NonResizableControl = controlForStrategyMemoized(() => {
-  const selectedElements = useEditorState('selectedViews')(
+  const selectedElements = useEditorState(
+    'selectedViews',
     selectedElementsSelector,
     'NonResizableControl selectedElements',
   )
@@ -70,7 +71,8 @@ const NonResizablePointOffset = NonResizablePointSize / 2
 const NonResizablePoint = React.memo(
   React.forwardRef<HTMLDivElement, NonResizablePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState('canvas')(
+    const scale = useEditorState(
+      'canvas',
       (store) => store.editor.canvas.scale,
       'NonResizablePoint scale',
     )

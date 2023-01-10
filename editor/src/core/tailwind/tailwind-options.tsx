@@ -278,23 +278,28 @@ export function useGetSelectedClasses(): {
   isSettable: boolean
 } {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const elements = useEditorState('fullOldStore')((store) => {
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-    if (openUIJSFileKey == null) {
-      return []
-    } else {
-      return store.editor.selectedViews.map((elementPath) =>
-        getJSXElementForTarget(
-          elementPath,
-          openUIJSFileKey,
-          store.editor.projectContents,
-          store.editor.nodeModules.files,
-        ),
-      )
-    }
-  }, 'ClassNameSelect elements')
+  const elements = useEditorState(
+    'fullOldStore',
+    (store) => {
+      const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+      if (openUIJSFileKey == null) {
+        return []
+      } else {
+        return store.editor.selectedViews.map((elementPath) =>
+          getJSXElementForTarget(
+            elementPath,
+            openUIJSFileKey,
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+          ),
+        )
+      }
+    },
+    'ClassNameSelect elements',
+  )
 
-  const elementPaths = useEditorState('selectedViews')(
+  const elementPaths = useEditorState(
+    'selectedViews',
     (store) => store.editor.selectedViews,
     'ClassNameSelect elementPaths',
   )

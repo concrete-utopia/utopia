@@ -15,7 +15,8 @@ const areElementsFlexContainersSelector = createSelector(
 )
 
 export const FlexSection = React.memo(() => {
-  const allElementsInFlexLayout = useEditorState('metadata')(
+  const allElementsInFlexLayout = useEditorState(
+    'metadata',
     areElementsFlexContainersSelector,
     'FlexSection areAllElementsInFlexLayout',
   )

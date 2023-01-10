@@ -27,7 +27,7 @@ export interface NameAndIconResult {
 }
 
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState('metadata')((store) => store.editor.jsxMetadata, 'useMetadata')
+  return useEditorState('metadata', (store) => store.editor.jsxMetadata, 'useMetadata')
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
@@ -45,7 +45,8 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
-  return useEditorState('metadata')(
+  return useEditorState(
+    'metadata',
     selector,
     'useNamesAndIconsAllPaths',
     (oldResult, newResult) => {

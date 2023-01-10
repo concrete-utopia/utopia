@@ -253,7 +253,8 @@ const getApplicableStrategiesSelector = createSelector(
 )
 
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
-  return useEditorState('fullOldStore')(
+  return useEditorState(
+    'fullOldStore',
     getApplicableStrategiesSelector,
     'useGetApplicableStrategies',
     arrayEquals,
@@ -488,9 +489,13 @@ export function interactionInProgress(interactionSession: InteractionSession | n
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
-  const currentlyInProgress = useEditorState('canvas')((store) => {
-    return interactionInProgress(store.editor.canvas.interactionSession)
-  }, 'useGetApplicableStrategyControls currentlyInProgress')
+  const currentlyInProgress = useEditorState(
+    'canvas',
+    (store) => {
+      return interactionInProgress(store.editor.canvas.interactionSession)
+    },
+    'useGetApplicableStrategyControls currentlyInProgress',
+  )
   return React.useMemo(() => {
     let applicableControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false

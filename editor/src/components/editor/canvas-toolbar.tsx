@@ -52,7 +52,8 @@ export const CanvasToolbar = React.memo(() => {
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
-  const insertMenuMode = useEditorState('restOfEditor')(
+  const insertMenuMode = useEditorState(
+    'restOfEditor',
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
@@ -85,7 +86,8 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
   }, [dispatch, selectedViewsRef])
 
-  const insertMenuSelected = useEditorState('restOfEditor')(
+  const insertMenuSelected = useEditorState(
+    'restOfEditor',
     (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
     'CanvasToolbar insertMenuSelected',
   )
@@ -99,7 +101,8 @@ export const CanvasToolbar = React.memo(() => {
     dispatch(actions)
   }, [dispatch, insertMenuSelected])
 
-  const zoomLevel = useEditorState('canvas')(
+  const zoomLevel = useEditorState(
+    'canvas',
     (store) => store.editor.canvas.scale,
     'CanvasToolbar zoomLevel',
   )
@@ -113,7 +116,8 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch, zoomLevel],
   )
 
-  const isLiveMode = useEditorState('restOfEditor')(
+  const isLiveMode = useEditorState(
+    'restOfEditor',
     (store) => store.editor.mode.type === 'live',
     'TopMenu isLiveMode',
   )
@@ -129,7 +133,8 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch])
 
-  const isCodeEditorVisible = useEditorState('restOfEditor')(
+  const isCodeEditorVisible = useEditorState(
+    'restOfEditor',
     (store) => store.editor.interfaceDesigner.codePaneVisible,
     'CanvasToolbar isCodeEditorVisible',
   )
@@ -295,7 +300,8 @@ interface InsertModeButtonProps {
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
-  const canvasInLiveMode = useEditorState('restOfEditor')(
+  const canvasInLiveMode = useEditorState(
+    'restOfEditor',
     (store) => store.editor.mode.type === 'live',
     'CanvasToolbar canvasInLiveMode',
   )

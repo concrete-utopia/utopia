@@ -37,14 +37,16 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 export const LeftPaneComponent = React.memo(() => {
-  const selectedTab = useEditorState('restOfEditor')(
+  const selectedTab = useEditorState(
+    'restOfEditor',
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
 
   const dispatch = useDispatch()
 
-  const loggedIn = useEditorState('restOfStore')(
+  const loggedIn = useEditorState(
+    'restOfStore',
     (store) => User.isLoggedIn(store.userState.loginState),
     'LeftPaneComponent loggedIn',
   )

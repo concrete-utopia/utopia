@@ -155,7 +155,8 @@ let queuedDispatchTimeout: number | undefined = undefined
 
 export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
-    const targets = useEditorState('selectedViews')(
+    const targets = useEditorState(
+      'selectedViews',
       (store) => store.editor.selectedViews,
       'ClassNameSelect targets',
     )

@@ -93,15 +93,19 @@ function packageDetailsFromDependencies(
 }
 
 export const DependencyList = React.memo(() => {
-  const props = useEditorState('fullOldStore')((store) => {
-    return {
-      minimised: store.editor.dependencyList.minimised,
-      focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
-      packageStatus: store.editor.nodeModules.packageStatus,
-      builtInDependencies: store.builtInDependencies,
-    }
-  }, 'DependencyList')
+  const props = useEditorState(
+    'fullOldStore',
+    (store) => {
+      return {
+        minimised: store.editor.dependencyList.minimised,
+        focusedPanel: store.editor.focusedPanel,
+        packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
+        packageStatus: store.editor.nodeModules.packageStatus,
+        builtInDependencies: store.builtInDependencies,
+      }
+    },
+    'DependencyList',
+  )
 
   const dispatch = useDispatch()
 

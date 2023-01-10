@@ -26,7 +26,8 @@ interface SceneLabelProps extends SceneLabelControlProps {
 export const SceneLabelTestID = 'scene-label'
 
 export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
-  const sceneTargets = useEditorState('metadata')(
+  const sceneTargets = useEditorState(
+    'metadata',
     (store) =>
       Object.values(store.editor.jsxMetadata).filter((element) =>
         MetadataUtils.isProbablyScene(store.editor.jsxMetadata, element.elementPath),
@@ -51,11 +52,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const labelSelectable = useEditorState('restOfEditor')(
+  const labelSelectable = useEditorState(
+    'restOfEditor',
     (store) => !store.editor.keysPressed['z'],
     'SceneLabel Z key pressed',
   )
-  const label = useEditorState('metadata')(
+  const label = useEditorState(
+    'metadata',
     (store) =>
       MetadataUtils.getElementLabel(
         store.editor.allElementProps,
@@ -64,16 +67,18 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
       ),
     'SceneLabel label',
   )
-  const frame = useEditorState('metadata')(
+  const frame = useEditorState(
+    'metadata',
     (store) => MetadataUtils.getFrameInCanvasCoords(props.target, store.editor.jsxMetadata),
     'SceneLabel frame',
   )
 
-  const canvasOffset = useEditorState('canvasOffset')(
+  const canvasOffset = useEditorState(
+    'canvasOffset',
     (store) => store.editor.canvas.realCanvasOffset,
     'SceneLabel canvasOffset',
   )
-  const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'SceneLabel scale')
+  const scale = useEditorState('canvas', (store) => store.editor.canvas.scale, 'SceneLabel scale')
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
@@ -82,11 +87,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
-  const isSelected = useEditorState('selectedViews')(
+  const isSelected = useEditorState(
+    'selectedViews',
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
-  const isHighlighted = useEditorState('highlightedHoveredViews')(
+  const isHighlighted = useEditorState(
+    'highlightedHoveredViews',
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )

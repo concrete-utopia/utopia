@@ -5,16 +5,20 @@ import { useEditorState } from '../../../editor/store/store-hook'
 const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlagsInfo = useEditorState('canvas')((store) => {
-    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
-      return {
-        indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
-        dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+  const indicatorFlagsInfo = useEditorState(
+    'canvas',
+    (store) => {
+      if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+        return {
+          indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
+          dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+        }
+      } else {
+        return null
       }
-    } else {
-      return null
-    }
-  }, 'StrategyIndicator')
+    },
+    'StrategyIndicator',
+  )
 
   if (indicatorFlagsInfo == null) {
     return null

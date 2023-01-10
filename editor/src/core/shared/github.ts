@@ -818,14 +818,15 @@ const githubFileChangesSelector = createSelector(
 )
 
 export function useGithubFileChanges(): GithubFileChanges | null {
-  const storeType = useEditorState('restOfStore')(
+  const storeType = useEditorState(
+    'restOfStore',
     (store) => store.storeName,
     'useGithubFileChanges storeName',
   )
   if (storeType !== 'low-priority-store') {
     throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
   }
-  return useEditorState('fullOldStore')(githubFileChangesSelector, 'useGithubFileChanges')
+  return useEditorState('fullOldStore', githubFileChangesSelector, 'useGithubFileChanges')
 }
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'
