@@ -13,26 +13,30 @@ import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { notLoggedIn } from '../action-types'
+
+const initialEditorStore: EditorStorePatched = {
+  editor: createEditorState(NO_OP),
+  derived: null as any,
+  strategyState: null as any,
+  history: null as any,
+  userState: {
+    shortcutConfig: null,
+    themeConfig: null,
+    loginState: notLoggedIn,
+    githubState: {
+      authenticated: false,
+    },
+  },
+  workers: null as any,
+  persistence: null as any,
+  alreadySaved: false,
+  builtInDependencies: createBuiltInDependenciesList(null),
+  storeName: 'editor-store',
+}
 
 function createEmptyEditorStoreHook() {
-  let emptyEditorState = createEditorState(NO_OP)
-
-  const initialEditorStore: EditorStorePatched = {
-    editor: emptyEditorState,
-    derived: null as any,
-    strategyState: null as any,
-    history: null as any,
-    userState: null as any,
-    workers: null as any,
-    persistence: null as any,
-    alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(null),
-    storeName: 'editor-store',
-  }
-
-  const storeHook = createStoresAndState(initialEditorStore)
-
-  return storeHook
+  return createStoresAndState(initialEditorStore)
 }
 
 const ContextProvider =
@@ -96,11 +100,12 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: {
           ...storeHook.getState().editor,
           selectedViews: [EP.fromString('sb/scene:aaa')],
         },
-      } as EditorStorePatched,
+      },
       [],
     )
 
@@ -137,11 +142,12 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: {
           ...storeHook.getState().editor,
           focusedElementPath: EP.fromString('sb/scene:aaa'),
         },
-      } as EditorStorePatched,
+      },
       [],
     )
 
@@ -150,8 +156,9 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: { ...storeHook.getState().editor, focusedElementPath: null },
-      } as EditorStorePatched,
+      },
       [],
     )
 
@@ -160,11 +167,12 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: {
           ...storeHook.getState().editor,
           selectedViews: [EP.fromString('sb/scene:aaa')],
         },
-      } as EditorStorePatched,
+      },
       [],
     )
 
@@ -173,11 +181,12 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: {
           ...storeHook.getState().editor,
           focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
         },
-      } as EditorStorePatched,
+      },
       [],
     )
 
@@ -231,11 +240,12 @@ describe('useSelectorWithCallback', () => {
 
     storeHook.setState(
       {
+        ...initialEditorStore,
         editor: {
           ...storeHook.getState().editor,
           selectedViews: [EP.fromString('sb/scene:aaa')],
         },
-      } as EditorStorePatched,
+      },
       [],
     )
 
