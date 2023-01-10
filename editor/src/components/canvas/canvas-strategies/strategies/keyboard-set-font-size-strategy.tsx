@@ -94,7 +94,7 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
 }
 
 export function isAdjustFontSizeShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
-  return modifiers.cmd && modifiers.shift && (key === 'period' || key == 'comma')
+  return modifiers.cmd && modifiers.shift && Keyboard.keyTriggersFontSizeStrategy(key)
 }
 
 function fitness(interactionSession: InteractionSession | null): number {

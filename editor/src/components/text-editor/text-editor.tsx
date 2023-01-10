@@ -10,6 +10,11 @@ import {
   getFontSize,
   isAdjustFontSizeShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
+import {
+  adjustFontWeight,
+  getFontWeightFromComputedStyle,
+  isAdjustFontWeightShortcut,
+} from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { ApplyCommandsAction } from '../editor/action-types'
 import {
@@ -83,6 +88,37 @@ const handleSetFontSizeShortcut = (
         elementPath,
         PP.create(['style', 'fontSize']),
         printCSSNumber(adjustFontSize(fontSize[0], direction[character]), null),
+      ),
+    ]),
+  ]
+}
+
+const handleSetFontWeightShortcut = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<ApplyCommandsAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const character = keyCharacterFromCode(event.keyCode)
+  const matches = isAdjustFontWeightShortcut(modifiers, character)
+
+  if (!matches) {
+    return []
+  }
+
+  const direction: { [key: string]: number } = { comma: -1, period: 1 }
+  const fontWeight = getFontWeightFromComputedStyle(metadata, elementPath)
+  if (fontWeight == null) {
+    return []
+  }
+
+  return [
+    applyCommandsAction([
+      setProperty(
+        'always',
+        elementPath,
+        PP.create(['style', 'fontSize']),
+        adjustFontWeight(fontWeight, direction[character]),
       ),
     ]),
   ]
@@ -180,6 +216,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
           'none',
         ),
         ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
+        ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]
       if (shortcuts.length > 0) {
         event.stopPropagation()
