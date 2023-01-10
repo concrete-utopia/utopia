@@ -372,14 +372,26 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          const textTarget = getTextEditorTarget(editor, derived)
-          if (textTarget != null && isSelectMode(editor.mode)) {
-            return [EditorActions.focusFormulaBar()]
-          } else {
-            const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
-            if (childToSelect != null) {
-              return MetaActions.selectComponents([childToSelect], false)
+          if (isFeatureEnabled('Text editing')) {
+            const firstTextEditableView = editor.selectedViews.find((v) =>
+              MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+            )
+            if (firstTextEditableView != null) {
+              return [
+                EditorActions.switchEditorMode(
+                  EditorModes.textEditMode(firstTextEditableView, null, 'existing'),
+                ),
+              ]
             }
+          } else {
+            const textTarget = getTextEditorTarget(editor, derived)
+            if (textTarget != null && isSelectMode(editor.mode)) {
+              return [EditorActions.focusFormulaBar()]
+            }
+          }
+          const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
+          if (childToSelect != null) {
+            return MetaActions.selectComponents([childToSelect], false)
           }
         }
         return []

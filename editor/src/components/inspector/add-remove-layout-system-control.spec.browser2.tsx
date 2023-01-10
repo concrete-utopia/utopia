@@ -22,7 +22,7 @@ describe('add layout system', () => {
 
     await clickOn(editor)
 
-    expect(div.style.flexDirection).toEqual('')
+    expect(div.style.display).toEqual('')
   })
 })
 

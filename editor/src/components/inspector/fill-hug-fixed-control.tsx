@@ -28,12 +28,11 @@ import {
   widthHeightFromAxis,
 } from './inspector-common'
 import {
-  InspectorStrategy,
-  runStrategies,
   setPropFillStrategies,
   setPropFixedStrategies,
   setPropHugStrategies,
-} from './inspector-strategies'
+} from './inspector-strategies/inspector-strategies'
+import { runStrategies, InspectorStrategy } from './inspector-strategies/inspector-strategy'
 
 export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 

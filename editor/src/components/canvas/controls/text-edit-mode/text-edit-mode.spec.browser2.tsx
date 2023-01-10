@@ -53,6 +53,17 @@ describe('Text edit mode', () => {
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
     })
+    it('Entering text edit mode with pressing enter on a text editable selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e'))
+      pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e')
+    })
   })
 
   describe('Click to choose target text for editing', () => {

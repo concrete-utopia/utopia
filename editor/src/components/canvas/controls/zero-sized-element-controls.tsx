@@ -81,7 +81,10 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
               if (child.globalFrame == null) {
                 return false
               } else {
-                return isZeroSizedElement(child.globalFrame)
+                return (
+                  isZeroSizedElement(child.globalFrame) &&
+                  MetadataUtils.targetElementSupportsChildren(projectContents, child)
+                )
               }
             })
           })
