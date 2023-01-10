@@ -8,7 +8,8 @@ import { defaultEither, isLeft, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import Keyboard from '../../../../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
+import { Modifiers } from '../../../../utils/modifiers'
 import {
   cssNumber,
   CSSNumber,
@@ -72,7 +73,7 @@ export function keyboardSetFontSizeStrategy(
           'always',
           path,
           PP.create(['style', 'fontSize']),
-          printCSSNumber(adjust(fontSize, fontSizeDelta), null),
+          printCSSNumber(adjustFontSize(fontSize, fontSizeDelta), null),
         ),
       )
 
@@ -92,6 +93,10 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   )
 }
 
+export function isAdjustFontSizeShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
+  return modifiers.cmd && modifiers.shift && (key === 'period' || key == 'comma')
+}
+
 function fitness(interactionSession: InteractionSession | null): number {
   if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
     return 0
@@ -100,10 +105,13 @@ function fitness(interactionSession: InteractionSession | null): number {
     interactionSession.interactionData.keyStates,
     Keyboard.keyTriggersFontSizeStrategy,
   )
-  if (lastKeyState == null || !lastKeyState.modifiers.cmd || !lastKeyState.modifiers.shift) {
-    return 0
-  }
-  return 1
+  const matches =
+    lastKeyState != null &&
+    Array.from(lastKeyState.keysPressed).some((key) =>
+      isAdjustFontSizeShortcut(lastKeyState.modifiers, key),
+    )
+
+  return matches ? 1 : 0
 }
 
 const FontSizeProp = 'fontSize'
@@ -144,7 +152,7 @@ function getFontSizeFromComputedStyle(
   return parseMaybeFontSize(element.computedStyle?.['fontSize'])
 }
 
-function adjust(value: CSSNumber, delta: number): CSSNumber {
+export function adjustFontSize(value: CSSNumber, delta: number): CSSNumber {
   const scaleFactor = value.unit === 'em' ? 0.1 : 1
   if (value.unit === 'em' && value.value < 1) {
     return value
@@ -155,7 +163,7 @@ function adjust(value: CSSNumber, delta: number): CSSNumber {
   return cssNumber(value.value + delta * scaleFactor, value.unit)
 }
 
-function getFontSize(
+export function getFontSize(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): [CSSNumber, ElementPath] | null {
