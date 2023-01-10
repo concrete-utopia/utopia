@@ -3,7 +3,7 @@ import { imagePathURL } from '../../../../common/server'
 import { treeToContents } from '../../../../components/assets'
 import { isImageFile } from '../../../../core/model/project-file-utils'
 import { ProjectContents } from '../../../../core/shared/project-file-types'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useInspectorElementInfo } from '../../common/property-path-hooks'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
@@ -36,7 +36,7 @@ export const ImageSourceControl = React.memo(() => {
   } = useInspectorElementInfo('src')
 
   const { projectContents } = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => {
       return {
         projectContents: store.editor.projectContents,

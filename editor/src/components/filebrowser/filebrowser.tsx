@@ -11,7 +11,7 @@ import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
 import { getAllCodeEditorErrors, getOpenFilename, GithubRepo } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {
   Section,
@@ -147,7 +147,7 @@ function collectFileBrowserItems(
 export const FileBrowser = React.memo(() => {
   const dispatch = useDispatch()
   const { minimised, focusedPanel } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         minimised: store.editor.fileBrowser.minimised,

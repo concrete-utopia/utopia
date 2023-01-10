@@ -283,11 +283,11 @@ type Substates = {
   selectedViews: SelectedViewsSubstate // done
   focusedElement: FocusedElementPathSubstate // done
   highlightedHoveredViews: HighlightedViewsSubstate // done
-  projectContents: ProjectContentSubstate
-  canvas: CanvasSubstate
-  canvasOffset: CanvasOffsetSubstate
+  projectContents: ProjectContentSubstate // done
+  canvas: CanvasSubstate // done
+  canvasOffset: CanvasOffsetSubstate // done
   derived: { derived: DerivedState }
-  restOfEditor: { editor: RestOfEditorState }
+  restOfEditor: { editor: RestOfEditorState } // done
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   fullOldStore: EditorStorePatched
   originalStore: EditorStorePatched

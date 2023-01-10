@@ -16,7 +16,7 @@ import {
   parseFailureAsErrorMessages,
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -81,7 +81,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   )
 
   const safeMode = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.safeMode
     },
@@ -89,7 +89,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   )
 
   const isNavigatorOverCanvas = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )

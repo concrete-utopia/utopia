@@ -17,7 +17,7 @@ import {
   LeftPaneDefaultWidth,
 } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/low-priority-store'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ContentsPane } from './contents-pane'
 import { ForksGiven } from './forks-given'
@@ -38,7 +38,7 @@ export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 export const LeftPaneComponent = React.memo(() => {
   const selectedTab = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )

@@ -10,7 +10,7 @@ import { EditorDispatch, LoginState } from '../editor/action-types'
 import { InsertMenu } from '../editor/insertmenu'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -22,7 +22,7 @@ export interface LeftPaneProps {
 export const InsertMenuPane = React.memo(() => {
   const dispatch = useDispatch()
   const { focusedPanel } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         focusedPanel: store.editor.focusedPanel,

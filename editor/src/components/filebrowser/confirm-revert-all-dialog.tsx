@@ -6,7 +6,7 @@ import { revertAllGithubFiles } from '../../core/shared/github'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 interface ConfirmRevertAllDialogProps {
   dispatch: EditorDispatch
@@ -44,7 +44,7 @@ const AcceptButton: React.FunctionComponent<
   React.PropsWithChildren<ConfirmRevertAllDialogProps>
 > = (props) => {
   const branchContents = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.branchContents,
     'branch contents',
   )

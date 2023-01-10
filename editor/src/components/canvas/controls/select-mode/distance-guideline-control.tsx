@@ -36,7 +36,7 @@ export const DistanceGuidelineControl = React.memo(() => {
     'DistanceGuidelineControl isInteractionActive',
   )
   const altKeyPressed = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
   )
@@ -59,7 +59,7 @@ const DistanceGuidelineControlInner = React.memo(() => {
     'DistanceGuidelineControl scale',
   )
   const canvasOffset = useEditorState(
-    'canvasOffset',
+    Substores.canvasOffset,
     (store) => store.editor.canvas.realCanvasOffset,
     'DistanceGuidelineControl canvasOffset',
   )

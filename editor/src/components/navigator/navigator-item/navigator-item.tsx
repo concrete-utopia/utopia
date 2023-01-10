@@ -295,7 +295,7 @@ export const NavigatorItem: React.FunctionComponent<
   const isProbablyScene = useIsProbablyScene(elementPath)
 
   const isHighlightedForInteraction = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.navigator.highlightedTargets.some((target) =>
         EP.pathsEqual(target, props.elementPath),

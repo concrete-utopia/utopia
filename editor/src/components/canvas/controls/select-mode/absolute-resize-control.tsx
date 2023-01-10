@@ -222,7 +222,7 @@ const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const scale = useEditorState(
-      'canvasOffset',
+      Substores.canvasOffset,
       (store) => store.editor.canvas.scale,
       'ResizeEdge scale',
     )

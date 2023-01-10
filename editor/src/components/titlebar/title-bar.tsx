@@ -59,7 +59,7 @@ const TitleBar = React.memo(() => {
     'TitleBar loginState',
   )
   const projectName = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.projectName
     },

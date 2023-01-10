@@ -8,7 +8,7 @@ import { Avatar, Section, SectionBodyArea, Subdued, useColorTheme } from '../../
 import { User } from '../../../uuiui-deps'
 import { Link } from '../../../uuiui/link'
 import { useGetProjectMetadata } from '../../common/server-hooks'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 
 export const ForksGiven = React.memo(() => {
@@ -20,7 +20,7 @@ export const ForksGiven = React.memo(() => {
     'ForksGiven isLoggedIn',
   )
   const { id, forkedFrom } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         id: store.editor.id,

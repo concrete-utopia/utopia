@@ -20,11 +20,11 @@ import {
 } from './defaults'
 import { EditorModes } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
-import { useEditorState, useRefEditorState } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
   return useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       const mode = store.editor.mode
       return (

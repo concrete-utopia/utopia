@@ -177,7 +177,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const dispatch = useDispatch()
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
     useEditorState(
-      'restOfEditor',
+      Substores.restOfEditor,
       (store) => {
         // Only capture this if it relates to the current navigator item, as it may change while
         // dragging around the navigator but we don't want the entire navigator to re-render each time.

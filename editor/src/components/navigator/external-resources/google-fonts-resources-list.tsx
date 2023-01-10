@@ -5,14 +5,14 @@ import { useExternalResources } from '../../../printer-parsers/html/external-res
 import { SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../../uuiui'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-search'
 
 export const GoogleFontsResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
   const dispatch = useDispatch()
   const { minimised, focusedPanel } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         minimised: store.editor.googleFontsResources.minimised,

@@ -13,7 +13,7 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -53,18 +53,18 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
   )
   const elementState = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
 
   const scale = useEditorState(
-    'canvasOffset',
+    Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
     'TextEditor scale',
   )

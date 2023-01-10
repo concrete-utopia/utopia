@@ -99,7 +99,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     'ConflictButton githubRepo',
   )
   const projectID = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.id
     },

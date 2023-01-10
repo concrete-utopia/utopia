@@ -190,7 +190,7 @@ const ClassNameControl = React.memo(() => {
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.inspector.classnameFocusCounter,
     'ClassNameSubsection classnameFocusCounter',
   )

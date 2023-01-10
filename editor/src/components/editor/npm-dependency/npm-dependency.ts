@@ -28,7 +28,7 @@ import {
 } from '../store/editor-state'
 import { pluck } from '../../../core/shared/array-utils'
 import { shallowEqual } from '../../../core/shared/equality-utils'
-import { useEditorState } from '../store/store-hook'
+import { Substores, useEditorState } from '../store/store-hook'
 import React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 import { deepFreeze } from '../../../utils/deep-freeze'
@@ -439,7 +439,7 @@ export function immediatelyResolvableDependenciesWithEditorRequirements(
 
 export function usePackageDependencies(): Array<RequestedNpmDependency> {
   const packageJsonFile = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => {
       return packageJsonFileFromProjectContents(store.editor.projectContents)
     },
@@ -458,7 +458,7 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
 export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
   const { files } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return { files: store.editor.nodeModules.files }
     },

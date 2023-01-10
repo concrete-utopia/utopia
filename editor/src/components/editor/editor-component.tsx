@@ -235,22 +235,22 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   ])
 
   const projectName = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.projectName,
     'EditorComponentInner projectName',
   )
   const projectId = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.id,
     'EditorComponentInner projectId',
   )
   const previewVisible = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.preview.visible,
     'EditorComponentInner previewVisible',
   )
   const leftMenuExpanded = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
@@ -418,7 +418,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
     'ModalComponent branchName',
   )
   const modal = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.modal
     },
@@ -452,7 +452,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
 
 export function EditorComponent(props: EditorProps) {
   const indexedDBFailed = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.indexedDBFailed,
     'EditorComponent indexedDBFailed',
   )
@@ -467,7 +467,11 @@ export function EditorComponent(props: EditorProps) {
 }
 
 const ToastRenderer = React.memo(() => {
-  const toasts = useEditorState('restOfEditor', (store) => store.editor.toasts, 'ToastRenderer')
+  const toasts = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.toasts,
+    'ToastRenderer',
+  )
 
   return (
     <FlexColumn
@@ -502,7 +506,7 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 
 const LockedOverlay = React.memo(() => {
   const leftMenuExpanded = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
@@ -514,7 +518,7 @@ const LockedOverlay = React.memo(() => {
   )
 
   const refreshingDependencies = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.refreshingDependencies,
     'EditorComponentInner refreshingDependencies',
   )

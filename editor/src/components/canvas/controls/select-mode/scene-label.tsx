@@ -53,7 +53,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const dispatch = useDispatch()
 
   const labelSelectable = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => !store.editor.keysPressed['z'],
     'SceneLabel Z key pressed',
   )
@@ -74,7 +74,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
 
   const canvasOffset = useEditorState(
-    'canvasOffset',
+    Substores.canvasOffset,
     (store) => store.editor.canvas.realCanvasOffset,
     'SceneLabel canvasOffset',
   )

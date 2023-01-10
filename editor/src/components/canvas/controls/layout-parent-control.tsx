@@ -10,7 +10,7 @@ import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   alignItemsOptions,
@@ -36,7 +36,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const dispatch = useDispatch()
 
   const { canvasOffset, scale } = useEditorState(
-    'canvasOffset',
+    Substores.canvasOffset,
     (store) => {
       return {
         canvasOffset: store.editor.canvas.roundedCanvasOffset,

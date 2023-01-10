@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
 import { AlternateColorThemeComponent, useColorTheme } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -10,7 +10,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedMode = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
   )

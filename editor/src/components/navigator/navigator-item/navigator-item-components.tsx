@@ -9,7 +9,7 @@ import * as EP from '../../../core/shared/element-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
@@ -203,14 +203,14 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   )
 
   const isLockedElement = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
     },
     'NavigatorItemActionSheet isLockedElement',
   )
   const isLockedHierarchy = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return store.editor.lockedElements.hierarchyLock.some((path) =>
         EP.pathsEqual(elementPath, path),
@@ -226,7 +226,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   )
 
   const isDescendantOfLocked = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return MetadataUtils.isDescendantOfHierarchyLockedElement(
         elementPath,

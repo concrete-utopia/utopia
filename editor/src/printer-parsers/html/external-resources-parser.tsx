@@ -9,7 +9,7 @@ import {
   defaultIndexHtmlFilePath,
   EditorStorePatched,
 } from '../../components/editor/store/editor-state'
-import { useEditorState } from '../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { ProjectContentSubstate } from '../../components/editor/store/store-hook-selectors'
 import {
   useCallbackFactory,
@@ -461,7 +461,7 @@ export function useExternalResources(): {
 } {
   const dispatch = useDispatch()
   const projectContents = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => store.editor.projectContents,
     'useExternalResources projectContents',
   )

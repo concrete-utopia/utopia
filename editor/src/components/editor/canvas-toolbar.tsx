@@ -53,7 +53,7 @@ export const CanvasToolbar = React.memo(() => {
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
   const insertMenuMode = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
@@ -87,7 +87,7 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch, selectedViewsRef])
 
   const insertMenuSelected = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
     'CanvasToolbar insertMenuSelected',
   )
@@ -117,7 +117,7 @@ export const CanvasToolbar = React.memo(() => {
   )
 
   const isLiveMode = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
     'TopMenu isLiveMode',
   )
@@ -134,7 +134,7 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch])
 
   const isCodeEditorVisible = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.interfaceDesigner.codePaneVisible,
     'CanvasToolbar isCodeEditorVisible',
   )
@@ -301,7 +301,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const canvasInLiveMode = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
     'CanvasToolbar canvasInLiveMode',
   )

@@ -12,7 +12,7 @@ import WindowedSelect, {
 } from 'react-windowed-select'
 
 import { getControlStyles } from '../../../uuiui-deps'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
   FlexColumn,
@@ -432,7 +432,7 @@ export var FloatingMenu = React.memo(() => {
   }, [])
 
   const floatingMenuState = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -703,7 +703,7 @@ interface FloatingInsertMenuProps {}
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
   const dispatch = useDispatch()
   const isVisible = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

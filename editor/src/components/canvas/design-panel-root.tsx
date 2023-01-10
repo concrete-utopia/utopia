@@ -132,7 +132,7 @@ const NothingOpenCard = React.memo(() => {
 const DesignPanelRootInner = React.memo(() => {
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
@@ -142,25 +142,25 @@ const DesignPanelRootInner = React.memo(() => {
     interfaceDesigner.codePaneWidth,
   )
   const navigatorVisible = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
     'DesignPanelRoot navigatorVisible',
   )
 
   const isRightMenuExpanded = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
 
   const rightMenuSelectedTab = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab,
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
   const leftMenuExpanded = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
