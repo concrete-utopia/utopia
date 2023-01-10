@@ -94,17 +94,27 @@ function packageDetailsFromDependencies(
 
 export const DependencyList = React.memo(() => {
   const props = useEditorState(
-    Substores.fullOldStore,
+    'restOfEditor',
     (store) => {
       return {
         minimised: store.editor.dependencyList.minimised,
         focusedPanel: store.editor.focusedPanel,
-        packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
         packageStatus: store.editor.nodeModules.packageStatus,
-        builtInDependencies: store.builtInDependencies,
       }
     },
     'DependencyList',
+  )
+
+  const builtInDependencies = useEditorState(
+    'builtInDependencies',
+    (store) => store.builtInDependencies,
+    'DependencyList builtInDependencies',
+  )
+
+  const packageJsonFile = useEditorState(
+    'projectContents',
+    (store) => packageJsonFileFromProjectContents(store.editor.projectContents),
+    'DependencyList packageJsonFile',
   )
 
   const dispatch = useDispatch()
@@ -115,7 +125,14 @@ export const DependencyList = React.memo(() => {
 
   const dependencyProps = { ...props, toggleMinimised: toggleMinimised }
 
-  return <DependencyListInner editorDispatch={dispatch} {...dependencyProps} />
+  return (
+    <DependencyListInner
+      editorDispatch={dispatch}
+      {...dependencyProps}
+      packageJsonFile={packageJsonFile}
+      builtInDependencies={builtInDependencies}
+    />
+  )
 })
 
 function unwrapLookupResult(lookupResult: VersionLookupResult): string | null {

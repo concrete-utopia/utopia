@@ -38,8 +38,11 @@ import {
   GithubSubstate,
   GithubSubstateKeys,
   emptyGithubSubstate,
+  BuiltInDependenciesSubstate,
+  UserStateSubstate,
 } from './store-hook-selectors'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
+import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -293,6 +296,8 @@ type Substates = {
   originalStore: EditorStorePatched
   theme: ThemeSubstate
   github: GithubSubstate
+  builtInDependencies: BuiltInDependenciesSubstate
+  userState: UserStateSubstate
 }
 
 type StoreKey = keyof Substates
@@ -361,6 +366,12 @@ export const Substores = {
     a.userState.themeConfig === b.userState.themeConfig,
   github: (a: GithubSubstate, b: GithubSubstate) => {
     return keysEquality(githubSubstateKeys, a.editor, b.editor)
+  },
+  builtInDependencies: (a: BuiltInDependenciesSubstate, b: BuiltInDependenciesSubstate) => {
+    return a.builtInDependencies === b.builtInDependencies
+  },
+  userState: (a: UserStateSubstate, b: UserStateSubstate) => {
+    return a.userState === b.userState
   },
 } as const
 

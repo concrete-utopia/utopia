@@ -109,6 +109,14 @@ export type GithubSubstate = {
   editor: Pick<EditorState, GithubSubstateKeys>
 }
 
+export type BuiltInDependenciesSubstate = {
+  builtInDependencies: EditorStoreShared['builtInDependencies']
+}
+
+export type UserStateSubstate = {
+  userState: EditorStoreShared['userState']
+}
+
 export const emptyGithubSubstate: GithubSubstate = {
   editor: {
     githubSettings: emptyGithubSettings(),
@@ -202,13 +210,4 @@ export const restOfEditorStateKeys: ReadonlyArray<keyof RestOfEditorState> = [
 ] as const
 
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
-  [
-    'storeName',
-    'strategyState',
-    'history',
-    'userState',
-    'workers',
-    'persistence',
-    'builtInDependencies',
-    'alreadySaved',
-  ]
+  ['storeName', 'strategyState', 'history', 'workers', 'persistence', 'alreadySaved']
