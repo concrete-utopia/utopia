@@ -33,6 +33,7 @@ import {
   setJSXValueAtPath,
   unsetJSXValueAtPath,
 } from '../shared/jsx-attributes'
+import { Substores } from '../../components/editor/store/store-hook'
 
 const sampleParentProps = {
   hello: 'kitty',
@@ -922,7 +923,7 @@ describe('dropKeyFromNestedObject', () => {
   it('only removes the pertinent attribute from a nested object', () => {
     const startingValue = jsxAttributeNestedObject(
       [
-        jsxSpreadAssignment(jsxAttributeValue('theme', emptyComments), emptyComments),
+        jsxSpreadAssignment(jsxAttributeValue(Substores.theme, emptyComments), emptyComments),
         jsxPropertyAssignment(
           'backgroundColor',
           jsxAttributeValue('red', emptyComments),
@@ -933,7 +934,7 @@ describe('dropKeyFromNestedObject', () => {
       emptyComments,
     )
     const expectedValue = jsxAttributeNestedObject(
-      [jsxSpreadAssignment(jsxAttributeValue('theme', emptyComments), emptyComments)],
+      [jsxSpreadAssignment(jsxAttributeValue(Substores.theme, emptyComments), emptyComments)],
       emptyComments,
     )
     const actualValue = dropKeyFromNestedObject(startingValue, 'backgroundColor')

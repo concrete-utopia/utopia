@@ -2,7 +2,7 @@ import { Placement } from 'tippy.js'
 import React from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
-import { useEditorState } from '../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../components/editor/store/store-hook'
 import { getCurrentTheme } from '../components/editor/store/editor-state'
 import { Theme } from './styles/theme'
 
@@ -34,7 +34,7 @@ export type IcnResultingColor =
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
-    'theme',
+    Substores.theme,
     (store) => getCurrentTheme(store.userState),
     'currentTheme',
   )
