@@ -53,7 +53,7 @@ function useBoundingBoxFromMetadataRef(
   }, [selectedElements, metadataRef, scaleRef])
 
   useSelectorWithCallback('fullOldStore')(
-    (store) => getMetadata(store.editor),
+    (store) => getMetadata(store.editor), // TODO before merge fix this
     (newMetadata) => {
       innerCallback()
     },
