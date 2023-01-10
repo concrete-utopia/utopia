@@ -279,17 +279,17 @@ export const useSelectorWithCallback =
 type FullStoreWOScrollOffset = Omit<EditorStorePatched, 'editor'> & EditorStateWOScrollOffset
 
 type Substates = {
-  metadata: MetadataSubstate // done
-  selectedViews: SelectedViewsSubstate // done
-  focusedElement: FocusedElementPathSubstate // done
-  highlightedHoveredViews: HighlightedViewsSubstate // done
-  projectContents: ProjectContentSubstate // done
-  canvas: CanvasSubstate // done
-  canvasOffset: CanvasOffsetSubstate // done
-  derived: { derived: DerivedState } // done
-  restOfEditor: { editor: RestOfEditorState } // done
-  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'> // done
-  fullOldStore: EditorStorePatched // done
+  metadata: MetadataSubstate
+  selectedViews: SelectedViewsSubstate
+  focusedElement: FocusedElementPathSubstate
+  highlightedHoveredViews: HighlightedViewsSubstate
+  projectContents: ProjectContentSubstate
+  canvas: CanvasSubstate
+  canvasOffset: CanvasOffsetSubstate
+  derived: { derived: DerivedState }
+  restOfEditor: { editor: RestOfEditorState }
+  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
+  fullOldStore: EditorStorePatched
   originalStore: EditorStorePatched
   theme: ThemeSubstate
   github: GithubSubstate
