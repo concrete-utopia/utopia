@@ -70,12 +70,13 @@ function ensureSubstoreTimingExists(storeKey: string) {
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState = <K extends StoreKey, U>(
-  storeKey: K,
-  selector: StateSelector<Substates[K], U>,
+export const useEditorState = <K extends StoreKey, S extends typeof Substores[K], U>(
+  storeKey_: K | S,
+  selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
+  const storeKey: K = typeof storeKey_ === 'function' ? (storeKey_.name as K) : storeKey_
   const context = React.useContext(EditorStateContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
@@ -300,9 +301,7 @@ const githubSubstateKeys: Array<GithubSubstateKeys> = Object.keys(
   emptyGithubSubstate.editor,
 ) as Array<GithubSubstateKeys>
 
-export const SubstateEqualityFns: {
-  [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
-} = {
+export const Substores = {
   metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
     return keysEquality(
       [
@@ -317,8 +316,10 @@ export const SubstateEqualityFns: {
       b.editor,
     )
   },
-  selectedViews: (a, b) => keysEquality(['selectedViews'], a.editor, b.editor),
-  focusedElement: (a, b) => keysEquality(['focusedElementPath'], a.editor, b.editor),
+  selectedViews: (a: SelectedViewsSubstate, b: SelectedViewsSubstate) =>
+    keysEquality(['selectedViews'], a.editor, b.editor),
+  focusedElement: (a: FocusedElementPathSubstate, b: FocusedElementPathSubstate) =>
+    keysEquality(['focusedElementPath'], a.editor, b.editor),
   highlightedHoveredViews: (a: HighlightedViewsSubstate, b: HighlightedViewsSubstate): boolean => {
     return (
       // a.editor.selectedViews === b.editor.selectedViews &&
@@ -351,7 +352,7 @@ export const SubstateEqualityFns: {
   ) => {
     return keysEquality(restOfStoreKeys, a, b)
   },
-  fullOldStore: (a: EditorStateWOScrollOffset, b: EditorStateWOScrollOffset) => {
+  fullOldStore: (a: EditorStorePatched, b: EditorStorePatched) => {
     // TODO exclude scroll offset!!!!!!!
     return a === b
   },
@@ -361,7 +362,11 @@ export const SubstateEqualityFns: {
   github: (a: GithubSubstate, b: GithubSubstate) => {
     return keysEquality(githubSubstateKeys, a.editor, b.editor)
   },
-}
+} as const
+
+export const SubstateEqualityFns: {
+  [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
+} = Substores
 
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
 export interface StoresAndSetState {

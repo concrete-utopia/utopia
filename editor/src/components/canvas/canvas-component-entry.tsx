@@ -1,5 +1,10 @@
 import React from 'react'
-import { CanvasStateContext, EditorStateContext, useEditorState } from '../editor/store/store-hook'
+import {
+  CanvasStateContext,
+  EditorStateContext,
+  Substores,
+  useEditorState,
+} from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -44,7 +49,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   const dispatch = useDispatch()
 
   const canvasScrollAnimation = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.scrollAnimation,
     'CanvasComponentEntry scrollAnimation',
   )
@@ -52,7 +57,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
   const canvasProps = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return pickUiJsxCanvasProps(
         store.editor,

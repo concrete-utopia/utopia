@@ -39,7 +39,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -247,7 +247,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
   } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       const rootMetadata = store.editor.jsxMetadata
       let anyComponentsInner: boolean = false
@@ -412,7 +412,7 @@ export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildre
 const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
   () => {
     const selectedViews = useEditorState(
-      'selectedViews',
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
@@ -467,7 +467,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   const { selectedViews } = props
   const dispatch = useDispatch()
   const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
@@ -608,7 +608,7 @@ export const InspectorContextProvider = React.memo<{
   const { selectedViews } = props
   const dispatch = useDispatch()
   const { jsxMetadata, allElementProps } = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
@@ -620,7 +620,7 @@ export const InspectorContextProvider = React.memo<{
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
     useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       rootComponentsSelector,
       'InspectorContextProvider rootComponents',
     ),
