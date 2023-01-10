@@ -62,6 +62,7 @@ import { ZeroSizedElementControls } from './zero-sized-element-controls'
 import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
 import { TextEditableControl } from './text-editable-control'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -124,9 +125,9 @@ interface NewCanvasControlsProps {
 }
 
 export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
+  const dispatch = useDispatch()
   const canvasControlProps = useEditorState(
     (store) => ({
-      dispatch: store.dispatch,
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
@@ -212,7 +213,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             setLocalSelectedViews={setSelectedViewsLocally}
             editor={canvasControlProps.editor}
             transientState={canvasControlProps.transientCanvasState}
-            dispatch={canvasControlProps.dispatch}
+            dispatch={dispatch}
             canvasOffset={canvasControlProps.canvasOffset}
           />
         </div>

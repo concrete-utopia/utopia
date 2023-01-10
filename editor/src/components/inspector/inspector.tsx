@@ -78,6 +78,7 @@ import type { StrategyState } from '../canvas/canvas-strategies/interaction-stat
 import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 
 export interface ElementPathElement {
@@ -120,7 +121,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
+  const dispatch = useDispatch()
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -238,8 +239,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
 
+  const dispatch = useDispatch()
   const {
-    dispatch,
     focusedPanel,
     anyComponents,
     anyUnknownElements,
@@ -290,7 +291,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       }
     })
     return {
-      dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
       anyComponents: anyComponentsInner,
       anyUnknownElements: anyUnknownElementsInner,
@@ -459,9 +459,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   }>
 > = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       isUIJSFile: isOpenFileUiJs(store.editor),
       allElementProps: store.editor.allElementProps,
@@ -596,9 +596,9 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, allElementProps } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { jsxMetadata, allElementProps } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       allElementProps: store.editor.allElementProps,
     }

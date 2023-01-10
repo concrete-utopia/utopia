@@ -26,6 +26,7 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
 
 interface ZeroSizedElementControlProps {
@@ -50,7 +51,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
       (store) => store.editor.canvas.scale,
       'ZeroSizedElementControls scale',
     )
-    const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+    const dispatch = useDispatch()
 
     const zeroSizeElements = useEditorState((store) => {
       if (showAllPossibleElements) {
@@ -68,7 +69,10 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
             if (child.globalFrame == null) {
               return false
             } else {
-              return isZeroSizedElement(child.globalFrame)
+              return (
+                isZeroSizedElement(child.globalFrame) &&
+                MetadataUtils.targetElementSupportsChildren(store.editor.projectContents, child)
+              )
             }
           })
         })
@@ -230,10 +234,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
       }, targets)
     }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
 
-    const dispatch = useEditorState(
-      (store) => store.dispatch,
-      'ZeroSizeResizeControlWrapper dispatch',
-    )
+    const dispatch = useDispatch()
     const scale = useEditorState(
       (store) => store.editor.canvas.scale,
       'ZeroSizeResizeControlWrapper scale',

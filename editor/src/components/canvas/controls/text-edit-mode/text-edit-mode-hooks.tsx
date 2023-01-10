@@ -7,7 +7,8 @@ import { useKeepShallowReferenceEquality } from '../../../../utils/react-perform
 import { EditorDispatch } from '../../../editor/action-types'
 import { switchEditorMode } from '../../../editor/actions/action-creators'
 import { Coordinates, EditorModes, isTextEditMode } from '../../../editor/editor-modes'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { useRefEditorState } from '../../../editor/store/store-hook'
 import {
   MouseCallbacks,
   useFindValidTarget,
@@ -40,10 +41,7 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
 
   const { onMouseMove } = useHighlightCallbacks(active, true, true, getTextEditableViews)
 
-  const dispatch = useEditorState(
-    (store) => store.dispatch,
-    'useTextEditModeSelectAndHover dispatch',
-  )
+  const dispatch = useDispatch()
   const findValidTarget = useFindValidTarget()
 
   const onMouseUp = React.useCallback(

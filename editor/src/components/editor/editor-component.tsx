@@ -52,6 +52,7 @@ import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
+import { useDispatch } from './store/dispatch-context'
 import { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 
@@ -85,6 +86,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
@@ -182,12 +184,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           editorStoreRef.current.editor,
           editorStoreRef.current.derived,
           namesByKey,
-          editorStoreRef.current.dispatch,
+          dispatch,
         ),
       )
       return actions
     },
-    [editorStoreRef, namesByKey, setClearKeyboardInteraction],
+    [dispatch, editorStoreRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(
@@ -232,7 +234,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     inputBlurForce,
   ])
 
-  const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
   const projectName = useEditorState(
     (store) => store.editor.projectName,
     'EditorComponentInner projectName',
@@ -401,9 +402,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 })
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch, currentBranch } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { modal, currentBranch } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       modal: store.editor.modal,
       currentBranch: store.editor.githubSettings.branchName,
     }

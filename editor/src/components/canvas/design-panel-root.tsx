@@ -40,6 +40,7 @@ import { getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 interface NumberSize {
   width: number
@@ -60,7 +61,7 @@ const TopMenuHeight = 35
 
 const NothingOpenCard = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'NothingOpenCard dispatch')
+  const dispatch = useDispatch()
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
@@ -129,7 +130,7 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
+  const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',

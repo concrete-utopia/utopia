@@ -43,6 +43,7 @@ import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
 
 export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -204,12 +205,12 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   const { layoutType, selfLayoutSectionOpen, toggleSection } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
 
-  const dispatch = useRefEditorState((store) => store.dispatch)
+  const dispatch = useDispatch()
   const selectedViews = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.selectedViews
   })
   const onAbsoluteButtonClick = React.useCallback(() => {
-    dispatch.current([runEscapeHatch(selectedViews)], 'everyone')
+    dispatch([runEscapeHatch(selectedViews)], 'everyone')
   }, [dispatch, selectedViews])
 
   return (
@@ -269,7 +270,7 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
     return EP.isStoryboardPath(parent) ? null : parent
   }, 'ParentIndicatorAndLink parentPath')
 
-  const dispatch = useEditorState((store) => store.dispatch, 'ParentIndicatorAndLink dispatch')
+  const dispatch = useDispatch()
 
   const handleClick = React.useCallback(() => {
     if (parentPath != null) {

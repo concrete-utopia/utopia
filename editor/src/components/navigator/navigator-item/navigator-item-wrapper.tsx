@@ -18,6 +18,7 @@ import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   defaultElementWarnings,
   DropTargetHint,
@@ -160,7 +161,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
-  const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
+  const dispatch = useDispatch()
+  const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
     useEditorState((store) => {
       // Only capture this if it relates to the current navigator item, as it may change while
       // dragging around the navigator but we don't want the entire navigator to re-render each time.
@@ -173,7 +175,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         store.editor.navigator.collapsedViews,
       )
       return {
-        dispatch: store.dispatch,
         appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
         renamingTarget: store.editor.navigator.renamingTarget,
         isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),

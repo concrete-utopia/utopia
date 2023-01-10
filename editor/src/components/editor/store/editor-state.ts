@@ -387,7 +387,6 @@ type EditorStoreShared = {
   userState: UserState
   workers: UtopiaTsWorkers
   persistence: PersistenceMachine
-  dispatch: EditorDispatch
   builtInDependencies: BuiltInDependencies
   alreadySaved: boolean
 }

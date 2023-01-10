@@ -4,6 +4,7 @@ import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { EditorStorePatched } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
@@ -238,15 +239,10 @@ const numberOfFlexContainersSelector = createSelector(
   numberOfFlexContainers,
 )
 
-const dispatchSelector = createSelector(
-  (store: EditorStorePatched) => store.dispatch,
-  (d) => d,
-)
-
 export const NineBlockControl = React.memo(() => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState(dispatchSelector, 'NineBlockControl dispatch')
+  const dispatch = useDispatch()
 
   const nFlexContainers = useEditorState(
     numberOfFlexContainersSelector,

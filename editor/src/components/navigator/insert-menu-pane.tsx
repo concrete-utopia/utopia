@@ -8,6 +8,7 @@ import { FlexRow, Section, SectionBodyArea, SectionTitleRow, Title } from '../..
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import { InsertMenu } from '../editor/insertmenu'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 
@@ -19,9 +20,9 @@ export interface LeftPaneProps {
 }
 
 export const InsertMenuPane = React.memo(() => {
-  const { dispatch, focusedPanel } = useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { focusedPanel } = useEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
     }
   }, 'InsertMenuPane')

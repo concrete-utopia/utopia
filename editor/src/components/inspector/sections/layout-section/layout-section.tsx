@@ -9,6 +9,7 @@ import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/s
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { LayoutSubsection } from './self-layout-subsection/self-layout-subsection'
 import { setInspectorLayoutSectionHovered } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
@@ -34,7 +35,7 @@ export const LayoutSection = React.memo((props: LayoutSectionProps) => {
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
+  const dispatch = useDispatch()
 
   return (
     <div

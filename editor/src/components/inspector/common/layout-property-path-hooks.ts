@@ -46,6 +46,7 @@ import React from 'react'
 import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const VerticalPropPreference: Array<LayoutPinnedProp> = ['top', 'height', 'bottom']
@@ -251,7 +252,7 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
+  const dispatch = useDispatch()
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadata

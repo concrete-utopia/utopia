@@ -60,6 +60,7 @@ import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
 import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
 import { isLeft } from '../../core/shared/either'
+import { useDispatch } from './store/dispatch-context'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -76,12 +77,12 @@ interface InsertMenuProps {
 }
 
 export const InsertMenu = React.memo(() => {
+  const dispatch = useDispatch()
   const props = useEditorState((store) => {
     const openFileFullPath = getOpenFilename(store.editor)
 
     return {
       lastFontSettings: store.editor.lastUsedFont,
-      editorDispatch: store.dispatch,
       selectedViews: store.editor.selectedViews,
       mode: store.editor.mode,
       currentlyOpenFilename: openFileFullPath,
@@ -97,6 +98,7 @@ export const InsertMenu = React.memo(() => {
 
   const propsWithDependencies: InsertMenuProps = {
     ...props,
+    editorDispatch: dispatch,
     dependencies: dependencies,
   }
 

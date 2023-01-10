@@ -12,6 +12,7 @@ import {
   updateEditorMode,
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState } from '../editor/store/store-hook'
 
 export const TextEditorSpanId = 'text-editor'
@@ -50,8 +51,7 @@ const handleShortcut = (
 
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
-
-  const dispatch = useEditorState((store) => store.dispatch, 'TextEditor dispatch')
+  const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',

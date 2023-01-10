@@ -35,6 +35,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { TopMenu } from '../editor/top-menu'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -60,9 +61,9 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
-  const { dispatch, editorState, derivedState, userState } = useEditorState(
+  const dispatch = useDispatch()
+  const { editorState, derivedState, userState } = useEditorState(
     (store) => ({
-      dispatch: store.dispatch,
       editorState: store.editor,
       derivedState: store.derived,
       userState: store.userState,
@@ -143,7 +144,7 @@ export const CanvasWrapperComponent = React.memo(() => {
 })
 
 const ErrorOverlayComponent = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
+  const dispatch = useDispatch()
   const utopiaParserErrors = useEditorState((store) => {
     return parseFailureAsErrorMessages(
       getOpenUIJSFileKey(store.editor),
@@ -215,7 +216,7 @@ const ErrorOverlayComponent = React.memo(() => {
 })
 
 export const SafeModeErrorOverlay = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'SafeModeErrorOverlay dispatch')
+  const dispatch = useDispatch()
   const onTryAgain = React.useCallback(() => {
     dispatch([setSafeMode(false)], 'everyone')
   }, [dispatch])

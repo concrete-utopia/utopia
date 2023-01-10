@@ -1,5 +1,3 @@
-import create from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
@@ -86,12 +84,6 @@ function createEditorStore(
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
-  const spyCollector = emptyUiJsxCanvasContextData()
-
-  const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, storeHook.getState(), spyCollector)
-    storeHook.setState(result)
-  }
 
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
@@ -114,12 +106,9 @@ function createEditorStore(
       new FakeWatchdogWorker(),
     ),
     persistence: DummyPersistenceMachine,
-    dispatch: dispatch,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
-
-  const storeHook = create(subscribeWithSelector<EditorStoreFull>(() => initialEditorStore))
 
   return initialEditorStore
 }
