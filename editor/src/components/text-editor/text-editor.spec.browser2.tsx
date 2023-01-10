@@ -1,6 +1,6 @@
 import { wait } from '../../utils/utils.test-utils'
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -210,36 +210,24 @@ describe('Use the text editor', () => {
     })
 
     it('supports increasing font size', async () => {
-      const { before, after } = await testModifier(
-        { shift: true, cmd: true, alt: false, ctrl: false },
-        '.',
-      )
+      const { before, after } = await testModifier(shiftCmdModifier, '.')
       expect(before).toEqual(projectWithStyle('fontSize', '17px'))
       expect(after).toEqual(projectWithStyle('fontSize', '18px'))
     })
 
     it('supports increasing font weight', async () => {
-      const { before, after } = await testModifier(
-        { shift: false, cmd: true, alt: true, ctrl: false },
-        '.',
-      )
+      const { before, after } = await testModifier(altCmdModifier, '.')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '500'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '600'))
     })
     it('supports decreasing font size', async () => {
-      const { before, after } = await testModifier(
-        { shift: true, cmd: true, alt: false, ctrl: false },
-        ',',
-      )
+      const { before, after } = await testModifier(shiftCmdModifier, ',')
       expect(before).toEqual(projectWithStyle('fontSize', '15px'))
       expect(after).toEqual(projectWithStyle('fontSize', '14px'))
     })
 
     it('supports decreasing font weight', async () => {
-      const { before, after } = await testModifier(
-        { shift: false, cmd: true, alt: true, ctrl: false },
-        ',',
-      )
+      const { before, after } = await testModifier(altCmdModifier, ',')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '300'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '200'))
     })

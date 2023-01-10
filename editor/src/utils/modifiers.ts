@@ -49,6 +49,8 @@ export const shiftCmdModifier: Modifiers = {
   shift: true,
 }
 
+export const altCmdModifier: Modifiers = { shift: false, cmd: true, alt: true, ctrl: false }
+
 export const altShiftModifier: Modifiers = {
   alt: true,
   cmd: false,
