@@ -193,10 +193,12 @@ function useGuideline<T = HTMLDivElement>(
   useSelectorWithCallback('canvas')(
     (store) => store.editor.canvas.controls.snappingGuidelines[index],
     innerCallback,
+    'useGuideline snappingGuidelines[index]',
   )
   useSelectorWithCallback('canvas')(
     (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
+    'useGuideline snappingGuidelines.length',
   )
   React.useEffect(() => {
     innerCallback()

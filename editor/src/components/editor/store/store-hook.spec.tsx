@@ -60,6 +60,7 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {
@@ -88,6 +89,7 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {
@@ -127,6 +129,7 @@ describe('useSelectorWithCallback', () => {
           (newFocusedElementPath) => {
             callCount++
           },
+          'test focusedElementPath',
         )
       },
       {
@@ -224,6 +227,7 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {

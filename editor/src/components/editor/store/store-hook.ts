@@ -48,8 +48,31 @@ import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-i
 type StateSelector<T, U> = (state: T) => U
 
 export const SelectorTimings: {
-  current: { [selectorName: string]: { accumulatedTime: number; calledNumberOfTimes: number } }
+  current: {
+    [selectorName: string]: {
+      accumulatedTime: number
+      accumulatedCallbackTime: number
+      calledNumberOfTimes: number
+      callbackNumberOfTimes: number
+      preSelectorName: string
+    }
+  }
 } = { current: {} }
+
+function ensureSelectorTimingExists(selectorName: string, substoreKey: string) {
+  if (
+    isFeatureEnabled('Debug – Measure Selectors') &&
+    SelectorTimings.current[selectorName] == null
+  ) {
+    SelectorTimings.current[selectorName] = {
+      accumulatedTime: 0,
+      accumulatedCallbackTime: 0,
+      calledNumberOfTimes: 0,
+      callbackNumberOfTimes: 0,
+      preSelectorName: substoreKey,
+    }
+  }
+}
 
 export const SubstoreTimings: {
   current: { [storeKey: string]: { updateTime: number | null; calledNumberOfTimes: number } }
@@ -139,11 +162,8 @@ function useWrapSelectorInPerformanceMeasureBlock<K extends StoreKey, U>(
       const afterSelector = MeasureSelectors ? performance.now() : 0
 
       if (MeasureSelectors) {
-        const currentValue = SelectorTimings.current[selectorName] ?? {
-          accumulatedTime: 0,
-          calledNumberOfTimes: 0,
-          preSelectorName: storeKey,
-        }
+        ensureSelectorTimingExists(selectorName, storeKey)
+        const currentValue = SelectorTimings.current[selectorName]
         currentValue.accumulatedTime += afterSelector - beforeSelector
         currentValue.calledNumberOfTimes += calledNumberOfTimes
         SelectorTimings.current[selectorName] = currentValue
@@ -209,6 +229,7 @@ export const useSelectorWithCallback =
   <U>(
     selector: StateSelector<Substates[K], U>,
     callback: (newValue: U) => void,
+    selectorName: string,
     equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
     explainMe: boolean = false,
   ): void => {
@@ -218,8 +239,14 @@ export const useSelectorWithCallback =
     }
     const api = context.stores[storeKey]
 
-    const selectorRef = React.useRef(selector)
-    selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
+    const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(
+      storeKey,
+      selector,
+      selectorName,
+    )
+
+    const selectorRef = React.useRef(wrappedSelector)
+    selectorRef.current = wrappedSelector // the selector is possibly a new function instance every time this hook is called
 
     const equalityFnRef = React.useRef(equalityFn)
     equalityFnRef.current = equalityFn // the equality function is possibly a new function instance every time this hook is called, but we don't want to re-subscribe because of that
@@ -231,6 +258,8 @@ export const useSelectorWithCallback =
 
     const innerCallback = React.useCallback<(newSlice: U) => void>(
       (newSlice) => {
+        const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+        const beforeCallback = MeasureSelectors ? performance.now() : 0
         // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
         if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
           if (explainMe) {
@@ -242,8 +271,15 @@ export const useSelectorWithCallback =
           callbackRef.current(newSlice)
           previouslySelectedStateRef.current = newSlice
         }
+        const afterCallback = MeasureSelectors ? performance.now() : 0
+        if (MeasureSelectors) {
+          ensureSelectorTimingExists(selectorName, storeKey)
+          SelectorTimings.current[selectorName].accumulatedCallbackTime +=
+            afterCallback - beforeCallback
+          SelectorTimings.current[selectorName].callbackNumberOfTimes += 1
+        }
       },
-      [explainMe],
+      [explainMe, selectorName],
     )
 
     /**
@@ -263,7 +299,7 @@ export const useSelectorWithCallback =
       }
       const unsubscribe = api.subscribe(
         (store: Substates[K]) => selectorRef.current(store),
-        (newSlice) => {
+        (newSlice: U) => {
           if (explainMe) {
             console.info('the Zustand api.subscribe is calling our callback')
           }

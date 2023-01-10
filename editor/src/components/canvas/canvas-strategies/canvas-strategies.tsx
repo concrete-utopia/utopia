@@ -376,6 +376,7 @@ export function applyCanvasStrategy(
 
 export function useDelayedEditorState<T>(
   selector: StateSelector<EditorStorePatched, T | null>,
+  selectorName: string,
 ): T | null {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
@@ -414,24 +415,28 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback('fullOldStore')(selector, maybeDelayedCallback)
-  useSelectorWithCallback('fullOldStore')((store) => {
-    if (
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-    ) {
-      return selector(store)
-    } else {
-      return null
-    }
-  }, immediateCallback)
+  useSelectorWithCallback('fullOldStore')(selector, maybeDelayedCallback, selectorName)
+  useSelectorWithCallback('fullOldStore')(
+    (store) => {
+      if (
+        store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+        store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
+      ) {
+        return selector(store)
+      } else {
+        return null
+      }
+    },
+    immediateCallback,
+    selectorName,
+  )
 
   return delayedValue
 }
 
 export const useDelayedCurrentStrategy = () => {
   const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedEditorState<CanvasStrategyId | null>(selector)
+  return useDelayedEditorState<CanvasStrategyId | null>(selector, 'useDelayedCurrentStrategy')
 }
 
 const notResizableControls = controlWithProps({

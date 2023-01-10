@@ -57,12 +57,14 @@ function useBoundingBoxFromMetadataRef(
     (newMetadata) => {
       innerCallback()
     },
+    'useBoundingBoxFromMetadataRef metadata',
   )
   useSelectorWithCallback('canvas')(
     (store) => store.editor.canvas.scale,
     (newScale) => {
       innerCallback()
     },
+    'useBoundingBoxFromMetadataRef canvas.scale',
   )
 
   React.useEffect(innerCallback, [innerCallback, selectedElements])
