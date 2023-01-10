@@ -209,6 +209,41 @@ describe('Use the text editor', () => {
       expect(after).toEqual(projectWithStyle('textDecoration', 'none'))
     })
 
+    it('supports increasing font size', async () => {
+      const { before, after } = await testModifier(
+        { shift: true, cmd: true, alt: false, ctrl: false },
+        '.',
+      )
+      expect(before).toEqual(projectWithStyle('fontSize', '17px'))
+      expect(after).toEqual(projectWithStyle('fontSize', '18px'))
+    })
+
+    it('supports increasing font weight', async () => {
+      const { before, after } = await testModifier(
+        { shift: false, cmd: true, alt: true, ctrl: false },
+        '.',
+      )
+      expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '500'))
+      expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '600'))
+    })
+    it('supports decreasing font size', async () => {
+      const { before, after } = await testModifier(
+        { shift: true, cmd: true, alt: false, ctrl: false },
+        ',',
+      )
+      expect(before).toEqual(projectWithStyle('fontSize', '15px'))
+      expect(after).toEqual(projectWithStyle('fontSize', '14px'))
+    })
+
+    it('supports decreasing font weight', async () => {
+      const { before, after } = await testModifier(
+        { shift: false, cmd: true, alt: true, ctrl: false },
+        ',',
+      )
+      expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '300'))
+      expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '200'))
+    })
+
     it("doesn't care about selection", async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
       await prepareTestModifierEditor(editor)
@@ -372,6 +407,31 @@ function projectWithStyle(prop: string, value: string) {
                 width: 288,
                 height: 362,
                 ${prop}: '${value}'
+              }}
+              data-uid='39e'
+            >Hello Utopia</div>
+          </Storyboard>
+        )`)
+}
+
+function projectWithStyleNoQuotes(prop: string, value: string) {
+  return formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+                ${prop}: ${value}
               }}
               data-uid='39e'
             >Hello Utopia</div>

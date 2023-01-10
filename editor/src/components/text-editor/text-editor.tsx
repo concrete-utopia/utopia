@@ -117,7 +117,7 @@ const handleSetFontWeightShortcut = (
       setProperty(
         'always',
         elementPath,
-        PP.create(['style', 'fontSize']),
+        PP.create(['style', 'fontWeight']),
         adjustFontWeight(fontWeight, direction[character]),
       ),
     ]),
