@@ -12,14 +12,20 @@ export const TextEditCanvasOverlay = React.memo(() => {
 
   const checkMousePosition = React.useCallback((event: MouseEvent) => {
     const textEditor = document.getElementById(TextEditorSpanId)
-    const textEditorBounds = textEditor?.getBoundingClientRect()
-    if (textEditorBounds == null) {
+    if (textEditor == null) {
       setEnabled(false)
-    } else if (
-      event.clientX >= textEditorBounds.left &&
-      event.clientX <= textEditorBounds.right &&
-      event.clientY >= textEditorBounds.top &&
-      event.clientY <= textEditorBounds.bottom
+      return
+    }
+    const range = document.createRange()
+    range.selectNode(textEditor)
+    const rangeBounding = range.getBoundingClientRect()
+    const textEditorBounding = textEditor.getBoundingClientRect()
+
+    if (
+      event.clientX >= Math.min(rangeBounding.left, textEditorBounding.left) &&
+      event.clientX <= Math.max(rangeBounding.right, textEditorBounding.right) &&
+      event.clientY >= Math.min(rangeBounding.top, textEditorBounding.top) &&
+      event.clientY <= Math.max(rangeBounding.bottom, textEditorBounding.bottom)
     ) {
       setEnabled(false)
     } else {
