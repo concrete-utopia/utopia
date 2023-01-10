@@ -58,7 +58,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
     const dispatch = useDispatch()
 
     const zeroSizeElements = useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => {
         if (showAllPossibleElements) {
           return Object.values(store.editor.jsxMetadata).filter((element) => {

@@ -109,7 +109,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,

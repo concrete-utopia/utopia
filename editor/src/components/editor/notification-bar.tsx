@@ -21,7 +21,7 @@ const EditorOfflineBar = React.memo(() => {
 
 export const LoginStatusBar = React.memo(() => {
   const loginState = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.loginState,
     'LoginStatusBar',
   )

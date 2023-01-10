@@ -8,7 +8,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
@@ -58,7 +58,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const dispatch = useDispatch()
   const { scale, hoveredViews, isDragging } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => ({
       scale: store.editor.canvas.scale,
       hoveredViews: store.editor.hoveredViews,

@@ -54,7 +54,7 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
   )
 
   const colors = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return targets.map((path) =>
         getSelectionColor(

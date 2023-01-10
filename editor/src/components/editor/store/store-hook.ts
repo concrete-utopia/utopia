@@ -286,10 +286,10 @@ type Substates = {
   projectContents: ProjectContentSubstate // done
   canvas: CanvasSubstate // done
   canvasOffset: CanvasOffsetSubstate // done
-  derived: { derived: DerivedState }
+  derived: { derived: DerivedState } // done
   restOfEditor: { editor: RestOfEditorState } // done
-  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
-  fullOldStore: EditorStorePatched
+  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'> // done
+  fullOldStore: EditorStorePatched // done
   originalStore: EditorStorePatched
   theme: ThemeSubstate
   github: GithubSubstate

@@ -52,7 +52,7 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 const TitleBar = React.memo(() => {
   const dispatch = useDispatch()
   const { loginState } = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => ({
       loginState: store.userState.loginState,
     }),
@@ -251,5 +251,5 @@ const loginStateSelector = createSelector(
   (loginState: LoginState) => getUserPicture(loginState),
 )
 function useGetUserPicture(): string | null {
-  return useEditorState('restOfStore', loginStateSelector, 'useGetUserPicture')
+  return useEditorState(Substores.restOfStore, loginStateSelector, 'useGetUserPicture')
 }

@@ -25,7 +25,7 @@ import {
   DependencyPackageDetails,
   packageJsonFileFromProjectContents,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -94,7 +94,7 @@ function packageDetailsFromDependencies(
 
 export const DependencyList = React.memo(() => {
   const props = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return {
         minimised: store.editor.dependencyList.minimised,

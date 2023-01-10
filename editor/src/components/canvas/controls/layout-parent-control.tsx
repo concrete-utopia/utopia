@@ -47,7 +47,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
   )
   const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
     useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => {
         if (
           store.editor.canvas.controls.flexReparentTargetLines != null ||

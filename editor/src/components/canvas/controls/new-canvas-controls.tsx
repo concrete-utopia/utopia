@@ -126,7 +126,7 @@ interface NewCanvasControlsProps {
 export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   const dispatch = useDispatch()
   const canvasControlProps = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => ({
       editor: store.editor,
       derived: store.derived,
@@ -242,11 +242,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const strategyControls = useGetApplicableStrategyControls()
 
   const anyStrategyActive = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.strategyState.currentStrategy != null,
     'currentStrategy',
   )
-  const strategy = useEditorState('restOfStore', (store) => store.strategyState, 'strategy')
+  const strategy = useEditorState(Substores.restOfStore, (store) => store.strategyState, 'strategy')
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false

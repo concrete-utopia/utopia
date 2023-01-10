@@ -58,7 +58,7 @@ type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
 const AccountBlock = () => {
   const authenticated = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -103,7 +103,7 @@ const RepositoryBlock = () => {
     'RepositoryBlock repo',
   )
   const githubAuthenticated = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'RepositoryBlock authenticated',
   )
@@ -395,7 +395,7 @@ const BranchBlock = () => {
   ])
 
   const githubAuthenticated = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -484,7 +484,7 @@ const RemoteChangesBlock = () => {
     }
   }, [dispatch, repo, branch, commit])
   const githubAuthenticated = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -620,7 +620,7 @@ const LocalChangesBlock = () => {
   }, [dispatch, repo, commitMessage, cleanedCommitBranchName])
 
   const githubAuthenticated = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -783,13 +783,13 @@ const BranchNotLoadedBlock = () => {
   )
 
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'Built-in dependencies',
   )
 
   const currentDependencies = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     projectDependenciesSelector,
     'Project dependencies',
   )
@@ -994,7 +994,7 @@ export const GithubPane = React.memo(() => {
     'GithubPane githubUser',
   )
   const isLoggedIn = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => {
       return User.isLoggedIn(store.userState.loginState)
     },

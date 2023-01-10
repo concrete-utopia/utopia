@@ -6,7 +6,11 @@ import {
   forUnderlyingTargetFromEditorState,
   withUnderlyingTarget,
 } from '../../../components/editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../../components/editor/store/store-hook'
 import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
@@ -1022,7 +1026,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
   return useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return selectedViews.current.every((view) => {
         const selectedViewType = withUnderlyingTarget(
@@ -1126,7 +1130,7 @@ export function useInspectorWarningStatus(): boolean {
   const selectedViews = useSelectedViews()
 
   return useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       let hasLayoutInCSSProp = false
       Utils.fastForEach(selectedViews, (view) => {

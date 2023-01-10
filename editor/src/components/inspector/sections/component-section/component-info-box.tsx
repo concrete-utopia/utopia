@@ -70,7 +70,7 @@ export const ComponentInfoBox = () => {
   }, [dispatch, isFocused, target])
 
   const locationOfComponentInstance = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (state) => {
       const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
       const importResult = getFilePathForImportedComponent(element)

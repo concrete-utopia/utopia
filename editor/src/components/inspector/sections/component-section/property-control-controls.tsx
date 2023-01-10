@@ -120,7 +120,7 @@ export const ExpressionInputPropertyControl = React.memo(
     const dispatch = useDispatch()
 
     const targetFilePaths = useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => {
         const currentFilePath = forceNotNull(
           'Missing open file',
@@ -237,7 +237,7 @@ export const ExpressionPopUpListPropertyControl = React.memo(
     )
 
     const targetFilePaths = useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => {
         // TODO probably make a store with selected views, projectContents and nodeModules.files ?
         const currentFilePath = forceNotNull(

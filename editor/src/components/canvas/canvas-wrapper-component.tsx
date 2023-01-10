@@ -63,7 +63,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { editorState, derivedState, userState } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => ({
       editorState: store.editor,
       derivedState: store.derived,
@@ -156,7 +156,7 @@ export const CanvasWrapperComponent = React.memo(() => {
 const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useDispatch()
   const utopiaParserErrors = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return parseFailureAsErrorMessages(
         getOpenUIJSFileKey(store.editor),

@@ -21,7 +21,7 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
       'ParentBounds canvas scale',
     )
     const parentFrame = useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => {
         const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
         if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
@@ -61,7 +61,7 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
   )
 
   const parentFrame = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       if (store.editor.canvas.controls.parentOutlineHighlight != null) {
         return null

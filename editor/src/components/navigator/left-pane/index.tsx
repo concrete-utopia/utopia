@@ -46,7 +46,7 @@ export const LeftPaneComponent = React.memo(() => {
   const dispatch = useDispatch()
 
   const loggedIn = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => User.isLoggedIn(store.userState.loginState),
     'LeftPaneComponent loggedIn',
   )

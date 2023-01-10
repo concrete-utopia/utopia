@@ -283,7 +283,7 @@ export function useGetSelectedClasses(): {
 } {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elements = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
       if (openUIJSFileKey == null) {

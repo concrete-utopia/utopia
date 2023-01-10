@@ -80,7 +80,7 @@ const PaddingResizeControlI = React.memo(
     const { setShownByParent } = props
     const dispatch = useDispatch()
     const { scale, isDragging } = useEditorState(
-      'fullOldStore',
+      Substores.fullOldStore,
       (store) => ({
         scale: scaleSelector(store),
         isDragging: isDraggingSelector(store, props.edge),

@@ -18,7 +18,7 @@ export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized((
     'FlexReparentTargetIndicator scale',
   )
   const parentFrame = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       const parentPath = store.editor.canvas.controls.parentOutlineHighlight
       if (parentPath != null) {

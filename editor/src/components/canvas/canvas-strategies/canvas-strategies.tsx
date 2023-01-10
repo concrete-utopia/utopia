@@ -254,7 +254,7 @@ const getApplicableStrategiesSelector = createSelector(
 
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     getApplicableStrategiesSelector,
     'useGetApplicableStrategies',
     arrayEquals,

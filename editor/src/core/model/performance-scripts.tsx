@@ -12,7 +12,11 @@ import {
   unsetProperty,
   updateEditorMode,
 } from '../../components/editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../components/editor/store/store-hook'
 import {
   canvasPoint,
   CanvasRectangle,
@@ -176,7 +180,7 @@ async function loadProject(
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerScrollPerformanceTest builtInDependencies',
   )
@@ -223,7 +227,7 @@ export function useTriggerResizePerformanceTest(): () => void {
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerResizePerformanceTest builtInDependencies',
   )
@@ -301,7 +305,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
   const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
@@ -368,7 +372,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerSelectionPerformanceTest builtInDependencies',
   )
@@ -496,7 +500,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerAbsoluteMovePerformanceTest builtInDependencies',
   )
@@ -681,7 +685,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'useTriggerSelectionChangePerformanceTest builtInDependencies',
   )

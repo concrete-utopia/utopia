@@ -71,7 +71,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const dispatch = useDispatch()
   const { scale, metadata, isDragging } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => ({
       scale: store.editor.canvas.scale,
       metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,

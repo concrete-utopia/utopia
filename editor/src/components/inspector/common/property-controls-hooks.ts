@@ -216,7 +216,7 @@ const emptyControls: PropertyControls = {}
 
 export function useGetPropertyControlsForSelectedComponents(): Array<FullPropertyControlsAndTargets> {
   const selectedPropertyControls = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(store.editor.selectedViews, (path) => {
@@ -283,7 +283,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
   )
 
   const selectedComponentsFIXME = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       return selectedPropertyControls.map(({ targets }) => {
         // TODO mapDropNulls

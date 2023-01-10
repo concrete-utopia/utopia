@@ -465,7 +465,7 @@ export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversio
     'usePossiblyResolvedPackageDependencies',
   )
   const { builtInDependencies } = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => {
       return { builtInDependencies: store.builtInDependencies }
     },

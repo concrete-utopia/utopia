@@ -15,7 +15,7 @@ export const ForksGiven = React.memo(() => {
   const colorTheme = useColorTheme()
 
   const isLoggedIn = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => User.isLoggedIn(store.userState.loginState),
     'ForksGiven isLoggedIn',
   )

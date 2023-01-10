@@ -3,7 +3,7 @@ import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
 import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
@@ -12,7 +12,7 @@ import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()
   const { allApplicableStrategies } = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => ({
       allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
     }),
@@ -20,7 +20,7 @@ export const CanvasStrategyPicker = React.memo(() => {
   )
   const activeStrategy = useDelayedCurrentStrategy()
   const isStrategyFailure = useEditorState(
-    'restOfStore',
+    Substores.restOfStore,
     (store) => store.strategyState?.status === 'failure',
     'Strategy failure',
   )

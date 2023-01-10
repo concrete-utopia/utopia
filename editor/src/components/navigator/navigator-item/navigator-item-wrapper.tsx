@@ -142,7 +142,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const noOfChildren = useEditorState(
-    'derived',
+    Substores.derived,
     (store) => {
       return noOfChildrenSelector(store, props.elementPath)
     },
@@ -156,7 +156,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const supportsChildren = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     // this is not good
     (store) => targetSupportsChildrenSelector(store, props.elementPath),
     'NavigatorItemWrapper targetSupportsChildrenSelector',
@@ -169,7 +169,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const elementWarnings = useEditorState(
-    'derived',
+    Substores.derived,
     (store) => elementWarningsSelector(store, props.elementPath),
     'NavigatorItemWrapper elementWarningsSelector',
   )

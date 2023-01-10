@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
@@ -33,7 +33,7 @@ interface ItemProps extends ListChildComponentProps {}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
-    'derived',
+    Substores.derived,
     (store) => {
       return store.derived.visibleNavigatorTargets
     },
@@ -120,7 +120,7 @@ export const NavigatorContainerId = 'navigator'
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
-    'fullOldStore',
+    Substores.fullOldStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
       const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
