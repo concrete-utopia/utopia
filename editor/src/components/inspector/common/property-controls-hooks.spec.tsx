@@ -196,7 +196,6 @@ function callPropertyControlsHook(
     userState: null as any,
     workers: null as any,
     persistence: null as any,
-    dispatch: null as any,
     alreadySaved: null as any,
     builtInDependencies: [],
     storeName: 'editor-store',

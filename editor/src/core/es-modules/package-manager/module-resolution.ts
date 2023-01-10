@@ -26,7 +26,6 @@ import {
 } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
-import { loaderExistsForFile } from '../../webpack-loaders/loaders'
 import { dropLast, last } from '../../shared/array-utils'
 import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../utils/path-utils'
 import type { MapLike } from 'typescript'
@@ -91,18 +90,6 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
-function failoverResolveResults<T>(
-  resolveResultCalls: Array<() => ResolveResult<T>>,
-): ResolveResult<T> {
-  for (const call of resolveResultCalls) {
-    const result = call()
-    if (isResolveSuccess(result)) {
-      return result
-    }
-  }
-  return resolveNotPresent
-}
-
 interface FoundFile {
   path: string
   file: ESCodeFile | ESRemoteDependencyPlaceholder
@@ -126,60 +113,60 @@ function fileLookupResult(
 
 type FileLookupFn = (path: string[], direct: boolean) => FileLookupResult
 
-const fallbackLookup: (lookupFn: FileLookupFn) => FileLookupFn = (lookupFn: FileLookupFn) => {
-  return (path: string[], direct: boolean) => {
-    const asIsPath = normalizePath(path)
-    const pathToFile = dropLast(asIsPath)
-    const lastPart = last(asIsPath)
-    if (lastPart == null) {
-      return resolveNotPresent
-    } else {
-      if (loaderExistsForFile(lastPart)) {
-        const asIsResult = lookupFn(asIsPath, direct)
-        if (isResolveSuccess(asIsResult)) {
-          return asIsResult
-        }
-      }
-
-      if (!direct) {
-        const withJs = lastPart + '.js'
-        if (loaderExistsForFile(withJs)) {
-          const withJsResult = lookupFn(pathToFile.concat(withJs), direct)
-          if (isResolveSuccess(withJsResult)) {
-            return withJsResult
-          }
-        }
-
-        const withJsx = lastPart + '.jsx'
-        if (loaderExistsForFile(withJsx)) {
-          const withJsxResult = lookupFn(pathToFile.concat(withJsx), direct)
-          if (isResolveSuccess(withJsxResult)) {
-            return withJsxResult
-          }
-        }
-
-        // TODO this also needs JSON parsing
-        const withJson = lastPart + '.json'
-        if (loaderExistsForFile(withJson)) {
-          const withJsonResult = lookupFn(pathToFile.concat(withJson), direct)
-          if (isResolveSuccess(withJsonResult)) {
-            return withJsonResult
-          }
-        }
-      }
-
-      return resolveNotPresent
+function fallbackLookup(
+  lookupFn: FileLookupFn,
+  path: Array<string>,
+  direct: boolean,
+): FileLookupResult {
+  const asIsPath = normalizePath(path)
+  const pathToFile = dropLast(asIsPath)
+  const lastPart = last(asIsPath)
+  if (lastPart == null) {
+    return resolveNotPresent
+  } else {
+    const asIsResult = lookupFn(asIsPath, direct)
+    if (isResolveSuccess(asIsResult)) {
+      return asIsResult
     }
+
+    if (!direct) {
+      const withJs = lastPart + '.js'
+      const withJsResult = lookupFn(pathToFile.concat(withJs), direct)
+      if (isResolveSuccess(withJsResult)) {
+        return withJsResult
+      }
+
+      const withJsx = lastPart + '.jsx'
+      const withJsxResult = lookupFn(pathToFile.concat(withJsx), direct)
+      if (isResolveSuccess(withJsxResult)) {
+        return withJsxResult
+      }
+
+      // TODO this also needs JSON parsing
+      const withJson = lastPart + '.json'
+      const withJsonResult = lookupFn(pathToFile.concat(withJson), direct)
+      if (isResolveSuccess(withJsonResult)) {
+        return withJsonResult
+      }
+    }
+
+    return resolveNotPresent
   }
 }
 
-const nodeModulesFileLookup: (nodeModules: NodeModules) => FileLookupFn = (
+function nodeModulesFileLookup(
   nodeModules: NodeModules,
-) => {
-  return fallbackLookup((path: string[], direct: boolean) => {
-    const filename = makePathFromParts(path)
-    return fileLookupResult(filename, nodeModules[filename])
-  })
+  path: Array<string>,
+  direct: boolean,
+): FileLookupResult {
+  return fallbackLookup(
+    (innerPath: string[], innerDirect: boolean) => {
+      const filename = makePathFromParts(innerPath)
+      return fileLookupResult(filename, nodeModules[filename])
+    },
+    path,
+    direct,
+  )
 }
 
 function getProjectFileContentsAsString(file: ProjectFile): string | null {
@@ -198,33 +185,29 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
   }
 }
 
-const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => FileLookupFn = (
+function projectContentsFileLookup(
   projectContents: ProjectContentTreeRoot,
-) => {
-  return fallbackLookup((path: string[]) => {
-    const projectFile = getContentsTreeFileFromElements(projectContents, path)
-    const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
-    if (fileContents == null) {
-      return resolveNotPresent
-    } else {
-      const filename = makePathFromParts(path)
-      return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
-    }
-  })
-}
-
-const combinedFileLookup: (lookupFns: Array<FileLookupFn>) => FileLookupFn = (
-  lookupFns: Array<FileLookupFn>,
-) => {
-  return (path: string[], direct: boolean) => {
-    for (const lookupFn of lookupFns) {
-      const result = lookupFn(path, direct)
-      if (isResolveSuccess(result)) {
-        return result
+  path: Array<string>,
+  direct: boolean,
+): FileLookupResult {
+  return fallbackLookup(
+    (innerPath: string[]) => {
+      const projectFile = getContentsTreeFileFromElements(projectContents, innerPath)
+      if (projectFile == null) {
+        return resolveNotPresent
+      } else {
+        const fileContents = getProjectFileContentsAsString(projectFile)
+        if (fileContents == null) {
+          return resolveNotPresent
+        } else {
+          const filename = makePathFromParts(innerPath)
+          return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
+        }
       }
-    }
-    return resolveNotPresent
-  }
+    },
+    path,
+    direct,
+  )
 }
 
 interface PartialPackageJsonDefinition {
@@ -317,15 +300,15 @@ function resolvePackageJson(
       normalizedFolderPath,
     )
     if (isResolveSuccess(mainEntryPath)) {
-      return failoverResolveResults([
-        // try loading the entry path as a file
-        () => fileLookupFn(mainEntryPath.success, false),
+      // try loading the entry path as a file
+      const mainEntryResult = fileLookupFn(mainEntryPath.success, false)
+      if (isResolveSuccess(mainEntryResult)) {
+        return mainEntryResult
+      } else {
         // fallback to loading it as a folder with an index.js
-        () => {
-          const indexJsPath = [...mainEntryPath.success, 'index']
-          return fileLookupFn(indexJsPath, false)
-        },
-      ])
+        const indexJsPath = [...mainEntryPath.success, 'index']
+        return fileLookupFn(indexJsPath, false)
+      }
     } else {
       return resolveNotPresent
     }
@@ -334,19 +317,19 @@ function resolvePackageJson(
 }
 
 function findPackageJsonForPath(fileLookupFn: FileLookupFn, origin: string[]): FileLookupResult {
-  return failoverResolveResults([
-    // 1. look for <origin>/package.json
-    () => fileLookupFn([...origin, 'package.json'], true),
-    // 4. repeat in the parent folder
-    () => {
-      if (origin.length === 0) {
-        // we exhausted all folders without success
-        return resolveNotPresent
-      } else {
-        return findPackageJsonForPath(fileLookupFn, origin.slice(0, -1))
-      }
-    },
-  ])
+  // 1. look for <origin>/package.json
+  const packageJsonResult = fileLookupFn([...origin, 'package.json'], true)
+  if (isResolveSuccess(packageJsonResult)) {
+    return packageJsonResult
+  } else {
+    // 2. repeat in the parent folder
+    if (origin.length === 0) {
+      // we exhausted all folders without success
+      return resolveNotPresent
+    } else {
+      return findPackageJsonForPath(fileLookupFn, origin.slice(0, -1))
+    }
+  }
 }
 
 function resolveNonRelativeModule(
@@ -355,26 +338,32 @@ function resolveNonRelativeModule(
   toImport: string[],
 ): FileLookupResult {
   const pathElements = [...importOrigin, 'node_modules', ...toImport]
-  return failoverResolveResults([
-    // 1. look for ./node_modules/<package_name>.js
-    () => fileLookupFn(pathElements, false),
+  // 1. look for ./node_modules/<package_name>.js
+  const packageNameResult = fileLookupFn(pathElements, false)
+  if (isResolveSuccess(packageNameResult)) {
+    return packageNameResult
+  } else {
     // 2. look for ./node_modules/<package_name>/package.json
-    () => resolvePackageJson(fileLookupFn, pathElements),
-    // 3. look for ./node_modules/<package_name>/index.js
-    () => {
+    const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
+    if (isResolveSuccess(packageJsonResult)) {
+      return packageJsonResult
+    } else {
+      // 3. look for ./node_modules/<package_name>/index.js
       const indexJsPath = [...pathElements, 'index']
-      return fileLookupFn(indexJsPath, false)
-    },
-    // 4. repeat in the parent folder
-    () => {
-      if (importOrigin.length === 0) {
-        // we exhausted all folders without success
-        return resolveNotPresent
+      const indexJSResult = fileLookupFn(indexJsPath, false)
+      if (isResolveSuccess(indexJSResult)) {
+        return indexJSResult
       } else {
-        return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+        // 4. repeat in the parent folder
+        if (importOrigin.length === 0) {
+          // we exhausted all folders without success
+          return resolveNotPresent
+        } else {
+          return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+        }
       }
-    },
-  ])
+    }
+  }
 }
 
 function resolveRelativeModule(
@@ -383,14 +372,20 @@ function resolveRelativeModule(
   toImport: string[],
 ): FileLookupResult {
   const pathElements = [...importOrigin, ...toImport]
-  return failoverResolveResults([
-    // 1. look for a file named <import_name>
-    () => fileLookupFn(pathElements, false),
+  // 1. look for a file named <import_name>
+  const importNameResult = fileLookupFn(pathElements, false)
+  if (isResolveSuccess(importNameResult)) {
+    return importNameResult
+  } else {
     // 2. look for <import_name>/package.json
-    () => resolvePackageJson(fileLookupFn, pathElements),
-    // 3. look for <import_name>/index.js
-    () => fileLookupFn([...pathElements, 'index'], false),
-  ])
+    const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
+    if (isResolveSuccess(packageJsonResult)) {
+      return packageJsonResult
+    } else {
+      // 3. look for <import_name>/index.js
+      return fileLookupFn([...pathElements, 'index'], false)
+    }
+  }
 }
 
 // Module resolution logic based on what Node / Typescript does https://www.typescriptlang.org/docs/handbook/module-resolution.html#node
@@ -479,10 +474,14 @@ function resolveModuleAndApplySubstitutions(
   importOrigin: string,
   toImport: string,
 ): FileLookupResult {
-  const lookupFn = combinedFileLookup([
-    nodeModulesFileLookup(nodeModules),
-    projectContentsFileLookup(projectContents),
-  ])
+  function lookupFn(path: string[], direct: boolean): FileLookupResult {
+    const nodeModulesResult = nodeModulesFileLookup(nodeModules, path, direct)
+    if (isResolveSuccess(nodeModulesResult)) {
+      return nodeModulesResult
+    } else {
+      return projectContentsFileLookup(projectContents, path, direct)
+    }
+  }
 
   const substitutedImport: Either<boolean, string> = findSubstitutionsForImport(
     lookupFn,

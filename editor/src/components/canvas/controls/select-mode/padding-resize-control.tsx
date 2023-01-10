@@ -6,6 +6,7 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
@@ -70,7 +71,6 @@ const PaddingResizeControlHitAreaWidth = 3
 type StoreSelector<T> = (s: EditorStorePatched) => T
 
 const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
-const dispatchSelector: StoreSelector<EditorDispatch> = (store) => store.dispatch
 const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
   store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
   store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
@@ -78,18 +78,16 @@ const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const { setShownByParent } = props
-    const { scale, dispatch, isDragging } = useEditorState('fullOldStore')(
+    const dispatch = useDispatch()
+    const { scale, isDragging } = useEditorState('fullOldStore')(
       (store) => ({
         scale: scaleSelector(store),
-        dispatch: dispatchSelector(store),
         isDragging: isDraggingSelector(store, props.edge),
       }),
       'PaddingResizeControl scale, dispatch, isDragging',
     )
 
-    const canvasOffsetRef = useRefEditorState('canvasOffset')(
-      (store) => store.editor.canvas.roundedCanvasOffset,
-    )
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
     const [stripesShown, setStripesShown] = React.useState<boolean>(false)
 
@@ -205,7 +203,7 @@ interface PaddingControlProps {
 
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
   const selectedElements = props.targets
-  const elementMetadata = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
+  const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const hoveredViews = useEditorState('highlightedHoveredViews')(
     (store) => store.editor.hoveredViews,

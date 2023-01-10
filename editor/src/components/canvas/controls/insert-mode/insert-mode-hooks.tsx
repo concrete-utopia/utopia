@@ -7,7 +7,7 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { MouseCallbacks, useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
-  const storeRef = useRefEditorState('fullOldStore')((store) => {
+  const storeRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
       componentMetadata: store.editor.jsxMetadata,

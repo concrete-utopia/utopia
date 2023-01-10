@@ -48,6 +48,7 @@ import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -61,7 +62,7 @@ const AccountBlock = () => {
     'Github authenticated',
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const triggerAuthentication = React.useCallback(() => {
     void startGithubAuthentication(dispatch)
   }, [dispatch])
@@ -147,7 +148,7 @@ const RepositoryBlock = () => {
 }
 
 const BranchBlock = () => {
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'BranchBlock dispatch')
+  const dispatch = useDispatch()
   const { currentBranch, githubOperations, targetRepository, branchesForRepository } =
     useEditorState('github')(
       (store) => ({
@@ -451,7 +452,7 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const branch = useEditorState('github')(
     (store) => store.editor.githubSettings.branchName,
     'Github branch',
@@ -541,7 +542,7 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubOperations,
     'Github operations',
   )
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const repo = useEditorState('github')(
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
@@ -744,7 +745,7 @@ const PullRequestButton = () => {
 }
 
 const BranchNotLoadedBlock = () => {
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
     'github',
   )(

@@ -21,6 +21,7 @@ import {
   setPanelVisibility,
   togglePanel,
 } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
 import {
   EditorStorePatched,
   EditorStoreShared,
@@ -49,9 +50,9 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState } = useEditorState('restOfStore')(
+  const dispatch = useDispatch()
+  const { loginState } = useEditorState('restOfStore')(
     (store) => ({
-      dispatch: store.dispatch,
       loginState: store.userState.loginState,
     }),
     'TitleBar loginState',

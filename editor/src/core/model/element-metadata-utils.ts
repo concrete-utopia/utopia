@@ -116,6 +116,11 @@ export const getChildrenOfCollapsedViews = (
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
+export type ElementSupportsChildren =
+  | 'supportsChildren'
+  | 'hasOnlyTextChildren'
+  | 'doesNotSupportChildren'
+
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
@@ -708,31 +713,46 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     instance: ElementInstanceMetadata,
   ): boolean {
+    return (
+      this.targetElementSupportsChildrenAlsoText(projectContents, instance) === 'supportsChildren'
+    )
+  },
+  targetElementSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    instance: ElementInstanceMetadata,
+  ): ElementSupportsChildren {
     return foldEither(
-      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (elementString) =>
+        intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
+          ? 'supportsChildren'
+          : 'doesNotSupportChildren',
       (element) => {
         if (elementOnlyHasTextChildren(element)) {
           // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
-          return false
+          return 'hasOnlyTextChildren'
         } else {
           if (isJSXElement(element)) {
             if (isIntrinsicElement(element.name)) {
               return intrinsicHTMLElementNamesThatSupportChildren.includes(
                 element.name.baseVariable,
               )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else if (isUtopiaAPIComponentFromMetadata(instance)) {
               // Explicitly prevent components / elements that we *know* don't support children
-              return (
-                isViewLikeFromMetadata(instance) ||
+              return isViewLikeFromMetadata(instance) ||
                 isSceneFromMetadata(instance) ||
                 EP.isStoryboardPath(instance.elementPath)
-              )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else {
               return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             }
           }
           // We don't know at this stage
-          return true
+          return 'supportsChildren'
         }
       },
       instance.element,
@@ -743,14 +763,24 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
+    return (
+      this.targetSupportsChildrenAlsoText(projectContents, metadata, target) !==
+      'doesNotSupportChildren'
+    )
+  },
+  targetSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
-      return true
+      return 'supportsChildren'
     } else {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
-        ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, instance)
+        ? 'doesNotSupportChildren'
+        : MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
     }
   },
   targetUsesProperty(
@@ -811,12 +841,21 @@ export const MetadataUtils = {
       }
     }
   },
-  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null) {
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
     if (target == null) {
       return false
     }
     const children = MetadataUtils.getChildren(metadata, target)
-    return children.length === 0
+    const hasNonEditableChildren = children
+      .map((c) =>
+        foldEither(
+          () => null,
+          (v) => (isJSXElement(v) ? v.name.baseVariable : null),
+          c.element,
+        ),
+      )
+      .some((e) => e !== 'br')
+    return children.length === 0 || !hasNonEditableChildren
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {

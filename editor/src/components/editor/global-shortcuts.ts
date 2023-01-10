@@ -30,6 +30,7 @@ import {
   defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
+  defaultSpanElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
@@ -318,7 +319,7 @@ export function handleKeyDown(
   derived: DerivedState,
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -684,9 +685,36 @@ export function handleKeyDown(
           MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
         )
 
-        return [
-          EditorActions.switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null)),
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+
+        const actions: Array<EditorAction> = [
+          EditorActions.switchEditorMode(
+            EditorModes.textEditMode(firstTextEditableView ?? null, null, 'existing'),
+          ),
         ]
+
+        if (firstTextEditableView == null) {
+          actions.push(
+            EditorActions.enableInsertModeForJSXElement(
+              defaultSpanElement(newUID),
+              newUID,
+              {},
+              null,
+              {
+                textEdit: true,
+              },
+            ),
+            CanvasActions.createInteractionSession(
+              createHoverInteractionViaMouse(
+                CanvasMousePositionRaw!,
+                modifiers,
+                boundingArea(),
+                'zero-drag-permitted',
+              ),
+            ),
+          )
+        }
+        return actions
       },
     })
   }
@@ -738,15 +766,14 @@ export function handleKeyDown(
     actions.push(...shortCutActions)
   }
 
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 export function handleKeyUp(
   event: KeyboardEvent,
   editor: EditorState,
   namesByKey: ShortcutNamesByKey,
-  dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -787,8 +814,7 @@ export function handleKeyUp(
   if (editorTargeted) {
     actions.push(...getShortcutActions())
   }
-
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 function addCreateHoverInteractionActionToSwitchModeAction(

@@ -11,6 +11,7 @@ import {
   transientActions,
   unsetProperty,
 } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import {
   getControlStatusFromPropertyStatus,
@@ -108,10 +109,7 @@ export function useInspectorInfoLonghandShorthand<
 ): {
   [longhand in LonghandKey]: InspectorInfoWithPropKeys<LonghandKey, ShorthandKey>
 } {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'useInspectorInfoLonghandShorthand dispatch',
-  )
+  const dispatch = useDispatch()
   const inspectorTargetPath = useKeepReferenceEqualityIfPossible(
     useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
   )

@@ -56,6 +56,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -116,10 +117,7 @@ export const ColorPropertyControl = React.memo(
 export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-    const dispatch = useEditorState('restOfStore')(
-      (store) => store.dispatch,
-      'ExpressionInputPropertyControl dispatch',
-    )
+    const dispatch = useDispatch()
 
     const targetFilePaths = useEditorState('fullOldStore')((store) => {
       const currentFilePath = forceNotNull(
@@ -227,10 +225,7 @@ export const PopUpListPropertyControl = React.memo(
 
 export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
-    const dispatch = useEditorState('restOfStore')(
-      (store) => store.dispatch,
-      'ExpressionPopUpListPropertyControl dispatch',
-    )
+    const dispatch = useDispatch()
     const selectedViews = useEditorState('selectedViews')(
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',

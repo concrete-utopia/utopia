@@ -2,6 +2,7 @@ import * as React from 'react'
 import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
@@ -9,10 +10,7 @@ import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strate
 import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'CanvasStrategyPicker dispatch',
-  )
+  const dispatch = useDispatch()
   const { allApplicableStrategies } = useEditorState('restOfStore')(
     (store) => ({
       allApplicableStrategies: store.strategyState.sortedApplicableStrategies,

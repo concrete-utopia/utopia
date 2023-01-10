@@ -17,6 +17,7 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 import * as EP from '../../../../core/shared/element-path'
 import { when } from '../../../../utils/react-conditionals'
 import { safeIndex } from '../../../../core/shared/array-utils'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 function useComponentType(path: ElementPath | null): string | null {
   return useEditorState('metadata')((store) => {
@@ -42,10 +43,7 @@ function useComponentType(path: ElementPath | null): string | null {
 }
 
 export const ComponentInfoBox = () => {
-  const dispatch = useEditorState('restOfStore')(
-    (state) => state.dispatch,
-    'ComponentInfoBox dispatch',
-  )
+  const dispatch = useDispatch()
   const selectedViews = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'ComponentInfoBox selectedViews',

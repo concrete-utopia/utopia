@@ -26,6 +26,7 @@ import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
 import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 interface CanvasComponentEntryProps {}
 
@@ -40,10 +41,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
 })
 
 const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'CanvasComponentEntry dispatch',
-  )
+  const dispatch = useDispatch()
 
   const canvasScrollAnimation = useEditorState('canvas')(
     (store) => store.editor.canvas.scrollAnimation,
@@ -56,7 +54,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     return pickUiJsxCanvasProps(
       store.editor,
       store.derived,
-      store.dispatch,
+      dispatch,
       clearConsoleLogs,
       addToConsoleLogs,
     )

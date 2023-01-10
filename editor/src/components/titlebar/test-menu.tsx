@@ -32,9 +32,9 @@ const Tile = styled.div<TileProps>((props) => ({
 }))
 
 export const TestMenu = React.memo(() => {
-  const entireStateRef = useRefEditorState('fullOldStore')((store) => store)
+  const entireStateRef = useRefEditorState((store) => store)
 
-  const jsxMetadata = useRefEditorState('metadata')((store) => {
+  const jsxMetadata = useRefEditorState((store) => {
     return store.editor.jsxMetadata
   })
 

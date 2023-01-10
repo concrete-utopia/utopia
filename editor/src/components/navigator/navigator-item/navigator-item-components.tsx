@@ -211,7 +211,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     )
   }, 'NavigatorItemActionSheet isLockedHierarchy')
 
-  const jsxMetadataRef = useRefEditorState('fullOldStore')((store) => getMetadata(store.editor))
+  const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const isSceneElement = React.useMemo(
     () => MetadataUtils.isProbablyScene(jsxMetadataRef.current, elementPath),
     [elementPath, jsxMetadataRef],

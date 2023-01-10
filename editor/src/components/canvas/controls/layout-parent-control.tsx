@@ -1,4 +1,5 @@
 import React from 'react'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -8,6 +9,7 @@ import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
@@ -31,10 +33,7 @@ const getFlexDirectionIcon = (
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'LayoutParentControl dispatch',
-  )
+  const dispatch = useDispatch()
 
   const { canvasOffset, scale } = useEditorState('canvasOffset')((store) => {
     return {
@@ -101,7 +100,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('flexDirection', ['style']),
+              stylePropPathMappingFn('flexDirection', styleStringInArray),
               jsxAttributeValue(newValue, emptyComments),
             ),
           ],
@@ -119,7 +118,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('alignItems', ['style']),
+              stylePropPathMappingFn('alignItems', styleStringInArray),
               jsxAttributeValue(option.value, emptyComments),
             ),
           ],

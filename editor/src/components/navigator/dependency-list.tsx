@@ -43,6 +43,7 @@ import {
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -94,7 +95,6 @@ function packageDetailsFromDependencies(
 export const DependencyList = React.memo(() => {
   const props = useEditorState('fullOldStore')((store) => {
     return {
-      editorDispatch: store.dispatch,
       minimised: store.editor.dependencyList.minimised,
       focusedPanel: store.editor.focusedPanel,
       packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
@@ -103,7 +103,7 @@ export const DependencyList = React.memo(() => {
     }
   }, 'DependencyList')
 
-  const dispatch = props.editorDispatch
+  const dispatch = useDispatch()
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('dependencylist')], 'leftpane')
@@ -111,7 +111,7 @@ export const DependencyList = React.memo(() => {
 
   const dependencyProps = { ...props, toggleMinimised: toggleMinimised }
 
-  return <DependencyListInner {...dependencyProps} />
+  return <DependencyListInner editorDispatch={dispatch} {...dependencyProps} />
 })
 
 function unwrapLookupResult(lookupResult: VersionLookupResult): string | null {
@@ -464,7 +464,7 @@ interface AddTailwindButtonProps {
 }
 
 const AddTailwindButton = (props: AddTailwindButtonProps) => {
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'AddTailwindButton')
+  const dispatch = useDispatch()
   const onButtonClicked = React.useCallback(() => {
     dispatch([EditorActions.addTailwindConfig()])
   }, [dispatch])

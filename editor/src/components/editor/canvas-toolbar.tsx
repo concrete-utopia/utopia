@@ -31,26 +31,24 @@ import {
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
-  useEnterDrawToInsertForSpan,
+  useEnterTextEditMode,
 } from './insert-callbacks'
+import { useDispatch } from './store/dispatch-context'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 
 export const CanvasToolbar = React.memo(() => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'CanvasToolbar dispatch',
-  )
+  const dispatch = useDispatch()
   const theme = useColorTheme()
 
-  const selectedViewsRef = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
   const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
   const spanInsertion = useCheckInsertModeForElementType('span')
-  const insertSpanCallback = useEnterDrawToInsertForSpan()
+  const insertSpanCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 

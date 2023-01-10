@@ -50,6 +50,7 @@ import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
+import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -149,6 +150,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
+  drawToInsertTextStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(

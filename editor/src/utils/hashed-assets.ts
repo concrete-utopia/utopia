@@ -2,7 +2,7 @@ import { HEADERS, MODE } from '../common/server'
 import { BASE_URL, STATIC_BASE_URL } from '../common/env-vars'
 import { isBrowserEnvironment } from '../core/shared/utils'
 import { cachedPromise } from '../core/shared/promise-utils'
-import urljoin from 'url-join'
+import { appendToPath } from './path-utils'
 
 const HASHED_ASSETS_ENDPOINT = BASE_URL + 'hashed-assets.json'
 
@@ -35,7 +35,7 @@ function getPossiblyHashedURLInner(url: string): string {
 
 export function getPossiblyHashedURL(url: string): string {
   const relativeURL = getPossiblyHashedURLInner(url)
-  return urljoin(STATIC_BASE_URL, relativeURL)
+  return appendToPath(STATIC_BASE_URL, relativeURL)
 }
 
 const prioritisedAssets = [

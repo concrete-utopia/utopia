@@ -18,6 +18,7 @@ import {
   UIRow,
 } from '../../../../uuiui'
 import { ContextMenuWrapper } from '../../../../uuiui-deps'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 
@@ -245,12 +246,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const [itemBeingRenamedId, setItemBeingRenamedId] = React.useState<number | null>(null)
   const [renameValue, setRenameValue] = React.useState<string | null>(null)
 
-  const { dispatch } = useEditorState('restOfStore')(
-    (store) => ({
-      dispatch: store.dispatch,
-    }),
-    'TargetListItem',
-  )
+  const dispatch = useDispatch()
 
   const startRename = React.useCallback(() => {
     setItemBeingRenamedId(fixedItemIndex)

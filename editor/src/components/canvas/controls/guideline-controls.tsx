@@ -142,9 +142,7 @@ function useGuideline<T = HTMLDivElement>(
   const guidelineCallbackRef = React.useRef(guidelineCallback)
   guidelineCallbackRef.current = guidelineCallback
 
-  const guidelineRef = useRefEditorState('canvas')(
-    (store) => store.editor.canvas.controls.snappingGuidelines,
-  )
+  const guidelineRef = useRefEditorState((store) => store.editor.canvas.controls.snappingGuidelines)
 
   const innerCallback = React.useCallback(() => {
     if (guidelineRef.current[index] != null) {

@@ -144,7 +144,7 @@ export function renderCanvasReturnResultAndError(
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
-  const storeHookForTest = getStoreHook(NO_OP)
+  const storeHookForTest = getStoreHook()
   let projectContents: ProjectContents = {
     [UiFilePath]: textFile(
       textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
@@ -187,7 +187,7 @@ export function renderCanvasReturnResultAndError(
     updatedEditor = UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(
       updateNodeModulesContents(SampleNodeModules),
       updatedEditor,
-      store.dispatch,
+      NO_OP,
       store.builtInDependencies,
     )
     return {

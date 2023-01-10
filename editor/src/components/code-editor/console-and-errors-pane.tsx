@@ -2,15 +2,13 @@ import React from 'react'
 import { useReadOnlyConsoleLogs } from '../../core/shared/runtime-report-logs'
 import { setFocus } from '../common/actions'
 import { openCodeEditorFile } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { getAllCodeEditorErrors } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { CodeEditorTabPane } from './code-problems'
 
 export const ConsoleAndErrorsPane = React.memo(() => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'ConsoleAndErrorsPane dispatch',
-  )
+  const dispatch = useDispatch()
 
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 

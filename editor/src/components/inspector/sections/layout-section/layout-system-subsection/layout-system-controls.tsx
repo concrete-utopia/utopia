@@ -40,6 +40,7 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -75,10 +76,7 @@ function useDefaultedLayoutSystemInfo(): {
 }
 
 export function useLayoutSystemData() {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'useLayoutSystemData dispatch',
-  )
+  const dispatch = useDispatch()
   const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.targetPath
   })

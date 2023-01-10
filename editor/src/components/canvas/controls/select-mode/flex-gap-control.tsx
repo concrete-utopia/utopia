@@ -14,6 +14,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
@@ -67,7 +68,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
   }, [hoveredViews, selectedElement])
 
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const { scale, metadata, isDragging } = useEditorState('fullOldStore')(
     (store) => ({
       scale: store.editor.canvas.scale,
@@ -77,9 +78,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl dispatch scale',
   )
 
-  const canvasOffset = useRefEditorState('canvasOffset')(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-  )
+  const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,

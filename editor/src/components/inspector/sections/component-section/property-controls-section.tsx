@@ -10,6 +10,7 @@ import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
@@ -35,7 +36,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     }),
   )
 
-  const dispatch = useEditorState('restOfStore')((state) => state.dispatch, 'ComponentSectionInner')
+  const dispatch = useDispatch()
   const setGlobalCursor = React.useCallback(
     (cursor: CSSCursor | null) => {
       dispatch([setCursorOverlay(cursor)], 'everyone')

@@ -12,6 +12,7 @@ import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 import SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
 import { emptyComments, jsxAttributesFromMap } from '../../shared/element-template'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -160,7 +161,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   defaultExpression: null,
                 },
               },
-              propsUsed: ['style'],
+              propsUsed: styleStringInArray,
               rootElement: {
                 type: 'JSX_ELEMENT',
                 name: {

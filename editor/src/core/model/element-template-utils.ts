@@ -62,6 +62,7 @@ import { getStoryboardElementPath } from './scene-utils'
 import { TransientFilesState } from '../../components/editor/store/editor-state'
 import { getSimpleAttributeAtPath } from './element-metadata-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { styleStringInArray } from '../../utils/common-constants'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -640,7 +641,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
   const boundParam = propsParam.boundParam
   switch (boundParam.type) {
     case 'REGULAR_PARAM': {
-      const styleProp = getJSXAttributeAtPath(attributes, PP.create(['style']))
+      const styleProp = getJSXAttributeAtPath(attributes, PP.create(styleStringInArray))
       const styleAttribute = styleProp.attribute
       switch (styleAttribute.type) {
         case 'ATTRIBUTE_NOT_FOUND':
@@ -683,7 +684,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             // This is the aliased name or if there's no alias the field name.
             const propertyToLookFor = partBoundParam.paramName
 
-            const styleProp = getJSXAttributeAtPath(attributes, PP.create(['style']))
+            const styleProp = getJSXAttributeAtPath(attributes, PP.create(styleStringInArray))
             const styleAttribute = styleProp.attribute
             switch (styleAttribute.type) {
               case 'ATTRIBUTE_NOT_FOUND':

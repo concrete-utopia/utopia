@@ -150,7 +150,7 @@ export function defaultDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultSpanElement(uid: string): JSXElement {
+export function defaultSpanElementWithPlaceholder(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('span', []),
     uid,
@@ -160,6 +160,25 @@ export function defaultSpanElement(uid: string): JSXElement {
     [jsxTextBlock('utopia')],
   )
 }
+
+export function defaultSpanElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('span', []),
+    uid,
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+          wordBreak: 'break-word',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
+    [],
+  )
+}
+export const DefaultTextWidth = 200
 
 export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(

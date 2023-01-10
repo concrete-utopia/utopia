@@ -40,6 +40,7 @@ import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import { pointsEqual, WindowPoint } from '../core/shared/math-utils'
+import { useDispatch } from './editor/store/dispatch-context'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -175,17 +176,14 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const { dispatch } = useEditorState('restOfStore')((store) => {
-    return { dispatch: store.dispatch }
-  }, 'ElementContextMenu dispatch')
+  const dispatch = useDispatch()
 
-  const editorSliceRef = useRefEditorState('fullOldStore')((store) => {
+  const editorSliceRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
       selectedViews: store.editor.selectedViews,
       jsxMetadata: store.editor.jsxMetadata,
-      editorDispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
       transientFilesState: store.derived.transientState.filesState,

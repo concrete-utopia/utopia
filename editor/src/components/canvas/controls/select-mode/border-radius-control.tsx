@@ -7,6 +7,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import {
@@ -54,12 +55,10 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     mode,
   } = props
 
-  const canvasOffset = useRefEditorState('canvasOffset')(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-  )
-  const { dispatch, scale, hoveredViews, isDragging } = useEditorState('fullOldStore')(
+  const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const dispatch = useDispatch()
+  const { scale, hoveredViews, isDragging } = useEditorState('fullOldStore')(
     (store) => ({
-      dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
       hoveredViews: store.editor.hoveredViews,
       isDragging:

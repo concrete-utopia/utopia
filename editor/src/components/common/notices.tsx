@@ -4,8 +4,8 @@ import { jsx } from '@emotion/react'
 import * as EditorActions from '../editor/actions/action-creators'
 import React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
-import { useEditorState } from '../editor/store/store-hook'
 import { Notice, NoticeLevel } from './notice'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 interface NoticeProps extends Notice {
   style?: React.CSSProperties
@@ -36,7 +36,7 @@ const ToastTimeout = 5500
  * **Level**: see NoticeLevel jsdoc
  */
 export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>> = (props) => {
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'Toast dispatch')
+  const dispatch = useDispatch()
   const deleteToast = React.useCallback(() => {
     dispatch([EditorActions.removeToast(props.id)])
   }, [dispatch, props.id])

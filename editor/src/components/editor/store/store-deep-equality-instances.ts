@@ -414,6 +414,8 @@ import {
   TargetedInsertionParent,
   imageInsertionSubject,
   TextEditMode,
+  Coordinates,
+  TextEditableElementState,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2643,7 +2645,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 )
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2654,6 +2656,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
+    (subject) => subject.textEdit,
+    BooleanKeepDeepEquality,
     insertionSubject,
   )
 
@@ -2685,10 +2689,31 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
     EditorModes.liveMode,
   )
 
+export const CoordinateKeepDeepEquality: KeepDeepEqualityCall<Coordinates> = combine2EqualityCalls(
+  (c) => c.x,
+  NumberKeepDeepEquality,
+  (c) => c.y,
+  NumberKeepDeepEquality,
+  (x: number, y: number) => ({ x, y }),
+)
+
+export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
+  TextEditableElementState
+> = (oldValue, newValue) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(newValue, true)
+  }
+  return keepDeepEqualityResult(oldValue, false)
+}
+
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
-  combine1EqualityCall(
+  combine3EqualityCalls(
     (mode) => mode.editedText,
     nullableDeepEquality(ElementPathKeepDeepEquality),
+    (mode) => mode.cursorPosition,
+    nullableDeepEquality(CoordinateKeepDeepEquality),
+    (mode) => mode.elementState,
+    TextEditableElementStateKeepDeepEquality,
     EditorModes.textEditMode,
   )
 

@@ -24,6 +24,8 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
+import { DispatchContext } from '../../editor/store/dispatch-context'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -36,7 +38,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
   attributeMetadatas: Array<StyleAttributeMetadata>,
 ) {
   const props = styleObjectExpressions.map(
-    (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
+    (styleExpression) => getPropsForStyleProp(styleExpression, styleStringInArray)!,
   )
 
   const mockDispatch = jest.fn()
@@ -46,7 +48,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
     const InspectorContextProvider = makeInspectorHookContextProvider(
       [TestSelectedComponent],
       props,
-      ['style'],
+      styleStringInArray,
       spiedProps,
       computedStyles,
       attributeMetadatas,
@@ -60,7 +62,6 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       userState: null as any,
       workers: null as any,
       persistence: null as any,
-      dispatch: mockDispatch,
       alreadySaved: false,
       builtInDependencies: [],
       storeName: 'editor-store',
@@ -69,9 +70,11 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
     const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)
 
     return (
-      <EditorStateContext.Provider value={storeHook}>
-        <InspectorContextProvider>{children}</InspectorContextProvider>
-      </EditorStateContext.Provider>
+      <DispatchContext.Provider value={mockDispatch}>
+        <EditorStateContext.Provider value={storeHook}>
+          <InspectorContextProvider>{children}</InspectorContextProvider>
+        </EditorStateContext.Provider>
+      </DispatchContext.Provider>
     )
   }
 

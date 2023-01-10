@@ -21,6 +21,8 @@ import {
   getJSXAttribute,
   emptyComments,
   jsxTextBlock,
+  JSXTextBlock,
+  JSXElementChildren,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -50,7 +52,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditor, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -319,17 +321,32 @@ export function renderCoreElement(
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      const unescaped = unescapeHTML(element.text)
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
-      if (parentPath == null || !EP.pathsEqual(parentPath, editedText)) {
-        return unescaped
+      // when the text is just edited its parent renders it in a text editor, so no need to render anything here
+      if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
+        return <></>
       }
-      return <TextEditor elementPath={parentPath} text={unescaped.trim()} />
+
+      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
+      return (
+        <>
+          {lines.map((l, index) => (
+            <React.Fragment key={index}>
+              {l}
+              {index < lines.length - 1 ? <br /> : null}
+            </React.Fragment>
+          ))}
+        </>
+      )
     }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
+}
+
+export function filterJSXElementChildIsTextOrNewline(c: JSXElementChild): c is JSXTextBlock {
+  return c.type === 'JSX_TEXT_BLOCK' || (c.type === 'JSX_ELEMENT' && c.name.baseVariable === 'br')
 }
 
 function renderJSXElement(
@@ -444,6 +461,34 @@ function renderJSXElement(
   }
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+    if (elementIsTextEdited) {
+      const text = childrenWithNewTextBlock
+        .filter(filterJSXElementChildIsTextOrNewline)
+        .map((c) => (c.text != null ? c.text.trim() : '\n'))
+        .join('')
+      const textContent = unescapeHTML(text ?? '')
+      const textEditorProps = {
+        elementPath: elementPath,
+        text: textContent.trim(),
+        component: FinalElement,
+        passthroughProps: finalPropsIcludingElementPath,
+      }
+
+      return buildSpyWrappedElement(
+        jsx,
+        textEditorProps,
+        elementPath,
+        metadataContext,
+        updateInvalidatedPaths,
+        childrenElements,
+        TextEditorWrapper,
+        inScope,
+        jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        filePath,
+      )
+    }
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,

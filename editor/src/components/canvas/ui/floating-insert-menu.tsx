@@ -61,6 +61,7 @@ import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -439,14 +440,12 @@ export var FloatingMenu = React.memo(() => {
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'FloatingMenu dispatch')
+  const dispatch = useDispatch()
 
-  const projectContentsRef = useRefEditorState('projectContents')(
-    (store) => store.editor.projectContents,
-  )
-  const selectedViewsref = useRefEditorState('selectedViews')((store) => store.editor.selectedViews)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
-  const shouldWrapContentsByDefault = useRefEditorState('metadata')((store) => {
+  const shouldWrapContentsByDefault = useRefEditorState((store) => {
     // We only care about this when the menu is first opened
     const firstSelectedView = store.editor.selectedViews[0]
     if (firstSelectedView != null) {
@@ -699,10 +698,7 @@ export var FloatingMenu = React.memo(() => {
 interface FloatingInsertMenuProps {}
 
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'FloatingInsertMenu dispatch',
-  )
+  const dispatch = useDispatch()
   const isVisible = useEditorState('restOfEditor')(
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',

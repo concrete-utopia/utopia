@@ -43,6 +43,7 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -173,16 +174,13 @@ const Input = (props: InputProps) => {
 }
 
 const ClassNameControl = React.memo(() => {
-  const editorStoreRef = useRefEditorState('fullOldStore')((store) => store)
+  const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState('selectedViews')(
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'ClassNameSubsection dispatch',
-  )
+  const dispatch = useDispatch()
 
   const [filter, setFilter] = React.useState('')
   const isFocusedRef = React.useRef(false)

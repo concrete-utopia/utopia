@@ -1,10 +1,10 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
-import { createSelector } from 'reselect'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
+import { useDispatch } from '../../components/editor/store/dispatch-context'
 import {
   defaultIndexHtmlFilePath,
   EditorStorePatched,
@@ -401,8 +401,7 @@ export function updateHTMLExternalResourcesLinks(
     return parsedIndices
   }
 }
-
-export function getExternalResourcesInfo(
+function getExternalResourcesInfo(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Either<
@@ -455,25 +454,17 @@ export function getExternalResourcesInfo(
   }
 }
 
-const getExternalResourcesInfoSelector = createSelector(
-  (store: ProjectContentSubstate) => store.editor.projectContents,
-  (_: ProjectContentSubstate, dispatch: EditorDispatch) => dispatch,
-  getExternalResourcesInfo,
-)
-
 export function useExternalResources(): {
   values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'useExternalResources dispatch',
+  const dispatch = useDispatch()
+  const projectContents = useEditorState('projectContents')(
+    (store) => store.editor.projectContents,
+    'useExternalResources projectContents',
   )
-  const externalResourcesInfo = useEditorState('projectContents')(
-    (state) => getExternalResourcesInfoSelector(state, dispatch),
-    'useExternalResources externalResourcesInfo',
-  )
+  const externalResourcesInfo = getExternalResourcesInfo(projectContents, dispatch)
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
     ? right(externalResourcesInfo.value.externalResources)
     : left(externalResourcesInfo.value)

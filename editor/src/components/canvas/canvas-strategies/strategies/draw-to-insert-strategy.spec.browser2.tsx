@@ -44,6 +44,10 @@ async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
   return renderResult
 }
 
+function ensureInInsertMode(renderResult: EditorRenderResult): void {
+  expect(renderResult.getEditorState().editor.mode.type).toEqual('insert')
+}
+
 async function enterInsertModeFromInsertMenu(
   renderResult: EditorRenderResult,
   elementType: 'div' | 'img' = 'div',
@@ -60,6 +64,8 @@ async function enterInsertModeFromInsertMenu(
   mouseClickAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
+
+  ensureInInsertMode(renderResult)
 }
 
 async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRenderResult) {
@@ -75,6 +81,8 @@ async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRender
   mouseDownAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
+
+  ensureInInsertMode(renderResult)
 }
 
 function isIndicatorBeforeSiblingBBB(

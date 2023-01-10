@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
@@ -157,7 +158,7 @@ export function getElementDirection(element: ElementInstanceMetadata | null): Di
   return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
-const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
+const StyleDisplayProp = stylePropPathMappingFn('display', styleStringInArray)
 
 export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,

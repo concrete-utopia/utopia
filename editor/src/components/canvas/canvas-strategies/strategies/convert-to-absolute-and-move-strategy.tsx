@@ -49,6 +49,7 @@ import { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -270,11 +271,11 @@ function filterPinsToSet(
     return ['top', 'left', 'width', 'height']
   } else {
     const horizontalProps = (['left', 'right', 'width'] as Array<LayoutPinnedProp>).filter((p) => {
-      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      const prop = getLayoutProperty(p, right(element.props), styleStringInArray)
       return isRight(prop) && prop.value != null
     })
     const verticalProps = (['top', 'bottom', 'height'] as Array<LayoutPinnedProp>).filter((p) => {
-      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      const prop = getLayoutProperty(p, right(element.props), styleStringInArray)
       return isRight(prop) && prop.value != null
     })
 
@@ -425,7 +426,7 @@ function createUpdatePinsCommands(
       setCssLengthProperty(
         'always',
         path,
-        stylePropPathMappingFn(framePin, ['style']),
+        stylePropPathMappingFn(framePin, styleStringInArray),
         pinValue,
         isHorizontalPoint(framePointForPinnedProp(framePin))
           ? parentFrame?.width

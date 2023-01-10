@@ -15,6 +15,7 @@ export interface InsertionSubject {
   defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
+  textEdit: boolean
 }
 
 export function insertionSubject(
@@ -23,6 +24,7 @@ export function insertionSubject(
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
+  textEdit: boolean,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -30,6 +32,7 @@ export function insertionSubject(
     defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
+    textEdit: textEdit,
   }
 }
 
@@ -89,6 +92,15 @@ export interface SelectMode {
 export interface TextEditMode {
   type: 'textEdit'
   editedText: ElementPath | null
+  cursorPosition: Coordinates | null
+  elementState: TextEditableElementState
+}
+
+export type TextEditableElementState = 'existing' | 'new'
+
+export interface Coordinates {
+  x: number
+  y: number
 }
 
 export interface LiveCanvasMode {
@@ -118,10 +130,16 @@ export const EditorModes = {
       controlId: controlId,
     }
   },
-  textEditMode: function (editedText: ElementPath | null): TextEditMode {
+  textEditMode: function (
+    editedText: ElementPath | null,
+    cursorPosition: Coordinates | null,
+    elementState: TextEditableElementState,
+  ): TextEditMode {
     return {
       type: 'textEdit',
       editedText: editedText,
+      cursorPosition: cursorPosition,
+      elementState: elementState,
     }
   },
 }

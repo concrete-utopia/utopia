@@ -26,6 +26,8 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 interface ZeroSizedElementControlProps {
   showAllPossibleElements: boolean
@@ -49,10 +51,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
       (store) => store.editor.canvas.scale,
       'ZeroSizedElementControls scale',
     )
-    const dispatch = useEditorState('restOfStore')(
-      (store) => store.dispatch,
-      'ZeroSizedElementControls dispatch',
-    )
+    const dispatch = useDispatch()
 
     const zeroSizeElements = useEditorState('fullOldStore')((store) => {
       if (showAllPossibleElements) {
@@ -232,11 +231,8 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
       }, targets)
     }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
 
-    const dispatch = useEditorState('restOfStore')(
-      (store) => store.dispatch,
-      'ZeroSizeResizeControlWrapper dispatch',
-    )
-    const scale = useEditorState('canvas')(
+    const dispatch = useDispatch()
+    const scale = useEditorState('canvasOffset')(
       (store) => store.editor.canvas.scale,
       'ZeroSizeResizeControlWrapper scale',
     )
@@ -302,12 +298,12 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
             element.specialSizeMeasurements.parentFlexDirection === 'row-reverse')
         ) {
           propsToSet.push({
-            path: stylePropPathMappingFn('flexBasis', ['style']),
+            path: stylePropPathMappingFn('flexBasis', styleStringInArray),
             value: 100,
           })
         } else {
           propsToSet.push({
-            path: stylePropPathMappingFn('width', ['style']),
+            path: stylePropPathMappingFn('width', styleStringInArray),
             value: 100,
           })
         }
@@ -319,19 +315,19 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
             element.specialSizeMeasurements.parentFlexDirection === 'column-reverse')
         ) {
           propsToSet.push({
-            path: stylePropPathMappingFn('flexBasis', ['style']),
+            path: stylePropPathMappingFn('flexBasis', styleStringInArray),
             value: 100,
           })
         } else {
           propsToSet.push({
-            path: stylePropPathMappingFn('height', ['style']),
+            path: stylePropPathMappingFn('height', styleStringInArray),
             value: 100,
           })
         }
       }
       if (!isFlexParent && element.specialSizeMeasurements.display === 'inline') {
         propsToSet.push({
-          path: stylePropPathMappingFn('position', ['style']),
+          path: stylePropPathMappingFn('position', styleStringInArray),
           value: 'absolute',
         })
       }

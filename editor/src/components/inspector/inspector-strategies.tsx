@@ -5,15 +5,20 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { EditorDispatch } from '../editor/action-types'
 import {
+  Axis,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
   FlexJustifyContent,
   hugContentsApplicable,
+  widthHeightFromAxis,
 } from './inspector-common'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from './common/css-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { assertNever } from '../../core/shared/utils'
+import * as EP from '../../core/shared/element-path'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -90,7 +95,7 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     const elements = elementPaths.filter(fillContainerApplicable)
 
@@ -98,26 +103,55 @@ export const setPropFillStrategies = (prop: 'width' | 'height'): Array<Inspector
       return null
     }
 
-    return elements.map((path) => setProperty('always', path, PP.create(['style', prop]), '100%'))
+    const nukePropsCommand = (path: ElementPath) => {
+      switch (axis) {
+        case 'horizontal':
+          return deleteProperties('always', path, [
+            PP.create(['style', 'width']),
+            PP.create(['style', 'minWidth']),
+            PP.create(['style', 'maxWidth']),
+          ])
+        case 'vertical':
+          return deleteProperties('always', path, [
+            PP.create(['style', 'height']),
+            PP.create(['style', 'minHeight']),
+            PP.create(['style', 'maxHeight']),
+          ])
+        default:
+          assertNever(axis)
+      }
+    }
+
+    return elements.flatMap((path) => {
+      const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
+      return MetadataUtils.isFlexLayoutedContainer(parentInstance)
+        ? [
+            setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
+            nukePropsCommand(path),
+          ]
+        : [setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%')]
+    })
   },
 ]
 
-export const setPropFixedStrategies = (
-  prop: 'width' | 'height',
-  value: CSSNumber,
-): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     if (elementPaths.length === 0) {
       return null
     }
 
     return elementPaths.map((path) =>
-      setProperty('always', path, PP.create(['style', prop]), printCSSNumber(value, null)),
+      setProperty(
+        'always',
+        path,
+        PP.create(['style', widthHeightFromAxis(axis)]),
+        printCSSNumber(value, null),
+      ),
     )
   },
 ]
 
-export const setPropHugStrategies = (prop: 'width' | 'height'): Array<InspectorStrategy> => [
+export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   (metadata, elementPaths) => {
     const elements = elementPaths.filter((path) => hugContentsApplicable(metadata, path))
 
@@ -126,7 +160,7 @@ export const setPropHugStrategies = (prop: 'width' | 'height'): Array<InspectorS
     }
 
     return elements.map((path) =>
-      setProperty('always', path, PP.create(['style', prop]), 'min-content'),
+      setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
     )
   },
 ]

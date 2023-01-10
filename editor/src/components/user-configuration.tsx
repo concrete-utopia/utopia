@@ -14,6 +14,7 @@ import { Key } from '../utils/keyboard'
 import { capitalize } from '../core/shared/string-utils'
 import Keyboard from '../utils/keyboard'
 import { setShortcut } from './editor/actions/action-creators'
+import { useDispatch } from './editor/store/dispatch-context'
 
 interface ShortcutWithName extends Shortcut {
   name: string
@@ -27,12 +28,11 @@ interface DataSourceEntry {
 }
 
 export function UserConfiguration() {
-  const { dispatch, shortcutConfig } = useEditorState('restOfStore')((store) => {
-    return {
-      dispatch: store.dispatch,
-      shortcutConfig: store.userState.shortcutConfig,
-    }
-  }, 'UserConfiguration')
+  const shortcutConfig = useEditorState('restOfStore')(
+    (store) => store.userState.shortcutConfig,
+    'UserConfiguration',
+  )
+  const dispatch = useDispatch()
 
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null)
 

@@ -55,7 +55,13 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
-import { DispatchPriority, EditorAction, LoginState, notLoggedIn } from '../editor/action-types'
+import {
+  DispatchPriority,
+  EditorAction,
+  EditorDispatch,
+  LoginState,
+  notLoggedIn,
+} from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
@@ -323,7 +329,6 @@ export async function renderTestEditorWithModel(
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
-    dispatch: asyncTestDispatch,
     alreadySaved: false,
     builtInDependencies: builtInDependencies,
   }
@@ -357,6 +362,7 @@ export async function renderTestEditorWithModel(
     >
       <FailJestOnCanvasError />
       <EditorRoot
+        dispatch={asyncTestDispatch as EditorDispatch}
         mainStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}

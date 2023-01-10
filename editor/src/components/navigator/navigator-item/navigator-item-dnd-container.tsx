@@ -250,9 +250,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
         key='navigatorItem'
         id={`navigator-item-${safeComponentId}`}
         data-testid={`navigator-item-${safeComponentId}`}
-        style={{
-          ...props.windowStyle,
-        }}
+        style={props.windowStyle}
       >
         <NavigatorItem
           elementPath={this.props.elementPath}
@@ -292,7 +290,7 @@ interface DropCollectedProps {
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
-  const editorStateRef = useRefEditorState('fullOldStore')((store) => store.editor)
+  const editorStateRef = useRefEditorState((store) => store.editor)
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',

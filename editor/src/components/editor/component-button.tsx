@@ -20,6 +20,7 @@ import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
 import { Interpolation } from '@emotion/serialize'
+import { useDispatch } from './store/dispatch-context'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
   const focusedElementPath = useEditorState('focusedElement')(
@@ -40,10 +41,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
     }
   }, 'Component-button')
 
-  const dispatch = useEditorState('restOfStore')(
-    (state) => state.dispatch,
-    'ComponentOrInstanceIndicator',
-  )
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 

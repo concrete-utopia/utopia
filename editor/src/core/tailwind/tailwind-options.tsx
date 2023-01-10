@@ -277,7 +277,7 @@ export function useGetSelectedClasses(): {
   elementPaths: Array<ElementPath>
   isSettable: boolean
 } {
-  const metadataRef = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elements = useEditorState('fullOldStore')((store) => {
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
     if (openUIJSFileKey == null) {
@@ -299,7 +299,7 @@ export function useGetSelectedClasses(): {
     'ClassNameSelect elementPaths',
   )
 
-  const allElementPropsRef = useRefEditorState('metadata')((store) => store.editor.allElementProps)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const classNamesFromAttributesOrProps = React.useMemo(
     () =>

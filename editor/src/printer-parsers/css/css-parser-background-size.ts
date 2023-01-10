@@ -12,6 +12,7 @@ import {
   left,
   mapEither,
   sequenceEither,
+  traverseEither,
 } from '../../core/shared/either'
 import {
   descriptionParseError,
@@ -68,24 +69,22 @@ export const parseBGSize: Parser<CSSBGSize> = (value: unknown) => {
 export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroundSize> {
   if (typeof value === 'string') {
     const preparsedLayers: Array<PreparsedLayer> = traverseForPreparsedLayers(value)
-    return sequenceEither(
-      preparsedLayers.map((layer) => {
-        const lexerMatch = getLexerTypeMatches('bg-size', layer.value)
-        if (isRight(lexerMatch)) {
-          const parsed = parseBGSize(lexerMatch.value)
-          return bimapEither(
-            (l) => getParseErrorDetails(l).description,
-            (r) => {
-              r.enabled = layer.enabled
-              return r
-            },
-            parsed,
-          )
-        } else {
-          return lexerMatch
-        }
-      }),
-    )
+    return traverseEither((layer) => {
+      const lexerMatch = getLexerTypeMatches('bg-size', layer.value)
+      if (isRight(lexerMatch)) {
+        const parsed = parseBGSize(lexerMatch.value)
+        return bimapEither(
+          (l) => getParseErrorDetails(l).description,
+          (r) => {
+            r.enabled = layer.enabled
+            return r
+          },
+          parsed,
+        )
+      } else {
+        return lexerMatch
+      }
+    }, preparsedLayers)
   }
   return left('Value is not string')
 }

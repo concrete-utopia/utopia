@@ -26,6 +26,7 @@ import {
 } from '../../../../core/shared/github'
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
@@ -36,10 +37,7 @@ interface RepositoryRowProps extends RepositoryEntry {
 }
 
 const RepositoryRow = (props: RepositoryRowProps) => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'RepositoryRow dispatch',
-  )
+  const dispatch = useDispatch()
 
   const [importing, setImporting] = React.useState(false)
 
@@ -237,7 +235,7 @@ export const RepositoryListing = React.memo(
       () => githubOperations.some((op) => op.name === 'loadRepositories'),
       [githubOperations],
     )
-    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+    const dispatch = useDispatch()
 
     const refreshRepos = React.useCallback(() => {
       void getUsersPublicGithubRepositories(dispatch).then((actions) => {

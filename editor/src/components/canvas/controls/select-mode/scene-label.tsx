@@ -7,6 +7,7 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
@@ -48,7 +49,7 @@ export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
 
 const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'SceneLabel dispatch')
+  const dispatch = useDispatch()
 
   const labelSelectable = useEditorState('restOfEditor')(
     (store) => !store.editor.keysPressed['z'],

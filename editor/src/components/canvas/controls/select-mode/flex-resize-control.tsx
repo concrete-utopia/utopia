@@ -12,6 +12,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
@@ -107,15 +108,11 @@ const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const LineSVGComponent =
       props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
-    const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'ResizeEdge dispatch')
+    const dispatch = useDispatch()
     const scale = useEditorState('canvas')((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const jsxMetadataRef = useRefEditorState('metadata')((store) => store.editor.jsxMetadata)
-    const selectedViewsRef = useRefEditorState('selectedViews')(
-      (store) => store.editor.selectedViews,
-    )
-    const canvasOffsetRef = useRefEditorState('canvasOffset')(
-      (store) => store.editor.canvas.roundedCanvasOffset,
-    )
+    const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {

@@ -78,6 +78,8 @@ import type { StrategyState } from '../canvas/canvas-strategies/interaction-stat
 import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export interface ElementPathElement {
   name?: string
@@ -119,10 +121,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'AlignmentButtons dispatch',
-  )
+  const dispatch = useDispatch()
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -240,8 +239,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
 
+  const dispatch = useDispatch()
   const {
-    dispatch,
     focusedPanel,
     anyComponents,
     anyUnknownElements,
@@ -278,7 +277,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           const elem = possibleElement.element.value
           if (isJSXElement(elem)) {
             if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
+              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                styleStringInArray,
+              )) {
                 const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
                 if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
                   hasNonDefaultPositionAttributesInner = true
@@ -290,7 +291,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       }
     })
     return {
-      dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
       anyComponents: anyComponentsInner,
       anyUnknownElements: anyUnknownElementsInner,
@@ -390,7 +390,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 })
 Inspector.displayName = 'Inspector'
 
-const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
+const DefaultStyleTargets: Array<CSSTarget> = [
+  cssTarget(styleStringInArray, 0),
+  cssTarget(['css'], 0),
+]
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
@@ -456,17 +459,14 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   }>
 > = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState('fullOldStore')(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadata: store.editor.jsxMetadata,
-        isUIJSFile: isOpenFileUiJs(store.editor),
-        allElementProps: store.editor.allElementProps,
-      }
-    },
-    'SingleInspectorEntryPoint',
-  )
+  const dispatch = useDispatch()
+  const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState('fullOldStore')((store) => {
+    return {
+      jsxMetadata: store.editor.jsxMetadata,
+      isUIJSFile: isOpenFileUiJs(store.editor),
+      allElementProps: store.editor.allElementProps,
+    }
+  }, 'SingleInspectorEntryPoint')
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
@@ -596,9 +596,9 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, allElementProps } = useEditorState('fullOldStore')((store) => {
+  const dispatch = useDispatch()
+  const { jsxMetadata, allElementProps } = useEditorState('metadata')((store) => {
     return {
-      dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       allElementProps: store.editor.allElementProps,
     }

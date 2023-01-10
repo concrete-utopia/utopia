@@ -18,6 +18,7 @@ import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   defaultElementWarnings,
   DropTargetHint,
@@ -163,11 +164,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
-  const dispatch = useEditorState('restOfStore')(
-    (store) => store.dispatch,
-    'NavigatorItemWrapper dispatch',
-  )
-
+  const dispatch = useDispatch()
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
     useEditorState('restOfEditor')((store) => {
       // Only capture this if it relates to the current navigator item, as it may change while

@@ -7,6 +7,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/meta-actions'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 interface ElementPathElement {
   name?: string
@@ -14,7 +15,7 @@ interface ElementPathElement {
 }
 
 export const BreadcrumbTrail = React.memo(() => {
-  const dispatch = useEditorState('restOfStore')((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const { jsxMetadata, selectedViews, allElementProps } = useEditorState('metadata')((store) => {
     return {
       jsxMetadata: store.editor.jsxMetadata,

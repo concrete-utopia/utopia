@@ -22,6 +22,7 @@ import { SelectOption } from '../../../uuiui-deps'
 import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ForksGiven } from './forks-given'
@@ -44,19 +45,16 @@ const themeOptions = [
 const defaultTheme = themeOptions[0]
 
 export const SettingsPane = React.memo(() => {
-  const { dispatch, userState, themeConfig } = useEditorState('restOfStore')((store) => {
+  const dispatch = useDispatch()
+  const { userState, projectId, projectName, projectDescription, themeConfig } = useEditorState(
+    'fullOldStore',
+  )((store) => {
     return {
-      dispatch: store.dispatch,
       userState: store.userState,
-      themeConfig: store.userState.themeConfig,
-    }
-  }, 'SettingsPane')
-
-  const { projectId, projectName, projectDescription } = useEditorState('restOfEditor')((store) => {
-    return {
       projectId: store.editor.id,
       projectName: store.editor.projectName,
       projectDescription: store.editor.projectDescription,
+      themeConfig: store.userState.themeConfig,
     }
   }, 'SettingsPane')
 
