@@ -4,7 +4,7 @@ import { setFocus } from '../common/actions'
 import { openCodeEditorFile } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { getAllCodeEditorErrors } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { CodeEditorTabPane } from './code-problems'
 
 export const ConsoleAndErrorsPane = React.memo(() => {
@@ -13,7 +13,7 @@ export const ConsoleAndErrorsPane = React.memo(() => {
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 
   const errorMessages = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'warning', false)
     },

@@ -71,12 +71,12 @@ function ensureSubstoreTimingExists(storeKey: string) {
  * It is a good practice to use object destructure to consume the return value.
  */
 export const useEditorState = <K extends StoreKey, S extends typeof Substores[K], U>(
-  storeKey_: K | S,
+  storeKey_: S,
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
-  const storeKey: K = typeof storeKey_ === 'function' ? (storeKey_.name as K) : storeKey_
+  const storeKey: K = storeKey_.name as K
   const context = React.useContext(EditorStateContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)

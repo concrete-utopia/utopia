@@ -250,7 +250,7 @@ interface FileBrowserActionSheetProps {
 const FileBrowserItems = React.memo(() => {
   const dispatch = useDispatch()
   const { errorMessages, codeResultCache, renamingTarget, dropTarget, projectID } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         errorMessages: getAllCodeEditorErrors(store.editor.codeEditorErrors, 'warning', true),
@@ -265,13 +265,13 @@ const FileBrowserItems = React.memo(() => {
   )
 
   const projectContents = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => store.editor.projectContents,
     'FileBrowserItems projectContents',
   )
 
   const { githubRepo, conflicts } = useEditorState(
-    'github',
+    Substores.github,
     (store) => {
       return {
         githubRepo: store.editor.githubSettings.targetRepository,
@@ -282,7 +282,7 @@ const FileBrowserItems = React.memo(() => {
   )
 
   const editorSelectedFile = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => store.editor.canvas.openFile?.filename ?? null,
     'FileBrowserItems editorSelectedFile',
   )

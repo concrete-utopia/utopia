@@ -28,7 +28,7 @@ import { EditorAction, EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement } from './actions/action-creators'
 import { InsertionSubject, Mode } from './editor-modes'
 import { getOpenFilename } from './store/editor-state'
-import { useEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
@@ -79,7 +79,7 @@ interface InsertMenuProps {
 export const InsertMenu = React.memo(() => {
   const dispatch = useDispatch()
   const restOfEditorProps = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         lastFontSettings: store.editor.lastUsedFont,
@@ -92,13 +92,13 @@ export const InsertMenu = React.memo(() => {
   )
 
   const selectedViews = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'InsertMenu selectedViews',
   )
 
   const canvasProps = useEditorState(
-    'canvas',
+    Substores.canvas,
     (store) => {
       return {
         currentlyOpenFilename: store.editor.canvas.openFile?.filename ?? null,
@@ -109,13 +109,13 @@ export const InsertMenu = React.memo(() => {
   )
 
   const roundedCanvasOffset = useEditorState(
-    'canvasOffset',
+    Substores.canvasOffset,
     (store) => store.editor.canvas.roundedCanvasOffset,
     'InsertMenu roundedCanvasOffset',
   )
 
   const projectContents = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => store.editor.projectContents,
     'InsertMenu projectContents',
   )
