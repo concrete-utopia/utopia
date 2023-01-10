@@ -30,16 +30,16 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('insert')
       expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
     })
-    it('Entering text edit mode with text editable selected element', async () => {
+    it('Entering insert even if editable element is selected', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
       pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
-      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-      expect(
-        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
-      ).toEqual('sb/39e')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('insert')
+      expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
     })
     it('Entering text edit mode with double click on selected text editable element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')

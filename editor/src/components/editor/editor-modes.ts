@@ -91,7 +91,7 @@ export interface SelectMode {
 
 export interface TextEditMode {
   type: 'textEdit'
-  editedText: ElementPath | null
+  editedText: ElementPath
   cursorPosition: Coordinates | null
   elementState: TextEditableElementState
 }
@@ -131,7 +131,7 @@ export const EditorModes = {
     }
   },
   textEditMode: function (
-    editedText: ElementPath | null,
+    editedText: ElementPath,
     cursorPosition: Coordinates | null,
     elementState: TextEditableElementState,
   ): TextEditMode {
