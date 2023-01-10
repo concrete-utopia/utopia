@@ -38,7 +38,7 @@ import {
 export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 
 type FixedHugFill =
-  | { type: 'fixed'; amount: CSSNumber }
+  | { type: 'fixed'; value: CSSNumber }
   | { type: 'hug' }
   | { type: 'fill'; value: CSSNumber }
 type FixedHugFillMode = FixedHugFill['type']
@@ -53,7 +53,7 @@ function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | unde
   }
 
   if (a?.type === 'fixed' && b?.type === 'fixed') {
-    return a.amount.value === b.amount.value && a.amount.unit === b.amount.unit
+    return a.value.value === b.value.value && a.value.unit === b.value.unit
   }
 
   return true
@@ -94,11 +94,11 @@ const FillHugFixedControlOptions = ({
     fillAvailable ? selectOption('fill') : null,
   ])
 
-function detectFillHugFixedState(
+function detectFillState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
-): FixedHugFill | null {
+): CSSNumber | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
@@ -118,13 +118,35 @@ function detectFillHugFixedState(
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
     if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow }
+      return flexGrow
     }
 
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
     if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow }
+      return flexGrow
     }
+  }
+
+  const property = widthHeightFromAxis(axis)
+  const prop = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
+  )
+  if (prop === '100%') {
+    return cssNumber(100, '%')
+  }
+
+  return null
+}
+
+function detectFixedState(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): CSSNumber | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return null
   }
 
   const property = widthHeightFromAxis(axis)
@@ -134,17 +156,54 @@ function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
+  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+  if (parsed != null) {
+    return parsed
+  }
+
+  return null
+}
+
+function detectHugState(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): 'ok' | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return null
+  }
+  const property = widthHeightFromAxis(axis)
+
+  const prop = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
+  )
+
   if (prop === 'min-content') {
+    return 'ok'
+  }
+  return null
+}
+
+function detectFillHugFixedState(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): FixedHugFill | null {
+  const fill = detectFillState(axis, metadata, elementPath)
+  if (fill != null) {
+    return { type: 'fill', value: fill }
+  }
+
+  const hug = detectHugState(axis, metadata, elementPath)
+  if (hug != null) {
     return { type: 'hug' }
   }
 
-  if (prop === '100%') {
-    return { type: 'fill', value: cssNumber(100, '%') }
-  }
-
-  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
-  if (parsed != null) {
-    return { type: 'fixed', amount: parsed }
+  const fixed = detectFixedState(axis, metadata, elementPath)
+  if (fixed != null) {
+    return { type: 'fixed', value: fixed }
   }
 
   return null
@@ -362,7 +421,7 @@ function strategyForMode(
 
 function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
   if (value.type === 'fixed') {
-    return value.amount
+    return value.value
   }
   if (value.type === 'fill') {
     return value.value
