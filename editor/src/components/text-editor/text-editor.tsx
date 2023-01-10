@@ -75,7 +75,7 @@ const handleSetFontSizeShortcut = (
     return []
   }
 
-  const direction: { [key: string]: number } = { comma: -1, period: 1 }
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
   const fontSize = getFontSize(metadata, elementPath)
   if (fontSize == null) {
     return []
@@ -87,7 +87,7 @@ const handleSetFontSizeShortcut = (
         'always',
         elementPath,
         PP.create(['style', 'fontSize']),
-        printCSSNumber(adjustFontSize(fontSize[0], direction[character]), null),
+        printCSSNumber(adjustFontSize(fontSize[0], delta), null),
       ),
     ]),
   ]
