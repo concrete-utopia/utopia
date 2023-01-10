@@ -13,7 +13,7 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     setFeatureEnabled('Nine block control', false)
   })
 
-  it('add and then remove flex layout', async () => {
+  it('remove flex layout', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)
 

@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
@@ -11,19 +11,22 @@ import { InspectorStrategy } from './inspector-strategy'
 
 const styleP = (prop: keyof CSSProperties) => PP.create(['style', prop])
 
-function pruneFlexPropsCommands(elementPath: ElementPath): Array<CanvasCommand> {
-  return [
-    deleteProperties('always', elementPath, [
-      styleP('flex'),
-      styleP('flexDirection'),
-      styleP('flexWrap'),
-      styleP('flexGrow'),
-      styleP('gap'),
-      styleP('display'),
-      styleP('alignItems'),
-      styleP('justifyContent'),
-    ]),
-  ]
+const flexContainerProps = [
+  styleP('flexDirection'),
+  styleP('flexWrap'),
+  styleP('gap'),
+  styleP('display'),
+  styleP('alignItems'),
+  styleP('justifyContent'),
+]
+
+const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+
+function pruneFlexPropsCommands(
+  props: PropertyPath[],
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  return [deleteProperties('always', elementPath, props)]
 }
 
 function positionAbsoluteCommands(elementPath: ElementPath): Array<CanvasCommand> {
@@ -58,10 +61,10 @@ function removeFlexConvertToAbsoluteOne(
 ): Array<CanvasCommand> {
   const children = MetadataUtils.getChildrenPaths(metadata, elementPath)
   return [
-    ...pruneFlexPropsCommands(elementPath), // flex-related stuff is pruned
+    ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) => positionAbsoluteCommands(c)), // all children are converted to absolute,
     ...children.flatMap((c) => sizeToVisualDimensions(metadata, c)), // with width/height based on measured dimensions
-    ...children.flatMap((c) => pruneFlexPropsCommands(c)),
+    ...children.flatMap((c) => pruneFlexPropsCommands(flexChildProps, c)),
     ...sizeToVisualDimensions(metadata, elementPath), // container is sized to keep its visual dimensions
   ]
 }
