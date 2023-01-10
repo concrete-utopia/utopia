@@ -387,6 +387,31 @@ export var storyboard = (
 )
 `
 
+const projectForEdgeDblClickNoChildren = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#3EA881FC',
+        position: 'absolute',
+        left: -231,
+        top: 221,
+        width: 637,
+        display: 'flex',
+        gap: 31,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 445,
+      }}
+    >
+    </div>
+  </Storyboard>
+)
+`
+
 describe('Absolute Resize Strategy', () => {
   it('resizes component instances that honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1173,7 +1198,7 @@ describe('Double click on resize edge', () => {
 
   it('not applicable when children are positioned absolute', async () => {
     const editor = await renderTestEditorWithCode(
-      projectForEdgeDblClickWithPosition('absolute', 'absolute'),
+      projectForEdgeDblClickNoChildren,
       'await-first-dom-report',
     )
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
