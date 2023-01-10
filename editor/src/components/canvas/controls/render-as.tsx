@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
@@ -21,7 +21,7 @@ export const RenderAsRow = React.memo(() => {
   const dispatch = useDispatch()
 
   const selectedElementName = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       return MetadataUtils.getJSXElementNameFromMetadata(
         store.editor.jsxMetadata,

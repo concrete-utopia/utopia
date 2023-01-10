@@ -8,7 +8,7 @@ import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -207,7 +207,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const hoveredViews = useEditorState(
-    'highlightedHoveredViews',
+    Substores.highlightedHoveredViews,
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )

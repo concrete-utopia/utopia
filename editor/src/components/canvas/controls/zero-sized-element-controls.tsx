@@ -36,12 +36,12 @@ interface ZeroSizedElementControlProps {
 export const ZeroSizedElementControls = controlForStrategyMemoized(
   ({ showAllPossibleElements }: ZeroSizedElementControlProps) => {
     const highlightedViews = useEditorState(
-      'highlightedHoveredViews',
+      Substores.highlightedHoveredViews,
       (store) => store.editor.highlightedViews,
       'ZeroSizedElementControls highlightedViews',
     )
     const selectedElements = useEditorState(
-      'selectedViews',
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'ZeroSizedElementControls selectedElements',
     )
@@ -228,7 +228,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
   ({ targets }: ZeroSizeResizeControlWrapperProps) => {
     const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const zeroSizeElements = useEditorState(
-      'metadata',
+      Substores.metadata,
       (store) => {
         return mapDropNulls((path) => {
           const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)

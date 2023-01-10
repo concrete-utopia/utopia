@@ -41,7 +41,7 @@ export const DistanceGuidelineControl = React.memo(() => {
     'DistanceGuidelineControl altKeyPressed',
   )
   const selectedElements = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'DistanceGuidelineControl selectedElements',
   )
@@ -64,7 +64,7 @@ const DistanceGuidelineControlInner = React.memo(() => {
     'DistanceGuidelineControl canvasOffset',
   )
   const boundingBoxes = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       if (EP.areAllElementsInSameInstance(store.editor.selectedViews)) {
         const multiSelectBounds = getMultiselectBounds(

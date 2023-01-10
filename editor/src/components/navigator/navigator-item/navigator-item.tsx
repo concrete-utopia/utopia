@@ -21,7 +21,7 @@ import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 
@@ -197,7 +197,7 @@ const computeResultingStyle = (
 
 function useStyleFullyVisible(path: ElementPath): boolean {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
       const selectedViews = store.editor.selectedViews
@@ -250,7 +250,7 @@ function useStyleFullyVisible(path: ElementPath): boolean {
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
@@ -273,13 +273,13 @@ export const NavigatorItem: React.FunctionComponent<
 
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(
-    'focusedElement',
+    Substores.focusedElement,
     (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
     'NavigatorItem isFocusedComponent',
   )
 
   const isFocusableComponent = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
     },

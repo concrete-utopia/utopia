@@ -5,7 +5,7 @@ import {
   ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import {
@@ -27,7 +27,7 @@ export interface NameAndIconResult {
 }
 
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState('metadata', (store) => store.editor.jsxMetadata, 'useMetadata')
+  return useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, 'useMetadata')
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
@@ -46,7 +46,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     selector,
     'useNamesAndIconsAllPaths',
     (oldResult, newResult) => {

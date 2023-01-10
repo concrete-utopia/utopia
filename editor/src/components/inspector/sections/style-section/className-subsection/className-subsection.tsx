@@ -177,7 +177,7 @@ const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )

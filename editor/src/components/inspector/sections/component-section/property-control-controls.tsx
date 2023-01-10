@@ -46,7 +46,7 @@ import {
   Imports,
   PropertyPath,
 } from '../../../../core/shared/project-file-types'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
@@ -231,7 +231,7 @@ export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
     const dispatch = useDispatch()
     const selectedViews = useEditorState(
-      'selectedViews',
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )

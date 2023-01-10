@@ -66,7 +66,7 @@ export const ParentOutlines = controlForStrategyMemoized(
     )
 
     const parentFrame = useEditorState(
-      'metadata',
+      Substores.metadata,
       (store) => {
         if (!EP.isStoryboardPath(targetParent)) {
           return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)

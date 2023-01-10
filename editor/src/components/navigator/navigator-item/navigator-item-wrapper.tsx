@@ -24,7 +24,7 @@ import {
   DropTargetHint,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-selectors'
 import {
   DragSelection,
@@ -131,12 +131,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
   const isHighlighted = useEditorState(
-    'highlightedHoveredViews',
+    Substores.highlightedHoveredViews,
     (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
     'NavigatorItemWrapper isHighlighted',
   )
@@ -150,7 +150,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const staticElementName = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => staticNameSelector(store, props.elementPath),
     'NavigatorItemWrapper staticName',
   )
@@ -163,7 +163,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const label = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => labelSelector(store, props.elementPath),
     'NavigatorItemWrapper labelSelector',
   )

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState } from '../../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
@@ -17,7 +17,7 @@ interface ElementPathElement {
 export const BreadcrumbTrail = React.memo(() => {
   const dispatch = useDispatch()
   const { jsxMetadata, selectedViews, allElementProps } = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,

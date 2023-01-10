@@ -35,7 +35,7 @@ interface FlexResizeControlProps {
 export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
   const localSelectedElements = props.localSelectedElements
   const allSelectedElementsFlex = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       return (
         localSelectedElements.length > 0 &&

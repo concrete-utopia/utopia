@@ -15,7 +15,7 @@ import {
   UtopiaTheme,
 } from '../../uuiui'
 import { RenderAsRow } from '../canvas/controls/render-as'
-import { useEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
@@ -24,13 +24,13 @@ import { useDispatch } from './store/dispatch-context'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
   const focusedElementPath = useEditorState(
-    'focusedElement',
+    Substores.focusedElement,
     (store) => store.editor.focusedElementPath,
     'focusedElementPath',
   )
 
   const { isComponent, selectedViews } = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
 

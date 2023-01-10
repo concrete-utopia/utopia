@@ -5,7 +5,7 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import {
   flexDirectionSelector,
@@ -31,7 +31,7 @@ export const FlexDirectionToggle = React.memo(() => {
   const dispatch = useDispatch()
 
   const flexDirection = useEditorState(
-    'metadata',
+    Substores.metadata,
     flexDirectionSelector,
     'FlexDirectionToggle flexDirection',
   )

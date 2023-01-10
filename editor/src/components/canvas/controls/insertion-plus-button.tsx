@@ -36,12 +36,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       'DistanceGuidelineControl isInteractionActive',
     )
     const selectedViews = useEditorState(
-      'selectedViews',
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
     )
     const jsxMetadata = useEditorState(
-      'metadata',
+      Substores.metadata,
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )

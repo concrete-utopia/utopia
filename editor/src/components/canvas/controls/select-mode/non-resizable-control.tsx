@@ -14,7 +14,7 @@ const selectedElementsSelector = (store: { editor: { selectedViews: ElementPath[
 
 export const NonResizableControl = controlForStrategyMemoized(() => {
   const selectedElements = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     selectedElementsSelector,
     'NonResizableControl selectedElements',
   )

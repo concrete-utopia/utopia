@@ -4,7 +4,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { SimpleFlexRow, HeadlessStringInput, colorTheme } from '../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 import {
@@ -31,7 +31,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   )
 
   const selectedElementPath = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => {
       if (store.editor.selectedViews.length === 1) {
         return store.editor.selectedViews[0]
@@ -43,7 +43,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   )
 
   const selectedElementTextContent = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       if (store.editor.selectedViews.length === 1) {
         const metadata = MetadataUtils.findElementByElementPath(

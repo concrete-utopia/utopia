@@ -12,7 +12,7 @@ import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile, setFocusedElement } from '../../../editor/actions/action-creators'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import * as EP from '../../../../core/shared/element-path'
 import { when } from '../../../../utils/react-conditionals'
@@ -21,7 +21,7 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 
 function useComponentType(path: ElementPath | null): string | null {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
       const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -49,13 +49,13 @@ function useComponentType(path: ElementPath | null): string | null {
 export const ComponentInfoBox = () => {
   const dispatch = useDispatch()
   const selectedViews = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ComponentInfoBox selectedViews',
   )
 
   const focusedElementPath = useEditorState(
-    'focusedElement',
+    Substores.focusedElement,
     (store) => store.editor.focusedElementPath,
     'ComponentInfoBox focusedElementPath',
   )
@@ -91,7 +91,7 @@ export const ComponentInfoBox = () => {
   )
 
   const componentPackageName = useEditorState(
-    'metadata',
+    Substores.metadata,
     (state) => {
       const componentMetadata = MetadataUtils.findElementByElementPath(
         state.editor.jsxMetadata,
@@ -105,7 +105,7 @@ export const ComponentInfoBox = () => {
   const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
   const isFocusable = useEditorState(
-    'metadata',
+    Substores.metadata,
     (state) => {
       return target == null
         ? false
@@ -114,7 +114,7 @@ export const ComponentInfoBox = () => {
     'ComponentSectionInner isFocusable',
   )
   const isImportedComponent = useEditorState(
-    'metadata',
+    Substores.metadata,
     (state) => {
       const componentMetadata = MetadataUtils.findElementByElementPath(
         state.editor.jsxMetadata,

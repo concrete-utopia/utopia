@@ -9,7 +9,7 @@ import {
   Tooltip,
   UtopiaTheme,
 } from '../../uuiui'
-import { useEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { Utils } from '../../uuiui-deps'
 import { FormulaBar } from '../canvas/controls/formula-bar'
@@ -114,7 +114,7 @@ const TopMenuRightControls = React.memo(() => {
 
 export const TopMenu = React.memo(() => {
   const selectedElementPathString = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => Utils.optionalMap(toString, store.editor.selectedViews[0]) ?? 'empty',
     'First selected view or default',
   )

@@ -11,7 +11,7 @@ import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   CSSNumber,
   cssNumber,
@@ -183,7 +183,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const widthCurrentValue = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) =>
       detectFillHugFixedState(
         'horizontal',
@@ -204,7 +204,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   )
 
   const heightCurrentValue = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) =>
       detectFillHugFixedState(
         'vertical',

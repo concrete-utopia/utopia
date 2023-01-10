@@ -19,7 +19,7 @@ import {
 } from '../../../../../uuiui'
 import { usePropControlledState } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
@@ -262,7 +262,7 @@ interface ParentIndicatorAndLinkProps {
 }
 const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
   const parentPath = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => {
       if (store.editor.selectedViews.length !== 1) {
         return null
@@ -305,7 +305,7 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
 
 function useElementHasChildrenOrContent() {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       if (store.editor.selectedViews.length !== 1) {
         return {

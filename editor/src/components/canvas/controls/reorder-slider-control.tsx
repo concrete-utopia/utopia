@@ -53,7 +53,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       'ReorderSliderControl isDragging',
     )
     const isTargetElementHovered = useEditorState(
-      'highlightedHoveredViews',
+      Substores.highlightedHoveredViews,
       (store) => {
         const { hoveredViews } = store.editor
         return target != null && hoveredViews.includes(target)

@@ -6,7 +6,7 @@ import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { EditorStorePatched } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
@@ -155,7 +155,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
   const flexDirection = useEditorState(
-    'metadata',
+    Substores.metadata,
     flexDirectionSelector,
     'FlexDirectionToggle flexDirection',
   )
@@ -166,7 +166,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   )
 
   const isSelected = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => isSelectedSelector(store, alignItemsJustifyContent),
     'NineBlockControlCell isSelected',
   )
@@ -251,7 +251,7 @@ export const NineBlockControl = React.memo(() => {
   const dispatch = useDispatch()
 
   const nFlexContainers = useEditorState(
-    'metadata',
+    Substores.metadata,
     numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )

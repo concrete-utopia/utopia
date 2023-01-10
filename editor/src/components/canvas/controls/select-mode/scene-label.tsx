@@ -27,7 +27,7 @@ export const SceneLabelTestID = 'scene-label'
 
 export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
   const sceneTargets = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) =>
       Object.values(store.editor.jsxMetadata).filter((element) =>
         MetadataUtils.isProbablyScene(store.editor.jsxMetadata, element.elementPath),
@@ -58,7 +58,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel Z key pressed',
   )
   const label = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) =>
       MetadataUtils.getElementLabel(
         store.editor.allElementProps,
@@ -68,7 +68,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel label',
   )
   const frame = useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => MetadataUtils.getFrameInCanvasCoords(props.target, store.editor.jsxMetadata),
     'SceneLabel frame',
   )
@@ -92,12 +92,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const borderRadius = 3 / scale
 
   const isSelected = useEditorState(
-    'selectedViews',
+    Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
   const isHighlighted = useEditorState(
-    'highlightedHoveredViews',
+    Substores.highlightedHoveredViews,
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )

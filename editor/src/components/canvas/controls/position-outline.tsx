@@ -97,7 +97,7 @@ export const PositionOutline = React.memo((props: PositionOutlineProps) => {
 
 const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
       if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
@@ -113,7 +113,7 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState(
-    'metadata',
+    Substores.metadata,
     (store) => {
       const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
       if (metadata != null && !EP.isStoryboardChild(path)) {
