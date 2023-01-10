@@ -28,7 +28,7 @@ import {
   githubRepoFullName,
   LeftMenuTab,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 
@@ -67,7 +67,7 @@ const TitleBar = React.memo(() => {
   )
 
   const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
-    'github',
+    Substores.github,
     (store) => {
       return {
         upstreamChanges: store.editor.githubData.upstreamChanges,

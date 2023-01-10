@@ -3,13 +3,13 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { useEditorState } from '../../../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../../../components/editor/store/store-hook'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import { FlexColumn } from '../../../../uuiui'
 
 export const PullRequestPane = React.memo(() => {
   const pullRequests = useEditorState(
-    'github',
+    Substores.github,
     (store) => {
       return store.editor.githubData.currentBranchPullRequests
     },

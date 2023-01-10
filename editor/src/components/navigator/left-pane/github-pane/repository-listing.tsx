@@ -27,7 +27,7 @@ import {
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
@@ -42,13 +42,13 @@ const RepositoryRow = (props: RepositoryRowProps) => {
   const [importing, setImporting] = React.useState(false)
 
   const githubOperations = useEditorState(
-    'github',
+    Substores.github,
     (store) => store.editor.githubOperations,
     'RepositoryRow githubOperations',
   )
 
   const currentRepo = useEditorState(
-    'github',
+    Substores.github,
     (store) => store.editor.githubSettings.targetRepository,
     'RepositoryRow currentRepo',
   )
@@ -170,7 +170,7 @@ export const RepositoryListing = React.memo(
     )
 
     const usersRepositories = useEditorState(
-      'github',
+      Substores.github,
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -231,7 +231,7 @@ export const RepositoryListing = React.memo(
     }, [filteredRepositories, targetRepository])
 
     const githubOperations = useEditorState(
-      'github',
+      Substores.github,
       (store) => store.editor.githubOperations,
       'Github operations',
     )

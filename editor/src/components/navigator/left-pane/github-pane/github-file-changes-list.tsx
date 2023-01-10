@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/github'
 import { Button, colorTheme, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { when } from '../../../../utils/react-conditionals'
 import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
@@ -92,7 +92,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
   const menuId = `conflict-context-menu-${props.fullPath}`
   const dispatch = useDispatch()
   const githubRepo = useEditorState(
-    'github',
+    Substores.github,
     (store) => {
       return store.editor.githubSettings.targetRepository
     },
@@ -156,7 +156,7 @@ export const GithubFileChangesList: React.FC<{
   const dispatch = useDispatch()
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
   const treeConflicts = useEditorState(
-    'github',
+    Substores.github,
     (store) => store.editor.githubData.treeConflicts,
     'GithubFileChangesList treeConflicts',
   )
@@ -200,7 +200,7 @@ export const GithubFileChangesList: React.FC<{
   )
 
   const githubOperations = useEditorState(
-    'github',
+    Substores.github,
     (store) => store.editor.githubOperations,
     'Github operations',
   )

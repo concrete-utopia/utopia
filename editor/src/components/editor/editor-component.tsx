@@ -48,7 +48,7 @@ import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
 } from './store/editor-state'
-import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/low-priority-store'
@@ -411,7 +411,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const dispatch = useDispatch()
   const currentBranch = useEditorState(
-    'github',
+    Substores.github,
     (store) => {
       return store.editor.githubSettings.branchName
     },
@@ -508,7 +508,7 @@ const LockedOverlay = React.memo(() => {
   )
 
   const editorLocked = useEditorState(
-    'github',
+    Substores.github,
     (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
     'EditorComponentInner editorLocked',
   )
