@@ -13,9 +13,9 @@ export const ConsoleAndErrorsPane = React.memo(() => {
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 
   const errorMessages = useEditorState(
-    'fullOldStore',
+    'restOfEditor',
     (store) => {
-      return getAllCodeEditorErrors(store.editor, 'warning', false)
+      return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'warning', false)
     },
     'ConsoleAndErrorsPane errorMessages',
   )

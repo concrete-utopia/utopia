@@ -249,33 +249,42 @@ interface FileBrowserActionSheetProps {
 
 const FileBrowserItems = React.memo(() => {
   const dispatch = useDispatch()
-  const {
-    projectContents,
-    editorSelectedFile,
-    errorMessages,
-    codeResultCache,
-    renamingTarget,
-    dropTarget,
-    conflicts,
-    githubRepo,
-    projectID,
-  } = useEditorState(
-    'fullOldStore',
+  const { errorMessages, codeResultCache, renamingTarget, dropTarget, projectID } = useEditorState(
+    'restOfEditor',
     (store) => {
       return {
-        projectContents: store.editor.projectContents,
-        editorSelectedFile: getOpenFilename(store.editor),
-        errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
+        errorMessages: getAllCodeEditorErrors(store.editor.codeEditorErrors, 'warning', true),
         codeResultCache: store.editor.codeResultCache,
         propertyControlsInfo: store.editor.propertyControlsInfo,
         renamingTarget: store.editor.fileBrowser.renamingTarget,
         dropTarget: store.editor.fileBrowser.dropTarget,
-        conflicts: store.editor.githubData.treeConflicts,
-        githubRepo: store.editor.githubSettings.targetRepository,
         projectID: store.editor.id,
       }
     },
     'FileBrowserItems',
+  )
+
+  const projectContents = useEditorState(
+    'projectContents',
+    (store) => store.editor.projectContents,
+    'FileBrowserItems projectContents',
+  )
+
+  const { githubRepo, conflicts } = useEditorState(
+    'github',
+    (store) => {
+      return {
+        githubRepo: store.editor.githubSettings.targetRepository,
+        conflicts: store.editor.githubData.treeConflicts,
+      }
+    },
+    'FileBrowserItems github',
+  )
+
+  const editorSelectedFile = useEditorState(
+    'canvas',
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'FileBrowserItems editorSelectedFile',
   )
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)

@@ -78,30 +78,56 @@ interface InsertMenuProps {
 
 export const InsertMenu = React.memo(() => {
   const dispatch = useDispatch()
-  const props = useEditorState(
-    'fullOldStore',
+  const restOfEditorProps = useEditorState(
+    'restOfEditor',
     (store) => {
-      const openFileFullPath = getOpenFilename(store.editor)
-
       return {
         lastFontSettings: store.editor.lastUsedFont,
-        selectedViews: store.editor.selectedViews,
         mode: store.editor.mode,
-        currentlyOpenFilename: openFileFullPath,
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        canvasScale: store.editor.canvas.scale,
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
       }
     },
-    'InsertMenu',
+    'InsertMenu restOfEditorProps',
+  )
+
+  const selectedViews = useEditorState(
+    'selectedViews',
+    (store) => store.editor.selectedViews,
+    'InsertMenu selectedViews',
+  )
+
+  const canvasProps = useEditorState(
+    'canvas',
+    (store) => {
+      return {
+        currentlyOpenFilename: store.editor.canvas.openFile?.filename ?? null,
+        canvasScale: store.editor.canvas.scale,
+      }
+    },
+    'InsertMenu canvasProps',
+  )
+
+  const roundedCanvasOffset = useEditorState(
+    'canvasOffset',
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'InsertMenu roundedCanvasOffset',
+  )
+
+  const projectContents = useEditorState(
+    'projectContents',
+    (store) => store.editor.projectContents,
+    'InsertMenu projectContents',
   )
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const propsWithDependencies: InsertMenuProps = {
-    ...props,
+    ...restOfEditorProps,
+    ...canvasProps,
+    selectedViews: selectedViews,
+    canvasOffset: roundedCanvasOffset,
+    projectContents: projectContents,
     editorDispatch: dispatch,
     dependencies: dependencies,
   }

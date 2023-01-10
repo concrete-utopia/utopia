@@ -2817,12 +2817,12 @@ export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boole
 }
 
 export function getAllCodeEditorErrors(
-  editor: EditorState,
+  codeEditorErrors: EditorStateCodeEditorErrors,
   minimumSeverity: ErrorMessageSeverity,
   skipTsErrors: boolean,
 ): Array<ErrorMessage> {
-  const allLintErrors = getAllLintErrors(editor)
-  const allBuildErrors = getAllBuildErrors(editor)
+  const allLintErrors = getAllLintErrors(codeEditorErrors)
+  const allBuildErrors = getAllBuildErrors(codeEditorErrors)
   const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
   if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
@@ -2835,12 +2835,16 @@ export function getAllCodeEditorErrors(
   }
 }
 
-export function getAllBuildErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.buildErrors)
+export function getAllBuildErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.buildErrors)
 }
 
-export function getAllLintErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.lintErrors)
+export function getAllLintErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.lintErrors)
 }
 
 export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {

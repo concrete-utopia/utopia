@@ -4064,7 +4064,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorBuildErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allBuildErrorsInState = getAllBuildErrors(editor)
+    const allBuildErrorsInState = getAllBuildErrors(editor.codeEditorErrors)
     const allBuildErrorsInAction = Utils.flatMapArray(
       (filename) => action.buildErrors[filename],
       Object.keys(action.buildErrors),
@@ -4094,7 +4094,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorLintErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allLintErrorsInState = getAllLintErrors(editor)
+    const allLintErrorsInState = getAllLintErrors(editor.codeEditorErrors)
     const allLintErrorsInAction = Utils.flatMapArray(
       (filename) => action.lintErrors[filename],
       Object.keys(action.lintErrors),
