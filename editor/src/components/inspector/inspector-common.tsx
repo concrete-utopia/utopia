@@ -174,7 +174,21 @@ export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
 export const hugContentsApplicable = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): boolean => MetadataUtils.getChildrenPaths(metadata, elementPath).length > 0
+): boolean => {
+  return (
+    mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      MetadataUtils.getChildrenPaths(metadata, elementPath),
+    ).filter(
+      (element) =>
+        !(
+          MetadataUtils.isPositionFixed(element) ||
+          MetadataUtils.isPositionSticky(element) ||
+          MetadataUtils.isPositionAbsolute(element)
+        ),
+    ).length > 0
+  )
+}
 
 export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
   !isStoryboardChild(elementPath)
