@@ -16,9 +16,9 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   addFlexLayoutStrategies,
   removeFlexLayoutStrategies,
-  runStrategies,
-} from './inspector-strategies'
+} from './inspector-strategies/inspector-strategies'
 import { detectAreElementsFlexContainers } from './inspector-common'
+import { runStrategies } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
 
 export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'

@@ -1,9 +1,5 @@
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
-import * as PP from '../../core/shared/property-path'
-import { CanvasCommand } from '../canvas/commands/commands'
-import { setProperty } from '../canvas/commands/set-property-command'
-import { EditorDispatch } from '../editor/action-types'
+import * as PP from '../../../core/shared/property-path'
+import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
   fillContainerApplicable,
@@ -12,13 +8,16 @@ import {
   FlexJustifyContent,
   hugContentsApplicable,
   widthHeightFromAxis,
-} from './inspector-common'
-import { applyCommandsAction } from '../editor/actions/action-creators'
-import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from './common/css-utils'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { assertNever } from '../../core/shared/utils'
-import * as EP from '../../core/shared/element-path'
+} from '../inspector-common'
+import * as EP from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
+import { CanvasCommand } from '../../canvas/commands/commands'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -82,6 +81,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
 ]
 
 export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
+  removeFlexConvertToAbsolute,
   (metadata, elementPaths) => {
     const elements = filterKeepFlexContainers(metadata, elementPaths)
 
@@ -164,18 +164,3 @@ export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
     )
   },
 ]
-
-export function runStrategies(
-  dispatch: EditorDispatch,
-  metadata: ElementInstanceMetadataMap,
-  selectedViews: ElementPath[],
-  strategies: InspectorStrategy[],
-): void {
-  for (const strategy of strategies) {
-    const commands = strategy(metadata, selectedViews)
-    if (commands != null) {
-      dispatch([applyCommandsAction(commands)])
-    }
-    return
-  }
-}
