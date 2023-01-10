@@ -2707,13 +2707,15 @@ export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (mode) => mode.editedText,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     (mode) => mode.cursorPosition,
     nullableDeepEquality(CoordinateKeepDeepEquality),
     (mode) => mode.elementState,
     TextEditableElementStateKeepDeepEquality,
+    (mode) => mode.selectOnFocus,
+    createCallWithTripleEquals<'select-all-on-focus' | 'no-text-selection'>(),
     EditorModes.textEditMode,
   )
 

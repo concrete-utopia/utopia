@@ -379,7 +379,12 @@ export function handleKeyDown(
             if (firstTextEditableView != null) {
               return [
                 EditorActions.switchEditorMode(
-                  EditorModes.textEditMode(firstTextEditableView, null, 'existing'),
+                  EditorModes.textEditMode(
+                    firstTextEditableView,
+                    null,
+                    'existing',
+                    'select-all-on-focus',
+                  ),
                 ),
               ]
             }
@@ -701,7 +706,12 @@ export function handleKeyDown(
 
         const actions: Array<EditorAction> = [
           EditorActions.switchEditorMode(
-            EditorModes.textEditMode(firstTextEditableView ?? null, null, 'existing'),
+            EditorModes.textEditMode(
+              firstTextEditableView ?? null,
+              null,
+              'existing',
+              'no-text-selection',
+            ),
           ),
         ]
 
