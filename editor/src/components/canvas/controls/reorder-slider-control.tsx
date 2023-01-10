@@ -25,6 +25,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { findNewIndex } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
@@ -219,7 +220,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
   const ref = React.useRef<HTMLDivElement>(null)
   const ClickAreaSize = ControlSize(scale) + 6 / scale
 
-  const dispatch = useRefEditorState((store) => store.dispatch)
+  const dispatch = useDispatch()
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
@@ -236,7 +237,7 @@ const ReorderControl = React.memo(({ controlPosition }: { controlPosition: Canva
         ref.current.requestPointerLock()
       }
       if (event.button !== 2) {
-        dispatch.current(
+        dispatch(
           [
             CanvasActions.createInteractionSession(
               createInteractionViaMouse(

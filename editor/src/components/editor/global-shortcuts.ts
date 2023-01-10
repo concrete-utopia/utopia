@@ -319,7 +319,7 @@ export function handleKeyDown(
   derived: DerivedState,
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -688,7 +688,9 @@ export function handleKeyDown(
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
         const actions: Array<EditorAction> = [
-          EditorActions.switchEditorMode(EditorModes.textEditMode(firstTextEditableView ?? null)),
+          EditorActions.switchEditorMode(
+            EditorModes.textEditMode(firstTextEditableView ?? null, null, 'existing'),
+          ),
         ]
 
         if (firstTextEditableView == null) {
@@ -764,15 +766,14 @@ export function handleKeyDown(
     actions.push(...shortCutActions)
   }
 
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 export function handleKeyUp(
   event: KeyboardEvent,
   editor: EditorState,
   namesByKey: ShortcutNamesByKey,
-  dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -813,8 +814,7 @@ export function handleKeyUp(
   if (editorTargeted) {
     actions.push(...getShortcutActions())
   }
-
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 function addCreateHoverInteractionActionToSwitchModeAction(

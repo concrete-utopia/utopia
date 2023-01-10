@@ -23,7 +23,6 @@ import {
   selectComponents,
   setHoveredView,
   clearHoveredViews,
-  switchEditorMode,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
@@ -54,6 +53,7 @@ import {
   scheduleTextEditForNextFrame,
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -101,9 +101,9 @@ export function useMaybeHighlightElement(): {
   maybeHoverOnHover: (target: ElementPath) => void
   maybeClearHoveredViewsOnHoverEnd: () => void
 } {
+  const dispatch = useDispatch()
   const stateRef = useRefEditorState((store) => {
     return {
-      dispatch: store.dispatch,
       resizing: isResizing(store.editor),
       dragging: isDragging(store.editor),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
@@ -115,8 +115,7 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
-        stateRef.current
+      const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
@@ -124,21 +123,20 @@ export function useMaybeHighlightElement(): {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },
-    [stateRef],
+    [dispatch, stateRef],
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
-      stateRef.current
+    const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
 
     if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
-  }, [stateRef])
+  }, [dispatch, stateRef])
 
   const maybeHoverOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+      const { dragging, resizing, inserting, hoveredViews } = stateRef.current
 
       const alreadyHovered = pathsEqual(target, hoveredViews?.[0])
 
@@ -146,16 +144,16 @@ export function useMaybeHighlightElement(): {
         dispatch([setHoveredView(target)], 'canvas')
       }
     },
-    [stateRef],
+    [dispatch, stateRef],
   )
 
   const maybeClearHoveredViewsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, inserting, hoveredViews } = stateRef.current
+    const { dragging, resizing, inserting, hoveredViews } = stateRef.current
 
     if (!dragging && !resizing && !inserting && hoveredViews.length > 0) {
       dispatch([clearHoveredViews()], 'canvas')
     }
-  }, [stateRef])
+  }, [dispatch, stateRef])
 
   return {
     maybeHighlightOnHover: maybeHighlightOnHover,
@@ -330,7 +328,7 @@ function useStartDragState(): (
   target: ElementPath,
   start: CanvasPoint | null,
 ) => (event: MouseEvent) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const dispatch = useDispatch()
   const entireEditorStoreRef = useRefEditorState((store) => store)
 
   return React.useCallback(
@@ -588,7 +586,7 @@ function useSelectOrLiveModeSelectAndHover(
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
 ): MouseCallbacks {
-  const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
+  const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
@@ -725,7 +723,11 @@ function useSelectOrLiveModeSelectAndHover(
           if (isEditableText && isFeatureEnabled('Text editing')) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
-            scheduleTextEditForNextFrame(foundTarget.elementPath, dispatch)
+            scheduleTextEditForNextFrame(
+              foundTarget.elementPath,
+              { x: event.clientX, y: event.clientY },
+              dispatch,
+            )
           }
         }
 
@@ -826,6 +828,7 @@ export function useSelectAndHover(
 export function useClearKeyboardInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }) {
+  const dispatch = useDispatch()
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
     if (keyboardTimeoutHandler.current != null) {
@@ -842,7 +845,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
       ) {
-        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }
     }
 
@@ -852,5 +855,5 @@ export function useClearKeyboardInteraction(editorStoreRef: {
     )
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
-  }, [editorStoreRef])
+  }, [dispatch, editorStoreRef])
 }

@@ -8,10 +8,13 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { borderRadius, color, useColorTheme } from '../../../../uuiui'
+import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
-import { EditorStorePatched, getMetadata } from '../../../editor/store/editor-state'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { getMetadata } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { invert } from '../../../inspector/inspector-common'
+import { runStrategies, setPropHugStrategies } from '../../../inspector/inspector-strategies'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
@@ -140,7 +143,7 @@ const ResizePoint = React.memo(
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onPointMouseDown = React.useCallback(
@@ -215,8 +218,10 @@ const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -234,6 +239,22 @@ const ResizeEdge = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
+    const onEdgeDblClick = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.detail != 2) {
+          return
+        }
+
+        runStrategies(
+          dispatch,
+          metadataRef.current,
+          selectedElementsRef.current,
+          setPropHugStrategies(invert(props.direction)),
+        )
+      },
+      [dispatch, metadataRef, props.direction, selectedElementsRef],
+    )
+
     const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
@@ -241,6 +262,7 @@ const ResizeEdge = React.memo(
     const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
+        onClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',

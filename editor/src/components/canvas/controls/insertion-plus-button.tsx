@@ -5,6 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
 import {
   getSiblingMidPointPosition,
@@ -222,7 +223,7 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
   const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(

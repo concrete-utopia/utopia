@@ -89,14 +89,14 @@ export function detectFlexDirectionOne(
   )
 }
 
-export const detectFlexDirection: Detect<FlexDirection> = (
+export const detectFlexDirection = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
-) => {
+): FlexDirection => {
   const allDetectedMeasurements = elementPaths.map((path) => detectFlexDirectionOne(metadata, path))
   return allElemsEqual(allDetectedMeasurements, (l, r) => l === r)
-    ? allDetectedMeasurements[0]
-    : null
+    ? allDetectedMeasurements.at(0) ?? 'row'
+    : 'row'
 }
 
 function detectFlexAlignJustifyContentOne(
@@ -152,6 +152,13 @@ export function filterKeepFlexContainers(
   )
 }
 
+export function numberOfFlexContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): number {
+  return filterKeepFlexContainers(metadata, elementPaths).length
+}
+
 export function detectAreElementsFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
@@ -192,6 +199,17 @@ function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): bool
 }
 
 export type Axis = 'horizontal' | 'vertical'
+
+export function invert(axis: Axis): Axis {
+  switch (axis) {
+    case 'horizontal':
+      return 'vertical'
+    case 'vertical':
+      return 'horizontal'
+    default:
+      assertNever(axis)
+  }
+}
 
 export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   switch (axis) {

@@ -25,6 +25,7 @@ import {
   isGithubCommishing,
   isGithubLoadingAnyBranch,
 } from '../../../../components/editor/store/editor-state'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 export const Ellipsis: React.FC<{
   children: any
@@ -89,9 +90,7 @@ interface ConflictButtonProps {
 
 const ConflictButton = React.memo((props: ConflictButtonProps) => {
   const menuId = `conflict-context-menu-${props.fullPath}`
-  const dispatch = useEditorState((store) => {
-    return store.dispatch
-  }, 'ConflictButton dispatch')
+  const dispatch = useDispatch()
   const githubRepo = useEditorState((store) => {
     return store.editor.githubSettings.targetRepository
   }, 'ConflictButton githubRepo')
@@ -146,7 +145,7 @@ export const GithubFileChangesList: React.FC<{
   conflicts?: string[]
 }> = ({ changes, revertable, showHeader, conflicts, clickable }) => {
   const count = React.useMemo(() => getGithubFileChangesCount(changes), [changes])
-  const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const list = React.useMemo(() => githubFileChangesToList(changes), [changes])
   const treeConflicts = useEditorState(
     (store) => store.editor.githubData.treeConflicts,

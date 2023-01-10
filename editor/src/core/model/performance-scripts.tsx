@@ -51,6 +51,8 @@ import { LargeProjectContents } from '../../test-cases/large-project'
 import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-editor-loading-screen'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
+import { useDispatch } from '../../components/editor/store/dispatch-context'
+import { styleStringInArray } from '../../utils/common-constants'
 
 let NumberOfIterations = 5
 if (window != null) {
@@ -172,10 +174,7 @@ async function loadProject(
 }
 
 export function useTriggerScrollPerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerScrollPerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
     (store) => store.builtInDependencies,
     'useTriggerScrollPerformanceTest builtInDependencies',
@@ -219,10 +218,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 export function useTriggerResizePerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerResizePerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
@@ -301,10 +297,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerHighlightPerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
     (store) => store.builtInDependencies,
     'useTriggerHighlightPerformanceTest builtInDependencies',
@@ -368,10 +361,7 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
   useTriggerHighlightPerformanceTest('all-elements')
 
 export function useTriggerSelectionPerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerSelectionPerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
@@ -496,10 +486,7 @@ export const useTriggerAbsoluteMoveSmallPerformanceTest = () =>
 export function useTriggerAbsoluteMovePerformanceTest(
   projectContents: ProjectContentTreeRoot,
 ): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerAbsoluteMovePerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const allPaths = useRefEditorState(
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
@@ -608,7 +595,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
           selectComponents([childTargetPath!], false),
           setProp_UNSAFE(
             childTargetPath!,
-            PP.create(['style']),
+            PP.create(styleStringInArray),
             jsxAttributeValue(childStyleValue, emptyComments),
           ),
         ],
@@ -683,10 +670,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
 
 export function useTriggerSelectionChangePerformanceTest(): () => void {
   const projectContents = LargeProjectContents
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerSelectionChangePerformanceTest dispatch',
-  )
+  const dispatch = useDispatch() as DebugDispatch
   const allPaths = useRefEditorState(
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
@@ -796,7 +780,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
           selectComponents([childTargetPath!], false),
           setProp_UNSAFE(
             childTargetPath!,
-            PP.create(['style']),
+            PP.create(styleStringInArray),
             jsxAttributeValue(childStyleValue, emptyComments),
           ),
         ],

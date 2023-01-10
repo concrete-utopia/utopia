@@ -19,6 +19,7 @@ import {
 } from './inspector-strategies/inspector-strategies'
 import { detectAreElementsFlexContainers } from './inspector-common'
 import { runStrategies } from './inspector-strategies/inspector-strategy'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'
 
@@ -31,7 +32,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
     'AddRemoveLayouSystemControl, isFlexLayoutedContainer',
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'AddRemoveLayouSystemControl dispatch')
+  const dispatch = useDispatch()
   const elementMetadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 

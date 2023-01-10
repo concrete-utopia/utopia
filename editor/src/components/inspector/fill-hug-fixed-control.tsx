@@ -10,6 +10,7 @@ import * as PP from '../../core/shared/property-path'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   CSSNumber,
@@ -176,7 +177,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     })
   })
 
-  const dispatch = useEditorState((store) => store.dispatch, 'FillHugFixedControl dispatch')
+  const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 

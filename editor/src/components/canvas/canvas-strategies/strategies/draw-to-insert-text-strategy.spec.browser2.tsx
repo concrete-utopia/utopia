@@ -1,3 +1,7 @@
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
@@ -68,6 +72,7 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
+                    wordBreak: 'break-word',
                     left: 389,
                     top: 101,
                     width: 100,
@@ -130,10 +135,10 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
-                    left: 339,
-                    top: 51,
-                    width: 100,
-                    height: 100,
+                    wordBreak: 'break-word',
+                    left: 389,
+                    top: 101,
+                    width: 200,
                   }}
                   data-uid='${newElementUID}'
                 >Utopia</span>
@@ -193,6 +198,74 @@ describe('draw-to-insert text', () => {
       )
     })
   })
+  describe('when the target is not editable', () => {
+    it('inserts new text', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithNonTextEditableDiv,
+        'await-first-dom-report',
+      )
+
+      const newUID = 'ddd'
+      FOR_TESTS_setNextGeneratedUid(newUID)
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId('div')
+      const divBounds = div.getBoundingClientRect()
+
+      pressKey('t')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const insideDiv = {
+        x: divBounds.x + divBounds.width / 2,
+        y: divBounds.y + divBounds.height / 2,
+      }
+
+      mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
+        x: insideDiv.x + 50,
+        y: insideDiv.y + 50,
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('Hello Utopia')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <div
+                  data-testid='div'
+                  style={{
+                    backgroundColor: '#0091FFAA',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 288,
+                    height: 362,
+                  }}
+                  data-uid='39e'
+                >
+                  <div data-uid='111' />
+                  <span
+                    style={{
+                      wordBreak: 'break-word',
+                      width: 50,
+                      height: 50,
+                      contain: 'layout',
+                    }}
+                    data-uid='ddd'
+                  >Hello Utopia</span>
+                </div>
+              </Storyboard>
+            )`),
+      )
+    })
+  })
   describe('when the target is root', () => {
     it('creates a new element', async () => {
       const editor = await renderTestEditorWithCode(emptyProject, 'await-first-dom-report')
@@ -231,6 +304,7 @@ describe('draw-to-insert text', () => {
                 <span
                   style={{
                     position: 'absolute',
+                    wordBreak: 'break-word',
                     left: 112,
                     top: 391,
                     width: 50,
@@ -272,6 +346,30 @@ export var storyboard = (
       data-uid='39e'
     >
       Hello
+    </div>
+  </Storyboard>
+)
+`)
+
+const projectWithNonTextEditableDiv = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      <div data-uid='111'/>
     </div>
   </Storyboard>
 )

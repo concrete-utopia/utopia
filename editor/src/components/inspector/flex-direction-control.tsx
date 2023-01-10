@@ -1,33 +1,43 @@
 import React from 'react'
+import { createSelector } from 'reselect'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
+import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { filterKeepFlexContainers } from './inspector-common'
+import {
+  flexDirectionSelector,
+  metadataSelector,
+  selectedViewsSelector,
+} from './inpector-selectors'
+import { numberOfFlexContainers } from './inspector-common'
 import {
   removeFlexDirectionStrategies,
   updateFlexDirectionStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { runStrategies } from './inspector-strategies/inspector-strategy'
 
+const nFlexContainersSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  numberOfFlexContainers,
+)
 export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
   `FlexDirectionToggle-${direction}`
 
-interface FlexDirectionToggleProps {
-  flexDirection: FlexDirection | null
-}
+export const FlexDirectionToggle = React.memo(() => {
+  const dispatch = useDispatch()
 
-export const FlexDirectionToggle = React.memo<FlexDirectionToggleProps>(({ flexDirection }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FlexDirectionToggle dispatch')
+  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
   const nFlexContainers = useEditorState(
-    (store) =>
-      filterKeepFlexContainers(metadataSelector(store), selectedViewsSelector(store)).length,
-    'FlexDirectionToggle, nFlexContainers',
+    nFlexContainersSelector,
+    'FlexDirectionToggle nFlexContainers',
   )
 
   const colorTheme = useColorTheme()

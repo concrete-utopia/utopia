@@ -12,7 +12,10 @@ import {
   uniqBy,
   mapAndFilter,
 } from '../shared/array-utils'
-import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import {
+  intrinsicHTMLElementNamesThatSupportChildren,
+  VoidElementsToFilter,
+} from '../shared/dom-utils'
 import {
   alternativeEither,
   Either,
@@ -846,7 +849,16 @@ export const MetadataUtils = {
       return false
     }
     const children = MetadataUtils.getChildren(metadata, target)
-    return children.length === 0
+    const hasNonEditableChildren = children
+      .map((c) =>
+        foldEither(
+          () => null,
+          (v) => (isJSXElement(v) ? v.name.baseVariable : null),
+          c.element,
+        ),
+      )
+      .some((e) => e !== 'br')
+    return children.length === 0 || !hasNonEditableChildren
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
@@ -946,7 +958,11 @@ export const MetadataUtils = {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           navigatorTargets.push(path)
-          if (!collapsedAncestor && !isHiddenInNavigator) {
+          if (
+            !collapsedAncestor &&
+            !isHiddenInNavigator &&
+            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+          ) {
             visibleNavigatorTargets.push(path)
           }
 
@@ -984,6 +1000,18 @@ export const MetadataUtils = {
       maxSize: 1,
     },
   ),
+  isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element == null) {
+      return false
+    } else {
+      return foldEither(
+        (l) => VoidElementsToFilter.includes(l),
+        (r) => (isJSXElement(r) ? VoidElementsToFilter.includes(r.name.baseVariable) : false),
+        element.element,
+      )
+    }
+  },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,

@@ -185,7 +185,6 @@ function processAction(
       userState: working.userState,
       workers: working.workers,
       persistence: working.persistence,
-      dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
       builtInDependencies: working.builtInDependencies,
     }
@@ -502,7 +501,6 @@ export function editorDispatch(
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
-    dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
     entireUpdateFinished: Promise.all([
       result.entireUpdateFinished,
@@ -774,7 +772,6 @@ function editorDispatchInner(
       userState: result.userState,
       workers: storedState.workers,
       persistence: storedState.persistence,
-      dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,
