@@ -144,7 +144,7 @@ export function modifiersForEvent(event: KeyboardEvent): ReadonlyArray<Modifier>
   return getCachedModifier(modifiers)
 }
 
-function keyCharacterFromCode(keyCode: number): KeyCharacter {
+export function keyCharacterFromCode(keyCode: number): KeyCharacter {
   switch (true) {
     case keyCode === KeyCode.BACKSPACE:
       return 'backspace'

@@ -7,7 +7,8 @@ import { clamp, safeParseInt } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import Keyboard from '../../../../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
+import { Modifiers } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
 import {
   InteractionCanvasState,
@@ -71,7 +72,7 @@ export function keyboardSetFontWeightStrategy(
           'always',
           path,
           PP.create(['style', FontWeightProp]),
-          adjust(fontWeight, fontSizeDelta),
+          adjustFontWeight(fontWeight, fontSizeDelta),
         ),
       )
 
@@ -91,6 +92,10 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   )
 }
 
+export function isAdjustFontWeightShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
+  return modifiers.alt && modifiers.cmd && Keyboard.keyTriggersFontWeightStrategy(key)
+}
+
 function fitness(interactionSession: InteractionSession | null): number {
   if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
     return 0
@@ -99,17 +104,21 @@ function fitness(interactionSession: InteractionSession | null): number {
     interactionSession.interactionData.keyStates,
     Keyboard.keyTriggersFontWeightStrategy,
   )
-  if (lastKeyState == null) {
-    return 0
-  }
-  return 1
+
+  const matches =
+    lastKeyState != null &&
+    Array.from(lastKeyState.keysPressed).some((key) =>
+      isAdjustFontWeightShortcut(lastKeyState.modifiers, key),
+    )
+
+  return matches ? 1 : 0
 }
 
 function parseMaybeFontWeight(maybeFontSize: unknown): number | null {
   return safeParseInt(maybeFontSize as string)
 }
 
-function getFontWeightFromComputedStyle(
+export function getFontWeightFromComputedStyle(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): number | null {
@@ -121,6 +130,6 @@ function getFontWeightFromComputedStyle(
   return parseMaybeFontWeight(element.computedStyle?.[FontWeightProp])
 }
 
-function adjust(value: number, delta: number): number {
+export function adjustFontWeight(value: number, delta: number): number {
   return clamp(100, 900, value + delta * 100)
 }

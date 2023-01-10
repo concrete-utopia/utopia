@@ -1,8 +1,20 @@
 import { escape, unescape } from 'he'
 import React from 'react'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
+import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
+import {
+  adjustFontSize,
+  getFontSize,
+  isAdjustFontSizeShortcut,
+} from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
+import {
+  adjustFontWeight,
+  getFontWeightFromComputedStyle,
+  isAdjustFontWeightShortcut,
+} from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { ApplyCommandsAction } from '../editor/action-types'
 import {
@@ -13,7 +25,8 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { printCSSNumber } from '../inspector/common/css-utils'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -49,6 +62,69 @@ const handleShortcut = (
   ]
 }
 
+const handleSetFontSizeShortcut = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<ApplyCommandsAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const character = keyCharacterFromCode(event.keyCode)
+  const matches = isAdjustFontSizeShortcut(modifiers, character)
+
+  if (!matches) {
+    return []
+  }
+
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
+  const fontSize = getFontSize(metadata, elementPath)
+  if (fontSize == null) {
+    return []
+  }
+
+  return [
+    applyCommandsAction([
+      setProperty(
+        'always',
+        elementPath,
+        PP.create(['style', 'fontSize']),
+        printCSSNumber(adjustFontSize(fontSize[0], delta), null),
+      ),
+    ]),
+  ]
+}
+
+const handleSetFontWeightShortcut = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<ApplyCommandsAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const character = keyCharacterFromCode(event.keyCode)
+  const matches = isAdjustFontWeightShortcut(modifiers, character)
+
+  if (!matches) {
+    return []
+  }
+
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
+
+  const fontWeight = getFontWeightFromComputedStyle(metadata, elementPath)
+  if (fontWeight == null) {
+    return []
+  }
+
+  return [
+    applyCommandsAction([
+      setProperty(
+        'always',
+        elementPath,
+        PP.create(['style', 'fontWeight']),
+        adjustFontWeight(fontWeight, delta),
+      ),
+    ]),
+  ]
+}
+
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
@@ -60,6 +136,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
   const [firstTextProp] = React.useState(text)
@@ -138,6 +216,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
           'line-through',
           'none',
         ),
+        ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
+        ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]
       if (shortcuts.length > 0) {
         event.stopPropagation()
@@ -151,7 +231,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         event.stopPropagation()
       }
     },
-    [dispatch, elementPath, passthroughProps],
+    [dispatch, elementPath, metadataRef, passthroughProps],
   )
 
   const onBlur = React.useCallback(() => {
