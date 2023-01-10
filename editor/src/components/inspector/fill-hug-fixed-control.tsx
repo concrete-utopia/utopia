@@ -149,11 +149,22 @@ function detectFixedState(
     return null
   }
 
-  const property = widthHeightFromAxis(axis)
+  const flexBasis = foldEither(
+    () => null,
+    (r) => defaultEither(null, parseCSSLengthPercent(r)),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'flexGrow'])),
+  )
+
+  if (flexBasis != null) {
+    return flexBasis
+  }
 
   const prop = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
+    getSimpleAttributeAtPath(
+      right(element.element.value.props),
+      PP.create(['style', widthHeightFromAxis(axis)]),
+    ),
   )
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
