@@ -40,6 +40,7 @@ import {
   emptyGithubSubstate,
   BuiltInDependenciesSubstate,
   UserStateSubstate,
+  CanvasAndMetadataSubstate,
 } from './store-hook-selectors'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
 import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
@@ -372,6 +373,12 @@ export const Substores = {
   },
   userState: (a: UserStateSubstate, b: UserStateSubstate) => {
     return a.userState === b.userState
+  },
+  canvasAndMetadata: (a: CanvasAndMetadataSubstate, b: CanvasAndMetadataSubstate) => {
+    return (
+      a.editor.jsxMetadata === b.editor.jsxMetadata &&
+      keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
+    )
   },
 } as const
 

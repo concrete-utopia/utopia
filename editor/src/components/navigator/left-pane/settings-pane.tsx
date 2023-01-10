@@ -47,7 +47,7 @@ const defaultTheme = themeOptions[0]
 export const SettingsPane = React.memo(() => {
   const dispatch = useDispatch()
   const { projectId, projectName, projectDescription } = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         projectId: store.editor.id,
@@ -59,7 +59,7 @@ export const SettingsPane = React.memo(() => {
   )
 
   const userState = useEditorState(
-    'userState',
+    Substores.userState,
     (store) => store.userState,
     'SettingsPane userState',
   )

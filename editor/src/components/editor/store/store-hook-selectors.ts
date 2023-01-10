@@ -117,6 +117,10 @@ export type UserStateSubstate = {
   userState: EditorStoreShared['userState']
 }
 
+export type CanvasAndMetadataSubstate = {
+  editor: Pick<EditorState, 'jsxMetadata'>
+} & CanvasSubstate
+
 export const emptyGithubSubstate: GithubSubstate = {
   editor: {
     githubSettings: emptyGithubSettings(),

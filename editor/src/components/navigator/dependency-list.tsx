@@ -94,7 +94,7 @@ function packageDetailsFromDependencies(
 
 export const DependencyList = React.memo(() => {
   const props = useEditorState(
-    'restOfEditor',
+    Substores.restOfEditor,
     (store) => {
       return {
         minimised: store.editor.dependencyList.minimised,
@@ -106,13 +106,13 @@ export const DependencyList = React.memo(() => {
   )
 
   const builtInDependencies = useEditorState(
-    'builtInDependencies',
+    Substores.builtInDependencies,
     (store) => store.builtInDependencies,
     'DependencyList builtInDependencies',
   )
 
   const packageJsonFile = useEditorState(
-    'projectContents',
+    Substores.projectContents,
     (store) => packageJsonFileFromProjectContents(store.editor.projectContents),
     'DependencyList packageJsonFile',
   )

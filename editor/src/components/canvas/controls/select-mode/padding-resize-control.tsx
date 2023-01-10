@@ -1,4 +1,5 @@
 import React from 'react'
+import { CanvasSubstate } from 'src/components/editor/store/store-hook-selectors'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -68,10 +69,10 @@ const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 3
 
-type StoreSelector<T> = (s: EditorStorePatched) => T
+type StoreSelector<T> = (s: CanvasSubstate) => T
 
 const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
-const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
+const isDraggingSelector = (store: CanvasSubstate, edge: EdgePiece): boolean =>
   store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
   store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
 
@@ -80,12 +81,12 @@ const PaddingResizeControlI = React.memo(
     const { setShownByParent } = props
     const dispatch = useDispatch()
     const { scale, isDragging } = useEditorState(
-      Substores.fullOldStore,
+      Substores.canvas,
       (store) => ({
         scale: scaleSelector(store),
         isDragging: isDraggingSelector(store, props.edge),
       }),
-      'PaddingResizeControl scale, dispatch, isDragging',
+      'PaddingResizeControl scale isDragging',
     )
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)

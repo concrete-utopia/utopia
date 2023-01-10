@@ -61,7 +61,7 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
   )
 
   const parentFrame = useEditorState(
-    Substores.fullOldStore,
+    Substores.canvasAndMetadata,
     (store) => {
       if (store.editor.canvas.controls.parentOutlineHighlight != null) {
         return null

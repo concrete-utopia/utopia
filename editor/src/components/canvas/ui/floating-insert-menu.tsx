@@ -108,17 +108,27 @@ function convertInsertableComponentsToFlatList(
 function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
-  const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    Substores.fullOldStore,
+  const { packageStatus, propertyControlsInfo } = useEditorState(
+    Substores.restOfEditor,
     (store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
-    'RenderAsRow',
+    'useGetInsertableComponents',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'useGetInsertableComponents projectContents',
+  )
+
+  const fullPath = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'useGetInsertableComponents fullPath',
   )
 
   const insertableComponents = React.useMemo(() => {

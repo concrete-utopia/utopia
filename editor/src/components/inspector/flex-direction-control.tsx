@@ -40,7 +40,7 @@ export const FlexDirectionToggle = React.memo(() => {
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const nFlexContainers = useEditorState(
-    Substores.fullOldStore,
+    Substores.metadata,
     nFlexContainersSelector,
     'FlexDirectionToggle nFlexContainers',
   )

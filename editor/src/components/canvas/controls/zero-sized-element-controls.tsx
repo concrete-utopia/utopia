@@ -57,15 +57,21 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
     )
     const dispatch = useDispatch()
 
+    const projectContents = useEditorState(
+      Substores.projectContents,
+      (store) => store.editor.projectContents,
+      'ZeroSizedElementControls projectContents',
+    )
+
     const zeroSizeElements = useEditorState(
-      Substores.fullOldStore,
+      Substores.metadata,
       (store) => {
         if (showAllPossibleElements) {
           return Object.values(store.editor.jsxMetadata).filter((element) => {
             return (
               element.globalFrame != null &&
               isZeroSizedElement(element.globalFrame) &&
-              MetadataUtils.targetElementSupportsChildren(store.editor.projectContents, element)
+              MetadataUtils.targetElementSupportsChildren(projectContents, element)
             )
           })
         } else {

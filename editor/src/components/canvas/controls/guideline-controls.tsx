@@ -29,7 +29,7 @@ import { CanvasSubstate } from '../../editor/store/store-hook-selectors'
 export const GuidelineControls = React.memo(() => {
   const scale = useEditorState(Substores.canvas, scaleSelector, 'Guideline scale')
   const strategyMovedSuccessfully = useEditorState(
-    Substores.fullOldStore,
+    Substores.canvasAndMetadata,
     (store) => {
       return (
         store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
