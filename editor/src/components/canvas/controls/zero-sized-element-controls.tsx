@@ -298,7 +298,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       dispatch(
         [
           EditorActions.switchEditorMode(
-            EditorModes.textEditMode(element?.elementPath, null, 'existing', 'no-text-selection'),
+            EditorModes.textEditMode(element.elementPath, null, 'existing', 'no-text-selection'),
           ),
         ],
         'everyone',
