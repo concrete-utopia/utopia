@@ -867,6 +867,10 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
+export interface ReparseOpenProjectFile {
+  action: 'REPARSE_OPEN_PROJECT_FILE'
+}
+
 export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
   target: ElementPath
@@ -1076,6 +1080,7 @@ export interface ApplyCommandsAction {
 }
 
 export type EditorAction =
+  | ReparseOpenProjectFile
   | ClearSelection
   | InsertScene
   | InsertJSXElement

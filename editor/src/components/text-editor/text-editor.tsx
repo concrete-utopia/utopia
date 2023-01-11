@@ -20,6 +20,7 @@ import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
+  reparseOpenProjectFile,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -27,6 +28,7 @@ import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
+import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -37,12 +39,34 @@ interface TextEditorProps {
   passthroughProps: Record<string, any>
 }
 
+const htmlEntities = {
+  curlyBraceLeft: '&#123;',
+  curlyBraceRight: '&#125;',
+}
+
+const deferredReparseTimeoutMS = 250
+
 export function escapeHTML(s: string): string {
-  return escape(s).replace(/\n/g, '<br />')
+  return (
+    escape(s)
+      // restore br tags
+      .replace(/\n/g, '<br />')
+      // clean up curly braces
+      .replace(/\{/g, htmlEntities.curlyBraceLeft)
+      .replace(/\}/g, htmlEntities.curlyBraceRight)
+      // restore the ones that wrap valid jsx expressions
+      .replace(
+        new RegExp(`${htmlEntities.curlyBraceLeft}([^&}]+)${htmlEntities.curlyBraceRight}`, 'g'),
+        '{$1}',
+      )
+  )
 }
 
 export function unescapeHTML(s: string): string {
-  return unescape(s).replace(/<br \/>/g, '\n')
+  return unescape(s)
+    .replace(/<br \/>/g, '\n')
+    .replace(/&#123;/g, '{')
+    .replace(/$#125;/g, '}')
 }
 
 const handleShortcut = (
@@ -71,7 +95,7 @@ const handleSetFontSizeShortcut = (
   const character = keyCharacterFromCode(event.keyCode)
   const matches = isAdjustFontSizeShortcut(modifiers, character)
 
-  if (!matches) {
+  if (matches == null) {
     return []
   }
 
@@ -102,7 +126,7 @@ const handleSetFontWeightShortcut = (
   const character = keyCharacterFromCode(event.keyCode)
   const matches = isAdjustFontWeightShortcut(modifiers, character)
 
-  if (!matches) {
+  if (matches == null) {
     return []
   }
 
@@ -145,6 +169,9 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
+
+  const reparse = useReParseOpenProjectFile()
+
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -164,10 +191,14 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
           dispatch([deleteView(elementPath)])
         } else {
           dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+
+          // defer reparsing the open project file to give it time to process the
+          // updateChildText action
+          setTimeout(() => dispatch([reparseOpenProjectFile()]), deferredReparseTimeoutMS)
         }
       }
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, reparse])
 
   React.useEffect(() => {
     if (myElement.current == null) {

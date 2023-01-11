@@ -304,6 +304,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
+    case 'REPARSE_OPEN_PROJECT_FILE':
+      return UPDATE_FNS.REPARSE_OPEN_PROJECT_FILE(action, state, dispatch)
     case 'UPDATE_CHILD_TEXT':
       return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':

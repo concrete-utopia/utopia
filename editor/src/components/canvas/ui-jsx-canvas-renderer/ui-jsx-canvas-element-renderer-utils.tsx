@@ -53,6 +53,7 @@ import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { mapDropNulls } from 'src/core/shared/array-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -345,8 +346,20 @@ export function renderCoreElement(
   }
 }
 
-export function filterJSXElementChildIsTextOrNewline(c: JSXElementChild): c is JSXTextBlock {
-  return c.type === 'JSX_TEXT_BLOCK' || (c.type === 'JSX_ELEMENT' && c.name.baseVariable === 'br')
+export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
+  switch (c.type) {
+    case 'JSX_TEXT_BLOCK':
+      return c.text
+    case 'JSX_ELEMENT':
+      return c.name.baseVariable === 'br' ? '\n' : null
+    case 'JSX_ARBITRARY_BLOCK':
+      if (c.transpiledJavascript === `return ${c.javascript}`) {
+        return `{${c.originalJavascript}}`
+      }
+      return null
+    default:
+      return null
+  }
 }
 
 function renderJSXElement(
@@ -462,10 +475,7 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const text = childrenWithNewTextBlock
-        .filter(filterJSXElementChildIsTextOrNewline)
-        .map((c) => (c.text != null ? c.text.trim() : '\n'))
-        .join('')
+      const text = mapDropNulls(textOrNullFromJSXElement, childrenWithNewTextBlock).join('')
       const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
