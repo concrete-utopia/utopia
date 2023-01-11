@@ -489,10 +489,7 @@ export class Editor {
         const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.canvasStore.setState(
-              patchedStoreFromFullStore(this.storedState, 'canvas-store'),
-              dispatchedActions,
-            )
+            this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
           })
         })
         const afterCanvasStore = MeasureSelectors ? performance.now() : 0
@@ -552,7 +549,6 @@ export class Editor {
             const beforeMainStore = MeasureSelectors ? performance.now() : 0
             this.utopiaStoreHook.setState(
               patchedStoreFromFullStore(this.storedState, 'editor-store'),
-              dispatchedActions,
             )
             const afterMainStore = MeasureSelectors ? performance.now() : 0
 
@@ -568,7 +564,6 @@ export class Editor {
               }
               this.lowPriorityStore.setState(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
-                dispatchedActions,
               )
               if (PerformanceMarks) {
                 performance.measure(

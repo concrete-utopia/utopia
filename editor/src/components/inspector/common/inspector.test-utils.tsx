@@ -69,9 +69,9 @@ export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
 
   const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
   const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
-    storeHook.setState(produce(fn)(storeHook.getState()), [])
+    storeHook.setState(produce(fn)(storeHook.getState()))
   const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
-    storeHook.setState(fn(storeHook.getState()), [])
+    storeHook.setState(fn(storeHook.getState()))
 
   return {
     ...storeHook,

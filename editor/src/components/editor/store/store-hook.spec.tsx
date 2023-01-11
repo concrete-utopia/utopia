@@ -100,16 +100,13 @@ describe('useSelectorWithCallback', () => {
       },
     )
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: {
-          ...storeHook.getState().editor,
-          selectedViews: [EP.fromString('sb/scene:aaa')],
-        },
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
       },
-      [],
-    )
+    })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
@@ -143,55 +140,43 @@ describe('useSelectorWithCallback', () => {
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(0)
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: {
-          ...storeHook.getState().editor,
-          focusedElementPath: EP.fromString('sb/scene:aaa'),
-        },
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: {
+        ...storeHook.getState().editor,
+        focusedElementPath: EP.fromString('sb/scene:aaa'),
       },
-      [],
-    )
+    })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: { ...storeHook.getState().editor, focusedElementPath: null },
-      },
-      [],
-    )
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: { ...storeHook.getState().editor, focusedElementPath: null },
+    })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: {
-          ...storeHook.getState().editor,
-          selectedViews: [EP.fromString('sb/scene:aaa')],
-        },
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
       },
-      [],
-    )
+    })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: {
-          ...storeHook.getState().editor,
-          focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
-        },
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: {
+        ...storeHook.getState().editor,
+        focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
       },
-      [],
-    )
+    })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(3)
@@ -242,16 +227,13 @@ describe('useSelectorWithCallback', () => {
       rerender({ storeHook: storeHook })
     }
 
-    storeHook.setState(
-      {
-        ...initialEditorStore,
-        editor: {
-          ...storeHook.getState().editor,
-          selectedViews: [EP.fromString('sb/scene:aaa')],
-        },
+    storeHook.setState({
+      ...initialEditorStore,
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
       },
-      [],
-    )
+    })
 
     Object.values(storeHook.stores).forEach((store) => store.destroy())
 

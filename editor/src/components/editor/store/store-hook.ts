@@ -425,7 +425,7 @@ export const SubstateEqualityFns: {
 export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
 export interface StoresAndSetState {
   stores: UtopiaStores
-  setState: (store: EditorStorePatched, dispatchedActions: ReadonlyArray<EditorAction>) => void
+  setState: (store: EditorStorePatched) => void
   getState: () => EditorStorePatched
 }
 
@@ -444,10 +444,7 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
   }, SubstateEqualityFns) as UtopiaStores // bad type
 
   return {
-    setState: (
-      editorStore: EditorStorePatched,
-      dispatchedActions: ReadonlyArray<EditorAction>,
-    ): void => {
+    setState: (editorStore: EditorStorePatched): void => {
       const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
       // console.log('--------------')
       // const substates = createSubstates(editorStore)
@@ -455,7 +452,7 @@ export const createStoresAndState = (initialEditorStore: EditorStorePatched): St
         // const debug = key === 'restOfStore'
         const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
         ensureSubstoreTimingExists(key)
-        if (!tailoredEqualFunctions(editorStore, substore.getState(), key, dispatchedActions)) {
+        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
           // console.log('halal', key)
           substore.setState(editorStore)
           const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
@@ -479,16 +476,11 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   editorStore: Substates[K],
   oldEditorStore: Substates[K],
   key: K,
-  dispatchedActions: ReadonlyArray<EditorAction>,
 ) {
   function runTheEqualities() {
     return SubstateEqualityFns[key](oldEditorStore, editorStore)
   }
 
-  if (dispatchedActions[0]?.action === 'SCROLL_CANVAS') {
-    runTheEqualities()
-    return key === 'canvasOffset' ? false : true
-  }
   return runTheEqualities()
 }
 
