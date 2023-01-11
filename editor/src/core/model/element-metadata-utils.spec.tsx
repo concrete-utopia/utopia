@@ -928,3 +928,12 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
     ])
   })
 })
+
+describe('elementHasTextOnlyChildren', () => {
+  it('element containing only text is considered to have only text children', async () =>
+    expect(0).toEqual(1))
+  it('element containing text and <br /> tags is considered to have only text children', async () =>
+    expect(0).toEqual(1))
+  it('element containing <br /> tags is considered to have only text children', async () =>
+    expect(0).toEqual(1))
+})
