@@ -25,6 +25,7 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
 
@@ -125,7 +126,15 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+  return (
+    <MainEditorStoreProvider>
+      <TextEditorWrapper {...props} />
+    </MainEditorStoreProvider>
+  )
+})
+
+const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(

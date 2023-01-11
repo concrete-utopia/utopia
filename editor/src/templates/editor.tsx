@@ -64,6 +64,7 @@ import {
   CanvasStateContext,
   EditorStateContext,
   LowPriorityStateContext,
+  OriginalMainEditorStateContext,
   SelectorTimings,
   UtopiaStoreAPI,
 } from '../components/editor/store/store-hook'
@@ -694,17 +695,19 @@ export const EditorRoot: React.FunctionComponent<{
 }) => {
   return (
     <DispatchContext.Provider value={dispatch}>
-      <EditorStateContext.Provider value={{ useStore: mainStore }}>
-        <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-          <CanvasStateContext.Provider value={{ useStore: canvasStore }}>
-            <LowPriorityStateContext.Provider value={{ useStore: lowPriorityStore }}>
-              <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                <EditorComponent />
-              </UiJsxCanvasCtxAtom.Provider>
-            </LowPriorityStateContext.Provider>
-          </CanvasStateContext.Provider>
-        </DomWalkerMutableStateCtx.Provider>
-      </EditorStateContext.Provider>
+      <OriginalMainEditorStateContext.Provider value={{ useStore: mainStore }}>
+        <EditorStateContext.Provider value={{ useStore: mainStore }}>
+          <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
+            <CanvasStateContext.Provider value={{ useStore: canvasStore }}>
+              <LowPriorityStateContext.Provider value={{ useStore: lowPriorityStore }}>
+                <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                  <EditorComponent />
+                </UiJsxCanvasCtxAtom.Provider>
+              </LowPriorityStateContext.Provider>
+            </CanvasStateContext.Provider>
+          </DomWalkerMutableStateCtx.Provider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>
     </DispatchContext.Provider>
   )
 }

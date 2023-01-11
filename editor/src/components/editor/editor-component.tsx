@@ -51,7 +51,7 @@ import {
 import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
-import { LowPriorityStoreProvider } from './store/low-priority-store'
+import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'

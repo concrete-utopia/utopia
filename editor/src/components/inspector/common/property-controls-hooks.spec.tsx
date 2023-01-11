@@ -1,6 +1,6 @@
 import React from 'react'
 import { renderHook } from '@testing-library/react'
-import { EditorStateContext } from '../../editor/store/store-hook'
+import { EditorStateContext, OriginalMainEditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
@@ -212,11 +212,13 @@ function callPropertyControlsHook(
   }
 
   const contextProvider = ({ children }: any) => (
-    <EditorStateContext.Provider value={{ useStore: storeHook }}>
-      <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
-        {children}
-      </InspectorCallbackContext.Provider>
-    </EditorStateContext.Provider>
+    <OriginalMainEditorStateContext.Provider value={{ useStore: storeHook }}>
+      <EditorStateContext.Provider value={{ useStore: storeHook }}>
+        <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
+          {children}
+        </InspectorCallbackContext.Provider>
+      </EditorStateContext.Provider>
+    </OriginalMainEditorStateContext.Provider>
   )
 
   const { result } = renderHook(() => useGetPropertyControlsForSelectedComponents(), {
