@@ -34,7 +34,7 @@ import {
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { fastForEach, NO_OP } from '../../../core/shared/utils'
+import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -357,8 +357,10 @@ export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
         return `{${c.originalJavascript}}`
       }
       return null
-    default:
+    case 'JSX_FRAGMENT':
       return null
+    default:
+      assertNever(c)
   }
 }
 
