@@ -41,9 +41,6 @@ export function useEnterDrawToInsertForDiv(): (event: React.MouseEvent<Element>)
 }
 
 export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => void {
-  const dispatch = useDispatch()
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const textInsertCallbackWithoutTextEditing = useEnterDrawToInsertForElement(
     defaultSpanElementWithPlaceholder,
   )
@@ -51,28 +48,13 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
 
   return React.useCallback(
     (event: React.MouseEvent<Element>): void => {
-      const firstTextEditableView = selectedViewsRef.current.find((v) =>
-        MetadataUtils.targetTextEditable(metadataRef.current, v),
-      )
       if (!isFeatureEnabled('Text editing')) {
         textInsertCallbackWithoutTextEditing(event, { textEdit: false })
-      } else if (firstTextEditableView == null) {
-        textInsertCallbackWithTextEditing(event, { textEdit: true })
       } else {
-        dispatch([
-          switchEditorMode(
-            EditorModes.textEditMode(firstTextEditableView, null, 'existing', 'no-text-selection'),
-          ),
-        ])
+        textInsertCallbackWithTextEditing(event, { textEdit: true })
       }
     },
-    [
-      dispatch,
-      selectedViewsRef,
-      metadataRef,
-      textInsertCallbackWithoutTextEditing,
-      textInsertCallbackWithTextEditing,
-    ],
+    [textInsertCallbackWithoutTextEditing, textInsertCallbackWithTextEditing],
   )
 }
 
