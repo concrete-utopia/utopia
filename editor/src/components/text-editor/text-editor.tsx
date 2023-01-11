@@ -191,7 +191,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     currentElement.focus()
 
     return () => {
-      const deferredTimeout = deferredReparseRef.current
+      const deferredReparseTimeout = deferredReparseRef.current
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content === '') {
@@ -201,8 +201,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
           // defer reparsing the open project file to give it time to process the
           // updateChildText action
-          if (deferredTimeout != null) {
-            clearTimeout(deferredTimeout)
+          if (deferredReparseTimeout != null) {
+            clearTimeout(deferredReparseTimeout)
           }
           deferredReparseRef.current = setTimeout(
             () => dispatch([reparseProjectFile(filename)]),
