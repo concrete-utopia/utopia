@@ -60,7 +60,9 @@ export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => vo
         textInsertCallbackWithTextEditing(event, { textEdit: true })
       } else {
         dispatch([
-          switchEditorMode(EditorModes.textEditMode(firstTextEditableView, null, 'existing')),
+          switchEditorMode(
+            EditorModes.textEditMode(firstTextEditableView, null, 'existing', 'no-text-selection'),
+          ),
         ])
       }
     },
