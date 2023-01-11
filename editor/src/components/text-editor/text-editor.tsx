@@ -64,7 +64,7 @@ export function escapeHTML(s: string): string {
       .replace(/\{/g, entities.curlyBraceLeft)
       .replace(/\}/g, entities.curlyBraceRight)
       // restore the ones that wrap valid jsx expressions
-      .replace(reValidInlineJSXExpression, '{$2}')
+      .replace(reValidInlineJSXExpression, '$1{$2}')
   )
 }
 

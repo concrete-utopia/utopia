@@ -346,8 +346,8 @@ describe('Use the text editor', () => {
     it('handles expressions', async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor, 'select-then-text-edit-mode')
-      typeText('the answer is  {41 + 1}')
+      await enterTextEditMode(editor)
+      typeText('the answer is {41 + 1}')
       closeTextEditor()
 
       await editor.getDispatchFollowUpActionsFinished()
@@ -379,7 +379,7 @@ describe('Use the text editor', () => {
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
 
-      await enterTextEditMode(editor, 'select-then-text-edit-mode')
+      await enterTextEditMode(editor)
       typeText(', right?')
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(
         'the answer is {41 + 1}, right?',
@@ -390,7 +390,7 @@ describe('Use the text editor', () => {
     it("escapes curly braces if they don't wrap an expression", async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor, 'select-then-text-edit-mode')
+      await enterTextEditMode(editor)
       typeText('the answer is {wrong')
       closeTextEditor()
 
@@ -425,7 +425,7 @@ describe('Use the text editor', () => {
     it('supports escaping curly braces', async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor, 'select-then-text-edit-mode')
+      await enterTextEditMode(editor)
       typeText('the answer is \\{41 + 1}')
       closeTextEditor()
 
