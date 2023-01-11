@@ -65,8 +65,8 @@ export function escapeHTML(s: string): string {
 export function unescapeHTML(s: string): string {
   return unescape(s)
     .replace(/<br \/>/g, '\n')
-    .replace(/&#123;/g, '{')
-    .replace(/$#125;/g, '}')
+    .replace(new RegExp(htmlEntities.curlyBraceLeft, 'g'), '{')
+    .replace(new RegExp(htmlEntities.curlyBraceRight, 'g'), '}')
 }
 
 const handleShortcut = (
