@@ -28,7 +28,6 @@ import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
-import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -170,8 +169,6 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
 
-  const reparse = useReParseOpenProjectFile()
-
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -198,7 +195,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState, reparse])
+  }, [dispatch, elementPath, elementState])
 
   React.useEffect(() => {
     if (myElement.current == null) {
