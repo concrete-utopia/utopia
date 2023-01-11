@@ -39,7 +39,7 @@ import {
   UiJsxCanvas,
 } from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
-import { EditorStateContext } from '../editor/store/store-hook'
+import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
@@ -264,19 +264,21 @@ export function renderCanvasReturnResultAndError(
   let errorsReportedSpyEnabled: Array<RuntimeErrorInfo> = []
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
-      <EditorStateContext.Provider value={storeHookForTest}>
-        <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-          <CanvasErrorBoundary
-            filePath={UiFilePath}
-            projectContents={canvasProps.projectContents}
-            // eslint-disable-next-line react/jsx-no-bind
-            reportError={reportError}
-            requireFn={canvasProps.curriedRequireFn}
-          >
-            <UiJsxCanvas {...canvasProps} />
-          </CanvasErrorBoundary>
-        </UiJsxCanvasCtxAtom.Provider>
-      </EditorStateContext.Provider>,
+      <OriginalMainEditorStateContext.Provider value={storeHookForTest}>
+        <EditorStateContext.Provider value={storeHookForTest}>
+          <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+            <CanvasErrorBoundary
+              filePath={UiFilePath}
+              projectContents={canvasProps.projectContents}
+              // eslint-disable-next-line react/jsx-no-bind
+              reportError={reportError}
+              requireFn={canvasProps.curriedRequireFn}
+            >
+              <UiJsxCanvas {...canvasProps} />
+            </CanvasErrorBoundary>
+          </UiJsxCanvasCtxAtom.Provider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>,
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
@@ -292,11 +294,13 @@ export function renderCanvasReturnResultAndError(
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
-      <EditorStateContext.Provider value={storeHookForTest}>
-        <UiJsxCanvasCtxAtom.Provider value={emptyUiJsxCanvasContextData()}>
-          <UiJsxCanvas {...canvasPropsSpyDisabled} />
-        </UiJsxCanvasCtxAtom.Provider>
-      </EditorStateContext.Provider>,
+      <OriginalMainEditorStateContext.Provider value={storeHookForTest}>
+        <EditorStateContext.Provider value={storeHookForTest}>
+          <UiJsxCanvasCtxAtom.Provider value={emptyUiJsxCanvasContextData()}>
+            <UiJsxCanvas {...canvasPropsSpyDisabled} />
+          </UiJsxCanvasCtxAtom.Provider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>,
     )
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
