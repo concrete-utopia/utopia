@@ -1,5 +1,4 @@
 import { wait } from '../../utils/utils.test-utils'
-import { setFeatureEnabled } from '../../utils/feature-switches'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
@@ -17,9 +16,6 @@ import {
 import { TextEditorSpanId } from './text-editor'
 
 describe('Use the text editor', () => {
-  before(() => {
-    setFeatureEnabled('Text editing', true)
-  })
   it('Click to edit text', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
