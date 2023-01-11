@@ -479,6 +479,7 @@ function renderJSXElement(
       const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
+        filePath: filePath,
         text: textContent.trim(),
         component: FinalElement,
         passthroughProps: finalPropsIcludingElementPath,

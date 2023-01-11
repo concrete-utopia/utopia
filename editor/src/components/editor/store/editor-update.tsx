@@ -1,14 +1,11 @@
-import { EditorState, DerivedState, UserState } from './editor-state'
 import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
+import { DerivedState, EditorState, UserState } from './editor-state'
 
-import { StateHistory } from '../history'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { assertNever } from '../../../core/shared/utils'
+import { StateHistory } from '../history'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -304,8 +301,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
-    case 'REPARSE_OPEN_PROJECT_FILE':
-      return UPDATE_FNS.REPARSE_OPEN_PROJECT_FILE(action, state, dispatch)
+    case 'REPARSE_PROJECT_FILE':
+      return UPDATE_FNS.REPARSE_PROJECT_FILE(action, state, dispatch)
     case 'UPDATE_CHILD_TEXT':
       return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':

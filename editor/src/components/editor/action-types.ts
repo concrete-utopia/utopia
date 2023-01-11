@@ -867,8 +867,9 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
-export interface ReparseOpenProjectFile {
-  action: 'REPARSE_OPEN_PROJECT_FILE'
+export interface ReparseProjectFile {
+  action: 'REPARSE_PROJECT_FILE'
+  filePath: string
 }
 
 export interface UpdateChildText {
@@ -1080,7 +1081,6 @@ export interface ApplyCommandsAction {
 }
 
 export type EditorAction =
-  | ReparseOpenProjectFile
   | ClearSelection
   | InsertScene
   | InsertJSXElement
@@ -1254,6 +1254,7 @@ export type EditorAction =
   | SetRefreshingDependencies
   | SetAssetChecksum
   | ApplyCommandsAction
+  | ReparseProjectFile
 
 export type DispatchPriority =
   | 'everyone'

@@ -20,7 +20,7 @@ import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
-  reparseOpenProjectFile,
+  reparseProjectFile,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -36,6 +36,7 @@ interface TextEditorProps {
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
+  filePath: string
 }
 
 const htmlEntities = {
@@ -43,7 +44,7 @@ const htmlEntities = {
   curlyBraceRight: '&#125;',
 }
 
-const deferredReparseTimeoutMS = 500
+const deferredReparseTimeoutMS = 250
 
 export function escapeHTML(s: string): string {
   return (
@@ -149,7 +150,7 @@ const handleSetFontWeightShortcut = (
 }
 
 export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps } = props
+  const { elementPath, text, component, passthroughProps, filePath: filename } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
@@ -191,11 +192,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
           // defer reparsing the open project file to give it time to process the
           // updateChildText action
-          setTimeout(() => dispatch([reparseOpenProjectFile()]), deferredReparseTimeoutMS)
+          setTimeout(() => dispatch([reparseProjectFile(filename)]), deferredReparseTimeoutMS)
         }
       }
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, filename])
 
   React.useEffect(() => {
     if (myElement.current == null) {

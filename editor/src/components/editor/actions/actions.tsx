@@ -315,7 +315,7 @@ import {
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
-  ReparseOpenProjectFile,
+  ReparseProjectFile,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -467,7 +467,7 @@ import {
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
-import { reparseOpenProjectFile } from '../../../core/model/project-file-helper-hooks'
+import { reparseProjectFile } from '../../../core/model/project-file-helper-hooks'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4473,12 +4473,12 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  REPARSE_OPEN_PROJECT_FILE: (
-    _action: ReparseOpenProjectFile,
+  REPARSE_PROJECT_FILE: (
+    action: ReparseProjectFile,
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    reparseOpenProjectFile(editor, dispatch)
+    reparseProjectFile(action.filePath, editor, dispatch)
     return editor
   },
   UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
