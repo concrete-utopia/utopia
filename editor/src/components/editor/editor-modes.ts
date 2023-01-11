@@ -94,6 +94,7 @@ export interface TextEditMode {
   editedText: ElementPath
   cursorPosition: Coordinates | null
   elementState: TextEditableElementState
+  selectOnFocus: 'select-all-on-focus' | 'no-text-selection'
 }
 
 export type TextEditableElementState = 'existing' | 'new'
@@ -134,12 +135,14 @@ export const EditorModes = {
     editedText: ElementPath,
     cursorPosition: Coordinates | null,
     elementState: TextEditableElementState,
+    selectOnFocus: 'select-all-on-focus' | 'no-text-selection',
   ): TextEditMode {
     return {
       type: 'textEdit',
       editedText: editedText,
       cursorPosition: cursorPosition,
       elementState: elementState,
+      selectOnFocus: selectOnFocus,
     }
   },
 }

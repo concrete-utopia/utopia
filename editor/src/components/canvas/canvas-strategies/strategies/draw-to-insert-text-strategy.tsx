@@ -88,6 +88,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
                     canvasState.canvasOffset,
                   ),
                   'existing',
+                  'no-text-selection',
                 ),
               },
             }),
@@ -114,7 +115,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         result.commands.push(
           wildcardPatch('on-complete', {
             mode: {
-              $set: EditorModes.textEditMode(targetElement, null, 'new'),
+              $set: EditorModes.textEditMode(targetElement, null, 'new', 'no-text-selection'),
             },
           }),
         )

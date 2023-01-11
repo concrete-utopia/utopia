@@ -136,6 +136,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
+  const shouldSelectOnFocus = useEditorState(
+    (store) =>
+      store.editor.mode.type === 'textEdit' ? store.editor.mode.selectOnFocus : 'no-text-selection',
+    'TextEditor shouldSelectOnFocus',
+  )
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
@@ -177,6 +182,20 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     }
     void setSelectionToOffset(myElement.current, scale, cursorPosition)
   }, [scale, cursorPosition])
+
+  React.useEffect(() => {
+    if (myElement.current == null || shouldSelectOnFocus === 'no-text-selection') {
+      return
+    }
+
+    const range = document.createRange()
+    range.selectNodeContents(myElement.current)
+    const selection = window.getSelection()
+    if (selection != null) {
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }, [shouldSelectOnFocus])
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -224,12 +243,16 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         dispatch(shortcuts)
       }
 
+      if (event.key === 'Tab') {
+        event.preventDefault()
+      }
+
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
-      } else {
-        event.stopPropagation()
       }
+
+      event.stopPropagation()
     },
     [dispatch, elementPath, metadataRef, passthroughProps],
   )
