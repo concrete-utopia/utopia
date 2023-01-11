@@ -1,6 +1,5 @@
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
@@ -17,10 +16,6 @@ import { selectComponents } from '../../../editor/actions/action-creators'
 import { InsertMode, TextEditMode } from '../../../editor/editor-modes'
 
 describe('Text edit mode', () => {
-  before(() => {
-    setFeatureEnabled('Text editing', true)
-  })
-
   describe('Entering text edit mode', () => {
     it('Enters insert mode without selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
