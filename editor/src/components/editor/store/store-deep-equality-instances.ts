@@ -2709,7 +2709,7 @@ export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
 export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
   combine4EqualityCalls(
     (mode) => mode.editedText,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
+    ElementPathKeepDeepEquality,
     (mode) => mode.cursorPosition,
     nullableDeepEquality(CoordinateKeepDeepEquality),
     (mode) => mode.elementState,
