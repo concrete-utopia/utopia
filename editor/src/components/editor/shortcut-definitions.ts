@@ -73,6 +73,8 @@ export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
 export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 export const TEXT_EDIT_MODE = 'text-edit-mode'
+export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
+export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 
@@ -209,6 +211,14 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
   [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
   [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),
+  [TOGGLE_TEXT_BOLD]: shortcut(
+    'Toggle font-weight of the currently selected text element.',
+    key('b', ['cmd']),
+  ),
+  [TOGGLE_TEXT_ITALIC]: shortcut(
+    'Toggle font-style of the currently selected text element.',
+    key('i', ['cmd']),
+  ),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

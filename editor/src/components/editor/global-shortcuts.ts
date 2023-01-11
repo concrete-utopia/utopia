@@ -89,6 +89,8 @@ import {
   INSERT_DIV_SHORTCUT,
   OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
   TEXT_EDIT_MODE,
+  TOGGLE_TEXT_BOLD,
+  TOGGLE_TEXT_ITALIC,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -98,7 +100,7 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import { emptyComments, JSXAttribute, jsxAttributeValue } from '../../core/shared/element-template'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -737,6 +739,37 @@ export function handleKeyDown(
           )
         }
         return actions
+      },
+      [TOGGLE_TEXT_BOLD]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.flatMap((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              const currentFontWeight = element?.computedStyle?.fontWeight ?? 'normal'
+              const newValue =
+                currentFontWeight === 'normal' || currentFontWeight === '400' ? 'bold' : 'normal'
+
+              return EditorActions.setProperty(
+                target,
+                PP.create(['style', 'fontWeight']),
+                jsxAttributeValue(newValue, emptyComments),
+              )
+            })
+          : []
+      },
+      [TOGGLE_TEXT_ITALIC]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.flatMap((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              const currentFontStyle = element?.computedStyle?.fontStyle ?? 'normal'
+              const newValue = currentFontStyle === 'italic' ? 'normal' : 'italic'
+
+              return EditorActions.setProperty(
+                target,
+                PP.create(['style', 'fontStyle']),
+                jsxAttributeValue(newValue, emptyComments),
+              )
+            })
+          : []
       },
     })
   }
