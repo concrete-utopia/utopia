@@ -698,44 +698,27 @@ export function handleKeyDown(
           return []
         }
 
-        const firstTextEditableView = editor.selectedViews.find((v) =>
-          MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
-        )
-
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-        const actions: Array<EditorAction> = [
-          EditorActions.switchEditorMode(
-            EditorModes.textEditMode(
-              firstTextEditableView ?? null,
-              null,
-              'existing',
-              'no-text-selection',
+        actions.push(
+          EditorActions.enableInsertModeForJSXElement(
+            defaultSpanElement(newUID),
+            newUID,
+            {},
+            null,
+            {
+              textEdit: true,
+            },
+          ),
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              CanvasMousePositionRaw!,
+              modifiers,
+              boundingArea(),
+              'zero-drag-permitted',
             ),
           ),
-        ]
-
-        if (firstTextEditableView == null) {
-          actions.push(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultSpanElement(newUID),
-              newUID,
-              {},
-              null,
-              {
-                textEdit: true,
-              },
-            ),
-            CanvasActions.createInteractionSession(
-              createHoverInteractionViaMouse(
-                CanvasMousePositionRaw!,
-                modifiers,
-                boundingArea(),
-                'zero-drag-permitted',
-              ),
-            ),
-          )
-        }
+        )
         return actions
       },
     })

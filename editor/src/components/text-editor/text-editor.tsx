@@ -278,12 +278,16 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         dispatch(shortcuts)
       }
 
+      if (event.key === 'Tab') {
+        event.preventDefault()
+      }
+
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
-      } else {
-        event.stopPropagation()
       }
+
+      event.stopPropagation()
     },
     [dispatch, elementPath, metadataRef, passthroughProps],
   )

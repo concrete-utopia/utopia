@@ -55,7 +55,7 @@ export function keyboardReorderStrategy(
     id: 'KEYBOARD_REORDER',
     name: 'Reorder',
     controlsToRender: [],
-    fitness: 1,
+    fitness: fitness(interactionSession),
     apply: () => {
       if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
         const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
@@ -106,6 +106,21 @@ export function keyboardReorderStrategy(
       }
     },
   }
+}
+
+function fitness(interactionSession: InteractionSession | null): number {
+  if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
+    return 0
+  }
+
+  const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
+  const matches = accumulatedPresses.some((accumulatedPress) =>
+    Array.from(accumulatedPress.keysPressed).some(
+      (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
+    ),
+  )
+
+  return matches ? 1 : 0
 }
 
 // This function creates the map which describes which keyboard cursor button should move the index which way.
