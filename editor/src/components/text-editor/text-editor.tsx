@@ -178,6 +178,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
   const [firstTextProp] = React.useState(text)
 
+  const deferredReparseRef = React.useRef<NodeJS.Timeout | null>(null)
+
   const myElement = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
@@ -189,6 +191,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     currentElement.focus()
 
     return () => {
+      const deferredTimeout = deferredReparseRef.current
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content === '') {
@@ -198,7 +201,13 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
           // defer reparsing the open project file to give it time to process the
           // updateChildText action
-          setTimeout(() => dispatch([reparseProjectFile(filename)]), deferredReparseTimeoutMS)
+          if (deferredTimeout != null) {
+            clearTimeout(deferredTimeout)
+          }
+          deferredReparseRef.current = setTimeout(
+            () => dispatch([reparseProjectFile(filename)]),
+            deferredReparseTimeoutMS,
+          )
         }
       }
     }
