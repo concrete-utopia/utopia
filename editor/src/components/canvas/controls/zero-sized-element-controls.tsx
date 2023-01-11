@@ -31,6 +31,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorModes } from '../../editor/editor-modes'
 import * as EditorActions from '../../editor/actions/action-creators'
 
+export const ZeroSizedControlTestID = 'zero-sized-control'
 interface ZeroSizedElementControlProps {
   showAllPossibleElements: boolean
 }
@@ -366,6 +367,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
+        data-testid={ZeroSizedControlTestID}
         style={{
           position: 'absolute',
           left: props.frame.x - ZeroControlSize / 2,
