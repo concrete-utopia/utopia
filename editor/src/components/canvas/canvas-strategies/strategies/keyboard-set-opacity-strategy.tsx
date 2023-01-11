@@ -74,7 +74,13 @@ export function parseOpacityFromKeyboard(keys: string): string | null {
 }
 
 function isSetOpacityShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
-  return shallowEqual(modifiers, emptyModifiers) && Keyboard.keyTriggersOpacityStrategy(key)
+  return (
+    modifiers.alt === false &&
+    modifiers.cmd === false &&
+    modifiers.ctrl === false &&
+    modifiers.shift === false &&
+    Keyboard.keyTriggersOpacityStrategy(key)
+  )
 }
 
 function fitness(interactionSession: InteractionSession | null): number {
