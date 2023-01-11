@@ -101,7 +101,7 @@ const handleSetFontSizeShortcut = (
   const character = keyCharacterFromCode(event.keyCode)
   const matches = isAdjustFontSizeShortcut(modifiers, character)
 
-  if (matches == null) {
+  if (!matches) {
     return []
   }
 
@@ -132,7 +132,7 @@ const handleSetFontWeightShortcut = (
   const character = keyCharacterFromCode(event.keyCode)
   const matches = isAdjustFontWeightShortcut(modifiers, character)
 
-  if (matches == null) {
+  if (!matches) {
     return []
   }
 
