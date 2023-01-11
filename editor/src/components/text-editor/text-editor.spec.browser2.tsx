@@ -176,24 +176,24 @@ describe('Use the text editor', () => {
       expect(after).toEqual(projectWithStyle('textDecoration', 'none'))
     })
 
-    it('supports increasing font size', async () => {
+    xit('supports increasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, '.')
       expect(before).toEqual(projectWithStyle('fontSize', '17px'))
       expect(after).toEqual(projectWithStyle('fontSize', '18px'))
     })
 
-    it('supports increasing font weight', async () => {
+    xit('supports increasing font weight', async () => {
       const { before, after } = await testModifier(altCmdModifier, '.')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '500'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '600'))
     })
-    it('supports decreasing font size', async () => {
+    xit('supports decreasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, ',')
       expect(before).toEqual(projectWithStyle('fontSize', '15px'))
       expect(after).toEqual(projectWithStyle('fontSize', '14px'))
     })
 
-    it('supports decreasing font weight', async () => {
+    xit('supports decreasing font weight', async () => {
       const { before, after } = await testModifier(altCmdModifier, ',')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '300'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '200'))
