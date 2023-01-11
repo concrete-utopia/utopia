@@ -53,7 +53,7 @@ import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
-import { mapDropNulls } from 'src/core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,

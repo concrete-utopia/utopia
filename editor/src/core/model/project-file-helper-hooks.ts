@@ -1,5 +1,5 @@
 import React from 'react'
-import { EditorDispatch } from 'src/components/editor/action-types'
+import { EditorDispatch } from '../../components/editor/action-types'
 import { updateFile } from '../../components/editor/actions/action-creators'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
 import {
