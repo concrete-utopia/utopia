@@ -39,34 +39,40 @@ interface TextEditorProps {
   filePath: string
 }
 
-const htmlEntities = {
+const entities = {
+  lesserThan: '&lt;',
+  greaterThan: '&gt;',
   curlyBraceLeft: '&#123;',
   curlyBraceRight: '&#125;',
 }
 
 const deferredReparseTimeoutMS = 250
 
+const reValidInlineJSXExpression = new RegExp(
+  `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
+  'g',
+)
+
 export function escapeHTML(s: string): string {
   return (
-    escape(s)
+    s
+      .replace('<', entities.lesserThan)
+      .replace('>', entities.greaterThan)
       // restore br tags
       .replace(/\n/g, '<br />')
       // clean up curly braces
-      .replace(/\{/g, htmlEntities.curlyBraceLeft)
-      .replace(/\}/g, htmlEntities.curlyBraceRight)
+      .replace(/\{/g, entities.curlyBraceLeft)
+      .replace(/\}/g, entities.curlyBraceRight)
       // restore the ones that wrap valid jsx expressions
-      .replace(
-        new RegExp(`${htmlEntities.curlyBraceLeft}([^&}]+)${htmlEntities.curlyBraceRight}`, 'g'),
-        '{$1}',
-      )
+      .replace(reValidInlineJSXExpression, '{$2}')
   )
 }
 
 export function unescapeHTML(s: string): string {
   return unescape(s)
     .replace(/<br \/>/g, '\n')
-    .replace(new RegExp(htmlEntities.curlyBraceLeft, 'g'), '{')
-    .replace(new RegExp(htmlEntities.curlyBraceRight, 'g'), '}')
+    .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
+    .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
 }
 
 const handleShortcut = (
