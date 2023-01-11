@@ -44,7 +44,7 @@ const htmlEntities = {
   curlyBraceRight: '&#125;',
 }
 
-const deferredReparseTimeoutMS = 250
+const deferredReparseTimeoutMS = 500
 
 export function escapeHTML(s: string): string {
   return (
