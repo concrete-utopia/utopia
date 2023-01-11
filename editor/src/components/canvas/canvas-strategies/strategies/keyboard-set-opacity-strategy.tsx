@@ -1,7 +1,7 @@
 import { shallowEqual } from '../../../../core/shared/equality-utils'
 import * as PP from '../../../../core/shared/property-path'
 import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
-import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifier, Modifiers } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
 import {
   InteractionCanvasState,
@@ -74,13 +74,7 @@ export function parseOpacityFromKeyboard(keys: string): string | null {
 }
 
 function isSetOpacityShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
-  return (
-    modifiers.alt === false &&
-    modifiers.cmd === false &&
-    modifiers.ctrl === false &&
-    modifiers.shift === false &&
-    Keyboard.keyTriggersOpacityStrategy(key)
-  )
+  return Modifier.equal(modifiers, emptyModifiers) && Keyboard.keyTriggersOpacityStrategy(key)
 }
 
 function fitness(interactionSession: InteractionSession | null): number {
