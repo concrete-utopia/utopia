@@ -330,7 +330,6 @@ type Substates = {
   restOfEditor: { editor: RestOfEditorState }
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   fullOldStore: EditorStorePatched
-  originalStore: EditorStorePatched
   theme: ThemeSubstate
   github: GithubSubstate
   builtInDependencies: BuiltInDependenciesSubstate
@@ -398,7 +397,6 @@ export const Substores = {
     // TODO exclude scroll offset!!!!!!!
     return a === b
   },
-  originalStore: (a: EditorStorePatched, b: EditorStorePatched) => a === b,
   theme: (a: ThemeSubstate, b: ThemeSubstate) =>
     a.userState.themeConfig === b.userState.themeConfig,
   github: (a: GithubSubstate, b: GithubSubstate) => {
@@ -430,43 +428,31 @@ export interface StoresAndSetState {
 }
 
 export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
-  // function createSubstates(editorStore: EditorStorePatched): Substates {
-  //   return objectMap((picker, key) => {
-  //     if (isFeatureEnabled('Selectors Split')) {
-  //       return picker(editorStore)
-  //     } else {
-  //       return editorStore
-  //     }
-  //   }, SubstatePickers) as Substates // bad type
-  // }
+  let latestStoreState: EditorStorePatched = initialEditorStore
+
   let substores: UtopiaStores = objectMap((_, key) => {
     return create(subscribeWithSelector((set) => initialEditorStore))
   }, SubstateEqualityFns) as UtopiaStores // bad type
 
   return {
     setState: (editorStore: EditorStorePatched): void => {
+      latestStoreState = editorStore
       const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-      // console.log('--------------')
-      // const substates = createSubstates(editorStore)
       objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
-        // const debug = key === 'restOfStore'
         const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
         ensureSubstoreTimingExists(key)
         if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
-          // console.log('halal', key)
           substore.setState(editorStore)
           const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
           if (MeasureSelectors) {
             SubstoreTimings.current[key].updateTime =
               (SubstoreTimings.current[key].updateTime ?? 0) + afterStoreUpdate - beforeStoreUpdate
           }
-        } else {
-          // console.log('bingo', key)
         }
       }, substores)
     },
     getState: (): EditorStorePatched => {
-      return substores.originalStore.getState()
+      return latestStoreState
     },
     stores: substores,
   }
