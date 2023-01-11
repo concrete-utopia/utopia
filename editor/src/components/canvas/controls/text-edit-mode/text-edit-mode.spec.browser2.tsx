@@ -52,6 +52,8 @@ describe('Text edit mode', () => {
       expect(
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
     it('Entering text edit mode with pressing enter on a text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
@@ -63,6 +65,8 @@ describe('Text edit mode', () => {
       expect(
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
   })
 
@@ -77,6 +81,8 @@ describe('Text edit mode', () => {
       expect(
         EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
       ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
   })
 })

@@ -1,6 +1,8 @@
 import { EditorModes } from '../../../../components/editor/editor-modes'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { updateSelectedRightMenuTab } from '../../../editor/actions/actions'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import { MetaCanvasStrategy } from '../canvas-strategies'
@@ -78,6 +80,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const isRoot = targetParentPathParts === 1
         if (!isRoot && textEditable) {
           return strategyApplicationResult([
+            updateSelectedViews('on-complete', [targetParent]),
             wildcardPatch('on-complete', {
               mode: {
                 $set: EditorModes.textEditMode(
@@ -113,6 +116,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
         const result = strategy.apply(s)
         result.commands.push(
+          updateSelectedViews('on-complete', [targetElement]),
           wildcardPatch('on-complete', {
             mode: {
               $set: EditorModes.textEditMode(targetElement, null, 'new', 'no-text-selection'),
