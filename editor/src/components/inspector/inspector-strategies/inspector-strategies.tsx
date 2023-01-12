@@ -6,7 +6,7 @@ import {
   filterKeepFlexContainers,
   FlexAlignment,
   FlexJustifyContent,
-  hugContentsApplicable,
+  hugContentsApplicableForContainer,
   widthHeightFromAxis,
 } from '../inspector-common'
 import * as EP from '../../../core/shared/element-path'
@@ -155,7 +155,9 @@ export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<Insp
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsTextStrategy(axis),
   (metadata, elementPaths) => {
-    const elements = elementPaths.filter((path) => hugContentsApplicable(metadata, path))
+    const elements = elementPaths.filter((path) =>
+      hugContentsApplicableForContainer(metadata, path),
+    )
 
     if (elements.length === 0) {
       return null
