@@ -3,6 +3,7 @@ import React from 'react'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
+import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
@@ -29,14 +30,13 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
+import { AllElementProps } from '../editor/store/editor-state'
 
 export const TextEditorSpanId = 'text-editor'
 
 interface TextEditorProps {
   elementPath: ElementPath
   text: string
-  component: React.ComponentType<React.PropsWithChildren<any>>
-  passthroughProps: Record<string, any>
 }
 
 export function escapeHTML(s: string): string {
@@ -49,7 +49,7 @@ export function unescapeHTML(s: string): string {
 
 const handleShortcut = (
   cond: boolean,
-  style: { [key: string]: unknown } | null,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
   prop: string,
   value: string,
@@ -58,6 +58,7 @@ const handleShortcut = (
   if (!cond) {
     return []
   }
+  const { style } = allElementProps[EP.toString(elementPath)]
   const newValue = style != null && style[prop] === value ? defaultValue : value
   return [
     applyCommandsAction([setProperty('always', elementPath, PP.create(['style', prop]), newValue)]),
@@ -136,8 +137,12 @@ export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditorWrapper = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps } = props
+  const { elementPath, text } = props
   const dispatch = useDispatch()
+  const allElementProps = useEditorState(
+    (store) => store.editor.allElementProps,
+    'TextEditor allElementProps',
+  )
   const cursorPosition = useEditorState(
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
@@ -216,11 +221,10 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (event: React.KeyboardEvent) => {
       const modifiers = Modifier.modifiersForEvent(event)
       const meta = modifiers.cmd || modifiers.ctrl
-      const style = passthroughProps.style ?? {}
       const shortcuts = [
         ...handleShortcut(
           meta && event.key === 'b', // Meta+b = bold
-          style,
+          allElementProps,
           elementPath,
           'fontWeight',
           'bold',
@@ -228,7 +232,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && event.key === 'i', // Meta+i = italic
-          style,
+          allElementProps,
           elementPath,
           'fontStyle',
           'italic',
@@ -236,7 +240,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && event.key === 'u', // Meta+u = underline
-          style,
+          allElementProps,
           elementPath,
           'textDecoration',
           'underline',
@@ -244,7 +248,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         ),
         ...handleShortcut(
           meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
-          style,
+          allElementProps,
           elementPath,
           'textDecoration',
           'line-through',
@@ -269,35 +273,26 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
       event.stopPropagation()
     },
-    [dispatch, elementPath, metadataRef, passthroughProps],
+    [dispatch, elementPath, metadataRef, allElementProps],
   )
 
   const onBlur = React.useCallback(() => {
     dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
-  const editorProps = {
-    ref: myElement,
-    id: TextEditorSpanId,
-    onPaste: stopPropagation,
-    onKeyDown: onKeyDown,
-    onKeyUp: stopPropagation,
-    onKeyPress: stopPropagation,
-    onBlur: onBlur,
-    contentEditable: 'plaintext-only' as any, // note: not supported on firefox,
-    suppressContentEditableWarning: true,
-  }
-
-  const filteredPassthroughProps = filterMouseHandlerProps(passthroughProps)
-
-  // When the component to render is a simple html element we should make that contenteditable
-  if (typeof component === 'string') {
-    return React.createElement(component, {
-      ...filteredPassthroughProps,
-      ...editorProps,
-    })
-  }
-  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
+  return (
+    <span
+      ref={myElement}
+      id={TextEditorSpanId}
+      onPaste={stopPropagation}
+      onKeyDown={onKeyDown}
+      onKeyUp={stopPropagation}
+      onKeyPress={stopPropagation}
+      onBlur={onBlur}
+      contentEditable={'plaintext-only' as any} // note: not supported on firefox
+      suppressContentEditableWarning={true}
+    />
+  )
 })
 
 async function setSelectionToOffset(

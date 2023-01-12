@@ -322,13 +322,16 @@ export function renderCoreElement(
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
+      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
+
       // when the text is just edited its parent renders it in a text editor, so no need to render anything here
       if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
-        return <></>
+        return (
+          <TextEditorWrapperWrapper elementPath={parentPath} text={unescapeHTML(element.text)} />
+        )
       }
 
-      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
-      return (
+      const textToRender = (
         <>
           {lines.map((l, index) => (
             <React.Fragment key={index}>
@@ -338,6 +341,8 @@ export function renderCoreElement(
           ))}
         </>
       )
+
+      return textToRender
     }
     default:
       const _exhaustiveCheck: never = element
@@ -461,34 +466,6 @@ function renderJSXElement(
   }
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
-    if (elementIsTextEdited) {
-      const text = childrenWithNewTextBlock
-        .filter(filterJSXElementChildIsTextOrNewline)
-        .map((c) => (c.text != null ? c.text.trim() : '\n'))
-        .join('')
-      const textContent = unescapeHTML(text ?? '')
-      const textEditorProps = {
-        elementPath: elementPath,
-        text: textContent.trim(),
-        component: FinalElement,
-        passthroughProps: finalPropsIcludingElementPath,
-      }
-
-      return buildSpyWrappedElement(
-        jsx,
-        textEditorProps,
-        elementPath,
-        metadataContext,
-        updateInvalidatedPaths,
-        childrenElements,
-        TextEditorWrapperWrapper,
-        inScope,
-        jsxFactoryFunctionName,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        filePath,
-      )
-    }
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,
