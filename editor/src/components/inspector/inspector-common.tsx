@@ -1,3 +1,4 @@
+import * as PP from '../../core/shared/property-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -8,8 +9,9 @@ import { assertNever } from '../../core/shared/utils'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
-import * as PP from '../../core/shared/property-path'
 import { defaultEither, right } from '../../core/shared/either'
+import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -176,7 +178,7 @@ export function detectAreElementsFlexContainers(
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
-export const hugContentsApplicable = (
+export const hugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): boolean => {
@@ -193,6 +195,14 @@ export const hugContentsApplicable = (
         ),
     ).length > 0
   )
+}
+
+export const hugContentsApplicableForText = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean => {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  return optionalMap(elementOnlyHasTextChildren, element) === true
 }
 
 export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
@@ -262,4 +272,8 @@ export function convertWidthToFlexGrow(
     deleteProperties('always', elementPath, [PP.create(['style', 'width'])]),
     setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
   ]
+}
+
+export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
+  return ts.length === 0 ? null : ts
 }

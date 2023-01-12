@@ -7,7 +7,7 @@ import {
   filterKeepFlexContainers,
   FlexAlignment,
   FlexJustifyContent,
-  hugContentsApplicable,
+  hugContentsApplicableForContainer,
   widthHeightFromAxis,
 } from '../inspector-common'
 import * as EP from '../../../core/shared/element-path'
@@ -19,6 +19,7 @@ import { CanvasCommand } from '../../canvas/commands/commands'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
+import { hugContentsTextStrategy } from './hug-contents-text'
 
 export type InspectorStrategy = (
   metadata: ElementInstanceMetadataMap,
@@ -156,8 +157,11 @@ export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<Insp
 ]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
+  hugContentsTextStrategy(axis),
   (metadata, elementPaths) => {
-    const elements = elementPaths.filter((path) => hugContentsApplicable(metadata, path))
+    const elements = elementPaths.filter((path) =>
+      hugContentsApplicableForContainer(metadata, path),
+    )
 
     if (elements.length === 0) {
       return null
