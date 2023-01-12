@@ -1,11 +1,14 @@
+import { EditorState, DerivedState, UserState } from './editor-state'
 import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
-import { DerivedState, EditorState, UserState } from './editor-state'
 
-import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import { StateHistory } from '../history'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { getAllUniqueUids } from '../../../core/model/element-template-utils'
+import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { assertNever } from '../../../core/shared/utils'
 
 export function runLocalEditorAction(
   state: EditorState,
