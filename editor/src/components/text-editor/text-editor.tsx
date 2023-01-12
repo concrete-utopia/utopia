@@ -289,6 +289,15 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
       onKeyUp={stopPropagation}
       onKeyPress={stopPropagation}
       onBlur={onBlur}
+      onClick={stopPropagation}
+      onContextMenu={stopPropagation}
+      onMouseDown={stopPropagation}
+      onMouseEnter={stopPropagation}
+      onMouseLeave={stopPropagation}
+      onMouseMove={stopPropagation}
+      onMouseOut={stopPropagation}
+      onMouseOver={stopPropagation}
+      onMouseUp={stopPropagation}
       contentEditable={'plaintext-only' as any} // note: not supported on firefox
       suppressContentEditableWarning={true}
     />
@@ -357,23 +366,6 @@ async function setSelectionToOffset(
   }
 }
 
-function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
+function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent | React.MouseEvent) {
   e.stopPropagation()
-}
-
-function filterMouseHandlerProps(props: Record<string, any>) {
-  const {
-    onClick,
-    onContextMenu,
-    onDblClick,
-    onMouseDown,
-    onMouseEnter,
-    onMouseLeave,
-    onMouseMove,
-    onMouseOut,
-    onMouseOver,
-    onMouseUp,
-    ...filteredProps
-  } = props
-  return filteredProps
 }
