@@ -1973,12 +1973,10 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (editor.canvas.dragState == null) {
-    return editor.jsxMetadata
-  } else {
-    return editor.canvas.dragState.metadata
-  }
+export function getMetadata(editor: {
+  jsxMetadata: ElementInstanceMetadataMap
+}): ElementInstanceMetadataMap {
+  return editor.jsxMetadata
 }
 
 export interface ElementWarnings {

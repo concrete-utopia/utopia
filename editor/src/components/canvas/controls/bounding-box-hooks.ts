@@ -57,8 +57,8 @@ function useBoundingBoxFromMetadataRef(
   }, [selectedElements, metadataRef, scaleRef])
 
   useSelectorWithCallback(
-    Substores.fullOldStore,
-    (store) => getMetadata(store.editor), // TODO before merge fix this
+    Substores.metadata,
+    (store) => getMetadata(store.editor),
     (newMetadata) => {
       innerCallback()
     },

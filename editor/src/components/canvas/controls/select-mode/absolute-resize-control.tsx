@@ -303,7 +303,7 @@ const SizeLabel = React.memo(
     )
     const colorTheme = useColorTheme()
     const metadata = useEditorState(
-      Substores.fullOldStore,
+      Substores.metadata,
       (store) => getMetadata(store.editor),
       'ResizeLabel metadata',
     )
