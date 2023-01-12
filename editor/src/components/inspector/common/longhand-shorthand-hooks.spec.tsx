@@ -16,7 +16,11 @@ import {
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { EditorStateContext, UtopiaStoreAPI } from '../../editor/store/store-hook'
+import {
+  EditorStateContext,
+  OriginalMainEditorStateContext,
+  UtopiaStoreAPI,
+} from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
@@ -67,9 +71,11 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
 
     return (
       <DispatchContext.Provider value={mockDispatch}>
-        <EditorStateContext.Provider value={{ useStore: storeHook }}>
-          <InspectorContextProvider>{children}</InspectorContextProvider>
-        </EditorStateContext.Provider>
+        <OriginalMainEditorStateContext.Provider value={{ useStore: storeHook }}>
+          <EditorStateContext.Provider value={{ useStore: storeHook }}>
+            <InspectorContextProvider>{children}</InspectorContextProvider>
+          </EditorStateContext.Provider>
+        </OriginalMainEditorStateContext.Provider>
       </DispatchContext.Provider>
     )
   }

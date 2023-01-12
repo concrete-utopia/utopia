@@ -1,5 +1,11 @@
+import { assertNever } from '../../../../core/shared/utils'
+import { shiftCmdModifier } from '../../../../utils/modifiers'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 describe('adjust font size with the keyboard', () => {
@@ -46,6 +52,16 @@ describe('adjust font size with the keyboard', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.fontSize).toEqual('11px')
+    })
+
+    it('increase font size, in a hierarchy', async () => {
+      const editor = await renderTestEditorWithCode(projectWithHierarchy, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId('div')
+      await doSelect(editor, 'double')
+      await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(div.style.fontSize).toEqual('17px')
     })
   })
 
@@ -137,7 +153,7 @@ describe('adjust font size with the keyboard', () => {
   })
 })
 
-async function doSelect(editor: EditorRenderResult) {
+async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 'single') {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('div')
   const divBounds = div.getBoundingClientRect()
@@ -146,7 +162,17 @@ async function doSelect(editor: EditorRenderResult) {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  switch (type) {
+    case 'single':
+      mouseClickAtPoint(canvasControlsLayer, divCorner)
+      break
+    case 'double':
+      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+      break
+    default:
+      assertNever(type)
+  }
+
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -155,11 +181,11 @@ async function doTestWithDelta(
   delta: { decreaseBy: number; increaseBy: number },
 ) {
   for (let i = 0; i < delta.increaseBy; i++) {
-    pressKey('.', { modifiers: { shift: true, cmd: true, alt: false, ctrl: false } })
+    pressKey('.', { modifiers: shiftCmdModifier })
   }
 
   for (let i = 0; i < delta.decreaseBy; i++) {
-    pressKey(',', { modifiers: { shift: true, cmd: true, alt: false, ctrl: false } })
+    pressKey(',', { modifiers: shiftCmdModifier })
   }
 
   await editor.getDispatchFollowUpActionsFinished()
@@ -185,6 +211,68 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithHierarchy = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 205,
+          height: 241,
+        }}
+        data-uid='28d'
+      />
+      <div
+        data-testid='div'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 160,
+          height: 165,
+        }}
+        data-uid='05f'
+      >
+        hello there
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 115,
+          height: 125,
+        }}
+        data-uid='f30'
+      />
+    </Scene>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+      data-uid='2c5'
+    >
+      <App style={{}} data-uid='a28' />
+    </Scene>
   </Storyboard>
 )
 `

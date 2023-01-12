@@ -1,8 +1,20 @@
 import { escape, unescape } from 'he'
 import React from 'react'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
+import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
+import {
+  adjustFontSize,
+  getFontSize,
+  isAdjustFontSizeShortcut,
+} from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
+import {
+  adjustFontWeight,
+  getFontWeightFromComputedStyle,
+  isAdjustFontWeightShortcut,
+} from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { ApplyCommandsAction } from '../editor/action-types'
 import {
@@ -13,7 +25,9 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useEditorState } from '../editor/store/store-hook'
+import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { printCSSNumber } from '../inspector/common/css-utils'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -49,7 +63,78 @@ const handleShortcut = (
   ]
 }
 
-export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+const handleSetFontSizeShortcut = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<ApplyCommandsAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const character = keyCharacterFromCode(event.keyCode)
+  const matches = isAdjustFontSizeShortcut(modifiers, character)
+
+  if (!matches) {
+    return []
+  }
+
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
+  const fontSize = getFontSize(metadata, elementPath)
+  if (fontSize == null) {
+    return []
+  }
+
+  return [
+    applyCommandsAction([
+      setProperty(
+        'always',
+        elementPath,
+        PP.create(['style', 'fontSize']),
+        printCSSNumber(adjustFontSize(fontSize[0], delta), null),
+      ),
+    ]),
+  ]
+}
+
+const handleSetFontWeightShortcut = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<ApplyCommandsAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const character = keyCharacterFromCode(event.keyCode)
+  const matches = isAdjustFontWeightShortcut(modifiers, character)
+
+  if (!matches) {
+    return []
+  }
+
+  const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
+
+  const fontWeight = getFontWeightFromComputedStyle(metadata, elementPath)
+  if (fontWeight == null) {
+    return []
+  }
+
+  return [
+    applyCommandsAction([
+      setProperty(
+        'always',
+        elementPath,
+        PP.create(['style', 'fontWeight']),
+        adjustFontWeight(fontWeight, delta),
+      ),
+    ]),
+  ]
+}
+
+export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+  return (
+    <MainEditorStoreProvider>
+      <TextEditorWrapper {...props} />
+    </MainEditorStoreProvider>
+  )
+})
+
+const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
@@ -60,6 +145,13 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
+  const shouldSelectOnFocus = useEditorState(
+    (store) =>
+      store.editor.mode.type === 'textEdit' ? store.editor.mode.selectOnFocus : 'no-text-selection',
+    'TextEditor shouldSelectOnFocus',
+  )
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
   const [firstTextProp] = React.useState(text)
@@ -100,6 +192,20 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     void setSelectionToOffset(myElement.current, scale, cursorPosition)
   }, [scale, cursorPosition])
 
+  React.useEffect(() => {
+    if (myElement.current == null || shouldSelectOnFocus === 'no-text-selection') {
+      return
+    }
+
+    const range = document.createRange()
+    range.selectNodeContents(myElement.current)
+    const selection = window.getSelection()
+    if (selection != null) {
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }, [shouldSelectOnFocus])
+
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
       const modifiers = Modifier.modifiersForEvent(event)
@@ -138,20 +244,26 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
           'line-through',
           'none',
         ),
+        ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
+        ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]
       if (shortcuts.length > 0) {
         event.stopPropagation()
         dispatch(shortcuts)
       }
 
+      if (event.key === 'Tab') {
+        event.preventDefault()
+      }
+
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
-      } else {
-        event.stopPropagation()
       }
+
+      event.stopPropagation()
     },
-    [dispatch, elementPath, passthroughProps],
+    [dispatch, elementPath, metadataRef, passthroughProps],
   )
 
   const onBlur = React.useCallback(() => {
@@ -170,14 +282,16 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     suppressContentEditableWarning: true,
   }
 
+  const filteredPassthroughProps = filterMouseHandlerProps(passthroughProps)
+
   // When the component to render is a simple html element we should make that contenteditable
   if (typeof component === 'string') {
     return React.createElement(component, {
-      ...passthroughProps,
+      ...filteredPassthroughProps,
       ...editorProps,
     })
   }
-  return React.createElement(component, passthroughProps, <span {...editorProps} />)
+  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
 })
 
 async function setSelectionToOffset(
@@ -244,4 +358,21 @@ async function setSelectionToOffset(
 
 function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
   e.stopPropagation()
+}
+
+function filterMouseHandlerProps(props: Record<string, any>) {
+  const {
+    onClick,
+    onContextMenu,
+    onDblClick,
+    onMouseDown,
+    onMouseEnter,
+    onMouseLeave,
+    onMouseMove,
+    onMouseOut,
+    onMouseOver,
+    onMouseUp,
+    ...filteredProps
+  } = props
+  return filteredProps
 }

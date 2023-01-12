@@ -1,8 +1,4 @@
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../../../../core/model/element-template-utils.test-utils'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -16,9 +12,6 @@ import {
 } from '../../../canvas/ui-jsx.test-utils'
 
 describe('draw-to-insert text', () => {
-  before(() => {
-    setFeatureEnabled('Text editing', true)
-  })
   describe('draw', () => {
     it('allows drawing to insert some text', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
