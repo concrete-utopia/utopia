@@ -5,6 +5,8 @@ import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
+import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -171,7 +173,7 @@ export function detectAreElementsFlexContainers(
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
-export const hugContentsApplicable = (
+export const hugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): boolean => {
@@ -188,6 +190,14 @@ export const hugContentsApplicable = (
         ),
     ).length > 0
   )
+}
+
+export const hugContentsApplicableForText = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean => {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  return optionalMap(elementOnlyHasTextChildren, element) === true
 }
 
 export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
@@ -234,4 +244,8 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
     default:
       assertNever(axis)
   }
+}
+
+export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
+  return ts.length === 0 ? null : ts
 }

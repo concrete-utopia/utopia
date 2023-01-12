@@ -6,7 +6,7 @@ import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { filterKeepFlexContainers } from '../inspector-common'
+import { filterKeepFlexContainers, nullOrNonEmpty } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 
 const styleP = (prop: keyof CSSProperties) => PP.create(['style', prop])
@@ -70,7 +70,8 @@ function removeFlexConvertToAbsoluteOne(
 }
 
 export const removeFlexConvertToAbsolute: InspectorStrategy = (metadata, elementPaths) => {
-  return filterKeepFlexContainers(metadata, elementPaths).flatMap((path) =>
+  const commands = filterKeepFlexContainers(metadata, elementPaths).flatMap((path) =>
     removeFlexConvertToAbsoluteOne(metadata, path),
   )
+  return nullOrNonEmpty(commands)
 }
