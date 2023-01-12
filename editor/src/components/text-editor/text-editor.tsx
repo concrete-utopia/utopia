@@ -55,6 +55,7 @@ const reValidInlineJSXExpression = new RegExp(
 export function escapeHTML(s: string): string {
   return (
     s
+      // clean up angular braces
       .replace('<', entities.lesserThan)
       .replace('>', entities.greaterThan)
       // restore br tags
