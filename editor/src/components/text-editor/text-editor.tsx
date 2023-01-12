@@ -1,11 +1,6 @@
 import { escape, unescape } from 'he'
 import React from 'react'
-import {
-  ComputedStyle,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsxAttributeValue,
-} from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -29,12 +24,17 @@ import {
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
-import * as EditorActions from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
+import {
+  toggleTextBold,
+  toggleTextItalic,
+  toggleTextStrikeThrough,
+  toggleTextUnderline,
+} from './text-editor-shortcut-helpers'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -51,71 +51,6 @@ export function escapeHTML(s: string): string {
 
 export function unescapeHTML(s: string): string {
   return unescape(s).replace(/<br \/>/g, '\n')
-}
-
-export function toggleTextBold(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
-  const toggledFontWeight = 'bold'
-  const defaultFontWeight = 'normal'
-  const currentValue = computedStyle['fontWeight'] === '400' ? defaultFontWeight : toggledFontWeight
-
-  return toggleStyleProp(target, 'fontWeight', currentValue, toggledFontWeight, defaultFontWeight)
-}
-
-export function toggleTextItalic(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
-  const toggledFontStyle = 'italic'
-  const defaultFontStyle = 'normal'
-  const currentValue = computedStyle['fontStyle']
-
-  return toggleStyleProp(target, 'fontStyle', currentValue, toggledFontStyle, defaultFontStyle)
-}
-
-export function toggleTextUnderline(
-  target: ElementPath,
-  computedStyle: ComputedStyle,
-): EditorAction {
-  const toggledDecoration = 'underline'
-  const defaultDecoration = 'none'
-  const currentValue = computedStyle['textDecorationLine']
-
-  return toggleStyleProp(
-    target,
-    'textDecoration',
-    currentValue,
-    toggledDecoration,
-    defaultDecoration,
-  )
-}
-
-export function toggleTextStrikeThrough(
-  target: ElementPath,
-  computedStyle: ComputedStyle,
-): EditorAction {
-  const toggledDecoration = 'line-through'
-  const defaultDecoration = 'none'
-  const currentValue = computedStyle['textDecorationLine']
-
-  return toggleStyleProp(
-    target,
-    'textDecoration',
-    currentValue,
-    toggledDecoration,
-    defaultDecoration,
-  )
-}
-
-const toggleStyleProp = (
-  elementPath: ElementPath,
-  prop: string,
-  currentValue: string,
-  toggledValue: string,
-  defaultValue: string,
-): EditorAction => {
-  const newValue = currentValue === toggledValue ? defaultValue : toggledValue
-  return EditorActions.setProperty(
-    elementPath,
-    PP.create(['style', prop]),
-    jsxAttributeValue(newValue, emptyComments),
-  )
 }
 
 const handleToggleShortcuts = (

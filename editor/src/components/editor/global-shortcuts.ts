@@ -101,13 +101,13 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
 import {
   toggleTextBold,
   toggleTextItalic,
   toggleTextStrikeThrough,
   toggleTextUnderline,
-} from '../text-editor/text-editor'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+} from '../text-editor/text-editor-shortcut-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
