@@ -24,6 +24,18 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('')
   })
+
+  it('adding flex layout converts child `width` to `flexGrow`', async () => {
+    const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
+    const div = await selectDiv(editor)
+    await clickOn(editor)
+
+    expect(div.style.display).toEqual('flex')
+
+    const child = editor.renderedDOM.getByTestId('child')
+    expect(child.style.width).toEqual('')
+    expect(child.style.flexGrow).toEqual('1')
+  })
 })
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
@@ -65,9 +77,10 @@ function project(): string {
             data-uid='5f9'
           >
             <div
+              data-testid='child'
               style={{
                 backgroundColor: '#aaaaaa33',
-                width: 195,
+                width: '100%',
                 height: 190,
               }}
               data-uid='9e4'
