@@ -15,7 +15,7 @@ import { getMetadata } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { invert } from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
-import { runStrategies } from '../../../inspector/inspector-strategies/inspector-strategy'
+import { runFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
@@ -246,7 +246,7 @@ const ResizeEdge = React.memo(
           return
         }
 
-        runStrategies(
+        runFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedElementsRef.current,

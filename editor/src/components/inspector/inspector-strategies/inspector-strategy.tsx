@@ -9,7 +9,7 @@ export type InspectorStrategy = (
   selectedElementPaths: Array<ElementPath>,
 ) => Array<CanvasCommand> | null
 
-export function runStrategies(
+export function runFirstApplicableStrategy(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
