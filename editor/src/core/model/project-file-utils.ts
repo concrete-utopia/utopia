@@ -439,14 +439,16 @@ export function canUpdateRevisionsState(
     case RevisionsState.BothMatch:
       return true
     case RevisionsState.ParsedAhead:
-      return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
-    case RevisionsState.CodeAhead:
-      return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
-    case RevisionsState.ParsedAheadNeedsReparsing:
       return (
         updated === RevisionsState.ParsedAhead ||
         updated === RevisionsState.ParsedAheadNeedsReparsing ||
         updated === RevisionsState.BothMatch
+      )
+    case RevisionsState.CodeAhead:
+      return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
+    case RevisionsState.ParsedAheadNeedsReparsing:
+      return (
+        updated === RevisionsState.ParsedAheadNeedsReparsing || updated === RevisionsState.BothMatch
       )
     default:
       const _exhaustiveCheck: never = existing
