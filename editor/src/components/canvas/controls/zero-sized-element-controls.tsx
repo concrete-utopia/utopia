@@ -28,7 +28,10 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { EditorModes } from '../../editor/editor-modes'
+import * as EditorActions from '../../editor/actions/action-creators'
 
+export const ZeroSizedControlTestID = 'zero-sized-control'
 interface ZeroSizedElementControlProps {
   showAllPossibleElements: boolean
 }
@@ -270,7 +273,7 @@ interface ZeroSizeResizeControlProps {
   frame: CanvasRectangle
   scale: number
   color: string | null | undefined
-  element: ElementInstanceMetadata | null
+  element: ElementInstanceMetadata
   dispatch: EditorDispatch
   maybeClearHighlightsOnHoverEnd: () => void
 }
@@ -291,8 +294,19 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   )
 
   const onControlDoubleClick = React.useCallback(() => {
-    let propsToSet: Array<{ path: PropertyPath; value: any }> = []
-    if (element != null) {
+    const isTextElement = MetadataUtils.isSpan(element)
+    if (isTextElement) {
+      dispatch(
+        [
+          EditorActions.switchEditorMode(
+            EditorModes.textEditMode(element.elementPath, null, 'existing', 'no-text-selection'),
+          ),
+        ],
+        'everyone',
+      )
+    } else {
+      let propsToSet: Array<{ path: PropertyPath; value: any }> = []
+
       const isFlexParent = element.specialSizeMeasurements.parentLayoutSystem === 'flex'
       if (props.frame.width === 0 || element.specialSizeMeasurements.display === 'inline') {
         if (
@@ -353,6 +367,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
+        data-testid={ZeroSizedControlTestID}
         style={{
           position: 'absolute',
           left: props.frame.x - ZeroControlSize / 2,

@@ -1,5 +1,6 @@
 import { escape, unescape } from 'he'
 import React from 'react'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -166,6 +167,11 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
+    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+    if (element?.globalFrame?.width === 0) {
+      currentElement.style.minWidth = '0.5px'
+    }
+
     return () => {
       const content = currentElement.textContent
       if (content != null) {
@@ -176,7 +182,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
