@@ -415,8 +415,9 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback('fullOldStore')(selector, maybeDelayedCallback, selectorName)
-  useSelectorWithCallback('fullOldStore')(
+  useSelectorWithCallback(Substores.fullOldStore, selector, maybeDelayedCallback, selectorName)
+  useSelectorWithCallback(
+    Substores.fullOldStore,
     (store) => {
       if (
         store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&

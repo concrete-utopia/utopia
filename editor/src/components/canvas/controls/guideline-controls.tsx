@@ -190,12 +190,14 @@ function useGuideline<T = HTMLDivElement>(
       guidelineCallbackRef.current(null)
     }
   }, [guidelineRef, guidelineCallbackRef, index])
-  useSelectorWithCallback('canvas')(
+  useSelectorWithCallback(
+    Substores.canvas,
     (store) => store.editor.canvas.controls.snappingGuidelines[index],
     innerCallback,
     'useGuideline snappingGuidelines[index]',
   )
-  useSelectorWithCallback('canvas')(
+  useSelectorWithCallback(
+    Substores.canvas,
     (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
     'useGuideline snappingGuidelines.length',

@@ -1,6 +1,10 @@
 import React from 'react'
 import { CanvasVector } from '../../../core/shared/math-utils'
-import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import {
+  Substores,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 
 export const CanvasOffsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
   const elementRef = useApplyCanvasOffsetToStyle(false)
@@ -33,7 +37,8 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
     [elementRef, setScaleToo, scaleRef],
   )
 
-  useSelectorWithCallback('canvasOffset')(
+  useSelectorWithCallback(
+    Substores.canvasOffset,
     (store) => store.editor.canvas.roundedCanvasOffset,
     applyCanvasOffset,
     'useApplyCanvasOffsetToStyle',

@@ -5,6 +5,7 @@ import { renderHook } from '@testing-library/react'
 import {
   createStoresAndState,
   EditorStateContext,
+  Substores,
   useSelectorWithCallback,
   UtopiaStoreAPI,
 } from './store-hook'
@@ -55,7 +56,8 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedViews')(
+        return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -84,7 +86,8 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedViews')(
+        return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
@@ -121,7 +124,8 @@ describe('useSelectorWithCallback', () => {
     const { result } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('focusedElement')(
+        return useSelectorWithCallback(
+          Substores.focusedElement,
           (store) => store.editor.focusedElementPath,
           (newFocusedElementPath) => {
             callCount++
@@ -207,7 +211,8 @@ describe('useSelectorWithCallback', () => {
     const { result, rerender } = renderHook<void, { storeHook: UtopiaStoreAPI }>(
       (props) => {
         hookRenders++
-        return useSelectorWithCallback('selectedViews')(
+        return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
