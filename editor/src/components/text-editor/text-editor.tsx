@@ -364,7 +364,7 @@ async function setSelectionToOffset(
   }
 }
 
-function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent | React.MouseEvent) {
+function stopPropagation(e: React.UIEvent | React.ClipboardEvent) {
   e.stopPropagation()
 }
 
