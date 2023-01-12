@@ -442,6 +442,12 @@ export function canUpdateRevisionsState(
       return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
     case RevisionsState.CodeAhead:
       return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
+    case RevisionsState.ParsedAheadNeedsReparsing:
+      return (
+        updated === RevisionsState.ParsedAhead ||
+        updated === RevisionsState.ParsedAheadNeedsReparsing ||
+        updated === RevisionsState.BothMatch
+      )
     default:
       const _exhaustiveCheck: never = existing
       throw new Error(`Invalid revisions state ${existing}`)

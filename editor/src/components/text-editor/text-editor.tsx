@@ -1,4 +1,4 @@
-import { escape, unescape } from 'he'
+import { unescape } from 'he'
 import React from 'react'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -21,7 +21,6 @@ import { ApplyCommandsAction } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
-  reparseProjectFile,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -47,8 +46,6 @@ const entities = {
   curlyBraceLeft: '&#123;',
   curlyBraceRight: '&#125;',
 }
-
-const deferredReparseTimeoutMS = 250
 
 const reValidInlineJSXExpression = new RegExp(
   `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
@@ -188,8 +185,6 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
   const [firstTextProp] = React.useState(text)
 
-  const deferredReparseRef = React.useRef<NodeJS.Timeout | null>(null)
-
   const myElement = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
@@ -206,23 +201,12 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     }
 
     return () => {
-      const deferredReparseTimeout = deferredReparseRef.current
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content === '') {
           dispatch([deleteView(elementPath)])
         } else {
           dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
-
-          // defer reparsing the open project file to give it time to process the
-          // updateChildText action
-          if (deferredReparseTimeout != null) {
-            clearTimeout(deferredReparseTimeout)
-          }
-          deferredReparseRef.current = setTimeout(
-            () => dispatch([reparseProjectFile(filename)]),
-            deferredReparseTimeoutMS,
-          )
         }
       }
     }

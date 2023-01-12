@@ -24,11 +24,17 @@ import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
-  return revisionsState === RevisionsState.ParsedAhead
+  return (
+    revisionsState === RevisionsState.ParsedAhead ||
+    revisionsState === RevisionsState.ParsedAheadNeedsReparsing
+  )
 }
 
 export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
-  return revisionsState === RevisionsState.CodeAhead
+  return (
+    revisionsState === RevisionsState.CodeAhead ||
+    revisionsState === RevisionsState.ParsedAheadNeedsReparsing
+  )
 }
 
 export function emptyImports(): Imports {
