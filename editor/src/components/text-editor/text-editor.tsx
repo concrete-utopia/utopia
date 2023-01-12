@@ -110,15 +110,11 @@ const toggleStyleProp = (
   defaultValue: string,
 ): EditorAction => {
   const newValue = currentValue === toggledValue ? defaultValue : toggledValue
-  if (currentValue === toggledValue) {
-    return EditorActions.unsetProperty(elementPath, PP.create(['style', prop]))
-  } else {
-    return EditorActions.setProperty(
-      elementPath,
-      PP.create(['style', prop]),
-      jsxAttributeValue(newValue, emptyComments),
-    )
-  }
+  return EditorActions.setProperty(
+    elementPath,
+    PP.create(['style', prop]),
+    jsxAttributeValue(newValue, emptyComments),
+  )
 }
 
 const handleToggleShortcuts = (

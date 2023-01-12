@@ -146,7 +146,7 @@ describe('global shortcuts to set properties', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{}}
+            style={{ fontWeight: 'normal' }}
             data-uid='bbb'
           >hello text</div>
         </div>`,
@@ -204,7 +204,65 @@ describe('global shortcuts to set properties', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{}}
+            style={{ fontStyle: 'normal' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + u toggles text to underline', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('u', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'underline' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + u toggles text to none if it was underlined', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'underline' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('u', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'none' }}
             data-uid='bbb'
           >hello text</div>
         </div>`,
