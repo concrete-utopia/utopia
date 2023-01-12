@@ -1538,10 +1538,10 @@ export const MetadataUtils = {
     if (isImported) {
       return false
     }
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
       return true
