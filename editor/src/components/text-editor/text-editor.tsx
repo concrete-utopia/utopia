@@ -1,4 +1,4 @@
-import { escape, unescape } from 'he'
+import { unescape } from 'he'
 import React from 'react'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -37,14 +37,42 @@ interface TextEditorProps {
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
+  filePath: string
 }
 
+const entities = {
+  lesserThan: '&lt;',
+  greaterThan: '&gt;',
+  curlyBraceLeft: '&#123;',
+  curlyBraceRight: '&#125;',
+}
+
+const reValidInlineJSXExpression = new RegExp(
+  `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
+  'g',
+)
+
 export function escapeHTML(s: string): string {
-  return escape(s).replace(/\n/g, '<br />')
+  return (
+    s
+      // clean up angular braces
+      .replace('<', entities.lesserThan)
+      .replace('>', entities.greaterThan)
+      // restore br tags
+      .replace(/\n/g, '<br />')
+      // clean up curly braces
+      .replace(/\{/g, entities.curlyBraceLeft)
+      .replace(/\}/g, entities.curlyBraceRight)
+      // restore the ones that wrap valid jsx expressions
+      .replace(reValidInlineJSXExpression, '$1{$2}')
+  )
 }
 
 export function unescapeHTML(s: string): string {
-  return unescape(s).replace(/<br \/>/g, '\n')
+  return unescape(s)
+    .replace(/<br \/>/g, '\n')
+    .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
+    .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
 }
 
 const handleShortcut = (
@@ -136,7 +164,7 @@ export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditorWrapper = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps } = props
+  const { elementPath, text, component, passthroughProps, filePath: filename } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
@@ -155,6 +183,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
+
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -182,7 +211,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef])
+  }, [dispatch, elementPath, elementState, filename, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
