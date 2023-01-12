@@ -91,7 +91,7 @@ export interface SelectMode {
 
 export interface TextEditMode {
   type: 'textEdit'
-  editedText: ElementPath | null
+  editedText: ElementPath
   cursorPosition: Coordinates | null
   elementState: TextEditableElementState
   selectOnFocus: 'select-all-on-focus' | 'no-text-selection'
@@ -132,7 +132,7 @@ export const EditorModes = {
     }
   },
   textEditMode: function (
-    editedText: ElementPath | null,
+    editedText: ElementPath,
     cursorPosition: Coordinates | null,
     elementState: TextEditableElementState,
     selectOnFocus: 'select-all-on-focus' | 'no-text-selection',
@@ -158,10 +158,6 @@ export function isLiveMode(value: Mode): value is LiveCanvasMode {
 }
 export function isTextEditMode(value: Mode): value is TextEditMode {
   return value.type === 'textEdit'
-}
-
-export function isTextEditModeWithActiveTextEditing(value: Mode): value is TextEditMode {
-  return value.type === 'textEdit' && value.editedText != null
 }
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {

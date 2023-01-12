@@ -97,7 +97,6 @@ import {
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
@@ -382,28 +381,22 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          if (isFeatureEnabled('Text editing')) {
-            const firstTextEditableView = editor.selectedViews.find((v) =>
-              MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
-            )
-            if (firstTextEditableView != null) {
-              return [
-                EditorActions.switchEditorMode(
-                  EditorModes.textEditMode(
-                    firstTextEditableView,
-                    null,
-                    'existing',
-                    'select-all-on-focus',
-                  ),
+          const firstTextEditableView = editor.selectedViews.find((v) =>
+            MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+          )
+          if (firstTextEditableView != null) {
+            return [
+              EditorActions.switchEditorMode(
+                EditorModes.textEditMode(
+                  firstTextEditableView,
+                  null,
+                  'existing',
+                  'select-all-on-focus',
                 ),
-              ]
-            }
-          } else {
-            const textTarget = getTextEditorTarget(editor, derived)
-            if (textTarget != null && isSelectMode(editor.mode)) {
-              return [EditorActions.focusFormulaBar()]
-            }
+              ),
+            ]
           }
+
           const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
           if (childToSelect != null) {
             return MetaActions.selectComponents([childToSelect], false)
@@ -704,48 +697,27 @@ export function handleKeyDown(
         return []
       },
       [TEXT_EDIT_MODE]: () => {
-        if (!isFeatureEnabled('Text editing')) {
-          return []
-        }
-
-        const firstTextEditableView = editor.selectedViews.find((v) =>
-          MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
-        )
-
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-        const actions: Array<EditorAction> = [
-          EditorActions.switchEditorMode(
-            EditorModes.textEditMode(
-              firstTextEditableView ?? null,
-              null,
-              'existing',
-              'no-text-selection',
+        actions.push(
+          EditorActions.enableInsertModeForJSXElement(
+            defaultSpanElement(newUID),
+            newUID,
+            {},
+            null,
+            {
+              textEdit: true,
+            },
+          ),
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              CanvasMousePositionRaw!,
+              modifiers,
+              boundingArea(),
+              'zero-drag-permitted',
             ),
           ),
-        ]
-
-        if (firstTextEditableView == null) {
-          actions.push(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultSpanElement(newUID),
-              newUID,
-              {},
-              null,
-              {
-                textEdit: true,
-              },
-            ),
-            CanvasActions.createInteractionSession(
-              createHoverInteractionViaMouse(
-                CanvasMousePositionRaw!,
-                modifiers,
-                boundingArea(),
-                'zero-drag-permitted',
-              ),
-            ),
-          )
-        }
+        )
         return actions
       },
       [TOGGLE_TEXT_BOLD]: () => {
