@@ -326,10 +326,12 @@ export function renderCoreElement(
 
       // when the text is just edited its parent renders it in a text editor, so no need to render anything here
       if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
-        return <TextEditorWrapper elementPath={parentPath} text={unescapeHTML(element.text)} />
+        return (
+          <TextEditorWrapper elementPath={parentPath} text={unescapeHTML(element.text.trim())} />
+        )
       }
 
-      const textToRender = (
+      return (
         <>
           {lines.map((l, index) => (
             <React.Fragment key={index}>
@@ -339,8 +341,6 @@ export function renderCoreElement(
           ))}
         </>
       )
-
-      return textToRender
     }
     default:
       const _exhaustiveCheck: never = element
