@@ -155,16 +155,16 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   return (
     <MainEditorStoreProvider>
-      <TextEditorWrapper {...props} />
+      <TextEditor {...props} />
     </MainEditorStoreProvider>
   )
 })
 
-const TextEditorWrapper = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps, filePath: filename } = props
+const TextEditor = React.memo((props: TextEditorProps) => {
+  const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
@@ -211,7 +211,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState, filename, metadataRef])
+  }, [dispatch, elementPath, elementState, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
@@ -312,20 +312,22 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
+    onClick: stopPropagation,
+    onContextMenu: stopPropagation,
+    onMouseDown: stopPropagation,
+    onMouseEnter: stopPropagation,
+    onMouseLeave: stopPropagation,
+    onMouseMove: stopPropagation,
+    onMouseOut: stopPropagation,
+    onMouseOver: stopPropagation,
+    onMouseUp: stopPropagation,
     onBlur: onBlur,
     contentEditable: 'plaintext-only' as any, // note: not supported on firefox,
     suppressContentEditableWarning: true,
   }
 
-  const filteredPassthroughProps = filterMouseHandlerProps(passthroughProps)
+  const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  // When the component to render is a simple html element we should make that contenteditable
-  if (typeof component === 'string') {
-    return React.createElement(component, {
-      ...filteredPassthroughProps,
-      ...editorProps,
-    })
-  }
   return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
 })
 
@@ -391,11 +393,11 @@ async function setSelectionToOffset(
   }
 }
 
-function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
+function stopPropagation(e: React.UIEvent | React.ClipboardEvent) {
   e.stopPropagation()
 }
 
-function filterMouseHandlerProps(props: Record<string, any>) {
+function filterEventHandlerProps(props: Record<string, any>) {
   const {
     onClick,
     onContextMenu,
@@ -407,6 +409,10 @@ function filterMouseHandlerProps(props: Record<string, any>) {
     onMouseOut,
     onMouseOver,
     onMouseUp,
+    onPaste,
+    onKeyDown,
+    onKeyUp,
+    onKeyPress,
     ...filteredProps
   } = props
   return filteredProps

@@ -52,8 +52,8 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { TextEditorWrapperWrapper, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -494,7 +494,7 @@ function renderJSXElement(
         metadataContext,
         updateInvalidatedPaths,
         childrenElements,
-        TextEditorWrapperWrapper,
+        TextEditorWrapper,
         inScope,
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
