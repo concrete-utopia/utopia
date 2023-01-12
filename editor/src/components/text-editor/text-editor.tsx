@@ -1,6 +1,11 @@
 import { escape, unescape } from 'he'
 import React from 'react'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import {
+  ComputedStyle,
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { keyCharacterFromCode } from '../../utils/keyboard'
@@ -16,17 +21,19 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction } from '../editor/action-types'
+import { ApplyCommandsAction, EditorAction } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
+import * as EditorActions from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -45,21 +52,102 @@ export function unescapeHTML(s: string): string {
   return unescape(s).replace(/<br \/>/g, '\n')
 }
 
-const handleShortcut = (
-  cond: boolean,
-  style: { [key: string]: unknown } | null,
+export function toggleTextBold(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
+  const toggledFontWeight = 'bold'
+  const defaultFontWeight = 'normal'
+  const currentValue = computedStyle['fontWeight'] === '400' ? defaultFontWeight : toggledFontWeight
+
+  return toggleStyleProp(target, 'fontWeight', currentValue, toggledFontWeight, defaultFontWeight)
+}
+
+export function toggleTextItalic(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
+  const toggledFontStyle = 'italic'
+  const defaultFontStyle = 'normal'
+  const currentValue = computedStyle['fontStyle']
+
+  return toggleStyleProp(target, 'fontStyle', currentValue, toggledFontStyle, defaultFontStyle)
+}
+
+export function toggleTextUnderline(
+  target: ElementPath,
+  computedStyle: ComputedStyle,
+): EditorAction {
+  const toggledDecoration = 'underline'
+  const defaultDecoration = 'none'
+  const currentValue = computedStyle['textDecorationLine']
+
+  return toggleStyleProp(
+    target,
+    'textDecoration',
+    currentValue,
+    toggledDecoration,
+    defaultDecoration,
+  )
+}
+
+export function toggleTextStrikeThrough(
+  target: ElementPath,
+  computedStyle: ComputedStyle,
+): EditorAction {
+  const toggledDecoration = 'line-through'
+  const defaultDecoration = 'none'
+  const currentValue = computedStyle['textDecorationLine']
+
+  return toggleStyleProp(
+    target,
+    'textDecoration',
+    currentValue,
+    toggledDecoration,
+    defaultDecoration,
+  )
+}
+
+const toggleStyleProp = (
   elementPath: ElementPath,
   prop: string,
-  value: string,
+  currentValue: string,
+  toggledValue: string,
   defaultValue: string,
-): Array<ApplyCommandsAction> => {
-  if (!cond) {
-    return []
+): EditorAction => {
+  const newValue = currentValue === toggledValue ? defaultValue : toggledValue
+  if (currentValue === toggledValue) {
+    return EditorActions.unsetProperty(elementPath, PP.create(['style', prop]))
+  } else {
+    return EditorActions.setProperty(
+      elementPath,
+      PP.create(['style', prop]),
+      jsxAttributeValue(newValue, emptyComments),
+    )
   }
-  const newValue = style != null && style[prop] === value ? defaultValue : value
-  return [
-    applyCommandsAction([setProperty('always', elementPath, PP.create(['style', prop]), newValue)]),
-  ]
+}
+
+const handleToggleShortcuts = (
+  event: React.KeyboardEvent<Element>,
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<EditorAction> => {
+  const modifiers = Modifier.modifiersForEvent(event)
+  const meta = modifiers.cmd || modifiers.ctrl
+  const computedStyle =
+    MetadataUtils.findElementByElementPath(metadata, target)?.computedStyle ?? {}
+
+  // Meta+b = bold
+  if (meta && event.key === 'b') {
+    return [toggleTextBold(target, computedStyle)]
+  }
+  // Meta+i = italic
+  if (meta && event.key === 'i') {
+    return [toggleTextItalic(target, computedStyle)]
+  }
+  // Meta+u = underline
+  if (meta && event.key === 'u') {
+    return [toggleTextUnderline(target, computedStyle)]
+  }
+  // Meta+shift+x = strikethrough
+  if (meta && modifiers.shift && event.key === 'x') {
+    return [toggleTextStrikeThrough(target, computedStyle)]
+  }
+  return []
 }
 
 const handleSetFontSizeShortcut = (
@@ -199,42 +287,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
-      const modifiers = Modifier.modifiersForEvent(event)
-      const meta = modifiers.cmd || modifiers.ctrl
-      const style = passthroughProps.style ?? {}
       const shortcuts = [
-        ...handleShortcut(
-          meta && event.key === 'b', // Meta+b = bold
-          style,
-          elementPath,
-          'fontWeight',
-          'bold',
-          'normal',
-        ),
-        ...handleShortcut(
-          meta && event.key === 'i', // Meta+i = italic
-          style,
-          elementPath,
-          'fontStyle',
-          'italic',
-          'normal',
-        ),
-        ...handleShortcut(
-          meta && event.key === 'u', // Meta+u = underline
-          style,
-          elementPath,
-          'textDecoration',
-          'underline',
-          'none',
-        ),
-        ...handleShortcut(
-          meta && modifiers.shift && event.key === 'x', // Meta+shift+x = strikethrough
-          style,
-          elementPath,
-          'textDecoration',
-          'line-through',
-          'none',
-        ),
+        ...handleToggleShortcuts(event, metadataRef.current, elementPath),
         ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
         ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]
@@ -250,7 +304,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         event.stopPropagation()
       }
     },
-    [dispatch, elementPath, metadataRef, passthroughProps],
+    [dispatch, elementPath, metadataRef],
   )
 
   const onBlur = React.useCallback(() => {

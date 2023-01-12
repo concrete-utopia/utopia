@@ -75,6 +75,8 @@ export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 export const TEXT_EDIT_MODE = 'text-edit-mode'
 export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
 export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
+export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
+export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 
@@ -218,6 +220,14 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [TOGGLE_TEXT_ITALIC]: shortcut(
     'Toggle font-style of the currently selected text element.',
     key('i', ['cmd']),
+  ),
+  [TOGGLE_TEXT_UNDERLINE]: shortcut(
+    'Toggle font-style of the currently selected text element.',
+    key('u', ['cmd']),
+  ),
+  [TOGGLE_TEXT_STRIKE_THROUGH]: shortcut(
+    'Toggle font-style of the currently selected text element.',
+    key('x', ['cmd', 'shift']),
   ),
 }
 

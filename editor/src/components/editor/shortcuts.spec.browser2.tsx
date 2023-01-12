@@ -146,7 +146,7 @@ describe('global shortcuts to set properties', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ fontWeight: 'normal' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,
@@ -204,7 +204,7 @@ describe('global shortcuts to set properties', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ fontStyle: 'normal' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,
