@@ -283,7 +283,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
-    onBlur: onBlur,
     onClick: stopPropagation,
     onContextMenu: stopPropagation,
     onMouseDown: stopPropagation,
@@ -293,6 +292,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     onMouseOut: stopPropagation,
     onMouseOver: stopPropagation,
     onMouseUp: stopPropagation,
+    onBlur: onBlur,
     contentEditable: 'plaintext-only' as any, // note: not supported on firefox,
     suppressContentEditableWarning: true,
   }
