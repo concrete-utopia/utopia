@@ -1,11 +1,18 @@
+import { match, P } from 'ts-pattern'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ComputedStyle, ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { CSSNumber, FlexDirection } from './common/css-utils'
+import {
+  cssNumber,
+  CSSNumber,
+  FlexDirection,
+  parseCSSLengthPercent,
+  parseCSSNumber,
+} from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
-import { Either } from '../../core/shared/either'
+import { defaultEither, Either, left, right } from '../../core/shared/either'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -196,13 +203,13 @@ export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
-  left: JustifyContentFlexAlignemt,
-  right: JustifyContentFlexAlignemt,
+  one: JustifyContentFlexAlignemt,
+  other: JustifyContentFlexAlignemt,
 ): boolean {
-  const { justifyContent, alignItems } = left
+  const { justifyContent, alignItems } = one
   return isFlexColumn(flexDirection)
-    ? alignItems === right.justifyContent && justifyContent === right.alignItems
-    : alignItems === right.alignItems && justifyContent === right.justifyContent
+    ? alignItems === other.justifyContent && justifyContent === other.alignItems
+    : alignItems === other.alignItems && justifyContent === other.justifyContent
 }
 
 function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
@@ -238,23 +245,90 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
 }
 
 export type FixedHugFill =
-  | { type: 'fixed'; amount: CSSNumber }
+  | { type: 'fixed'; value: CSSNumber }
   | { type: 'hug' }
   | { type: 'fill'; value: CSSNumber }
 
-interface FillFixedInFlex {
-  minWidth: CSSNumber
-  maxWidth: CSSNumber
-  mode: FixedHugFill
+function numberFromCSSValue(value: unknown): CSSNumber | null {
+  return defaultEither(null, parseCSSNumber(value, 'Unitless'))
 }
 
-type FillFixedInFlexError = never
+interface FillFixedInFlex {
+  minDimension: CSSNumber | null
+  maxDimension: CSSNumber | null
+  mode: FixedHugFill | null
+}
 
-type FillFixedInFlexResult = Either<string, FillFixedInFlex>
+type FillFixedInFlexError = 'element is null' | 'computedStyle is null'
+
+type FillFixedInFlexResult = Either<FillFixedInFlexError, FillFixedInFlex>
+
+/**
+ * - [ ] take axis into account
+ * - [ ] take flex-direction of parent into account
+ */
+
+function getMinDimension(axis: Axis, computedStyle: ComputedStyle) {
+  switch (axis) {
+    case 'horizontal':
+      return numberFromCSSValue(computedStyle['minWidth'])
+    case 'vertical':
+      return numberFromCSSValue(computedStyle['minHeight'])
+    default:
+      assertNever(axis)
+  }
+}
+
+function getMaxDimension(axis: Axis, computedStyle: ComputedStyle) {
+  switch (axis) {
+    case 'horizontal':
+      return numberFromCSSValue(computedStyle['maxWidth'])
+    case 'vertical':
+      return numberFromCSSValue(computedStyle['maxHeight'])
+    default:
+      assertNever(axis)
+  }
+}
+
+function flexToFillFixedHug(
+  flexGrow: string,
+  flexShrink: string,
+  flexBasis: string,
+): FixedHugFill | null {
+  const dimension =
+    flexBasis === 'auto' ? 'auto' : defaultEither(null, parseCSSLengthPercent(flexBasis))
+  if (dimension == null) {
+    return null
+  }
+  return match<[string, string, typeof dimension]>([flexGrow, flexShrink, dimension])
+    .with(['0', '0', 'auto'], (): FixedHugFill => ({ type: 'fixed', value: cssNumber(1, null) }))
+    .with(['0', '0', P._], (): FixedHugFill => ({ type: 'fixed', value: dimension as CSSNumber }))
+    .with([P._, P._, 'auto'], (): FixedHugFill => ({ type: 'fill', value: cssNumber(1, null) }))
+    .with([P._, P._, P._], (): FixedHugFill => ({ type: 'fill', value: dimension as CSSNumber }))
+    .exhaustive()
+}
 
 export function detectFillFixedInFlex(
+  axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): FillFixedInFlexResult {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return left('element is null')
+  }
+
+  const computedStyle = element.computedStyle
+  if (computedStyle == null) {
+    return left('computedStyle is null')
+  }
+
+  const minDimension = getMinDimension(axis, computedStyle)
+  const maxDimension = getMaxDimension(axis, computedStyle)
+  const flexGrow = computedStyle['flexGrow']
+  const flexShrink = computedStyle['flexShrink']
+  const flexBasis = computedStyle['flexBasis']
+  const mode = flexToFillFixedHug(flexGrow, flexShrink, flexBasis)
+
+  return right({ minDimension, maxDimension, mode })
 }
