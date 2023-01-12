@@ -144,7 +144,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call
   // work properly in `editor-canvas.ts`. I blame React DnD for this.
-  const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'canvas', unknown> = {
+  const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
     accept: 'files',
     canDrop: () => true,
   }
