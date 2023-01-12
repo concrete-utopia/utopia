@@ -322,7 +322,6 @@ export function renderCoreElement(
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
-      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
 
       // when the text is just edited its parent renders it in a text editor, so no need to render anything here
       if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
@@ -331,6 +330,7 @@ export function renderCoreElement(
         )
       }
 
+      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
       return (
         <>
           {lines.map((l, index) => (
