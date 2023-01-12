@@ -3,8 +3,9 @@ import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { FlexDirection } from './common/css-utils'
+import { CSSNumber, FlexDirection } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
+import { Either } from '../../core/shared/either'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -234,4 +235,26 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
     default:
       assertNever(axis)
   }
+}
+
+export type FixedHugFill =
+  | { type: 'fixed'; amount: CSSNumber }
+  | { type: 'hug' }
+  | { type: 'fill'; value: CSSNumber }
+
+interface FillFixedInFlex {
+  minWidth: CSSNumber
+  maxWidth: CSSNumber
+  mode: FixedHugFill
+}
+
+type FillFixedInFlexError = never
+
+type FillFixedInFlexResult = Either<string, FillFixedInFlex>
+
+export function detectFillFixedInFlex(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FillFixedInFlexResult {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
 }

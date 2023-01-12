@@ -1,7 +1,7 @@
 import React from 'react'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { parentPath } from '../../core/shared/element-path'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -22,8 +22,10 @@ import {
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   Axis,
+  detectFillFixedInFlex,
   detectFlexDirectionOne,
   fillContainerApplicable,
+  FixedHugFill,
   hugContentsApplicable,
   widthHeightFromAxis,
 } from './inspector-common'
@@ -36,10 +38,6 @@ import { runStrategies, InspectorStrategy } from './inspector-strategies/inspect
 
 export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 
-type FixedHugFill =
-  | { type: 'fixed'; value: CSSNumber }
-  | { type: 'hug' }
-  | { type: 'fill'; value: CSSNumber }
 type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
@@ -201,6 +199,14 @@ function detectFillHugFixedState(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
 ): FixedHugFill | null {
+  const stateInFlex = optionalMap(
+    (path) => detectFillFixedInFlex(axis, metadata, path),
+    elementPath,
+  )
+  if (stateInFlex != null && isRight(stateInFlex) && stateInFlex.value.mode != null) {
+    return stateInFlex.value.mode
+  }
+
   const fill = detectFillState(axis, metadata, elementPath)
   if (fill != null) {
     return { type: 'fill', value: fill }
