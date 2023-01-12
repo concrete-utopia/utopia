@@ -5,7 +5,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { EditorDispatch } from '../../../editor/action-types'
-import { switchEditorMode } from '../../../editor/actions/action-creators'
+import { selectComponents, switchEditorMode } from '../../../editor/actions/action-creators'
 import { Coordinates, EditorModes, isTextEditMode } from '../../../editor/editor-modes'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
@@ -56,9 +56,7 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
       if (foundTarget == null) {
         return
       }
-      dispatch([
-        switchEditorMode(EditorModes.textEditMode(foundTarget.elementPath, null, 'existing')),
-      ])
+      activateTextEditing(foundTarget.elementPath, null, dispatch)
     },
     [findValidTarget, getTextEditableViews, dispatch],
   )
@@ -75,7 +73,18 @@ export function scheduleTextEditForNextFrame(
   cursorPosition: Coordinates | null,
   dispatch: EditorDispatch,
 ): void {
-  setTimeout(() =>
-    dispatch([switchEditorMode(EditorModes.textEditMode(elementPath, cursorPosition, 'existing'))]),
-  )
+  setTimeout(() => activateTextEditing(elementPath, cursorPosition, dispatch))
+}
+
+function activateTextEditing(
+  elementPath: ElementPath,
+  cursorPosition: Coordinates | null,
+  dispatch: EditorDispatch,
+): void {
+  dispatch([
+    selectComponents([elementPath], false),
+    switchEditorMode(
+      EditorModes.textEditMode(elementPath, cursorPosition, 'existing', 'no-text-selection'),
+    ),
+  ])
 }

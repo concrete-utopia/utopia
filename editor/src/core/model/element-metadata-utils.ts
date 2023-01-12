@@ -239,6 +239,15 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isPositionFixed(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'fixed'
+  },
+  isPositionSticky(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.position === 'sticky' ||
+      instance?.specialSizeMeasurements.position === '-webkit-sticky'
+    )
+  },
   isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'relative'
   },
@@ -1521,10 +1530,6 @@ export const MetadataUtils = {
     }
   },
   isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (element?.isEmotionOrStyledComponent) {
-      return false
-    }
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1533,6 +1538,10 @@ export const MetadataUtils = {
     if (isImported) {
       return false
     }
+    if (element?.isEmotionOrStyledComponent) {
+      return false
+    }
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
       return true

@@ -140,6 +140,10 @@ export type EditorStateContextData = {
   useStore: UtopiaStoreAPI
 }
 
+export const OriginalMainEditorStateContext = React.createContext<EditorStateContextData | null>(
+  null,
+)
+OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)

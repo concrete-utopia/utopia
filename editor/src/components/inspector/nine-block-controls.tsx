@@ -21,7 +21,8 @@ import {
   numberOfFlexContainers,
   StartCenterEnd,
 } from './inspector-common'
-import { runStrategies, setFlexAlignJustifyContentStrategies } from './inspector-strategies'
+import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
+import { runStrategies } from './inspector-strategies/inspector-strategy'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,

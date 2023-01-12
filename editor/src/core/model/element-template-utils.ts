@@ -34,6 +34,8 @@ import {
   JSXProperty,
   isSpreadAssignment,
   isJSXAttributeOtherJavaScript,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../shared/element-template'
 import {
   Imports,
@@ -528,7 +530,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
         case 'JSX_ARBITRARY_BLOCK':
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
-          return false
+          return jsxElementNameEquals(element.name, jsxElementName('br', []))
         case 'JSX_FRAGMENT':
           return allElementsAndChildrenAreText(element.children)
         case 'JSX_TEXT_BLOCK':
@@ -545,7 +547,10 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
     case 'JSX_ARBITRARY_BLOCK':
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
-      return allElementsAndChildrenAreText(element.children)
+      return (
+        jsxElementNameEquals(element.name, jsxElementName('br', [])) ||
+        allElementsAndChildrenAreText(element.children)
+      )
     case 'JSX_FRAGMENT':
       return allElementsAndChildrenAreText(element.children)
     case 'JSX_TEXT_BLOCK':
