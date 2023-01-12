@@ -1,7 +1,10 @@
 /// <reference types="karma-viewport" />
 
 import { renderTestEditorWithCode } from '../../components/canvas/ui-jsx.test-utils'
+import { Either, isRight } from '../shared/either'
+import { elementPath, toString } from '../shared/element-path'
 import { canvasRectangle, localRectangle } from '../shared/math-utils'
+import { elementOnlyHasTextChildren } from './element-template-utils'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -66,6 +69,43 @@ describe('Frame calculation for fragments', () => {
         width: 10,
       }),
     )
+  })
+})
+
+function asRight<L, R>(e: Either<L, R>): R {
+  if (isRight(e)) {
+    return e.value
+  }
+  throw new Error('found left')
+}
+
+describe('elementHasTextOnlyChildren', () => {
+  it('element containing only text is considered to have only text children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+    const elem =
+      editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb', 'hello']]))]
+    const isText = elementOnlyHasTextChildren(asRight(elem.element))
+    expect(isText).toEqual(true)
+  })
+  it('element containing text and <br /> tags is considered to have only text children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+    const elem =
+      editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb', 'hibr']]))]
+    const isText = elementOnlyHasTextChildren(asRight(elem.element))
+    expect(isText).toEqual(true)
+  })
+  it('element containing <br /> tags is considered to have only text children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+    const elem =
+      editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb', 'brbrbr']]))]
+    const isText = elementOnlyHasTextChildren(asRight(elem.element))
+    expect(isText).toEqual(true)
+  })
+  it('element containing divs is not considered to have only text children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+    const elem = editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb']]))]
+    const isText = elementOnlyHasTextChildren(asRight(elem.element))
+    expect(isText).toEqual(false)
   })
 })
 
@@ -190,4 +230,58 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 );
+`
+
+const projectWithText = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='stb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 108,
+        top: 133,
+        width: 154,
+        height: 96,
+      }}
+      data-uid='hello'
+    >
+      Hello
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 412,
+        top: 139,
+        width: 198,
+        height: 99,
+      }}
+      data-uid='hibr'
+    >
+      hi here
+      <br />
+      <br />
+      <br />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 213,
+        top: 303,
+        width: 270,
+        height: 128,
+      }}
+      data-uid='brbrbr'
+    >
+      <br />
+      <br />
+      <br />
+      <br />
+    </div>
+  </Storyboard>
+)
 `

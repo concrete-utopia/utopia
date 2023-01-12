@@ -22,6 +22,7 @@ import {
 import {
   EditorStateContext,
   EditorStateContextData,
+  OriginalMainEditorStateContext,
   UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
@@ -87,14 +88,16 @@ export const TestInspectorContextProvider: React.FunctionComponent<
 > = (props) => {
   return (
     <DispatchContext.Provider value={NO_OP}>
-      <EditorStateContext.Provider value={props.editorStoreData}>
-        <InspectorContextProvider
-          selectedViews={props.selectedViews}
-          targetPath={styleStringInArray}
-        >
-          {props.children}
-        </InspectorContextProvider>
-      </EditorStateContext.Provider>
+      <OriginalMainEditorStateContext.Provider value={props.editorStoreData}>
+        <EditorStateContext.Provider value={props.editorStoreData}>
+          <InspectorContextProvider
+            selectedViews={props.selectedViews}
+            targetPath={styleStringInArray}
+          >
+            {props.children}
+          </InspectorContextProvider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>
     </DispatchContext.Provider>
   )
 }

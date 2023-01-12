@@ -1,5 +1,6 @@
 import { escape, unescape } from 'he'
 import React from 'react'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -26,6 +27,7 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
 
@@ -155,7 +157,15 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+  return (
+    <MainEditorStoreProvider>
+      <TextEditorWrapper {...props} />
+    </MainEditorStoreProvider>
+  )
+})
+
+const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps, filePath: filename } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
@@ -190,6 +200,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
+    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+    if (element?.globalFrame?.width === 0) {
+      currentElement.style.minWidth = '0.5px'
+    }
+
     return () => {
       const deferredReparseTimeout = deferredReparseRef.current
       const content = currentElement.textContent
@@ -211,7 +226,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState, filename])
+  }, [dispatch, elementPath, elementState, filename, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
