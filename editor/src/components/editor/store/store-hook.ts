@@ -25,7 +25,6 @@ import {
   canvasSubstateKeys,
   DerivedSubstate,
   DispatchSubstate,
-  EditorStateWOScrollOffset,
   FocusedElementPathSubstate,
   HighlightedViewsSubstate,
   MetadataSubstate,
@@ -317,8 +316,6 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Sub
   }, [api, innerCallback, explainMe])
 }
 
-type FullStoreWOScrollOffset = Omit<EditorStorePatched, 'editor'> & EditorStateWOScrollOffset
-
 type Substates = {
   metadata: MetadataSubstate
   selectedViews: SelectedViewsSubstate
@@ -395,7 +392,6 @@ export const Substores = {
     return keysEquality(restOfStoreKeys, a, b)
   },
   fullOldStore: (a: EditorStorePatched, b: EditorStorePatched) => {
-    // TODO exclude scroll offset!!!!!!!
     return a === b
   },
   theme: (a: ThemeSubstate, b: ThemeSubstate) =>

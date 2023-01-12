@@ -131,12 +131,6 @@ export const emptyGithubSubstate: GithubSubstate = {
   },
 }
 
-export type EditorStateWOScrollOffset = Omit<EditorStorePatched, 'editor'> & {
-  editor: Omit<EditorState, 'canvas'> & {
-    canvas: Omit<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset'>
-  }
-}
-
 export type RestOfEditorState = Omit<
   EditorState,
   | 'projectContents'
