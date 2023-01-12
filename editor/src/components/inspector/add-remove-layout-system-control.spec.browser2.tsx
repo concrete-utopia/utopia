@@ -14,7 +14,10 @@ describe('add layout system', () => {
   })
 
   it('add and then remove flex layout', async () => {
-    const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
+    const editor = await renderTestEditorWithCode(
+      project({ width: '100px', height: '100px' }),
+      'await-first-dom-report',
+    )
     const div = await selectDiv(editor)
     await clickOn(editor)
 
@@ -26,7 +29,10 @@ describe('add layout system', () => {
   })
 
   it('adding flex layout converts child `width` to `flexGrow`', async () => {
-    const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
+    const editor = await renderTestEditorWithCode(
+      project({ width: '100%', height: '100px' }),
+      'await-first-dom-report',
+    )
     const div = await selectDiv(editor)
     await clickOn(editor)
 
@@ -34,6 +40,21 @@ describe('add layout system', () => {
 
     const child = editor.renderedDOM.getByTestId('child')
     expect(child.style.width).toEqual('')
+    expect(child.style.flexGrow).toEqual('1')
+  })
+
+  it('adding flex layout converts child `height` to `flexGrow` if flexDirection is set', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithFlexDirectionColumn({ width: '111px', height: '100%' }),
+      'await-first-dom-report',
+    )
+    const div = await selectDiv(editor)
+    await clickOn(editor)
+
+    expect(div.style.display).toEqual('flex')
+
+    const child = editor.renderedDOM.getByTestId('child')
+    expect(child.style.height).toEqual('')
     expect(child.style.flexGrow).toEqual('1')
   })
 })
@@ -58,7 +79,7 @@ async function clickOn(editor: EditorRenderResult) {
   mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
-function project(): string {
+function project({ width, height }: { width: string; height: string }): string {
   return `import * as React from 'react'
       import { Storyboard } from 'utopia-api'
       
@@ -80,8 +101,48 @@ function project(): string {
               data-testid='child'
               style={{
                 backgroundColor: '#aaaaaa33',
-                width: '100%',
-                height: 190,
+                width: '${width}',
+                height: '${height}'
+              }}
+              data-uid='9e4'
+            />
+          </div>
+        </Storyboard>
+      )
+      `
+}
+
+function projectWithFlexDirectionColumn({
+  width,
+  height,
+}: {
+  width: string
+  height: string
+}): string {
+  return `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='0cd'>
+          <div
+            data-testid='mydiv'
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 133,
+              top: 228,
+              width: 342,
+              height: 368,
+              flexDirection: 'column'
+            }}
+            data-uid='5f9'
+          >
+            <div
+              data-testid='child'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: '${width}',
+                height: '${height}'
               }}
               data-uid='9e4'
             />

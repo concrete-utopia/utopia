@@ -254,22 +254,30 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
 export function convertWidthToFlexGrow(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
+  parentPath: ElementPath,
 ): Array<CanvasCommand> {
   const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
   if (element == null) {
     return []
   }
+
+  const parentFlexDirection =
+    MetadataUtils.findElementByElementPath(metadata, parentPath)?.computedStyle?.[
+      'flexDirection'
+    ] ?? 'row'
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
   const matches =
     defaultEither(
       null,
-      getSimpleAttributeAtPath(right(element.props), PP.create(['style', 'width'])),
+      getSimpleAttributeAtPath(right(element.props), PP.create(['style', prop])),
     ) === '100%'
 
   if (!matches) {
     return []
   }
   return [
-    deleteProperties('always', elementPath, [PP.create(['style', 'width'])]),
+    deleteProperties('always', elementPath, [PP.create(['style', prop])]),
     setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
   ]
 }
