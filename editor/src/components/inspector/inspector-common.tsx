@@ -235,3 +235,7 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
       assertNever(axis)
   }
 }
+
+export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
+  return ts.length === 0 ? null : ts
+}
