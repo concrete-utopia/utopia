@@ -660,9 +660,18 @@ export interface WorkerParsedUpdate {
   lastRevisedTime: number
 }
 
+export interface WorkerCodeAndParsedUpdate {
+  type: 'WORKER_CODE_AND_PARSED_UPDATE'
+  filePath: string
+  code: string
+  highlightBounds: HighlightBoundsForUids
+  parsed: ParsedTextFile
+  lastRevisedTime: number
+}
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {

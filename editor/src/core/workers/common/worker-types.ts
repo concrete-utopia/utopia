@@ -58,11 +58,34 @@ export function createParseFile(
   }
 }
 
+export interface PrintAndReparseFile {
+  type: 'printandreparsefile'
+  filename: string
+  parseSuccess: ParseSuccess
+  stripUIDs: boolean
+  lastRevisedTime: number
+}
+
+export function createPrintAndReparseFile(
+  filename: string,
+  parseSuccess: ParseSuccess,
+  stripUIDs: boolean,
+  lastRevisedTime: number,
+): PrintAndReparseFile {
+  return {
+    type: 'printandreparsefile',
+    filename: filename,
+    parseSuccess: parseSuccess,
+    stripUIDs: stripUIDs,
+    lastRevisedTime: lastRevisedTime,
+  }
+}
+
 export interface ParsePrintBase {
   messageID: number
 }
 
-export type ParseOrPrint = PrintCode | ParseFile
+export type ParseOrPrint = PrintCode | ParseFile | PrintAndReparseFile
 
 export interface PrintCodeResult {
   type: 'printcoderesult'
@@ -106,7 +129,34 @@ export function createParseFileResult(
     lastRevisedTime: lastRevisedTime,
   }
 }
-export type ParseOrPrintResult = PrintCodeResult | ParseFileResult
+
+export interface PrintAndReparseResult {
+  type: 'printandreparseresult'
+  filename: string
+  parsedResult: ParsedTextFile
+  lastRevisedTime: number
+  highlightBounds: HighlightBoundsForUids
+  printResult: string
+}
+
+export function createPrintAndReparseResult(
+  filename: string,
+  parseResult: ParsedTextFile,
+  lastRevisedTime: number,
+  highlightBounds: HighlightBoundsForUids,
+  printResult: string,
+): PrintAndReparseResult {
+  return {
+    type: 'printandreparseresult',
+    filename: filename,
+    parsedResult: parseResult,
+    lastRevisedTime: lastRevisedTime,
+    highlightBounds: highlightBounds,
+    printResult: printResult,
+  }
+}
+
+export type ParseOrPrintResult = PrintCodeResult | ParseFileResult | PrintAndReparseResult
 
 export interface ParsePrintFilesResult extends ParsePrintBase {
   type: 'parseprintfilesresult'
