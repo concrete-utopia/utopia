@@ -223,7 +223,6 @@ import type {
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
-  ReparseProjectFile,
   WorkerCodeAndParsedUpdate,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
@@ -1420,13 +1419,6 @@ export function sendLinterRequestMessage(
     action: 'SEND_LINTER_REQUEST_MESSAGE',
     filePath: filePath,
     content: content,
-  }
-}
-
-export function reparseProjectFile(filePath: string): ReparseProjectFile {
-  return {
-    action: 'REPARSE_PROJECT_FILE',
-    filePath: filePath,
   }
 }
 

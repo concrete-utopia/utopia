@@ -876,11 +876,6 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
-export interface ReparseProjectFile {
-  action: 'REPARSE_PROJECT_FILE'
-  filePath: string
-}
-
 export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
   target: ElementPath
@@ -1263,7 +1258,6 @@ export type EditorAction =
   | SetRefreshingDependencies
   | SetAssetChecksum
   | ApplyCommandsAction
-  | ReparseProjectFile
 
 export type DispatchPriority =
   | 'everyone'
