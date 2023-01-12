@@ -2,6 +2,7 @@ import * as PP from '../../../core/shared/property-path'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
+  convertWidthToFlexGrow,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
@@ -74,9 +75,12 @@ export const updateFlexDirectionStrategies = (
 
 export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
   (metadata, elementPaths) => {
-    return elementPaths.map((path) =>
+    return elementPaths.flatMap((path) => [
       setProperty('always', path, PP.create(['style', 'display']), 'flex'),
-    )
+      ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) =>
+        convertWidthToFlexGrow(metadata, child),
+      ),
+    ])
   },
 ]
 
