@@ -38,7 +38,6 @@ import { getSelectionOrValidTargetAtPoint, getValidTargetAtPoint } from '../../d
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from '../insert-mode/insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
@@ -720,7 +719,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
             foundTarget.elementPath,
           )
-          if (isEditableText && isFeatureEnabled('Text editing')) {
+          if (isEditableText) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             // We need to dispatch switching to text edit mode in the next frame, otherwise the mouse up blurs the text editor immediately
             scheduleTextEditForNextFrame(

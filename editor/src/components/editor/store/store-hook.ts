@@ -217,6 +217,10 @@ export type UtopiaStoreAPI = StoresAndSetState
 
 export type EditorStateContextData = StoresAndSetState
 
+export const OriginalMainEditorStateContext = React.createContext<EditorStateContextData | null>(
+  null,
+)
+OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)

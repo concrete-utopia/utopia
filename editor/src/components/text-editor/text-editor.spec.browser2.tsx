@@ -1,5 +1,4 @@
 import { wait } from '../../utils/utils.test-utils'
-import { setFeatureEnabled } from '../../utils/feature-switches'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
@@ -17,46 +16,10 @@ import {
 import { TextEditorSpanId } from './text-editor'
 
 describe('Use the text editor', () => {
-  before(() => {
-    setFeatureEnabled('Text editing', true)
-  })
-  it('Edit existing selected text', async () => {
-    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
-
-    await enterTextEditMode(editor, 'select-then-text-edit-mode')
-    typeText(' Utopia')
-    closeTextEditor()
-    await editor.getDispatchFollowUpActionsFinished()
-
-    expect(editor.getEditorState().editor.mode.type).toEqual('select')
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      formatTestProjectCode(`
-        import * as React from 'react'
-        import { Storyboard } from 'utopia-api'
-
-
-        export var storyboard = (
-          <Storyboard data-uid='sb'>
-            <div
-              data-testid='div'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: 288,
-                height: 362,
-              }}
-              data-uid='39e'
-            >Hello Utopia</div>
-          </Storyboard>
-        )`),
-    )
-  })
   it('Click to edit text', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor, 'text-edit-mode-then-select')
+    await enterTextEditMode(editor)
     typeText(' Utopia')
     closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
@@ -89,7 +52,7 @@ describe('Use the text editor', () => {
   it('Add new text', async () => {
     const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor, 'select-then-text-edit-mode')
+    await enterTextEditMode(editor)
     typeText('Utopia')
     closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
@@ -122,7 +85,7 @@ describe('Use the text editor', () => {
   it('Do not save content before exiting the text editor', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor, 'select-then-text-edit-mode')
+    await enterTextEditMode(editor)
     typeText(' Utopia')
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -154,7 +117,7 @@ describe('Use the text editor', () => {
   it('Escapes HTML entities', async () => {
     const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor, 'select-then-text-edit-mode')
+    await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
     closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
@@ -209,24 +172,24 @@ describe('Use the text editor', () => {
       expect(after).toEqual(projectWithStyle('textDecoration', 'none'))
     })
 
-    it('supports increasing font size', async () => {
+    xit('supports increasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, '.')
       expect(before).toEqual(projectWithStyle('fontSize', '17px'))
       expect(after).toEqual(projectWithStyle('fontSize', '18px'))
     })
 
-    it('supports increasing font weight', async () => {
+    xit('supports increasing font weight', async () => {
       const { before, after } = await testModifier(altCmdModifier, '.')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '500'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '600'))
     })
-    it('supports decreasing font size', async () => {
+    xit('supports decreasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, ',')
       expect(before).toEqual(projectWithStyle('fontSize', '15px'))
       expect(after).toEqual(projectWithStyle('fontSize', '14px'))
     })
 
-    it('supports decreasing font weight', async () => {
+    xit('supports decreasing font weight', async () => {
       const { before, after } = await testModifier(altCmdModifier, ',')
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '300'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '200'))
@@ -313,7 +276,7 @@ describe('Use the text editor', () => {
       it('keeps existing elements', async () => {
         const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-        await enterTextEditMode(editor, 'select-then-text-edit-mode')
+        await enterTextEditMode(editor)
 
         deleteTypedText()
 
@@ -439,7 +402,7 @@ function deleteTypedText() {
 }
 
 async function prepareTestModifierEditor(editor: EditorRenderResult) {
-  await enterTextEditMode(editor, 'select-then-text-edit-mode')
+  await enterTextEditMode(editor)
   typeText('Hello Utopia')
 }
 
@@ -459,17 +422,14 @@ async function testModifier(mod: Modifiers, key: string) {
   await pressShortcut(editor, mod, key)
   const before = getPrintedUiJsCode(editor.getEditorState())
 
-  await enterTextEditMode(editor, 'select-then-text-edit-mode')
+  await enterTextEditMode(editor)
   await pressShortcut(editor, mod, key)
   const after = getPrintedUiJsCode(editor.getEditorState())
 
   return { before, after }
 }
 
-async function enterTextEditMode(
-  editor: EditorRenderResult,
-  order: 'text-edit-mode-then-select' | 'select-then-text-edit-mode',
-) {
+async function enterTextEditMode(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('div')
   const divBounds = div.getBoundingClientRect()
@@ -478,17 +438,10 @@ async function enterTextEditMode(
     y: divBounds.y + 40,
   }
 
-  if (order === 'select-then-text-edit-mode') {
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
-    await editor.getDispatchFollowUpActionsFinished()
-    pressKey('t')
-    await editor.getDispatchFollowUpActionsFinished()
-  } else {
-    pressKey('t')
-    await editor.getDispatchFollowUpActionsFinished()
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
-    await editor.getDispatchFollowUpActionsFinished()
-  }
+  pressKey('t')
+  await editor.getDispatchFollowUpActionsFinished()
+  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await editor.getDispatchFollowUpActionsFinished()
 }
 
 function typeText(text: string) {

@@ -149,12 +149,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper noOfChildren',
   )
 
-  const staticElementName = useEditorState(
-    Substores.metadata,
-    (store) => staticNameSelector(store, props.elementPath),
-    'NavigatorItemWrapper staticName',
-  )
-
   const supportsChildren = useEditorState(
     Substores.fullOldStore,
     // this is not good
@@ -199,11 +193,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       'NavigatorItemWrapper',
     )
 
-  const deepReferenceStaticElementName = useKeepDeepEqualityCall(
-    staticElementName,
-    nullableJSXElementNameKeepDeepEquality,
-  )
-
   const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
     index: props.index,
     editorDispatch: dispatch,
@@ -217,7 +206,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     appropriateDropTargetHint: appropriateDropTargetHint,
     supportsChildren: supportsChildren,
     noOfChildren: noOfChildren,
-    staticElementName: deepReferenceStaticElementName,
     label: label,
     isElementVisible: isElementVisible,
     renamingTarget: renamingTarget,

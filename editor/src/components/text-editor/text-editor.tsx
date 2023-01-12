@@ -1,5 +1,6 @@
 import { escape, unescape } from 'he'
 import React from 'react'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -25,6 +26,7 @@ import {
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
 
@@ -125,7 +127,15 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+  return (
+    <MainEditorStoreProvider>
+      <TextEditorWrapper {...props} />
+    </MainEditorStoreProvider>
+  )
+})
+
+const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
@@ -137,6 +147,12 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
+  )
+  const shouldSelectOnFocus = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      store.editor.mode.type === 'textEdit' ? store.editor.mode.selectOnFocus : 'no-text-selection',
+    'TextEditor shouldSelectOnFocus',
   )
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -158,6 +174,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
+    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+    if (element?.globalFrame?.width === 0) {
+      currentElement.style.minWidth = '0.5px'
+    }
+
     return () => {
       const content = currentElement.textContent
       if (content != null) {
@@ -168,7 +189,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
@@ -183,6 +204,20 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     }
     void setSelectionToOffset(myElement.current, scale, cursorPosition)
   }, [scale, cursorPosition])
+
+  React.useEffect(() => {
+    if (myElement.current == null || shouldSelectOnFocus === 'no-text-selection') {
+      return
+    }
+
+    const range = document.createRange()
+    range.selectNodeContents(myElement.current)
+    const selection = window.getSelection()
+    if (selection != null) {
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }, [shouldSelectOnFocus])
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -230,12 +265,16 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
         dispatch(shortcuts)
       }
 
+      if (event.key === 'Tab') {
+        event.preventDefault()
+      }
+
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
-      } else {
-        event.stopPropagation()
       }
+
+      event.stopPropagation()
     },
     [dispatch, elementPath, metadataRef, passthroughProps],
   )

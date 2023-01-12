@@ -42,7 +42,6 @@ export interface NavigatorItemInnerProps {
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
-  staticElementName: JSXElementName | null
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean

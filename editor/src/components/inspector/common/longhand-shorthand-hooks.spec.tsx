@@ -19,6 +19,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import {
   createStoresAndState,
   EditorStateContext,
+  OriginalMainEditorStateContext,
   UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
@@ -71,9 +72,11 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
 
     return (
       <DispatchContext.Provider value={mockDispatch}>
-        <EditorStateContext.Provider value={storeHook}>
-          <InspectorContextProvider>{children}</InspectorContextProvider>
-        </EditorStateContext.Provider>
+        <OriginalMainEditorStateContext.Provider value={storeHook}>
+          <EditorStateContext.Provider value={storeHook}>
+            <InspectorContextProvider>{children}</InspectorContextProvider>
+          </EditorStateContext.Provider>
+        </OriginalMainEditorStateContext.Provider>
       </DispatchContext.Provider>
     )
   }
