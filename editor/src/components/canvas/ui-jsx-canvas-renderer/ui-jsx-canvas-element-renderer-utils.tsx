@@ -52,7 +52,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditorWrapperWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -326,9 +326,7 @@ export function renderCoreElement(
 
       // when the text is just edited its parent renders it in a text editor, so no need to render anything here
       if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
-        return (
-          <TextEditorWrapperWrapper elementPath={parentPath} text={unescapeHTML(element.text)} />
-        )
+        return <TextEditorWrapper elementPath={parentPath} text={unescapeHTML(element.text)} />
       }
 
       const textToRender = (

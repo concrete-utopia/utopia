@@ -128,15 +128,15 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   return (
     <MainEditorStoreProvider>
-      <TextEditorWrapper {...props} />
+      <TextEditor {...props} />
     </MainEditorStoreProvider>
   )
 })
 
-const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, text } = props
   const dispatch = useDispatch()
   const allElementProps = useEditorState(
