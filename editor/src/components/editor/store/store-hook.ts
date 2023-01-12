@@ -464,11 +464,7 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   oldEditorStore: Substates[K],
   key: K,
 ) {
-  function runTheEqualities() {
-    return SubstateEqualityFns[key](oldEditorStore, editorStore)
-  }
-
-  return runTheEqualities()
+  return SubstateEqualityFns[key](oldEditorStore, editorStore)
 }
 
 function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
