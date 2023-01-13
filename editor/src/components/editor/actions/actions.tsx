@@ -466,6 +466,7 @@ import {
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4479,7 +4480,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(
+    const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
         if (action.text.trim() === '') {
@@ -4497,6 +4498,7 @@ export const UPDATE_FNS = {
       editor,
       RevisionsState.ParsedAheadNeedsReparsing,
     )
+    return collapseTextElements(action.target, withUpdatedText)
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {

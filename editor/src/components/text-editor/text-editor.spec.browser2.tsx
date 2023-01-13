@@ -337,6 +337,118 @@ describe('Use the text editor', () => {
         )
       })
     })
+    describe('collapses runs of text', () => {
+      it('only when the elements involved are eligible', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithARunOfText,
+          'await-first-dom-report',
+        )
+
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const div = editor.renderedDOM.getByTestId('first-div')
+        const divBounds = div.getBoundingClientRect()
+        const divCorner = {
+          x: divBounds.x + 20,
+          y: divBounds.y + 10,
+        }
+
+        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await wait(50) // give it time to adjust the caret position
+
+        closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='storyboard'>
+            <div
+              data-testid='first-div'
+              data-uid='first-div'
+            >
+              Hello this
+            </div>
+            <div
+              style={{ backgroundColor: 'red' }}
+              data-testid='third-div'
+              data-uid='third-div'
+            >
+              is
+            </div>
+            <div
+              data-testid='fourth-div'
+              data-uid='fourth-div'
+            >
+              text! 
+            </div>
+          </Storyboard>
+        )`),
+        )
+      })
+      it('only when the elements involved are eligible after adding some text', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithARunOfText,
+          'await-first-dom-report',
+        )
+
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const div = editor.renderedDOM.getByTestId('first-div')
+        const divBounds = div.getBoundingClientRect()
+        const divCorner = {
+          x: divBounds.x + 30,
+          y: divBounds.y + 10,
+        }
+
+        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await wait(50) // give it time to adjust the caret position
+
+        typeText(' there')
+
+        closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='storyboard'>
+            <div
+              data-testid='first-div'
+              data-uid='first-div'
+            >
+              Hell thereo this
+            </div>
+            <div
+              style={{ backgroundColor: 'red' }}
+              data-testid='third-div'
+              data-uid='third-div'
+            >
+              is
+            </div>
+            <div
+              data-testid='fourth-div'
+              data-uid='fourth-div'
+            >
+              text! 
+            </div>
+          </Storyboard>
+        )`),
+        )
+      })
+    })
   })
   describe('inline expressions', () => {
     it('handles expressions', async () => {
@@ -621,6 +733,35 @@ import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
+  </Storyboard>
+)
+`)
+
+const projectWithARunOfText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-testid='first-div'
+      data-uid='first-div'
+    >Hello</div>
+    <div
+      data-testid='second-div'
+      data-uid='second-div'
+    >this</div>
+    <div
+      style={{
+        backgroundColor: 'red'
+      }}
+      data-testid='third-div'
+      data-uid='third-div'
+    >is</div>
+    <div
+      data-testid='fourth-div'
+      data-uid='fourth-div'
+    >text!</div>
   </Storyboard>
 )
 `)
