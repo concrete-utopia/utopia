@@ -28,6 +28,8 @@ import {
   createPrintCodeResult,
   ParsePrintFilesRequest,
   ParsePrintResultMessage,
+  PrintAndReparseResult,
+  createPrintAndReparseResult,
 } from '../common/worker-types'
 
 export function handleMessage(
@@ -54,6 +56,14 @@ export function handleMessage(
                 file.parseSuccess,
                 file.stripUIDs,
                 file.lastRevisedTime,
+              )
+            case 'printandreparsefile':
+              return getPrintAndReparseCodeResult(
+                file.filename,
+                file.parseSuccess,
+                file.stripUIDs,
+                file.lastRevisedTime,
+                alreadyExistingUIDs_MUTABLE,
               )
             default:
               const _exhaustiveCheck: never = file
@@ -125,4 +135,28 @@ function getPrintCodeResult(
     })
   }
   return createPrintCodeResult(filename, withoutUIDs, newHighlightBounds, lastRevisedTime)
+}
+
+function getPrintAndReparseCodeResult(
+  filename: string,
+  parseSuccess: ParseSuccess,
+  stripUIDs: boolean,
+  lastRevisedTime: number,
+  alreadyExistingUIDs: Set<string>,
+): PrintAndReparseResult {
+  const printResult = getPrintCodeResult(filename, parseSuccess, stripUIDs, lastRevisedTime)
+  const parseResult = getParseFileResult(
+    filename,
+    printResult.printResult,
+    parseSuccess,
+    lastRevisedTime,
+    alreadyExistingUIDs,
+  )
+  return createPrintAndReparseResult(
+    filename,
+    parseResult.parseResult,
+    lastRevisedTime,
+    printResult.highlightBounds,
+    printResult.printResult,
+  )
 }

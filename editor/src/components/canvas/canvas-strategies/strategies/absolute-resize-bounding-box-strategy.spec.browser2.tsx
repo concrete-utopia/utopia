@@ -337,6 +337,32 @@ export var storyboard = (
 )
 `
 
+const projectForEdgeDblClickWithText = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      data-testid='mydiv'
+      style={{
+        backgroundColor: '#3EA881FC',
+        position: 'absolute',
+        left: -231,
+        top: 221,
+        width: 637,
+        display: 'flex',
+        gap: 31,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 445,
+      }}
+    >
+      hello there
+    </div>
+  </Storyboard>
+)
+`
+
 const projectForEdgeDblClickWithPosition = (
   leftPos: CSSProperties['position'],
   rightPos: CSSProperties['position'],
@@ -1157,6 +1183,7 @@ describe('Double click on resize edge', () => {
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
   const minContent = 'min-content'
+  const maxContent = 'max-content'
 
   it('double click left edge', async () => {
     const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
@@ -1223,6 +1250,26 @@ describe('Double click on resize edge', () => {
     )
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
     expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual('445px')
+  })
+
+  it('`max-content` is applied to `height` when element only has text children', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithText,
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+    expect(div.style.width).toEqual('637px')
+    expect(div.style.height).toEqual(maxContent)
+  })
+
+  it('`max-content` is applied to `width` when element only has text children', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithText,
+      'await-first-dom-report',
+    )
+    const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
+    expect(div.style.width).toEqual(maxContent)
     expect(div.style.height).toEqual('445px')
   })
 })

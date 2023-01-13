@@ -3852,6 +3852,13 @@ export const UPDATE_FNS = {
             )
             break
           }
+          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+            code = fileUpdate.code
+            updatedContents = updateParsedTextFileHighlightBounds(
+              fileUpdate.parsed,
+              fileUpdate.highlightBounds,
+            )
+            break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
@@ -4488,6 +4495,7 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      RevisionsState.ParsedAheadNeedsReparsing,
     )
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {

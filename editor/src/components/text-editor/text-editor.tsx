@@ -1,4 +1,4 @@
-import { escape, unescape } from 'he'
+import { unescape } from 'he'
 import React from 'react'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -37,14 +37,42 @@ interface TextEditorProps {
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
+  filePath: string
 }
 
+const entities = {
+  lesserThan: '&lt;',
+  greaterThan: '&gt;',
+  curlyBraceLeft: '&#123;',
+  curlyBraceRight: '&#125;',
+}
+
+const reValidInlineJSXExpression = new RegExp(
+  `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
+  'g',
+)
+
 export function escapeHTML(s: string): string {
-  return escape(s).replace(/\n/g, '<br />')
+  return (
+    s
+      // clean up angular braces
+      .replace('<', entities.lesserThan)
+      .replace('>', entities.greaterThan)
+      // restore br tags
+      .replace(/\n/g, '<br />')
+      // clean up curly braces
+      .replace(/\{/g, entities.curlyBraceLeft)
+      .replace(/\}/g, entities.curlyBraceRight)
+      // restore the ones that wrap valid jsx expressions
+      .replace(reValidInlineJSXExpression, '$1{$2}')
+  )
 }
 
 export function unescapeHTML(s: string): string {
-  return unescape(s).replace(/<br \/>/g, '\n')
+  return unescape(s)
+    .replace(/<br \/>/g, '\n')
+    .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
+    .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
 }
 
 const handleShortcut = (
@@ -127,15 +155,15 @@ const handleSetFontWeightShortcut = (
   ]
 }
 
-export const TextEditorWrapperWrapper = React.memo((props: TextEditorProps) => {
+export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   return (
     <MainEditorStoreProvider>
-      <TextEditorWrapper {...props} />
+      <TextEditor {...props} />
     </MainEditorStoreProvider>
   )
 })
 
-const TextEditorWrapper = React.memo((props: TextEditorProps) => {
+const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
@@ -162,6 +190,7 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     (store) => store.editor.canvas.scale,
     'TextEditor scale',
   )
+
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -290,20 +319,22 @@ const TextEditorWrapper = React.memo((props: TextEditorProps) => {
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
+    onClick: stopPropagation,
+    onContextMenu: stopPropagation,
+    onMouseDown: stopPropagation,
+    onMouseEnter: stopPropagation,
+    onMouseLeave: stopPropagation,
+    onMouseMove: stopPropagation,
+    onMouseOut: stopPropagation,
+    onMouseOver: stopPropagation,
+    onMouseUp: stopPropagation,
     onBlur: onBlur,
     contentEditable: 'plaintext-only' as any, // note: not supported on firefox,
     suppressContentEditableWarning: true,
   }
 
-  const filteredPassthroughProps = filterMouseHandlerProps(passthroughProps)
+  const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  // When the component to render is a simple html element we should make that contenteditable
-  if (typeof component === 'string') {
-    return React.createElement(component, {
-      ...filteredPassthroughProps,
-      ...editorProps,
-    })
-  }
   return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
 })
 
@@ -369,11 +400,11 @@ async function setSelectionToOffset(
   }
 }
 
-function stopPropagation(e: React.KeyboardEvent | React.ClipboardEvent) {
+function stopPropagation(e: React.UIEvent | React.ClipboardEvent) {
   e.stopPropagation()
 }
 
-function filterMouseHandlerProps(props: Record<string, any>) {
+function filterEventHandlerProps(props: Record<string, any>) {
   const {
     onClick,
     onContextMenu,
@@ -385,6 +416,10 @@ function filterMouseHandlerProps(props: Record<string, any>) {
     onMouseOut,
     onMouseOver,
     onMouseUp,
+    onPaste,
+    onKeyDown,
+    onKeyUp,
+    onKeyPress,
     ...filteredProps
   } = props
   return filteredProps

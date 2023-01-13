@@ -55,6 +55,7 @@ import {
   PropertyPath,
   HighlightBoundsWithFileForUids,
   parseSuccess,
+  ParsedAheadRevisionsState,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
@@ -1710,12 +1711,15 @@ export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingTarget(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
     transform,
+    defaultModifyParseSuccess,
+    revisionsState,
   )
 }
 
@@ -3000,6 +3004,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (isTextFile(projectFile)) {
@@ -3012,11 +3017,7 @@ export function modifyParseSuccessAtPath(
       } else {
         const updatedFile = saveTextFileContents(
           projectFile,
-          textFileContents(
-            projectFile.fileContents.code,
-            updatedParseSuccess,
-            RevisionsState.ParsedAhead,
-          ),
+          textFileContents(projectFile.fileContents.code, updatedParseSuccess, revisionsState),
           false,
         )
         return {
@@ -3032,6 +3033,10 @@ export function modifyParseSuccessAtPath(
   }
 }
 
+export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
+  return success
+}
+
 export function modifyUnderlyingTarget(
   target: ElementPath | null,
   currentFilePath: string,
@@ -3045,7 +3050,8 @@ export function modifyUnderlyingTarget(
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
-  ) => ParseSuccess = (success) => success,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3098,7 +3104,12 @@ export function modifyUnderlyingTarget(
     }
   }
 
-  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+  return modifyParseSuccessAtPath(
+    targetSuccess.filePath,
+    editor,
+    innerModifyParseSuccess,
+    revisionsState,
+  )
 }
 
 export function modifyUnderlyingForOpenFile(

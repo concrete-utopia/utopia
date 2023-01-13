@@ -520,12 +520,15 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type RevisionsStateType = 'PARSED_AHEAD' | 'CODE_AHEAD' | 'BOTH_MATCH'
+export type RevisionsStateType = ParsedAheadRevisionsState | 'CODE_AHEAD' | 'BOTH_MATCH'
+
+export type ParsedAheadRevisionsState = 'PARSED_AHEAD' | 'PARSED_AHEAD_NEEDS_REPARSING'
 
 export const RevisionsState = {
   ParsedAhead: 'PARSED_AHEAD',
   CodeAhead: 'CODE_AHEAD',
   BothMatch: 'BOTH_MATCH',
+  ParsedAheadNeedsReparsing: 'PARSED_AHEAD_NEEDS_REPARSING',
 } as const
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.

@@ -7,6 +7,7 @@ import {
 } from '../../../core/workers/common/project-file-utils'
 import {
   createParseFile,
+  createPrintAndReparseFile,
   createPrintCode,
   getParseResult,
   ParseOrPrint,
@@ -238,7 +239,20 @@ function maybeRequestModelUpdate(
   let existingUIDs: Set<string> = emptySet()
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
-      if (codeNeedsParsing(file.fileContents.revisionsState)) {
+      if (
+        codeNeedsParsing(file.fileContents.revisionsState) &&
+        codeNeedsPrinting(file.fileContents.revisionsState) &&
+        isParseSuccess(file.fileContents.parsed)
+      ) {
+        filesToUpdate.push(
+          createPrintAndReparseFile(
+            fullPath,
+            file.fileContents.parsed,
+            PRODUCTION_ENV,
+            file.lastRevisedTime,
+          ),
+        )
+      } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
           ? file.fileContents.parsed
           : file.lastParseSuccess
@@ -286,6 +300,14 @@ function maybeRequestModelUpdate(
                 fileResult.filename,
                 fileResult.printResult,
                 fileResult.highlightBounds,
+                fileResult.lastRevisedTime,
+              )
+            case 'printandreparseresult':
+              return EditorActions.workerCodeAndParsedUpdate(
+                fileResult.filename,
+                fileResult.printResult,
+                fileResult.highlightBounds,
+                fileResult.parsedResult,
                 fileResult.lastRevisedTime,
               )
             default:

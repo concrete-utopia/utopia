@@ -24,7 +24,8 @@ import {
   Axis,
   detectFlexDirectionOne,
   fillContainerApplicable,
-  hugContentsApplicable,
+  hugContentsApplicableForContainer,
+  hugContentsApplicableForText,
   widthHeightFromAxis,
 } from './inspector-common'
 import {
@@ -172,7 +173,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     }
     const metadata = metadataSelector(store)
     return FillHugFixedControlOptions({
-      hugAvailable: hugContentsApplicable(metadata, selectedView),
+      hugAvailable:
+        hugContentsApplicableForText(metadata, selectedView) ||
+        hugContentsApplicableForContainer(metadata, selectedView),
       fillAvailable: fillContainerApplicable(selectedView),
     })
   })

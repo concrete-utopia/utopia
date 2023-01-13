@@ -18,8 +18,7 @@ export function runStrategies(
   for (const strategy of strategies) {
     const commands = strategy(metadata, selectedViews)
     if (commands != null) {
-      dispatch([applyCommandsAction(commands)])
+      return dispatch([applyCommandsAction(commands)])
     }
-    return
   }
 }
