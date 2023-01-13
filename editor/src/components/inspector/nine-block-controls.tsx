@@ -22,7 +22,7 @@ import {
   StartCenterEnd,
 } from './inspector-common'
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
-import { runFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
@@ -259,7 +259,7 @@ export const NineBlockControl = React.memo(() => {
       const strategies = isFlexColumn(flexDirectionRef.current ?? DefaultFlexDirection)
         ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
         : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
-      runFirstApplicableStrategy(
+      executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,

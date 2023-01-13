@@ -34,7 +34,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import {
-  runFirstApplicableStrategy,
+  executeFirstApplicableStrategy,
   InspectorStrategy,
 } from './inspector-strategies/inspector-strategy'
 
@@ -231,7 +231,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
-      runFirstApplicableStrategy(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        strategy,
+      )
     },
     [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
   )
@@ -239,7 +244,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onAdjustHeight = React.useCallback(
     (value: number | EmptyInputValue) => {
       if (typeof value === 'number') {
-        runFirstApplicableStrategy(
+        executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
@@ -256,7 +261,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onAdjustWidth = React.useCallback(
     (value: number | EmptyInputValue) => {
       if (typeof value === 'number') {
-        runFirstApplicableStrategy(
+        executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
@@ -274,7 +279,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
-      runFirstApplicableStrategy(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        strategy,
+      )
     },
     [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
   )

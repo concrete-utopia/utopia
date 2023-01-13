@@ -17,7 +17,7 @@ import {
   removeFlexDirectionStrategies,
   updateFlexDirectionStrategies,
 } from './inspector-strategies/inspector-strategies'
-import { runFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 const nFlexContainersSelector = createSelector(
   metadataSelector,
@@ -122,5 +122,5 @@ function maybeSetFlexDirection(
     desiredFlexDirection == null
       ? removeFlexDirectionStrategies()
       : updateFlexDirectionStrategies(desiredFlexDirection)
-  runFirstApplicableStrategy(dispatch, metadata, selectedViews, strategies)
+  executeFirstApplicableStrategy(dispatch, metadata, selectedViews, strategies)
 }
