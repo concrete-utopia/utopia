@@ -882,8 +882,13 @@ export const MetadataUtils = {
       return false
     }
 
-    const textContent = MetadataUtils.getTextContentOfElement(element)
-    return textContent != null && textContent.length > 0
+    if (isRight(element.element) && isJSXElement(element.element.value)) {
+      const elementValue = element.element.value
+      return (
+        elementValue.children.length >= 1 && elementValue.children.some((c) => isJSXTextBlock(c))
+      )
+    }
+    return false
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
