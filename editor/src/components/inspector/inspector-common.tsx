@@ -1,11 +1,12 @@
 import * as PP from '../../core/shared/property-path'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
+import { defaultEither, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
@@ -210,13 +211,13 @@ export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
-  left: JustifyContentFlexAlignemt,
-  right: JustifyContentFlexAlignemt,
+  one: JustifyContentFlexAlignemt,
+  other: JustifyContentFlexAlignemt,
 ): boolean {
-  const { justifyContent, alignItems } = left
+  const { justifyContent, alignItems } = one
   return isFlexColumn(flexDirection)
-    ? alignItems === right.justifyContent && justifyContent === right.alignItems
-    : alignItems === right.alignItems && justifyContent === right.justifyContent
+    ? alignItems === other.justifyContent && justifyContent === other.alignItems
+    : alignItems === other.alignItems && justifyContent === other.justifyContent
 }
 
 function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
@@ -249,6 +250,37 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
     default:
       assertNever(axis)
   }
+}
+
+export function convertWidthToFlexGrow(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const parentFlexDirection =
+    MetadataUtils.findElementByElementPath(metadata, parentPath)?.computedStyle?.[
+      'flexDirection'
+    ] ?? 'row'
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
+  const matches =
+    defaultEither(
+      null,
+      getSimpleAttributeAtPath(right(element.props), PP.create(['style', prop])),
+    ) === '100%'
+
+  if (!matches) {
+    return []
+  }
+  return [
+    deleteProperties('always', elementPath, [PP.create(['style', prop])]),
+    setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
+  ]
 }
 
 export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {

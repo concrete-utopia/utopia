@@ -142,7 +142,7 @@ describe('Use the text editor', () => {
                 height: 362,
               }}
               data-uid='39e'
-            >this is a &lt;test&gt; with bells &amp; whistles</div>
+            >this is a &lt;test&gt; with bells & whistles</div>
           </Storyboard>
         )`),
     )
@@ -336,6 +336,123 @@ describe('Use the text editor', () => {
             )`),
         )
       })
+    })
+  })
+  describe('inline expressions', () => {
+    it('handles expressions', async () => {
+      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+
+      await enterTextEditMode(editor)
+      typeText('the answer is {41 + 1}')
+      closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(500)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+              import * as React from 'react'
+              import { Storyboard } from 'utopia-api'
+
+
+              export var storyboard = (
+                <Storyboard data-uid='sb'>
+                  <div
+                    data-testid='div'
+                    style={{
+                      backgroundColor: '#0091FFAA',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: 288,
+                      height: 362,
+                    }}
+                    data-uid='39e'
+                  >the answer is {41 + 1}</div>
+                </Storyboard>
+              )`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
+
+      await enterTextEditMode(editor)
+      typeText(', right?')
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(
+        'the answer is {41 + 1}, right?',
+      )
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+    })
+    it("escapes curly braces if they don't wrap an expression", async () => {
+      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+
+      await enterTextEditMode(editor)
+      typeText('the answer is {wrong')
+      closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(500)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+              import * as React from 'react'
+              import { Storyboard } from 'utopia-api'
+
+
+              export var storyboard = (
+                <Storyboard data-uid='sb'>
+                  <div
+                    data-testid='div'
+                    style={{
+                      backgroundColor: '#0091FFAA',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: 288,
+                      height: 362,
+                    }}
+                    data-uid='39e'
+                  >the answer is &#123;wrong</div>
+                </Storyboard>
+              )`),
+      )
+    })
+    it('supports escaping curly braces', async () => {
+      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+
+      await enterTextEditMode(editor)
+      typeText('the answer is \\{41 + 1}')
+      closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(500)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+              import * as React from 'react'
+              import { Storyboard } from 'utopia-api'
+
+
+              export var storyboard = (
+                <Storyboard data-uid='sb'>
+                  <div
+                    data-testid='div'
+                    style={{
+                      backgroundColor: '#0091FFAA',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: 288,
+                      height: 362,
+                    }}
+                    data-uid='39e'
+                  >the answer is \\&#123;41 + 1&#125;</div>
+                </Storyboard>
+              )`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is \\{41 + 1}')
     })
   })
 })

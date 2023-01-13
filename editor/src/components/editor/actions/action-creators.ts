@@ -223,6 +223,7 @@ import type {
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
+  WorkerCodeAndParsedUpdate,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1063,6 +1064,23 @@ export function workerCodeUpdate(
   }
 }
 
+export function workerCodeAndParsedUpdate(
+  filePath: string,
+  code: string,
+  highlightBounds: HighlightBoundsForUids,
+  parsed: ParsedTextFile,
+  lastRevisedTime: number,
+): WorkerCodeAndParsedUpdate {
+  return {
+    type: 'WORKER_CODE_AND_PARSED_UPDATE',
+    filePath: filePath,
+    code: code,
+    highlightBounds: highlightBounds,
+    parsed: parsed,
+    lastRevisedTime: lastRevisedTime,
+  }
+}
+
 export function workerParsedUpdate(
   filePath: string,
   parsed: ParsedTextFile,
@@ -1077,7 +1095,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>,
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
