@@ -23,7 +23,7 @@ import {
 } from './inspector-common'
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { MetadataSubstate } from '../editor/store/store-hook-selectors'
+import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,

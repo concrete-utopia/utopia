@@ -17,7 +17,7 @@ import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-s
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
-import { MetadataSubstate } from '../../editor/store/store-hook-selectors'
+import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 
 export interface NameAndIconResult {
   path: ElementPath

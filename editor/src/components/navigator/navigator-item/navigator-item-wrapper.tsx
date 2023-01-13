@@ -25,7 +25,7 @@ import {
   EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-selectors'
+import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
   DragSelection,
   NavigatorItemContainer,

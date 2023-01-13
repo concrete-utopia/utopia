@@ -26,7 +26,7 @@ import {
   DerivedSubstate,
   DispatchSubstate,
   FocusedElementPathSubstate,
-  HighlightedViewsSubstate,
+  HighlightedHoveredViewsSubstate,
   MetadataSubstate,
   RestOfEditorState,
   restOfEditorStateKeys,
@@ -40,7 +40,7 @@ import {
   BuiltInDependenciesSubstate,
   UserStateSubstate,
   CanvasAndMetadataSubstate,
-} from './store-hook-selectors'
+} from './store-hook-substore-types'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
 import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
 
@@ -320,7 +320,7 @@ type Substates = {
   metadata: MetadataSubstate
   selectedViews: SelectedViewsSubstate
   focusedElement: FocusedElementPathSubstate
-  highlightedHoveredViews: HighlightedViewsSubstate
+  highlightedHoveredViews: HighlightedHoveredViewsSubstate
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
@@ -360,7 +360,10 @@ export const Substores = {
     keysEquality(['selectedViews'], a.editor, b.editor),
   focusedElement: (a: FocusedElementPathSubstate, b: FocusedElementPathSubstate) =>
     keysEquality(['focusedElementPath'], a.editor, b.editor),
-  highlightedHoveredViews: (a: HighlightedViewsSubstate, b: HighlightedViewsSubstate): boolean => {
+  highlightedHoveredViews: (
+    a: HighlightedHoveredViewsSubstate,
+    b: HighlightedHoveredViewsSubstate,
+  ): boolean => {
     return (
       // a.editor.selectedViews === b.editor.selectedViews &&
       a.editor.highlightedViews === b.editor.highlightedViews &&

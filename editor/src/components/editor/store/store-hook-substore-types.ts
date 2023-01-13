@@ -1,9 +1,11 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { omit } from '../../../core/shared/object-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import { EditorDispatch } from '../action-types'
 import {
   AllElementProps,
+  createEditorState,
   DerivedState,
   EditorState,
   EditorStateCanvas,
@@ -14,6 +16,8 @@ import {
   ThemeSetting,
 } from './editor-state'
 
+const emptyEditorState = createEditorState(null as any)
+
 export interface ProjectContentSubstate {
   editor: {
     projectContents: ProjectContentTreeRoot
@@ -22,13 +26,12 @@ export interface ProjectContentSubstate {
 
 export interface MetadataSubstate {
   editor: {
-    selectedViews: Array<ElementPath> // duplicated from SelectedHighlightedViewsSubstate, for convenience!
+    selectedViews: Array<ElementPath>
     focusedElementPath: ElementPath | null
     spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
     domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
     jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
     allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
-    // _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   }
 }
 
@@ -44,41 +47,24 @@ export interface FocusedElementPathSubstate {
   }
 }
 
-export interface HighlightedViewsSubstate {
+export interface HighlightedHoveredViewsSubstate {
   editor: {
-    // selectedViews: Array<ElementPath>
     highlightedViews: Array<ElementPath>
     hoveredViews: Array<ElementPath>
   }
 }
 
-export interface CanvasSubstate {
+const emptyCanvasSubstate = {
   editor: {
-    canvas: Omit<EditorStateCanvas, 'realCanvasOffset' | 'roundedCanvasOffset'>
-  }
-}
+    canvas: omit(['realCanvasOffset', 'roundedCanvasOffset'], emptyEditorState.canvas),
+  },
+} as const
 
-export const canvasSubstateKeys = [
-  'elementsToRerender',
-  'visible',
-  'dragState',
-  'interactionSession',
-  'snappingThreshold',
-  'textEditor',
-  'selectionControlsVisible',
-  'cursor',
-  'duplicationState',
-  'base64Blobs',
-  'mountCount',
-  'canvasContentInvalidateCount',
-  'domWalkerInvalidateCount',
-  'openFile',
-  'scrollAnimation',
-  'transientProperties',
-  'resizeOptions',
-  'domWalkerAdditionalElementsToUpdate',
-  'controls',
-] as const
+export type CanvasSubstate = typeof emptyCanvasSubstate
+
+export const canvasSubstateKeys = Object.keys(emptyCanvasSubstate.editor.canvas) as Array<
+  keyof CanvasSubstate['editor']['canvas']
+>
 
 export interface CanvasOffsetSubstate {
   editor: {

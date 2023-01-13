@@ -10,7 +10,7 @@ import {
   EditorStorePatched,
 } from '../../components/editor/store/editor-state'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { ProjectContentSubstate } from '../../components/editor/store/store-hook-selectors'
+import { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 import {
   useCallbackFactory,
   UseSubmitValueFactory,

@@ -23,7 +23,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
-import { CanvasSubstate } from '../../editor/store/store-hook-selectors'
+import { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
