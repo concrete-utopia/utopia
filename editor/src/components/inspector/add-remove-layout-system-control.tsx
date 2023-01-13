@@ -18,7 +18,7 @@ import {
   removeFlexLayoutStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { detectAreElementsFlexContainers } from './inspector-common'
-import { runStrategies } from './inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
 
 export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'
@@ -39,7 +39,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
 
   const addLayoutSystem = React.useCallback(
     () =>
-      runStrategies(
+      executeFirstApplicableStrategy(
         dispatch,
         elementMetadataRef.current,
         selectedViewsRef.current,
@@ -50,7 +50,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
 
   const removeLayoutSystem = React.useCallback(
     () =>
-      runStrategies(
+      executeFirstApplicableStrategy(
         dispatch,
         elementMetadataRef.current,
         selectedViewsRef.current,
