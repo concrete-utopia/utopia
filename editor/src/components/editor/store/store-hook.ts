@@ -2,11 +2,15 @@
 import React from 'react'
 import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { DerivedState, EditorStorePatched } from './editor-state'
+import {
+  logAfterStoreUpdate,
+  logBeforeStoreUpdate,
+  useWrapCallbackInPerformanceMeasureBlock,
+  useWrapSelectorInPerformanceMeasureBlock,
+} from './store-hook-performance-logging'
 import {
   BuiltInDependenciesSubstate,
   CanvasAndMetadataSubstate,
@@ -29,51 +33,57 @@ import {
   restOfStoreKeys,
   SelectedViewsSubstate,
   selectedViewsSubstateKeys,
+  StoreKey,
+  Substates,
   ThemeSubstate,
   UserStateSubstate,
 } from './store-hook-substore-types'
 
-type StateSelector<T, U> = (state: T) => U
+// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
+type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
 
-export const SelectorTimings: {
-  current: {
-    [selectorName: string]: {
-      accumulatedTime: number
-      accumulatedCallbackTime: number
-      calledNumberOfTimes: number
-      callbackNumberOfTimes: number
-      preSelectorName: string
-    }
-  }
-} = { current: {} }
+export type UtopiaStoreAPI = StoresAndSetState
 
-function ensureSelectorTimingExists(selectorName: string, substoreKey: string) {
-  if (
-    isFeatureEnabled('Debug – Measure Selectors') &&
-    SelectorTimings.current[selectorName] == null
-  ) {
-    SelectorTimings.current[selectorName] = {
-      accumulatedTime: 0,
-      accumulatedCallbackTime: 0,
-      calledNumberOfTimes: 0,
-      callbackNumberOfTimes: 0,
-      preSelectorName: substoreKey,
-    }
+export const OriginalMainEditorStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
+export const EditorStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+EditorStateContext.displayName = 'EditorStateContext'
+export const CanvasStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+CanvasStateContext.displayName = 'CanvasStateContext'
+export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+LowPriorityStateContext.displayName = 'LowPriorityStateContext'
+
+export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
+  let latestStoreState: EditorStorePatched = initialEditorStore
+
+  let substores: UtopiaStores = objectMap((_) => {
+    return create(subscribeWithSelector((set) => initialEditorStore))
+  }, SubstateEqualityFns) as UtopiaStores // bad type
+
+  return {
+    setState: (editorStore: EditorStorePatched): void => {
+      latestStoreState = editorStore
+
+      objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
+        logBeforeStoreUpdate(key)
+
+        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
+          // we call the original Zustand setState for this substore here
+          // Notice that we pass in the _entire_ editorStore as value, not a partial! This saves us from having to create partial objects
+          substore.setState(editorStore)
+
+          logAfterStoreUpdate(key)
+        }
+      }, substores)
+    },
+    getState: (): EditorStorePatched => {
+      return latestStoreState
+    },
+    stores: substores,
   }
 }
 
-export const SubstoreTimings: {
-  current: { [storeKey: string]: { updateTime: number | null; calledNumberOfTimes: number } }
-} = { current: {} }
-
-function ensureSubstoreTimingExists(storeKey: string) {
-  if (isFeatureEnabled('Debug – Measure Selectors') && SubstoreTimings.current[storeKey] == null) {
-    SubstoreTimings.current[storeKey] = {
-      updateTime: null,
-      calledNumberOfTimes: 0,
-    }
-  }
-}
+export type StateSelector<T, U> = (state: T) => U
 
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
@@ -102,129 +112,16 @@ export const useEditorState = <K extends StoreKey, S extends typeof Substores[K]
   return context.stores[storeKey](wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
-function useWrapSelectorInPerformanceMeasureBlock<K extends StoreKey, U>(
-  storeKey: K,
-  selector: StateSelector<Substates[K], U>,
-  selectorName: string,
-): StateSelector<Substates[K], U> {
-  const previousSelectorRef = React.useRef<StateSelector<Substates[K], U>>()
-  const previousWrappedSelectorRef = React.useRef<StateSelector<Substates[K], U>>()
-
-  if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
-    // we alreaedy wrapped this selector
-    return previousWrappedSelectorRef.current
-  } else {
-    // let's create a new wrapped selector
-    const wrappedSelector = (state: Substates[K]): U => {
-      const LogSelectorPerformance =
-        isFeatureEnabled('Debug – Performance Marks (Slow)') && PERFORMANCE_MARKS_ALLOWED
-
-      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-
-      if (LogSelectorPerformance) {
-        window.performance.mark('selector_begin')
-      }
-
-      const beforeSelector = MeasureSelectors ? performance.now() : 0
-
-      let calledNumberOfTimes = 1
-
-      // Uncomment this to stress-test selectors
-      // if (MeasureSelectors) {
-      //   for (let index = 0; index < 99; index++) {
-      //     calledNumberOfTimes++
-      //     selector(state)
-      //   }
-      // }
-
-      const result = selector(state)
-      if (LogSelectorPerformance) {
-        window.performance.mark('selector_end')
-        window.performance.measure(
-          `Zustand Selector ${selectorName}`,
-          'selector_begin',
-          'selector_end',
-        )
-      }
-
-      const afterSelector = MeasureSelectors ? performance.now() : 0
-
-      if (MeasureSelectors) {
-        ensureSelectorTimingExists(selectorName, storeKey)
-        const currentValue = SelectorTimings.current[selectorName]
-        currentValue.accumulatedTime += afterSelector - beforeSelector
-        currentValue.calledNumberOfTimes += calledNumberOfTimes
-        SelectorTimings.current[selectorName] = currentValue
-        ensureSubstoreTimingExists(storeKey)
-        SubstoreTimings.current[storeKey].calledNumberOfTimes += calledNumberOfTimes
-      }
-
-      return result
-    }
-    previousSelectorRef.current = selector
-    previousWrappedSelectorRef.current = wrappedSelector
-    return wrappedSelector
-  }
-}
-
-class Getter<T> {
-  public getter: (() => T) | null = null
-
-  get current(): T {
-    if (this.getter == null) {
-      throw new Error('Getter.getter is null')
-    }
-    return this.getter()
-  }
-}
-
-/**
- * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
- *
- * ONLY USE IT IF YOU ARE SURE ABOUT WHAT YOU ARE DOING
- */
-export const useRefEditorState = <U>(
-  selector: StateSelector<EditorStorePatched, U>,
-  explainMe = false,
-): { readonly current: U } => {
-  const context = React.useContext(EditorStateContext)
-  if (context == null) {
-    throw new Error('useStore is missing from editor context')
-  }
-  const api = context
-  const getterShell = React.useMemo(() => new Getter<U>(), [])
-  getterShell.getter = () => selector(api.getState())
-
-  return getterShell
-}
-
-// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
-type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
-
-export type UtopiaStoreAPI = StoresAndSetState
-
-export type EditorStateContextData = StoresAndSetState
-
-export const OriginalMainEditorStateContext = React.createContext<EditorStateContextData | null>(
-  null,
-)
-OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
-export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
-EditorStateContext.displayName = 'EditorStateContext'
-export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)
-CanvasStateContext.displayName = 'CanvasStateContext'
-export const LowPriorityStateContext = React.createContext<EditorStateContextData | null>(null)
-LowPriorityStateContext.displayName = 'LowPriorityStateContext'
-
 export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Substores[K], U>(
   storeKey_: S,
   selector: StateSelector<Parameters<S>[0], U>,
   callback: (newValue: U) => void,
-  selectorName: string,
+  selectorName_: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
 ): void => {
   const storeKey: K = storeKey_.name as K
+  const selectorName = `${selectorName_} - useEditorStateWithCallback`
 
   const context = React.useContext(EditorStateContext)
   if (context == null) {
@@ -245,30 +142,13 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Sub
 
   const previouslySelectedStateRef = React.useRef<U>(selectorRef.current(api.getState()))
 
-  const innerCallback = React.useCallback<(newSlice: U) => void>(
-    (newSlice) => {
-      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-      const beforeCallback = MeasureSelectors ? performance.now() : 0
-      // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
-      if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
-        if (explainMe) {
-          console.info(
-            'selected state has a new value according to the provided equalityFn, notifying callback',
-            newSlice,
-          )
-        }
-        callbackRef.current(newSlice)
-        previouslySelectedStateRef.current = newSlice
-      }
-      const afterCallback = MeasureSelectors ? performance.now() : 0
-      if (MeasureSelectors) {
-        ensureSelectorTimingExists(selectorName, storeKey)
-        SelectorTimings.current[selectorName].accumulatedCallbackTime +=
-          afterCallback - beforeCallback
-        SelectorTimings.current[selectorName].callbackNumberOfTimes += 1
-      }
-    },
-    [storeKey, explainMe, selectorName],
+  const innerCallback = useWrapCallbackInPerformanceMeasureBlock(
+    storeKey,
+    callbackRef,
+    selectorName,
+    previouslySelectedStateRef,
+    equalityFnRef,
+    explainMe,
   )
 
   /**
@@ -305,57 +185,36 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Sub
   }, [api, innerCallback, explainMe])
 }
 
-export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
-  let latestStoreState: EditorStorePatched = initialEditorStore
+class Getter<T> {
+  public getter: (() => T) | null = null
 
-  let substores: UtopiaStores = objectMap((_) => {
-    return create(subscribeWithSelector((set) => initialEditorStore))
-  }, SubstateEqualityFns) as UtopiaStores // bad type
-
-  return {
-    setState: (editorStore: EditorStorePatched): void => {
-      latestStoreState = editorStore
-      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-      objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
-        const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
-        ensureSubstoreTimingExists(key)
-        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
-          substore.setState(editorStore)
-          const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
-          if (MeasureSelectors) {
-            SubstoreTimings.current[key].updateTime =
-              (SubstoreTimings.current[key].updateTime ?? 0) + afterStoreUpdate - beforeStoreUpdate
-          }
-        }
-      }, substores)
-    },
-    getState: (): EditorStorePatched => {
-      return latestStoreState
-    },
-    stores: substores,
+  get current(): T {
+    if (this.getter == null) {
+      throw new Error('Getter.getter is null')
+    }
+    return this.getter()
   }
 }
 
-type Substates = {
-  metadata: MetadataSubstate
-  selectedViews: SelectedViewsSubstate
-  focusedElement: FocusedElementPathSubstate
-  highlightedHoveredViews: HighlightedHoveredViewsSubstate
-  projectContents: ProjectContentSubstate
-  canvas: CanvasSubstate
-  canvasOffset: CanvasOffsetSubstate
-  derived: { derived: DerivedState }
-  restOfEditor: RestOfEditorState
-  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
-  /**@deprecated hurts performance, please avoid using it */
-  fullStore: EditorStorePatched
-  theme: ThemeSubstate
-  github: GithubSubstate
-  builtInDependencies: BuiltInDependenciesSubstate
-  userState: UserStateSubstate
-}
+/**
+ * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
+ *
+ * ONLY USE IT IF YOU ARE SURE ABOUT WHAT YOU ARE DOING
+ */
+export const useRefEditorState = <U>(
+  selector: StateSelector<EditorStorePatched, U>,
+  explainMe = false,
+): { readonly current: U } => {
+  const context = React.useContext(EditorStateContext)
+  if (context == null) {
+    throw new Error('useStore is missing from editor context')
+  }
+  const api = context
+  const getterShell = React.useMemo(() => new Getter<U>(), [])
+  getterShell.getter = () => selector(api.getState())
 
-type StoreKey = keyof Substates
+  return getterShell
+}
 
 export const Substores = {
   metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {

@@ -64,11 +64,9 @@ import {
   EditorStateContext,
   LowPriorityStateContext,
   OriginalMainEditorStateContext,
-  SelectorTimings,
   UtopiaStores,
   UtopiaStoreAPI,
   StoresAndSetState,
-  SubstoreTimings,
 } from '../components/editor/store/store-hook'
 import { RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { LinterResultMessage } from '../core/workers/linter/linter-worker'
@@ -124,6 +122,10 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
 import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
+import {
+  logSelectorTimings,
+  resetSelectorTimings,
+} from '../components/editor/store/store-hook-performance-logging'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -587,23 +589,14 @@ export class Editor {
                 'slow store',
                 afterStoreUpdate - afterMainStore,
               )
-              // eslint-disable-next-line no-console
-              console.log(
-                'Number of Selectors called during store update phase',
-                Object.keys(SelectorTimings.current).length,
-              )
-              // eslint-disable-next-line no-console
-              console.table(SelectorTimings.current)
-              // eslint-disable-next-line no-console
-              console.log('Pre-Selectors during store update phase')
-              // eslint-disable-next-line no-console
-              console.table(SubstoreTimings.current)
-              SelectorTimings.current = {}
-              SubstoreTimings.current = {}
+              logSelectorTimings('store update phase')
             }
             if (PerformanceMarks) {
               performance.mark(`react wrap up ${updateId}`)
             }
+
+            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+            resetSelectorTimings()
           })
         })
         if (PerformanceMarks) {
@@ -624,24 +617,13 @@ export class Editor {
         entireUpdateFinished: entireUpdateFinished,
       }
     }
-    SelectorTimings.current = {}
-    SubstoreTimings.current = {}
+    resetSelectorTimings()
     if (PerformanceMarks) {
       performance.mark('beforeFullDispatch')
     }
     const result = runDispatch()
     if (MeasureSelectors) {
-      // eslint-disable-next-line no-console
-      console.log(
-        'Number of Selectors called during re-render phase',
-        Object.keys(SelectorTimings.current).length,
-      )
-      // eslint-disable-next-line no-console
-      console.table(SelectorTimings.current)
-      // eslint-disable-next-line no-console
-      console.log('Pre-Selectors during re-render phase')
-      // eslint-disable-next-line no-console
-      console.table(SubstoreTimings.current)
+      logSelectorTimings('re-render phase')
     }
     if (PerformanceMarks) {
       performance.measure(

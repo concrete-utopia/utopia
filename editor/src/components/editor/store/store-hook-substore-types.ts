@@ -10,6 +10,27 @@ import type {
 } from './editor-state'
 import { EmptyEditorStateForKeysOnly } from './store-hook-substore-helpers'
 
+export type Substates = {
+  metadata: MetadataSubstate
+  selectedViews: SelectedViewsSubstate
+  focusedElement: FocusedElementPathSubstate
+  highlightedHoveredViews: HighlightedHoveredViewsSubstate
+  projectContents: ProjectContentSubstate
+  canvas: CanvasSubstate
+  canvasOffset: CanvasOffsetSubstate
+  derived: { derived: DerivedState }
+  restOfEditor: RestOfEditorState
+  restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
+  /**@deprecated hurts performance, please avoid using it */
+  fullStore: EditorStorePatched
+  theme: ThemeSubstate
+  github: GithubSubstate
+  builtInDependencies: BuiltInDependenciesSubstate
+  userState: UserStateSubstate
+}
+
+export type StoreKey = keyof Substates
+
 // ProjectContentSubstate
 export const projectContentsKeys = ['projectContents'] as const
 const emptyProjectContents = {

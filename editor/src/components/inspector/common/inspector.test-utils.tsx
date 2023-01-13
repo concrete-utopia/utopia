@@ -22,7 +22,6 @@ import {
 import {
   createStoresAndState,
   EditorStateContext,
-  EditorStateContextData,
   OriginalMainEditorStateContext,
   UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
@@ -47,7 +46,7 @@ type UpdateFunctionHelpers = {
   updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
 }
 
-export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
+export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
@@ -84,7 +83,7 @@ export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
 export const TestInspectorContextProvider: React.FunctionComponent<
   React.PropsWithChildren<{
     selectedViews: Array<ElementPath>
-    editorStoreData: EditorStateContextData
+    editorStoreData: UtopiaStoreAPI
   }>
 > = (props) => {
   return (
