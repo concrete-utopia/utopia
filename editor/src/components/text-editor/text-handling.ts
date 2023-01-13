@@ -1,4 +1,4 @@
-import { ElementPath } from '../../core/shared/project-file-types'
+import { ElementPath, RevisionsState } from '../../core/shared/project-file-types'
 import {
   EditorState,
   getElementFromProjectContents,
@@ -211,29 +211,39 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
         }
 
         // Modify the editor state.
-        return modifyUnderlyingTarget(targetParent, openFile, editor, (element: JSXElement) => {
-          // Create the new collection of children by skipping those found in the target run.
-          let updatedChildren: Array<JSXElementChild> = []
-          for (const child of element.children) {
-            if (targetRun.includes(child)) {
-              if (getUtopiaID(child) === targetDataUID && isJSXElement(child)) {
-                // Insert the replacement combined element here.
-                updatedChildren.push({
-                  ...child,
-                  children: [jsxTextBlock(combinedText)],
-                })
+        return modifyUnderlyingTarget(
+          targetParent,
+          openFile,
+          editor,
+          (element: JSXElement) => {
+            // Create the new collection of children by skipping those found in the target run.
+            let updatedChildren: Array<JSXElementChild> = []
+            for (const child of element.children) {
+              if (targetRun.includes(child)) {
+                if (getUtopiaID(child) === targetDataUID && isJSXElement(child)) {
+                  // Insert the replacement combined element here.
+                  updatedChildren.push({
+                    ...child,
+                    children: [jsxTextBlock(combinedText)],
+                  })
+                }
+              } else {
+                updatedChildren.push(child)
               }
-            } else {
-              updatedChildren.push(child)
             }
-          }
 
-          // Create replacement element containing the updated children.
-          return {
-            ...element,
-            children: updatedChildren,
-          }
-        })
+            // Create replacement element containing the updated children.
+            return {
+              ...element,
+              children: updatedChildren,
+            }
+          },
+          (parseSuccess) => parseSuccess,
+          // FIXME: This needs to be here because the callsite of
+          // this function also passes this in another call to
+          // `modifyUnderlyingTarget`.
+          RevisionsState.ParsedAheadNeedsReparsing,
+        )
       }
     }
   }
