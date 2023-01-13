@@ -225,7 +225,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         if (elementState === 'new' && content === '') {
           dispatch([deleteView(elementPath)])
         } else {
-          dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+          if (elementState != null) {
+            dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+          }
         }
       }
     }

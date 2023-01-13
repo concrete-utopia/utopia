@@ -11,7 +11,6 @@ import {
   getJSXAttribute,
   isJSXElement,
   emptyComments,
-  isUtopiaJSXComponent,
 } from '../shared/element-template'
 import {
   componentHonoursPropsPosition,
@@ -24,8 +23,7 @@ import {
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
-import { parseCode } from '../workers/parser-printer/parser-printer'
-import { isParseSuccess } from '../shared/project-file-types'
+import { getComponentFromCode } from './element-template-test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -218,20 +216,6 @@ describe('removeJSXElementChild', () => {
     expect(updatedElements).toEqual(expectedResult)
   })
 })
-
-function getComponentFromCode(componentName: string, code: string): UtopiaJSXComponent {
-  const parseResult = parseCode('test.jsx', code, null, new Set())
-  if (isParseSuccess(parseResult)) {
-    for (const topLevelElement of parseResult.topLevelElements) {
-      if (isUtopiaJSXComponent(topLevelElement) && topLevelElement.name === componentName) {
-        return topLevelElement
-      }
-    }
-    throw new Error(`Could not find component ${componentName}`)
-  } else {
-    throw new Error(`Not a parse success: ${parseResult.type}`)
-  }
-}
 
 describe('componentUsesProperty', () => {
   it('returns false for a component that in no way uses the children property', () => {
