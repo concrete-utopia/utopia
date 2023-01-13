@@ -383,6 +383,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
+  EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4479,7 +4480,10 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
+  UPDATE_CHILD_TEXT: (
+    action: UpdateChildText,
+    editorStore: EditorStoreUnpatched,
+  ): EditorStoreUnpatched => {
     const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
@@ -4495,10 +4499,23 @@ export const UPDATE_FNS = {
           }
         }
       },
-      editor,
+      editorStore.unpatchedEditor,
       RevisionsState.ParsedAheadNeedsReparsing,
     )
-    return collapseTextElements(action.target, withUpdatedText)
+    const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
+
+    if (withUpdatedText === withCollapsedElements) {
+      return {
+        ...editorStore,
+        unpatchedEditor: withUpdatedText,
+      }
+    } else {
+      return {
+        ...editorStore,
+        unpatchedEditor: withCollapsedElements,
+        history: History.add(editorStore.history, withUpdatedText, editorStore.unpatchedDerived),
+      }
+    }
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {
