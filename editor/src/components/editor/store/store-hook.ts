@@ -40,6 +40,12 @@ import {
   UserStateSubstate,
   CanvasAndMetadataSubstate,
   githubSubstateKeys,
+  highlightedHoveredViewsSubstateKeys,
+  metadataSubstateKeys,
+  selectedViewsSubstateKeys,
+  focusedElementPathSubstateKeys,
+  projectContentsKeys,
+  canvasOffsetSubstateKeys,
 } from './store-hook-substore-types'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
 import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
@@ -339,45 +345,26 @@ type StoreKey = keyof Substates
 
 export const Substores = {
   metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
-    return keysEquality(
-      [
-        'selectedViews',
-        'focusedElementPath',
-        'spyMetadata',
-        'domMetadata',
-        'jsxMetadata',
-        'allElementProps',
-      ],
-      a.editor,
-      b.editor,
-    )
+    return keysEquality(metadataSubstateKeys, a.editor, b.editor)
   },
   selectedViews: (a: SelectedViewsSubstate, b: SelectedViewsSubstate) =>
-    keysEquality(['selectedViews'], a.editor, b.editor),
+    keysEquality(selectedViewsSubstateKeys, a.editor, b.editor),
   focusedElement: (a: FocusedElementPathSubstate, b: FocusedElementPathSubstate) =>
-    keysEquality(['focusedElementPath'], a.editor, b.editor),
+    keysEquality(focusedElementPathSubstateKeys, a.editor, b.editor),
   highlightedHoveredViews: (
     a: HighlightedHoveredViewsSubstate,
     b: HighlightedHoveredViewsSubstate,
   ): boolean => {
-    return (
-      // a.editor.selectedViews === b.editor.selectedViews &&
-      a.editor.highlightedViews === b.editor.highlightedViews &&
-      a.editor.hoveredViews === b.editor.hoveredViews
-    )
+    return keysEquality(highlightedHoveredViewsSubstateKeys, a.editor, b.editor)
   },
   projectContents: (a: ProjectContentSubstate, b: ProjectContentSubstate) => {
-    return a.editor.projectContents === b.editor.projectContents
+    return keysEquality(projectContentsKeys, a.editor, b.editor)
   },
   canvas: (a: CanvasSubstate, b: CanvasSubstate): boolean => {
     return keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
   },
   canvasOffset: (a: CanvasOffsetSubstate, b: CanvasOffsetSubstate) => {
-    return keysEquality(
-      ['realCanvasOffset', 'roundedCanvasOffset', 'scale'],
-      a.editor.canvas,
-      b.editor.canvas,
-    )
+    return keysEquality(canvasOffsetSubstateKeys, a.editor.canvas, b.editor.canvas)
   },
   derived: (a: { derived: DerivedState }, b: { derived: DerivedState }) => {
     return a.derived === b.derived

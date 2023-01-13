@@ -18,7 +18,7 @@ const emptyProjectContents = {
 export type ProjectContentSubstate = typeof emptyProjectContents
 
 // MetadataSubstate
-const metadataSubstateKeys = [
+export const metadataSubstateKeys = [
   'selectedViews',
   'focusedElementPath',
   'spyMetadata',
