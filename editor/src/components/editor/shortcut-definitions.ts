@@ -214,19 +214,19 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
   [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),
   [TOGGLE_TEXT_BOLD]: shortcut(
-    'Toggle font-weight of the currently selected text element.',
+    'Toggle font-weight to bold of the currently selected text element.',
     key('b', ['cmd']),
   ),
   [TOGGLE_TEXT_ITALIC]: shortcut(
-    'Toggle font-style of the currently selected text element.',
+    'Toggle font-style to italic of the currently selected text element.',
     key('i', ['cmd']),
   ),
   [TOGGLE_TEXT_UNDERLINE]: shortcut(
-    'Toggle font-style of the currently selected text element.',
+    'Toggle text-decoration to underline of the currently selected text element.',
     key('u', ['cmd']),
   ),
   [TOGGLE_TEXT_STRIKE_THROUGH]: shortcut(
-    'Toggle font-style of the currently selected text element.',
+    'Toggle text-decoration to line-through of the currently selected text element.',
     key('x', ['cmd', 'shift']),
   ),
 }
