@@ -1,5 +1,6 @@
 import { match, P } from 'ts-pattern'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import * as PP from '../../core/shared/property-path'
+import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ComputedStyle, ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -13,6 +14,11 @@ import {
 } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
 import { defaultEither, Either, left, right } from '../../core/shared/either'
+import { CanvasCommand } from '../canvas/commands/commands'
+import { deleteProperties } from '../canvas/commands/delete-properties-command'
+import { setProperty } from '../canvas/commands/set-property-command'
+import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -179,7 +185,7 @@ export function detectAreElementsFlexContainers(
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
-export const hugContentsApplicable = (
+export const hugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): boolean => {
@@ -196,6 +202,14 @@ export const hugContentsApplicable = (
         ),
     ).length > 0
   )
+}
+
+export const hugContentsApplicableForText = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean => {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  return optionalMap(elementOnlyHasTextChildren, element) === true
 }
 
 export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
@@ -331,4 +345,38 @@ export function detectFillFixedInFlex(
   const mode = flexToFillFixedHug(flexGrow, flexShrink, flexBasis)
 
   return right({ minDimension, maxDimension, mode })
+}
+export function convertWidthToFlexGrow(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const parentFlexDirection =
+    MetadataUtils.findElementByElementPath(metadata, parentPath)?.computedStyle?.[
+      'flexDirection'
+    ] ?? 'row'
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
+  const matches =
+    defaultEither(
+      null,
+      getSimpleAttributeAtPath(right(element.props), PP.create(['style', prop])),
+    ) === '100%'
+
+  if (!matches) {
+    return []
+  }
+  return [
+    deleteProperties('always', elementPath, [PP.create(['style', prop])]),
+    setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
+  ]
+}
+
+export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
+  return ts.length === 0 ? null : ts
 }

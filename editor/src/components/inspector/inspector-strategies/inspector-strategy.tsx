@@ -9,7 +9,7 @@ export type InspectorStrategy = (
   selectedElementPaths: Array<ElementPath>,
 ) => Array<CanvasCommand> | null
 
-export function runStrategies(
+export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
@@ -18,8 +18,7 @@ export function runStrategies(
   for (const strategy of strategies) {
     const commands = strategy(metadata, selectedViews)
     if (commands != null) {
-      dispatch([applyCommandsAction(commands)])
+      return dispatch([applyCommandsAction(commands)])
     }
-    return
   }
 }
