@@ -327,7 +327,7 @@ export const MetadataUtils = {
       element.element,
     )
     {
-      return true
+      return isTextElement
     }
   },
   getYogaSizeProps(
