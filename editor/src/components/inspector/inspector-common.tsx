@@ -278,7 +278,6 @@ type FillFixedInFlexError = 'element is null' | 'computedStyle is null'
 type FillFixedInFlexResult = Either<FillFixedInFlexError, FillFixedInFlex>
 
 /**
- * - [ ] take axis into account
  * - [ ] take flex-direction of parent into account
  */
 
@@ -314,12 +313,15 @@ function flexToFillFixedHug(
   if (dimension == null) {
     return null
   }
-  return match<[string, string, typeof dimension]>([flexGrow, flexShrink, dimension])
-    .with(['0', '0', 'auto'], (): FixedHugFill => ({ type: 'fixed', value: cssNumber(1, null) }))
-    .with(['0', '0', P._], (): FixedHugFill => ({ type: 'fixed', value: dimension as CSSNumber }))
-    .with([P._, P._, 'auto'], (): FixedHugFill => ({ type: 'fill', value: cssNumber(1, null) }))
-    .with([P._, P._, P._], (): FixedHugFill => ({ type: 'fill', value: dimension as CSSNumber }))
-    .exhaustive()
+  return (
+    match<[string, string, typeof dimension]>([flexGrow, flexShrink, dimension])
+      .with(['0', '0', 'auto'], (): FixedHugFill => ({ type: 'fixed', value: cssNumber(1, null) })) // this is a degenerate case
+      .with(['0', '0', P._], (): FixedHugFill => ({ type: 'fixed', value: dimension as CSSNumber }))
+      // when flex-grow is 1, the child acts as fill-container
+      .with([P._, P._, 'auto'], (): FixedHugFill => ({ type: 'fill', value: cssNumber(1, null) }))
+      .with([P._, P._, P._], (): FixedHugFill => ({ type: 'fill', value: dimension as CSSNumber }))
+      .exhaustive()
+  )
 }
 
 export function detectFillFixedInFlex(
