@@ -1,4 +1,4 @@
-import { getComponentFromCode } from '../../core/model/element-template-test-utils'
+import { getComponentFromCode } from '../../core/model/element-template.test-utils'
 import { isJSXElement } from '../../core/shared/element-template'
 import { isEligibleForCollapse } from './text-handling'
 

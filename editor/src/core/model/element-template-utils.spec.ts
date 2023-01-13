@@ -23,7 +23,7 @@ import {
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
-import { getComponentFromCode } from './element-template-test-utils'
+import { getComponentFromCode } from './element-template.test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
