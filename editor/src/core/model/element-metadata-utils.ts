@@ -322,7 +322,12 @@ export const MetadataUtils = {
       PP.depth(elementName.propertyPath) === 0 &&
       (elementName.baseVariable === 'p' ||
         elementName.baseVariable === 'span' ||
-        elementName.baseVariable === 'h1')
+        elementName.baseVariable === 'h1' ||
+        elementName.baseVariable === 'h2' ||
+        elementName.baseVariable === 'h3' ||
+        elementName.baseVariable === 'h4' ||
+        elementName.baseVariable === 'h5' ||
+        elementName.baseVariable === 'h6')
     ) {
       return true
     }
@@ -332,7 +337,16 @@ export const MetadataUtils = {
         if (isJSXElement(elem)) {
           const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
           forEachRight(attrResult, (value) => {
-            if (value === 'p' || value === 'span' || value === 'h1') {
+            if (
+              value === 'p' ||
+              value === 'span' ||
+              value === 'h1' ||
+              value === 'h2' ||
+              value === 'h3' ||
+              value === 'h4' ||
+              value === 'h5' ||
+              value === 'h6'
+            ) {
               textRoleFound = true
             }
           })
