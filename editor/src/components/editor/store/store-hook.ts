@@ -327,7 +327,8 @@ type Substates = {
   derived: { derived: DerivedState }
   restOfEditor: { editor: RestOfEditorState }
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
-  fullOldStore: EditorStorePatched
+  /**@deprecated hurts performance, please avoid using it */
+  fullStore: EditorStorePatched
   theme: ThemeSubstate
   github: GithubSubstate
   builtInDependencies: BuiltInDependenciesSubstate
@@ -391,7 +392,8 @@ export const Substores = {
   ) => {
     return keysEquality(restOfStoreKeys, a, b)
   },
-  fullOldStore: (a: EditorStorePatched, b: EditorStorePatched) => {
+  /** @deprecated hurts performance, please avoid using it */
+  fullStore: (a: EditorStorePatched, b: EditorStorePatched) => {
     return a === b
   },
   theme: (a: ThemeSubstate, b: ThemeSubstate) =>

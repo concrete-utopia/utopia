@@ -21,7 +21,7 @@ export const PinLines = React.memo(() => {
     'PinLines scale',
   )
   const elementsAndFrames = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       const selectedViewsNotHidden = store.editor.selectedViews.filter(
         (sv) => !store.editor.hiddenInstances.includes(sv),

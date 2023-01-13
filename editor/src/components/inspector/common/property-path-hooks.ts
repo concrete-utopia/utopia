@@ -1026,7 +1026,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
   return useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       return selectedViews.current.every((view) => {
         const selectedViewType = withUnderlyingTarget(
@@ -1130,7 +1130,7 @@ export function useInspectorWarningStatus(): boolean {
   const selectedViews = useSelectedViews()
 
   return useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       let hasLayoutInCSSProp = false
       Utils.fastForEach(selectedViews, (view) => {

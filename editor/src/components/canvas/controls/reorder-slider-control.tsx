@@ -62,7 +62,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
     )
 
     const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
-      Substores.fullOldStore,
+      Substores.fullStore,
       (store) => {
         if (target != null) {
           const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(

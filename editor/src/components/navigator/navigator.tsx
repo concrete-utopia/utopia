@@ -120,7 +120,7 @@ export const NavigatorContainerId = 'navigator'
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
       const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets

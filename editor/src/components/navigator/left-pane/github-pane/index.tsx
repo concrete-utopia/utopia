@@ -789,7 +789,7 @@ const BranchNotLoadedBlock = () => {
   )
 
   const currentDependencies = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     projectDependenciesSelector,
     'Project dependencies',
   )

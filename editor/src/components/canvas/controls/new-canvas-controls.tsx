@@ -120,7 +120,7 @@ interface NewCanvasControlsProps {
 
 export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   const canvasControlProps = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => ({
       keysPressed: store.editor.keysPressed,
       editorMode: store.editor.mode,
@@ -243,7 +243,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     allElementProps,
     projectContents,
   } = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       return {
         keysPressed: store.editor.keysPressed,

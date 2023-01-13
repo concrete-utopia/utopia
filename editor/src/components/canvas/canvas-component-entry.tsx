@@ -57,7 +57,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
   const canvasProps = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       return pickUiJsxCanvasProps(
         store.editor,

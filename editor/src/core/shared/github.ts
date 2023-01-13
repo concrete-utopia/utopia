@@ -826,7 +826,7 @@ export function useGithubFileChanges(): GithubFileChanges | null {
   if (storeType !== 'low-priority-store') {
     throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
   }
-  return useEditorState(Substores.fullOldStore, githubFileChangesSelector, 'useGithubFileChanges')
+  return useEditorState(Substores.fullStore, githubFileChangesSelector, 'useGithubFileChanges')
 }
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'

@@ -92,7 +92,7 @@ export const DragOutlineControl = controlForStrategyMemoized((props: DragOutline
 
 function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | null {
   const bounds = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       switch (props.type) {
         case 'frames':

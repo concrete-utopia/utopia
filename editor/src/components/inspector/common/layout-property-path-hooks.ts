@@ -268,7 +268,7 @@ export function usePinToggling(): UsePinTogglingResult {
   })
 
   const elementFrames = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store): ReadonlyArray<Frame> => {
       const jsxElements = selectedViewsRef.current.map((path) => {
         const rootComponents = getJSXComponentsAndImportsForPathFromState(

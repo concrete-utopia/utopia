@@ -247,7 +247,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
   } = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       const rootMetadata = store.editor.jsxMetadata
       let anyComponentsInner: boolean = false
@@ -467,7 +467,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   const { selectedViews } = props
   const dispatch = useDispatch()
   const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
@@ -620,7 +620,7 @@ export const InspectorContextProvider = React.memo<{
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
     useEditorState(
-      Substores.fullOldStore,
+      Substores.fullStore,
       rootComponentsSelector,
       'InspectorContextProvider rootComponents',
     ),

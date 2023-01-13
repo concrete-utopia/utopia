@@ -196,7 +196,7 @@ describe('useSelectorWithCallback', () => {
 
     let rerenderTestHook: () => void
 
-    storeHook.stores.fullOldStore.subscribe(
+    storeHook.stores.fullStore.subscribe(
       (store) => store.editor.selectedViews,
       (newSelectedViews) => {
         if (newSelectedViews != null) {

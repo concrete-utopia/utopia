@@ -254,7 +254,7 @@ const getApplicableStrategiesSelector = createSelector(
 
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     getApplicableStrategiesSelector,
     'useGetApplicableStrategies',
     arrayEquals,
@@ -415,9 +415,9 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback(Substores.fullOldStore, selector, maybeDelayedCallback, selectorName)
+  useSelectorWithCallback(Substores.fullStore, selector, maybeDelayedCallback, selectorName)
   useSelectorWithCallback(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       if (
         store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&

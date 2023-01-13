@@ -150,7 +150,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const supportsChildren = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     // this is not good
     (store) => targetSupportsChildrenSelector(store, props.elementPath),
     'NavigatorItemWrapper targetSupportsChildrenSelector',

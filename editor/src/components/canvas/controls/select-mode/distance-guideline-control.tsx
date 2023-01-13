@@ -86,7 +86,7 @@ const DistanceGuidelineControlInner = React.memo(() => {
   )
 
   const distanceGuidelines = useEditorState(
-    Substores.fullOldStore,
+    Substores.fullStore,
     (store) => {
       let guidelineInfo: Array<{ guidelines: Array<Guideline>; boundingBox: CanvasRectangle }> = []
       fastForEach(boundingBoxes, (boundingBox, index) => {
