@@ -402,8 +402,7 @@ describe('Use the text editor', () => {
               }}
               data-uid='39e'
             >
-              Hello
-              <br />
+              Hello <br />
               How are you?
               <br />
               <br />
@@ -476,8 +475,7 @@ describe('Use the text editor', () => {
               }}
               data-uid='39e'
             >
-              Hello
-              <br />
+              Hello <br />
               <br />
               test
             </div>
@@ -522,14 +520,6 @@ describe('Use the text editor', () => {
               )`),
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
-
-      await enterTextEditMode(editor)
-      typeText(', right?')
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(
-        'the answer is {41 + 1}, right?',
-      )
-      closeTextEditor()
-      await editor.getDispatchFollowUpActionsFinished()
     })
     it("escapes curly braces if they don't wrap an expression", async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')

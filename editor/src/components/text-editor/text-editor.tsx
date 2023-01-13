@@ -82,6 +82,7 @@ export function unescapeHTML(s: string): string {
   const unescaped = unescape(s)
     .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
     .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
+    .replace(/ +$/, '') // prettier fix
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
   // if the string _ends_ with a newline.
@@ -229,7 +230,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        if (elementState === 'new' && content === '') {
+        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
           dispatch([deleteView(elementPath)])
         } else {
           dispatch([updateChildText(elementPath, escapeHTML(content))])

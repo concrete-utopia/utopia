@@ -349,7 +349,7 @@ export function renderCoreElement(
 export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
   switch (c.type) {
     case 'JSX_TEXT_BLOCK':
-      return c.text.trim() // trimming to remove code formatting (prettier)
+      return c.text.replace(/\n +/, '').replace('\n', '') // trimming to remove code formatting (prettier)
     case 'JSX_ELEMENT':
       return c.name.baseVariable === 'br' ? '\n' : null
     case 'JSX_ARBITRARY_BLOCK':
