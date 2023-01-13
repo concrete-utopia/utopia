@@ -1,54 +1,37 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { Dispatch } from 'react'
-import { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
+import React from 'react'
+import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import create from 'zustand'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import {
-  oneLevelNestedEquals,
-  shallowEqual,
-  twoLevelNestedEquals,
-} from '../../../core/shared/equality-utils'
-import { objectMap, omit } from '../../../core/shared/object-utils'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { objectMap } from '../../../core/shared/object-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { DerivedState, EditorStorePatched } from './editor-state'
 import {
-  DerivedState,
-  EditorStateCanvas,
-  EditorStoreFull,
-  EditorStorePatched,
-  EditorStoreShared,
-} from './editor-state'
-import { EditorAction, EditorDispatch } from '../action-types'
-import {
+  BuiltInDependenciesSubstate,
+  CanvasAndMetadataSubstate,
   CanvasOffsetSubstate,
+  canvasOffsetSubstateKeys,
   CanvasSubstate,
   canvasSubstateKeys,
-  DerivedSubstate,
-  DispatchSubstate,
   FocusedElementPathSubstate,
+  focusedElementPathSubstateKeys,
+  GithubSubstate,
+  githubSubstateKeys,
   HighlightedHoveredViewsSubstate,
+  highlightedHoveredViewsSubstateKeys,
   MetadataSubstate,
+  metadataSubstateKeys,
+  projectContentsKeys,
+  ProjectContentSubstate,
   RestOfEditorState,
   restOfEditorStateKeys,
-  ProjectContentSubstate,
   restOfStoreKeys,
   SelectedViewsSubstate,
-  ThemeSubstate,
-  GithubSubstate,
-  emptyGithubSubstate,
-  BuiltInDependenciesSubstate,
-  UserStateSubstate,
-  CanvasAndMetadataSubstate,
-  githubSubstateKeys,
-  highlightedHoveredViewsSubstateKeys,
-  metadataSubstateKeys,
   selectedViewsSubstateKeys,
-  focusedElementPathSubstateKeys,
-  projectContentsKeys,
-  canvasOffsetSubstateKeys,
+  ThemeSubstate,
+  UserStateSubstate,
 } from './store-hook-substore-types'
-import { editorCursorPositionChanged } from 'utopia-vscode-common'
-import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -322,6 +305,37 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Sub
   }, [api, innerCallback, explainMe])
 }
 
+export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
+  let latestStoreState: EditorStorePatched = initialEditorStore
+
+  let substores: UtopiaStores = objectMap((_) => {
+    return create(subscribeWithSelector((set) => initialEditorStore))
+  }, SubstateEqualityFns) as UtopiaStores // bad type
+
+  return {
+    setState: (editorStore: EditorStorePatched): void => {
+      latestStoreState = editorStore
+      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+      objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
+        const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
+        ensureSubstoreTimingExists(key)
+        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
+          substore.setState(editorStore)
+          const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
+          if (MeasureSelectors) {
+            SubstoreTimings.current[key].updateTime =
+              (SubstoreTimings.current[key].updateTime ?? 0) + afterStoreUpdate - beforeStoreUpdate
+          }
+        }
+      }, substores)
+    },
+    getState: (): EditorStorePatched => {
+      return latestStoreState
+    },
+    stores: substores,
+  }
+}
+
 type Substates = {
   metadata: MetadataSubstate
   selectedViews: SelectedViewsSubstate
@@ -410,37 +424,6 @@ export interface StoresAndSetState {
   stores: UtopiaStores
   setState: (store: EditorStorePatched) => void
   getState: () => EditorStorePatched
-}
-
-export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
-  let latestStoreState: EditorStorePatched = initialEditorStore
-
-  let substores: UtopiaStores = objectMap((_) => {
-    return create(subscribeWithSelector((set) => initialEditorStore))
-  }, SubstateEqualityFns) as UtopiaStores // bad type
-
-  return {
-    setState: (editorStore: EditorStorePatched): void => {
-      latestStoreState = editorStore
-      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-      objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
-        const beforeStoreUpdate = MeasureSelectors ? performance.now() : 0
-        ensureSubstoreTimingExists(key)
-        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
-          substore.setState(editorStore)
-          const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
-          if (MeasureSelectors) {
-            SubstoreTimings.current[key].updateTime =
-              (SubstoreTimings.current[key].updateTime ?? 0) + afterStoreUpdate - beforeStoreUpdate
-          }
-        }
-      }, substores)
-    },
-    getState: (): EditorStorePatched => {
-      return latestStoreState
-    },
-    stores: substores,
-  }
 }
 
 function tailoredEqualFunctions<K extends keyof Substates>(
