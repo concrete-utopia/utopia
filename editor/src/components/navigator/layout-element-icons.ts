@@ -174,6 +174,7 @@ export function createElementIconPropsFromMetadata(
         category: 'element',
         type: 'pure-text',
         width: 18,
+
         height: 18,
       }
     }

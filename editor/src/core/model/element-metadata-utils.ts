@@ -14,6 +14,7 @@ import {
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
+  textElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
 import {
@@ -316,47 +317,17 @@ export const MetadataUtils = {
     return MetadataUtils.isButtonFromMetadata(instance)
   },
   isTextFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (
-      elementName != null &&
-      PP.depth(elementName.propertyPath) === 0 &&
-      (elementName.baseVariable === 'p' ||
-        elementName.baseVariable === 'span' ||
-        elementName.baseVariable === 'h1' ||
-        elementName.baseVariable === 'h2' ||
-        elementName.baseVariable === 'h3' ||
-        elementName.baseVariable === 'h4' ||
-        elementName.baseVariable === 'h5' ||
-        elementName.baseVariable === 'h6')
-    ) {
-      return true
+    if (element == null) {
+      return false
     }
-    let textRoleFound: boolean = false
-    if (element != null) {
-      forEachRight(element.element, (elem) => {
-        if (isJSXElement(elem)) {
-          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
-          forEachRight(attrResult, (value) => {
-            if (
-              value === 'p' ||
-              value === 'span' ||
-              value === 'h1' ||
-              value === 'h2' ||
-              value === 'h3' ||
-              value === 'h4' ||
-              value === 'h5' ||
-              value === 'h6'
-            ) {
-              textRoleFound = true
-            }
-          })
-        }
-      })
-    }
-    if (textRoleFound) {
+    const isTextElement = foldEither(
+      (elementString) => textElements.includes(elementString),
+      (elementInstance) =>
+        isJSXElement(elementInstance) && textElements.includes(elementInstance.name.baseVariable),
+      element.element,
+    )
+    {
       return true
-    } else {
-      return element?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'span'
     }
   },
   getYogaSizeProps(
