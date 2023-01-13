@@ -52,9 +52,12 @@ const reValidInlineJSXExpression = new RegExp(
   'g',
 )
 
+// canvas → editor
 export function escapeHTML(s: string): string {
   return (
     s
+      // a trailing newline is added by contenteditable for multiline strings, so get rid of it
+      .replace(/\n$/, '')
       // clean up angular braces
       .replace('<', entities.lesserThan)
       .replace('>', entities.greaterThan)
@@ -68,11 +71,15 @@ export function escapeHTML(s: string): string {
   )
 }
 
+// editor → canvas
 export function unescapeHTML(s: string): string {
-  return unescape(s)
-    .replace(/<br \/>/g, '\n')
+  const unescaped = unescape(s)
     .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
     .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
+
+  // We need to add a trailing newline so that the contenteditable can render and reach the last newline
+  // if the string _ends_ with a newline.
+  return unescaped + '\n'
 }
 
 const handleShortcut = (
@@ -207,7 +214,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         if (elementState === 'new' && content === '') {
           dispatch([deleteView(elementPath)])
         } else {
-          dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
+          dispatch([updateChildText(elementPath, escapeHTML(content))])
         }
       }
     }

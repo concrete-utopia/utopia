@@ -349,7 +349,7 @@ export function renderCoreElement(
 export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
   switch (c.type) {
     case 'JSX_TEXT_BLOCK':
-      return c.text
+      return c.text.trim() // trimming to remove code formatting (prettier)
     case 'JSX_ELEMENT':
       return c.name.baseVariable === 'br' ? '\n' : null
     case 'JSX_ARBITRARY_BLOCK':
@@ -482,7 +482,7 @@ function renderJSXElement(
       const textEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
-        text: textContent.trim(),
+        text: textContent,
         component: FinalElement,
         passthroughProps: finalPropsIcludingElementPath,
       }
