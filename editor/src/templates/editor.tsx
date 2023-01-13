@@ -66,7 +66,6 @@ import {
   OriginalMainEditorStateContext,
   UtopiaStores,
   UtopiaStoreAPI,
-  StoresAndSetState,
 } from '../components/editor/store/store-hook'
 import { RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { LinterResultMessage } from '../core/workers/linter/linter-worker'
@@ -226,9 +225,9 @@ function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDisp
 
 export class Editor {
   storedState: EditorStoreFull
-  utopiaStoreHook: StoresAndSetState
-  canvasStore: StoresAndSetState
-  lowPriorityStore: StoresAndSetState
+  utopiaStoreHook: UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
@@ -683,9 +682,9 @@ let canvasUpdateId: number = 0
 
 export const EditorRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
-  mainStore: StoresAndSetState
-  canvasStore: StoresAndSetState
-  lowPriorityStore: StoresAndSetState
+  mainStore: UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
 }> = ({
@@ -719,9 +718,9 @@ EditorRoot.displayName = 'Utopia Editor Root'
 
 export const HotRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
-  mainStore: StoresAndSetState
-  canvasStore: StoresAndSetState
-  lowPriorityStore: StoresAndSetState
+  mainStore: UtopiaStoreAPI
+  canvasStore: UtopiaStoreAPI
+  lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
 }> = hot(
@@ -742,9 +741,9 @@ HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   dispatch: EditorDispatch,
-  mainStore: StoresAndSetState,
-  canvasStore: StoresAndSetState,
-  lowPriorityStore: StoresAndSetState,
+  mainStore: UtopiaStoreAPI,
+  canvasStore: UtopiaStoreAPI,
+  lowPriorityStore: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
 ): Promise<void> {

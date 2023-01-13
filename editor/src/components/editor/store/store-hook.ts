@@ -42,7 +42,13 @@ import {
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
 
-export type UtopiaStoreAPI = StoresAndSetState
+export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
+
+export type UtopiaStoreAPI = {
+  stores: UtopiaStores
+  setState: (store: EditorStorePatched) => void
+  getState: () => EditorStorePatched
+}
 
 export const OriginalMainEditorStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
@@ -53,7 +59,7 @@ CanvasStateContext.displayName = 'CanvasStateContext'
 export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 LowPriorityStateContext.displayName = 'LowPriorityStateContext'
 
-export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
+export const createStoresAndState = (initialEditorStore: EditorStorePatched): UtopiaStoreAPI => {
   let latestStoreState: EditorStorePatched = initialEditorStore
 
   let substores: UtopiaStores = objectMap((_) => {
@@ -277,13 +283,6 @@ export const Substores = {
 export const SubstateEqualityFns: {
   [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
 } = Substores
-
-export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
-export interface StoresAndSetState {
-  stores: UtopiaStores
-  setState: (store: EditorStorePatched) => void
-  getState: () => EditorStorePatched
-}
 
 function tailoredEqualFunctions<K extends keyof Substates>(
   editorStore: Substates[K],

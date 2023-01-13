@@ -115,7 +115,7 @@ import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from './canvas-strategies/canvas-strategies'
-import { createStoresAndState, StoresAndSetState, UtopiaStoreAPI } from '../editor/store/store-hook'
+import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -332,17 +332,17 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
-  const canvasStoreHook: StoresAndSetState = createStoresAndState(
+  const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
-  const lowPriorityStoreHook: StoresAndSetState = createStoresAndState(
+  const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
   )
 
-  const storeHook: StoresAndSetState = createStoresAndState(
+  const storeHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'editor-store'),
   )
 
