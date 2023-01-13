@@ -61,6 +61,32 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
   })
+
+  it('when updating flex direction, child sizes are hardcoded', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithFillContainerChildren(),
+      'await-first-dom-report',
+    )
+    const div = await selectDiv(editor)
+    await clickOn(editor, 'column')
+
+    expect(div.style.flexDirection).toEqual('column')
+
+    const blue = editor.renderedDOM.getByTestId('blue')
+    expect(blue.style.flex).toEqual('')
+    expect(blue.style.width).toEqual('333px')
+    expect(blue.style.height).toEqual('170px')
+
+    const red = editor.renderedDOM.getByTestId('red')
+    expect(red.style.flex).toEqual('')
+    expect(red.style.width).toEqual('333px')
+    expect(red.style.height).toEqual('211px')
+
+    const green = editor.renderedDOM.getByTestId('green')
+    expect(green.style.flex).toEqual('')
+    expect(green.style.width).toEqual('333px')
+    expect(green.style.height).toEqual('188px')
+  })
 })
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
@@ -120,4 +146,57 @@ function project(): string {
       </Storyboard>
     )
     `
+}
+
+function projectWithFillContainerChildren(): string {
+  return `import * as React from 'react'
+  import { Storyboard } from 'utopia-api'
+  
+  export var storyboard = (
+    <Storyboard data-uid='0cd'>
+      <div
+        data-testid='mydiv'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 38,
+          top: 159,
+          width: 999,
+          height: 634,
+          display: 'flex',
+          flexDirection: 'row',
+        }}
+        data-uid='9f5'
+      >
+        <div
+          data-testid='blue'
+          style={{
+            backgroundColor: '#00acff',
+            height: 170,
+            flexGrow: '1',
+          }}
+          data-uid='b5c'
+        />
+        <div
+          data-testid='red'
+          style={{
+            backgroundColor: '#fe4400',
+            height: 211,
+            flexGrow: '1',
+          }}
+          data-uid='e8f'
+        />
+        <div
+          data-testid='green'
+          style={{
+            backgroundColor: '#669f39',
+            height: 188,
+            flexGrow: '1',
+          }}
+          data-uid='e8d'
+        />
+      </div>
+    </Storyboard>
+  )
+  `
 }
