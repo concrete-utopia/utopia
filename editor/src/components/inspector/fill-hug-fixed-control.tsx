@@ -33,7 +33,10 @@ import {
   setPropFixedStrategies,
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
-import { runStrategies, InspectorStrategy } from './inspector-strategies/inspector-strategy'
+import {
+  executeFirstApplicableStrategy,
+  InspectorStrategy,
+} from './inspector-strategies/inspector-strategy'
 
 export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 
@@ -228,7 +231,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
-      runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        strategy,
+      )
     },
     [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
   )
@@ -236,7 +244,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onAdjustHeight = React.useCallback(
     (value: number | EmptyInputValue) => {
       if (typeof value === 'number') {
-        runStrategies(
+        executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
@@ -253,7 +261,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onAdjustWidth = React.useCallback(
     (value: number | EmptyInputValue) => {
       if (typeof value === 'number') {
-        runStrategies(
+        executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
@@ -271,7 +279,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
-      runStrategies(dispatch, metadataRef.current, selectedViewsRef.current, strategy)
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        strategy,
+      )
     },
     [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
