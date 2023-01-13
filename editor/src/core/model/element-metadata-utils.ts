@@ -315,6 +315,36 @@ export const MetadataUtils = {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isButtonFromMetadata(instance)
   },
+  isTextFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
+    if (
+      elementName != null &&
+      PP.depth(elementName.propertyPath) === 0 &&
+      (elementName.baseVariable === 'p' ||
+        elementName.baseVariable === 'span' ||
+        elementName.baseVariable === 'h1')
+    ) {
+      return true
+    }
+    let textRoleFound: boolean = false
+    if (element != null) {
+      forEachRight(element.element, (elem) => {
+        if (isJSXElement(elem)) {
+          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
+          forEachRight(attrResult, (value) => {
+            if (value === 'p' || value === 'span' || value === 'h1') {
+              textRoleFound = true
+            }
+          })
+        }
+      })
+    }
+    if (textRoleFound) {
+      return true
+    } else {
+      return element?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'span'
+    }
+  },
   getYogaSizeProps(
     target: ElementPath,
     metadata: ElementInstanceMetadataMap,

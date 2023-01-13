@@ -39,8 +39,8 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           <div
             style={{
               position: 'absolute',
-              left: -5,
-              top: 3,
+              left: -8,
+              top: 2,
               color: '#ff00ff',
               fontSize: 11,
               fontWeight: 600,
