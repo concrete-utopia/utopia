@@ -715,7 +715,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
 
-          const isEditableText = MetadataUtils.targetTextEditable(
+          const isEditableText = MetadataUtils.targetTextEditableAndHasText(
             editorStoreRef.current.editor.jsxMetadata,
             foundTarget.elementPath,
           )

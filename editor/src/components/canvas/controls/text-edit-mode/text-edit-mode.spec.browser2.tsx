@@ -50,8 +50,32 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Clicking on selected text editable but empty element should not enter text edit mode', async () => {
+      const editor = await renderTestEditorWithCode(projectWithEmptyText, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
     it('Entering text edit mode with pressing enter on a text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e'))
+      pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it('Entering text edit mode with pressing enter on a text editable but empty selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithEmptyText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
       pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
@@ -127,6 +151,28 @@ export var storyboard = (
     >
       Hello
     </div>
+  </Storyboard>
+)
+`)
+
+const projectWithEmptyText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    />
   </Storyboard>
 )
 `)
