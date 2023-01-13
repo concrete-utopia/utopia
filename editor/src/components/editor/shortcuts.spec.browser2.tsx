@@ -1,8 +1,17 @@
-import { ctrlModifier } from '../../utils/modifiers'
+import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import * as EP from '../../core/shared/element-path'
+import { cmdModifier, ctrlModifier } from '../../utils/modifiers'
 import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { keyDown, mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import {
+  getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestAppUID,
+  TestSceneUID,
+} from '../canvas/ui-jsx.test-utils'
+import { selectComponents } from './actions/meta-actions'
 
 const TestIdOne = 'one'
 const TestIdTwo = 'two'
@@ -84,3 +93,180 @@ import { Scene, Storyboard } from 'utopia-api'
   </Storyboard>
 )
 `
+
+describe('global shortcuts to set properties', () => {
+  it('cmd + b toggles text to bold', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('b', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontWeight: 'bold' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + b toggles text to normal if it was bold', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontWeight: 'bold' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('b', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontWeight: 'normal' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + i toggles text to italic', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('i', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontStyle: 'italic' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + i toggles text to normal if it was italic', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontStyle: 'italic' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('i', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ fontStyle: 'normal' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + u toggles text to underline', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('u', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'underline' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('cmd + u toggles text to none if it was underlined', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'underline' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    pressKey('u', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ textDecoration: 'none' }}
+            data-uid='bbb'
+          >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+})

@@ -89,6 +89,10 @@ import {
   INSERT_DIV_SHORTCUT,
   OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
   TEXT_EDIT_MODE,
+  TOGGLE_TEXT_BOLD,
+  TOGGLE_TEXT_ITALIC,
+  TOGGLE_TEXT_UNDERLINE,
+  TOGGLE_TEXT_STRIKE_THROUGH,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -98,6 +102,12 @@ import {
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
 import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  toggleTextBold,
+  toggleTextItalic,
+  toggleTextStrikeThrough,
+  toggleTextUnderline,
+} from '../text-editor/text-editor-shortcut-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -709,6 +719,38 @@ export function handleKeyDown(
           ),
         )
         return actions
+      },
+      [TOGGLE_TEXT_BOLD]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextBold(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_ITALIC]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextItalic(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_UNDERLINE]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextUnderline(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_STRIKE_THROUGH]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
+            })
+          : []
       },
     })
   }

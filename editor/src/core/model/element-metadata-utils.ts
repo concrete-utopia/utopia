@@ -869,6 +869,22 @@ export const MetadataUtils = {
       .some((e) => e !== 'br')
     return children.length === 0 || !hasNonEditableChildren
   },
+  targetTextEditableAndHasText(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): boolean {
+    if (!MetadataUtils.targetTextEditable(metadata, target)) {
+      return false
+    }
+
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+
+    const textContent = MetadataUtils.getTextContentOfElement(element)
+    return textContent != null && textContent.length > 0
+  },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
       if (element.element.value.children.length === 1) {
