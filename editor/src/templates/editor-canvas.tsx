@@ -758,6 +758,21 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     event.preventDefault()
   }
 
+  updateCanvasOffsetViaScroll = (event: React.UIEvent<HTMLElement, UIEvent>): void => {
+    if (this.canvasWrapperRef != null) {
+      const scrollDelta = {
+        x: this.canvasWrapperRef.scrollLeft / this.props.model.scale,
+        y: this.canvasWrapperRef.scrollTop / this.props.model.scale,
+      } as CanvasVector
+
+      // Reset wrapper scroll first
+      this.canvasWrapperRef.scrollTo({ left: 0, top: 0 })
+
+      // Update canvasOffset
+      this.props.dispatch([CanvasActions.scrollCanvas(scrollDelta)], 'canvas')
+    }
+  }
+
   componentDidMount() {
     if (this.canvasWrapperRef != null) {
       // Due to the introduction of this https://www.chromestatus.com/features/6662647093133312 combined with
@@ -1064,6 +1079,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               'canvas',
             )
           }
+        },
+        onScroll: (event) => {
+          this.updateCanvasOffsetViaScroll(event)
         },
       },
       nodeConnectorsDiv,
