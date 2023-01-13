@@ -35,11 +35,11 @@ import {
   SelectedViewsSubstate,
   ThemeSubstate,
   GithubSubstate,
-  GithubSubstateKeys,
   emptyGithubSubstate,
   BuiltInDependenciesSubstate,
   UserStateSubstate,
   CanvasAndMetadataSubstate,
+  githubSubstateKeys,
 } from './store-hook-substore-types'
 import { editorCursorPositionChanged } from 'utopia-vscode-common'
 import { BuiltInDependencies } from 'src/core/es-modules/package-manager/built-in-dependencies-list'
@@ -325,7 +325,7 @@ type Substates = {
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
   derived: { derived: DerivedState }
-  restOfEditor: { editor: RestOfEditorState }
+  restOfEditor: RestOfEditorState
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
   /**@deprecated hurts performance, please avoid using it */
   fullStore: EditorStorePatched
@@ -336,10 +336,6 @@ type Substates = {
 }
 
 type StoreKey = keyof Substates
-
-const githubSubstateKeys: Array<GithubSubstateKeys> = Object.keys(
-  emptyGithubSubstate.editor,
-) as Array<GithubSubstateKeys>
 
 export const Substores = {
   metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
@@ -386,7 +382,7 @@ export const Substores = {
   derived: (a: { derived: DerivedState }, b: { derived: DerivedState }) => {
     return a.derived === b.derived
   },
-  restOfEditor: (a: { editor: RestOfEditorState }, b: { editor: RestOfEditorState }) => {
+  restOfEditor: (a: RestOfEditorState, b: RestOfEditorState) => {
     return keysEquality(restOfEditorStateKeys, a.editor, b.editor)
   },
   restOfStore: (

@@ -173,7 +173,7 @@ import {
   TreeConflicts,
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
-import { ThemeSubstate } from './store-hook-substore-types'
+import type { ThemeSubstate } from './store-hook-substore-types'
 
 const ObjectPathImmutable: any = OPI
 
