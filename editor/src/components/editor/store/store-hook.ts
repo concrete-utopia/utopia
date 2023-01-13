@@ -415,7 +415,7 @@ export interface StoresAndSetState {
 export const createStoresAndState = (initialEditorStore: EditorStorePatched): StoresAndSetState => {
   let latestStoreState: EditorStorePatched = initialEditorStore
 
-  let substores: UtopiaStores = objectMap((_, key) => {
+  let substores: UtopiaStores = objectMap((_) => {
     return create(subscribeWithSelector((set) => initialEditorStore))
   }, SubstateEqualityFns) as UtopiaStores // bad type
 
