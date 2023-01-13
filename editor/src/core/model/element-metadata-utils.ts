@@ -853,12 +853,15 @@ export const MetadataUtils = {
       }
     }
   },
-  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
+  hasNonTextEditableChildren(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): boolean {
     if (target == null) {
       return false
     }
     const children = MetadataUtils.getChildren(metadata, target)
-    const hasNonEditableChildren = children
+    return children
       .map((c) =>
         foldEither(
           () => null,
@@ -867,23 +870,25 @@ export const MetadataUtils = {
         ),
       )
       .some((e) => e !== 'br')
+  },
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
+    if (target == null) {
+      return false
+    }
+    const children = MetadataUtils.getChildren(metadata, target)
+    const hasNonEditableChildren = MetadataUtils.hasNonTextEditableChildren(metadata, target)
     return children.length === 0 || !hasNonEditableChildren
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
-    if (!MetadataUtils.targetTextEditable(metadata, target)) {
+    if (target == null) {
       return false
     }
-
-    const element = MetadataUtils.findElementByElementPath(metadata, target)
-    if (element == null) {
-      return false
-    }
-
-    const textContent = MetadataUtils.getTextContentOfElement(element)
-    return textContent != null && textContent.length > 0
+    const children = MetadataUtils.getChildren(metadata, target)
+    const hasNonEditableChildren = MetadataUtils.hasNonTextEditableChildren(metadata, target)
+    return children.length > 0 && !hasNonEditableChildren
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
