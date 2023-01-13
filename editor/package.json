@@ -194,6 +194,8 @@
     "semver": "7.3.2",
     "settle-promise": "1.0.0",
     "sha.js": "2.4.11",
+    "slate": "^0.88.1",
+    "slate-react": "^0.88.0",
     "source-map": "0.5.6",
     "stream-browserify": "^3.0.0",
     "string-hash": "1.1.3",

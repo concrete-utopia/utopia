@@ -1,9 +1,20 @@
 import { unescape } from 'he'
 import React from 'react'
+import { createEditor, Descendant, Node } from 'slate'
+import {
+  DefaultElement,
+  DefaultLeaf,
+  Editable,
+  RenderElementProps,
+  RenderLeafProps,
+  Slate,
+  withReact,
+} from 'slate-react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
+import { NO_OP } from '../../core/shared/utils'
 import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -202,9 +213,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
 
-  const [firstTextProp] = React.useState(text)
-
   const myElement = React.useRef<HTMLSpanElement>(null)
+
+  const contentRef = React.useRef(props.text)
 
   React.useEffect(() => {
     const currentElement = myElement.current
@@ -218,25 +229,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (element?.globalFrame?.width === 0) {
       currentElement.style.minWidth = '0.5px'
     }
-
-    return () => {
-      const content = currentElement.textContent
-      if (content != null) {
-        if (elementState === 'new' && content === '') {
-          dispatch([deleteView(elementPath)])
-        } else {
-          dispatch([updateChildText(elementPath, escapeHTML(content).replace(/\n/g, '<br />'))])
-        }
-      }
-    }
   }, [dispatch, elementPath, elementState, metadataRef])
-
-  React.useEffect(() => {
-    if (myElement.current == null) {
-      return
-    }
-    myElement.current.textContent = firstTextProp
-  }, [firstTextProp])
 
   React.useEffect(() => {
     if (myElement.current == null) {
@@ -289,9 +282,24 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
+  const onChange = React.useCallback(
+    (value: Array<Descendant>) => {
+      const content = value.map((v) => Node.string(v)).join('<br />')
+      if (content !== contentRef.current) {
+        contentRef.current = content
+        dispatch([updateChildText(props.elementPath, content)])
+      }
+    },
+    [props.elementPath, dispatch],
+  )
+
   const editorProps = {
     ref: myElement,
     id: TextEditorSpanId,
+    style: {
+      width: '100%',
+      height: '100%',
+    },
     onPaste: stopPropagation,
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
@@ -312,7 +320,36 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
+  const lines = props.text.split('<br />')
+  const nodes = lines.map((line) => ({
+    type: 'paragraph',
+    children: [{ text: line }],
+  }))
+
+  const editor = withReact(createEditor())
+
+  const renderElement = React.useCallback(
+    (innerProps: RenderElementProps) => <DefaultElement {...innerProps} />,
+    [],
+  )
+  const renderLeaf = React.useCallback(
+    (innerProps: RenderLeafProps) => <DefaultLeaf {...innerProps} />,
+    [],
+  )
+
+  return React.createElement(
+    component,
+    filteredPassthroughProps,
+    <Slate editor={editor} value={nodes} onChange={onChange}>
+      <Editable
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+        spellCheck
+        autoFocus
+        {...editorProps}
+      />
+    </Slate>,
+  )
 })
 
 async function setSelectionToOffset(
