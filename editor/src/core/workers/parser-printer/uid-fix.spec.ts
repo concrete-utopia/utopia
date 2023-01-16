@@ -162,6 +162,47 @@ describe('fixParseSuccessUIDs', () => {
     `)
   })
 
+  it('multiple uid changes but the number of elements stays the same', () => {
+    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
+    const updatedThreeViews = lintAndParse(
+      'test.js',
+      fileWithTwoDuplicatedViewsWithChanges,
+      asParseSuccessOrNull(threeViews),
+      emptySet(),
+    )
+    expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
+  })
+
+  it('re-ordered elements should re-order the uid tree', () => {
+    const beforeReOrder = lintAndParse('test.js', fileWithOneInsertedView, null, emptySet())
+    const afterReOrder = lintAndParse(
+      'test.js',
+      fileWithOneInsertedViewReOrdered,
+      asParseSuccessOrNull(beforeReOrder),
+      emptySet(),
+    )
+    expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
+      "4ed
+        random-uuid
+      001
+        a2e
+        f6d
+      storyboard
+        scene
+          component"
+    `)
+    expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
+      "4ed
+        random-uuid
+      001
+        f6d
+        a2e
+      storyboard
+        scene
+          component"
+    `)
+  })
+
   it('uids should match including root element when root element changes', () => {
     const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet())
     const secondResult = lintAndParse(
@@ -335,6 +376,27 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const fileWithOneInsertedViewReOrdered = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+      <View
+        style={{
+          width: 100,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
 const fileWithTwoDuplicatedViews = createFileText(`
 export var SameFileApp = (props) => {
   return (
@@ -385,6 +447,35 @@ export var SameFileApp = (props) => {
       <View
         style={{
           width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const fileWithTwoDuplicatedViewsWithChanges = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+          height: 100,
+        }}
+      />
+      <View
+        style={{
+          width: 191,
+          height: 200,
+        }}
+      />
+      <View
+        style={{
+          width: 191,
+          height: 300,
         }}
       />
     </div>
