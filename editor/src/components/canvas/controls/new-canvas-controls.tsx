@@ -48,7 +48,6 @@ import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
-import { CursorComponent } from './select-mode/cursor-component'
 import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -424,7 +423,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
         </>,
       )}
-      <CursorComponent />
     </div>
   )
 }

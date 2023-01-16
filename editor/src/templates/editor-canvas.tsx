@@ -101,6 +101,7 @@ import Utils from '../utils/utils'
 import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
+import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1087,6 +1088,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
+      React.createElement(CursorComponent, {}),
       <EditorCommon
         mouseDown={this.handleMouseDown}
         mouseUp={this.handleMouseUp}
