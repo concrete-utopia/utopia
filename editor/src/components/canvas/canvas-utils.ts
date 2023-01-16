@@ -208,6 +208,7 @@ import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -571,19 +572,19 @@ export function updateFramesOfScenesAndComponents(
             }
 
             propsToSkip.push(
-              stylePropPathMappingFn('left', ['style']),
-              stylePropPathMappingFn('top', ['style']),
-              stylePropPathMappingFn('right', ['style']),
-              stylePropPathMappingFn('bottom', ['style']),
-              stylePropPathMappingFn('width', ['style']),
-              stylePropPathMappingFn('height', ['style']),
-              stylePropPathMappingFn('minWidth', ['style']),
-              stylePropPathMappingFn('minHeight', ['style']),
-              stylePropPathMappingFn('maxWidth', ['style']),
-              stylePropPathMappingFn('maxHeight', ['style']),
-              stylePropPathMappingFn('flexBasis', ['style']),
-              stylePropPathMappingFn('flexGrow', ['style']),
-              stylePropPathMappingFn('flexShrink', ['style']),
+              stylePropPathMappingFn('left', styleStringInArray),
+              stylePropPathMappingFn('top', styleStringInArray),
+              stylePropPathMappingFn('right', styleStringInArray),
+              stylePropPathMappingFn('bottom', styleStringInArray),
+              stylePropPathMappingFn('width', styleStringInArray),
+              stylePropPathMappingFn('height', styleStringInArray),
+              stylePropPathMappingFn('minWidth', styleStringInArray),
+              stylePropPathMappingFn('minHeight', styleStringInArray),
+              stylePropPathMappingFn('maxWidth', styleStringInArray),
+              stylePropPathMappingFn('maxHeight', styleStringInArray),
+              stylePropPathMappingFn('flexBasis', styleStringInArray),
+              stylePropPathMappingFn('flexGrow', styleStringInArray),
+              stylePropPathMappingFn('flexShrink', styleStringInArray),
             )
           }
           break
@@ -625,7 +626,7 @@ export function updateFramesOfScenesAndComponents(
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
-              const value = getLayoutProperty(p, right(elementAttributes), ['style'])
+              const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
               return isLeft(value) || value.value != null
             })
 
@@ -664,7 +665,7 @@ export function updateFramesOfScenesAndComponents(
               const absoluteValue = fullFrame[propToUpdate]
               const previousValue = currentFullFrame == null ? null : currentFullFrame[propToUpdate]
 
-              const propPathToUpdate = stylePropPathMappingFn(propToUpdate, ['style'])
+              const propPathToUpdate = stylePropPathMappingFn(propToUpdate, styleStringInArray)
               const existingProp = getLayoutProperty(propToUpdate, right(elementAttributes), [
                 'style',
               ])
@@ -698,10 +699,10 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             if (p !== 'width' && p !== 'height') {
-              const value = getLayoutProperty(p, right(element.props), ['style'])
+              const value = getLayoutProperty(p, right(element.props), styleStringInArray)
               if (isLeft(value) || value.value != null) {
                 frameProps[p] = cssNumberAsNumberIfPossible(value.value)
-                propsToSkip.push(stylePropPathMappingFn(p, ['style']))
+                propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
               }
             }
           })
@@ -735,10 +736,10 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(element.props), ['style'])
+            const value = getLayoutProperty(p, right(element.props), styleStringInArray)
             if (isLeft(value) || value.value != null) {
               frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
-              propsToSkip.push(stylePropPathMappingFn(p, ['style']))
+              propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
             }
           })
 
@@ -806,7 +807,7 @@ export function updateFramesOfScenesAndComponents(
               : PinningAndFlexPoints
           let propsToRemove: Array<PropertyPath> = [...propsToUnset]
           fastForEach(propsToMaybeRemove, (prop) => {
-            const propPath = stylePropPathMappingFn(prop, ['style'])
+            const propPath = stylePropPathMappingFn(prop, styleStringInArray)
             if (!PP.contains(propsToNotDelete, propPath)) {
               propsToRemove.push(propPath)
             }
@@ -846,7 +847,7 @@ export function updateFramesOfScenesAndComponents(
 
     // Round the frame details.
     workingEditorState = modifyUnderlyingForOpenFile(staticTarget, workingEditorState, (attrs) =>
-      roundJSXElementLayoutValues(['style'], attrs),
+      roundJSXElementLayoutValues(styleStringInArray, attrs),
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -871,7 +872,7 @@ function updateFrameValueForProp(
     const existingProp = frameProps[framePoint]
     if (existingProp == null) {
       return {
-        path: stylePropPathMappingFn(framePoint, ['style']),
+        path: stylePropPathMappingFn(framePoint, styleStringInArray),
         value: jsxAttributeValue(delta, emptyComments),
       }
     }
@@ -896,12 +897,12 @@ function updateFrameValueForProp(
           valueToUse = `${percentValue + delta}%`
         }
         return {
-          path: stylePropPathMappingFn(framePoint, ['style']),
+          path: stylePropPathMappingFn(framePoint, styleStringInArray),
           value: jsxAttributeValue(valueToUse, emptyComments),
         }
       } else if (pinIsUnitlessOrPx) {
         return {
-          path: stylePropPathMappingFn(framePoint, ['style']),
+          path: stylePropPathMappingFn(framePoint, styleStringInArray),
           value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
         }
       }
@@ -2062,7 +2063,6 @@ export function getReparentTarget(
   } else {
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       projectContents,
-      openFile ?? null,
       componentMeta,
       possibleNewParent,
     )
@@ -2239,7 +2239,7 @@ export function moveTemplate(
               parentFrame,
               newParentLayoutSystem,
               newParentMainAxis,
-              ['style'],
+              styleStringInArray,
               editorState.allElementProps,
             )
             const updatedUnderlyingElement = findElementAtPath(
@@ -3279,7 +3279,7 @@ export function getResizeOptions(
   }
 }
 
-export const MoveIntoDragThreshold = 3
+export const MoveIntoDragThreshold = 2
 
 export function dragExceededThreshold(
   canvasPosition: CanvasPoint,
@@ -3310,7 +3310,7 @@ export function getObservableValueForLayoutProp(
       case 'flexBasis':
       case 'flexGrow':
       case 'flexShrink':
-        const path = stylePropPathMappingFn(layoutProp, ['style'])
+        const path = stylePropPathMappingFn(layoutProp, styleStringInArray)
         return Utils.pathOr(null, PP.getElements(path), elementProps)
       case 'marginTop':
         return elementMetadata.specialSizeMeasurements.margin.top

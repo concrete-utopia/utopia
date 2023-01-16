@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
 import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
@@ -45,11 +45,15 @@ const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
 })
 
 export const CodeEditorWrapper = React.memo(() => {
-  const selectedProps = useEditorState((store) => {
-    return {
-      vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
-    }
-  }, 'CodeEditorWrapper')
+  const selectedProps = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
+      }
+    },
+    'CodeEditorWrapper',
+  )
 
   return <VSCodeIframeContainer projectID={selectedProps.vscodeBridgeId} />
 })

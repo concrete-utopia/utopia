@@ -1,5 +1,3 @@
-import create from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
@@ -86,12 +84,6 @@ function createEditorStore(
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
-  const spyCollector = emptyUiJsxCanvasContextData()
-
-  const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, storeHook.getState(), spyCollector)
-    storeHook.setState(result)
-  }
 
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
@@ -114,12 +106,9 @@ function createEditorStore(
       new FakeWatchdogWorker(),
     ),
     persistence: DummyPersistenceMachine,
-    dispatch: dispatch,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
-
-  const storeHook = create<EditorStoreFull>(subscribeWithSelector((set) => initialEditorStore))
 
   return initialEditorStore
 }
@@ -139,6 +128,7 @@ describe('interactionCancel', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        'zero-drag-not-permitted',
       ),
     )
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
@@ -172,6 +162,7 @@ describe('interactionStart', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        'zero-drag-not-permitted',
       ),
     )
     const actualResult = interactionStart(
@@ -225,6 +216,7 @@ describe('interactionStart', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -266,6 +258,7 @@ describe('interactionUpdate', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      'zero-drag-not-permitted',
     )
 
     const editorStore = createEditorStore(
@@ -367,6 +360,7 @@ describe('interactionUpdate', () => {
         "prevDrag": null,
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -409,6 +403,7 @@ describe('interactionHardReset', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      'zero-drag-not-permitted',
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -507,6 +502,7 @@ describe('interactionHardReset', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -548,6 +544,7 @@ describe('interactionUpdate with user changed strategy', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       boundingArea(),
+      'zero-drag-not-permitted',
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -660,6 +657,7 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "spacePressed": false,
         "type": "DRAG",
+        "zeroDragPermitted": "zero-drag-not-permitted",
       }
     `)
   })
@@ -743,6 +741,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         boundingArea(),
+        'zero-drag-not-permitted',
       ),
     )
 
@@ -806,7 +805,12 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch(
       [
         CanvasActions.createInteractionSession(
-          createInteractionViaMouse(canvasPoint({ x: 0, y: 0 }), emptyModifiers, boundingArea()),
+          createInteractionViaMouse(
+            canvasPoint({ x: 0, y: 0 }),
+            emptyModifiers,
+            boundingArea(),
+            'zero-drag-not-permitted',
+          ),
         ),
       ],
       true,

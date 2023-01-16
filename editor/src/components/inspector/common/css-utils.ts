@@ -72,6 +72,7 @@ import {
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -3871,10 +3872,14 @@ export function toggleStylePropPaths(
   toggleFn: (attribute: JSXAttribute) => JSXAttribute,
 ): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
-    const styleProp = getJSXAttributeAtPath(element.props, PP.create(['style']))
+    const styleProp = getJSXAttributeAtPath(element.props, PP.create(styleStringInArray))
     const attribute = styleProp.attribute
     if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
-      const newProps = setJSXValueAtPath(element.props, PP.create(['style']), toggleFn(attribute))
+      const newProps = setJSXValueAtPath(
+        element.props,
+        PP.create(styleStringInArray),
+        toggleFn(attribute),
+      )
       if (isRight(newProps)) {
         return { ...element, props: newProps.value }
       }
@@ -4836,10 +4841,12 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
   }
 }
 
-const parseMetadataValue = parseValueFactory(elementPropertiesParsers)
-const parseCSSValue = parseValueFactory(cssParsers)
-const parseOldLayoutValue = parseValueFactory(layoutParsers)
-const parseNewLayoutValue = parseValueFactory(layoutParsersNew)
+const parseMetadataValue = Utils.memoize(parseValueFactory(elementPropertiesParsers), {
+  maxSize: 1000,
+})
+const parseCSSValue = Utils.memoize(parseValueFactory(cssParsers), { maxSize: 1000 })
+const parseOldLayoutValue = Utils.memoize(parseValueFactory(layoutParsers), { maxSize: 1000 })
+const parseNewLayoutValue = Utils.memoize(parseValueFactory(layoutParsersNew), { maxSize: 1000 })
 
 function isMetadataProp(prop: unknown): prop is keyof ParsedElementProperties {
   return typeof prop === 'string' && prop in elementPropertiesEmptyValues

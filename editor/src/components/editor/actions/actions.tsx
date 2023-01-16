@@ -314,6 +314,7 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  ApplyCommandsAction,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -464,6 +465,8 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import { styleStringInArray } from '../../../utils/common-constants'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -963,6 +966,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     topmenu: {
       formulaBarMode: poppedEditor.topmenu.formulaBarMode,
@@ -1394,7 +1398,7 @@ function toastOnGeneratedElementsTargeted(
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets, editor)
+  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
@@ -1416,12 +1420,7 @@ function toastOnUncopyableElementsSelected(
   dispatch: EditorDispatch,
 ): EditorState {
   const isReparentable = editor.selectedViews.every((target) => {
-    return isAllowedToReparent(
-      editor.projectContents,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      target,
-    )
+    return isAllowedToReparent(editor.projectContents, editor.jsxMetadata, target)
   })
   let result: EditorState = editor
   if (!isReparentable) {
@@ -1799,7 +1798,7 @@ export const UPDATE_FNS = {
             editorForAction,
             derived,
           )
-          return MetadataUtils.isStaticElement(components, selectedView)
+          return !MetadataUtils.isElementGenerated(selectedView)
         })
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
@@ -1964,6 +1963,12 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
+    if (action.unlessMode === editor.mode.type) {
+      // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
+      // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
+      // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
+      return clearDragState(editor, derived, false)
+    }
     return clearDragState(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -2870,24 +2875,8 @@ export const UPDATE_FNS = {
     let insertionAllowed: boolean = true
     if (action.pasteInto != null) {
       const pasteInto = action.pasteInto
-      const parentOriginType = withUnderlyingTargetFromEditorState(
-        action.pasteInto,
-        editor,
-        'unknown-element',
-        (targetParentSuccess) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
-            pasteInto,
-          )
-        },
-      )
-      switch (parentOriginType) {
-        case 'unknown-element':
-          insertionAllowed = false
-          break
-        default:
-          insertionAllowed = true
-      }
+      const parentGenerated = MetadataUtils.isElementGenerated(pasteInto)
+      insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
       const existingIDs = getAllUniqueUids(editor.projectContents)
@@ -3169,7 +3158,7 @@ export const UPDATE_FNS = {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
-          ['style'],
+          styleStringInArray,
         )
 
         if (isLeft(updatedAttributes)) {
@@ -3864,6 +3853,13 @@ export const UPDATE_FNS = {
             )
             break
           }
+          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+            code = fileUpdate.code
+            updatedContents = updateParsedTextFileHighlightBounds(
+              fileUpdate.parsed,
+              fileUpdate.highlightBounds,
+            )
+            break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
@@ -4076,7 +4072,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorBuildErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allBuildErrorsInState = getAllBuildErrors(editor)
+    const allBuildErrorsInState = getAllBuildErrors(editor.codeEditorErrors)
     const allBuildErrorsInAction = Utils.flatMapArray(
       (filename) => action.buildErrors[filename],
       Object.keys(action.buildErrors),
@@ -4106,7 +4102,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorLintErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allLintErrorsInState = getAllLintErrors(editor)
+    const allLintErrorsInState = getAllLintErrors(editor.codeEditorErrors)
     const allLintErrorsInAction = Utils.flatMapArray(
       (filename) => action.lintErrors[filename],
       Object.keys(action.lintErrors),
@@ -4169,7 +4165,7 @@ export const UPDATE_FNS = {
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
       return mapEither(
-        (attrs) => roundAttributeLayoutValues(['style'], attrs),
+        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
     })
@@ -4484,7 +4480,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(
+    const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
         if (action.text.trim() === '') {
@@ -4500,7 +4496,9 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      RevisionsState.ParsedAheadNeedsReparsing,
     )
+    return collapseTextElements(action.target, withUpdatedText)
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {
@@ -4713,7 +4711,7 @@ export const UPDATE_FNS = {
     }
 
     // Side effect - update the setting in VS Code
-    void sendSetVSCodeTheme(action.theme)
+    void sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
 
     // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
@@ -5161,6 +5159,9 @@ export const UPDATE_FNS = {
       ...editor,
       imageDragSessionState: action.imageDragSessionState,
     }
+  },
+  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, action.commands)
   },
 }
 

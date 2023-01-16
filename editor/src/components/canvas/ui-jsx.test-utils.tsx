@@ -55,7 +55,13 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
-import { DispatchPriority, EditorAction, LoginState, notLoggedIn } from '../editor/action-types'
+import {
+  DispatchPriority,
+  EditorAction,
+  EditorDispatch,
+  LoginState,
+  notLoggedIn,
+} from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
@@ -109,6 +115,7 @@ import {
   MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from './canvas-strategies/canvas-strategies'
+import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -314,44 +321,30 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: loginState,
       shortcutConfig: {},
-      themeConfig: 'light',
+      themeConfig: 'system',
       githubState: {
         authenticated: false,
       },
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
-    dispatch: asyncTestDispatch,
     alreadySaved: false,
     builtInDependencies: builtInDependencies,
   }
 
-  const canvasStoreHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'canvas-store')))
+  const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
+  )
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
-  const lowPriorityStoreHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(
-    subscribeWithSelector((set) =>
-      patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
-    ),
+  const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
   )
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore, 'editor-store')))
+  const storeHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'editor-store'),
+  )
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
@@ -368,8 +361,8 @@ export async function renderTestEditorWithModel(
     >
       <FailJestOnCanvasError />
       <EditorRoot
-        api={storeHook}
-        useStore={storeHook}
+        dispatch={asyncTestDispatch as EditorDispatch}
+        mainStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
         lowPriorityStore={lowPriorityStoreHook}

@@ -124,7 +124,7 @@ const mangleFunctionType = Utils.memoize(
     const mangledFunction = {
       [mangledFunctionName]: (p: any, context?: any) => {
         const MeasureRenderTimes =
-          isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+          isFeatureEnabled('Debug – Performance Marks (Slow)') && PERFORMANCE_MARKS_ALLOWED
         const uuid = MeasureRenderTimes ? v4() : ''
         if (MeasureRenderTimes) {
           performance.mark(`render_start_${uuid}`)
@@ -165,7 +165,7 @@ const mangleClassType = Utils.memoize(
     // mutation
     type.prototype.render = function monkeyRender() {
       const MeasureRenderTimes =
-        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+        isFeatureEnabled('Debug – Performance Marks (Slow)') && PERFORMANCE_MARKS_ALLOWED
       const uuid = MeasureRenderTimes ? v4() : ''
       if (MeasureRenderTimes) {
         performance.mark(`render_start_${uuid}`)

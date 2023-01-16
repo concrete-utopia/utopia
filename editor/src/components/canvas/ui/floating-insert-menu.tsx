@@ -12,7 +12,7 @@ import WindowedSelect, {
 } from 'react-windowed-select'
 
 import { getControlStyles } from '../../../uuiui-deps'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
   FlexColumn,
@@ -61,6 +61,7 @@ import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -107,16 +108,27 @@ function convertInsertableComponentsToFlatList(
 function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
-  const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
+  const { packageStatus, propertyControlsInfo } = useEditorState(
+    Substores.restOfEditor,
     (store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
-    'RenderAsRow',
+    'useGetInsertableComponents',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'useGetInsertableComponents projectContents',
+  )
+
+  const fullPath = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'useGetInsertableComponents fullPath',
   )
 
   const insertableComponents = React.useMemo(() => {
@@ -287,7 +299,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           paddingLeft: 4,
           paddingRight: 4,
           cursor: isDisabled ? 'not-allowed' : 'default',
-          color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+          color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
           backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
           borderRadius: UtopiaTheme.inputBorderRadius,
         }
@@ -331,7 +343,7 @@ const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
         paddingLeft: 4,
         paddingRight: 4,
         cursor: isDisabled ? 'not-allowed' : 'default',
-        color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+        color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
         backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
         borderRadius: UtopiaTheme.inputBorderRadius,
       }}
@@ -430,6 +442,7 @@ export var FloatingMenu = React.memo(() => {
   }, [])
 
   const floatingMenuState = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -440,7 +453,7 @@ export var FloatingMenu = React.memo(() => {
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
+  const dispatch = useDispatch()
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
@@ -698,8 +711,9 @@ export var FloatingMenu = React.memo(() => {
 interface FloatingInsertMenuProps {}
 
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
+  const dispatch = useDispatch()
   const isVisible = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

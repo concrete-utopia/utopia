@@ -177,7 +177,6 @@ type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
 
 export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   element: ElementInstanceMetadata,
   scale: number,
 ): Set<CanvasPropControl> {
@@ -194,20 +193,17 @@ export function canShowCanvasPropControl(
     return new Set<CanvasPropControl>([])
   }
 
-  if (!MetadataUtils.targetElementSupportsChildren(projectContents, openFile, element)) {
+  if (!MetadataUtils.targetElementSupportsChildren(projectContents, element)) {
     return new Set<CanvasPropControl>(['borderRadius', 'gap'])
   }
 
   return new Set<CanvasPropControl>(['padding', 'gap'])
 }
 
-interface ShouldShowControlsParams {
-  propAvailableFromStyle: boolean
-  measurementsNonZero: boolean
-}
-
-export function shouldShowControls(params: ShouldShowControlsParams): boolean {
-  const { propAvailableFromStyle, measurementsNonZero } = params
+export function shouldShowControls(
+  propAvailableFromStyle: boolean,
+  measurementsNonZero: boolean,
+): boolean {
   if (propAvailableFromStyle) {
     return true
   }

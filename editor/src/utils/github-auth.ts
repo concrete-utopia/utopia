@@ -16,7 +16,7 @@ async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
   if (response.ok) {
     return response.json()
   } else {
-    throw new Error(`Unexpected status returned from endpoint: ${response.status}`)
+    throw new Error(`Github: Unexpected status returned from endpoint: ${response.status}`)
   }
 }
 

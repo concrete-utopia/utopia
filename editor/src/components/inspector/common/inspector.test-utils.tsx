@@ -1,6 +1,6 @@
 import { produce } from 'immer'
 import React from 'react'
-import create, { GetState, Mutate, SetState, StoreApi, UseBoundStore } from 'zustand'
+import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { emptyComments, jsxAttributeValue, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
@@ -19,7 +19,12 @@ import {
   defaultUserState,
   StoryboardFilePath,
 } from '../../editor/store/editor-state'
-import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
+import {
+  createStoresAndState,
+  EditorStateContext,
+  OriginalMainEditorStateContext,
+  UtopiaStoreAPI,
+} from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { InspectorContextProvider } from '../inspector'
 import { getControlStyles, PropertyStatus } from './control-status'
@@ -32,16 +37,16 @@ import { mapValues } from '../../../core/shared/object-utils'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
   updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
 }
 
-export function getStoreHook(
-  mockDispatch: EditorDispatch,
-): EditorStateContextData & UpdateFunctionHelpers {
+export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
@@ -58,25 +63,18 @@ export function getStoreHook(
     userState: defaultUserState,
     workers: null as any,
     persistence: null as any,
-    dispatch: mockDispatch,
     alreadySaved: false,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => defaultState))
+  const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
   const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
-    storeHook.setState(produce(fn))
+    storeHook.setState(produce(fn)(storeHook.getState()))
   const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
-    storeHook.setState(fn)
+    storeHook.setState(fn(storeHook.getState()))
 
   return {
-    api: storeHook,
-    useStore: storeHook,
+    ...storeHook,
     updateStoreWithImmer: updateStoreWithImmer,
     updateStore: updateStore,
   }
@@ -85,15 +83,22 @@ export function getStoreHook(
 export const TestInspectorContextProvider: React.FunctionComponent<
   React.PropsWithChildren<{
     selectedViews: Array<ElementPath>
-    editorStoreData: EditorStateContextData
+    editorStoreData: UtopiaStoreAPI
   }>
 > = (props) => {
   return (
-    <EditorStateContext.Provider value={props.editorStoreData}>
-      <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>
-        {props.children}
-      </InspectorContextProvider>
-    </EditorStateContext.Provider>
+    <DispatchContext.Provider value={NO_OP}>
+      <OriginalMainEditorStateContext.Provider value={props.editorStoreData}>
+        <EditorStateContext.Provider value={props.editorStoreData}>
+          <InspectorContextProvider
+            selectedViews={props.selectedViews}
+            targetPath={styleStringInArray}
+          >
+            {props.children}
+          </InspectorContextProvider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>
+    </DispatchContext.Provider>
   )
 }
 

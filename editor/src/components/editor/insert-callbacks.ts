@@ -1,4 +1,5 @@
 import React from 'react'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { JSXElement } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
@@ -15,28 +16,40 @@ import {
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
-import { useEditorState, useRefEditorState } from './store/store-hook'
+import { useDispatch } from './store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 
 export function useCheckInsertModeForElementType(elementName: string): boolean {
-  return useEditorState((store) => {
-    const mode = store.editor.mode
-    return (
-      mode.type === 'insert' &&
-      mode.subjects.some(
-        (subject) =>
-          subject.element.type === 'JSX_ELEMENT' &&
-          subject.element.name.baseVariable === elementName,
+  return useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      const mode = store.editor.mode
+      return (
+        mode.type === 'insert' &&
+        mode.subjects.some(
+          (subject) =>
+            subject.element.type === 'JSX_ELEMENT' &&
+            subject.element.name.baseVariable === elementName,
+        )
       )
-    )
-  }, 'useCheckInsertModeForElementType mode')
+    },
+    'useCheckInsertModeForElementType mode',
+  )
 }
 
 export function useEnterDrawToInsertForDiv(): (event: React.MouseEvent<Element>) => void {
   return useEnterDrawToInsertForElement(defaultDivElement)
 }
 
-export function useEnterDrawToInsertForSpan(): (event: React.MouseEvent<Element>) => void {
-  return useEnterDrawToInsertForElement(defaultSpanElement)
+export function useEnterTextEditMode(): (event: React.MouseEvent<Element>) => void {
+  const textInsertCallbackWithTextEditing = useEnterDrawToInsertForElement(defaultSpanElement)
+
+  return React.useCallback(
+    (event: React.MouseEvent<Element>): void => {
+      textInsertCallbackWithTextEditing(event, { textEdit: true })
+    },
+    [textInsertCallbackWithTextEditing],
+  )
 }
 
 export function useEnterDrawToInsertForImage(): (event: React.MouseEvent<Element>) => void {
@@ -47,21 +60,34 @@ export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Elemen
   return useEnterDrawToInsertForElement(defaultButtonElement)
 }
 
-function useEnterDrawToInsertForElement(
-  elementFactory: (newUID: string) => JSXElement,
-): (event: React.MouseEvent<Element>) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'enterDrawToInsertForDiv dispatch')
+function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXElement): (
+  event: React.MouseEvent<Element>,
+  insertOptions?: {
+    textEdit?: boolean
+  },
+) => void {
+  const dispatch = useDispatch()
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   return React.useCallback(
-    (event: React.MouseEvent<Element>): void => {
+    (
+      event: React.MouseEvent<Element>,
+      insertOptions: {
+        textEdit?: boolean
+      } = {},
+    ): void => {
       const modifiers = Modifier.modifiersForEvent(event)
       const newUID = generateUidWithExistingComponents(projectContentsRef.current)
 
       dispatch([
-        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null),
+        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, insertOptions),
         CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(CanvasMousePositionRaw!, modifiers, boundingArea()),
+          createHoverInteractionViaMouse(
+            CanvasMousePositionRaw!,
+            modifiers,
+            boundingArea(),
+            'zero-drag-permitted',
+          ),
         ),
       ])
     },

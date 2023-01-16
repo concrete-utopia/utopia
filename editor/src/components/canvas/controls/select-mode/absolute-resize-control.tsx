@@ -1,12 +1,21 @@
 import React from 'react'
-import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  boundingRectangleArray,
+  CanvasVector,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
-import { EditorStorePatched } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { getMetadata } from '../../../editor/store/editor-state'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { invert } from '../../../inspector/inspector-common'
+import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
+import { executeFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
@@ -63,6 +72,12 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       ref.current.style.top = boundingBox.height + 'px'
     })
 
+    const resizeRef = useBoundingBox(targets, (ref, boundingBox) => {
+      ref.current.style.top = boundingBox.height + 'px'
+      ref.current.style.left = 0 + 'px'
+      ref.current.style.width = boundingBox.width + 'px'
+    })
+
     return (
       <CanvasOffsetWrapper>
         <div
@@ -108,6 +123,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
             position={{ x: 1, y: 1 }}
             cursor={CSSCursor.ResizeNWSE}
           />
+          <SizeLabel ref={resizeRef} targets={targets} />
         </div>
       </CanvasOffsetWrapper>
     )
@@ -127,8 +143,12 @@ const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'ResizeEdge scale',
+    )
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onPointMouseDown = React.useCallback(
@@ -202,9 +222,15 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const scale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'ResizeEdge scale',
+    )
+    const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -222,6 +248,22 @@ const ResizeEdge = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
+    const onEdgeDblClick = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.detail != 2) {
+          return
+        }
+
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedElementsRef.current,
+          setPropHugStrategies(invert(props.direction)),
+        )
+      },
+      [dispatch, metadataRef, props.direction, selectedElementsRef],
+    )
+
     const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
@@ -229,6 +271,7 @@ const ResizeEdge = React.memo(
     const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
+        onClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',
@@ -243,6 +286,54 @@ const ResizeEdge = React.memo(
         onMouseMove={onMouseMove}
         data-testid={`resize-control-${props.position.x}-${props.position.y}`}
       />
+    )
+  }),
+)
+
+interface SizeLabelProps {
+  targets: Array<ElementPath>
+}
+
+const SizeLabel = React.memo(
+  React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'Resizelabel scale',
+    )
+    const colorTheme = useColorTheme()
+    const metadata = useEditorState(
+      Substores.metadata,
+      (store) => getMetadata(store.editor),
+      'ResizeLabel metadata',
+    )
+    const boundingBox = boundingRectangleArray(
+      targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
+    )
+    return (
+      <div
+        ref={ref}
+        style={{
+          position: 'absolute',
+          pointerEvents: 'none',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+        data-testid='parent-resize-label'
+      >
+        <div
+          style={{
+            marginTop: 8 / scale,
+            padding: 4 / scale,
+            borderRadius: 4 / scale,
+            color: colorTheme.white.value,
+            backgroundColor: colorTheme.secondaryBlue.value,
+            fontSize: 12 / scale,
+          }}
+        >
+          {boundingBox != null ? `${boundingBox.width} x ${boundingBox.height}` : ''}
+        </div>
+      </div>
     )
   }),
 )
@@ -270,6 +361,7 @@ function startResizeInteraction(
             type: 'RESIZE_HANDLE',
             edgePosition: position,
           },
+          'zero-drag-not-permitted',
         ),
       ),
     ])

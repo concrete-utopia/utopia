@@ -1,13 +1,14 @@
 import React from 'react'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+import { when } from '../../../../../utils/react-conditionals'
 import {
   FlexRow,
-  H1,
-  H2,
   Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
 } from '../../../../../uuiui'
-import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
+import { FillHugFixedControl } from '../../../fill-hug-fixed-control'
+import { SeeMoreHOC, useToggle } from '../../../widgets/see-more'
 import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
@@ -34,7 +35,7 @@ export const ContainerSubsection = React.memo(() => {
           onClick={toggleSeeMoreVisible}
         />
       </InspectorSubsectionHeader>
-
+      {when(isFeatureEnabled('Nine block control'), <FillHugFixedControl />)}
       <OpacityRow />
       <OverflowRow />
       <RadiusRow />

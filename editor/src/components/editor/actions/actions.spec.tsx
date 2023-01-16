@@ -130,6 +130,8 @@ import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { styleStringInArray } from '../../../utils/common-constants'
+
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -310,10 +312,25 @@ describe('SET_CANVAS_FRAMES', () => {
       ['rootElement', 'children', 0, 'props'],
       updatedRoot,
     )
-    const leftProp = getLayoutPropertyOr(undefined, 'left', right(updatedViewProps), ['style'])
-    const top = getLayoutPropertyOr(undefined, 'top', right(updatedViewProps), ['style'])
-    const width = getLayoutPropertyOr(undefined, 'width', right(updatedViewProps), ['style'])
-    const height = getLayoutPropertyOr(undefined, 'height', right(updatedViewProps), ['style'])
+    const leftProp = getLayoutPropertyOr(
+      undefined,
+      'left',
+      right(updatedViewProps),
+      styleStringInArray,
+    )
+    const top = getLayoutPropertyOr(undefined, 'top', right(updatedViewProps), styleStringInArray)
+    const width = getLayoutPropertyOr(
+      undefined,
+      'width',
+      right(updatedViewProps),
+      styleStringInArray,
+    )
+    const height = getLayoutPropertyOr(
+      undefined,
+      'height',
+      right(updatedViewProps),
+      styleStringInArray,
+    )
     chaiExpect(leftProp).to.deep.equal(cssNumber(20))
     chaiExpect(top).to.deep.equal(cssNumber(20))
     chaiExpect(width).to.deep.equal(cssNumber(50))
@@ -713,15 +730,23 @@ describe('moveTemplate', () => {
     expect(isUtopiaJSXComponent(updatedGroup)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedGroup)).toHaveLength(1)
     const actual: any = Utils.path(['rootElement', 'children', 0], updatedGroup)
-    expect(getLayoutPropertyOr(undefined, 'left', right(actual.props), ['style'])).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'top', right(actual.props), ['style'])).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'width', right(actual.props), ['style'])).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'height', right(actual.props), ['style'])).toBeDefined()
     expect(
-      getLayoutPropertyOr(undefined, 'right', right(actual.props), ['style']),
+      getLayoutPropertyOr(undefined, 'left', right(actual.props), styleStringInArray),
+    ).toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'top', right(actual.props), styleStringInArray),
+    ).toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'width', right(actual.props), styleStringInArray),
+    ).toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'height', right(actual.props), styleStringInArray),
+    ).toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'right', right(actual.props), styleStringInArray),
     ).not.toBeDefined()
     expect(
-      getLayoutPropertyOr(undefined, 'bottom', right(actual.props), ['style']),
+      getLayoutPropertyOr(undefined, 'bottom', right(actual.props), styleStringInArray),
     ).not.toBeDefined()
   })
 })
@@ -883,14 +908,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
   })
   it('switches from pins to flex correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex', ['style'])
+    const switchActionToFlex = switchLayoutSystem('flex', styleStringInArray)
     const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
     expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })
   it('switches from flex to pins correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex', ['style'])
+    const switchActionToFlex = switchLayoutSystem('flex', styleStringInArray)
     let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem, ['style'])
+    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem, styleStringInArray)
     result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
     expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })
@@ -1462,7 +1487,7 @@ describe('INSERT_INSERTABLE', () => {
               <div style={{ ...props.style }}>
                 <div
                   style={{
-                    backgroundColor: '#0091FFAA',
+                    backgroundColor: '#aaaaaa33',
                     position: 'absolute',
                   }}
                 >
@@ -1583,7 +1608,7 @@ describe('RUN_ESCAPE_HATCH', () => {
         `
           <View style={{ ...(props.style || {}) }} data-uid='aaa'>
             <View
-              style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+              style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
               data-uid='bbb'
             />
           </View>
@@ -1618,7 +1643,7 @@ describe('RUN_ESCAPE_HATCH', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
           data-uid='bbb'
         />
       </View>`,

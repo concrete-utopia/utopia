@@ -45,7 +45,7 @@ describe('Padding resize strategy', () => {
             data-uid='mydiv'
             data-testid='mydiv'
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               left: 28,
               top: 28,
@@ -84,7 +84,7 @@ describe('Padding resize strategy', () => {
           data-uid='mydiv'
           data-testid='mydiv'
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 28,
             top: 28,
@@ -94,7 +94,7 @@ describe('Padding resize strategy', () => {
         >
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: 22,
               height: 22,
             }}
@@ -128,7 +128,7 @@ describe('Padding resize strategy', () => {
       makeTestProjectCodeWithSnippet(`<div
       data-testid='mydiv'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 28,
         top: 28,
@@ -187,6 +187,12 @@ describe('Padding resize strategy', () => {
       y: paddingResizeControlContainerBounds.y + 4,
     }
 
+    EdgePieces.forEach((edge) => {
+      const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
+      expect(paddingControlHandle).toBeTruthy()
+      expect(paddingControlHandle.style.opacity).toEqual('0')
+    })
+
     mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
@@ -194,9 +200,10 @@ describe('Padding resize strategy', () => {
     EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
       expect(paddingControlOuter).toBeTruthy()
+
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
       expect(paddingControlHandle).toBeTruthy()
-      expect(paddingControlHandle.style.visibility).toEqual('visible')
+      expect(paddingControlHandle.style.opacity).toEqual('1')
     })
   })
 
@@ -653,7 +660,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -664,7 +671,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
       >
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: '100%',
             height: '100%',
           }}
@@ -683,7 +690,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -694,7 +701,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
       >
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: '100%',
             height: '100%',
           }}

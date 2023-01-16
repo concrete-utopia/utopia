@@ -39,7 +39,7 @@ import {
   UiJsxCanvas,
 } from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
-import { EditorStateContext } from '../editor/store/store-hook'
+import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
@@ -144,7 +144,7 @@ export function renderCanvasReturnResultAndError(
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
-  const storeHookForTest = getStoreHook(NO_OP)
+  const storeHookForTest = getStoreHook()
   let projectContents: ProjectContents = {
     [UiFilePath]: textFile(
       textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
@@ -170,7 +170,7 @@ export function renderCanvasReturnResultAndError(
       innerProjectContents,
       SampleNodeModules,
       {},
-      storeHookForTest.useStore().builtInDependencies,
+      storeHookForTest.getState().builtInDependencies,
     )
 
   storeHookForTest.updateStore((store) => {
@@ -187,7 +187,7 @@ export function renderCanvasReturnResultAndError(
     updatedEditor = UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(
       updateNodeModulesContents(SampleNodeModules),
       updatedEditor,
-      store.dispatch,
+      NO_OP,
       store.builtInDependencies,
     )
     return {
@@ -222,11 +222,12 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.transientState.filesState,
+      projectContents: storeHookForTest.getState().editor.projectContents,
+      transientFilesState: storeHookForTest.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      editedText: null,
     }
   } else {
     canvasProps = {
@@ -245,11 +246,12 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.transientState.filesState,
+      projectContents: storeHookForTest.getState().editor.projectContents,
+      transientFilesState: storeHookForTest.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      editedText: null,
     }
   }
 
@@ -262,19 +264,21 @@ export function renderCanvasReturnResultAndError(
   let errorsReportedSpyEnabled: Array<RuntimeErrorInfo> = []
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
-      <EditorStateContext.Provider value={storeHookForTest}>
-        <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-          <CanvasErrorBoundary
-            filePath={UiFilePath}
-            projectContents={canvasProps.projectContents}
-            // eslint-disable-next-line react/jsx-no-bind
-            reportError={reportError}
-            requireFn={canvasProps.curriedRequireFn}
-          >
-            <UiJsxCanvas {...canvasProps} />
-          </CanvasErrorBoundary>
-        </UiJsxCanvasCtxAtom.Provider>
-      </EditorStateContext.Provider>,
+      <OriginalMainEditorStateContext.Provider value={storeHookForTest}>
+        <EditorStateContext.Provider value={storeHookForTest}>
+          <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+            <CanvasErrorBoundary
+              filePath={UiFilePath}
+              projectContents={canvasProps.projectContents}
+              // eslint-disable-next-line react/jsx-no-bind
+              reportError={reportError}
+              requireFn={canvasProps.curriedRequireFn}
+            >
+              <UiJsxCanvas {...canvasProps} />
+            </CanvasErrorBoundary>
+          </UiJsxCanvasCtxAtom.Provider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>,
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
@@ -290,11 +294,13 @@ export function renderCanvasReturnResultAndError(
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
-      <EditorStateContext.Provider value={storeHookForTest}>
-        <UiJsxCanvasCtxAtom.Provider value={emptyUiJsxCanvasContextData()}>
-          <UiJsxCanvas {...canvasPropsSpyDisabled} />
-        </UiJsxCanvasCtxAtom.Provider>
-      </EditorStateContext.Provider>,
+      <OriginalMainEditorStateContext.Provider value={storeHookForTest}>
+        <EditorStateContext.Provider value={storeHookForTest}>
+          <UiJsxCanvasCtxAtom.Provider value={emptyUiJsxCanvasContextData()}>
+            <UiJsxCanvas {...canvasPropsSpyDisabled} />
+          </UiJsxCanvasCtxAtom.Provider>
+        </EditorStateContext.Provider>
+      </OriginalMainEditorStateContext.Provider>,
     )
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported

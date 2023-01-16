@@ -1511,28 +1511,60 @@ export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntr
 export type ElementInstanceMetadataMap = { [key: string]: Readonly<ElementInstanceMetadata> }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
-export type FoundImportInfo = {
+export interface SameFileOrigin {
+  type: 'SAME_FILE_ORIGIN'
+  filePath: string
   variableName: string
-  originalName: string | null
-  path: string
 }
 
-export type ImportInfo = Either<'NOT_IMPORTED', FoundImportInfo>
+export function isSameFileOrigin(importInfo: ImportInfo): importInfo is SameFileOrigin {
+  return importInfo.type === 'SAME_FILE_ORIGIN'
+}
+
+export function sameFileOrigin(filePath: string, variableName: string): SameFileOrigin {
+  return {
+    type: 'SAME_FILE_ORIGIN',
+    filePath: filePath,
+    variableName: variableName,
+  }
+}
+
+export interface ImportedOrigin {
+  type: 'IMPORTED_ORIGIN'
+  filePath: string
+  variableName: string
+  exportedName: string | null
+}
+
+export function isImportedOrigin(importInfo: ImportInfo): importInfo is ImportedOrigin {
+  return importInfo.type === 'IMPORTED_ORIGIN'
+}
+
+export function importedOrigin(
+  filePath: string,
+  variableName: string,
+  exportedName: string | null,
+): ImportedOrigin {
+  return {
+    type: 'IMPORTED_ORIGIN',
+    filePath: filePath,
+    variableName: variableName,
+    exportedName: exportedName,
+  }
+}
+
+export type ImportInfo = SameFileOrigin | ImportedOrigin
 
 export function createImportedFrom(
   variableName: string,
   originalName: string | null,
   path: string,
 ): ImportInfo {
-  return right({
-    variableName: variableName,
-    originalName: originalName,
-    path: path,
-  })
+  return importedOrigin(path, variableName, originalName)
 }
 
-export function createNotImported(): ImportInfo {
-  return left('NOT_IMPORTED')
+export function createNotImported(path: string, variableName: string): ImportInfo {
+  return sameFileOrigin(path, variableName)
 }
 
 export interface ElementInstanceMetadata {

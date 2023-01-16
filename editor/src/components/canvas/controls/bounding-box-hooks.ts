@@ -2,7 +2,11 @@ import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { boundingRectangleArray, CanvasRectangle } from '../../../core/shared/math-utils'
-import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import {
+  Substores,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 
@@ -53,16 +57,20 @@ function useBoundingBoxFromMetadataRef(
   }, [selectedElements, metadataRef, scaleRef])
 
   useSelectorWithCallback(
+    Substores.metadata,
     (store) => getMetadata(store.editor),
     (newMetadata) => {
       innerCallback()
     },
+    'useBoundingBoxFromMetadataRef metadata',
   )
   useSelectorWithCallback(
+    Substores.canvas,
     (store) => store.editor.canvas.scale,
     (newScale) => {
       innerCallback()
     },
+    'useBoundingBoxFromMetadataRef canvas.scale',
   )
 
   React.useEffect(innerCallback, [innerCallback, selectedElements])

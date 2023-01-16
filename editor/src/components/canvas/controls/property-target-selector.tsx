@@ -13,8 +13,10 @@ import {
   setResizeOptionsTargetOptions,
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 interface PropertyTargetSelectorProps {
   targetComponentMetadata: ElementInstanceMetadata | null
@@ -27,12 +29,12 @@ interface PropertyTargetSelectorProps {
 export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
-    const { resizeOptions, dispatch } = useEditorState((editorState) => {
-      return {
-        resizeOptions: editorState.editor.canvas.resizeOptions,
-        dispatch: editorState.dispatch,
-      }
-    }, 'PropertyTargetSelector resizeOptions')
+    const dispatch = useDispatch()
+    const resizeOptions = useEditorState(
+      Substores.canvas,
+      (editorState) => editorState.editor.canvas.resizeOptions,
+      'PropertyTargetSelector resizeOptions',
+    )
 
     const onKeyDown = React.useCallback(
       (event: KeyboardEvent) => {
@@ -60,7 +62,7 @@ export const PropertyTargetSelector = React.memo(
         eitherToMaybe(
           getSimpleAttributeAtPath(
             left(props.targetProps ?? {}),
-            stylePropPathMappingFn(option, ['style']),
+            stylePropPathMappingFn(option, styleStringInArray),
           ),
         ),
       )

@@ -28,6 +28,8 @@ import {
   jsxArbitraryBlock,
   isJSXElement,
   JSXElement,
+  ImportInfo,
+  importedOrigin,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -322,6 +324,7 @@ function dummyInstanceDataForElementType(
   elementName: JSXElementName | string,
   elementPath: ElementPath,
   children: JSXElementChildren = [],
+  importInfo: ImportInfo | null = null,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -334,7 +337,7 @@ function dummyInstanceDataForElementType(
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
-    importInfo: null,
+    importInfo: importInfo,
   }
 }
 
@@ -356,11 +359,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed button', () => {
@@ -371,11 +370,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed button', () => {
@@ -386,11 +381,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed div', () => {
@@ -401,11 +392,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div', () => {
@@ -416,11 +403,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with an arbitrary jsx block child', () => {
@@ -432,11 +415,7 @@ describe('targetElementSupportsChildren', () => {
       ]),
       [jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with another parsed div child', () => {
@@ -448,11 +427,7 @@ describe('targetElementSupportsChildren', () => {
       ]),
       [jsxTestElement('div', [], [])],
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with an empty fragment child', () => {
@@ -464,11 +439,7 @@ describe('targetElementSupportsChildren', () => {
       ]),
       [jsxFragment([], false)],
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with a fragment child containing another parsed div', () => {
@@ -480,11 +451,7 @@ describe('targetElementSupportsChildren', () => {
       ]),
       [jsxFragment([jsxTestElement('div', [], [])], false)],
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with a fragment child containing an arbitrary jsx block', () => {
@@ -509,11 +476,7 @@ describe('targetElementSupportsChildren', () => {
         ),
       ],
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed span', () => {
@@ -524,11 +487,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed span', () => {
@@ -539,11 +498,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an animated.div', () => {
@@ -554,11 +509,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns false for an unparsed img', () => {
@@ -569,11 +520,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(false)
   })
   it('returns false for a parsed img', () => {
@@ -584,11 +531,7 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(false)
   })
   it('returns true for a component used from a different file that uses props.children', () => {
@@ -630,11 +573,7 @@ export const App = (props) => {
       jsxElementName('App', []),
       EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      projectContents,
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(true)
   })
   it('returns false for a component used from a different file that uses props.children but has only text children', () => {
@@ -691,11 +630,7 @@ export const App = (props) => {
       EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
       parsedChildren,
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      projectContents,
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(false)
   })
   it('returns false for a component used from a different file that does not use props.children', () => {
@@ -736,12 +671,10 @@ export const App = (props) => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('App', []),
       EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+      [],
+      importedOrigin('/src/app.js', 'App', 'App'),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(
-      projectContents,
-      StoryboardFilePath,
-      element,
-    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(false)
   })
 })
@@ -953,16 +886,22 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   ]
 
   it('with no collapsed paths', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
   })
 
   it('with the scene collapsed', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
-      testComponentSceneElement.elementPath,
-    ])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [testComponentSceneElement.elementPath],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
@@ -973,10 +912,11 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   })
 
   it('with collapsed roots', () => {
-    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
-      testComponentRoot1.elementPath,
-      testComponentSceneChildElement.elementPath,
-    ])
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
+      testJsxMetadata,
+      [testComponentRoot1.elementPath, testComponentSceneChildElement.elementPath],
+      [],
+    )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([

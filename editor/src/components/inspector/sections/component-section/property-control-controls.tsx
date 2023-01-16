@@ -46,7 +46,7 @@ import {
   Imports,
   PropertyPath,
 } from '../../../../core/shared/project-file-types'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
@@ -56,6 +56,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -116,26 +117,27 @@ export const ColorPropertyControl = React.memo(
 export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-    const dispatch = useEditorState(
-      (store) => store.dispatch,
-      'ExpressionInputPropertyControl dispatch',
-    )
+    const dispatch = useDispatch()
 
-    const targetFilePaths = useEditorState((store) => {
-      const currentFilePath = forceNotNull(
-        'Missing open file',
-        store.editor.canvas.openFile?.filename,
-      )
-      return store.editor.selectedViews.map((selectedView) => {
-        const normalisedPath = normalisePathToUnderlyingTarget(
-          store.editor.projectContents,
-          store.editor.nodeModules.files,
-          currentFilePath,
-          selectedView,
+    const targetFilePaths = useEditorState(
+      Substores.fullStore,
+      (store) => {
+        const currentFilePath = forceNotNull(
+          'Missing open file',
+          store.editor.canvas.openFile?.filename,
         )
-        return normalisePathSuccessOrThrowError(normalisedPath).filePath
-      })
-    }, 'ExpressionInputPropertyControl targetFilePaths')
+        return store.editor.selectedViews.map((selectedView) => {
+          const normalisedPath = normalisePathToUnderlyingTarget(
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+            currentFilePath,
+            selectedView,
+          )
+          return normalisePathSuccessOrThrowError(normalisedPath).filePath
+        })
+      },
+      'ExpressionInputPropertyControl targetFilePaths',
+    )
 
     const controlId = `${propName}-expression-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
@@ -227,30 +229,33 @@ export const PopUpListPropertyControl = React.memo(
 
 export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
-    const dispatch = useEditorState(
-      (store) => store.dispatch,
-      'ExpressionPopUpListPropertyControl dispatch',
-    )
+    const dispatch = useDispatch()
     const selectedViews = useEditorState(
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )
 
-    const targetFilePaths = useEditorState((store) => {
-      const currentFilePath = forceNotNull(
-        'Missing open file',
-        store.editor.canvas.openFile?.filename,
-      )
-      return selectedViews.map((selectedView) => {
-        const normalisedPath = normalisePathToUnderlyingTarget(
-          store.editor.projectContents,
-          store.editor.nodeModules.files,
-          currentFilePath,
-          selectedView,
+    const targetFilePaths = useEditorState(
+      Substores.fullStore,
+      (store) => {
+        // TODO probably make a store with selected views, projectContents and nodeModules.files ?
+        const currentFilePath = forceNotNull(
+          'Missing open file',
+          store.editor.canvas.openFile?.filename,
         )
-        return normalisePathSuccessOrThrowError(normalisedPath).filePath
-      })
-    }, 'ExpressionPopUpListPropertyControl targetFilePaths')
+        return selectedViews.map((selectedView) => {
+          const normalisedPath = normalisePathToUnderlyingTarget(
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+            currentFilePath,
+            selectedView,
+          )
+          return normalisePathSuccessOrThrowError(normalisedPath).filePath
+        })
+      },
+      'ExpressionPopUpListPropertyControl targetFilePaths',
+    )
 
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props

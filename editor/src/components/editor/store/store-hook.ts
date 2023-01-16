@@ -1,11 +1,95 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from 'react'
-import type { EditorStorePatched } from './editor-state'
-import { StoreApi, EqualityChecker, UseBoundStore, Mutate } from 'zustand'
+import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { objectMap } from '../../../core/shared/object-utils'
+import { DerivedState, EditorStorePatched } from './editor-state'
+import {
+  logAfterStoreUpdate,
+  logBeforeStoreUpdate,
+  useWrapCallbackInPerformanceMeasureBlock,
+  useWrapSelectorInPerformanceMeasureBlock,
+} from './store-hook-performance-logging'
+import {
+  BuiltInDependenciesSubstate,
+  CanvasAndMetadataSubstate,
+  CanvasOffsetSubstate,
+  canvasOffsetSubstateKeys,
+  CanvasSubstate,
+  canvasSubstateKeys,
+  FocusedElementPathSubstate,
+  focusedElementPathSubstateKeys,
+  GithubSubstate,
+  githubSubstateKeys,
+  HighlightedHoveredViewsSubstate,
+  highlightedHoveredViewsSubstateKeys,
+  MetadataSubstate,
+  metadataSubstateKeys,
+  projectContentsKeys,
+  ProjectContentSubstate,
+  RestOfEditorState,
+  restOfEditorStateKeys,
+  restOfStoreKeys,
+  SelectedViewsSubstate,
+  selectedViewsSubstateKeys,
+  StoreKey,
+  Substates,
+  ThemeSubstate,
+  UserStateSubstate,
+} from './store-hook-substore-types'
 
-type StateSelector<T, U> = (state: T) => U
+// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
+type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
+
+export type UtopiaStores = { [key in StoreKey]: Store<Substates[key]> }
+
+export type UtopiaStoreAPI = {
+  stores: UtopiaStores
+  setState: (store: EditorStorePatched) => void
+  getState: () => EditorStorePatched
+}
+
+export const OriginalMainEditorStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+OriginalMainEditorStateContext.displayName = 'OriginalMainEditorStateContext'
+export const EditorStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+EditorStateContext.displayName = 'EditorStateContext'
+export const CanvasStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+CanvasStateContext.displayName = 'CanvasStateContext'
+export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+LowPriorityStateContext.displayName = 'LowPriorityStateContext'
+
+export const createStoresAndState = (initialEditorStore: EditorStorePatched): UtopiaStoreAPI => {
+  let latestStoreState: EditorStorePatched = initialEditorStore
+
+  let substores: UtopiaStores = objectMap((_) => {
+    return create(subscribeWithSelector((set) => initialEditorStore))
+  }, SubstateEqualityFns) as UtopiaStores // bad type
+
+  return {
+    setState: (editorStore: EditorStorePatched): void => {
+      latestStoreState = editorStore
+
+      objectMap(<K extends keyof Substates>(substore: UtopiaStores[K], key: K) => {
+        logBeforeStoreUpdate(key)
+
+        if (!tailoredEqualFunctions(editorStore, substore.getState(), key)) {
+          // we call the original Zustand setState for this substore here
+          // Notice that we pass in the _entire_ editorStore as value, not a partial! This saves us from having to create partial objects
+          substore.setState(editorStore)
+
+          logAfterStoreUpdate(key)
+        }
+      }, substores)
+    },
+    getState: (): EditorStorePatched => {
+      return latestStoreState
+    },
+    stores: substores,
+  }
+}
+
+export type StateSelector<T, U> = (state: T) => U
 
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
@@ -17,149 +101,44 @@ type StateSelector<T, U> = (state: T) => U
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState = <U>(
-  selector: StateSelector<EditorStorePatched, U>,
+export const useEditorState = <K extends StoreKey, S extends typeof Substores[K], U>(
+  storeKey_: S,
+  selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
+  const storeKey: K = storeKey_.name as K
   const context = React.useContext(EditorStateContext)
 
-  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
+  return context.stores[storeKey](wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
-function useWrapSelectorInPerformanceMeasureBlock<U>(
-  selector: StateSelector<EditorStorePatched, U>,
-  selectorName: string,
-): StateSelector<EditorStorePatched, U> {
-  const previousSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
-  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
-
-  if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
-    // we alreaedy wrapped this selector
-    return previousWrappedSelectorRef.current
-  } else {
-    // let's create a new wrapped selector
-    const wrappedSelector = (state: EditorStorePatched) => {
-      const LogSelectorPerformance =
-        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
-
-      if (LogSelectorPerformance) {
-        window.performance.mark('selector_begin')
-      }
-      const result = selector(state)
-      if (LogSelectorPerformance) {
-        window.performance.mark('selector_end')
-        window.performance.measure(
-          `Zustand Selector ${selectorName}`,
-          'selector_begin',
-          'selector_end',
-        )
-      }
-      return result
-    }
-    previousSelectorRef.current = selector
-    previousWrappedSelectorRef.current = wrappedSelector
-    return wrappedSelector
-  }
-}
-
-/**
- * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
- *
- * ONLY USE IT IF YOU ARE SURE ABOUT WHAT YOU ARE DOING
- */
-export const useRefEditorState = <U>(
-  selector: StateSelector<EditorStorePatched, U>,
-  explainMe = false,
-): { readonly current: U } => {
-  const context = React.useContext(EditorStateContext)
-  if (context == null) {
-    throw new Error('useStore is missing from editor context')
-  }
-  const api = context.api
-
-  const selectorRef = React.useRef(selector)
-  selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
-
-  const sliceRef = React.useRef(selector(api.getState()))
-  // TODO CONCURRENT MODE: We should avoid mutation during the render phase and follow a pattern similar to
-  // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
-  sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
-  if (explainMe) {
-    console.info('useRefEditorState: reading editor state', sliceRef.current)
-  }
-  React.useEffect(() => {
-    sliceRef.current = selectorRef.current(api.getState()) // the state might have changed between the render and this Effect being called
-    if (explainMe) {
-      console.info(
-        'useRefEditorState: re-reading editor state in useEffect, just in case it changed since the hook was called',
-        sliceRef.current,
-      )
-    }
-    if (explainMe) {
-      console.info('useRefEditorState: subscribing to the zustand api')
-    }
-    const unsubscribe = api.subscribe(
-      (store: EditorStorePatched) => selectorRef.current(store),
-      (newSlice) => {
-        if (newSlice != null) {
-          if (explainMe) {
-            console.info('useRefEditorState: new state slice arrived', newSlice)
-          }
-          sliceRef.current = newSlice
-        }
-      },
-      { equalityFn: shallowEqual },
-    )
-    return function cleanup() {
-      if (explainMe) {
-        console.info('useRefEditorState: unsubscribing from the zustand api')
-      }
-      unsubscribe()
-    }
-  }, [api, explainMe])
-  return sliceRef
-}
-
-export type UtopiaStoreHook = UseBoundStore<EditorStorePatched>
-
-// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 3.6.0 https://github.com/pmndrs/zustand#using-subscribe-with-selector
-export type UtopiaStoreAPI = Mutate<
-  StoreApi<EditorStorePatched>,
-  [['zustand/subscribeWithSelector', never]]
->
-
-export type EditorStateContextData = {
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
-}
-
-export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
-EditorStateContext.displayName = 'EditorStateContext'
-export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)
-CanvasStateContext.displayName = 'CanvasStateContext'
-export const LowPriorityStateContext = React.createContext<EditorStateContextData | null>(null)
-LowPriorityStateContext.displayName = 'LowPriorityStateContext'
-
-export function useSelectorWithCallback<U>(
-  selector: StateSelector<EditorStorePatched, U>,
+export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Substores[K], U>(
+  storeKey_: S,
+  selector: StateSelector<Parameters<S>[0], U>,
   callback: (newValue: U) => void,
+  selectorName_: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
-): void {
+): void => {
+  const storeKey: K = storeKey_.name as K
+  const selectorName = `${selectorName_} - useEditorStateWithCallback`
+
   const context = React.useContext(EditorStateContext)
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  const api = context.api
+  const api = context.stores[storeKey]
 
-  const selectorRef = React.useRef(selector)
-  selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
+
+  const selectorRef = React.useRef(wrappedSelector)
+  selectorRef.current = wrappedSelector // the selector is possibly a new function instance every time this hook is called
 
   const equalityFnRef = React.useRef(equalityFn)
   equalityFnRef.current = equalityFn // the equality function is possibly a new function instance every time this hook is called, but we don't want to re-subscribe because of that
@@ -169,21 +148,13 @@ export function useSelectorWithCallback<U>(
 
   const previouslySelectedStateRef = React.useRef<U>(selectorRef.current(api.getState()))
 
-  const innerCallback = React.useCallback<(newSlice: U) => void>(
-    (newSlice) => {
-      // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
-      if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
-        if (explainMe) {
-          console.info(
-            'selected state has a new value according to the provided equalityFn, notifying callback',
-            newSlice,
-          )
-        }
-        callbackRef.current(newSlice)
-        previouslySelectedStateRef.current = newSlice
-      }
-    },
-    [explainMe],
+  const innerCallback = useWrapCallbackInPerformanceMeasureBlock(
+    storeKey,
+    callbackRef,
+    selectorName,
+    previouslySelectedStateRef,
+    equalityFnRef,
+    explainMe,
   )
 
   /**
@@ -202,8 +173,8 @@ export function useSelectorWithCallback<U>(
       console.info('subscribing to the api')
     }
     const unsubscribe = api.subscribe(
-      (store: EditorStorePatched) => selectorRef.current(store),
-      (newSlice) => {
+      (store: Substates[K]) => selectorRef.current(store),
+      (newSlice: U) => {
         if (explainMe) {
           console.info('the Zustand api.subscribe is calling our callback')
         }
@@ -218,4 +189,112 @@ export function useSelectorWithCallback<U>(
       unsubscribe()
     }
   }, [api, innerCallback, explainMe])
+}
+
+class Getter<T> {
+  public getter: (() => T) | null = null
+
+  get current(): T {
+    if (this.getter == null) {
+      throw new Error('Getter.getter is null')
+    }
+    return this.getter()
+  }
+}
+
+/**
+ * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
+ *
+ * ONLY USE IT IF YOU ARE SURE ABOUT WHAT YOU ARE DOING
+ */
+export const useRefEditorState = <U>(
+  selector: StateSelector<EditorStorePatched, U>,
+  explainMe = false,
+): { readonly current: U } => {
+  const context = React.useContext(EditorStateContext)
+  if (context == null) {
+    throw new Error('useStore is missing from editor context')
+  }
+  const api = context
+  const getterShell = React.useMemo(() => new Getter<U>(), [])
+  getterShell.getter = () => selector(api.getState())
+
+  return getterShell
+}
+
+export const Substores = {
+  metadata: (a: MetadataSubstate, b: MetadataSubstate): boolean => {
+    return keysEquality(metadataSubstateKeys, a.editor, b.editor)
+  },
+  selectedViews: (a: SelectedViewsSubstate, b: SelectedViewsSubstate) =>
+    keysEquality(selectedViewsSubstateKeys, a.editor, b.editor),
+  focusedElement: (a: FocusedElementPathSubstate, b: FocusedElementPathSubstate) =>
+    keysEquality(focusedElementPathSubstateKeys, a.editor, b.editor),
+  highlightedHoveredViews: (
+    a: HighlightedHoveredViewsSubstate,
+    b: HighlightedHoveredViewsSubstate,
+  ): boolean => {
+    return keysEquality(highlightedHoveredViewsSubstateKeys, a.editor, b.editor)
+  },
+  projectContents: (a: ProjectContentSubstate, b: ProjectContentSubstate) => {
+    return keysEquality(projectContentsKeys, a.editor, b.editor)
+  },
+  canvas: (a: CanvasSubstate, b: CanvasSubstate): boolean => {
+    return keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
+  },
+  canvasOffset: (a: CanvasOffsetSubstate, b: CanvasOffsetSubstate) => {
+    return keysEquality(canvasOffsetSubstateKeys, a.editor.canvas, b.editor.canvas)
+  },
+  derived: (a: { derived: DerivedState }, b: { derived: DerivedState }) => {
+    return a.derived === b.derived
+  },
+  restOfEditor: (a: RestOfEditorState, b: RestOfEditorState) => {
+    return keysEquality(restOfEditorStateKeys, a.editor, b.editor)
+  },
+  restOfStore: (
+    a: Omit<EditorStorePatched, 'editor' | 'derived'>,
+    b: Omit<EditorStorePatched, 'editor' | 'derived'>,
+  ) => {
+    return keysEquality(restOfStoreKeys, a, b)
+  },
+  /** @deprecated hurts performance, please avoid using it */
+  fullStore: (a: EditorStorePatched, b: EditorStorePatched) => {
+    return a === b
+  },
+  theme: (a: ThemeSubstate, b: ThemeSubstate) =>
+    a.userState.themeConfig === b.userState.themeConfig,
+  github: (a: GithubSubstate, b: GithubSubstate) => {
+    return keysEquality(githubSubstateKeys, a.editor, b.editor)
+  },
+  builtInDependencies: (a: BuiltInDependenciesSubstate, b: BuiltInDependenciesSubstate) => {
+    return a.builtInDependencies === b.builtInDependencies
+  },
+  userState: (a: UserStateSubstate, b: UserStateSubstate) => {
+    return a.userState === b.userState
+  },
+  canvasAndMetadata: (a: CanvasAndMetadataSubstate, b: CanvasAndMetadataSubstate) => {
+    return (
+      a.editor.jsxMetadata === b.editor.jsxMetadata &&
+      keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
+    )
+  },
+} as const
+
+export const SubstateEqualityFns: {
+  [key in StoreKey]: (a: Substates[key], b: Substates[key]) => boolean
+} = Substores
+
+function tailoredEqualFunctions<K extends keyof Substates>(
+  editorStore: Substates[K],
+  oldEditorStore: Substates[K],
+  key: K,
+) {
+  return SubstateEqualityFns[key](oldEditorStore, editorStore)
+}
+
+function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
+  return a[key] === b[key]
+}
+function keysEquality<T>(keys: ReadonlyArray<keyof T>, a: T, b: T): boolean {
+  return keys.every((key) => keyEquality(key, a, b))
 }

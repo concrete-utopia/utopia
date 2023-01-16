@@ -129,7 +129,6 @@ import {
   JSXAttributesEntry,
   jsxAttributesEntry,
   ImportInfo,
-  FoundImportInfo,
   JSXAttributesSpread,
   jsxAttributesSpread,
   JSXAttributesPart,
@@ -166,6 +165,10 @@ import {
   unparsedCode,
   JSXElementWithoutUID,
   jsxElementWithoutUID,
+  SameFileOrigin,
+  sameFileOrigin,
+  ImportedOrigin,
+  importedOrigin,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -356,9 +359,11 @@ import {
   resizeHandle,
   ResizeHandle,
   BorderRadiusResizeHandle,
+  ZeroDragPermitted,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
+  CanvasFrameAndTarget,
   CSSCursor,
   DragState,
   edgePosition,
@@ -408,6 +413,9 @@ import {
   targetedInsertionParent,
   TargetedInsertionParent,
   imageInsertionSubject,
+  TextEditMode,
+  Coordinates,
+  TextEditableElementState,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -1116,27 +1124,28 @@ function RectangleKeepDeepEquality<C extends CoordinateMarker>(
   }
 }
 
-export const CanvasRectangleKeepDeepEquality: (
-  oldValue: CanvasRectangle,
-  newValue: CanvasRectangle,
-) => KeepDeepEqualityResult<CanvasRectangle> = RectangleKeepDeepEquality
+export const CanvasRectangleKeepDeepEquality: KeepDeepEqualityCall<CanvasRectangle> =
+  RectangleKeepDeepEquality
 
-export function FrameAndTargetKeepDeepEquality<C extends CoordinateMarker>(
-  oldFrameAndTarget: FrameAndTarget<C>,
-  newFrameAndTarget: FrameAndTarget<C>,
-): KeepDeepEqualityResult<FrameAndTarget<C>> {
-  if (
-    nullableDeepEquality(RectangleKeepDeepEquality)(
-      oldFrameAndTarget.frame,
-      newFrameAndTarget.frame,
-    ).areEqual &&
-    ElementPathKeepDeepEquality(oldFrameAndTarget.target, newFrameAndTarget.target).areEqual
-  ) {
-    return keepDeepEqualityResult(oldFrameAndTarget, true)
-  } else {
-    return keepDeepEqualityResult(newFrameAndTarget, false)
-  }
+export function FrameAndTargetKeepDeepEqualityCall<
+  C extends CoordinateMarker,
+>(): KeepDeepEqualityCall<FrameAndTarget<C>> {
+  return combine2EqualityCalls(
+    (frameAndTarget) => frameAndTarget.frame,
+    RectangleKeepDeepEquality,
+    (frameAndTarget) => frameAndTarget.target,
+    ElementPathKeepDeepEquality,
+    (frame, target) => {
+      return {
+        frame: frame,
+        target: target,
+      }
+    },
+  )
 }
+
+export const CanvasFrameAndTargetKeepDeepEquality: KeepDeepEqualityCall<CanvasFrameAndTarget> =
+  FrameAndTargetKeepDeepEqualityCall<CanvasRectangle>()
 
 export function LocalRectangleKeepDeepEquality(
   oldRect: LocalRectangle,
@@ -1181,27 +1190,45 @@ export function SidesKeepDeepEquality(
   }
 }
 
-export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = EitherKeepDeepEquality<
-  'NOT_IMPORTED',
-  FoundImportInfo
->(
+const SameFileOriginKeepDeepEquality: KeepDeepEqualityCall<SameFileOrigin> = combine2EqualityCalls(
+  (i) => i.filePath,
   createCallWithTripleEquals(),
-  combine3EqualityCalls(
-    (i) => i.variableName,
-    createCallWithTripleEquals(),
-    (info) => info.originalName,
-    createCallWithTripleEquals(),
-    (info) => info.path,
-    createCallWithTripleEquals(),
-    (variableName, originalName, path): FoundImportInfo => {
-      return {
-        variableName: variableName,
-        originalName: originalName,
-        path: path,
-      }
-    },
-  ),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  sameFileOrigin,
 )
+
+const ImportedOriginKeepDeepEquality: KeepDeepEqualityCall<ImportedOrigin> = combine3EqualityCalls(
+  (i) => i.filePath,
+  createCallWithTripleEquals(),
+  (i) => i.variableName,
+  createCallWithTripleEquals(),
+  (i) => i.exportedName,
+  createCallWithTripleEquals(),
+  importedOrigin,
+)
+
+export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SAME_FILE_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return SameFileOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'IMPORTED_ORIGIN':
+      if (newValue.type === oldValue.type) {
+        return ImportedOriginKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
@@ -1608,13 +1635,13 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
-    arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    arrayDeepEquality(CanvasFrameAndTargetKeepDeepEquality),
     (controls) => controls.flexReparentTargetLines,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.parentHighlightPaths,
@@ -1623,6 +1650,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     ElementPathArrayKeepDeepEquality,
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
+    (controls) => controls.parentOutlineHighlight,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     editorStateCanvasControls,
   )
 
@@ -1646,7 +1675,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1665,6 +1694,8 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     CanvasPointKeepDeepEquality,
     (data) => data.spacePressed,
     BooleanKeepDeepEquality,
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
     (
       dragStart,
       drag,
@@ -1675,6 +1706,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       hasMouseMoved,
       accumulatedMovement,
       spacePressed,
+      zeroDragPermitted,
     ) => {
       return {
         type: 'DRAG',
@@ -1687,21 +1719,25 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         hasMouseMoved: hasMouseMoved,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: spacePressed,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
 
 export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (data) => data.point,
     CanvasPointKeepDeepEquality,
     (data) => data.modifiers,
     ModifiersKeepDeepEquality,
-    (point, modifiers) => {
+    (data) => data.zeroDragPermitted,
+    createCallWithTripleEquals<ZeroDragPermitted>(),
+    (point, modifiers, zeroDragPermitted) => {
       return {
         type: 'HOVER',
         point: point,
         modifiers: modifiers,
+        zeroDragPermitted: zeroDragPermitted,
       }
     },
   )
@@ -2455,21 +2491,8 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> = (
-  oldAttribute,
-  newAttribute,
-) => {
-  if (oldAttribute == null && newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, true)
-  }
-  if (oldAttribute == null) {
-    return keepDeepEqualityResult(newAttribute, false)
-  }
-  if (newAttribute == null) {
-    return keepDeepEqualityResult(oldAttribute, false)
-  }
-  return objectDeepEquality(StringKeepDeepEquality)(oldAttribute, newAttribute)
-}
+export const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> =
+  nullableDeepEquality(objectDeepEquality(StringKeepDeepEquality))
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
@@ -2622,7 +2645,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 )
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2633,6 +2656,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
+    (subject) => subject.textEdit,
+    BooleanKeepDeepEquality,
     insertionSubject,
   )
 
@@ -2664,6 +2689,36 @@ export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode
     EditorModes.liveMode,
   )
 
+export const CoordinateKeepDeepEquality: KeepDeepEqualityCall<Coordinates> = combine2EqualityCalls(
+  (c) => c.x,
+  NumberKeepDeepEquality,
+  (c) => c.y,
+  NumberKeepDeepEquality,
+  (x: number, y: number) => ({ x, y }),
+)
+
+export const TextEditableElementStateKeepDeepEquality: KeepDeepEqualityCall<
+  TextEditableElementState
+> = (oldValue, newValue) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(newValue, true)
+  }
+  return keepDeepEqualityResult(oldValue, false)
+}
+
+export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
+  combine4EqualityCalls(
+    (mode) => mode.editedText,
+    ElementPathKeepDeepEquality,
+    (mode) => mode.cursorPosition,
+    nullableDeepEquality(CoordinateKeepDeepEquality),
+    (mode) => mode.elementState,
+    TextEditableElementStateKeepDeepEquality,
+    (mode) => mode.selectOnFocus,
+    createCallWithTripleEquals<'select-all-on-focus' | 'no-text-selection'>(),
+    EditorModes.textEditMode,
+  )
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -2679,6 +2734,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'live':
       if (newValue.type === oldValue.type) {
         return LiveCanvasModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'textEdit':
+      if (newValue.type === oldValue.type) {
+        return TextEditModeKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -3313,6 +3373,9 @@ export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = comb
   emptyGithubData,
 )
 
+export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
   newValue,
@@ -3543,15 +3606,14 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.forceParseFiles,
     newValue.forceParseFiles,
   )
-  const allElementPropsResults = createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+  const allElementPropsResults = AllElementPropsKeepDeepEquality(
     oldValue.allElementProps,
     newValue.allElementProps,
   )
-  const _currentAllElementProps_KILLME_Results =
-    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
-      oldValue._currentAllElementProps_KILLME,
-      newValue._currentAllElementProps_KILLME,
-    )
+  const _currentAllElementProps_KILLME_Results = AllElementPropsKeepDeepEquality(
+    oldValue._currentAllElementProps_KILLME,
+    newValue._currentAllElementProps_KILLME,
+  )
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,

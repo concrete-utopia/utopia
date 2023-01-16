@@ -20,6 +20,9 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
   emptyComments,
+  jsxTextBlock,
+  JSXTextBlock,
+  JSXElementChildren,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -31,7 +34,7 @@ import {
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { fastForEach, NO_OP } from '../../../core/shared/utils'
+import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -49,6 +52,8 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -68,6 +73,7 @@ export function createLookupRender(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -121,6 +127,7 @@ export function createLookupRender(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 }
@@ -165,10 +172,12 @@ export function renderCoreElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
   }
+
   switch (element.type) {
     case 'JSX_ELEMENT': {
       const elementsWithinProps = getAccumulatedElementsWithin(element.props)
@@ -194,6 +203,7 @@ export function renderCoreElement(
             imports,
             code,
             highlightBounds,
+            editedText,
           )
         : NoOpLookupRender
 
@@ -241,6 +251,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -262,6 +273,7 @@ export function renderCoreElement(
         imports,
         code,
         highlightBounds,
+        editedText,
       )
 
       const blockScope = {
@@ -303,18 +315,64 @@ export function renderCoreElement(
           imports,
           code,
           highlightBounds,
+          editedText,
         )
         renderedChildren.push(renderResult)
       })
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      return element.text
+      const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
+      // when the text is just edited its parent renders it in a text editor, so no need to render anything here
+      if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
+        return <></>
+      }
+
+      const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
+      return (
+        <>
+          {lines.map((l, index) => (
+            <React.Fragment key={index}>
+              {l}
+              {index < lines.length - 1 ? <br /> : null}
+            </React.Fragment>
+          ))}
+        </>
+      )
     }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
+}
+
+export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
+  switch (c.type) {
+    case 'JSX_TEXT_BLOCK':
+      if (c.text.trim().length === 0) {
+        return c.text
+      }
+      return c.text.replace(/\n +/, '').replace('\n', '') // trimming to remove code formatting (prettier)
+    case 'JSX_ELEMENT':
+      return c.name.baseVariable === 'br' ? '\n' : null
+    case 'JSX_ARBITRARY_BLOCK':
+      if (c.transpiledJavascript === `return ${c.javascript}`) {
+        return `{${c.originalJavascript}}`
+      }
+      return null
+    case 'JSX_FRAGMENT':
+      return null
+    default:
+      assertNever(c)
+  }
+}
+
+// if the element's text is not a newline and the next one is, trim the current element.
+function trimTextBeforeNewline(e: string, index: number, arr: string[]) {
+  if (e !== '\n' && index < arr.length - 1 && arr[index + 1] === '\n') {
+    return e.trim()
+  }
+  return e
 }
 
 function renderJSXElement(
@@ -339,6 +397,7 @@ function renderJSXElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
@@ -373,15 +432,23 @@ function renderJSXElement(
       imports,
       code,
       highlightBounds,
+      editedText,
     )
   }
 
-  const childrenElements = jsx.children.map(createChildrenElement)
   const elementIsIntrinsic = isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
   const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
+  const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+  const elementIsTextEditedAndNoTextBlockChild =
+    elementIsTextEdited && jsx.children.every((c) => c.type !== 'JSX_TEXT_BLOCK')
+
+  const childrenWithNewTextBlock = elementIsTextEditedAndNoTextBlockChild
+    ? [...jsx.children, jsxTextBlock('')]
+    : jsx.children
+  const childrenElements = childrenWithNewTextBlock.map(createChildrenElement)
 
   // Not necessary to check the top level elements, as we'll use a comparison of the
   // elements from scope and import to confirm it's not a top level element.
@@ -420,6 +487,34 @@ function renderJSXElement(
   }
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+    if (elementIsTextEdited) {
+      const text = mapDropNulls(textOrNullFromJSXElement, childrenWithNewTextBlock)
+        .map(trimTextBeforeNewline)
+        .join('')
+      const textContent = unescapeHTML(text ?? '')
+      const textEditorProps = {
+        elementPath: elementPath,
+        filePath: filePath,
+        text: textContent,
+        component: FinalElement,
+        passthroughProps: finalPropsIcludingElementPath,
+      }
+
+      return buildSpyWrappedElement(
+        jsx,
+        textEditorProps,
+        elementPath,
+        metadataContext,
+        updateInvalidatedPaths,
+        childrenElements,
+        TextEditorWrapper,
+        inScope,
+        jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        filePath,
+      )
+    }
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,
@@ -432,6 +527,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
       imports,
+      filePath,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

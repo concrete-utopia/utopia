@@ -5,7 +5,7 @@ import React from 'react'
 import { PureComponent } from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import * as ReactDOM from 'react-dom'
-import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
@@ -47,9 +47,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   getSelectedViewsInRange: (index: number) => Array<ElementPath> // TODO remove me
   supportsChildren: boolean
   noOfChildren: number
-  staticElementName: JSXElementName | null
   label: string
-  elementOriginType: ElementOriginType
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
@@ -251,16 +249,13 @@ export class NavigatorItemDndWrapper extends PureComponent<
         key='navigatorItem'
         id={`navigator-item-${safeComponentId}`}
         data-testid={`navigator-item-${safeComponentId}`}
-        style={{
-          ...props.windowStyle,
-        }}
+        style={props.windowStyle}
       >
         <NavigatorItem
           elementPath={this.props.elementPath}
           index={this.props.index}
           getSelectedViewsInRange={this.props.getSelectedViewsInRange}
           noOfChildren={this.props.noOfChildren}
-          staticElementName={this.props.staticElementName}
           label={this.props.label}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}
@@ -268,7 +263,6 @@ export class NavigatorItemDndWrapper extends PureComponent<
           renamingTarget={this.props.renamingTarget}
           collapsed={this.props.collapsed}
           selected={this.props.selected}
-          elementOriginType={this.props.elementOriginType}
           elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop
@@ -307,7 +301,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         const editorState = editorStateRef.current
         const result = isAllowedToReparent(
           editorState.projectContents,
-          editorState.canvas.openFile?.filename,
           editorState.jsxMetadata,
           props.elementPath,
         )
@@ -343,7 +336,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           !isReparentTarget ||
           MetadataUtils.targetSupportsChildren(
             editorState.projectContents,
-            editorState.canvas.openFile?.filename,
             editorState.jsxMetadata,
             props.elementPath,
           )

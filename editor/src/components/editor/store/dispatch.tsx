@@ -7,6 +7,7 @@ import {
 } from '../../../core/workers/common/project-file-utils'
 import {
   createParseFile,
+  createPrintAndReparseFile,
   createPrintCode,
   getParseResult,
   ParseOrPrint,
@@ -16,7 +17,7 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
-import { CanvasAction } from '../../canvas/canvas-types'
+import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
@@ -62,7 +63,8 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import * as EP from '../../../core/shared/element-path'
+import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -184,7 +186,6 @@ function processAction(
       userState: working.userState,
       workers: working.workers,
       persistence: working.persistence,
-      dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
       builtInDependencies: working.builtInDependencies,
     }
@@ -238,7 +239,20 @@ function maybeRequestModelUpdate(
   let existingUIDs: Set<string> = emptySet()
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
-      if (codeNeedsParsing(file.fileContents.revisionsState)) {
+      if (
+        codeNeedsParsing(file.fileContents.revisionsState) &&
+        codeNeedsPrinting(file.fileContents.revisionsState) &&
+        isParseSuccess(file.fileContents.parsed)
+      ) {
+        filesToUpdate.push(
+          createPrintAndReparseFile(
+            fullPath,
+            file.fileContents.parsed,
+            PRODUCTION_ENV,
+            file.lastRevisedTime,
+          ),
+        )
+      } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
           ? file.fileContents.parsed
           : file.lastParseSuccess
@@ -286,6 +300,14 @@ function maybeRequestModelUpdate(
                 fileResult.filename,
                 fileResult.printResult,
                 fileResult.highlightBounds,
+                fileResult.lastRevisedTime,
+              )
+            case 'printandreparseresult':
+              return EditorActions.workerCodeAndParsedUpdate(
+                fileResult.filename,
+                fileResult.printResult,
+                fileResult.highlightBounds,
+                fileResult.parsedResult,
                 fileResult.lastRevisedTime,
               )
             default:
@@ -501,7 +523,6 @@ export function editorDispatch(
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
-    dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
     entireUpdateFinished: Promise.all([
       result.entireUpdateFinished,
@@ -642,7 +663,9 @@ function editorDispatchInner(
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
-    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
+      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
+    PERFORMANCE_MARKS_ALLOWED
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')
@@ -676,19 +699,7 @@ function editorDispatchInner(
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
-        result = {
-          ...result,
-          unpatchedEditor: {
-            ...result.unpatchedEditor,
-            canvas: {
-              ...result.unpatchedEditor.canvas,
-              dragState: {
-                ...result.unpatchedEditor.canvas.dragState,
-                metadata: reconstructJSXMetadata(result.unpatchedEditor),
-              },
-            },
-          },
-        }
+        throw new Error('canvas.dragState should not be used anymore!')
       } else if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -771,7 +782,6 @@ function editorDispatchInner(
       userState: result.userState,
       workers: storedState.workers,
       persistence: storedState.persistence,
-      dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,

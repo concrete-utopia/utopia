@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../utils/common-constants'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -31,7 +32,7 @@ export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [
     {
-      path: stylePropPathMappingFn('position', ['style']),
+      path: stylePropPathMappingFn('position', styleStringInArray),
       value: jsxAttributeValue('absolute', emptyComments),
     },
   ]

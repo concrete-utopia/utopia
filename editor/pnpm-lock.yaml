@@ -29,6 +29,7 @@ specifiers:
   '@rollup/plugin-node-resolve': 13.1.3
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': ^1.0.4
+  '@stitches/react': 1.2.8
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/react': 13.2.0
   '@tippyjs/react': 4.1.0
@@ -46,6 +47,7 @@ specifiers:
   '@types/flat': 0.0.28
   '@types/fontfaceobserver': 0.0.6
   '@types/graphlib': 2.1.4
+  '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
   '@types/html-entities': 1.2.16
   '@types/immutability-helper': 2.0.15
@@ -137,6 +139,7 @@ specifiers:
   glslCanvas: 0.1.7
   got: 11.8.1
   graphlib: 2.1.1
+  he: 1.2.0
   hosted-git-info: 3.0.5
   html-entities: 1.2.1
   html-react-parser: 0.13.0
@@ -175,7 +178,7 @@ specifiers:
   minimatch: 3.0.4
   minimist: 1.2.0
   mocha: 8.4.0
-  moize: 5.4.7
+  moize: 6.1.4
   node-diff3: 3.1.2
   node-fetch: 2.6.1
   node-html-parser: 1.2.20
@@ -219,7 +222,7 @@ specifiers:
   react-vtree: 2.0.0
   react-window: 1.8.7
   react-windowed-select: 3.1.2
-  reselect: 4.0.0
+  reselect: 4.1.7
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   script-ext-html-webpack-plugin: 2.1.4
@@ -261,7 +264,7 @@ specifiers:
   webpack-merge: 4.2.2
   webpack-node-externals: 1.7.2
   xstate: 4.23.1
-  zustand: 3.7.1
+  zustand: 4.1.5
 
 dependencies:
   '@babel/code-frame': 7.14.5
@@ -281,6 +284,7 @@ dependencies:
   '@popperjs/core': 2.4.4
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
+  '@stitches/react': 1.2.8_react@18.1.0
   '@svgr/plugin-jsx': 5.5.0
   '@tippyjs/react': 4.1.0_react-dom@18.1.0+react@18.1.0
   '@types/fontfaceobserver': 0.0.6
@@ -309,6 +313,7 @@ dependencies:
   fontfaceobserver: 2.1.0
   friendly-words: 1.1.10
   graphlib: 2.1.1
+  he: 1.2.0
   hosted-git-info: 3.0.5
   html-entities: 1.2.1
   html-react-parser: 0.13.0_react@18.1.0
@@ -325,7 +330,7 @@ dependencies:
   lru-cache: 7.10.1
   matter-js: github.com/liabru/matter-js/e909b0466cea2051267bab92a38ccaa9bf7f154e
   mime-types: 2.1.24
-  moize: 5.4.7
+  moize: 6.1.4
   node-diff3: 3.1.2
   node-html-parser: 1.2.20
   npm-package-arg: 8.1.5
@@ -363,7 +368,7 @@ dependencies:
   react-vtree: 2.0.0_fc75b599a283ce88adf32a755f569cd4
   react-window: 1.8.7_react-dom@18.1.0+react@18.1.0
   react-windowed-select: 3.1.2_3b9cfa1ca2be6d0dc04583129899fdc5
-  reselect: 4.0.0
+  reselect: 4.1.7
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   semver: 7.3.2
@@ -382,7 +387,7 @@ dependencies:
   utopia-vscode-common: link:../utopia-vscode-common
   uuid: 8.3.2
   xstate: 4.23.1
-  zustand: 3.7.1_react@18.1.0
+  zustand: 4.1.5_immer@3.2.0+react@18.1.0
 
 optionalDependencies:
   fsevents: 2.1.2
@@ -413,6 +418,7 @@ devDependencies:
   '@types/filesystem': 0.0.29
   '@types/flat': 0.0.28
   '@types/graphlib': 2.1.4
+  '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
   '@types/html-entities': 1.2.16
   '@types/immutability-helper': 2.0.15
@@ -3099,6 +3105,14 @@ packages:
     resolution: {integrity: sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==}
     dev: true
 
+  /@stitches/react/1.2.8_react@18.1.0:
+    resolution: {integrity: sha512-9g9dWI4gsSVe8bNLlb+lMkBYsnIKCZTmvqvDG+Avnn69XfmHZKiaMrx7cgTaddq7aTPPmXiTsbFcUy0xgI4+wA==}
+    peerDependencies:
+      react: '>= 16.3.0'
+    dependencies:
+      react: 18.1.0
+    dev: false
+
   /@svgr/babel-plugin-add-jsx-attribute/5.4.0:
     resolution: {integrity: sha512-ZFf2gs/8/6B8PnSofI0inYXr2SDNTDScPXhN7k5EqD4aZ3gi6u+rbmZHVB8IM3wDyx8ntKACZbtXSm7oZGRqVg==}
     engines: {node: '>=10'}
@@ -3399,6 +3413,10 @@ packages:
 
   /@types/graphlib/2.1.4:
     resolution: {integrity: sha1-G1F/QRHgd2ZVXPG9kwS+yQU7AkA=}
+    dev: true
+
+  /@types/he/1.1.2:
+    resolution: {integrity: sha512-kSJPcLO1x+oolc0R89pUl2kozldQ/fVQ1C1p5mp8fPoLdF/ZcBvckaTC2M8xXh3GYendXvCpy5m/a2eSbfgNgw==}
     dev: true
 
   /@types/hosted-git-info/3.0.0:
@@ -5928,7 +5946,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -7887,8 +7905,8 @@ packages:
     resolution: {integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==}
     dev: true
 
-  /fast-equals/1.6.3:
-    resolution: {integrity: sha512-4WKW0AL5+WEqO0zWavAfYGY1qwLsBgE//DN4TTcVEN2UlINgkv9b3vm2iHicoenWKSX9mKWmGOsU/iI5IST7pQ==}
+  /fast-equals/3.0.3:
+    resolution: {integrity: sha512-NCe8qxnZFARSHGztGMZOO/PC1qa5MIFB5Hp66WdzbCRAz8U8US3bx1UTgLS49efBQPcUtO9gf5oVEY8o7y/7Kg==}
     dev: false
 
   /fast-glob/3.2.7:
@@ -7915,10 +7933,6 @@ packages:
   /fast-safe-stringify/2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
     dev: true
-
-  /fast-stringify/1.1.2:
-    resolution: {integrity: sha512-SfslXjiH8km0WnRiuPfpUKwlZjW5I878qsOm+2x8x3TgqmElOOLh1rgJFb+PolNdNRK3r8urEefqx0wt7vx1dA==}
-    dev: false
 
   /fastest-levenshtein/1.0.12:
     resolution: {integrity: sha512-On2N+BpYJ15xIC974QNVuYGMOlEVt4s0EOI3wwMqOmK1fdDY+FN/zltPV8vosq4ad4c/gJ1KHScUn/6AWIgiow==}
@@ -8673,14 +8687,13 @@ packages:
     dev: false
 
   /he/1.1.1:
-    resolution: {integrity: sha1-k0EP0hsAlzUVH4howvJx80J+I/0=}
+    resolution: {integrity: sha512-z/GDPjlRMNOa2XJiB4em8wJpuuBfrFOlYKTZxtpkdr1uPdibHI8rYA3MY0KDObpVyaes0e/aunid/t88ZI2EKA==}
     hasBin: true
     dev: false
 
   /he/1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
-    dev: true
 
   /highlight-words-core/1.2.2:
     resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
@@ -11102,8 +11115,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /micro-memoize/2.1.2:
-    resolution: {integrity: sha512-COjNutiFgnDHXZEIM/jYuZPwq2h8zMUeScf6Sh6so98a+REqdlpaNS7Cb2ffGfK5I+xfgoA3Rx49NGuNJTJq3w==}
+  /micro-memoize/4.0.14:
+    resolution: {integrity: sha512-2tzWP1w2Hh+r7kCYa4f//jpBEA6dAueiuLco38NxfjF9Py3KCCI7wVOTdCvOhmTC043t+ulclVBdl3v+s+UJIQ==}
     dev: false
 
   /microevent.ts/0.1.1:
@@ -11340,12 +11353,11 @@ packages:
       xtend: 4.0.2
     dev: true
 
-  /moize/5.4.7:
-    resolution: {integrity: sha512-7PZH8QFJ51cIVtDv7wfUREBd3gL59JB0v/ARA3RI9zkSRa9LyGjS1Bdldii2J1/NQXRQ/3OOVOSdnZrCcVaZlw==}
+  /moize/6.1.4:
+    resolution: {integrity: sha512-Ga8V0iu7XHDz6GR50pAaGjc3hJ5CVmWUgQRyWFAn4pYrBzITx9dMlXOGhURP2qmO3WTeOC9Yu17MlFV6PY2m/g==}
     dependencies:
-      fast-equals: 1.6.3
-      fast-stringify: 1.1.2
-      micro-memoize: 2.1.2
+      fast-equals: 3.0.3
+      micro-memoize: 4.0.14
     dev: false
 
   /moment/2.29.1:
@@ -13881,8 +13893,8 @@ packages:
     resolution: {integrity: sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=}
     dev: true
 
-  /reselect/4.0.0:
-    resolution: {integrity: sha512-qUgANli03jjAyGlnbYVAV5vvnOmJnODyABz51RdBN7M4WaVu8mecZWgyQNkG8Yqe3KRGRt0l4K4B3XVEULC4CA==}
+  /reselect/4.1.7:
+    resolution: {integrity: sha512-Zu1xbUt3/OPwsXL46hvOOoQrap2azE7ZQbokq61BQfiXvhewsKDwhMeZjTX9sX0nvw1t/U5Audyn1I9P/m9z0A==}
     dev: false
 
   /resize-observer-polyfill/1.5.0:
@@ -15698,6 +15710,14 @@ packages:
       react: 18.1.0
     dev: false
 
+  /use-sync-external-store/1.2.0_react@18.1.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.1.0
+    dev: false
+
   /use/3.1.1:
     resolution: {integrity: sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==}
     engines: {node: '>=0.10.0'}
@@ -16374,6 +16394,24 @@ packages:
         optional: true
     dependencies:
       react: 18.1.0
+    dev: true
+
+  /zustand/4.1.5_immer@3.2.0+react@18.1.0:
+    resolution: {integrity: sha512-PsdRT8Bvq22Yyh1tvpgdHNE7OAeFKqJXUxtJvj1Ixw2B9O2YZ1M34ImQ+xyZah4wZrR4lENMoDUutKPpyXCQ/Q==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      immer: '>=9.0'
+      react: '>=16.8'
+    peerDependenciesMeta:
+      immer:
+        optional: true
+      react:
+        optional: true
+    dependencies:
+      immer: 3.2.0
+      react: 18.1.0
+      use-sync-external-store: 1.2.0_react@18.1.0
+    dev: false
 
   github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42:
     resolution: {tarball: https://codeload.github.com/concrete-utopia/react-error-overlay/tar.gz/201980990d653e821f36ab4f921a4f83588a8a42}

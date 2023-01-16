@@ -19,11 +19,13 @@ import {
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import { StaticReparentTargetOutlineIndicator } from '../../controls/select-mode/static-reparent-target-outline'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -33,7 +35,7 @@ import { InteractionSession } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
-import { getReparentOutcome, pathToReparent } from './reparent-utils'
+import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
 export function baseReparentAsStaticStrategy(
@@ -44,6 +46,7 @@ export function baseReparentAsStaticStrategy(
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
@@ -88,10 +91,21 @@ export function baseReparentAsStaticStrategy(
           key: 'zero-size-control',
           show: 'visible-only-while-active',
         }),
+        controlWithProps({
+          control: StaticReparentTargetOutlineIndicator,
+          props: {},
+          key: 'parent-outline-highlight',
+          show: 'visible-only-while-active',
+        }),
       ],
       fitness: fitness,
       apply: () => {
-        return applyStaticReparent(canvasState, interactionSession, reparentTarget)
+        return applyStaticReparent(
+          canvasState,
+          interactionSession,
+          customStrategyState,
+          reparentTarget,
+        )
       },
     }
   }
@@ -120,6 +134,7 @@ function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): 
 function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
   reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -148,10 +163,6 @@ function applyStaticReparent(
             newParent,
           )
 
-          const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
-            newParent,
-            EP.parentPath(target),
-          )
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
             canvasState.builtInDependencies,
@@ -162,7 +173,7 @@ function applyStaticReparent(
             newParent,
             'always',
           )
-
+          let duplicatedElementNewUids: { [elementPath: string]: string } = {}
           if (outcomeResult != null) {
             const { commands: reparentCommands, newPath } = outcomeResult
 
@@ -186,42 +197,52 @@ function applyStaticReparent(
 
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand([target, newPath]),
+              setElementsToRerenderCommand([target, newPath]), // TODO THIS LIST IS INCOMPLETE, KEEPS GHOSTS IN THE NAVIGATOR
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
 
-            function midInteractionCommandsForTarget(shouldReorder: boolean): Array<CanvasCommand> {
-              const commonPatches = [
+            function midInteractionCommandsForTarget(
+              shouldShowPositionIndicator: boolean,
+            ): Array<CanvasCommand> {
+              // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+              const placeholderResult = placeholderCloneCommands(
+                canvasState,
+                customStrategyState,
+                filteredSelectedElements,
+                newParent,
+              )
+
+              const commonPatches: Array<CanvasCommand> = [
                 wildcardPatch('mid-interaction', {
                   canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
                 }),
-                newParentADescendantOfCurrentParent
-                  ? wildcardPatch('mid-interaction', {
-                      hiddenInstances: { $push: [target] },
-                    })
-                  : wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [target] },
-                    }),
+                wildcardPatch('mid-interaction', {
+                  displayNoneInstances: { $push: [newPath] },
+                }),
+                ...placeholderResult.commands,
               ]
-              if (shouldReorder) {
+              duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
+
+              if (shouldShowPositionIndicator) {
+                return [...commonPatches, showReorderIndicator(newParent, newIndex)]
+              } else {
                 return [
                   ...commonPatches,
-                  showReorderIndicator(newParent, newIndex),
                   wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [newPath] },
+                    canvas: { controls: { parentOutlineHighlight: { $set: newParent } } },
                   }),
                 ]
-              } else {
-                return commonPatches
               }
             }
 
             let interactionFinishCommands: Array<CanvasCommand>
             let midInteractionCommands: Array<CanvasCommand>
 
-            if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-              midInteractionCommands = midInteractionCommandsForTarget(reparentResult.shouldReorder)
+            if (reparentResult.shouldShowPositionIndicator && siblingsOfTarget.length > 0) {
+              midInteractionCommands = midInteractionCommandsForTarget(
+                reparentResult.shouldShowPositionIndicator,
+              )
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
@@ -231,7 +252,7 @@ function applyStaticReparent(
             } else {
               if (parentRect != null) {
                 midInteractionCommands = midInteractionCommandsForTarget(
-                  reparentResult.shouldReorder,
+                  reparentResult.shouldShowPositionIndicator,
                 )
               } else {
                 // this should be an error because parentRect should never be null
@@ -243,7 +264,7 @@ function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
-              customStatePatch: {},
+              customStatePatch: { duplicatedElementNewUids: duplicatedElementNewUids },
               status: 'success',
             }
           }

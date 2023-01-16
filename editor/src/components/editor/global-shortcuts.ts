@@ -30,9 +30,10 @@ import {
   defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
+  defaultSpanElement,
   defaultViewElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
+import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
@@ -65,10 +66,10 @@ import {
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
   TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
-  TOGGLE_LEFT_MENU_SHORTCUT,
+  TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
-  TOGGLE_RIGHT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR,
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
@@ -86,15 +87,27 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
+  OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
+  TEXT_EDIT_MODE,
+  TOGGLE_TEXT_BOLD,
+  TOGGLE_TEXT_ITALIC,
+  TOGGLE_TEXT_UNDERLINE,
+  TOGGLE_TEXT_STRIKE_THROUGH,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  toggleTextBold,
+  toggleTextItalic,
+  toggleTextStrikeThrough,
+  toggleTextUnderline,
+} from '../text-editor/text-editor-shortcut-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -166,13 +179,17 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
   }
 }
 
-function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return (
-    editor.focusedPanel === 'inspector' ||
-    editor.focusedPanel === 'dependencylist' ||
-    editor.floatingInsertMenu.insertMenuMode !== 'closed'
-  )
+function activeElementIsAnInput(): boolean {
+  const activeElement = document.activeElement
+  if (activeElement != null) {
+    const activeElementTag = activeElement.tagName.toLowerCase()
+    return activeElementTag === 'input' || activeElementTag === 'textarea'
+  }
+
+  return false
 }
+
+const activeElementIsNotAnInput = () => !activeElementIsAnInput()
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -183,7 +200,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 
   switch (key) {
     case 'tab':
-      if (!shouldTabBeHandledByBrowser(editor)) {
+      if (activeElementIsNotAnInput()) {
         event.preventDefault()
       }
       break
@@ -206,7 +223,9 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
     case 'left':
     case 'right':
       if (cmd) {
-        event.preventDefault()
+        if (activeElementIsNotAnInput()) {
+          event.preventDefault()
+        }
       }
       break
     case 'b':
@@ -309,7 +328,7 @@ export function handleKeyDown(
   derived: DerivedState,
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -338,7 +357,7 @@ export function handleKeyDown(
   }
 
   function getUIFileActions(): Array<EditorAction> {
-    if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
+    if (key === 'tab' && activeElementIsAnInput()) {
       return []
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
@@ -362,14 +381,25 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          const textTarget = getTextEditorTarget(editor, derived)
-          if (textTarget != null && isSelectMode(editor.mode)) {
-            return [EditorActions.focusFormulaBar()]
-          } else {
-            const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
-            if (childToSelect != null) {
-              return MetaActions.selectComponents([childToSelect], false)
-            }
+          const firstTextEditableView = editor.selectedViews.find((v) =>
+            MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+          )
+          if (firstTextEditableView != null) {
+            return [
+              EditorActions.switchEditorMode(
+                EditorModes.textEditMode(
+                  firstTextEditableView,
+                  null,
+                  'existing',
+                  'select-all-on-focus',
+                ),
+              ),
+            ]
+          }
+
+          const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
+          if (childToSelect != null) {
+            return MetaActions.selectComponents([childToSelect], false)
           }
         }
         return []
@@ -398,6 +428,9 @@ export function handleKeyDown(
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
+        }
+        if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
         }
         return []
       },
@@ -605,10 +638,10 @@ export function handleKeyDown(
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
       },
-      [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_NAVIGATOR]: () => {
+        return [EditorActions.togglePanel('navigator')]
       },
-      [TOGGLE_RIGHT_MENU_SHORTCUT]: () => {
+      [TOGGLE_INSPECTOR]: () => {
         return [EditorActions.togglePanel('rightmenu')]
       },
       [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: () => {
@@ -639,6 +672,85 @@ export function handleKeyDown(
         } else {
           return []
         }
+      },
+      [OPEN_EYEDROPPER]: () => {
+        const selectedViews = editor.selectedViews
+        if (selectedViews.length === 0) {
+          return []
+        }
+        const EyeDropper = window.EyeDropper
+        if (EyeDropper == null) {
+          return []
+        }
+
+        void new EyeDropper().open().then((result: any) => {
+          dispatch(
+            selectedViews.map((view) =>
+              EditorActions.setProperty(
+                view,
+                PP.create(['style', 'backgroundColor']),
+                jsxAttributeValue(result.sRGBHex as string, emptyComments),
+              ),
+            ),
+          )
+        })
+        return []
+      },
+      [TEXT_EDIT_MODE]: () => {
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+
+        actions.push(
+          EditorActions.enableInsertModeForJSXElement(
+            defaultSpanElement(newUID),
+            newUID,
+            {},
+            null,
+            {
+              textEdit: true,
+            },
+          ),
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              CanvasMousePositionRaw!,
+              modifiers,
+              boundingArea(),
+              'zero-drag-permitted',
+            ),
+          ),
+        )
+        return actions
+      },
+      [TOGGLE_TEXT_BOLD]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextBold(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_ITALIC]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextItalic(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_UNDERLINE]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextUnderline(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [TOGGLE_TEXT_STRIKE_THROUGH]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+              return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
+            })
+          : []
       },
     })
   }
@@ -690,15 +802,14 @@ export function handleKeyDown(
     actions.push(...shortCutActions)
   }
 
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 export function handleKeyUp(
   event: KeyboardEvent,
   editor: EditorState,
   namesByKey: ShortcutNamesByKey,
-  dispatch: EditorDispatch,
-): void {
+): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
@@ -739,8 +850,7 @@ export function handleKeyUp(
   if (editorTargeted) {
     actions.push(...getShortcutActions())
   }
-
-  dispatch(actions, 'everyone')
+  return actions
 }
 
 function addCreateHoverInteractionActionToSwitchModeAction(
@@ -751,7 +861,12 @@ function addCreateHoverInteractionActionToSwitchModeAction(
     ? [
         switchModeAction,
         CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(CanvasMousePositionRaw, modifiers, boundingArea()),
+          createHoverInteractionViaMouse(
+            CanvasMousePositionRaw,
+            modifiers,
+            boundingArea(),
+            'zero-drag-not-permitted',
+          ),
         ),
       ]
     : [switchModeAction]

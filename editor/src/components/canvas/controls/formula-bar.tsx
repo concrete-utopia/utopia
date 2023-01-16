@@ -3,8 +3,8 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useColorTheme, SimpleFlexRow, HeadlessStringInput } from '../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { SimpleFlexRow, HeadlessStringInput, colorTheme } from '../../../uuiui'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 import {
@@ -14,6 +14,7 @@ import {
 } from '../../editor/shortcut-definitions'
 import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 interface FormulaBarProps {
   style: React.CSSProperties
@@ -21,45 +22,54 @@ interface FormulaBarProps {
 
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
-  const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+  const dispatch = useDispatch()
 
   const selectedMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarMode,
     'FormulaBar selectedMode',
   )
 
-  const selectedElementPath = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      return store.editor.selectedViews[0]
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementPath')
-
-  const selectedElementTextContent = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      if (metadata == null) {
-        return null
+  const selectedElementPath = useEditorState(
+    Substores.selectedViews,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        return store.editor.selectedViews[0]
       } else {
-        return MetadataUtils.getTextContentOfElement(metadata)
+        return null
       }
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementTextContent')
+    },
+    'FormulaBar selectedElementPath',
+  )
+
+  const selectedElementTextContent = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const metadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (metadata == null) {
+          return null
+        } else {
+          return MetadataUtils.getTextContentOfElement(metadata)
+        }
+      } else {
+        return null
+      }
+    },
+    'FormulaBar selectedElementTextContent',
+  )
 
   const focusTriggerCount = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
   )
 
   const inputRef = useInputFocusOnCountIncrease<HTMLInputElement>(focusTriggerCount)
 
-  const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
 
@@ -163,7 +173,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
             border: '1px solid transparent',
             borderRadius: 3,
             backgroundColor: 'transparent',
-            color: colorTheme.inverted.fg1.value,
+            color: colorTheme.bg0.value,
             transition: 'background-color .1s ease-in-out',
             '&:hover': {
               outline: 'none',

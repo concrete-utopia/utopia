@@ -5,7 +5,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -16,6 +16,7 @@ interface MultiSelectOutlineControlProps {
 
 export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
   const hiddenInstances = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.hiddenInstances,
     'MultiSelectOutlineControl hiddenInstances',
   )
@@ -46,18 +47,26 @@ interface OutlineControlProps {
 const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'OutlineControl scale',
+  )
 
-  const colors = useEditorState((store) => {
-    return targets.map((path) =>
-      getSelectionColor(
-        path,
-        store.editor.jsxMetadata,
-        store.editor.focusedElementPath,
-        colorTheme,
-      ),
-    )
-  }, 'OutlineControl colors')
+  const colors = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return targets.map((path) =>
+        getSelectionColor(
+          path,
+          store.editor.jsxMetadata,
+          store.editor.focusedElementPath,
+          colorTheme,
+        ),
+      )
+    },
+    'OutlineControl colors',
+  )
 
   const outlineRef = useBoundingBox(targets, (ref, boundingBox, canvasScale) => {
     if (isZeroSizedElement(boundingBox)) {

@@ -2,11 +2,13 @@ import React from 'react'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import {
   BorderRadiusAdjustMode,
@@ -26,6 +28,7 @@ import {
   borderRadiusResizeHandle,
   createInteractionViaMouse,
 } from '../../canvas-strategies/interaction-state'
+import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -53,16 +56,22 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const { dispatch, scale, hoveredViews, isDragging } = useEditorState(
+  const dispatch = useDispatch()
+  const { scale, isDragging } = useEditorState(
+    Substores.canvas,
     (store) => ({
-      dispatch: store.dispatch,
       scale: store.editor.canvas.scale,
-      hoveredViews: store.editor.hoveredViews,
       isDragging:
         store.editor.canvas.interactionSession?.activeControl.type ===
         'BORDER_RADIUS_RESIZE_HANDLE',
     }),
-    'BorderRadiusControl dispatch scale',
+    'BorderRadiusControl isDragging scale',
+  )
+
+  const hoveredViews = useEditorState(
+    Substores.highlightedHoveredViews,
+    (store) => store.editor.highlightedViews,
+    'BorderRadiusControl hoveredViews',
   )
 
   const backgroundShown = hoveredViews.some((p) => EP.pathsEqual(p, selectedElement))
@@ -145,7 +154,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
-  const size = BorderRadiusHandleSize(scale)
+  const { padding, size } = BorderRadiusHandleSize(scale)
   const position = handlePosition(
     isDragging
       ? borderRadius.renderedValuePx
@@ -162,6 +171,9 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         position: 'absolute',
         left: position.x,
         top: position.y,
+        padding: padding,
+        pointerEvents: 'all',
+        cursor: CSSCursor.Radius,
       }}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
@@ -179,7 +191,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             }}
           >
             <CanvasLabel
-              value={`Radius ${printCSSNumber(borderRadius.value, null)}`}
+              value={`${printCSSNumber(borderRadius.value, null)}`}
               scale={scale}
               color={colorTheme.brandNeonPink.value}
               textColor={colorTheme.white.value}
@@ -188,7 +200,6 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         )}
         <div
           style={{
-            pointerEvents: 'all',
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             width: size,
             height: size,
@@ -235,6 +246,7 @@ function startInteraction(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
           borderRadiusResizeHandle(corner),
+          'zero-drag-not-permitted',
         ),
       ),
     ])

@@ -53,14 +53,18 @@ function removeExtraLineBreaks(string: string) {
     : string
 }
 
-export function matchInlineSnapshotBrowser(received: unknown, inlineSnapshot: string): void {
-  const resultSnapshot = removeExtraLineBreaks(
+export function printSnapshotformat(received: unknown): string {
+  return removeExtraLineBreaks(
     prettyFormat(received, {
       escapeRegex: true,
       indent: 2,
       printFunctionName: false,
     }),
   )
+}
+
+export function matchInlineSnapshotBrowser(received: unknown, inlineSnapshot: string): void {
+  const resultSnapshot = printSnapshotformat(received)
   const trimmedMultilineSnapshot = removeExtraLineBreaks(stripAddedIndentation(inlineSnapshot))
   expect(resultSnapshot).toEqual(trimmedMultilineSnapshot)
 }

@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import {
+  ElementSupportsChildren,
+  MetadataUtils,
+} from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
@@ -42,6 +45,7 @@ export function getReparentTargetUnified(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
@@ -53,6 +57,7 @@ export function getReparentTargetUnified(
     metadata,
     allElementProps,
     allowSmallerParent,
+    elementSupportsChildren,
   )
 
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
@@ -60,6 +65,7 @@ export function getReparentTargetUnified(
     findParentByPaddedInsertionZone(
       metadata,
       validTargetparentsUnderPoint,
+      reparentSubjects,
       canvasScale,
       pointOnCanvas,
     )
@@ -92,6 +98,7 @@ function findValidTargetsUnderPoint(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -127,7 +134,11 @@ function findValidTargetsUnderPoint(
       return true
     }
 
-    if (!MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target)) {
+    if (
+      !elementSupportsChildren.includes(
+        MetadataUtils.targetSupportsChildrenAlsoText(projectContents, metadata, target),
+      )
+    ) {
       // simply skip elements that do not support children
       return false
     }
@@ -239,20 +250,34 @@ function isTargetOutsideOfContainingComponentUnderMouse(
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
   validTargetparentsUnderPoint: ElementPath[],
+  reparentSubjects: ReparentSubjects,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
-) {
-  let targetParentWithPaddedInsertionZone: ReparentTarget | null = null
+): ReparentTarget | null {
+  // with current parent under cursor filter ancestors from reparent targets
+  const currentParentUnderCursor =
+    reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? validTargetparentsUnderPoint.find((targetParent) =>
+          EP.isParentOf(targetParent, reparentSubjects.elements[0]),
+        ) ?? null
+      : null
+  const validTargetparentsUnderPointFiltered =
+    currentParentUnderCursor != null
+      ? validTargetparentsUnderPoint.filter(
+          (targetParent) => !EP.isDescendantOf(currentParentUnderCursor, targetParent),
+        )
+      : validTargetparentsUnderPoint
+
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
     const autolayoutDirection = singleAxisAutoLayoutContainerDirections(element, metadata)
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
-    const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
-    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
-    const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(metadata, element)
+    const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(metadata, element)
     if (!compatibleWith1DReorder) {
       return null
     }
@@ -261,7 +286,7 @@ function findParentByPaddedInsertionZone(
       path: element,
       directions: autolayoutDirection,
     }
-  }, [...validTargetparentsUnderPoint].reverse())
+  }, [...validTargetparentsUnderPointFiltered].reverse())
 
   // first try to find a flex element insertion area
   for (const singleAxisAutoLayoutContainer of singleAxisAutoLayoutContainersUnderPoint) {
@@ -287,10 +312,10 @@ function findParentByPaddedInsertionZone(
     const targetUnderMouseIndex = foundTarget?.insertionIndex
 
     if (targetUnderMouseIndex != null) {
-      // we found a target!
-      targetParentWithPaddedInsertionZone = {
+      // we found a first good target parent, early return
+      return {
         shouldReparent: true,
-        shouldReorder: true,
+        shouldShowPositionIndicator: true,
         newParent: singleAxisAutoLayoutContainer.path,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
@@ -299,7 +324,7 @@ function findParentByPaddedInsertionZone(
       }
     }
   }
-  return targetParentWithPaddedInsertionZone
+  return null
 }
 
 function findParentUnderPointByArea(
@@ -309,19 +334,22 @@ function findParentUnderPointByArea(
   pointOnCanvas: CanvasPoint,
 ) {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
-  const shouldReparentAsFlowOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, targetParentPath)
-  const compatibleWith1DReorder = isSingleAxisAutoLayoutComaptibleWithReorder(
+  const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+    metadata,
+    targetParentPath,
+  )
+  const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
     metadata,
     targetParentPath,
   )
 
   const targetParentUnderPoint: ReparentTarget = (() => {
-    if (shouldReparentAsFlowOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: false,
+        shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
         defaultReparentType: 'REPARENT_AS_ABSOLUTE',
@@ -336,10 +364,13 @@ function findParentUnderPointByArea(
           pointOnCanvas,
         )
 
+      const hasStaticChildren =
+        MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, targetParentPath).length > 0
+
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: targetUnderMouseIndex !== -1,
+        shouldShowPositionIndicator: targetUnderMouseIndex !== -1 && hasStaticChildren,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
         defaultReparentType: 'REPARENT_AS_STATIC',
@@ -349,7 +380,7 @@ function findParentUnderPointByArea(
       return {
         shouldReparent: true,
         newParent: targetParentPath,
-        shouldReorder: false,
+        shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
         defaultReparentType: 'REPARENT_AS_STATIC',
@@ -468,7 +499,7 @@ export function flowParentAbsoluteOrStatic(
   // should there be a DO_NOT_REPARENT return type here?
 }
 
-function isSingleAxisAutoLayoutComaptibleWithReorder(
+function isSingleAxisAutoLayoutCompatibleWithReorder(
   metadata: ElementInstanceMetadataMap,
   parent: ElementPath,
 ): boolean {
@@ -477,10 +508,8 @@ function isSingleAxisAutoLayoutComaptibleWithReorder(
   if (parentIsFlexLayout) {
     return true
   }
-
   const flowChildren = MetadataUtils.getChildren(metadata, parent).filter(
-    (child) => child.specialSizeMeasurements.position !== 'absolute',
+    MetadataUtils.elementParticipatesInAutoLayout,
   )
-
   return flowChildren.length > 1
 }

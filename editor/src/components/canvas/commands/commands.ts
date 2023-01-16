@@ -58,6 +58,7 @@ import {
   ConvertCssPercentToPx,
   runConvertCssPercentToPx,
 } from './convert-css-percent-to-px-command'
+import { HideInNavigatorCommand, runHideInNavigatorCommand } from './hide-in-navigator-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -101,6 +102,7 @@ export type CanvasCommand =
   | AddElement
   | HighlightElementsCommand
   | ConvertCssPercentToPx
+  | HideInNavigatorCommand
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -164,6 +166,8 @@ export const runCanvasCommand = (
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':
       return runConvertCssPercentToPx(editorState, command)
+    case 'HIDE_IN_NAVIGATOR_COMMAND':
+      return runHideInNavigatorCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -247,11 +251,28 @@ export function foldAndApplyCommands(
     commandLifecycle,
   )
 
+  const priorPatchedStateWithCurrentSpyValues: EditorState = {
+    ...priorPatchedState,
+
+    // List of parts of the editor state that we already know changed from the last frame, and are not usually affected by Commands
+    _currentAllElementProps_KILLME: editorState._currentAllElementProps_KILLME,
+    jsxMetadata: editorState.jsxMetadata,
+    domMetadata: editorState.domMetadata,
+    spyMetadata: editorState.spyMetadata,
+    canvas: {
+      ...priorPatchedState.canvas,
+      interactionSession: editorState.canvas.interactionSession,
+    },
+  }
+
   let workingEditorState = updatedEditorState
   if (statePatches.length === 0) {
     workingEditorState = editorState
   } else {
-    workingEditorState = EditorStateKeepDeepEquality(priorPatchedState, workingEditorState).value
+    workingEditorState = EditorStateKeepDeepEquality(
+      priorPatchedStateWithCurrentSpyValues,
+      workingEditorState,
+    ).value
   }
 
   return {

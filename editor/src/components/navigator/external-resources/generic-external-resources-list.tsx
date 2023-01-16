@@ -15,7 +15,8 @@ import {
   SectionBodyArea,
 } from '../../../uuiui'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
 import { GenericExternalResourcesListItem } from './generic-external-resources-list-item'
@@ -59,13 +60,18 @@ export const GenericExternalResourcesList = React.memo(() => {
     setEditingIndexOrInserting(null)
   }, [])
 
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      minimised: store.editor.genericExternalResources.minimised,
-      focusedPanel: store.editor.focusedPanel,
-    }
-  }, 'GenericExternalResourcesList')
+  const dispatch = useDispatch()
+
+  const { minimised, focusedPanel } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        minimised: store.editor.genericExternalResources.minimised,
+        focusedPanel: store.editor.focusedPanel,
+      }
+    },
+    'GenericExternalResourcesList',
+  )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')

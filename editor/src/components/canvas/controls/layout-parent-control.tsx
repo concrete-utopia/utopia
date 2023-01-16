@@ -1,4 +1,5 @@
 import React from 'react'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -8,7 +9,8 @@ import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   alignItemsOptions,
@@ -31,47 +33,55 @@ const getFlexDirectionIcon = (
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutParentControl dispatch')
+  const dispatch = useDispatch()
 
-  const { canvasOffset, scale } = useEditorState((store) => {
-    return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      scale: store.editor.canvas.scale,
-    }
-  }, 'LayoutParentControl canvas')
-  const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
-    useEditorState((store) => {
-      if (
-        store.editor.canvas.controls.flexReparentTargetLines != null ||
-        store.editor.selectedViews.length !== 1 ||
-        store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
-      ) {
-        return {
-          parentTarget: null,
-          parentLayout: null,
-          parentFrame: null,
-          flexWrap: null,
-          flexDirection: null,
-          alignItems: null,
-        }
-      }
-      const parentElement = MetadataUtils.getParent(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      const elementProps =
-        parentElement == null
-          ? {}
-          : store.editor.allElementProps[EP.toString(parentElement.elementPath)]
+  const { canvasOffset, scale } = useEditorState(
+    Substores.canvasOffset,
+    (store) => {
       return {
-        parentTarget: parentElement?.elementPath,
-        parentLayout: parentElement?.specialSizeMeasurements.layoutSystemForChildren,
-        parentFrame: parentElement?.globalFrame,
-        flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
-        flexDirection: elementProps?.style?.flexDirection ?? 'row',
-        alignItems: elementProps?.style?.alignItems ?? 'flex-start',
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        scale: store.editor.canvas.scale,
       }
-    }, 'LayoutParentControl')
+    },
+    'LayoutParentControl canvas',
+  )
+  const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
+    useEditorState(
+      Substores.fullStore,
+      (store) => {
+        if (
+          store.editor.canvas.controls.flexReparentTargetLines != null ||
+          store.editor.selectedViews.length !== 1 ||
+          store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
+        ) {
+          return {
+            parentTarget: null,
+            parentLayout: null,
+            parentFrame: null,
+            flexWrap: null,
+            flexDirection: null,
+            alignItems: null,
+          }
+        }
+        const parentElement = MetadataUtils.getParent(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        const elementProps =
+          parentElement == null
+            ? {}
+            : store.editor.allElementProps[EP.toString(parentElement.elementPath)]
+        return {
+          parentTarget: parentElement?.elementPath,
+          parentLayout: parentElement?.specialSizeMeasurements.layoutSystemForChildren,
+          parentFrame: parentElement?.globalFrame,
+          flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
+          flexDirection: elementProps?.style?.flexDirection ?? 'row',
+          alignItems: elementProps?.style?.alignItems ?? 'flex-start',
+        }
+      },
+      'LayoutParentControl',
+    )
 
   const {
     justifyFlexStart,
@@ -98,7 +108,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('flexDirection', ['style']),
+              stylePropPathMappingFn('flexDirection', styleStringInArray),
               jsxAttributeValue(newValue, emptyComments),
             ),
           ],
@@ -116,7 +126,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              stylePropPathMappingFn('alignItems', ['style']),
+              stylePropPathMappingFn('alignItems', styleStringInArray),
               jsxAttributeValue(option.value, emptyComments),
             ),
           ],

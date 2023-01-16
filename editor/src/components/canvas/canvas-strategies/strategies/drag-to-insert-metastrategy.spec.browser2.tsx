@@ -153,7 +153,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 left: 140,
                 top: 40,
@@ -229,7 +229,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 left: -40,
                 top: -40,
@@ -309,7 +309,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
         >
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -392,7 +392,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               left: 125,
               top: 125,
@@ -457,7 +457,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           >
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 left: 190,
                 top: 45,
@@ -510,7 +510,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           /> 
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
               contain: 'layout',
@@ -570,7 +570,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           > 
             <div
               style={{
-                backgroundColor: '#0091FFAA',
+                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 left: 40,
                 top: 40,

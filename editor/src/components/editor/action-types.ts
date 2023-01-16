@@ -54,11 +54,11 @@ import {
   ProjectGithubSettings,
   RightMenuTab,
   StoredEditorState,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -72,6 +72,7 @@ import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
+import { CanvasCommand } from '../canvas/commands/commands'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -179,6 +180,7 @@ export type UpdateEditorMode = {
 export type SwitchEditorMode = {
   action: 'SWITCH_EDITOR_MODE'
   mode: Mode
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit'
 }
 
 export interface ToggleCanvasIsLive {
@@ -658,9 +660,18 @@ export interface WorkerParsedUpdate {
   lastRevisedTime: number
 }
 
+export interface WorkerCodeAndParsedUpdate {
+  type: 'WORKER_CODE_AND_PARSED_UPDATE'
+  filePath: string
+  code: string
+  highlightBounds: HighlightBoundsForUids
+  parsed: ParsedTextFile
+  lastRevisedTime: number
+}
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {
@@ -961,7 +972,7 @@ export interface SetFilebrowserDropTarget {
 
 export interface SetCurrentTheme {
   action: 'SET_CURRENT_THEME'
-  theme: Theme
+  theme: ThemeSetting
 }
 
 export interface FocusClassNameInput {
@@ -1067,6 +1078,10 @@ export interface UpdateAgainstGithub {
 export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   imageDragSessionState: ImageDragSessionState
+}
+export interface ApplyCommandsAction {
+  action: 'APPLY_COMMANDS'
+  commands: CanvasCommand[]
 }
 
 export type EditorAction =
@@ -1242,6 +1257,7 @@ export type EditorAction =
   | UpdateBranchContents
   | SetRefreshingDependencies
   | SetAssetChecksum
+  | ApplyCommandsAction
 
 export type DispatchPriority =
   | 'everyone'

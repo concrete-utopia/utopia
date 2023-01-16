@@ -22,6 +22,7 @@ import {
 } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
+import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 
 export function reorderSliderStategy(
   canvasState: InteractionCanvasState,
@@ -59,12 +60,8 @@ export function reorderSliderStategy(
         show: 'always-visible',
       }),
     ],
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'REORDER_SLIDER'
-        ? 100
-        : 0,
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'REORDER_SLIDER', 100),
+
     apply: () => {
       if (
         interactionSession != null &&

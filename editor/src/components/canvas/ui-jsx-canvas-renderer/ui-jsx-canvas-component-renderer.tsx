@@ -201,6 +201,7 @@ export function createComponentRendererComponent(params: {
         imports,
         code,
         highlightBounds,
+        rerenderUtopiaContext.editedText,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -248,6 +249,7 @@ export function createComponentRendererComponent(params: {
           imports,
           code,
           highlightBounds,
+          rerenderUtopiaContext.editedText,
         )
 
         if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

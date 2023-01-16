@@ -28,7 +28,7 @@ import {
   escapeHatch,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
-import { useRefEditorState, useEditorState } from './editor/store/store-hook'
+import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
 import { setHighlightedView } from './editor/actions/action-creators'
@@ -40,6 +40,7 @@ import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import { pointsEqual, WindowPoint } from '../core/shared/math-utils'
+import { useDispatch } from './editor/store/dispatch-context'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -142,6 +143,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(
+    Substores.highlightedHoveredViews,
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )
@@ -175,9 +177,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const { dispatch } = useEditorState((store) => {
-    return { dispatch: store.dispatch }
-  }, 'ElementContextMenu dispatch')
+  const dispatch = useDispatch()
 
   const editorSliceRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
@@ -185,7 +185,6 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
       selectedViews: store.editor.selectedViews,
       jsxMetadata: store.editor.jsxMetadata,
-      editorDispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
       transientFilesState: store.derived.transientState.filesState,

@@ -7,7 +7,7 @@ import {
   isJSXElement,
   JSXElementName,
 } from '../../../core/shared/element-template'
-import { ElementOriginType, ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
@@ -19,17 +19,11 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import {
-  IcnProps,
-  useColorTheme,
-  UtopiaStyles,
-  UtopiaTheme,
-  FlexRow,
-  ColorTheme,
-} from '../../../uuiui'
+import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -48,14 +42,12 @@ export interface NavigatorItemInnerProps {
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
-  staticElementName: JSXElementName | null
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
 }
 
@@ -133,7 +125,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
   iconColor: 'warning',
 })
 
-const componentSelected = (colorTheme: any): ComputedLook => ({
+const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: colorTheme.navigatorComponentSelected.value,
     color: colorTheme.neutralForeground.value,
@@ -150,7 +142,7 @@ const computeResultingStyle = (
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
-  colorTheme: ColorTheme,
+  colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
   if (isHighlightedForInteraction) {
@@ -203,56 +195,61 @@ const computeResultingStyle = (
 }
 
 function useStyleFullyVisible(path: ElementPath): boolean {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    const selectedViews = store.editor.selectedViews
-    const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
-    const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      const selectedViews = store.editor.selectedViews
+      const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
+      const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
 
-    const isStoryboardChild = EP.isStoryboardChild(path)
+      const isStoryboardChild = EP.isStoryboardChild(path)
 
-    const isContainingBlockAncestor = selectedViews.some((selected) => {
-      return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
-    })
+      const isContainingBlockAncestor = selectedViews.some((selected) => {
+        return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
+      })
 
-    const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
-        metadata,
-        selected,
-      )?.specialSizeMeasurements
-      const parentPath = EP.parentPath(selected)
-      if (
-        selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
-        !isParentOfSelected &&
-        EP.isDescendantOfOrEqualTo(selected, path) &&
-        parentPath != null
-      ) {
-        const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+      const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+        const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
           metadata,
-          parentPath,
-        )
-        return EP.pathsEqual(flexDirectionChange, path)
-      } else {
-        return false
-      }
-    })
+          selected,
+        )?.specialSizeMeasurements
+        const parentPath = EP.parentPath(selected)
+        if (
+          selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+          !isParentOfSelected &&
+          EP.isDescendantOfOrEqualTo(selected, path) &&
+          parentPath != null
+        ) {
+          const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+            metadata,
+            parentPath,
+          )
+          return EP.pathsEqual(flexDirectionChange, path)
+        } else {
+          return false
+        }
+      })
 
-    let isInsideFocusedComponent =
-      EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
+      let isInsideFocusedComponent =
+        EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
 
-    return (
-      isStoryboardChild ||
-      isSelected ||
-      isParentOfSelected ||
-      isContainingBlockAncestor ||
-      isFlexAncestorDirectionChange ||
-      isInsideFocusedComponent
-    )
-  }, 'NavigatorItem useStyleFullyVisible')
+      return (
+        isStoryboardChild ||
+        isSelected ||
+        isParentOfSelected ||
+        isContainingBlockAncestor ||
+        isFlexAncestorDirectionChange ||
+        isInsideFocusedComponent
+      )
+    },
+    'NavigatorItem useStyleFullyVisible',
+  )
 }
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
+    Substores.metadata,
     (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
@@ -267,7 +264,6 @@ export const NavigatorItem: React.FunctionComponent<
     isElementVisible,
     selected,
     collapsed,
-    elementOriginType,
     elementPath,
     getSelectedViewsInRange,
     index,
@@ -276,29 +272,36 @@ export const NavigatorItem: React.FunctionComponent<
 
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(
+    Substores.focusedElement,
     (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
     'NavigatorItem isFocusedComponent',
   )
 
-  const isFocusableComponent = useEditorState((store) => {
-    return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
-  }, 'NavigatorItem isFocusable')
+  const isFocusableComponent = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
+    },
+    'NavigatorItem isFocusable',
+  )
 
   const childComponentCount = props.noOfChildren
 
-  const isDynamic =
-    elementOriginType === 'unknown-element' ||
-    elementOriginType === 'generated-static-definition-present'
+  const isDynamic = MetadataUtils.isElementGenerated(elementPath)
 
   const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
-  const isHighlightedForInteraction = useEditorState((store) => {
-    return store.editor.navigator.highlightedTargets.some((target) =>
-      EP.pathsEqual(target, props.elementPath),
-    )
-  }, 'isreallyhighlighted')
+  const isHighlightedForInteraction = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.navigator.highlightedTargets.some((target) =>
+        EP.pathsEqual(target, props.elementPath),
+      )
+    },
+    'isreallyhighlighted',
+  )
 
   const resultingStyle = computeResultingStyle(
     selected,
@@ -379,7 +382,6 @@ export const NavigatorItem: React.FunctionComponent<
           label={props.label}
           renamingTarget={props.renamingTarget}
           selected={props.selected}
-          elementOriginType={props.elementOriginType}
           dispatch={props.dispatch}
           isDynamic={isDynamic}
           iconColor={resultingStyle.iconColor}
@@ -407,7 +409,6 @@ interface NavigatorRowLabelProps {
   isDynamic: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  elementOriginType: ElementOriginType
   dispatch: EditorDispatch
 }
 
@@ -429,7 +430,6 @@ const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
-        elementOriginType={props.elementOriginType}
       />
       <ComponentPreview
         key={`preview-${props.label}`}

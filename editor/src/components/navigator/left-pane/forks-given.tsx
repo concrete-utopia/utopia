@@ -8,19 +8,27 @@ import { Avatar, Section, SectionBodyArea, Subdued, useColorTheme } from '../../
 import { User } from '../../../uuiui-deps'
 import { Link } from '../../../uuiui/link'
 import { useGetProjectMetadata } from '../../common/server-hooks'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 
 export const ForksGiven = React.memo(() => {
   const colorTheme = useColorTheme()
 
-  const { id, isLoggedIn, forkedFrom } = useEditorState((store) => {
-    return {
-      id: store.editor.id,
-      isLoggedIn: User.isLoggedIn(store.userState.loginState),
-      forkedFrom: store.editor.forkedFromProjectId,
-    }
-  }, 'ForkPanel')
+  const isLoggedIn = useEditorState(
+    Substores.restOfStore,
+    (store) => User.isLoggedIn(store.userState.loginState),
+    'ForksGiven isLoggedIn',
+  )
+  const { id, forkedFrom } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        id: store.editor.id,
+        forkedFrom: store.editor.forkedFromProjectId,
+      }
+    },
+    'ForkPanel',
+  )
 
   const projectOwnerMetadata = useGetProjectMetadata(id)
   const forkedFromMetadata = useGetProjectMetadata(forkedFrom)

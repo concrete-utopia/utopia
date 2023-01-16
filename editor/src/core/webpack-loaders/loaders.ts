@@ -23,10 +23,6 @@ function loaderForFile(filename: string): ModuleLoader | undefined {
   return moduleLoaders.find((loader) => loader.match(filename))
 }
 
-export function loaderExistsForFile(filename: string): boolean {
-  return loaderForFile(filename) != null
-}
-
 export function applyLoaders(filename: string, contents: string): LoadModuleResult {
   const matchedLoader = loaderForFile(filename)
   if (matchedLoader != null) {

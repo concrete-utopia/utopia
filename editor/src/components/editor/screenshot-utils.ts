@@ -4,14 +4,14 @@ const BASE64_PREFIX = 'data:image/png;base64,'
 
 type Dom2ImageOptions = { width?: number; height?: number }
 
-export async function getPNGOfElement(
+async function getPNGOfElement(
   element: HTMLElement,
   options: Dom2ImageOptions = {},
 ): Promise<string | null> {
   return domtoimage.toPng(element, options)
 }
 
-export async function getPNGOfElementWithID(
+async function getPNGOfElementWithID(
   elementID: string,
   options: Dom2ImageOptions = {},
 ): Promise<string | null> {

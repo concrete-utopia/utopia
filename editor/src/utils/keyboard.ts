@@ -144,7 +144,7 @@ export function modifiersForEvent(event: KeyboardEvent): ReadonlyArray<Modifier>
   return getCachedModifier(modifiers)
 }
 
-function keyCharacterFromCode(keyCode: number): KeyCharacter {
+export function keyCharacterFromCode(keyCode: number): KeyCharacter {
   switch (true) {
     case keyCode === KeyCode.BACKSPACE:
       return 'backspace'
@@ -265,9 +265,35 @@ export const Keyboard = {
         return false
     }
   },
+  keyTriggersFontSizeStrategy: function (keyChar: KeyCharacter): boolean {
+    switch (keyChar) {
+      case 'period':
+      case 'comma':
+        return true
+      default:
+        return false
+    }
+  },
+  keyTriggersFontWeightStrategy: function (keyChar: KeyCharacter): boolean {
+    switch (keyChar) {
+      case 'period':
+      case 'comma':
+        return true
+      default:
+        return false
+    }
+  },
+  keyTriggersOpacityStrategy: function (keyChar: KeyCharacter): boolean {
+    return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(keyChar)
+  },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
-    return this.keyIsArrow(keyChar)
+    return (
+      this.keyIsArrow(keyChar) ||
+      this.keyTriggersFontSizeStrategy(keyChar) ||
+      this.keyTriggersFontWeightStrategy(keyChar) ||
+      this.keyTriggersOpacityStrategy(keyChar)
+    )
   },
   keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (

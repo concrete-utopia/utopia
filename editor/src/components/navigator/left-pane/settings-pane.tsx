@@ -22,11 +22,16 @@ import { SelectOption } from '../../../uuiui-deps'
 import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ForksGiven } from './forks-given'
 
 const themeOptions = [
+  {
+    label: 'System',
+    value: 'system',
+  },
   {
     label: 'Dark',
     value: 'dark',
@@ -37,20 +42,28 @@ const themeOptions = [
   },
 ]
 
-const defaultTheme = themeOptions[1]
+const defaultTheme = themeOptions[0]
 
 export const SettingsPane = React.memo(() => {
-  const { dispatch, userState, projectId, projectName, projectDescription, themeConfig } =
-    useEditorState((store) => {
+  const dispatch = useDispatch()
+  const { projectId, projectName, projectDescription } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
       return {
-        dispatch: store.dispatch,
-        userState: store.userState,
         projectId: store.editor.id,
         projectName: store.editor.projectName,
         projectDescription: store.editor.projectDescription,
-        themeConfig: store.userState.themeConfig,
       }
-    }, 'SettingsPane')
+    },
+    'SettingsPane',
+  )
+
+  const userState = useEditorState(
+    Substores.userState,
+    (store) => store.userState,
+    'SettingsPane userState',
+  )
+  const themeConfig = userState.themeConfig
 
   const isMyProject = useIsMyProject(projectId)
 

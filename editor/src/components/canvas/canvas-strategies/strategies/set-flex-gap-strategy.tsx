@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -38,7 +39,7 @@ import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
-const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
+const StyleGapProp = stylePropPathMappingFn('gap', styleStringInArray)
 
 export const FlexGapTearThreshold: number = -25
 

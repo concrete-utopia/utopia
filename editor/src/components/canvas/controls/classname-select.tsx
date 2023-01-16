@@ -29,9 +29,16 @@ import {
   useFilteredOptions,
   useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'
-import { colorTheme, FlexColumn, FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import {
+  AlternateColorThemeComponent,
+  colorTheme,
+  FlexColumn,
+  FlexRow,
+  UtopiaTheme,
+} from '../../../uuiui'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 const DropdownIndicator = React.memo((props: IndicatorProps<TailWindOption, true>) => (
   <components.DropdownIndicator {...props}>
@@ -45,18 +52,17 @@ const IndicatorSeparator = () => null
 const NoOptionsMessage = React.memo((props: any) => <span {...props}>No results found</span>)
 
 const getOptionColors = (
-  theme: typeof colorTheme,
   isFocused: boolean,
   isSelected: boolean,
   isDisabled: boolean,
   data: any,
 ) => {
-  let color: string | undefined = theme.inverted.textColor.value
-  let selectedColor = theme.inverted.primary.value
-  let backgroundColor: string | undefined = theme.inverted.bg1.value
-  let activeBackgroundColor: string | undefined = theme.primary.value
+  let color: string | undefined = colorTheme.bg0.value
+  let selectedColor = colorTheme.primary.value
+  let backgroundColor: string | undefined = colorTheme.fg1.value
+  let activeBackgroundColor: string | undefined = colorTheme.primary.value
   if (isFocused) {
-    backgroundColor = theme.inverted.primary.value
+    backgroundColor = colorTheme.primary.value
   } else if (isSelected) {
     backgroundColor = selectedColor
     activeBackgroundColor = selectedColor
@@ -105,11 +111,11 @@ const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
             css={{
               label: 'focusedElementMetadata',
               overflow: 'hidden',
-              boxShadow: `inset 0px 1px 0px 0px ${colorTheme.inverted.bg0Opacity10.value}`,
+              boxShadow: `inset 0px 1px 0px 0px ${colorTheme.fg0Opacity10.value}`,
               padding: '8px 8px',
               fontSize: '10px',
               pointerEvents: 'none',
-              color: colorTheme.inverted.textColor.value,
+              color: colorTheme.bg0.value,
             }}
           >
             <FlexColumn>
@@ -149,9 +155,12 @@ let queuedDispatchTimeout: number | undefined = undefined
 
 export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
-    const theme = useColorTheme()
-    const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
-    const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+    const targets = useEditorState(
+      Substores.selectedViews,
+      (store) => store.editor.selectedViews,
+      'ClassNameSelect targets',
+    )
+    const dispatch = useDispatch()
     const [input, setInput] = React.useState('')
     const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
@@ -280,17 +289,17 @@ export const ClassNameSelect = React.memo(
             display: 'flex',
             alignItems: 'center',
             height: 18,
-            border: `1px solid ${theme.inverted.primary.value}`,
+            border: `1px solid ${colorTheme.primary.value}`,
             borderRadius: UtopiaTheme.inputBorderRadius,
             backgroundColor: (state.isFocused as boolean)
-              ? theme.inverted.primary.value
-              : theme.inverted.bg1.value,
+              ? colorTheme.primary.value
+              : colorTheme.fg1.value,
           }
         },
         multiValueLabel: () => ({
           fontSize: 10,
           padding: '2px 4px',
-          color: theme.inverted.textColor.value,
+          color: colorTheme.textColor.value,
         }),
         multiValueRemove: (styles: React.CSSProperties, { data }) => ({
           width: 11,
@@ -301,7 +310,7 @@ export const ClassNameSelect = React.memo(
           ':hover': {
             opacity: 1,
             backgroundColor: data.color,
-            color: theme.inverted.textColor.value,
+            color: colorTheme.bg0.value,
           },
           '& > svg': {
             overflow: 'hidden',
@@ -310,7 +319,7 @@ export const ClassNameSelect = React.memo(
         input: () => {
           return {
             fontSize: 11,
-            color: theme.inverted.textColor.value,
+            color: colorTheme.bg0.value,
             letterSpacing: 0.3,
             background: 'transparent',
             display: 'flex',
@@ -323,12 +332,12 @@ export const ClassNameSelect = React.memo(
         }),
         menu: (styles) => ({
           ...styles,
-          backgroundColor: theme.inverted.bg1.value,
+          backgroundColor: colorTheme.fg1.value,
           zIndex: 100,
         }),
         option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
           // a single entry in the options list
-          const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
+          const optionColors = getOptionColors(isFocused, isSelected, isDisabled, data)
           return {
             minHeight: 27,
             display: 'flex',
@@ -346,7 +355,7 @@ export const ClassNameSelect = React.memo(
           }
         },
       }),
-      [theme],
+      [],
     )
 
     const onInputChange = React.useCallback(
@@ -385,7 +394,7 @@ export const ClassNameSelect = React.memo(
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
-          '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
+          '&:focus-within': { boxShadow: `0px 0px 0px 1px ${colorTheme.primary.value}` },
         }}
         onKeyDown={handleKeyDown}
       >

@@ -42,7 +42,7 @@ export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSXAttr
 export function defaultViewElementStyle(): JSXAttribute {
   return jsxAttributeValue(
     {
-      backgroundColor: '#0091FFAA',
+      backgroundColor: '#aaaaaa33',
       position: 'absolute',
     },
     emptyComments,
@@ -68,7 +68,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
         },
         emptyComments,
       ),
@@ -155,11 +155,19 @@ export function defaultSpanElement(uid: string): JSXElement {
     jsxElementName('span', []),
     uid,
     jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+          wordBreak: 'break-word',
+        },
+        emptyComments,
+      ),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
-    [jsxTextBlock('utopia')],
+    [],
   )
 }
+export const DefaultTextWidth = 200
 
 export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(

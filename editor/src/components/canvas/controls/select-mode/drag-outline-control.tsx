@@ -7,7 +7,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { getMultiselectBounds } from '../../canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -58,7 +58,11 @@ type DragOutlineControlProps =
   | DragTargetsFrames
 
 export const DragOutlineControl = controlForStrategyMemoized((props: DragOutlineControlProps) => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'OutlineControl scale',
+  )
   const frame = useFrameFromProps(props)
 
   const colorTheme = useColorTheme()
@@ -87,29 +91,37 @@ export const DragOutlineControl = controlForStrategyMemoized((props: DragOutline
 })
 
 function useFrameFromProps(props: DragOutlineControlProps): CanvasRectangle | null {
-  const bounds = useEditorState((store) => {
-    switch (props.type) {
-      case 'frames':
-        return boundingRectangleArray(props.frames)
-      case 'element-paths':
-        return getMultiselectBounds(store.strategyState.startingMetadata, props.targets)
-      case 'element-paths-live':
-        return getMultiselectBounds(
-          store.editor.canvas.interactionSession?.latestMetadata ??
-            store.strategyState.startingMetadata,
-          props.targets,
-        )
-      default:
-        assertNever(props)
-    }
-  }, 'GhostOutline frame')
+  const bounds = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      switch (props.type) {
+        case 'frames':
+          return boundingRectangleArray(props.frames)
+        case 'element-paths':
+          return getMultiselectBounds(store.strategyState.startingMetadata, props.targets)
+        case 'element-paths-live':
+          return getMultiselectBounds(
+            store.editor.canvas.interactionSession?.latestMetadata ??
+              store.strategyState.startingMetadata,
+            props.targets,
+          )
+        default:
+          assertNever(props)
+      }
+    },
+    'GhostOutline frame',
+  )
 
-  const dragVector = useEditorState((store) => {
-    if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
-      return null
-    }
-    return store.editor.canvas.interactionSession.interactionData.drag
-  }, 'GhostOutline dragVector')
+  const dragVector = useEditorState(
+    Substores.canvas,
+    (store) => {
+      if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
+        return null
+      }
+      return store.editor.canvas.interactionSession.interactionData.drag
+    },
+    'GhostOutline dragVector',
+  )
 
   if (bounds == null || dragVector == null) {
     return null
