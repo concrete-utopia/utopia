@@ -230,10 +230,14 @@ function borderRadiusFromElement(
           fromProps,
         )
 
+        const defaultBorderRadiusSides = borderRadiusSidesFromValue(
+          unitlessCSSNumberWithRenderedValue(0),
+        )
+
         if (borderRadius == null && isElementIntrinsic) {
           return {
             mode: 'all',
-            borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
+            borderRadius: defaultBorderRadiusSides,
           }
         }
 
@@ -249,7 +253,7 @@ function borderRadiusFromElement(
           mode: fromProps?.type === 'sides' ? 'individual' : 'all',
           borderRadius: mapBorderRadiusSides(
             (n) => adjustBorderRadius(borderRadiusMinMax, n),
-            borderRadius,
+            borderRadius ?? defaultBorderRadiusSides,
           ),
         }
       } else {
