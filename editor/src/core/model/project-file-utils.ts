@@ -484,17 +484,17 @@ export function updateFileIfPossible(
       existing.fileContents.revisionsState,
     )
   ) {
-    // we should not overwrite PARSED_AHEAD_NEEDS_REPARSING with PARSED_AHEAD, because we don't want to lose that
+    // we should not overwrite RevisionsState.ParsedAheadNeedsReparsing with RevisionsState.ParsedAhead, because we don't want to lose that
     // the file needs reparsing
     if (
-      existing.fileContents.revisionsState === 'PARSED_AHEAD_NEEDS_REPARSING' &&
-      updated.fileContents.revisionsState === 'PARSED_AHEAD'
+      existing.fileContents.revisionsState === RevisionsState.ParsedAheadNeedsReparsing &&
+      updated.fileContents.revisionsState === RevisionsState.ParsedAhead
     ) {
       return {
         ...updated,
         fileContents: {
           ...updated.fileContents,
-          revisionsState: 'PARSED_AHEAD_NEEDS_REPARSING',
+          revisionsState: RevisionsState.ParsedAheadNeedsReparsing,
         },
       }
     }

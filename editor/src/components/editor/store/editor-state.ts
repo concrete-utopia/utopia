@@ -3126,10 +3126,10 @@ function getNextRevisionsState(
   nextRevisionState: ParsedAheadRevisionsState,
 ): ParsedAheadRevisionsState {
   if (
-    prevRevisionState === 'PARSED_AHEAD_NEEDS_REPARSING' &&
-    nextRevisionState === 'PARSED_AHEAD'
+    prevRevisionState === RevisionsState.ParsedAheadNeedsReparsing &&
+    nextRevisionState === RevisionsState.ParsedAhead
   ) {
-    return 'PARSED_AHEAD_NEEDS_REPARSING'
+    return RevisionsState.ParsedAheadNeedsReparsing
   }
   return nextRevisionState
 }

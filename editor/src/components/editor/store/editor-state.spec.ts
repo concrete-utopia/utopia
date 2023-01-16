@@ -23,6 +23,7 @@ import {
   isParseSuccess,
   parseSuccess,
   ParseSuccess,
+  RevisionsState,
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
@@ -243,7 +244,7 @@ describe('Revision state management', () => {
     const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
     expect(resultingFile.fileContents.revisionsState).toEqual('PARSED_AHEAD')
   })
-  it('updating PARSED_AHEAD_NEEDS_REPARSING revision state to PARSED_AHEAD keeps PARSED_AHEAD_NEEDS_REPARSING', () => {
+  it('updating RevisionsState.ParsedAheadNeedsReparsing to ParsedAhead keeps ParsedAheadNeedsReparsing', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
 
     // This is just initialization, make /src/app.js PARSED_AHEAD
@@ -260,12 +261,12 @@ describe('Revision state management', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
       defaultModifyParseSuccess,
-      'PARSED_AHEAD_NEEDS_REPARSING',
+      RevisionsState.ParsedAheadNeedsReparsing,
     )
     const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
 
-    // This is the tested feature, PARSED_AHEAD_NEEDS_REPARSING should be kept even if
-    // it is tried to be updated to PARSED_AHEAD
+    // This is the tested feature, RevisionsState.ParsedAheadNeedsReparsing should be kept even if
+    // it is tried to be updated to RevisionsState.ParsedAhead
     const actualResult2 = modifyUnderlyingTarget(
       pathToElement,
       '/src/app.js',
@@ -282,6 +283,8 @@ describe('Revision state management', () => {
       'PARSED_AHEAD',
     )
     const resultingFile2 = getTextFileByPath(actualResult2.projectContents, '/src/app.js')
-    expect(resultingFile2.fileContents.revisionsState).toEqual('PARSED_AHEAD_NEEDS_REPARSING')
+    expect(resultingFile2.fileContents.revisionsState).toEqual(
+      RevisionsState.ParsedAheadNeedsReparsing,
+    )
   })
 })
