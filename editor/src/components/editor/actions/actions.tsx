@@ -466,6 +466,7 @@ import {
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4071,7 +4072,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorBuildErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allBuildErrorsInState = getAllBuildErrors(editor)
+    const allBuildErrorsInState = getAllBuildErrors(editor.codeEditorErrors)
     const allBuildErrorsInAction = Utils.flatMapArray(
       (filename) => action.buildErrors[filename],
       Object.keys(action.buildErrors),
@@ -4101,7 +4102,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorLintErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allLintErrorsInState = getAllLintErrors(editor)
+    const allLintErrorsInState = getAllLintErrors(editor.codeEditorErrors)
     const allLintErrorsInAction = Utils.flatMapArray(
       (filename) => action.lintErrors[filename],
       Object.keys(action.lintErrors),
@@ -4479,7 +4480,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(
+    const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
         if (action.text.trim() === '') {
@@ -4497,6 +4498,7 @@ export const UPDATE_FNS = {
       editor,
       RevisionsState.ParsedAheadNeedsReparsing,
     )
+    return collapseTextElements(action.target, withUpdatedText)
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {

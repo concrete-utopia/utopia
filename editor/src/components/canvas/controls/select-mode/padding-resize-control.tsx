@@ -1,4 +1,5 @@
 import React from 'react'
+import { CanvasSubstate } from 'src/components/editor/store/store-hook-substore-types'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -8,7 +9,7 @@ import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -68,10 +69,10 @@ const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaWidth = 3
 
-type StoreSelector<T> = (s: EditorStorePatched) => T
+type StoreSelector<T> = (s: CanvasSubstate) => T
 
 const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
-const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
+const isDraggingSelector = (store: CanvasSubstate, edge: EdgePiece): boolean =>
   store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
   store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
 
@@ -80,11 +81,12 @@ const PaddingResizeControlI = React.memo(
     const { setShownByParent } = props
     const dispatch = useDispatch()
     const { scale, isDragging } = useEditorState(
+      Substores.canvas,
       (store) => ({
         scale: scaleSelector(store),
         isDragging: isDraggingSelector(store, props.edge),
       }),
-      'PaddingResizeControl scale, dispatch, isDragging',
+      'PaddingResizeControl scale isDragging',
     )
 
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
@@ -206,6 +208,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const hoveredViews = useEditorState(
+    Substores.highlightedHoveredViews,
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )

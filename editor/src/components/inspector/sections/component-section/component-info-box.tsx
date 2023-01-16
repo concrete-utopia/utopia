@@ -12,7 +12,7 @@ import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile, setFocusedElement } from '../../../editor/actions/action-creators'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import * as EP from '../../../../core/shared/element-path'
 import { when } from '../../../../utils/react-conditionals'
@@ -20,36 +20,42 @@ import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
 function useComponentType(path: ElementPath | null): string | null {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-    if (path != null && MetadataUtils.isProbablyScene(metadata, path)) {
-      return 'Scene'
-    }
-    if (path != null && MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
-      return 'Styled Component'
-    }
-    const isAnimatedComponent = isAnimatedElement(elementMetadata)
-    if (isAnimatedComponent) {
-      return 'Animated Component'
-    }
-    const isImported = isImportedComponentNPM(elementMetadata)
-    if (isImported) {
-      return 'Component'
-    }
-    const isComponent = path != null && MetadataUtils.isFocusableComponent(path, metadata)
-    return isComponent ? 'Component' : null
-  }, 'useComponentType')
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+      if (path != null && MetadataUtils.isProbablyScene(metadata, path)) {
+        return 'Scene'
+      }
+      if (path != null && MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
+        return 'Styled Component'
+      }
+      const isAnimatedComponent = isAnimatedElement(elementMetadata)
+      if (isAnimatedComponent) {
+        return 'Animated Component'
+      }
+      const isImported = isImportedComponentNPM(elementMetadata)
+      if (isImported) {
+        return 'Component'
+      }
+      const isComponent = path != null && MetadataUtils.isFocusableComponent(path, metadata)
+      return isComponent ? 'Component' : null
+    },
+    'useComponentType',
+  )
 }
 
 export const ComponentInfoBox = () => {
   const dispatch = useDispatch()
   const selectedViews = useEditorState(
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ComponentInfoBox selectedViews',
   )
 
   const focusedElementPath = useEditorState(
+    Substores.focusedElement,
     (store) => store.editor.focusedElementPath,
     'ComponentInfoBox focusedElementPath',
   )
@@ -63,45 +69,61 @@ export const ComponentInfoBox = () => {
     dispatch([setFocusedElement(isFocused ? null : target)])
   }, [dispatch, isFocused, target])
 
-  const locationOfComponentInstance = useEditorState((state) => {
-    const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
-    const importResult = getFilePathForImportedComponent(element)
-    if (importResult == null) {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        state.editor.projectContents,
-        state.editor.nodeModules.files,
-        state.editor.canvas.openFile?.filename ?? '',
+  const locationOfComponentInstance = useEditorState(
+    Substores.fullStore,
+    (state) => {
+      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
+      const importResult = getFilePathForImportedComponent(element)
+      if (importResult == null) {
+        const underlyingTarget = normalisePathToUnderlyingTarget(
+          state.editor.projectContents,
+          state.editor.nodeModules.files,
+          state.editor.canvas.openFile?.filename ?? '',
+          target,
+        )
+
+        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
+      } else {
+        return importResult
+      }
+    },
+    'ComponentSectionInner locationOfComponentInstance',
+  )
+
+  const componentPackageName = useEditorState(
+    Substores.metadata,
+    (state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
         target,
       )
-
-      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
-    } else {
-      return importResult
-    }
-  }, 'ComponentSectionInner locationOfComponentInstance')
-
-  const componentPackageName = useEditorState((state) => {
-    const componentMetadata = MetadataUtils.findElementByElementPath(
-      state.editor.jsxMetadata,
-      target,
-    )
-    return componentMetadata?.importInfo?.filePath
-  }, 'ComponentSectionInner componentPackageName')
+      return componentMetadata?.importInfo?.filePath
+    },
+    'ComponentSectionInner componentPackageName',
+  )
 
   const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
-  const isFocusable = useEditorState((state) => {
-    return target == null
-      ? false
-      : MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
-  }, 'ComponentSectionInner isFocusable')
-  const isImportedComponent = useEditorState((state) => {
-    const componentMetadata = MetadataUtils.findElementByElementPath(
-      state.editor.jsxMetadata,
-      target,
-    )
-    return isImportedComponentNPM(componentMetadata)
-  }, 'ComponentSectionInner isImportedComponent')
+  const isFocusable = useEditorState(
+    Substores.metadata,
+    (state) => {
+      return target == null
+        ? false
+        : MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
+    },
+    'ComponentSectionInner isFocusable',
+  )
+  const isImportedComponent = useEditorState(
+    Substores.metadata,
+    (state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
+        target,
+      )
+      return isImportedComponentNPM(componentMetadata)
+    },
+    'ComponentSectionInner isImportedComponent',
+  )
 
   const componentType = useComponentType(target)
 

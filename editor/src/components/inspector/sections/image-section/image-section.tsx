@@ -4,7 +4,7 @@ import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-te
 import * as PP from '../../../../core/shared/property-path'
 import utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
@@ -28,6 +28,7 @@ export const ImgSection = React.memo(() => {
 
   const dispatch = useDispatch()
   const zerothElementInstanceMetadata = useEditorState(
+    Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedViews[0]),
     'ImgSection',
   )

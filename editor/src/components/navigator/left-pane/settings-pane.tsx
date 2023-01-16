@@ -23,7 +23,7 @@ import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ForksGiven } from './forks-given'
 
@@ -46,18 +46,24 @@ const defaultTheme = themeOptions[0]
 
 export const SettingsPane = React.memo(() => {
   const dispatch = useDispatch()
-  const { userState, projectId, projectName, projectDescription, themeConfig } = useEditorState(
+  const { projectId, projectName, projectDescription } = useEditorState(
+    Substores.restOfEditor,
     (store) => {
       return {
-        userState: store.userState,
         projectId: store.editor.id,
         projectName: store.editor.projectName,
         projectDescription: store.editor.projectDescription,
-        themeConfig: store.userState.themeConfig,
       }
     },
     'SettingsPane',
   )
+
+  const userState = useEditorState(
+    Substores.userState,
+    (store) => store.userState,
+    'SettingsPane userState',
+  )
+  const themeConfig = userState.themeConfig
 
   const isMyProject = useIsMyProject(projectId)
 

@@ -173,6 +173,7 @@ import {
   TreeConflicts,
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
+import type { ThemeSubstate } from './store-hook-substore-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -382,7 +383,7 @@ export const defaultUserState: UserState = {
   },
 }
 
-type EditorStoreShared = {
+export type EditorStoreShared = {
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -1976,12 +1977,10 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (editor.canvas.dragState == null) {
-    return editor.jsxMetadata
-  } else {
-    return editor.canvas.dragState.metadata
-  }
+export function getMetadata(editor: {
+  jsxMetadata: ElementInstanceMetadataMap
+}): ElementInstanceMetadataMap {
+  return editor.jsxMetadata
 }
 
 export interface ElementWarnings {
@@ -2820,12 +2819,12 @@ export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boole
 }
 
 export function getAllCodeEditorErrors(
-  editor: EditorState,
+  codeEditorErrors: EditorStateCodeEditorErrors,
   minimumSeverity: ErrorMessageSeverity,
   skipTsErrors: boolean,
 ): Array<ErrorMessage> {
-  const allLintErrors = getAllLintErrors(editor)
-  const allBuildErrors = getAllBuildErrors(editor)
+  const allLintErrors = getAllLintErrors(codeEditorErrors)
+  const allBuildErrors = getAllBuildErrors(codeEditorErrors)
   const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
   if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
@@ -2838,12 +2837,16 @@ export function getAllCodeEditorErrors(
   }
 }
 
-export function getAllBuildErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.buildErrors)
+export function getAllBuildErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.buildErrors)
 }
 
-export function getAllLintErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.lintErrors)
+export function getAllLintErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.lintErrors)
 }
 
 export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {
@@ -3236,7 +3239,7 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
+export function getCurrentTheme(userConfiguration: ThemeSubstate['userState']): Theme {
   const currentTheme = userConfiguration.themeConfig ?? DefaultTheme
   if (currentTheme === 'system') {
     return getPreferredColorScheme()

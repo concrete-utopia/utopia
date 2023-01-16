@@ -22,8 +22,13 @@ import {
   togglePanel,
 } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  EditorStorePatched,
+  EditorStoreShared,
+  githubRepoFullName,
+  LeftMenuTab,
+} from '../editor/store/editor-state'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 
@@ -46,23 +51,35 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 
 const TitleBar = React.memo(() => {
   const dispatch = useDispatch()
-  const { loginState, projectName, upstreamChanges, currentBranch, treeConflicts } = useEditorState(
+  const { loginState } = useEditorState(
+    Substores.restOfStore,
     (store) => ({
       loginState: store.userState.loginState,
-      projectName: store.editor.projectName,
-      upstreamChanges: store.editor.githubData.upstreamChanges,
-      currentBranch: store.editor.githubSettings.branchName,
-      treeConflicts: store.editor.githubData.treeConflicts,
     }),
-    'TitleBar',
+    'TitleBar loginState',
+  )
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.projectName
+    },
+    'TitleBar projectName',
+  )
+
+  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+    Substores.github,
+    (store) => {
+      return {
+        upstreamChanges: store.editor.githubData.upstreamChanges,
+        currentBranch: store.editor.githubSettings.branchName,
+        treeConflicts: store.editor.githubData.treeConflicts,
+        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+      }
+    },
+    'TitleBar github',
   )
 
   const userPicture = useGetUserPicture()
-
-  const repoName = useEditorState(
-    (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
-    'RepositoryBlock repo',
-  )
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
@@ -230,9 +247,9 @@ const TitleBar = React.memo(() => {
 export default TitleBar
 
 const loginStateSelector = createSelector(
-  (store: EditorStorePatched) => store.userState.loginState,
+  (store: EditorStoreShared) => store.userState.loginState,
   (loginState: LoginState) => getUserPicture(loginState),
 )
 function useGetUserPicture(): string | null {
-  return useEditorState(loginStateSelector, 'useGetUserPicture')
+  return useEditorState(Substores.restOfStore, loginStateSelector, 'useGetUserPicture')
 }

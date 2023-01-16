@@ -21,7 +21,7 @@ import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 
@@ -195,56 +195,61 @@ const computeResultingStyle = (
 }
 
 function useStyleFullyVisible(path: ElementPath): boolean {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    const selectedViews = store.editor.selectedViews
-    const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
-    const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      const selectedViews = store.editor.selectedViews
+      const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
+      const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
 
-    const isStoryboardChild = EP.isStoryboardChild(path)
+      const isStoryboardChild = EP.isStoryboardChild(path)
 
-    const isContainingBlockAncestor = selectedViews.some((selected) => {
-      return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
-    })
+      const isContainingBlockAncestor = selectedViews.some((selected) => {
+        return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
+      })
 
-    const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
-        metadata,
-        selected,
-      )?.specialSizeMeasurements
-      const parentPath = EP.parentPath(selected)
-      if (
-        selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
-        !isParentOfSelected &&
-        EP.isDescendantOfOrEqualTo(selected, path) &&
-        parentPath != null
-      ) {
-        const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+      const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+        const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
           metadata,
-          parentPath,
-        )
-        return EP.pathsEqual(flexDirectionChange, path)
-      } else {
-        return false
-      }
-    })
+          selected,
+        )?.specialSizeMeasurements
+        const parentPath = EP.parentPath(selected)
+        if (
+          selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+          !isParentOfSelected &&
+          EP.isDescendantOfOrEqualTo(selected, path) &&
+          parentPath != null
+        ) {
+          const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+            metadata,
+            parentPath,
+          )
+          return EP.pathsEqual(flexDirectionChange, path)
+        } else {
+          return false
+        }
+      })
 
-    let isInsideFocusedComponent =
-      EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
+      let isInsideFocusedComponent =
+        EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
 
-    return (
-      isStoryboardChild ||
-      isSelected ||
-      isParentOfSelected ||
-      isContainingBlockAncestor ||
-      isFlexAncestorDirectionChange ||
-      isInsideFocusedComponent
-    )
-  }, 'NavigatorItem useStyleFullyVisible')
+      return (
+        isStoryboardChild ||
+        isSelected ||
+        isParentOfSelected ||
+        isContainingBlockAncestor ||
+        isFlexAncestorDirectionChange ||
+        isInsideFocusedComponent
+      )
+    },
+    'NavigatorItem useStyleFullyVisible',
+  )
 }
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
+    Substores.metadata,
     (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
@@ -267,13 +272,18 @@ export const NavigatorItem: React.FunctionComponent<
 
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(
+    Substores.focusedElement,
     (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
     'NavigatorItem isFocusedComponent',
   )
 
-  const isFocusableComponent = useEditorState((store) => {
-    return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
-  }, 'NavigatorItem isFocusable')
+  const isFocusableComponent = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
+    },
+    'NavigatorItem isFocusable',
+  )
 
   const childComponentCount = props.noOfChildren
 
@@ -283,11 +293,15 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
-  const isHighlightedForInteraction = useEditorState((store) => {
-    return store.editor.navigator.highlightedTargets.some((target) =>
-      EP.pathsEqual(target, props.elementPath),
-    )
-  }, 'isreallyhighlighted')
+  const isHighlightedForInteraction = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.navigator.highlightedTargets.some((target) =>
+        EP.pathsEqual(target, props.elementPath),
+      )
+    },
+    'isreallyhighlighted',
+  )
 
   const resultingStyle = computeResultingStyle(
     selected,

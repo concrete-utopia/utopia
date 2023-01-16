@@ -48,7 +48,7 @@ import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
 } from './store/editor-state'
-import { useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
@@ -235,15 +235,22 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   ])
 
   const projectName = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.projectName,
     'EditorComponentInner projectName',
   )
-  const projectId = useEditorState((store) => store.editor.id, 'EditorComponentInner projectId')
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'EditorComponentInner projectId',
+  )
   const previewVisible = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.preview.visible,
     'EditorComponentInner previewVisible',
   )
   const leftMenuExpanded = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
@@ -403,12 +410,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const dispatch = useDispatch()
-  const { modal, currentBranch } = useEditorState((store) => {
-    return {
-      modal: store.editor.modal,
-      currentBranch: store.editor.githubSettings.branchName,
-    }
-  }, 'ModalComponent')
+  const currentBranch = useEditorState(
+    Substores.github,
+    (store) => {
+      return store.editor.githubSettings.branchName
+    },
+    'ModalComponent branchName',
+  )
+  const modal = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.modal
+    },
+    'ModalComponent modal',
+  )
   if (modal != null) {
     switch (modal.type) {
       case 'file-delete':
@@ -437,6 +452,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
 
 export function EditorComponent(props: EditorProps) {
   const indexedDBFailed = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.indexedDBFailed,
     'EditorComponent indexedDBFailed',
   )
@@ -451,7 +467,11 @@ export function EditorComponent(props: EditorProps) {
 }
 
 const ToastRenderer = React.memo(() => {
-  const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')
+  const toasts = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.toasts,
+    'ToastRenderer',
+  )
 
   return (
     <FlexColumn
@@ -486,16 +506,19 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 
 const LockedOverlay = React.memo(() => {
   const leftMenuExpanded = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
 
   const editorLocked = useEditorState(
+    Substores.github,
     (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
     'EditorComponentInner editorLocked',
   )
 
   const refreshingDependencies = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.refreshingDependencies,
     'EditorComponentInner refreshingDependencies',
   )

@@ -11,7 +11,7 @@ import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
 import { getAllCodeEditorErrors, getOpenFilename, GithubRepo } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {
   Section,
@@ -146,12 +146,16 @@ function collectFileBrowserItems(
 
 export const FileBrowser = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, focusedPanel } = useEditorState((store) => {
-    return {
-      minimised: store.editor.fileBrowser.minimised,
-      focusedPanel: store.editor.focusedPanel,
-    }
-  }, 'FileBrowser')
+  const { minimised, focusedPanel } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        minimised: store.editor.fileBrowser.minimised,
+        focusedPanel: store.editor.focusedPanel,
+      }
+    },
+    'FileBrowser',
+  )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('filebrowser')], 'leftpane')
@@ -245,30 +249,43 @@ interface FileBrowserActionSheetProps {
 
 const FileBrowserItems = React.memo(() => {
   const dispatch = useDispatch()
-  const {
-    projectContents,
-    editorSelectedFile,
-    errorMessages,
-    codeResultCache,
-    renamingTarget,
-    dropTarget,
-    conflicts,
-    githubRepo,
-    projectID,
-  } = useEditorState((store) => {
-    return {
-      projectContents: store.editor.projectContents,
-      editorSelectedFile: getOpenFilename(store.editor),
-      errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
-      codeResultCache: store.editor.codeResultCache,
-      propertyControlsInfo: store.editor.propertyControlsInfo,
-      renamingTarget: store.editor.fileBrowser.renamingTarget,
-      dropTarget: store.editor.fileBrowser.dropTarget,
-      conflicts: store.editor.githubData.treeConflicts,
-      githubRepo: store.editor.githubSettings.targetRepository,
-      projectID: store.editor.id,
-    }
-  }, 'FileBrowserItems')
+  const { errorMessages, codeResultCache, renamingTarget, dropTarget, projectID } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        errorMessages: getAllCodeEditorErrors(store.editor.codeEditorErrors, 'warning', true),
+        codeResultCache: store.editor.codeResultCache,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        renamingTarget: store.editor.fileBrowser.renamingTarget,
+        dropTarget: store.editor.fileBrowser.dropTarget,
+        projectID: store.editor.id,
+      }
+    },
+    'FileBrowserItems',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'FileBrowserItems projectContents',
+  )
+
+  const { githubRepo, conflicts } = useEditorState(
+    Substores.github,
+    (store) => {
+      return {
+        githubRepo: store.editor.githubSettings.targetRepository,
+        conflicts: store.editor.githubData.treeConflicts,
+      }
+    },
+    'FileBrowserItems github',
+  )
+
+  const editorSelectedFile = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'FileBrowserItems editorSelectedFile',
+  )
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
 

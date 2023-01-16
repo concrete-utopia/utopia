@@ -2,42 +2,48 @@ import React from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react'
-import { EditorStateContext, useSelectorWithCallback, UtopiaStoreAPI } from './store-hook'
+import {
+  createStoresAndState,
+  EditorStateContext,
+  Substores,
+  useSelectorWithCallback,
+  UtopiaStoreAPI,
+} from './store-hook'
 import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { notLoggedIn } from '../action-types'
+
+const initialEditorStore: EditorStorePatched = {
+  editor: createEditorState(NO_OP),
+  derived: null as any,
+  strategyState: null as any,
+  history: null as any,
+  userState: {
+    shortcutConfig: null,
+    themeConfig: null,
+    loginState: notLoggedIn,
+    githubState: {
+      authenticated: false,
+    },
+  },
+  workers: null as any,
+  persistence: null as any,
+  alreadySaved: false,
+  builtInDependencies: createBuiltInDependenciesList(null),
+  storeName: 'editor-store',
+}
 
 function createEmptyEditorStoreHook() {
-  let emptyEditorState = createEditorState(NO_OP)
-
-  const initialEditorStore: EditorStorePatched = {
-    editor: emptyEditorState,
-    derived: null as any,
-    strategyState: null as any,
-    history: null as any,
-    userState: null as any,
-    workers: null as any,
-    persistence: null as any,
-    alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(null),
-    storeName: 'editor-store',
-  }
-
-  const storeHook = create(subscribeWithSelector<EditorStorePatched>((set) => initialEditorStore))
-
-  return storeHook
+  return createStoresAndState(initialEditorStore)
 }
 
 const ContextProvider =
   (storeHook: UtopiaStoreAPI) =>
   ({ children }: { children: React.ReactNode }) => {
-    return (
-      <EditorStateContext.Provider value={{ useStore: storeHook }}>
-        {children}
-      </EditorStateContext.Provider>
-    )
+    return <EditorStateContext.Provider value={storeHook}>{children}</EditorStateContext.Provider>
   }
 
 describe('useSelectorWithCallback', () => {
@@ -51,10 +57,12 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {
@@ -79,10 +87,12 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {
@@ -94,10 +104,11 @@ describe('useSelectorWithCallback', () => {
     )
 
     storeHook.setState({
+      ...initialEditorStore,
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
+      },
     })
 
     expect(hookRenders).toEqual(1)
@@ -114,10 +125,12 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
+          Substores.focusedElement,
           (store) => store.editor.focusedElementPath,
           (newFocusedElementPath) => {
             callCount++
           },
+          'test focusedElementPath',
         )
       },
       {
@@ -132,37 +145,41 @@ describe('useSelectorWithCallback', () => {
     expect(callCount).toEqual(0)
 
     storeHook.setState({
+      ...initialEditorStore,
       editor: {
         ...storeHook.getState().editor,
         focusedElementPath: EP.fromString('sb/scene:aaa'),
-      } as EditorState,
+      },
     })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
 
     storeHook.setState({
-      editor: { ...storeHook.getState().editor, focusedElementPath: null } as EditorState,
+      ...initialEditorStore,
+      editor: { ...storeHook.getState().editor, focusedElementPath: null },
     })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
 
     storeHook.setState({
+      ...initialEditorStore,
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
+      },
     })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(2)
 
     storeHook.setState({
+      ...initialEditorStore,
       editor: {
         ...storeHook.getState().editor,
         focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
-      } as EditorState,
+      },
     })
 
     expect(hookRenders).toEqual(1)
@@ -179,7 +196,7 @@ describe('useSelectorWithCallback', () => {
 
     let rerenderTestHook: () => void
 
-    storeHook.subscribe(
+    storeHook.stores.fullStore.subscribe(
       (store) => store.editor.selectedViews,
       (newSelectedViews) => {
         if (newSelectedViews != null) {
@@ -195,10 +212,12 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
+          Substores.selectedViews,
           (store) => store.editor.selectedViews,
           (newSelectedViews) => {
             callCount++
           },
+          'test selectedViews',
         )
       },
       {
@@ -214,13 +233,14 @@ describe('useSelectorWithCallback', () => {
     }
 
     storeHook.setState({
+      ...initialEditorStore,
       editor: {
         ...storeHook.getState().editor,
         selectedViews: [EP.fromString('sb/scene:aaa')],
-      } as EditorState,
+      },
     })
 
-    storeHook.destroy()
+    Object.values(storeHook.stores).forEach((store) => store.destroy())
 
     expect(hookRenders).toEqual(2)
     expect(hookRendersWhenCallbackWasFired).toEqual(2)

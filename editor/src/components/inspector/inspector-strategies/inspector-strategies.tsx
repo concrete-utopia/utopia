@@ -6,8 +6,11 @@ import {
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
+  flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  pruneFlexPropsCommands,
+  sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
 import * as EP from '../../../core/shared/element-path'
@@ -68,9 +71,13 @@ export const updateFlexDirectionStrategies = (
       return null
     }
 
-    return elements.map((path) =>
+    return elements.flatMap((path) => [
       setProperty('always', path, PP.create(['style', 'flexDirection']), flexDirection),
-    )
+      ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
+        ...pruneFlexPropsCommands(flexChildProps, child),
+        ...sizeToVisualDimensions(metadata, child),
+      ]),
+    ])
   },
 ]
 

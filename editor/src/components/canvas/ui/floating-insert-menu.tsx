@@ -12,7 +12,7 @@ import WindowedSelect, {
 } from 'react-windowed-select'
 
 import { getControlStyles } from '../../../uuiui-deps'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
   FlexColumn,
@@ -108,16 +108,27 @@ function convertInsertableComponentsToFlatList(
 function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
-  const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
+  const { packageStatus, propertyControlsInfo } = useEditorState(
+    Substores.restOfEditor,
     (store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
-    'RenderAsRow',
+    'useGetInsertableComponents',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'useGetInsertableComponents projectContents',
+  )
+
+  const fullPath = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'useGetInsertableComponents fullPath',
   )
 
   const insertableComponents = React.useMemo(() => {
@@ -431,6 +442,7 @@ export var FloatingMenu = React.memo(() => {
   }, [])
 
   const floatingMenuState = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu,
     'FloatingMenu floatingMenuState',
   )
@@ -701,6 +713,7 @@ interface FloatingInsertMenuProps {}
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
   const dispatch = useDispatch()
   const isVisible = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
     'FloatingInsertMenu insertMenuOpen',
   )

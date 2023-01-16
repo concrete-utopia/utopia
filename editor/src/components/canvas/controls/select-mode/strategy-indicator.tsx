@@ -1,20 +1,24 @@
 import React from 'react'
 import { FlexColumn, FlexRow, ModalityIcons, useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 
 const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const indicatorFlagsInfo = useEditorState((store) => {
-    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
-      return {
-        indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
-        dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+  const indicatorFlagsInfo = useEditorState(
+    Substores.canvas,
+    (store) => {
+      if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+        return {
+          indicatorFlags: store.editor.canvas.controls.dragToMoveIndicatorFlags,
+          dragStarted: store.editor.canvas.interactionSession?.interactionData.drag != null,
+        }
+      } else {
+        return null
       }
-    } else {
-      return null
-    }
-  }, 'StrategyIndicator')
+    },
+    'StrategyIndicator',
+  )
 
   if (indicatorFlagsInfo == null) {
     return null

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
@@ -20,12 +20,16 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 export const RenderAsRow = React.memo(() => {
   const dispatch = useDispatch()
 
-  const selectedElementName = useEditorState((store) => {
-    return MetadataUtils.getJSXElementNameFromMetadata(
-      store.editor.jsxMetadata,
-      store.editor.selectedViews[0],
-    )
-  }, 'RenderAsRow selectedElementName')
+  const selectedElementName = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.getJSXElementNameFromMetadata(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+    },
+    'RenderAsRow selectedElementName',
+  )
 
   const refElementsToTargetForUpdates = useRefEditorState((store) => {
     return getElementsToTarget(store.editor.selectedViews)
@@ -51,16 +55,27 @@ export const RenderAsRow = React.memo(() => {
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 
-  const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
+  const { packageStatus, propertyControlsInfo } = useEditorState(
+    Substores.restOfEditor,
     (store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
     'RenderAsRow',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'RenderAsRow projectContents',
+  )
+
+  const fullPath = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'RenderAsRow fullPath',
   )
 
   const insertableComponents = React.useMemo(() => {

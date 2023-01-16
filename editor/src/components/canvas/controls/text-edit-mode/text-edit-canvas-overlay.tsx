@@ -1,9 +1,10 @@
 import React from 'react'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { TextEditorSpanId } from '../../../text-editor/text-editor'
 
 export const TextEditCanvasOverlay = React.memo(() => {
   const scale = useEditorState(
+    Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
     'TextEditCanvasOverlay canvas scale',
   )

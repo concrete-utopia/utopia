@@ -6,7 +6,7 @@ import { Table, Checkbox } from 'antd'
 import Column from 'antd/lib/table/Column'
 import 'antd/dist/antd.css'
 import { RenderedCell, GetComponentProps } from 'rc-table/lib/interface'
-import { useEditorState } from './editor/store/store-hook'
+import { Substores, useEditorState } from './editor/store/store-hook'
 import { getShortcutDetails, Shortcut } from './editor/shortcut-definitions'
 import { comparePrimitive } from '../utils/compare'
 import { mapToArray } from '../core/shared/object-utils'
@@ -29,6 +29,7 @@ interface DataSourceEntry {
 
 export function UserConfiguration() {
   const shortcutConfig = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.shortcutConfig,
     'UserConfiguration',
   )

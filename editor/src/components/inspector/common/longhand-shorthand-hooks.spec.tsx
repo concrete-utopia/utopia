@@ -17,6 +17,7 @@ import { EditorStorePatched } from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import {
+  createStoresAndState,
   EditorStateContext,
   OriginalMainEditorStateContext,
   UtopiaStoreAPI,
@@ -67,12 +68,12 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       storeName: 'editor-store',
     }
 
-    const storeHook: UtopiaStoreAPI = create(subscribeWithSelector(() => initialEditorStore))
+    const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)
 
     return (
       <DispatchContext.Provider value={mockDispatch}>
-        <OriginalMainEditorStateContext.Provider value={{ useStore: storeHook }}>
-          <EditorStateContext.Provider value={{ useStore: storeHook }}>
+        <OriginalMainEditorStateContext.Provider value={storeHook}>
+          <EditorStateContext.Provider value={storeHook}>
             <InspectorContextProvider>{children}</InspectorContextProvider>
           </EditorStateContext.Provider>
         </OriginalMainEditorStateContext.Provider>

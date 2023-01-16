@@ -25,7 +25,7 @@ import {
   DependencyPackageDetails,
   packageJsonFileFromProjectContents,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -93,15 +93,29 @@ function packageDetailsFromDependencies(
 }
 
 export const DependencyList = React.memo(() => {
-  const props = useEditorState((store) => {
-    return {
-      minimised: store.editor.dependencyList.minimised,
-      focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
-      packageStatus: store.editor.nodeModules.packageStatus,
-      builtInDependencies: store.builtInDependencies,
-    }
-  }, 'DependencyList')
+  const props = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        minimised: store.editor.dependencyList.minimised,
+        focusedPanel: store.editor.focusedPanel,
+        packageStatus: store.editor.nodeModules.packageStatus,
+      }
+    },
+    'DependencyList',
+  )
+
+  const builtInDependencies = useEditorState(
+    Substores.builtInDependencies,
+    (store) => store.builtInDependencies,
+    'DependencyList builtInDependencies',
+  )
+
+  const packageJsonFile = useEditorState(
+    Substores.projectContents,
+    (store) => packageJsonFileFromProjectContents(store.editor.projectContents),
+    'DependencyList packageJsonFile',
+  )
 
   const dispatch = useDispatch()
 
@@ -111,7 +125,14 @@ export const DependencyList = React.memo(() => {
 
   const dependencyProps = { ...props, toggleMinimised: toggleMinimised }
 
-  return <DependencyListInner editorDispatch={dispatch} {...dependencyProps} />
+  return (
+    <DependencyListInner
+      editorDispatch={dispatch}
+      {...dependencyProps}
+      packageJsonFile={packageJsonFile}
+      builtInDependencies={builtInDependencies}
+    />
+  )
 })
 
 function unwrapLookupResult(lookupResult: VersionLookupResult): string | null {

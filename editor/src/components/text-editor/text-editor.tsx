@@ -27,7 +27,7 @@ import {
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
@@ -193,14 +193,17 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
   )
   const elementState = useEditorState(
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
   const shouldSelectOnFocus = useEditorState(
+    Substores.restOfEditor,
     (store) =>
       store.editor.mode.type === 'textEdit' ? store.editor.mode.selectOnFocus : 'no-text-selection',
     'TextEditor shouldSelectOnFocus',
@@ -208,7 +211,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
+  const scale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'TextEditor scale',
+  )
 
   const [firstTextProp] = React.useState(text)
 
@@ -233,7 +240,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         if (elementState === 'new' && content.replace(/\n/g, '') === '') {
           dispatch([deleteView(elementPath)])
         } else {
-          dispatch([updateChildText(elementPath, escapeHTML(content))])
+          if (elementState != null) {
+            dispatch([updateChildText(elementPath, escapeHTML(content))])
+          }
         }
       }
     }
@@ -297,9 +306,17 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
-  const editorProps = {
+  const editorProps: React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLSpanElement>,
+    HTMLSpanElement
+  > = {
     ref: myElement,
     id: TextEditorSpanId,
+    style: {
+      display: 'inline-block',
+      width: '100%',
+      height: '100%',
+    },
     onPaste: stopPropagation,
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { auth0Url } from '../../common/env-vars'
-import { useEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 
 import { NotificationBar } from '../common/notices'
 
@@ -20,8 +20,13 @@ const EditorOfflineBar = React.memo(() => {
 })
 
 export const LoginStatusBar = React.memo(() => {
-  const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
+  const loginState = useEditorState(
+    Substores.restOfStore,
+    (store) => store.userState.loginState,
+    'LoginStatusBar',
+  )
   const saveError = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.saveError,
     'EditorComponentInner saveError',
   )

@@ -170,7 +170,7 @@ export function renderCanvasReturnResultAndError(
       innerProjectContents,
       SampleNodeModules,
       {},
-      storeHookForTest.useStore().builtInDependencies,
+      storeHookForTest.getState().builtInDependencies,
     )
 
   storeHookForTest.updateStore((store) => {
@@ -222,8 +222,8 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.useStore.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.useStore.getState().derived.transientState.filesState,
+      projectContents: storeHookForTest.getState().editor.projectContents,
+      transientFilesState: storeHookForTest.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
@@ -246,8 +246,8 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.useStore.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.useStore.getState().derived.transientState.filesState,
+      projectContents: storeHookForTest.getState().editor.projectContents,
+      transientFilesState: storeHookForTest.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
