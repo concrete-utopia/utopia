@@ -27,7 +27,7 @@ import {
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
@@ -185,14 +185,17 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, text, component, passthroughProps } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.cursorPosition : null),
     'TextEditor cursor position',
   )
   const elementState = useEditorState(
+    Substores.restOfEditor,
     (store) => (store.editor.mode.type === 'textEdit' ? store.editor.mode.elementState : null),
     'TextEditor element state',
   )
   const shouldSelectOnFocus = useEditorState(
+    Substores.restOfEditor,
     (store) =>
       store.editor.mode.type === 'textEdit' ? store.editor.mode.selectOnFocus : 'no-text-selection',
     'TextEditor shouldSelectOnFocus',
@@ -200,7 +203,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'TextEditor scale')
+  const scale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'TextEditor scale',
+  )
 
   const [firstTextProp] = React.useState(text)
 

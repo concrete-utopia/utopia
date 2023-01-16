@@ -44,7 +44,7 @@ import {
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 
@@ -177,6 +177,7 @@ const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )
@@ -189,6 +190,7 @@ const ClassNameControl = React.memo(() => {
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.inspector.classnameFocusCounter,
     'ClassNameSubsection classnameFocusCounter',
   )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { when } from '../../utils/react-conditionals'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
@@ -16,6 +16,7 @@ const areElementsFlexContainersSelector = createSelector(
 
 export const FlexSection = React.memo(() => {
   const allElementsInFlexLayout = useEditorState(
+    Substores.metadata,
     areElementsFlexContainersSelector,
     'FlexSection areAllElementsInFlexLayout',
   )

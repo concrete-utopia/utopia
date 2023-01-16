@@ -10,7 +10,7 @@ import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   alignItemsOptions,
@@ -35,45 +35,53 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
 
   const dispatch = useDispatch()
 
-  const { canvasOffset, scale } = useEditorState((store) => {
-    return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      scale: store.editor.canvas.scale,
-    }
-  }, 'LayoutParentControl canvas')
-  const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
-    useEditorState((store) => {
-      if (
-        store.editor.canvas.controls.flexReparentTargetLines != null ||
-        store.editor.selectedViews.length !== 1 ||
-        store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
-      ) {
-        return {
-          parentTarget: null,
-          parentLayout: null,
-          parentFrame: null,
-          flexWrap: null,
-          flexDirection: null,
-          alignItems: null,
-        }
-      }
-      const parentElement = MetadataUtils.getParent(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      const elementProps =
-        parentElement == null
-          ? {}
-          : store.editor.allElementProps[EP.toString(parentElement.elementPath)]
+  const { canvasOffset, scale } = useEditorState(
+    Substores.canvasOffset,
+    (store) => {
       return {
-        parentTarget: parentElement?.elementPath,
-        parentLayout: parentElement?.specialSizeMeasurements.layoutSystemForChildren,
-        parentFrame: parentElement?.globalFrame,
-        flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
-        flexDirection: elementProps?.style?.flexDirection ?? 'row',
-        alignItems: elementProps?.style?.alignItems ?? 'flex-start',
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        scale: store.editor.canvas.scale,
       }
-    }, 'LayoutParentControl')
+    },
+    'LayoutParentControl canvas',
+  )
+  const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
+    useEditorState(
+      Substores.fullStore,
+      (store) => {
+        if (
+          store.editor.canvas.controls.flexReparentTargetLines != null ||
+          store.editor.selectedViews.length !== 1 ||
+          store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
+        ) {
+          return {
+            parentTarget: null,
+            parentLayout: null,
+            parentFrame: null,
+            flexWrap: null,
+            flexDirection: null,
+            alignItems: null,
+          }
+        }
+        const parentElement = MetadataUtils.getParent(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        const elementProps =
+          parentElement == null
+            ? {}
+            : store.editor.allElementProps[EP.toString(parentElement.elementPath)]
+        return {
+          parentTarget: parentElement?.elementPath,
+          parentLayout: parentElement?.specialSizeMeasurements.layoutSystemForChildren,
+          parentFrame: parentElement?.globalFrame,
+          flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
+          flexDirection: elementProps?.style?.flexDirection ?? 'row',
+          alignItems: elementProps?.style?.alignItems ?? 'flex-start',
+        }
+      },
+      'LayoutParentControl',
+    )
 
   const {
     justifyFlexStart,

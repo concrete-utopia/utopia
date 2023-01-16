@@ -19,7 +19,7 @@ import {
 } from '../../../../../uuiui'
 import { usePropControlledState } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
@@ -261,14 +261,18 @@ interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
 const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
-  const parentPath = useEditorState((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return null
-    }
-    const target = store.editor.selectedViews[0]
-    const parent = EP.parentPath(target)
-    return EP.isStoryboardPath(parent) ? null : parent
-  }, 'ParentIndicatorAndLink parentPath')
+  const parentPath = useEditorState(
+    Substores.selectedViews,
+    (store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return null
+      }
+      const target = store.editor.selectedViews[0]
+      const parent = EP.parentPath(target)
+      return EP.isStoryboardPath(parent) ? null : parent
+    },
+    'ParentIndicatorAndLink parentPath',
+  )
 
   const dispatch = useDispatch()
 
@@ -300,23 +304,27 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
 }
 
 function useElementHasChildrenOrContent() {
-  return useEditorState((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return {
-        hasChildren: false,
-        hasContent: false,
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return {
+          hasChildren: false,
+          hasContent: false,
+        }
       }
-    }
-    const element = MetadataUtils.findElementByElementPath(
-      store.editor.jsxMetadata,
-      store.editor.selectedViews[0],
-    )
-    const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
-    return {
-      hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
-      hasContent: textContent != null && textContent.length > 0,
-    }
-  }, 'ChildrenLink children')
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
+      return {
+        hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
+        hasContent: textContent != null && textContent.length > 0,
+      }
+    },
+    'ChildrenLink children',
+  )
 }
 
 const ChildrenOrContentIndicator = () => {

@@ -46,7 +46,7 @@ import {
   projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
-import { useEditorState } from '../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from './dependencies'
 import { RequestedNpmDependency } from './npm-dependency-types'
@@ -818,11 +818,15 @@ const githubFileChangesSelector = createSelector(
 )
 
 export function useGithubFileChanges(): GithubFileChanges | null {
-  const storeType = useEditorState((store) => store.storeName, 'useGithubFileChanges storeName')
+  const storeType = useEditorState(
+    Substores.restOfStore,
+    (store) => store.storeName,
+    'useGithubFileChanges storeName',
+  )
   if (storeType !== 'low-priority-store') {
     throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
   }
-  return useEditorState(githubFileChangesSelector, 'useGithubFileChanges')
+  return useEditorState(Substores.fullStore, githubFileChangesSelector, 'useGithubFileChanges')
 }
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'

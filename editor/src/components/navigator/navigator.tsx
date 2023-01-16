@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
@@ -32,9 +32,13 @@ import { useDispatch } from '../editor/store/dispatch-context'
 interface ItemProps extends ListChildComponentProps {}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState((store) => {
-    return store.derived.visibleNavigatorTargets
-  }, 'Item visibleNavigatorTargets')
+  const visibleNavigatorTargets = useEditorState(
+    Substores.derived,
+    (store) => {
+      return store.derived.visibleNavigatorTargets
+    },
+    'Item visibleNavigatorTargets',
+  )
   const editorSliceRef = useRefEditorState((store) => {
     const dragSelections = createDragSelections(
       store.derived.navigatorTargets,
@@ -115,19 +119,23 @@ export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
-    const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
-    const innerSelectionIndex =
-      selectedViews == null
-        ? -1
-        : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
-    return {
-      minimised: store.editor.navigator.minimised,
-      visibleNavigatorTargets: innerVisibleNavigatorTargets,
-      selectionIndex: innerSelectionIndex,
-    }
-  }, 'NavigatorComponent')
+  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      const selectedViews = store.editor.selectedViews
+      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+      const innerSelectionIndex =
+        selectedViews == null
+          ? -1
+          : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
+      return {
+        minimised: store.editor.navigator.minimised,
+        visibleNavigatorTargets: innerVisibleNavigatorTargets,
+        selectionIndex: innerSelectionIndex,
+      }
+    },
+    'NavigatorComponent',
+  )
 
   const itemListRef = React.createRef<FixedSizeList>()
 

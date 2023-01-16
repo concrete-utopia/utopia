@@ -18,7 +18,7 @@ export function getCursorFromEditor(editorState: EditorState): CSSCursor | null 
 export const CursorComponent = React.memo(() => {
   const cursor = useDelayedEditorState((store) => {
     return getCursorFromEditor(store.editor)
-  })
+  }, 'CursorComponent getCursorFromEditor')
 
   React.useEffect(() => {
     if (cursor != null) {

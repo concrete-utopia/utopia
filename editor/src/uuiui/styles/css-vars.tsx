@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
-import { useEditorState } from '../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
 import { getPreferredColorScheme, Theme } from './theme'
 import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
 
 export const ColorThemeComponent = React.memo(() => {
-  const themeSetting = useEditorState((store) => store.userState.themeConfig, 'currentTheme')
+  const themeSetting = useEditorState(
+    Substores.theme,
+    (store) => store.userState.themeConfig,
+    'currentTheme',
+  )
   const currentTheme: Theme = useEditorState(
+    Substores.theme,
     (store) => getCurrentTheme(store.userState),
     'currentTheme',
   )

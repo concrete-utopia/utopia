@@ -2,7 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useMemo } from 'react'
 import TimeAgo from 'react-timeago'
 import { notice } from '../../../../components/common/notice'
 import {
@@ -27,7 +27,7 @@ import {
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
@@ -41,22 +41,29 @@ const RepositoryRow = (props: RepositoryRowProps) => {
 
   const [importing, setImporting] = React.useState(false)
 
-  const loadingRepos = useEditorState(
-    (store) => isGithubLoadingRepositories(store.editor.githubOperations),
-    'RepositoryRow loadingRepos',
+  const githubOperations = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubOperations,
+    'RepositoryRow githubOperations',
   )
 
-  const importingThisBranch = useEditorState((store) => {
+  const currentRepo = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubSettings.targetRepository,
+    'RepositoryRow currentRepo',
+  )
+
+  const loadingRepos = useMemo(() => {
+    return isGithubLoadingRepositories(githubOperations)
+  }, [githubOperations])
+
+  const importingThisBranch = useMemo(() => {
     if (props.defaultBranch == null) {
       return false
     } else {
-      return isGithubLoadingBranch(
-        store.editor.githubOperations,
-        props.defaultBranch,
-        store.editor.githubSettings.targetRepository,
-      )
+      return isGithubLoadingBranch(githubOperations, props.defaultBranch, currentRepo)
     }
-  }, 'RepositoryRow importingThisBranch')
+  }, [props.defaultBranch, githubOperations, currentRepo])
 
   const [previousImportingThisBranch, setPreviousImportingThisBranch] =
     React.useState(importingThisBranch)
@@ -68,11 +75,6 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       setImporting(false)
     }
   }
-
-  const currentRepo = useEditorState(
-    (store) => store.editor.githubSettings.targetRepository,
-    'Current Github repository',
-  )
 
   const importRepository = React.useCallback(() => {
     if (loadingRepos) {
@@ -168,6 +170,7 @@ export const RepositoryListing = React.memo(
     )
 
     const usersRepositories = useEditorState(
+      Substores.github,
       (store) => store.editor.githubData.publicRepositories,
       'Github repositories',
     )
@@ -228,6 +231,7 @@ export const RepositoryListing = React.memo(
     }, [filteredRepositories, targetRepository])
 
     const githubOperations = useEditorState(
+      Substores.github,
       (store) => store.editor.githubOperations,
       'Github operations',
     )

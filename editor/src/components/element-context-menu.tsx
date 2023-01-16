@@ -28,7 +28,7 @@ import {
   escapeHatch,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
-import { useRefEditorState, useEditorState } from './editor/store/store-hook'
+import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
 import { setHighlightedView } from './editor/actions/action-creators'
@@ -143,6 +143,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(
+    Substores.highlightedHoveredViews,
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )

@@ -57,7 +57,7 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { fastForEach } from '../../../core/shared/utils'
@@ -216,6 +216,7 @@ const emptyControls: PropertyControls = {}
 
 export function useGetPropertyControlsForSelectedComponents(): Array<FullPropertyControlsAndTargets> {
   const selectedPropertyControls = useEditorState(
+    Substores.fullStore,
     (store) => {
       let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(store.editor.selectedViews, (path) => {
@@ -251,6 +252,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
   )
 
   const selectedElementsProps = useEditorState(
+    Substores.metadata,
     (store) => {
       let result: AllElementProps = {}
       fastForEach(selectedPropertyControls, ({ targets }) => {
@@ -266,6 +268,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
   )
 
   const selectedElementsFIXME = useEditorState(
+    Substores.metadata,
     (store) => {
       return selectedPropertyControls.map(({ targets }) =>
         mapDropNulls(
@@ -280,6 +283,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
   )
 
   const selectedComponentsFIXME = useEditorState(
+    Substores.fullStore,
     (store) => {
       return selectedPropertyControls.map(({ targets }) => {
         // TODO mapDropNulls

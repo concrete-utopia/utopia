@@ -15,7 +15,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -45,6 +45,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const indicatorColor = colorTheme.brandNeonPink.value
 
   const hoveredViews = useEditorState(
+    Substores.highlightedHoveredViews,
     (store) => store.editor.hoveredViews,
     'FlexGapControl hoveredViews',
   )
@@ -70,6 +71,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const dispatch = useDispatch()
   const { scale, metadata, isDragging } = useEditorState(
+    Substores.canvasAndMetadata,
     (store) => ({
       scale: store.editor.canvas.scale,
       metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,

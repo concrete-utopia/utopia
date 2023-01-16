@@ -8,7 +8,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
@@ -27,6 +27,7 @@ export const SceneLabelTestID = 'scene-label'
 
 export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
   const sceneTargets = useEditorState(
+    Substores.metadata,
     (store) =>
       Object.values(store.editor.jsxMetadata).filter((element) =>
         MetadataUtils.isProbablyScene(store.editor.jsxMetadata, element.elementPath),
@@ -52,10 +53,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const dispatch = useDispatch()
 
   const labelSelectable = useEditorState(
+    Substores.restOfEditor,
     (store) => !store.editor.keysPressed['z'],
     'SceneLabel Z key pressed',
   )
   const label = useEditorState(
+    Substores.metadata,
     (store) =>
       MetadataUtils.getElementLabel(
         store.editor.allElementProps,
@@ -65,15 +68,21 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel label',
   )
   const frame = useEditorState(
+    Substores.metadata,
     (store) => MetadataUtils.getFrameInCanvasCoords(props.target, store.editor.jsxMetadata),
     'SceneLabel frame',
   )
 
   const canvasOffset = useEditorState(
+    Substores.canvasOffset,
     (store) => store.editor.canvas.realCanvasOffset,
     'SceneLabel canvasOffset',
   )
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'SceneLabel scale',
+  )
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
@@ -83,10 +92,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const borderRadius = 3 / scale
 
   const isSelected = useEditorState(
+    Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
   const isHighlighted = useEditorState(
+    Substores.highlightedHoveredViews,
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )

@@ -20,8 +20,8 @@ import {
   StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import {
+  createStoresAndState,
   EditorStateContext,
-  EditorStateContextData,
   OriginalMainEditorStateContext,
   UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
@@ -46,7 +46,7 @@ type UpdateFunctionHelpers = {
   updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
 }
 
-export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
+export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
@@ -67,14 +67,14 @@ export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook: UtopiaStoreAPI = create(subscribeWithSelector((set) => defaultState))
+  const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
   const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
-    storeHook.setState(produce(fn))
+    storeHook.setState(produce(fn)(storeHook.getState()))
   const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
-    storeHook.setState(fn)
+    storeHook.setState(fn(storeHook.getState()))
 
   return {
-    useStore: storeHook,
+    ...storeHook,
     updateStoreWithImmer: updateStoreWithImmer,
     updateStore: updateStore,
   }
@@ -83,7 +83,7 @@ export function getStoreHook(): EditorStateContextData & UpdateFunctionHelpers {
 export const TestInspectorContextProvider: React.FunctionComponent<
   React.PropsWithChildren<{
     selectedViews: Array<ElementPath>
-    editorStoreData: EditorStateContextData
+    editorStoreData: UtopiaStoreAPI
   }>
 > = (props) => {
   return (

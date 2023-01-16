@@ -5,8 +5,6 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
-import create, { GetState, Mutate, SetState, StoreApi, UseBoundStore } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
@@ -62,10 +60,11 @@ import {
 } from '../components/editor/store/editor-state'
 import {
   CanvasStateContext,
+  createStoresAndState,
   EditorStateContext,
   LowPriorityStateContext,
   OriginalMainEditorStateContext,
-  SelectorTimings,
+  UtopiaStores,
   UtopiaStoreAPI,
 } from '../components/editor/store/store-hook'
 import { RealBundlerWorker } from '../core/workers/bundler-bridge'
@@ -122,6 +121,10 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
 import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
+import {
+  logSelectorTimings,
+  resetSelectorTimings,
+} from '../components/editor/store/store-hook-performance-logging'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -223,11 +226,8 @@ function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDisp
 export class Editor {
   storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreAPI
-  updateStore: (partialState: EditorStorePatched) => void
   canvasStore: UtopiaStoreAPI
-  updateCanvasStore: (partialState: EditorStorePatched) => void
   lowPriorityStore: UtopiaStoreAPI
-  updateLowPriorityStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
@@ -289,28 +289,21 @@ export class Editor {
       alreadySaved: false,
     }
 
-    const storeHook: UtopiaStoreAPI = create(
-      subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'editor-store')),
+    const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))
+
+    const canvasStore = createStoresAndState(
+      patchedStoreFromFullStore(this.storedState, 'canvas-store'),
     )
 
-    const canvasStoreHook: UtopiaStoreAPI = create(
-      subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState, 'canvas-store')),
+    const lowPriorityStore = createStoresAndState(
+      patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
     )
 
-    const lowPriorityStoreHook: UtopiaStoreAPI = create(
-      subscribeWithSelector((set) =>
-        patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
-      ),
-    )
+    this.utopiaStoreHook = store
 
-    this.utopiaStoreHook = storeHook
-    this.updateStore = storeHook.setState
+    this.canvasStore = canvasStore
 
-    this.canvasStore = canvasStoreHook
-    this.updateCanvasStore = canvasStoreHook.setState
-
-    this.lowPriorityStore = lowPriorityStoreHook
-    this.updateLowPriorityStore = lowPriorityStoreHook.setState
+    this.lowPriorityStore = lowPriorityStore
 
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreHook)
 
@@ -456,6 +449,10 @@ export class Editor {
     entireUpdateFinished: Promise<any>
   } => {
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+    if (MeasureSelectors) {
+      // eslint-disable-next-line no-console
+      console.log('------------------')
+    }
     const PerformanceMarks =
       (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
         isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
@@ -494,7 +491,7 @@ export class Editor {
         const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+            this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
           })
         })
         const afterCanvasStore = MeasureSelectors ? performance.now() : 0
@@ -552,7 +549,9 @@ export class Editor {
               performance.mark(`update main store ${updateId}`)
             }
             const beforeMainStore = MeasureSelectors ? performance.now() : 0
-            this.updateStore(patchedStoreFromFullStore(this.storedState, 'editor-store'))
+            this.utopiaStoreHook.setState(
+              patchedStoreFromFullStore(this.storedState, 'editor-store'),
+            )
             const afterMainStore = MeasureSelectors ? performance.now() : 0
 
             if (PerformanceMarks) {
@@ -565,7 +564,7 @@ export class Editor {
               if (PerformanceMarks) {
                 performance.mark(`update low priority store ${updateId}`)
               }
-              this.updateLowPriorityStore(
+              this.lowPriorityStore.setState(
                 patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
               )
               if (PerformanceMarks) {
@@ -589,10 +588,14 @@ export class Editor {
                 'slow store',
                 afterStoreUpdate - afterMainStore,
               )
+              logSelectorTimings('store update phase')
             }
             if (PerformanceMarks) {
               performance.mark(`react wrap up ${updateId}`)
             }
+
+            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+            resetSelectorTimings()
           })
         })
         if (PerformanceMarks) {
@@ -613,14 +616,13 @@ export class Editor {
         entireUpdateFinished: entireUpdateFinished,
       }
     }
-    SelectorTimings.current = {}
+    resetSelectorTimings()
     if (PerformanceMarks) {
       performance.mark('beforeFullDispatch')
     }
     const result = runDispatch()
     if (MeasureSelectors) {
-      // eslint-disable-next-line no-console
-      console.table(SelectorTimings.current)
+      logSelectorTimings('re-render phase')
     }
     if (PerformanceMarks) {
       performance.measure(
@@ -695,11 +697,11 @@ export const EditorRoot: React.FunctionComponent<{
 }) => {
   return (
     <DispatchContext.Provider value={dispatch}>
-      <OriginalMainEditorStateContext.Provider value={{ useStore: mainStore }}>
-        <EditorStateContext.Provider value={{ useStore: mainStore }}>
+      <OriginalMainEditorStateContext.Provider value={mainStore}>
+        <EditorStateContext.Provider value={mainStore}>
           <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-            <CanvasStateContext.Provider value={{ useStore: canvasStore }}>
-              <LowPriorityStateContext.Provider value={{ useStore: lowPriorityStore }}>
+            <CanvasStateContext.Provider value={canvasStore}>
+              <LowPriorityStateContext.Provider value={lowPriorityStore}>
                 <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
                   <EditorComponent />
                 </UiJsxCanvasCtxAtom.Provider>

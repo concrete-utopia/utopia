@@ -4,7 +4,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { SimpleFlexRow, HeadlessStringInput, colorTheme } from '../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 import {
@@ -25,35 +25,45 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const dispatch = useDispatch()
 
   const selectedMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarMode,
     'FormulaBar selectedMode',
   )
 
-  const selectedElementPath = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      return store.editor.selectedViews[0]
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementPath')
-
-  const selectedElementTextContent = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      if (metadata == null) {
-        return null
+  const selectedElementPath = useEditorState(
+    Substores.selectedViews,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        return store.editor.selectedViews[0]
       } else {
-        return MetadataUtils.getTextContentOfElement(metadata)
+        return null
       }
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElementTextContent')
+    },
+    'FormulaBar selectedElementPath',
+  )
+
+  const selectedElementTextContent = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const metadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (metadata == null) {
+          return null
+        } else {
+          return MetadataUtils.getTextContentOfElement(metadata)
+        }
+      } else {
+        return null
+      }
+    },
+    'FormulaBar selectedElementTextContent',
+  )
 
   const focusTriggerCount = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
   )

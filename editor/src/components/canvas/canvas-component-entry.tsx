@@ -1,5 +1,10 @@
 import React from 'react'
-import { CanvasStateContext, EditorStateContext, useEditorState } from '../editor/store/store-hook'
+import {
+  CanvasStateContext,
+  EditorStateContext,
+  Substores,
+  useEditorState,
+} from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -31,10 +36,10 @@ import { useDispatch } from '../editor/store/dispatch-context'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
-  const canvasStore = React.useContext(CanvasStateContext)?.useStore
+  const canvasStore = React.useContext(CanvasStateContext)
 
   return (
-    <EditorStateContext.Provider value={canvasStore == null ? null : { useStore: canvasStore }}>
+    <EditorStateContext.Provider value={canvasStore == null ? null : canvasStore}>
       <CanvasComponentEntryInner {...props} />
     </EditorStateContext.Provider>
   )
@@ -44,21 +49,26 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   const dispatch = useDispatch()
 
   const canvasScrollAnimation = useEditorState(
+    Substores.canvas,
     (store) => store.editor.canvas.scrollAnimation,
     'CanvasComponentEntry scrollAnimation',
   )
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
-  const canvasProps = useEditorState((store) => {
-    return pickUiJsxCanvasProps(
-      store.editor,
-      store.derived,
-      dispatch,
-      clearConsoleLogs,
-      addToConsoleLogs,
-    )
-  }, 'CanvasComponentEntry canvasProps')
+  const canvasProps = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return pickUiJsxCanvasProps(
+        store.editor,
+        store.derived,
+        dispatch,
+        clearConsoleLogs,
+        addToConsoleLogs,
+      )
+    },
+    'CanvasComponentEntry canvasProps',
+  )
 
   const canvasEditOrSelect = React.useMemo(() => {
     // Explicitly target the case where the canvas is not live, needs to handle `undefined`.
