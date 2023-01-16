@@ -1,3 +1,4 @@
+import { assertNever } from '../../shared/utils'
 import { OutgoingWorkerMessage } from '../common/worker-types'
 
 export type IncomingWorkerMessage = StoreAssetMessage | EvictAssetMessage
@@ -27,8 +28,12 @@ export async function handleMessage(
 ) {
   switch (workerMessage.type) {
     case 'STORE_ASSET_MESSAGE':
-      return await storeAsset({ base64: workerMessage.base64, path: workerMessage.path })
+      await storeAsset({ base64: workerMessage.base64, path: workerMessage.path })
+      sendMessage({ type: 'updateprocessed', jobID: '1' })
+      break
     case 'EVICT_ASSET_MESSAGE':
-      return
+      break
+    default:
+      assertNever(workerMessage)
   }
 }

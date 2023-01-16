@@ -125,6 +125,7 @@ import {
   logSelectorTimings,
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
+import { createAssetWorker } from '../core/workers/worker-import-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -231,6 +232,8 @@ export class Editor {
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
+  assetWorker: any = null
+
   constructor() {
     startPreviewConnectedMonitoring(this.boundDispatch)
 
@@ -246,6 +249,15 @@ export class Editor {
     window.addEventListener('message', this.onMessage)
 
     const watchdogWorker = new RealWatchdogWorker()
+
+    void createAssetWorker()
+      .then((worker) => {
+        // console.log('worker registration OK')
+        this.assetWorker = worker
+      })
+      .catch((e) => {
+        // console.log("it's over anakin", JSON.stringify(e))
+      })
 
     const renderRootEditor = () =>
       renderRootComponent(

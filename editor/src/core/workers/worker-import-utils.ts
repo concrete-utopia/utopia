@@ -43,3 +43,26 @@ export function createWatchdogWorker(): Worker {
   __webpack_public_path__ = oldPublicPath
   return worker
 }
+
+export function url(): URL {
+  const result = new URL('./asset/asset.worker.ts', import.meta.url)
+  return result
+}
+
+export async function createAssetWorker(): Promise<ServiceWorkerRegistration> {
+  // eslint-disable-next-line no-restricted-globals
+  const registration = await navigator.serviceWorker.register(url(), { scope: '/' })
+  if (registration.installing != null) {
+    // console.log('Service worker installing')
+  } else if (registration.waiting != null) {
+    // console.log('Service worker installed')
+  } else if (registration.active != null) {
+    // console.log('Service worker active')
+  }
+  return registration
+  // try {
+  // } catch (e) {
+  //   // console.log(e)
+  //   throw e
+  // }
+}

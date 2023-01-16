@@ -13,5 +13,6 @@ ctx.addEventListener('message', (event: MessageEvent) => {
 })
 
 ctx.addEventListener('fetch', (event: FetchEvent) => {
-  /* TODO */
+  // console.log(event)
+  return null
 })
