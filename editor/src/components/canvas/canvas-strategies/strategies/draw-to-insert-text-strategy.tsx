@@ -2,6 +2,8 @@ import { EditorModes } from '../../../../components/editor/editor-modes'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { updateSelectedRightMenuTab } from '../../../editor/actions/actions'
+import { CSSCursor } from '../../canvas-types'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
@@ -81,6 +83,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         if (!isRoot && textEditable) {
           return strategyApplicationResult([
             updateSelectedViews('on-complete', [targetParent]),
+            setCursorCommand(CSSCursor.Select),
             wildcardPatch('on-complete', {
               mode: {
                 $set: EditorModes.textEditMode(
