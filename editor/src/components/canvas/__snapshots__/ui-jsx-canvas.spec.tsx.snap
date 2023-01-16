@@ -22721,797 +22721,6 @@ Object {
 }
 `;
 
-exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 1`] = `
-"<div style=\\"all: initial\\">
-  <div
-    id=\\"canvas-container\\"
-    style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
-    data-utopia-root-element-path=\\"eee\\"
-  >
-    <div
-      data-utopia-scene-id=\\"eee/fff\\"
-      data-path=\\"eee/fff\\"
-      style=\\"
-        overflow: hidden;
-        position: absolute;
-        background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
-        background-image: conic-gradient(
-          var(--utopitheme-checkerboardLight) 0.25turn,
-          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-          var(--utopitheme-checkerboardDark) 0.75turn
-        );
-        background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-        background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-        left: 0;
-        top: 0;
-        width: 375px;
-        height: 812px;
-      \\"
-      data-uid=\\"fff\\"
-    >
-      <div
-        data-uid=\\"aaa\\"
-        style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
-        data-path=\\"eee/fff/app-entity:aaa\\"
-      >
-        Test
-        <div
-          data-uid=\\"ddd\\"
-          style=\\"background-color: pink; width: 100%; height: 20px\\"
-          data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
-        >
-          <div data-uid=\\"ccc~~~1\\" data-path=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
-            test
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 2`] = `
-Object {
-  "eee/fff": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [
-          Object {
-            "children": Array [],
-            "name": Object {
-              "baseVariable": "App",
-              "propertyPath": Object {
-                "propertyElements": Array [],
-              },
-            },
-            "props": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "data-uid",
-                "type": "JSX_ATTRIBUTES_ENTRY",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "app-entity",
-                },
-              },
-            ],
-            "type": "JSX_ELEMENT",
-            "uid": "app-entity",
-          },
-        ],
-        "name": Object {
-          "baseVariable": "Scene",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "fff",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "style",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {
-                "height": 812,
-                "left": 0,
-                "position": "absolute",
-                "top": 0,
-                "width": 375,
-              },
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "fff",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "eee",
-          "fff",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "Scene",
-      "filePath": "utopia-api",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "Scene",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "globalContentBox": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentLayoutSystem": "flow",
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "usesParentBounds": false,
-    },
-  },
-  "eee/fff/app-entity": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "App",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "app-entity",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "app-entity",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "eee",
-          "fff",
-          "app-entity",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "filePath": "test.js",
-      "type": "SAME_FILE_ORIGIN",
-      "variableName": "App",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "globalContentBox": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentLayoutSystem": "flow",
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "usesParentBounds": false,
-    },
-  },
-  "eee/fff/app-entity:aaa": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [
-          Object {
-            "text": "
-      Test
-      ",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
-          },
-          Object {
-            "children": Array [],
-            "name": Object {
-              "baseVariable": "Thing",
-              "propertyPath": Object {
-                "propertyElements": Array [],
-              },
-            },
-            "props": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "data-uid",
-                "type": "JSX_ATTRIBUTES_ENTRY",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "bbb",
-                },
-              },
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "thing",
-                "type": "JSX_ATTRIBUTES_ENTRY",
-                "value": Object {
-                  "definedElsewhere": Array [
-                    "React",
-                    "utopiaCanvasJSXLookup",
-                  ],
-                  "elementsWithin": Object {
-                    "ccc": Object {
-                      "children": Array [
-                        Object {
-                          "text": "test",
-                          "type": "JSX_TEXT_BLOCK",
-                          "uniqueID": "",
-                        },
-                      ],
-                      "name": Object {
-                        "baseVariable": "div",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "data-uid",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "value": "ccc",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                      "uid": "ccc",
-                    },
-                  },
-                  "javascript": "<div data-uid={'ccc'}>test</div>",
-                  "sourceMap": Object {
-                    "file": "code.tsx",
-                    "mappings": "OAesCA;AAAAA;AAAAA",
-                    "names": Array [
-                      "<",
-                    ],
-                    "sources": Array [
-                      "code.tsx",
-                    ],
-                    "sourcesContent": Array [
-                      "
-import * as React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-export var App = (props) => {
-  return (
-    <div
-      data-uid={'aaa'}
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      
-    >
-      Test
-      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
-    </div>
-  )
-}
-
-export var Thing = (props) => {
-  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
-}
-
-export var storyboard = (
-  <Storyboard data-uid={'eee'} >
-    <Scene
-      data-uid={'fff'}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    >
-      <App data-uid='app-entity' />
-    </Scene>
-  </Storyboard>
-)",
-                    ],
-                    "version": 3,
-                  },
-                  "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
-  callerThis: this
-});",
-                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                  "uniqueID": "",
-                },
-              },
-            ],
-            "type": "JSX_ELEMENT",
-            "uid": "bbb",
-          },
-        ],
-        "name": Object {
-          "baseVariable": "div",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "aaa",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "style",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {
-                "backgroundColor": "#FFFFFF",
-                "height": "100%",
-                "width": "100%",
-              },
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "aaa",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "eee",
-          "fff",
-          "app-entity",
-        ],
-        Array [
-          "aaa",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "filePath": "test.js",
-      "type": "SAME_FILE_ORIGIN",
-      "variableName": "div",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "globalContentBox": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentLayoutSystem": "flow",
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "usesParentBounds": false,
-    },
-  },
-  "eee/fff/app-entity:aaa/bbb": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "Thing",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "bbb",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "thing",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "definedElsewhere": Array [
-                "React",
-                "utopiaCanvasJSXLookup",
-              ],
-              "elementsWithin": Object {
-                "ccc": Object {
-                  "children": Array [
-                    Object {
-                      "text": "test",
-                      "type": "JSX_TEXT_BLOCK",
-                      "uniqueID": "",
-                    },
-                  ],
-                  "name": Object {
-                    "baseVariable": "div",
-                    "propertyPath": Object {
-                      "propertyElements": Array [],
-                    },
-                  },
-                  "props": Array [
-                    Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "key": "data-uid",
-                      "type": "JSX_ATTRIBUTES_ENTRY",
-                      "value": Object {
-                        "comments": Object {
-                          "leadingComments": Array [],
-                          "trailingComments": Array [],
-                        },
-                        "type": "ATTRIBUTE_VALUE",
-                        "value": "ccc",
-                      },
-                    },
-                  ],
-                  "type": "JSX_ELEMENT",
-                  "uid": "ccc",
-                },
-              },
-              "javascript": "<div data-uid={'ccc'}>test</div>",
-              "sourceMap": Object {
-                "file": "code.tsx",
-                "mappings": "OAesCA;AAAAA;AAAAA",
-                "names": Array [
-                  "<",
-                ],
-                "sources": Array [
-                  "code.tsx",
-                ],
-                "sourcesContent": Array [
-                  "
-import * as React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-export var App = (props) => {
-  return (
-    <div
-      data-uid={'aaa'}
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      
-    >
-      Test
-      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
-    </div>
-  )
-}
-
-export var Thing = (props) => {
-  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
-}
-
-export var storyboard = (
-  <Storyboard data-uid={'eee'} >
-    <Scene
-      data-uid={'fff'}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    >
-      <App data-uid='app-entity' />
-    </Scene>
-  </Storyboard>
-)",
-                ],
-                "version": 3,
-              },
-              "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
-  callerThis: this
-});",
-              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-              "uniqueID": "",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "bbb",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "eee",
-          "fff",
-          "app-entity",
-        ],
-        Array [
-          "aaa",
-          "bbb",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "filePath": "test.js",
-      "type": "SAME_FILE_ORIGIN",
-      "variableName": "Thing",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "globalContentBox": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentLayoutSystem": "flow",
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "usesParentBounds": false,
-    },
-  },
-}
-`;
-
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 1`] = `
 "<div style=\\"all: initial\\">
   <div
@@ -34111,6 +33320,798 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders correctly when a component is passed in via a prop 1`] = `
+"<div style=\\"all: initial\\">
+  <div
+    id=\\"canvas-container\\"
+    style=\\"position: absolute\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"eee\\"
+  >
+    <div
+      data-utopia-scene-id=\\"eee/fff\\"
+      data-path=\\"eee/fff\\"
+      style=\\"
+        overflow: hidden;
+        position: absolute;
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 0px 1px 0px
+          var(--utopitheme-neutralInvertedBackground30);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
+        background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+        background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"fff\\"
+    >
+      <div
+        data-uid=\\"aaa\\"
+        style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
+        data-path=\\"eee/fff/app-entity:aaa\\"
+      >
+        Test
+
+        <div
+          data-uid=\\"ddd\\"
+          style=\\"background-color: pink; width: 100%; height: 20px\\"
+          data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
+        >
+          <div data-uid=\\"ccc~~~1\\" data-path=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
+            test
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders correctly when a component is passed in via a prop 2`] = `
+Object {
+  "eee/fff": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "App",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "app-entity",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "app-entity",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "Scene",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "fff",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "height": 812,
+                "left": 0,
+                "position": "absolute",
+                "top": 0,
+                "width": 375,
+              },
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "fff",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "Scene",
+      "filePath": "utopia-api",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "Scene",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app-entity": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "App",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "app-entity",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "app-entity",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app-entity",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "App",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app-entity:aaa": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "
+      Test
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "Thing",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "bbb",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "thing",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "definedElsewhere": Array [
+                    "React",
+                    "utopiaCanvasJSXLookup",
+                  ],
+                  "elementsWithin": Object {
+                    "ccc": Object {
+                      "children": Array [
+                        Object {
+                          "text": "test",
+                          "type": "JSX_TEXT_BLOCK",
+                          "uniqueID": "",
+                        },
+                      ],
+                      "name": Object {
+                        "baseVariable": "div",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "data-uid",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "ccc",
+                          },
+                        },
+                      ],
+                      "type": "JSX_ELEMENT",
+                      "uid": "ccc",
+                    },
+                  },
+                  "javascript": "<div data-uid={'ccc'}>test</div>",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAesCA;AAAAA;AAAAA",
+                    "names": Array [
+                      "<",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "
+import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} >
+    <Scene
+      data-uid={'fff'}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)",
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
+  callerThis: this
+});",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "bbb",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "backgroundColor": "#FFFFFF",
+                "height": "100%",
+                "width": "100%",
+              },
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "aaa",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "div",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app-entity:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "Thing",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "thing",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "definedElsewhere": Array [
+                "React",
+                "utopiaCanvasJSXLookup",
+              ],
+              "elementsWithin": Object {
+                "ccc": Object {
+                  "children": Array [
+                    Object {
+                      "text": "test",
+                      "type": "JSX_TEXT_BLOCK",
+                      "uniqueID": "",
+                    },
+                  ],
+                  "name": Object {
+                    "baseVariable": "div",
+                    "propertyPath": Object {
+                      "propertyElements": Array [],
+                    },
+                  },
+                  "props": Array [
+                    Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "key": "data-uid",
+                      "type": "JSX_ATTRIBUTES_ENTRY",
+                      "value": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "type": "ATTRIBUTE_VALUE",
+                        "value": "ccc",
+                      },
+                    },
+                  ],
+                  "type": "JSX_ELEMENT",
+                  "uid": "ccc",
+                },
+              },
+              "javascript": "<div data-uid={'ccc'}>test</div>",
+              "sourceMap": Object {
+                "file": "code.tsx",
+                "mappings": "OAesCA;AAAAA;AAAAA",
+                "names": Array [
+                  "<",
+                ],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "
+import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} >
+    <Scene
+      data-uid={'fff'}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)",
+                ],
+                "version": 3,
+              },
+              "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
+  callerThis: this
+});",
+              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+              "uniqueID": "",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "bbb",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "bbb",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "Thing",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders correctly with a context 1`] = `
 "<div style=\\"all: initial\\">
   <div
@@ -36844,6 +36845,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-path=\\"eee/fff/app:aaa/bbb/ccc\\"
           ></div>
         </div>
+
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
     </div>

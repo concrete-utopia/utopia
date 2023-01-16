@@ -349,7 +349,10 @@ export function renderCoreElement(
 export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
   switch (c.type) {
     case 'JSX_TEXT_BLOCK':
-      return c.text
+      if (c.text.trim().length === 0) {
+        return c.text
+      }
+      return c.text.replace(/\n +/, '').replace('\n', '') // trimming to remove code formatting (prettier)
     case 'JSX_ELEMENT':
       return c.name.baseVariable === 'br' ? '\n' : null
     case 'JSX_ARBITRARY_BLOCK':
@@ -362,6 +365,14 @@ export function textOrNullFromJSXElement(c: JSXElementChild): string | null {
     default:
       assertNever(c)
   }
+}
+
+// if the element's text is not a newline and the next one is, trim the current element.
+function trimTextBeforeNewline(e: string, index: number, arr: string[]) {
+  if (e !== '\n' && index < arr.length - 1 && arr[index + 1] === '\n') {
+    return e.trim()
+  }
+  return e
 }
 
 function renderJSXElement(
@@ -477,12 +488,14 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const text = mapDropNulls(textOrNullFromJSXElement, childrenWithNewTextBlock).join('')
+      const text = mapDropNulls(textOrNullFromJSXElement, childrenWithNewTextBlock)
+        .map(trimTextBeforeNewline)
+        .join('')
       const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
-        text: textContent.trim(),
+        text: textContent,
         component: FinalElement,
         passthroughProps: finalPropsIcludingElementPath,
       }

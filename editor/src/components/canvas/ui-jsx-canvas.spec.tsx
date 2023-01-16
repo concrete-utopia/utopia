@@ -1725,7 +1725,7 @@ export var storyboard = (
     )
   })
 
-  it('renderrs correctly when a component is passed in via a prop', () => {
+  it('renders correctly when a component is passed in via a prop', () => {
     testCanvasRender(
       null,
       `
@@ -2033,8 +2033,8 @@ describe('UiJsxCanvas render multifile projects', () => {
                 <span
                   data-uid=\\"card-content\\"
                   data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
-                  >hello</span
-                >
+                  >hello
+                </span>
               </div>
             </div>
           </div>

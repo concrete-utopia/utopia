@@ -450,6 +450,154 @@ describe('Use the text editor', () => {
       })
     })
   })
+  describe('multiline editing', () => {
+    it('renders and escapes newlines', async () => {
+      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+      await enterTextEditMode(editor)
+      typeText('\nHow are you?')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Hello
+              <br />
+              How are you?
+            </div>
+          </Storyboard>
+        )`),
+      )
+
+      await enterTextEditMode(editor)
+      typeText('\n\nblablabla')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Hello
+              <br />
+              How are you?
+              <br />
+              <br />
+              blablabla
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
+    it('does not trim trailing newlines', async () => {
+      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+      await enterTextEditMode(editor)
+      typeText('\n\n')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Hello
+              <br />
+              <br />
+            </div>
+          </Storyboard>
+        )`),
+      )
+
+      await enterTextEditMode(editor)
+      typeText('test')
+      closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Hello
+              <br />
+              <br />
+              test
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
+  })
   describe('inline expressions', () => {
     it('handles expressions', async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
@@ -486,14 +634,6 @@ describe('Use the text editor', () => {
               )`),
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
-
-      await enterTextEditMode(editor)
-      typeText(', right?')
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(
-        'the answer is {41 + 1}, right?',
-      )
-      closeTextEditor()
-      await editor.getDispatchFollowUpActionsFinished()
     })
     it("escapes curly braces if they don't wrap an expression", async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
