@@ -3717,7 +3717,7 @@ export const UPDATE_FNS = {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
     const updatedFile = updateFileIfPossible(file, existing)
 
-    if (updatedFile == null) {
+    if (updatedFile === 'cant-update') {
       return editor
     }
 

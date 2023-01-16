@@ -471,7 +471,7 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
 export function updateFileIfPossible(
   updated: ProjectFile,
   existing: ProjectFile | null,
-): ProjectFile | null {
+): ProjectFile | 'cant-update' {
   if (existing == null || !isTextFile(existing)) {
     return updated
   }
@@ -501,7 +501,7 @@ export function updateFileIfPossible(
     return updated
   }
 
-  return null
+  return 'cant-update'
 }
 
 export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {
