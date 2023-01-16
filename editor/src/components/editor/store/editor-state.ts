@@ -56,6 +56,7 @@ import {
   HighlightBoundsWithFileForUids,
   parseSuccess,
   ParsedAheadRevisionsState,
+  RevisionsStateType,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
@@ -3015,9 +3016,17 @@ export function modifyParseSuccessAtPath(
       if (updatedParseSuccess === parsedFileContents) {
         return editor
       } else {
+        const updatedRevisionState = getNextRevisionsState(
+          projectFile.fileContents.revisionsState,
+          revisionsState,
+        )
         const updatedFile = saveTextFileContents(
           projectFile,
-          textFileContents(projectFile.fileContents.code, updatedParseSuccess, revisionsState),
+          textFileContents(
+            projectFile.fileContents.code,
+            updatedParseSuccess,
+            updatedRevisionState,
+          ),
           false,
         )
         return {
@@ -3110,6 +3119,19 @@ export function modifyUnderlyingTarget(
     innerModifyParseSuccess,
     revisionsState,
   )
+}
+
+function getNextRevisionsState(
+  prevRevisionState: RevisionsStateType,
+  nextRevisionState: ParsedAheadRevisionsState,
+): ParsedAheadRevisionsState {
+  if (
+    prevRevisionState === 'PARSED_AHEAD_NEEDS_REPARSING' &&
+    nextRevisionState === 'PARSED_AHEAD'
+  ) {
+    return 'PARSED_AHEAD_NEEDS_REPARSING'
+  }
+  return nextRevisionState
 }
 
 export function modifyUnderlyingForOpenFile(
