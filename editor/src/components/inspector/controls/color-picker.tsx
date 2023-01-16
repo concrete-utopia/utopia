@@ -2,6 +2,7 @@ import Chroma from 'chroma-js'
 import { clamp, WindowPoint, roundTo } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
 import {
+  cssColor,
   CSSColor,
   cssColorToChromaColorOrDefault,
   EmptyInputValue,
@@ -15,7 +16,13 @@ import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
-import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
+import {
+  colorTheme,
+  Icn,
+  SimpleNumberInput,
+  SimplePercentInput,
+  UtopiaStyles,
+} from '../../../uuiui'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -37,6 +44,17 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
   portalTarget,
   ...props
 }) => {
+  const onSubmitValue = props.onSubmitValue
+  const dispatchEyeDropper = React.useCallback(() => {
+    const EyeDropper = window.EyeDropper
+    if (EyeDropper == null) {
+      return
+    }
+    closePopup()
+    void new EyeDropper().open().then((result: any) => {
+      onSubmitValue(cssColor(result.sRGBHex as string))
+    })
+  }, [closePopup, onSubmitValue])
   return (
     <InspectorModal
       offsetX={props.offsetX - colorPickerWidth}
@@ -56,6 +74,14 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
           ...UtopiaStyles.popup,
         }}
       >
+        <Icn
+          type='plus'
+          color='secondary'
+          width={16}
+          height={16}
+          onClick={dispatchEyeDropper}
+          style={{ marginLeft: 8 }}
+        />
         <ColorPickerInner {...props} />
       </div>
     </InspectorModal>
