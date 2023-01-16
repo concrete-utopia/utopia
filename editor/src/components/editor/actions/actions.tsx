@@ -22,7 +22,6 @@ import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   assetFile,
-  canUpdateFile,
   directory,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
@@ -37,6 +36,7 @@ import {
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
+  updateFileIfPossible,
   updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
@@ -3714,32 +3714,31 @@ export const UPDATE_FNS = {
 
     const { file } = action
 
-    if (isTextFile(file)) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-      const canUpdate = canUpdateFile(file, existing)
-      if (!canUpdate) {
-        return editor
-      }
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const updatedFile = updateFileIfPossible(file, existing)
+
+    if (updatedFile === 'cant-update') {
+      return editor
     }
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
       action.filePath,
-      file,
+      updatedFile,
     )
 
     let updatedNodeModulesFiles = editor.nodeModules.files
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
-    if (action.filePath === '/package.json' && isTextFile(file)) {
+    if (action.filePath === '/package.json' && isTextFile(updatedFile)) {
       const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
       const currentDeps = isTextFile(packageJson)
         ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
         : null
       void refreshDependencies(
         dispatch,
-        file.fileContents.code,
+        updatedFile.fileContents.code,
         currentDeps,
         builtInDependencies,
         editor.nodeModules.files,
@@ -3752,9 +3751,9 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount:
-          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
         domWalkerInvalidateCount:
-          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
