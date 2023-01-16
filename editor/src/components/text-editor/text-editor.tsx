@@ -298,9 +298,17 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     dispatch([updateEditorMode(EditorModes.selectMode())])
   }, [dispatch])
 
-  const editorProps = {
+  const editorProps: React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLSpanElement>,
+    HTMLSpanElement
+  > = {
     ref: myElement,
     id: TextEditorSpanId,
+    style: {
+      display: 'inline-block',
+      width: '100%',
+      height: '100%',
+    },
     onPaste: stopPropagation,
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
