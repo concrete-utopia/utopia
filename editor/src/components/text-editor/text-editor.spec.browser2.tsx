@@ -402,7 +402,8 @@ describe('Use the text editor', () => {
               }}
               data-uid='39e'
             >
-              Hello <br />
+              Hello
+              <br />
               How are you?
               <br />
               <br />
@@ -475,7 +476,8 @@ describe('Use the text editor', () => {
               }}
               data-uid='39e'
             >
-              Hello <br />
+              Hello
+              <br />
               <br />
               test
             </div>

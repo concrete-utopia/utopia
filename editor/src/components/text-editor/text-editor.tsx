@@ -68,7 +68,7 @@ export function escapeHTML(s: string): string {
       .replace('<', entities.lesserThan)
       .replace('>', entities.greaterThan)
       // restore br tags
-      .replace(/\n/g, '<br />')
+      .replace(/\n/g, '\n<br />')
       // clean up curly braces
       .replace(/\{/g, entities.curlyBraceLeft)
       .replace(/\}/g, entities.curlyBraceRight)

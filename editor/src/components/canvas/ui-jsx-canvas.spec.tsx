@@ -1725,7 +1725,7 @@ export var storyboard = (
     )
   })
 
-  it('renderrs correctly when a component is passed in via a prop', () => {
+  it('renders correctly when a component is passed in via a prop', () => {
     testCanvasRender(
       null,
       `
