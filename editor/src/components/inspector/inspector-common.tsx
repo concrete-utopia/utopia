@@ -3,15 +3,16 @@ import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/elemen
 import { isStoryboardChild } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { FlexDirection } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
-import { CanvasCommand } from '../canvas/commands/commands'
-import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import { setProperty } from '../canvas/commands/set-property-command'
 import { defaultEither, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { CSSProperties } from 'react'
+import { CanvasCommand } from '../canvas/commands/commands'
+import { deleteProperties } from '../canvas/commands/delete-properties-command'
+import { setProperty } from '../canvas/commands/set-property-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -284,4 +285,42 @@ export function convertWidthToFlexGrow(
 
 export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
+}
+
+export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create(['style', prop])
+
+export const flexContainerProps = [
+  styleP('flexDirection'),
+  styleP('flexWrap'),
+  styleP('gap'),
+  styleP('display'),
+  styleP('alignItems'),
+  styleP('justifyContent'),
+]
+
+export const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+
+export function pruneFlexPropsCommands(
+  props: PropertyPath[],
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  return [deleteProperties('always', elementPath, props)]
+}
+
+export function sizeToVisualDimensions(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const width = element.specialSizeMeasurements.clientWidth
+  const height = element.specialSizeMeasurements.clientHeight
+
+  return [
+    setProperty('always', elementPath, styleP('width'), width),
+    setProperty('always', elementPath, styleP('height'), height),
+  ]
 }

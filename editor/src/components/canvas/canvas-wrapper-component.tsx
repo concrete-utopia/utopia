@@ -16,7 +16,7 @@ import {
   parseFailureAsErrorMessages,
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -63,6 +63,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { editorState, derivedState, userState } = useEditorState(
+    Substores.fullStore,
     (store) => ({
       editorState: store.editor,
       derivedState: store.derived,
@@ -71,15 +72,24 @@ export const CanvasWrapperComponent = React.memo(() => {
     'CanvasWrapperComponent',
   )
 
-  const fatalErrors = React.useMemo(() => {
-    return getAllCodeEditorErrors(editorState, 'fatal', true)
-  }, [editorState])
+  const fatalErrors = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'fatal', true)
+    },
+    'CanvasWrapperComponent fatalErrors',
+  )
 
-  const safeMode = useEditorState((store) => {
-    return store.editor.safeMode
-  }, 'CanvasWrapperComponent safeMode')
+  const safeMode = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.safeMode
+    },
+    'CanvasWrapperComponent safeMode',
+  )
 
   const isNavigatorOverCanvas = useEditorState(
+    Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
@@ -145,15 +155,23 @@ export const CanvasWrapperComponent = React.memo(() => {
 
 const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const utopiaParserErrors = useEditorState((store) => {
-    return parseFailureAsErrorMessages(
-      getOpenUIJSFileKey(store.editor),
-      getOpenUIJSFile(store.editor),
-    )
-  }, 'ErrorOverlayComponent utopiaParserErrors')
-  const fatalCodeEditorErrors = useEditorState((store) => {
-    return getAllCodeEditorErrors(store.editor, 'error', true)
-  }, 'ErrorOverlayComponent fatalCodeEditorErrors')
+  const utopiaParserErrors = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return parseFailureAsErrorMessages(
+        getOpenUIJSFileKey(store.editor),
+        getOpenUIJSFile(store.editor),
+      )
+    },
+    'ErrorOverlayComponent utopiaParserErrors',
+  )
+  const fatalCodeEditorErrors = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'error', true)
+    },
+    'ErrorOverlayComponent fatalCodeEditorErrors',
+  )
 
   const runtimeErrors = useReadOnlyRuntimeErrors()
 

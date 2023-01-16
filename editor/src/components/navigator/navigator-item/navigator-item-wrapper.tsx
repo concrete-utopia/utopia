@@ -24,7 +24,8 @@ import {
   DropTargetHint,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
   DragSelection,
   NavigatorItemContainer,
@@ -42,8 +43,8 @@ interface NavigatorItemWrapperProps {
 }
 
 const targetElementMetadataSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate, targetPath: ElementPath) => targetPath,
   (metadata, targetPath): ElementInstanceMetadata | null => {
     return MetadataUtils.findElementByElementPath(metadata, targetPath)
   },
@@ -89,7 +90,7 @@ const staticNameSelector = createSelector(targetJsxElementSelector, (targetEleme
 
 const labelSelector = createSelector(
   targetElementMetadataSelector,
-  (store: EditorStorePatched) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
     if (elementMetadata == null) {
       return 'Element 👻'
@@ -99,8 +100,8 @@ const labelSelector = createSelector(
 )
 
 const elementWarningsSelector = createSelector(
-  (store: EditorStorePatched) => store.derived.elementWarnings,
-  (_: EditorStorePatched, elementPath: ElementPath) => elementPath,
+  (store: DerivedSubstate) => store.derived.elementWarnings,
+  (_: DerivedSubstate, elementPath: ElementPath) => elementPath,
   (elementWarnings, elementPath) => {
     return (
       getValueFromComplexMap(EP.toString, elementWarnings, elementPath) ?? defaultElementWarnings
@@ -109,8 +110,8 @@ const elementWarningsSelector = createSelector(
 )
 
 const noOfChildrenSelector = createSelector(
-  (store: EditorStorePatched) => store.derived.navigatorTargets,
-  (_: EditorStorePatched, targetPath: ElementPath) => targetPath,
+  (store: DerivedSubstate) => store.derived.navigatorTargets,
+  (_: DerivedSubstate, targetPath: ElementPath) => targetPath,
   (navigatorTargets, targetPath) => {
     let result = 0
     for (const nt of navigatorTargets) {
@@ -129,53 +130,68 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
-  const { isSelected, isHighlighted } = useEditorState(
-    (store) => ({
-      isSelected: EP.containsPath(props.elementPath, store.editor.selectedViews),
-      isHighlighted: EP.containsPath(props.elementPath, store.editor.highlightedViews),
-    }),
+  const isSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
+  const isHighlighted = useEditorState(
+    Substores.highlightedHoveredViews,
+    (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
+    'NavigatorItemWrapper isHighlighted',
+  )
 
-  const noOfChildren = useEditorState((store) => {
-    return noOfChildrenSelector(store, props.elementPath)
-  }, 'NavigatorItemWrapper noOfChildren')
+  const noOfChildren = useEditorState(
+    Substores.derived,
+    (store) => {
+      return noOfChildrenSelector(store, props.elementPath)
+    },
+    'NavigatorItemWrapper noOfChildren',
+  )
 
   const supportsChildren = useEditorState(
+    Substores.fullStore,
+    // this is not good
     (store) => targetSupportsChildrenSelector(store, props.elementPath),
     'NavigatorItemWrapper targetSupportsChildrenSelector',
   )
 
   const label = useEditorState(
+    Substores.metadata,
     (store) => labelSelector(store, props.elementPath),
     'NavigatorItemWrapper labelSelector',
   )
 
   const elementWarnings = useEditorState(
+    Substores.derived,
     (store) => elementWarningsSelector(store, props.elementPath),
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
   const dispatch = useDispatch()
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
-    useEditorState((store) => {
-      // Only capture this if it relates to the current navigator item, as it may change while
-      // dragging around the navigator but we don't want the entire navigator to re-render each time.
-      let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
-      if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
-        possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
-      }
-      const elementIsCollapsed = EP.containsPath(
-        props.elementPath,
-        store.editor.navigator.collapsedViews,
-      )
-      return {
-        appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
-        renamingTarget: store.editor.navigator.renamingTarget,
-        isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
-        isCollapsed: elementIsCollapsed,
-      }
-    }, 'NavigatorItemWrapper')
+    useEditorState(
+      Substores.restOfEditor,
+      (store) => {
+        // Only capture this if it relates to the current navigator item, as it may change while
+        // dragging around the navigator but we don't want the entire navigator to re-render each time.
+        let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
+        if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+          possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
+        }
+        const elementIsCollapsed = EP.containsPath(
+          props.elementPath,
+          store.editor.navigator.collapsedViews,
+        )
+        return {
+          appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
+          renamingTarget: store.editor.navigator.renamingTarget,
+          isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+          isCollapsed: elementIsCollapsed,
+        }
+      },
+      'NavigatorItemWrapper',
+    )
 
   const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
     index: props.index,

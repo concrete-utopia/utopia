@@ -5,7 +5,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import {
   FeatureName,
   toggleFeatureEnabled,
@@ -77,19 +77,12 @@ export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )
 
   const entireStateRef = useRefEditorState((store) => store)
-
-  const openUiJsFile = useRefEditorState((store) => {
-    return getOpenUIJSFile(store.editor)
-  })
-
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
@@ -98,18 +91,6 @@ export const SettingsPanel = React.memo(() => {
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
-
-  const printEditorState = React.useCallback(() => {
-    console.info('Current Editor State:', entireStateRef.current)
-  }, [entireStateRef])
-
-  const printOpenUiJsFileModel = React.useCallback(() => {
-    console.info('Open UIJSFile:', openUiJsFile.current)
-  }, [openUiJsFile])
-
-  const printCanvasMetadata = React.useCallback(() => {
-    console.info('Latest metadata:', jsxMetadata.current)
-  }, [jsxMetadata])
 
   const loadProjectContentJson = React.useCallback(
     (value: string) => {

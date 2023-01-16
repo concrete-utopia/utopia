@@ -9,7 +9,7 @@ import {
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
@@ -22,6 +22,7 @@ interface LayoutIconResult {
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
+    Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
@@ -37,10 +38,14 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 }
 
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    return createComponentIconProps(path, metadata)
-  }, 'useComponentIcon') // TODO Memoize Icon Result
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      return createComponentIconProps(path, metadata)
+    },
+    'useComponentIcon',
+  ) // TODO Memoize Icon Result
 }
 
 export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {

@@ -6,7 +6,7 @@ import { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
@@ -31,18 +31,25 @@ interface ButtonControlProps {
 export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
     const isInteractionActive = useEditorState(
+      Substores.canvas,
       (store) => store.editor.canvas.interactionSession != null,
       'DistanceGuidelineControl isInteractionActive',
     )
     const selectedViews = useEditorState(
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
     )
     const jsxMetadata = useEditorState(
+      Substores.metadata,
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'InsertionControls scale')
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'InsertionControls scale',
+    )
     if (selectedViews.length !== 1 || isInteractionActive) {
       return null
     }

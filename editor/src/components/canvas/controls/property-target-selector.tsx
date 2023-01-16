@@ -13,7 +13,7 @@ import {
   setResizeOptionsTargetOptions,
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
@@ -31,6 +31,7 @@ export const PropertyTargetSelector = React.memo(
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
     const resizeOptions = useEditorState(
+      Substores.canvas,
       (editorState) => editorState.editor.canvas.resizeOptions,
       'PropertyTargetSelector resizeOptions',
     )

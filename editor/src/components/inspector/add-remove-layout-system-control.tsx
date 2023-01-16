@@ -11,7 +11,7 @@ import {
   InspectorSectionHeader,
   useColorTheme,
 } from '../../uuiui'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   addFlexLayoutStrategies,
@@ -27,6 +27,7 @@ interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
   const isFlexLayoutedContainer = useEditorState(
+    Substores.metadata,
     (store) =>
       detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
     'AddRemoveLayouSystemControl, isFlexLayoutedContainer',

@@ -1,7 +1,7 @@
 import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -19,6 +19,7 @@ interface LayoutSectionProps {
 
 export const LayoutSection = React.memo((props: LayoutSectionProps) => {
   const specialSizeMeasurements = useEditorState(
+    Substores.metadata,
     (state) => {
       let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
       fastForEach(state.editor.selectedViews, (path) => {

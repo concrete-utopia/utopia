@@ -10,7 +10,7 @@ import {
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
 
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 
@@ -132,6 +132,7 @@ const NothingOpenCard = React.memo(() => {
 const DesignPanelRootInner = React.memo(() => {
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
@@ -141,26 +142,31 @@ const DesignPanelRootInner = React.memo(() => {
     interfaceDesigner.codePaneWidth,
   )
   const navigatorVisible = useEditorState(
+    Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
     'DesignPanelRoot navigatorVisible',
   )
 
   const isRightMenuExpanded = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
 
   const rightMenuSelectedTab = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab,
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
   const leftMenuExpanded = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
   )
 
   const isCanvasVisible = useEditorState(
+    Substores.canvas,
     (store) => store.editor.canvas.visible,
     'design panel root',
   )

@@ -26,7 +26,7 @@ import {
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { moveDragState } from '../../canvas-types'
 import {
@@ -783,12 +783,18 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const modeType = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode.type,
+    'useSelectAndHover mode',
+  )
   const isZoomMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.keysPressed['z'] ?? false,
     'useSelectAndHover isZoomMode',
   )
   const hasInteractionSession = useEditorState(
+    Substores.canvas,
     (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionSession',
   )

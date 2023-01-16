@@ -14,6 +14,7 @@ import {
 import { bold, useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
+  Substores,
   useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
@@ -22,25 +23,34 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
-  const scale = useEditorState(scaleSelector, 'Guideline scale')
-  const strategyMovedSuccessfully = useEditorState((store) => {
-    return (
-      store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
-      store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
-        const measuredFrame = MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
-        if (measuredFrame == null) {
-          return false
-        } else {
-          return rectanglesEqual(measuredFrame, frame)
-        }
-      })
-    )
-  }, 'GuidelineControls strategyMovedSuccessfully')
+  const scale = useEditorState(Substores.canvas, scaleSelector, 'Guideline scale')
+  const strategyMovedSuccessfully = useEditorState(
+    Substores.canvasAndMetadata,
+    (store) => {
+      return (
+        store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
+        store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
+          const measuredFrame = MetadataUtils.getFrameInCanvasCoords(
+            target,
+            store.editor.jsxMetadata,
+          )
+          if (measuredFrame == null) {
+            return false
+          } else {
+            return rectanglesEqual(measuredFrame, frame)
+          }
+        })
+      )
+    },
+    'GuidelineControls strategyMovedSuccessfully',
+  )
 
   const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
+    Substores.canvas,
     (store) => store.editor.canvas.controls,
     'Strategy intended bounds and snapping guidelines',
   )
@@ -84,11 +94,11 @@ interface GuidelineProps {
 }
 
 const LineWidth = 1
-const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const scaleSelector = (store: CanvasSubstate) => store.editor.canvas.scale
 
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState(scaleSelector, 'Guideline scale')
+  const scale = useEditorState(Substores.canvas, scaleSelector, 'Guideline scale')
   const controlRef = useGuideline(props.index, (result: { frame: CanvasRectangle } | null) => {
     if (controlRef.current != null) {
       if (result == null) {
@@ -181,12 +191,16 @@ function useGuideline<T = HTMLDivElement>(
     }
   }, [guidelineRef, guidelineCallbackRef, index])
   useSelectorWithCallback(
+    Substores.canvas,
     (store) => store.editor.canvas.controls.snappingGuidelines[index],
     innerCallback,
+    'useGuideline snappingGuidelines[index]',
   )
   useSelectorWithCallback(
+    Substores.canvas,
     (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
+    'useGuideline snappingGuidelines.length',
   )
   React.useEffect(() => {
     innerCallback()

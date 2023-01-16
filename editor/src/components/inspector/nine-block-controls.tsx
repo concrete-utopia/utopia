@@ -6,7 +6,7 @@ import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { EditorStorePatched } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
@@ -23,6 +23,7 @@ import {
 } from './inspector-common'
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
@@ -111,7 +112,7 @@ const flexDirectionSelector = createSelector(
 const isSelectedSelector = createSelector(
   justifyAlignSelector,
   flexDirectionSelector,
-  (_: EditorStorePatched, x: JustifyContentFlexAlignemt) => x,
+  (_: MetadataSubstate, x: JustifyContentFlexAlignemt) => x,
   (detectedJustifyContentFlexAlignment, flexDirection, fixedJustifyContentFlexAlignment) =>
     detectedJustifyContentFlexAlignment != null &&
     justifyContentAlignItemsEquals(
@@ -154,7 +155,11 @@ interface NineBlockControlCellProps {
 const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   const { bgColor, fgColor, alignItems, justifyContent, onClick } = props
 
-  const flexDirection = useEditorState(flexDirectionSelector, 'FlexDirectionToggle flexDirection')
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'FlexDirectionToggle flexDirection',
+  )
 
   const alignItemsJustifyContent = React.useMemo(
     () => ({ alignItems, justifyContent }),
@@ -162,6 +167,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
   )
 
   const isSelected = useEditorState(
+    Substores.metadata,
     (store) => isSelectedSelector(store, alignItemsJustifyContent),
     'NineBlockControlCell isSelected',
   )
@@ -246,6 +252,7 @@ export const NineBlockControl = React.memo(() => {
   const dispatch = useDispatch()
 
   const nFlexContainers = useEditorState(
+    Substores.metadata,
     numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )

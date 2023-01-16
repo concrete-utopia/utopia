@@ -699,19 +699,7 @@ function editorDispatchInner(
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
-        result = {
-          ...result,
-          unpatchedEditor: {
-            ...result.unpatchedEditor,
-            canvas: {
-              ...result.unpatchedEditor.canvas,
-              dragState: {
-                ...result.unpatchedEditor.canvas.dragState,
-                metadata: reconstructJSXMetadata(result.unpatchedEditor),
-              },
-            },
-          },
-        }
+        throw new Error('canvas.dragState should not be used anymore!')
       } else if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { colorTheme } from '../../uuiui'
 
 const SampleCode = [
@@ -87,6 +87,7 @@ export const VSCodeLoadingScreenID = 'vscode-loading-screen'
 
 export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
   const vscodeLoadingScreenVisible = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.vscodeLoadingScreenVisible,
     'VSCodeIframeContainer',
   )

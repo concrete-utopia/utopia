@@ -12,7 +12,7 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { invert } from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
@@ -143,7 +143,11 @@ const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'ResizeEdge scale',
+    )
     const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
@@ -218,7 +222,11 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
+    const scale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'ResizeEdge scale',
+    )
     const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -288,9 +296,17 @@ interface SizeLabelProps {
 
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'Resizelabel scale')
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'Resizelabel scale',
+    )
     const colorTheme = useColorTheme()
-    const metadata = useEditorState((store) => getMetadata(store.editor), 'ResizeLabel metadata')
+    const metadata = useEditorState(
+      Substores.metadata,
+      (store) => getMetadata(store.editor),
+      'ResizeLabel metadata',
+    )
     const boundingBox = boundingRectangleArray(
       targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
     )

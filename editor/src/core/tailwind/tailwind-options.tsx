@@ -9,7 +9,11 @@ import {
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
 import { ElementPath, isParseSuccess, isTextFile, NodeModules } from '../shared/project-file-types'
-import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../components/editor/store/store-hook'
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
@@ -278,23 +282,28 @@ export function useGetSelectedClasses(): {
   isSettable: boolean
 } {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const elements = useEditorState((store) => {
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-    if (openUIJSFileKey == null) {
-      return []
-    } else {
-      return store.editor.selectedViews.map((elementPath) =>
-        getJSXElementForTarget(
-          elementPath,
-          openUIJSFileKey,
-          store.editor.projectContents,
-          store.editor.nodeModules.files,
-        ),
-      )
-    }
-  }, 'ClassNameSelect elements')
+  const elements = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+      if (openUIJSFileKey == null) {
+        return []
+      } else {
+        return store.editor.selectedViews.map((elementPath) =>
+          getJSXElementForTarget(
+            elementPath,
+            openUIJSFileKey,
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+          ),
+        )
+      }
+    },
+    'ClassNameSelect elements',
+  )
 
   const elementPaths = useEditorState(
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ClassNameSelect elementPaths',
   )

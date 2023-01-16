@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { SelectOption } from '../inspector/controls/select-control'
 import { isTextFile, TextFile, ProjectContents } from '../../core/shared/project-file-types'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
@@ -83,14 +83,22 @@ export interface PreviewColumnState {
 }
 
 export const PreviewColumn = React.memo(() => {
-  const { id, projectName, connected, mainJSFilename } = useEditorState((store) => {
-    return {
-      id: store.editor.id,
-      projectName: store.editor.projectName,
-      connected: store.editor.preview.connected,
-      mainJSFilename: getMainJSFilename(store.editor.projectContents),
-    }
-  }, 'PreviewColumn')
+  const mainJSFilename = useEditorState(
+    Substores.projectContents,
+    (store) => getMainJSFilename(store.editor.projectContents),
+    'PreviewColumn mainJSFilename',
+  )
+  const { id, projectName, connected } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        id: store.editor.id,
+        projectName: store.editor.projectName,
+        connected: store.editor.preview.connected,
+      }
+    },
+    'PreviewColumn',
+  )
   return (
     <PreviewColumnContent
       id={id}
