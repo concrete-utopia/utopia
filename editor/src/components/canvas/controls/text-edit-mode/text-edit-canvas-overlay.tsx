@@ -1,8 +1,13 @@
 import React from 'react'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { TextEditorSpanId } from '../../../text-editor/text-editor'
+import { CSSCursor } from '../../canvas-types'
 
-export const TextEditCanvasOverlay = React.memo(() => {
+interface TextEditCanvasOverlayProps {
+  cursor: CSSCursor
+}
+
+export const TextEditCanvasOverlay = React.memo((props: TextEditCanvasOverlayProps) => {
   const scale = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
@@ -53,6 +58,7 @@ export const TextEditCanvasOverlay = React.memo(() => {
         height: `${scale < 1 ? 100 / scale : 100}%`,
         transformOrigin: 'top left',
         transform: scale < 1 ? `scale(${scale}) ` : '',
+        cursor: props.cursor,
       }}
     />
   )

@@ -160,7 +160,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return null
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
-    return <TextEditCanvasOverlay />
+    return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
     return (
       <div
