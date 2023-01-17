@@ -3,6 +3,7 @@ import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXFragment,
+  isJSXTextBlock,
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
@@ -75,6 +76,10 @@ export function fixParseSuccessUIDs(
     // which means there's a very good chance that it was an update to existing elements,
     // or a single new element was inserted
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
+
+    // We need to sort the array first, as the pathToModify will be based on the new UIDs up to the leaf,
+    // so we must update the deepest elements first
+    newToOldUidMappingArray.sort((l, r) => r.pathToModify.length - l.pathToModify.length)
 
     newToOldUidMappingArray.forEach((mapping) => {
       const oldPathAlreadyExistingElement = findJSXElementChildAtPath(
@@ -254,6 +259,8 @@ function compareAndWalkElements(
         newElement.elementsWithin,
         onElement,
       )
+    } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
+      return true
     }
   }
 

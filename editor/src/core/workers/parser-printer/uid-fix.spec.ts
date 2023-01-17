@@ -173,6 +173,28 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
   })
 
+  it('can handle text children fine', () => {
+    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet())
+    const end = lintAndParse(
+      'test.js',
+      fileWithTwoTextElementsWithChanges,
+      asParseSuccessOrNull(start),
+      emptySet(),
+    )
+    expect(getUidTree(end)).toEqual(getUidTree(start))
+  })
+
+  it('can handle changes to a parent and child', () => {
+    const start = lintAndParse('test.js', baseFileContents, null, emptySet())
+    const end = lintAndParse(
+      'test.js',
+      fileWithChildAndParentUpdated,
+      asParseSuccessOrNull(start),
+      emptySet(),
+    )
+    expect(getUidTree(end)).toEqual(getUidTree(start))
+  })
+
   it('re-ordered elements should re-order the uid tree', () => {
     const beforeReOrder = lintAndParse('test.js', fileWithOneInsertedView, null, emptySet())
     const afterReOrder = lintAndParse(
@@ -348,6 +370,22 @@ export var SameFileApp = (props) => {
       <View
         style={{
           width: 101, // <- this is updated
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const fileWithChildAndParentUpdated = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '150', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 150,
         }}
       />
     </div>
@@ -574,6 +612,56 @@ export var SameFileApp = (props) => {
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
       <div><div>Hello</div></div>
+    </div>
+  )
+}
+`)
+
+const fileWithTwoTextElements = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <div
+        style={{
+          width: 100,
+        }}
+      >
+      Hello
+      </div>
+      <div
+        style={{
+          width: 200,
+        }}
+      >
+      There
+      </div>
+    </div>
+  )
+}
+`)
+
+const fileWithTwoTextElementsWithChanges = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <div
+        style={{
+          width: 150,
+        }}
+      >
+      Hello,
+      </div>
+      <div
+        style={{
+          width: 250,
+        }}
+      >
+      There!
+      </div>
     </div>
   )
 }
