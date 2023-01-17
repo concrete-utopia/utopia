@@ -491,7 +491,7 @@ function renderJSXElement(
       const text = mapDropNulls(textOrNullFromJSXElement, childrenWithNewTextBlock)
         .map(trimTextBeforeNewline)
         .join('')
-      const textContent = unescapeHTML(text ?? '', { renderCurlyBraces: true })
+      const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
