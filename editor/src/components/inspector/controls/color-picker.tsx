@@ -75,10 +75,10 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
         }}
       >
         <Icn
-          type='plus'
+          type='pipette'
           color='secondary'
-          width={16}
-          height={16}
+          width={18}
+          height={18}
           onClick={dispatchEyeDropper}
           style={{ marginLeft: 8 }}
         />

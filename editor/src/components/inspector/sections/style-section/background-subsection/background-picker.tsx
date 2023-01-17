@@ -590,10 +590,10 @@ export const BackgroundPicker: React.FunctionComponent<
           {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}
           <FlexRow>
             <Icn
-              type='plus'
+              type='pipette'
               color='secondary'
-              width={16}
-              height={16}
+              width={18}
+              height={18}
               onClick={dispatchEyeDropper}
               style={{ marginLeft: 8 }}
             />
