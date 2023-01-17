@@ -14,6 +14,7 @@ import {
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
+  TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
 import {
@@ -314,6 +315,20 @@ export const MetadataUtils = {
   isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isButtonFromMetadata(instance)
+  },
+  isTextFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    if (element == null) {
+      return false
+    }
+    const isTextElement = foldEither(
+      (elementString) => TextElements.includes(elementString),
+      (elementInstance) =>
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+      element.element,
+    )
+    {
+      return isTextElement
+    }
   },
   getYogaSizeProps(
     target: ElementPath,

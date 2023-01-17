@@ -175,7 +175,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
           <Tooltip title='Insert text' placement='bottom'>
             <InsertModeButton
-              iconType='text'
+              iconType='pure-text'
               primary={spanInsertion}
               onClick={insertSpanCallback}
             />
@@ -210,7 +210,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
           <Tooltip title='Insert button' placement='bottom'>
             <InsertModeButton
-              iconType='button'
+              iconType='clickable'
               primary={buttonInsertion}
               onClick={insertButtonCallback}
             />

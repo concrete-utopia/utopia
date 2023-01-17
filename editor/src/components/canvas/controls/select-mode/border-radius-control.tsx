@@ -2,7 +2,6 @@ import React from 'react'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
@@ -70,7 +69,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
 
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
-    (store) => store.editor.highlightedViews,
+    (store) => store.editor.hoveredViews,
     'BorderRadiusControl hoveredViews',
   )
 
