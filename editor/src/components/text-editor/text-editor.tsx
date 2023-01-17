@@ -69,20 +69,12 @@ export function escapeHTML(s: string): string {
       .replace('>', entities.greaterThan)
       // restore br tags
       .replace(/\n/g, '\n<br />')
-      // clean up curly braces
-      .replace(/\{/g, entities.curlyBraceLeft)
-      .replace(/\}/g, entities.curlyBraceRight)
-      // restore the ones that wrap valid jsx expressions
-      .replace(reValidInlineJSXExpression, '$1{$2}')
   )
 }
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
-  const unescaped = unescape(s)
-    .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
-    .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
-    .replace(/ +$/, '') // prettier fix
+  const unescaped = unescape(s).replace(/ +$/, '') // prettier fix
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
   // if the string _ends_ with a newline.
