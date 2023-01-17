@@ -14,7 +14,7 @@ import {
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
-  textElements,
+  TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
 import {
@@ -321,9 +321,9 @@ export const MetadataUtils = {
       return false
     }
     const isTextElement = foldEither(
-      (elementString) => textElements.includes(elementString),
+      (elementString) => TextElements.includes(elementString),
       (elementInstance) =>
-        isJSXElement(elementInstance) && textElements.includes(elementInstance.name.baseVariable),
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
       element.element,
     )
     {
