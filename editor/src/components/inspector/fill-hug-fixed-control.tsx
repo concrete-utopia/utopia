@@ -62,22 +62,26 @@ function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | unde
   return true
 }
 
+export const FillContainerLabel = 'Fill container' as const
+export const FixedLabel = 'Fixed' as const
+export const HugContentsLabel = 'Hug contents' as const
+
 function selectOption(value: FixedHugFillMode): SelectOption {
   switch (value) {
     case 'fill':
       return {
         value: 'fill',
-        label: 'Fill container',
+        label: FillContainerLabel,
       }
     case 'fixed':
       return {
         value: 'fixed',
-        label: 'Fixed',
+        label: FixedLabel,
       }
     case 'hug':
       return {
         value: 'hug',
-        label: 'Hug contents',
+        label: HugContentsLabel,
       }
     default:
       assertNever(value)
