@@ -4,10 +4,13 @@ import { CanvasCommand } from '../../canvas/commands/commands'
 import { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
 
-export type InspectorStrategy = (
-  metadata: ElementInstanceMetadataMap,
-  selectedElementPaths: Array<ElementPath>,
-) => Array<CanvasCommand> | null
+export interface InspectorStrategy {
+  name: string
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    selectedElementPaths: Array<ElementPath>,
+  ) => Array<CanvasCommand> | null
+}
 
 export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
@@ -16,7 +19,7 @@ export function executeFirstApplicableStrategy(
   strategies: InspectorStrategy[],
 ): void {
   for (const strategy of strategies) {
-    const commands = strategy(metadata, selectedViews)
+    const commands = strategy.strategy(metadata, selectedViews)
     if (commands != null) {
       return dispatch([applyCommandsAction(commands)])
     }
