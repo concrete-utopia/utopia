@@ -53,11 +53,6 @@ const entities = {
   curlyBraceRight: '&#125;',
 }
 
-const reValidInlineJSXExpression = new RegExp(
-  `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
-  'g',
-)
-
 // canvas → editor
 export function escapeHTML(s: string): string {
   return (

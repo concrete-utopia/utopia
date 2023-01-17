@@ -607,7 +607,7 @@ describe('Use the text editor', () => {
       closeTextEditor()
 
       await editor.getDispatchFollowUpActionsFinished()
-      await wait(500)
+      await wait(50)
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
