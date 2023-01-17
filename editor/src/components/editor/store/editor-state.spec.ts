@@ -1,5 +1,6 @@
 import {
   createEditorState,
+  defaultModifyParseSuccess,
   EditorState,
   modifyUnderlyingTarget,
   StoryboardFilePath,
@@ -22,6 +23,7 @@ import {
   isParseSuccess,
   parseSuccess,
   ParseSuccess,
+  RevisionsState,
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
@@ -216,5 +218,73 @@ describe('modifyUnderlyingTarget', () => {
         },
       )
     expect(modifyCall).toThrowError(`Could not proceed past /src/kitchen.js.`)
+  })
+})
+
+describe('Revision state management', () => {
+  const startingEditorModel = {
+    ...createEditorState(() => {}),
+    projectContents: defaultProjectContentsForNormalising(),
+  }
+  it('changes something in a file sets revision state to PARSED_AHEAD', () => {
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
+    const actualResult = modifyUnderlyingTarget(
+      pathToElement,
+      '/src/app.js',
+      startingEditorModel,
+      (element: JSXElement) => {
+        const updatedAttributes = setJSXAttributesAttribute(
+          element.props,
+          'data-thing',
+          jsxAttributeValue('a thing', emptyComments),
+        )
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
+      },
+    )
+    const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
+    expect(resultingFile.fileContents.revisionsState).toEqual('PARSED_AHEAD')
+  })
+  it('updating RevisionsState.ParsedAheadNeedsReparsing to ParsedAhead keeps ParsedAheadNeedsReparsing', () => {
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
+
+    // This is just initialization, make /src/app.js PARSED_AHEAD
+    const actualResult = modifyUnderlyingTarget(
+      pathToElement,
+      '/src/app.js',
+      startingEditorModel,
+      (element: JSXElement) => {
+        const updatedAttributes = setJSXAttributesAttribute(
+          element.props,
+          'data-thing',
+          jsxAttributeValue('a thing', emptyComments),
+        )
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
+      },
+      defaultModifyParseSuccess,
+      RevisionsState.ParsedAheadNeedsReparsing,
+    )
+    const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
+
+    // This is the tested feature, RevisionsState.ParsedAheadNeedsReparsing should be kept even if
+    // it is tried to be updated to RevisionsState.ParsedAhead
+    const actualResult2 = modifyUnderlyingTarget(
+      pathToElement,
+      '/src/app.js',
+      actualResult,
+      (element: JSXElement) => {
+        const updatedAttributes = setJSXAttributesAttribute(
+          element.props,
+          'data-thing',
+          jsxAttributeValue('a thing', emptyComments),
+        )
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
+      },
+      defaultModifyParseSuccess,
+      'PARSED_AHEAD',
+    )
+    const resultingFile2 = getTextFileByPath(actualResult2.projectContents, '/src/app.js')
+    expect(resultingFile2.fileContents.revisionsState).toEqual(
+      RevisionsState.ParsedAheadNeedsReparsing,
+    )
   })
 })

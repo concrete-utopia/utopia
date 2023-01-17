@@ -468,24 +468,40 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   )
 }
 
-export function canUpdateFile(updated: ProjectFile, existing: ProjectFile | null): boolean {
-  if (existing == null) {
-    return true
+export function updateFileIfPossible(
+  updated: ProjectFile,
+  existing: ProjectFile | null,
+): ProjectFile | 'cant-update' {
+  if (existing == null || !isTextFile(existing)) {
+    return updated
   }
 
-  if (isTextFile(existing)) {
-    return (
-      isTextFile(updated) &&
-      isTextFile(existing) &&
-      isOlderThan(existing, updated) &&
-      canUpdateRevisionsState(
-        updated.fileContents.revisionsState,
-        existing.fileContents.revisionsState,
-      )
+  if (
+    isTextFile(updated) &&
+    isOlderThan(existing, updated) &&
+    canUpdateRevisionsState(
+      updated.fileContents.revisionsState,
+      existing.fileContents.revisionsState,
     )
+  ) {
+    // we should not overwrite RevisionsState.ParsedAheadNeedsReparsing with RevisionsState.ParsedAhead, because we don't want to lose that
+    // the file needs reparsing
+    if (
+      existing.fileContents.revisionsState === RevisionsState.ParsedAheadNeedsReparsing &&
+      updated.fileContents.revisionsState === RevisionsState.ParsedAhead
+    ) {
+      return {
+        ...updated,
+        fileContents: {
+          ...updated.fileContents,
+          revisionsState: RevisionsState.ParsedAheadNeedsReparsing,
+        },
+      }
+    }
+    return updated
   }
 
-  return true
+  return 'cant-update'
 }
 
 export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {

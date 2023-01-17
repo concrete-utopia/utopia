@@ -53,11 +53,6 @@ const entities = {
   curlyBraceRight: '&#125;',
 }
 
-const reValidInlineJSXExpression = new RegExp(
-  `(^|[^${'\\\\'}])${entities.curlyBraceLeft}([^}]?[^}\\\\]+)${entities.curlyBraceRight}`,
-  'g',
-)
-
 // canvas → editor
 export function escapeHTML(s: string): string {
   return (
@@ -69,20 +64,12 @@ export function escapeHTML(s: string): string {
       .replace('>', entities.greaterThan)
       // restore br tags
       .replace(/\n/g, '\n<br />')
-      // clean up curly braces
-      .replace(/\{/g, entities.curlyBraceLeft)
-      .replace(/\}/g, entities.curlyBraceRight)
-      // restore the ones that wrap valid jsx expressions
-      .replace(reValidInlineJSXExpression, '$1{$2}')
   )
 }
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
-  const unescaped = unescape(s)
-    .replace(new RegExp(entities.curlyBraceLeft, 'g'), '{')
-    .replace(new RegExp(entities.curlyBraceRight, 'g'), '}')
-    .replace(/ +$/, '') // prettier fix
+  const unescaped = unescape(s).replace(/ +$/, '') // prettier fix
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
   // if the string _ends_ with a newline.
@@ -313,9 +300,59 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     ref: myElement,
     id: TextEditorSpanId,
     style: {
+      // These properties need to be set to get the positioning that
+      // is required of the text editor element itself:
       display: 'inline-block',
       width: '100%',
       height: '100%',
+      // Ensure that font and text settings are inherited from
+      // the containing element:
+      font: 'inherit',
+      fontFamily: 'inherit',
+      fontFeatureSettings: 'inherit',
+      fontKerning: 'inherit',
+      fontLanguageOverride: 'inherit',
+      fontOpticalSizing: 'inherit',
+      fontSize: 'inherit',
+      fontSizeAdjust: 'inherit',
+      fontStretch: 'inherit',
+      fontStyle: 'inherit',
+      fontSynthesis: 'inherit',
+      fontVariant: 'inherit',
+      fontVariantCaps: 'inherit',
+      fontVariantEastAsian: 'inherit',
+      fontVariantLigatures: 'inherit',
+      fontVariantNumeric: 'inherit',
+      fontVariantPosition: 'inherit',
+      fontVariationSettings: 'inherit',
+      fontWeight: 'inherit',
+      textAlign: 'inherit',
+      textAlignLast: 'inherit',
+      textCombineUpright: 'inherit',
+      textDecorationColor: 'inherit',
+      textDecorationLine: 'inherit',
+      textDecorationSkip: 'inherit',
+      textDecorationSkipInk: 'inherit',
+      textDecorationStyle: 'inherit',
+      textDecorationThickness: 'inherit',
+      textDecorationWidth: 'inherit',
+      textEmphasisColor: 'inherit',
+      textEmphasisPosition: 'inherit',
+      textEmphasisStyle: 'inherit',
+      textIndent: 'inherit',
+      textJustify: 'inherit',
+      textOrientation: 'inherit',
+      textOverflow: 'inherit',
+      textRendering: 'inherit',
+      textShadow: 'inherit',
+      textSizeAdjust: 'inherit',
+      textTransform: 'inherit',
+      textUnderlineOffset: 'inherit',
+      textUnderlinePosition: 'inherit',
+      letterSpacing: 'inherit',
+      lineHeight: 'inherit',
+      // Prevent double applying these properties:
+      opacity: 1,
     },
     onPaste: stopPropagation,
     onKeyDown: onKeyDown,

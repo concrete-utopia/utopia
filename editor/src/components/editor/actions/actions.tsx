@@ -22,7 +22,6 @@ import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   assetFile,
-  canUpdateFile,
   directory,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
@@ -37,6 +36,7 @@ import {
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
+  updateFileIfPossible,
   updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
@@ -383,6 +383,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
+  EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -3714,32 +3715,31 @@ export const UPDATE_FNS = {
 
     const { file } = action
 
-    if (isTextFile(file)) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-      const canUpdate = canUpdateFile(file, existing)
-      if (!canUpdate) {
-        return editor
-      }
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const updatedFile = updateFileIfPossible(file, existing)
+
+    if (updatedFile === 'cant-update') {
+      return editor
     }
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
       action.filePath,
-      file,
+      updatedFile,
     )
 
     let updatedNodeModulesFiles = editor.nodeModules.files
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
-    if (action.filePath === '/package.json' && isTextFile(file)) {
+    if (action.filePath === '/package.json' && isTextFile(updatedFile)) {
       const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
       const currentDeps = isTextFile(packageJson)
         ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
         : null
       void refreshDependencies(
         dispatch,
-        file.fileContents.code,
+        updatedFile.fileContents.code,
         currentDeps,
         builtInDependencies,
         editor.nodeModules.files,
@@ -3752,9 +3752,9 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount:
-          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
         domWalkerInvalidateCount:
-          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -4479,7 +4479,10 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
+  UPDATE_CHILD_TEXT: (
+    action: UpdateChildText,
+    editorStore: EditorStoreUnpatched,
+  ): EditorStoreUnpatched => {
     const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
@@ -4495,10 +4498,23 @@ export const UPDATE_FNS = {
           }
         }
       },
-      editor,
+      editorStore.unpatchedEditor,
       RevisionsState.ParsedAheadNeedsReparsing,
     )
-    return collapseTextElements(action.target, withUpdatedText)
+    const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
+
+    if (withUpdatedText === withCollapsedElements) {
+      return {
+        ...editorStore,
+        unpatchedEditor: withUpdatedText,
+      }
+    } else {
+      return {
+        ...editorStore,
+        unpatchedEditor: withCollapsedElements,
+        history: History.add(editorStore.history, withUpdatedText, editorStore.unpatchedDerived),
+      }
+    }
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {

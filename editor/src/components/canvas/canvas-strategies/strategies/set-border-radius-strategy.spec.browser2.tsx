@@ -1,4 +1,4 @@
-import { appendNewElementPath, elementPath, fromString } from '../../../../core/shared/element-path'
+import { fromString } from '../../../../core/shared/element-path'
 import {
   canvasVector,
   CanvasVector,
@@ -9,7 +9,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
 import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
@@ -53,7 +52,7 @@ describe('set border radius strategy', () => {
     expect(borderRadiusControls.length).toEqual(4)
   })
 
-  it("border radius controls don't show up for elements that have don't border radius set", async () => {
+  it("border radius controls do show up for elements that have don't border radius set", async () => {
     const editor = await renderTestEditorWithCode(codeForDragTest(``), 'await-first-dom-report')
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -66,11 +65,11 @@ describe('set border radius strategy', () => {
 
     mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
-    const paddingControls = BorderRadiusCorners.flatMap((corner) =>
+    const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
       editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
     )
 
-    expect(paddingControls).toEqual([])
+    expect(borderRadiusControls.length).toEqual(4)
   })
 
   it("border radius controls don't show up for elements that are smaller than 40px", async () => {
