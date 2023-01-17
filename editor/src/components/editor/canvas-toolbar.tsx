@@ -164,6 +164,7 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
+        {/* TODO is there a component for this subheading? */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Select' placement='bottom'>
@@ -199,7 +200,6 @@ export const CanvasToolbar = React.memo(() => {
       <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
-        {/* TODO is there a component for this subheading? */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Insert div' placement='bottom'>
@@ -215,8 +215,6 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertButtonCallback}
             />
           </Tooltip>
-          {/* TODO I have to find a better spacer */}
-          {/* <IcnSpacer height={0} width={'100%'} /> */}
           <Tooltip title='Choose and insert a component' placement='bottom'>
             <InsertModeButton
               iconType='componentinstance'
