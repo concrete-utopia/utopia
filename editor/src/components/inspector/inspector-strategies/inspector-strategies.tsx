@@ -3,7 +3,6 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
   convertWidthToFlexGrow,
-  detectFlexDirection,
   detectFlexDirectionOne,
   fillContainerApplicable,
   filterKeepFlexContainers,
@@ -158,8 +157,8 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       }
 
       return [
-        setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         nukePropsCommand(path),
+        setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
       ]
     })
   },
