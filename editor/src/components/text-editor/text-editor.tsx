@@ -35,6 +35,7 @@ import {
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from './text-editor-shortcut-helpers'
+import { useColorTheme } from '../../uuiui'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -204,6 +205,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     'TextEditor scale',
   )
 
+  const colorTheme = useColorTheme()
+  const outlineWidth = 1.5 / scale
+  const outlineColor = colorTheme.textEditableOutline.value
+
   const [firstTextProp] = React.useState(text)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
@@ -305,6 +310,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       display: 'inline-block',
       width: '100%',
       height: '100%',
+      // text editor outline
+      boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
       // Ensure that font and text settings are inherited from
       // the containing element:
       font: 'inherit',
