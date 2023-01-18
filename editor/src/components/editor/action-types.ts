@@ -73,6 +73,7 @@ import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
+import { ColorPreset } from '../inspector/controls/color-picker-presets'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1079,9 +1080,15 @@ export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   imageDragSessionState: ImageDragSessionState
 }
+
 export interface ApplyCommandsAction {
   action: 'APPLY_COMMANDS'
   commands: CanvasCommand[]
+}
+
+export interface UpdateColorPresets {
+  action: 'UPDATE_COLOR_PRESETS'
+  presets: Array<ColorPreset>
 }
 
 export type EditorAction =
@@ -1258,6 +1265,7 @@ export type EditorAction =
   | SetRefreshingDependencies
   | SetAssetChecksum
   | ApplyCommandsAction
+  | UpdateColorPresets
 
 export type DispatchPriority =
   | 'everyone'

@@ -467,6 +467,7 @@ import {
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
 } from '../../../core/shared/github'
+import { ColorPreset, newColorPreset } from '../../inspector/controls/color-picker-presets'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3389,6 +3390,14 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
 
+export const ColorPresetDeepEquality: KeepDeepEqualityCall<ColorPreset> = combine2EqualityCalls(
+  (c) => c.id,
+  StringKeepDeepEquality,
+  (c) => c.hex,
+  StringKeepDeepEquality,
+  newColorPreset,
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3651,6 +3660,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.assetChecksums,
   )
 
+  const colorPresetsResults = arrayDeepEquality(ColorPresetDeepEquality)(
+    oldValue.colorPresets,
+    newValue.colorPresets,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3724,7 +3738,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
-    assetChecksumsResults.areEqual
+    assetChecksumsResults.areEqual &&
+    colorPresetsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3803,6 +3818,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubDataResults.value,
       refreshingDependenciesResults.value,
       assetChecksumsResults.value,
+      colorPresetsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -1,5 +1,6 @@
 import Chroma from 'chroma-js'
-import { clamp, WindowPoint, roundTo } from '../../../core/shared/math-utils'
+import React from 'react'
+import { clamp, roundTo, WindowPoint } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
 import {
   cssColor,
@@ -14,7 +15,6 @@ import {
 import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
-import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import {
   colorTheme,
@@ -24,6 +24,7 @@ import {
   UtopiaStyles,
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
+import { ColorPickerPresets } from './color-picker-presets'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -699,6 +700,10 @@ export class ColorPickerInner extends React.Component<
               defaultUnitToHide={null}
             />
           </div>
+          <ColorPickerPresets
+            onSelectColor={this.onSubmitValueHex}
+            currentColor={chroma.hex('auto').toUpperCase()}
+          />
         </div>
         {/* hover preventer: don't trigger other hover events while sliding / scrubbing */}
         {this.state.isScrubbing ? (

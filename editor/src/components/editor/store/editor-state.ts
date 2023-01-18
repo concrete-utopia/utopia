@@ -175,6 +175,7 @@ import {
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
+import { ColorPreset } from '../../inspector/controls/color-picker-presets'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1304,6 +1305,7 @@ export interface EditorState {
   githubData: GithubData
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
+  colorPresets: Array<ColorPreset>
 }
 
 export function editorState(
@@ -1380,6 +1382,7 @@ export function editorState(
   githubData: GithubData,
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
+  colorPresets: Array<ColorPreset>,
 ): EditorState {
   return {
     id: id,
@@ -1455,6 +1458,7 @@ export function editorState(
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
+    colorPresets: colorPresets,
   }
 }
 
@@ -2055,6 +2059,7 @@ export interface PersistentModel {
   githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
+  colorPresets: Array<ColorPreset>
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2098,6 +2103,7 @@ export function mergePersistentModel(
     githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
+    colorPresets: second.colorPresets,
   }
 }
 
@@ -2290,6 +2296,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubData: emptyGithubData(),
     refreshingDependencies: false,
     assetChecksums: {},
+    colorPresets: [],
   }
 }
 
@@ -2603,6 +2610,7 @@ export function editorModelFromPersistentModel(
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
     assetChecksums: {},
+    colorPresets: persistentModel.colorPresets,
   }
   return editor
 }
@@ -2642,6 +2650,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
+    colorPresets: editor.colorPresets,
   }
 }
 
@@ -2677,6 +2686,7 @@ export function persistentModelForProjectContents(
     githubChecksums: null,
     branchContents: null,
     assetChecksums: {},
+    colorPresets: [],
   }
 }
 

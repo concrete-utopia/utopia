@@ -44,6 +44,7 @@ import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
+import { ColorPreset } from '../../inspector/controls/color-picker-presets'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
 import {
   InsertableComponent,
@@ -224,6 +225,7 @@ import type {
   SetAssetChecksum,
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
+  UpdateColorPresets,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1723,5 +1725,12 @@ export function applyCommandsAction(commands: CanvasCommand[]): ApplyCommandsAct
   return {
     action: 'APPLY_COMMANDS',
     commands: commands,
+  }
+}
+
+export function updateColorPresets(presets: Array<ColorPreset>): UpdateColorPresets {
+  return {
+    action: 'UPDATE_COLOR_PRESETS',
+    presets: presets,
   }
 }
