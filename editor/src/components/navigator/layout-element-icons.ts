@@ -14,6 +14,7 @@ import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { AllElementProps } from '../editor/store/editor-state'
+import { isSpawnedActor } from 'xstate/lib/Actor'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -139,7 +140,16 @@ export function createElementIconPropsFromMetadata(
   if (isButton) {
     return {
       category: 'element',
-      type: 'button',
+      type: 'clickable',
+      width: 18,
+      height: 18,
+    }
+  }
+  const isText = MetadataUtils.isTextFromMetadata(element)
+  if (isText) {
+    return {
+      category: 'element',
+      type: 'pure-text',
       width: 18,
       height: 18,
     }
@@ -167,13 +177,13 @@ export function createElementIconPropsFromMetadata(
     if (hasTextChild) {
       return {
         category: 'element',
-        type: 'text',
+        type: 'pure-text',
         width: 18,
+
         height: 18,
       }
     }
   }
-
   return {
     category: 'element',
     type: 'div',

@@ -204,6 +204,8 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'span',
 ]
 
+export const TextElements = ['text', 'p', 'span', 'h1', 'h2', 'h2', 'h3', 'h5', 'h6']
+
 export const VoidElementsToFilter = ['br', 'wbr']
 
 export function getDOMAttribute(element: Element, attributeName: string): string | null {

@@ -3,6 +3,7 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
   convertWidthToFlexGrow,
+  detectFlexDirectionOne,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
@@ -147,12 +148,29 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
 
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
-        return MetadataUtils.isFlexLayoutedContainer(parentInstance)
-          ? [
-              setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
-              nukePropsCommand(path),
-            ]
-          : [setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%')]
+        if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+          return [
+            nukePropsCommand(path),
+            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+          ]
+        }
+
+        const flexDirection = detectFlexDirectionOne(metadata, EP.parentPath(path)) ?? 'row'
+
+        if (
+          (flexDirection.startsWith('row') && axis === 'vertical') ||
+          (flexDirection.startsWith('column') && axis === 'horizontal')
+        ) {
+          return [
+            nukePropsCommand(path),
+            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+          ]
+        }
+
+        return [
+          nukePropsCommand(path),
+          setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
+        ]
       })
     },
   },

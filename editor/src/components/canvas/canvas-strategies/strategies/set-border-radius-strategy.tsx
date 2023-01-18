@@ -2,13 +2,12 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { defaultEither, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
+import { defaultEither, foldEither, right } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
   isIntrinsicElement,
   isJSXElement,
   JSXAttributes,
-  JSXElement,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
@@ -212,9 +211,10 @@ function borderRadiusFromElement(
           }
         })
 
+        const isElementIntrinsic = isIntrinsicElement(jsxElement.name)
+
         const elementIsIntrinsicElementOrScene =
-          isIntrinsicElement(jsxElement.name) ||
-          jsxElementNameEquals(jsxElement.name, jsxElementName('Scene', []))
+          isElementIntrinsic || jsxElementNameEquals(jsxElement.name, jsxElementName('Scene', []))
 
         if (
           !(
@@ -230,14 +230,14 @@ function borderRadiusFromElement(
           fromProps,
         )
 
-        if (borderRadius == null) {
-          if (elementIsIntrinsicElementOrScene) {
-            return null
-          } else {
-            return {
-              mode: 'all',
-              borderRadius: borderRadiusSidesFromValue(unitlessCSSNumberWithRenderedValue(0)),
-            }
+        const defaultBorderRadiusSides = borderRadiusSidesFromValue(
+          unitlessCSSNumberWithRenderedValue(0),
+        )
+
+        if (borderRadius == null && isElementIntrinsic) {
+          return {
+            mode: 'all',
+            borderRadius: defaultBorderRadiusSides,
           }
         }
 
@@ -253,7 +253,7 @@ function borderRadiusFromElement(
           mode: fromProps?.type === 'sides' ? 'individual' : 'all',
           borderRadius: mapBorderRadiusSides(
             (n) => adjustBorderRadius(borderRadiusMinMax, n),
-            borderRadius,
+            borderRadius ?? defaultBorderRadiusSides,
           ),
         }
       } else {

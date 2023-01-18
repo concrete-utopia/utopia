@@ -200,6 +200,7 @@ export const Icons = {
   LockOpen: makeIcon({ type: 'lockopen', color: 'main' }),
   Dot: makeIcon({ type: 'dot', color: 'main' }),
   Pin: makeIcon({ type: 'pin', color: 'main' }),
+  Pipette: makeIcon({ type: 'pipette', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
   Play: makeIcon({ type: 'play', color: 'main' }),
