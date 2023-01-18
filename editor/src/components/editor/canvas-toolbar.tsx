@@ -86,6 +86,10 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
   }, [dispatch, selectedViewsRef])
 
+  const clickSelectModeButton = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.selectMode())])
+  }, [dispatch])
+
   const insertMenuSelected = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
@@ -161,13 +165,14 @@ export const CanvasToolbar = React.memo(() => {
     >
       <FlexColumn style={{ padding: 4 }}>
         {/* TODO is there a component for this subheading? */}
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Insert div' placement='bottom'>
-            <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
-          </Tooltip>
-          <Tooltip title='Insert image' placement='bottom'>
-            <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
+          <Tooltip title='Select' placement='bottom'>
+            <InsertModeButton
+              iconType='pointer'
+              iconCategory='tools'
+              onClick={clickSelectModeButton}
+            />
           </Tooltip>
           <Tooltip title='Insert text' placement='bottom'>
             <InsertModeButton
@@ -176,6 +181,33 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertSpanCallback}
             />
           </Tooltip>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-plus'
+              iconCategory='semantic'
+              onClick={zoomIn}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom out' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-minus'
+              iconCategory='semantic'
+              onClick={zoomOut}
+            />
+          </Tooltip>
+        </FlexRow>
+      </FlexColumn>
+      <Divider />
+      {/* ------------------------------------ */}
+      <FlexColumn style={{ padding: 4 }}>
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
+        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
+          <Tooltip title='Insert div' placement='bottom'>
+            <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
+          </Tooltip>
+          <Tooltip title='Insert image' placement='bottom'>
+            <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
+          </Tooltip>
           <Tooltip title='Insert button' placement='bottom'>
             <InsertModeButton
               iconType='clickable'
@@ -183,8 +215,6 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertButtonCallback}
             />
           </Tooltip>
-          {/* TODO I have to find a better spacer */}
-          <IcnSpacer height={0} width={'100%'} />
           <Tooltip title='Choose and insert a component' placement='bottom'>
             <InsertModeButton
               iconType='componentinstance'
@@ -231,27 +261,6 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory='semantic'
               primary={insertMenuMode === 'wrap'}
               onClick={openFloatingWrapInMenuCallback}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-      <Divider />
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Zoom</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
             />
           </Tooltip>
         </FlexRow>
