@@ -46,7 +46,7 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
   ...props
 }) => {
   const onSubmitValue = props.onSubmitValue
-  const dispatchEyeDropper = React.useCallback(() => {
+  const onClickEyeDropper = React.useCallback(() => {
     closePopup()
     void pickColorWithEyeDropper()
       .then(({ sRGBHex }) => {
@@ -78,7 +78,7 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
           color='secondary'
           width={18}
           height={18}
-          onClick={dispatchEyeDropper}
+          onClick={onClickEyeDropper}
           style={{ marginLeft: 8 }}
         />
         <ColorPickerInner {...props} />
