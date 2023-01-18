@@ -23,6 +23,7 @@ import {
   SimplePercentInput,
   UtopiaStyles,
 } from '../../../uuiui'
+import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -46,14 +47,12 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
 }) => {
   const onSubmitValue = props.onSubmitValue
   const dispatchEyeDropper = React.useCallback(() => {
-    const EyeDropper = window.EyeDropper
-    if (EyeDropper == null) {
-      return
-    }
     closePopup()
-    void new EyeDropper().open().then((result: any) => {
-      onSubmitValue(cssColor(result.sRGBHex as string))
-    })
+    void pickColorWithEyeDropper()
+      .then(({ sRGBHex }) => {
+        onSubmitValue(cssColor(sRGBHex))
+      })
+      .catch((e) => console.error(e))
   }, [closePopup, onSubmitValue])
   return (
     <InspectorModal

@@ -13,6 +13,7 @@ import {
   UIRow,
   Icons,
 } from '../../../../../uuiui'
+import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
 import { setProperty } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
@@ -483,22 +484,20 @@ export const BackgroundPicker: React.FunctionComponent<
     if (selectedViews.length === 0) {
       return
     }
-    const EyeDropper = window.EyeDropper
-    if (EyeDropper == null) {
-      return
-    }
     closePopup()
-    void new EyeDropper().open().then((result: any) => {
-      dispatch(
-        selectedViews.map((view) =>
-          setProperty(
-            view,
-            create(['style', 'backgroundColor']),
-            jsxAttributeValue(result.sRGBHex as string, emptyComments),
+    void pickColorWithEyeDropper()
+      .then(({ sRGBHex }) => {
+        dispatch(
+          selectedViews.map((view) =>
+            setProperty(
+              view,
+              create(['style', 'backgroundColor']),
+              jsxAttributeValue(sRGBHex, emptyComments),
+            ),
           ),
-        ),
-      )
-    })
+        )
+      })
+      .catch((e) => console.error(e))
   }, [dispatch, closePopup, selectedViewsFromStore])
 
   const MetadataControls: React.ReactNode = (() => {
