@@ -43,6 +43,7 @@ import {
   TransientFilesState,
   ElementsToRerender,
   AllElementProps,
+  ComputedStylesMap,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'

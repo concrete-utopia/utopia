@@ -518,6 +518,9 @@ export class Editor {
           rootMetadataInStateRef: {
             current: this.storedState.patchedEditor.domMetadata,
           },
+          computedStyleInStateRef: {
+            current: this.storedState.patchedEditor._currentComputedStyles_KILLME,
+          },
         })
 
         if (domWalkerResult != null) {
@@ -526,6 +529,7 @@ export class Editor {
             [
               EditorActions.saveDOMReport(
                 domWalkerResult.metadata,
+                domWalkerResult.computedStyles,
                 domWalkerResult.cachedPaths,
                 domWalkerResult.invalidatedPaths,
               ),

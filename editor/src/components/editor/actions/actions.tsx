@@ -439,7 +439,10 @@ import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
+import {
+  ComputedStylesKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import {
   addImports,
   clearImageFileBlob,
@@ -1001,6 +1004,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: poppedEditor.allElementProps,
     _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
+    computedStyles: poppedEditor.computedStyles,
+    _currentComputedStyles_KILLME: poppedEditor._currentComputedStyles_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -4144,9 +4149,15 @@ export const UPDATE_FNS = {
       editor.spyMetadata,
       spyResult,
     ).value
+    const finalComputedStyles = ComputedStylesKeepDeepEquality(
+      editor._currentComputedStyles_KILLME,
+      action.computedStyles,
+    ).value
 
     const stayedTheSame =
-      editor.domMetadata === finalDomMetadata && editor.spyMetadata === finalSpyMetadata
+      editor.domMetadata === finalDomMetadata &&
+      editor.spyMetadata === finalSpyMetadata &&
+      editor._currentComputedStyles_KILLME === finalComputedStyles
 
     if (stayedTheSame) {
       return editor
@@ -4159,6 +4170,7 @@ export const UPDATE_FNS = {
         _currentAllElementProps_KILLME: {
           ...spyCollector.current.spyValues.allElementProps,
         },
+        _currentComputedStyles_KILLME: finalComputedStyles,
       }
     }
   },

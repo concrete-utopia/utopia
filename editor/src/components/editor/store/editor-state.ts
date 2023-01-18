@@ -13,6 +13,7 @@ import {
   emptyJsxMetadata,
   JSXAttribute,
   walkElements,
+  ComputedStyle,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -1128,6 +1129,8 @@ export type ElementProps = { [key: string]: any }
 
 export type AllElementProps = { [path: string]: ElementProps }
 
+export type ComputedStylesMap = { [path: string]: ComputedStyle | null }
+
 export type LockedElements = {
   simpleLock: Array<ElementPath>
   hierarchyLock: Array<ElementPath>
@@ -1297,6 +1300,8 @@ export interface EditorState {
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  computedStyles: ComputedStylesMap //  we only update computedStyles when we update jsxMetadata
+  _currentComputedStyles_KILLME: ComputedStylesMap // This is the counterpart of domMetadata and spyMetadata. we update _currentComputedStyles_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
@@ -1372,6 +1377,8 @@ export function editorState(
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
+  computedStyles: ComputedStylesMap,
+  _currentComputedStyles_KILLME: ComputedStylesMap,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
@@ -1448,6 +1455,8 @@ export function editorState(
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
+    computedStyles: computedStyles,
+    _currentComputedStyles_KILLME: _currentComputedStyles_KILLME,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
@@ -2282,6 +2291,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
+    computedStyles: {},
+    _currentComputedStyles_KILLME: {},
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
@@ -2595,6 +2606,8 @@ export function editorModelFromPersistentModel(
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
+    computedStyles: {},
+    _currentComputedStyles_KILLME: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],

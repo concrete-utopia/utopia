@@ -326,6 +326,7 @@ import {
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
   projectGithubSettings,
+  ComputedStylesMap,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3376,6 +3377,9 @@ export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = comb
 export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
   objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
 
+export const ComputedStylesKeepDeepEquality: KeepDeepEqualityCall<ComputedStylesMap> =
+  objectDeepEquality(nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals()))) // an individual computed style object is "flat", which means we get to use a createCallWithTripleEquals
+
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
   newValue,
@@ -3614,6 +3618,16 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue._currentAllElementProps_KILLME,
     newValue._currentAllElementProps_KILLME,
   )
+
+  const computedStylesResults = ComputedStylesKeepDeepEquality(
+    oldValue.computedStyles,
+    newValue.computedStyles,
+  )
+  const _currentComputedStyles_KILLME_Results = ComputedStylesKeepDeepEquality(
+    oldValue._currentComputedStyles_KILLME,
+    newValue._currentComputedStyles_KILLME,
+  )
+
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -3717,6 +3731,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
+    computedStylesResults.areEqual &&
+    _currentComputedStyles_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
@@ -3795,6 +3811,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forceParseFilesResults.value,
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
+      computedStylesResults.value,
+      _currentComputedStyles_KILLME_Results.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,

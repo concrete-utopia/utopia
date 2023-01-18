@@ -69,6 +69,7 @@ import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
+  ComputedStylesMap as ComputedStylesMap,
   EditorState,
   EditorStorePatched,
   ElementsToRerender,
@@ -339,6 +340,7 @@ interface RunDomWalkerParams {
 
   domWalkerMutableState: DomWalkerMutableStateData
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
+  computedStyleInStateRef: { readonly current: ComputedStylesMap }
 }
 
 function runSelectiveDomWalker(
@@ -347,9 +349,15 @@ function runSelectiveDomWalker(
   selectedViews: Array<ElementPath>,
   scale: number,
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap },
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   containerRectLazy: () => CanvasRectangle,
-): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
+): {
+  metadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
+  cachedPaths: ElementPath[]
+} {
   let workingMetadata: ElementInstanceMetadataMap = {}
+  let workingComputedStyles: ComputedStylesMap = {}
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
@@ -380,7 +388,7 @@ function runSelectiveDomWalker(
           return validPaths.has(staticPath)
         })
 
-        const { collectedMetadata } = collectAndCreateMetadataForElement(
+        const { collectedMetadata, computedStyles } = collectAndCreateMetadataForElement(
           element,
           parentPoint,
           path, // TODO is this good enough?
@@ -393,6 +401,7 @@ function runSelectiveDomWalker(
         )
 
         mergeMetadataMapsWithFragments_MUTATE(workingMetadata, collectedMetadata)
+        Object.assign(workingComputedStyles, computedStyles) // mutation!
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
@@ -403,12 +412,14 @@ function runSelectiveDomWalker(
 
     return {
       metadata: rootMetadataForOtherElements,
+      computedStyles: { ...computedStyleInStateRef.current, ...workingComputedStyles },
       cachedPaths: otherElementPaths.map(EP.fromString),
     }
   }
 
   return {
     metadata: rootMetadataInStateRef.current,
+    computedStyles: computedStyleInStateRef.current,
     cachedPaths: Object.values(rootMetadataInStateRef.current).map((p) => p.elementPath),
   }
 }
@@ -424,8 +435,10 @@ export function runDomWalker({
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
+  computedStyleInStateRef,
 }: RunDomWalkerParams): {
   metadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
   cachedPaths: ElementPath[]
   invalidatedPaths: string[]
 } | null {
@@ -470,13 +483,14 @@ export function runDomWalker({
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
     // because the fragment is invisible in the DOM.
-    const { metadata, cachedPaths } =
+    const { metadata, computedStyles, cachedPaths } =
       // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
       // of the currently rendered elements (for performance reasons)
       elementsToFocusOn === 'rerender-all-elements'
         ? walkCanvasRootFragment(
             canvasRootContainer,
             rootMetadataInStateRef,
+            computedStyleInStateRef,
             domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
             domWalkerMutableState.invalidatedPathsForStylesheetCache,
             selectedViews,
@@ -491,6 +505,7 @@ export function runDomWalker({
             selectedViews,
             scale,
             rootMetadataInStateRef,
+            computedStyleInStateRef,
             containerRect,
           )
     if (LogDomWalkerPerformance) {
@@ -503,7 +518,12 @@ export function runDomWalker({
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
-    return { metadata: metadata, cachedPaths: cachedPaths, invalidatedPaths: invalidatedPaths }
+    return {
+      metadata: metadata,
+      computedStyles: computedStyles,
+      cachedPaths: cachedPaths,
+      invalidatedPaths: invalidatedPaths,
+    }
   } else {
     // TODO flip if-else
     return null
@@ -659,17 +679,20 @@ function collectMetadata(
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   collectedMetadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
   cachedPaths: Array<ElementPath>
   collectedPaths: Array<ElementPath>
 } {
   if (pathsForElement.length === 0) {
     return {
       collectedMetadata: {},
+      computedStyles: {},
       cachedPaths: [],
       collectedPaths: [],
     }
@@ -696,10 +719,15 @@ function collectMetadata(
     )
   } else {
     const cachedMetadata = pick(pathsForElement.map(EP.toString), rootMetadataInStateRef.current)
+    const cachedComputedStyles = pick(
+      pathsForElement.map(EP.toString),
+      computedStyleInStateRef.current,
+    )
 
     if (Object.keys(cachedMetadata).length === pathsForElement.length) {
       return {
         collectedMetadata: cachedMetadata,
+        computedStyles: cachedComputedStyles,
         cachedPaths: pathsForElement,
         collectedPaths: pathsForElement,
       }
@@ -717,6 +745,7 @@ function collectMetadata(
         invalidatedPaths,
         invalidatedPathsForStylesheetCache,
         rootMetadataInStateRef,
+        computedStyleInStateRef,
         true,
         selectedViews,
         additionalElementsToUpdate,
@@ -753,6 +782,7 @@ function collectAndCreateMetadataForElement(
   )
 
   const collectedMetadata: ElementInstanceMetadataMap = {}
+  const computedStyles: ComputedStylesMap = {}
   pathsForElement.forEach((path) => {
     const pathStr = EP.toString(path)
     invalidatedPaths.delete(pathStr) // mutation!
@@ -770,10 +800,13 @@ function collectAndCreateMetadataForElement(
       null,
       null,
     )
+
+    computedStyles[pathStr] = computedStyle
   })
 
   return {
     collectedMetadata: collectedMetadata,
+    computedStyles: computedStyles,
     cachedPaths: [],
     collectedPaths: pathsForElement,
   }
@@ -984,6 +1017,7 @@ function globalFrameForElement(
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -993,6 +1027,7 @@ function walkCanvasRootFragment(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   metadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
   cachedPaths: Array<ElementPath>
 } {
   const canvasRootPath: ElementPath | null = optionalMap(
@@ -1022,14 +1057,16 @@ function walkCanvasRootFragment(
     // no mutation happened on the entire canvas, just return the old metadata
     return {
       metadata: rootMetadataInStateRef.current,
+      computedStyles: computedStyleInStateRef.current,
       cachedPaths: [canvasRootPath],
     }
   } else {
-    const { rootMetadata, cachedPaths } = walkSceneInner(
+    const { rootMetadata, computedStyles, cachedPaths } = walkSceneInner(
       canvasRoot,
       canvasRootPath,
       validPaths,
       rootMetadataInStateRef,
+      computedStyleInStateRef,
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       selectedViews,
@@ -1057,7 +1094,7 @@ function walkCanvasRootFragment(
 
     addElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
 
-    return { metadata: rootMetadata, cachedPaths: cachedPaths }
+    return { metadata: rootMetadata, computedStyles: computedStyles, cachedPaths: cachedPaths }
   }
 }
 
@@ -1065,6 +1102,7 @@ function walkScene(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -1074,6 +1112,7 @@ function walkScene(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   metadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
   cachedPaths: Array<ElementPath>
 } {
   if (scene instanceof HTMLElement) {
@@ -1093,12 +1132,14 @@ function walkScene(
       const {
         childPaths: rootElements,
         rootMetadata,
+        computedStyles: computedStylesFromScene,
         cachedPaths,
       } = walkSceneInner(
         scene,
         instancePath,
         validPaths,
         rootMetadataInStateRef,
+        computedStyleInStateRef,
         invalidatedPaths,
         invalidatedPathsForStylesheetCache,
         selectedViews,
@@ -1108,7 +1149,11 @@ function walkScene(
         additionalElementsToUpdate,
       )
 
-      const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
+      const {
+        collectedMetadata: sceneMetadata,
+        computedStyles,
+        cachedPaths: sceneCachedPaths,
+      } = collectMetadata(
         scene,
         [instancePath],
         [sceneID],
@@ -1120,6 +1165,7 @@ function walkScene(
         invalidatedPaths,
         invalidatedPathsForStylesheetCache,
         rootMetadataInStateRef,
+        computedStyleInStateRef,
         invalidatedScene,
         selectedViews,
         additionalElementsToUpdate,
@@ -1127,13 +1173,16 @@ function walkScene(
 
       mergeMetadataMapsWithFragments_MUTATE(rootMetadata, sceneMetadata)
 
+      Object.assign(computedStylesFromScene, computedStyles) // mutation!
+
       return {
         metadata: rootMetadata,
+        computedStyles: computedStylesFromScene,
         cachedPaths: [...cachedPaths, ...sceneCachedPaths],
       }
     }
   }
-  return { metadata: {}, cachedPaths: [] } // verify
+  return { metadata: {}, computedStyles: {}, cachedPaths: [] } // verify
 }
 
 function walkSceneInner(
@@ -1141,6 +1190,7 @@ function walkSceneInner(
   closestOffsetParentPath: ElementPath,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -1150,6 +1200,7 @@ function walkSceneInner(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: Array<ElementPath>
+  computedStyles: ComputedStylesMap
   rootMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
@@ -1159,10 +1210,13 @@ function walkSceneInner(
   let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
   let cachedPathsAccumulator: Array<ElementPath> = []
 
+  let computedStylesAccumulator: ComputedStylesMap = {}
+
   scene.childNodes.forEach((childNode) => {
     const {
       childPaths: childNodePaths,
       rootMetadata,
+      computedStyles,
       cachedPaths,
     } = walkElements(
       childNode,
@@ -1170,6 +1224,7 @@ function walkSceneInner(
       closestOffsetParentPath,
       validPaths,
       rootMetadataInStateRef,
+      computedStyleInStateRef,
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       selectedViews,
@@ -1182,10 +1237,12 @@ function walkSceneInner(
     childPaths.push(...childNodePaths)
     mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadata)
     cachedPathsAccumulator.push(...cachedPaths)
+    Object.assign(computedStylesAccumulator, computedStyles) // mutation!
   })
 
   return {
     childPaths: childPaths,
+    computedStyles: computedStylesAccumulator,
     rootMetadata: rootMetadataAccumulator,
     cachedPaths: cachedPathsAccumulator,
   }
@@ -1198,6 +1255,7 @@ function walkElements(
   closestOffsetParentPath: ElementPath,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
+  computedStyleInStateRef: { readonly current: ComputedStylesMap },
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -1207,15 +1265,21 @@ function walkElements(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: ReadonlyArray<ElementPath>
+  computedStyles: ComputedStylesMap
   rootMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
-    const { metadata, cachedPaths: cachedPaths } = walkScene(
+    const {
+      metadata,
+      computedStyles,
+      cachedPaths: cachedPaths,
+    } = walkScene(
       element,
       validPaths,
       rootMetadataInStateRef,
+      computedStyleInStateRef,
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       selectedViews,
@@ -1227,6 +1291,7 @@ function walkElements(
 
     const result = {
       childPaths: [],
+      computedStyles: computedStyles,
       rootMetadata: metadata,
       cachedPaths: cachedPaths,
     }
@@ -1264,6 +1329,8 @@ function walkElements(
     let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
     let cachedPathsAccumulator: Array<ElementPath> = []
+    let computedStylesAccumulator: ComputedStylesMap = {}
+
     // TODO: we should not traverse the children when all elements of this subtree will be retrieved from cache anyway
     // WARNING: we need to retrieve the metadata of all elements of the subtree from the cache, because the SAVE_DOM_REPORT
     // action replaces (and not merges) the full metadata map
@@ -1272,6 +1339,7 @@ function walkElements(
         const {
           childPaths: childNodePaths,
           rootMetadata: rootMetadataInner,
+          computedStyles,
           cachedPaths,
         } = walkElements(
           child,
@@ -1279,6 +1347,7 @@ function walkElements(
           closestOffsetParentPathInner,
           validPaths,
           rootMetadataInStateRef,
+          computedStyleInStateRef,
           invalidatedPaths,
           invalidatedPathsForStylesheetCache,
           selectedViews,
@@ -1290,12 +1359,13 @@ function walkElements(
         childPaths.push(...childNodePaths)
         mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadataInner)
         cachedPathsAccumulator.push(...cachedPaths)
+        Object.assign(computedStylesAccumulator, computedStyles) // mutation!
       })
     }
 
     const uniqueChildPaths = uniqBy(childPaths, EP.pathsEqual)
 
-    const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
+    const { collectedMetadata, computedStyles, cachedPaths, collectedPaths } = collectMetadata(
       element,
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
@@ -1307,6 +1377,7 @@ function walkElements(
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       rootMetadataInStateRef,
+      computedStyleInStateRef,
       invalidated,
       selectedViews,
       additionalElementsToUpdate,
@@ -1314,12 +1385,14 @@ function walkElements(
 
     mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, collectedMetadata)
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
+    Object.assign(computedStylesAccumulator, computedStyles)
     return {
       rootMetadata: rootMetadataAccumulator,
+      computedStyles: computedStylesAccumulator,
       childPaths: collectedPaths,
       cachedPaths: cachedPathsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: {}, cachedPaths: [] }
+    return { childPaths: [], computedStyles: {}, rootMetadata: {}, cachedPaths: [] }
   }
 }

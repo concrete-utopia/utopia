@@ -165,6 +165,8 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   forceParseFiles: [],
   allElementProps: {},
   _currentAllElementProps_KILLME: {},
+  computedStyles: {},
+  _currentComputedStyles_KILLME: {},
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],

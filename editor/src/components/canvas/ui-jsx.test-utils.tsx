@@ -266,11 +266,15 @@ export async function renderTestEditorWithModel(
       rootMetadataInStateRef: {
         current: workingEditorState.patchedEditor.domMetadata,
       },
+      computedStyleInStateRef: {
+        current: workingEditorState.patchedEditor._currentComputedStyles_KILLME,
+      },
     })
 
     if (domWalkerResult != null) {
       const saveDomReportAction = saveDOMReport(
         domWalkerResult.metadata,
+        domWalkerResult.computedStyles,
         domWalkerResult.cachedPaths,
         domWalkerResult.invalidatedPaths,
       )

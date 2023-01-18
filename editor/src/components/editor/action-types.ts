@@ -59,6 +59,7 @@ import {
   GithubData,
   UserConfiguration,
   ThemeSetting,
+  ComputedStylesMap,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -732,6 +733,7 @@ export interface SendLinterRequestMessage {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ElementInstanceMetadataMap
+  computedStyles: ComputedStylesMap
   cachedPaths: Array<ElementPath>
   invalidatedPaths: Array<string>
 }

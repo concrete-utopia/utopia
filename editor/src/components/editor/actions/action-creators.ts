@@ -243,6 +243,7 @@ import type {
   GithubData,
   UserConfiguration,
   ThemeSetting,
+  ComputedStylesMap,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1147,12 +1148,14 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ElementInstanceMetadataMap,
+  computedStyles: ComputedStylesMap,
   cachedPaths: Array<ElementPath>,
   invalidatedPaths: Array<string>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
+    computedStyles: computedStyles,
     cachedPaths: cachedPaths,
     invalidatedPaths: invalidatedPaths,
   }
