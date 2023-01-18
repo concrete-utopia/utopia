@@ -96,7 +96,7 @@ import {
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
-import { getDragStateStart } from '../canvas/canvas-utils'
+import { getDragStateStart, pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
@@ -678,22 +678,19 @@ export function handleKeyDown(
         if (selectedViews.length === 0) {
           return []
         }
-        const EyeDropper = window.EyeDropper
-        if (EyeDropper == null) {
-          return []
-        }
-
-        void new EyeDropper().open().then((result: any) => {
-          dispatch(
-            selectedViews.map((view) =>
-              EditorActions.setProperty(
-                view,
-                PP.create(['style', 'backgroundColor']),
-                jsxAttributeValue(result.sRGBHex as string, emptyComments),
+        void pickColorWithEyeDropper()
+          .then(({ sRGBHex }) =>
+            dispatch(
+              selectedViews.map((view) =>
+                EditorActions.setProperty(
+                  view,
+                  PP.create(['style', 'backgroundColor']),
+                  jsxAttributeValue(sRGBHex, emptyComments),
+                ),
               ),
             ),
           )
-        })
+          .catch((e) => console.error(e))
         return []
       },
       [TEXT_EDIT_MODE]: () => {

@@ -3342,3 +3342,16 @@ export function getObservableValueForLayoutProp(
     }
   }
 }
+
+export async function pickColorWithEyeDropper(): Promise<{ sRGBHex: string }> {
+  const EyeDropper = window.EyeDropper
+  if (EyeDropper == null) {
+    throw new Error('EyeDropper API not supported')
+  }
+  const result: any = await new EyeDropper().open()
+  const sRGBHex = result['sRGBHex']
+  if (typeof sRGBHex === 'string') {
+    return { sRGBHex }
+  }
+  throw new Error('No result returned')
+}

@@ -1,5 +1,7 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
+import { jsxAttributeValue, emptyComments } from '../../../../../core/shared/element-template'
+import { create } from '../../../../../core/shared/property-path'
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   useColorTheme,
@@ -7,11 +9,14 @@ import {
   Icn,
   NumberInput,
   PopupList,
-  UtopiaTheme,
   UtopiaStyles,
   UIRow,
   Icons,
 } from '../../../../../uuiui'
+import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
+import { setProperty } from '../../../../editor/actions/action-creators'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus } from '../../../common/control-status'
 import {
   CSSBackgroundLayer,
@@ -410,6 +415,12 @@ export const BackgroundPicker: React.FunctionComponent<
     [setShowSettings],
   )
   const [selectedStopUnorderedIndex, setSelectedStopUnorderedIndex] = React.useState(0)
+  const dispatch = useDispatch()
+  const selectedViewsFromStore = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'BackgroundPicker selectedViews',
+  )
 
   const [onSubmitColorValue, onTransientSubmitColorValue] = props.useSubmitValueFactory(
     getIndexedUpdateCSSBackgroundLayerStop(selectedStopUnorderedIndex, props.backgroundLayerIndex),
@@ -465,6 +476,29 @@ export const BackgroundPicker: React.FunctionComponent<
       ),
     [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
   )
+
+  const closePopup = props.closePopup
+
+  const dispatchEyeDropper = React.useCallback(() => {
+    const selectedViews = selectedViewsFromStore
+    if (selectedViews.length === 0) {
+      return
+    }
+    closePopup()
+    void pickColorWithEyeDropper()
+      .then(({ sRGBHex }) => {
+        dispatch(
+          selectedViews.map((view) =>
+            setProperty(
+              view,
+              create(['style', 'backgroundColor']),
+              jsxAttributeValue(sRGBHex, emptyComments),
+            ),
+          ),
+        )
+      })
+      .catch((e) => console.error(e))
+  }, [dispatch, closePopup, selectedViewsFromStore])
 
   const MetadataControls: React.ReactNode = (() => {
     switch (props.value.type) {
@@ -553,14 +587,24 @@ export const BackgroundPicker: React.FunctionComponent<
             />
           </div>
           {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}
-          <Icn
-            type='cross-large'
-            color='secondary'
-            width={16}
-            height={16}
-            onClick={props.closePopup}
-            style={{ marginLeft: 8 }}
-          />
+          <FlexRow>
+            <Icn
+              type='pipette'
+              color='secondary'
+              width={18}
+              height={18}
+              onClick={dispatchEyeDropper}
+              style={{ marginLeft: 8 }}
+            />
+            <Icn
+              type='cross-large'
+              color='secondary'
+              width={16}
+              height={16}
+              onClick={props.closePopup}
+              style={{ marginLeft: 8 }}
+            />
+          </FlexRow>
         </UIRow>
         {isCSSImageURLBackgroundLayer(props.value) ? (
           <PickerImagePreview value={props.value} />
