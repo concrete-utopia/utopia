@@ -5,6 +5,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { updateColorSwatches } from '../../editor/actions/action-creators'
 import { ColorSwatch } from '../../editor/store/editor-state'
+import { unless, when } from '../../../utils/react-conditionals'
 
 export interface ColorPickerSwatchesProps {
   onSelectColor: (hex: string) => void
@@ -72,7 +73,8 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
         <div style={{ fontWeight: 600 }}>Swatches</div>
         {colorSwatches.length > 0 && (
           <Button spotlight highlight style={{ padding: '0 6px' }} onMouseDown={toggleEditing}>
-            {editing ? 'Done' : 'Edit'}
+            {when(editing, 'Done')}
+            {unless(editing, 'Edit')}
           </Button>
         )}
       </FlexRow>
@@ -96,8 +98,8 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
                 zIndex: 0,
               }}
             >
-              {editing && <TrashIcon />}
-              {!editing && currentColor === c.hex && <CurrentColorBadge />}
+              {when(editing, <TrashIcon />)}
+              {when(currentColor === c.hex && !editing, <CurrentColorBadge />)}
             </Button>
           )
         })}
@@ -140,7 +142,7 @@ const CurrentColorBadge = React.memo(() => {
   )
 })
 
-const TrashIcon: React.FC = () => {
+const TrashIcon = React.memo(() => {
   return (
     <FlexColumn>
       <svg
@@ -161,9 +163,9 @@ const TrashIcon: React.FC = () => {
       </svg>
     </FlexColumn>
   )
-}
+})
 
-const PlusIcon: React.FC = () => {
+const PlusIcon = React.memo(() => {
   return (
     <FlexColumn>
       <svg
@@ -182,4 +184,4 @@ const PlusIcon: React.FC = () => {
       </svg>
     </FlexColumn>
   )
-}
+})
