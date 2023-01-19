@@ -326,6 +326,8 @@ import {
   DragToMoveIndicatorFlags,
   dragToMoveIndicatorFlags,
   projectGithubSettings,
+  ColorSwatch,
+  newColorSwatch,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -467,7 +469,6 @@ import {
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
 } from '../../../core/shared/github'
-import { ColorSwatch, newColorSwatch } from '../../inspector/controls/color-picker-swatches'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,

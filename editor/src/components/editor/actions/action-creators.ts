@@ -44,7 +44,6 @@ import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
-import { ColorSwatch } from '../../inspector/controls/color-picker-swatches'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
 import {
   InsertableComponent,
@@ -245,6 +244,7 @@ import type {
   GithubData,
   UserConfiguration,
   ThemeSetting,
+  ColorSwatch,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {

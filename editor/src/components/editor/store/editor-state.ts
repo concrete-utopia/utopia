@@ -175,7 +175,6 @@ import {
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
-import { ColorSwatch } from '../../inspector/controls/color-picker-swatches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1225,6 +1224,18 @@ export function emptyGithubData(): GithubData {
     currentBranchPullRequests: null,
     githubUserDetails: null,
     lastRefreshedCommit: null,
+  }
+}
+
+export type ColorSwatch = {
+  id: string
+  hex: string
+}
+
+export function newColorSwatch(id: string, hex: string): ColorSwatch {
+  return {
+    id: id,
+    hex: hex,
   }
 }
 

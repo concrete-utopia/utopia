@@ -4,22 +4,11 @@ import { v4 as UUID } from 'uuid'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { updateColorSwatches } from '../../editor/actions/action-creators'
+import { ColorSwatch } from '../../editor/store/editor-state'
 
 export interface ColorPickerSwatchesProps {
   onSelectColor: (hex: string) => void
   currentColor: string
-}
-
-export type ColorSwatch = {
-  id: string
-  hex: string
-}
-
-export function newColorSwatch(id: string, hex: string): ColorSwatch {
-  return {
-    id: id,
-    hex: hex,
-  }
 }
 
 const SWATCH_SIZE = 24
