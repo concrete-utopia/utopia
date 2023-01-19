@@ -78,11 +78,11 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
       </FlexRow>
 
       <FlexRow style={{ flexWrap: 'wrap', gap: 2 }}>
-        {colorSwatches.map((c, index) => {
+        {colorSwatches.map((c) => {
           return (
             <Button
               onClick={onClickPreset(c)}
-              key={index}
+              key={c.id}
               title={editing ? 'Remove color' : ''}
               style={{
                 position: 'relative',
