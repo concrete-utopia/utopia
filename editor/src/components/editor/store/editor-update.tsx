@@ -372,8 +372,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
     case 'APPLY_COMMANDS':
       return UPDATE_FNS.APPLY_COMMANDS(action, state)
-    case 'UPDATE_COLOR_PRESETS':
-      return UPDATE_FNS.UPDATE_COLOR_PRESETS(action, state)
+    case 'UPDATE_COLOR_SWATCHES':
+      return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     default:
       return state
   }

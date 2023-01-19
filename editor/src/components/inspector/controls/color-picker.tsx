@@ -24,7 +24,7 @@ import {
   UtopiaStyles,
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
-import { ColorPickerPresets } from './color-picker-presets'
+import { ColorPickerSwatches } from './color-picker-swatches'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -700,7 +700,7 @@ export class ColorPickerInner extends React.Component<
               defaultUnitToHide={null}
             />
           </div>
-          <ColorPickerPresets
+          <ColorPickerSwatches
             onSelectColor={this.onSubmitValueHex}
             currentColor={chroma.hex('auto').toUpperCase()}
           />

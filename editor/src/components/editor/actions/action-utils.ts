@@ -189,7 +189,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_IMAGE_DRAG_SESSION_STATE':
     case 'UPDATE_AGAINST_GITHUB':
     case 'APPLY_COMMANDS':
-    case 'UPDATE_COLOR_PRESETS':
+    case 'UPDATE_COLOR_SWATCHES':
       return false
     case 'SAVE_ASSET':
       return (

@@ -73,7 +73,7 @@ import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
-import { ColorPreset } from '../inspector/controls/color-picker-presets'
+import { ColorSwatch } from '../inspector/controls/color-picker-swatches'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1086,9 +1086,9 @@ export interface ApplyCommandsAction {
   commands: CanvasCommand[]
 }
 
-export interface UpdateColorPresets {
-  action: 'UPDATE_COLOR_PRESETS'
-  presets: Array<ColorPreset>
+export interface UpdateColorSwatches {
+  action: 'UPDATE_COLOR_SWATCHES'
+  colorSwatches: Array<ColorSwatch>
 }
 
 export type EditorAction =
@@ -1265,7 +1265,7 @@ export type EditorAction =
   | SetRefreshingDependencies
   | SetAssetChecksum
   | ApplyCommandsAction
-  | UpdateColorPresets
+  | UpdateColorSwatches
 
 export type DispatchPriority =
   | 'everyone'

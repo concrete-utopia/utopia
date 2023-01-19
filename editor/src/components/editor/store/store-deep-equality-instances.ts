@@ -467,7 +467,7 @@ import {
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
 } from '../../../core/shared/github'
-import { ColorPreset, newColorPreset } from '../../inspector/controls/color-picker-presets'
+import { ColorSwatch, newColorSwatch } from '../../inspector/controls/color-picker-swatches'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3390,12 +3390,12 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
 
-export const ColorPresetDeepEquality: KeepDeepEqualityCall<ColorPreset> = combine2EqualityCalls(
+export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
   (c) => c.id,
   StringKeepDeepEquality,
   (c) => c.hex,
   StringKeepDeepEquality,
-  newColorPreset,
+  newColorSwatch,
 )
 
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
@@ -3660,9 +3660,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.assetChecksums,
   )
 
-  const colorPresetsResults = arrayDeepEquality(ColorPresetDeepEquality)(
-    oldValue.colorPresets,
-    newValue.colorPresets,
+  const colorSwatchesResults = arrayDeepEquality(ColorSwatchDeepEquality)(
+    oldValue.colorSwatches,
+    newValue.colorSwatches,
   )
 
   const areEqual =
@@ -3739,7 +3739,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     assetChecksumsResults.areEqual &&
-    colorPresetsResults.areEqual
+    colorSwatchesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3818,7 +3818,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubDataResults.value,
       refreshingDependenciesResults.value,
       assetChecksumsResults.value,
-      colorPresetsResults.value,
+      colorSwatchesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

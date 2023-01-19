@@ -429,7 +429,7 @@ function migrateFromVersion12(
     return {
       ...persistentModel,
       projectVersion: 13,
-      colorPresets: [],
+      colorSwatches: [],
     }
   }
 }

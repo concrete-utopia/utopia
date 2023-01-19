@@ -175,7 +175,7 @@ import {
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
-import { ColorPreset } from '../../inspector/controls/color-picker-presets'
+import { ColorSwatch } from '../../inspector/controls/color-picker-swatches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1305,7 +1305,7 @@ export interface EditorState {
   githubData: GithubData
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
-  colorPresets: Array<ColorPreset>
+  colorSwatches: Array<ColorSwatch>
 }
 
 export function editorState(
@@ -1382,7 +1382,7 @@ export function editorState(
   githubData: GithubData,
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
-  colorPresets: Array<ColorPreset>,
+  colorSwatches: Array<ColorSwatch>,
 ): EditorState {
   return {
     id: id,
@@ -1458,7 +1458,7 @@ export function editorState(
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
-    colorPresets: colorPresets,
+    colorSwatches: colorSwatches,
   }
 }
 
@@ -2059,7 +2059,7 @@ export interface PersistentModel {
   githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
-  colorPresets: Array<ColorPreset>
+  colorSwatches: Array<ColorSwatch>
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2103,7 +2103,7 @@ export function mergePersistentModel(
     githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
-    colorPresets: second.colorPresets,
+    colorSwatches: second.colorSwatches,
   }
 }
 
@@ -2296,7 +2296,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubData: emptyGithubData(),
     refreshingDependencies: false,
     assetChecksums: {},
-    colorPresets: [],
+    colorSwatches: [],
   }
 }
 
@@ -2610,7 +2610,7 @@ export function editorModelFromPersistentModel(
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
     assetChecksums: {},
-    colorPresets: persistentModel.colorPresets,
+    colorSwatches: persistentModel.colorSwatches,
   }
   return editor
 }
@@ -2650,7 +2650,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
-    colorPresets: editor.colorPresets,
+    colorSwatches: editor.colorSwatches,
   }
 }
 
@@ -2686,7 +2686,7 @@ export function persistentModelForProjectContents(
     githubChecksums: null,
     branchContents: null,
     assetChecksums: {},
-    colorPresets: [],
+    colorSwatches: [],
   }
 }
 
