@@ -10,6 +10,8 @@ import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.tes
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser, printSnapshotformat } from '../../../test/karma-snapshots'
 import * as EP from '../../core/shared/element-path'
+import { selectComponents } from '../editor/actions/action-creators'
+import { ComputedStylesMap } from '../editor/store/editor-state'
 
 disableStoredStateforTests()
 
@@ -3440,5 +3442,91 @@ describe('Capturing closest offset parent', () => {
     expect(
       EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
     ).toBe(expectedClosestOffsetParent)
+  })
+})
+
+function prettyPrintComputedStyle(computedStylesMap: ComputedStylesMap): string {
+  return Object.entries(computedStylesMap)
+    .map(([elementPath, computedStyle]) => {
+      return `${elementPath} - ${computedStyle == null ? 'null' : typeof computedStyle}`
+    })
+    .join('\n')
+}
+
+describe('Dom-walker ComputedStyle', () => {
+  it('only non-null for selected element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+      import * as React from 'react'
+      import {
+        View,
+        Scene,
+        Storyboard,
+      } from 'utopia-api'
+      export var App = (props) => {
+        return (
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'}>
+            <div
+              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, left: 55, top: 98, width: 266, height: 124 }}
+              data-uid={'ef0'}
+            >
+              <div
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
+                data-uid={'488'}
+              />
+            </div>
+          </div>
+        )
+      }
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      'await-first-dom-report',
+    )
+
+    // select the inner div
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [
+            EP.elementPath([
+              [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+              ['05c', 'ef0', '488'],
+            ]),
+          ],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const sanitizedSpecialSizeMeasurements = prettyPrintComputedStyle(
+      renderResult.getEditorState().editor.computedStyles,
+    )
+
+    matchInlineSnapshotBrowser(
+      sanitizedSpecialSizeMeasurements,
+      `
+    "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488 - object
+    utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0 - null
+    utopia-storyboard-uid/scene-aaa/app-entity:05c - null
+    utopia-storyboard-uid/scene-aaa/app-entity - null
+    utopia-storyboard-uid/scene-aaa - null"
+    `,
+    )
   })
 })
