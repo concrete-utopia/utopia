@@ -80,7 +80,14 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
       }}
     >
       <FlexRow style={{ justifyContent: 'space-between' }}>
-        <div style={{ fontWeight: 600 }}>Project colors</div>
+        <div
+          style={{
+            fontWeight: 600,
+            color: colorTheme.fg0.value,
+          }}
+        >
+          Project colors
+        </div>
         {colorSwatches.length > 0 && (
           <Button
             spotlight
