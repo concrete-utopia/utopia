@@ -968,6 +968,7 @@ describe('LOAD', () => {
       githubChecksums: null,
       branchContents: null,
       assetChecksums: {},
+      colorSwatches: [],
     }
 
     const action = {
