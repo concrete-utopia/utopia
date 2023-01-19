@@ -11,6 +11,7 @@ import { MetaCanvasStrategy } from '../canvas-strategies'
 import {
   CanvasStrategy,
   CustomStrategyState,
+  emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -56,6 +57,9 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
       controlsToRender: [],
       fitness: insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? 1 : 0,
       apply: (s) => {
+        if (interactionSession.interactionData.type !== 'DRAG') {
+          return emptyStrategyApplicationResult
+        }
         const applicableReparentFactories = getApplicableReparentFactories(
           canvasState,
           pointOnCanvas,
@@ -80,7 +84,8 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const targetParentPathParts =
           targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
         const isRoot = targetParentPathParts === 1
-        if (!isRoot && textEditable) {
+        const isClick = s === 'end-interaction' && interactionSession.interactionData.drag == null
+        if (!isRoot && textEditable && isClick) {
           return strategyApplicationResult([
             updateSelectedViews('on-complete', [targetParent]),
             setCursorCommand(CSSCursor.Select),
