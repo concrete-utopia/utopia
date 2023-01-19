@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { Button, colorTheme, FlexColumn, FlexRow } from '../../../uuiui'
 import { v4 as UUID } from 'uuid'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { updateColorSwatches } from '../../editor/actions/action-creators'
-import { ColorSwatch } from '../../editor/store/editor-state'
 import { unless, when } from '../../../utils/react-conditionals'
+import { Button, colorTheme, FlexColumn, FlexRow, Icons } from '../../../uuiui'
+import { updateColorSwatches } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { ColorSwatch } from '../../editor/store/editor-state'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 export interface ColorPickerSwatchesProps {
   onSelectColor: (hex: string) => void
@@ -28,6 +28,10 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
 
   const dispatch = useDispatch()
 
+  const isCurrentColorSaved = React.useMemo(() => {
+    return colorSwatches.some((c) => c.hex === currentColor)
+  }, [currentColor, colorSwatches])
+
   React.useEffect(() => {
     dispatch([updateColorSwatches(colorSwatches)], 'everyone')
   }, [colorSwatches, dispatch])
@@ -46,7 +50,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
     if (currentColor == null) {
       return
     }
-    if (colorSwatches.some((c) => c.hex === currentColor)) {
+    if (isCurrentColorSaved) {
       return
     }
     const swatch: ColorSwatch = {
@@ -54,7 +58,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
       hex: currentColor,
     }
     setColorSwatches(colorSwatches.concat(swatch))
-  }, [currentColor, colorSwatches])
+  }, [currentColor, colorSwatches, isCurrentColorSaved])
 
   const onClickSwatch = React.useCallback(
     (c: ColorSwatch) => () => {
@@ -78,9 +82,16 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
       <FlexRow style={{ justifyContent: 'space-between' }}>
         <div style={{ fontWeight: 600 }}>Project colors</div>
         {colorSwatches.length > 0 && (
-          <Button spotlight highlight style={{ padding: '0 6px' }} onMouseDown={toggleEditing}>
-            {when(editing, 'Done')}
-            {unless(editing, 'Edit')}
+          <Button
+            spotlight
+            highlight
+            style={{
+              padding: '0 6px',
+            }}
+            onMouseDown={toggleEditing}
+          >
+            {when(editing, <Icons.Checkmark />)}
+            {unless(editing, <Icons.EditPencil />)}
           </Button>
         )}
       </FlexRow>
@@ -104,7 +115,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
                 zIndex: 0,
               }}
             >
-              {when(editing, <TrashIcon />)}
+              {when(editing, <Icons.Bin />)}
             </Button>
           )
         })}
@@ -119,55 +130,12 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
               height: SWATCH_SIZE,
             }}
             onMouseDown={onAddColor}
+            disabled={isCurrentColorSaved}
           >
-            <PlusIcon />
+            <Icons.Plus />
           </Button>
         )}
       </FlexRow>
-    </FlexColumn>
-  )
-})
-
-const TrashIcon = React.memo(() => {
-  return (
-    <FlexColumn>
-      <svg
-        xmlns='http://www.w3.org/2000/svg'
-        width='12'
-        height='12'
-        viewBox='0 0 24 24'
-        fill={colorTheme.bg0.value}
-        stroke={colorTheme.fg0.value}
-        strokeWidth='2'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-      >
-        <polyline points='3 6 5 6 21 6'></polyline>
-        <path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path>
-        <line x1='10' y1='11' x2='10' y2='17'></line>
-        <line x1='14' y1='11' x2='14' y2='17'></line>
-      </svg>
-    </FlexColumn>
-  )
-})
-
-const PlusIcon = React.memo(() => {
-  return (
-    <FlexColumn>
-      <svg
-        xmlns='http://www.w3.org/2000/svg'
-        width='14'
-        height='14'
-        viewBox='0 0 24 24'
-        fill={colorTheme.bg0.value}
-        stroke={colorTheme.fg0.value}
-        strokeWidth='2'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-      >
-        <line x1='12' y1='5' x2='12' y2='19'></line>
-        <line x1='5' y1='12' x2='19' y2='12'></line>
-      </svg>
     </FlexColumn>
   )
 })
