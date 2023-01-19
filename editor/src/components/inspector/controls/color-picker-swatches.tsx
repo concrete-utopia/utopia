@@ -1,7 +1,15 @@
 import * as React from 'react'
 import { v4 as UUID } from 'uuid'
 import { unless, when } from '../../../utils/react-conditionals'
-import { Button, colorTheme, FlexColumn, FlexRow, Icons, UtopiaStyles } from '../../../uuiui'
+import {
+  Button,
+  colorTheme,
+  FlexColumn,
+  FlexRow,
+  Icons,
+  Tooltip,
+  UtopiaStyles,
+} from '../../../uuiui'
 import { updateColorSwatches } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { ColorSwatch } from '../../editor/store/editor-state'
@@ -112,23 +120,24 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
           const rgbString = `rgba(${r}, ${g}, ${b})`
           const rgbaString = `rgba(${r}, ${g}, ${b}, ${a})`
           return (
-            <Button
-              onClick={onClickSwatch(c)}
-              key={c.id}
-              title={editing ? 'Remove color' : ''}
-              style={{
-                width: SWATCH_SIZE,
-                height: SWATCH_SIZE,
-                backgroundImage: `linear-gradient(to bottom right, transparent 65%, ${rgbString} 65%), linear-gradient(${rgbaString}, ${rgbaString}), ${checkerboardBackground.backgroundImage}`,
-                backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
-                backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
-                border: `1px solid ${colorTheme.bg0.value}`,
-                boxShadow: currentColor === c.hex ? `${c.hex} 0px 0px 3px` : 'none',
-                borderRadius: 2,
-              }}
-            >
-              {when(editing, <Icons.Bin />)}
-            </Button>
+            <Tooltip placement='top' title={c.hex} key={c.id}>
+              <Button
+                onClick={onClickSwatch(c)}
+                title={editing ? 'Remove color' : ''}
+                style={{
+                  width: SWATCH_SIZE,
+                  height: SWATCH_SIZE,
+                  backgroundImage: `linear-gradient(to bottom right, transparent 65%, ${rgbString} 65%), linear-gradient(${rgbaString}, ${rgbaString}), ${checkerboardBackground.backgroundImage}`,
+                  backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
+                  backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
+                  border: `1px solid ${colorTheme.bg0.value}`,
+                  boxShadow: currentColor === c.hex ? `${c.hex} 0px 0px 3px` : 'none',
+                  borderRadius: 2,
+                }}
+              >
+                {when(editing, <Icons.Bin />)}
+              </Button>
+            </Tooltip>
           )
         })}
 
