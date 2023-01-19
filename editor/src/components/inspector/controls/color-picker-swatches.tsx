@@ -20,7 +20,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
   const storeColorSwatches = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.colorSwatches,
-    'ColorPickerPresets color presets',
+    'ColorPickerSwatches color swatches',
   )
 
   const [editing, setEditing] = React.useState(false)
@@ -42,15 +42,18 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
     setEditing(!editing)
   }, [editing])
 
-  const onAddPreset = React.useCallback(() => {
-    const preset: ColorSwatch = {
+  const onAddColor = React.useCallback(() => {
+    if (currentColor == null) {
+      return
+    }
+    const swatch: ColorSwatch = {
       id: UUID(),
       hex: currentColor,
     }
-    setColorSwatches(colorSwatches.concat(preset))
+    setColorSwatches(colorSwatches.concat(swatch))
   }, [currentColor, colorSwatches])
 
-  const onClickPreset = React.useCallback(
+  const onClickSwatch = React.useCallback(
     (c: ColorSwatch) => () => {
       if (editing) {
         setColorSwatches(colorSwatches.filter((p) => p.id != c.id))
@@ -83,7 +86,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
         {colorSwatches.map((c) => {
           return (
             <Button
-              onClick={onClickPreset(c)}
+              onClick={onClickSwatch(c)}
               key={c.id}
               title={editing ? 'Remove color' : ''}
               style={{
@@ -113,7 +116,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
               width: SWATCH_SIZE,
               height: SWATCH_SIZE,
             }}
-            onMouseDown={onAddPreset}
+            onMouseDown={onAddColor}
           >
             <PlusIcon />
           </Button>

@@ -157,6 +157,7 @@ function deriveStateFromNewColor(
     normalisedAlphaPosition: color.alpha(),
     dirty: false,
     isScrubbing: false,
+    swatchColor: color.hex(),
   }
 }
 
@@ -181,6 +182,7 @@ interface ColorPickerPositions {
 export interface ColorPickerInnerState extends ColorPickerPositions {
   dirty: boolean
   isScrubbing: boolean
+  swatchColor: string
 }
 
 export class ColorPickerInner extends React.Component<
@@ -211,6 +213,12 @@ export class ColorPickerInner extends React.Component<
       ...calculatedState,
       dirty: false,
       isScrubbing: false,
+      swatchColor: this.hexFromHue(
+        calculatedState.normalisedHuePosition,
+        calculatedState.normalisedSaturationPosition,
+        calculatedState.normalisedValuePosition,
+        calculatedState.normalisedAlphaPosition,
+      ),
     }
   }
 
@@ -248,6 +256,7 @@ export class ColorPickerInner extends React.Component<
     if (state.dirty) {
       return {
         dirty: false,
+        swatchColor: state.swatchColor,
       }
     } else {
       const controlStateHexa = ColorPickerInner.getHexaColorFromControlPositionState(state)
@@ -275,7 +284,6 @@ export class ColorPickerInner extends React.Component<
     transient: boolean,
   ) => {
     const newChromaValue = Chroma(h, s, v, 'hsv').alpha(a)
-    const newHex = newChromaValue.hex('auto').toUpperCase()
     this.setState({
       normalisedHuePosition: h / 360,
       normalisedSaturationPosition: s,
@@ -298,6 +306,7 @@ export class ColorPickerInner extends React.Component<
         normalisedAlphaPosition: newChromaValue.alpha(),
         dirty: true,
         isScrubbing: state.isScrubbing,
+        swatchColor: newChromaValue.hex('auto').toUpperCase(),
       }))
       this.submitNewColor(newChromaValue, false)
     } catch (e) {
@@ -350,12 +359,33 @@ export class ColorPickerInner extends React.Component<
     this.setSVFromClientPosition(e.clientX, e.clientY, true)
   }
 
+  hexFromHue = (h: number, s: number, v: number, a: number): string => {
+    return Chroma(h * 360, s, v, 'hsv')
+      .alpha(a)
+      .hex('auto')
+      .toUpperCase()
+  }
+
+  hexFromState = (): string => {
+    return this.hexFromHue(
+      this.state.normalisedHuePosition,
+      this.state.normalisedSaturationPosition,
+      this.state.normalisedValuePosition,
+      this.state.normalisedAlphaPosition,
+    )
+  }
+
+  updateSwatchColor = (): void => {
+    this.setState({ swatchColor: this.hexFromState() })
+  }
+
   onSVMouseUp = (e: MouseEvent) => {
     this.setSVFromClientPosition(e.clientX, e.clientY, false)
     document.removeEventListener('mousemove', this.onSVMouseMove)
     document.removeEventListener('mouseup', this.onSVMouseUp)
     this.setState({
       isScrubbing: false,
+      swatchColor: this.hexFromState(),
     })
     e.stopPropagation()
   }
@@ -393,6 +423,7 @@ export class ColorPickerInner extends React.Component<
     document.removeEventListener('mouseup', this.onHueSliderMouseUp)
     this.setState({
       isScrubbing: false,
+      swatchColor: this.hexFromState(),
     })
     e.stopPropagation()
   }
@@ -429,6 +460,7 @@ export class ColorPickerInner extends React.Component<
     document.removeEventListener('mouseup', this.onAlphaSliderMouseUp)
     this.setState({
       isScrubbing: false,
+      swatchColor: this.hexFromState(),
     })
   }
 
@@ -439,6 +471,7 @@ export class ColorPickerInner extends React.Component<
       this.state.normalisedHuePosition,
     )
     this.setNewHSVa(newHue, undefined, undefined, undefined, false)
+    this.updateSwatchColor()
   }
   onTransientSubmitValueHue = (value: number | EmptyInputValue) => {
     const newHue = getSafeHue(
@@ -451,6 +484,7 @@ export class ColorPickerInner extends React.Component<
   onSubmitValueSaturation = (value: number | EmptyInputValue) => {
     const newSaturation = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
     this.setNewHSVa(undefined, newSaturation, undefined, undefined, false)
+    this.updateSwatchColor()
   }
   onTransientSubmitValueSaturation = (value: number | EmptyInputValue) => {
     const newSaturation = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
@@ -460,6 +494,7 @@ export class ColorPickerInner extends React.Component<
   onSubmitHSVValueValue = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
     this.setNewHSVa(undefined, undefined, newValue, undefined, false)
+    this.updateSwatchColor()
   }
   onTransientSubmitHSVValueValue = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
@@ -469,6 +504,7 @@ export class ColorPickerInner extends React.Component<
   onSubmitValueAlpha = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
     this.setNewHSVa(undefined, undefined, undefined, newValue, false)
+    this.updateSwatchColor()
   }
   onTransientSubmitValueAlpha = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
@@ -702,7 +738,7 @@ export class ColorPickerInner extends React.Component<
           </div>
           <ColorPickerSwatches
             onSelectColor={this.onSubmitValueHex}
-            currentColor={chroma.hex('auto').toUpperCase()}
+            currentColor={this.state.swatchColor}
           />
         </div>
         {/* hover preventer: don't trigger other hover events while sliding / scrubbing */}
