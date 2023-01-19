@@ -46,6 +46,9 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
     if (currentColor == null) {
       return
     }
+    if (colorSwatches.some((c) => c.hex === currentColor)) {
+      return
+    }
     const swatch: ColorSwatch = {
       id: UUID(),
       hex: currentColor,
@@ -73,7 +76,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
       }}
     >
       <FlexRow style={{ justifyContent: 'space-between' }}>
-        <div style={{ fontWeight: 600 }}>Swatches</div>
+        <div style={{ fontWeight: 600 }}>Project colors</div>
         {colorSwatches.length > 0 && (
           <Button spotlight highlight style={{ padding: '0 6px' }} onMouseDown={toggleEditing}>
             {when(editing, 'Done')}
@@ -95,14 +98,13 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
                 height: SWATCH_SIZE,
                 background: c.hex,
                 border: `1px solid ${
-                  currentColor === c.hex ? colorTheme.fg0.value : colorTheme.border0.value
+                  currentColor === c.hex ? colorTheme.primary.value : colorTheme.border0.value
                 }`,
                 borderRadius: 2,
                 zIndex: 0,
               }}
             >
               {when(editing, <TrashIcon />)}
-              {when(currentColor === c.hex && !editing, <CurrentColorBadge />)}
             </Button>
           )
         })}
@@ -123,25 +125,6 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
         )}
       </FlexRow>
     </FlexColumn>
-  )
-})
-
-const CurrentColorBadge = React.memo(() => {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: -2,
-        right: -2,
-        width: 7,
-        height: 7,
-        background: colorTheme.primary.value,
-        border: `1px solid ${colorTheme.border0.value}`,
-        borderRadius: '100%',
-        zIndex: 1,
-        boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 1px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px 1px 2px 1px`,
-      }}
-    />
   )
 })
 
