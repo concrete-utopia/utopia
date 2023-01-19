@@ -1,11 +1,14 @@
 import * as React from 'react'
 import { v4 as UUID } from 'uuid'
 import { unless, when } from '../../../utils/react-conditionals'
-import { Button, colorTheme, FlexColumn, FlexRow, Icons } from '../../../uuiui'
+import { Button, colorTheme, FlexColumn, FlexRow, Icons, UtopiaStyles } from '../../../uuiui'
 import { updateColorSwatches } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { ColorSwatch } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { cssColorToChromaColorOrDefault } from '../common/css-utils'
+
+const { checkerboardBackground } = UtopiaStyles.backgrounds
 
 export interface ColorPickerSwatchesProps {
   onSelectColor: (hex: string) => void
@@ -105,21 +108,23 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
 
       <FlexRow style={{ flexWrap: 'wrap', gap: 2 }}>
         {colorSwatches.map((c) => {
+          const [r, g, b, a] = cssColorToChromaColorOrDefault({ type: 'Hex', hex: c.hex }).rgba()
+          const rgbString = `rgba(${r}, ${g}, ${b})`
+          const rgbaString = `rgba(${r}, ${g}, ${b}, ${a})`
           return (
             <Button
               onClick={onClickSwatch(c)}
               key={c.id}
               title={editing ? 'Remove color' : ''}
               style={{
-                position: 'relative',
                 width: SWATCH_SIZE,
                 height: SWATCH_SIZE,
-                background: c.hex,
-                border: `1px solid ${
-                  currentColor === c.hex ? colorTheme.primary.value : colorTheme.border0.value
-                }`,
+                backgroundImage: `linear-gradient(to bottom right, transparent 65%, ${rgbString} 65%), linear-gradient(${rgbaString}, ${rgbaString}), ${checkerboardBackground.backgroundImage}`,
+                backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
+                backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
+                border: `1px solid ${colorTheme.bg0.value}`,
+                boxShadow: currentColor === c.hex ? `${c.hex} 0px 0px 3px` : 'none',
                 borderRadius: 2,
-                zIndex: 0,
               }}
             >
               {when(editing, <Icons.Bin />)}
