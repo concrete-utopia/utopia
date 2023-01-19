@@ -696,11 +696,21 @@ function editorDispatchInner(
     const allElementPropsChanged =
       storedState.unpatchedEditor._currentAllElementProps_KILLME !==
       result.unpatchedEditor._currentAllElementProps_KILLME
+    const computedStylesChanged =
+      storedState.unpatchedEditor._currentComputedStyles_KILLME !==
+      result.unpatchedEditor._currentComputedStyles_KILLME
+
     const dragStateLost =
       storedState.unpatchedEditor.canvas.dragState != null &&
       result.unpatchedEditor.canvas.dragState == null
+
     const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
+      domMetadataChanged ||
+      spyMetadataChanged ||
+      allElementPropsChanged ||
+      dragStateLost ||
+      computedStylesChanged
+
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
         throw new Error('canvas.dragState should not be used anymore!')
@@ -726,6 +736,7 @@ function editorDispatchInner(
             ...result.unpatchedEditor,
             jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            computedStyles: result.unpatchedEditor._currentComputedStyles_KILLME,
           },
         }
       }

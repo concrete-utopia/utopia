@@ -674,11 +674,15 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
+        allElementProps: newEditorState.allElementProps,
+        computedStyles: newEditorState.computedStyles,
+        _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
         canvas: {
           ...oldEditorState.canvas,
           interactionSession: {
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
+            latestAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
           },
         },
       }
@@ -693,6 +697,9 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
+        allElementProps: newEditorState.allElementProps,
+        computedStyles: newEditorState.computedStyles,
+        _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
         canvas: {
           ...oldEditorState.canvas,
           dragState: {
@@ -708,6 +715,9 @@ function injectNewMetadataToOldEditorState(
       jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
+      allElementProps: newEditorState.allElementProps,
+      computedStyles: newEditorState.computedStyles,
+      _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
     }
   }
 }
