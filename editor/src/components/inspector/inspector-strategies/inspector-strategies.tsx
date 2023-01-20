@@ -4,6 +4,7 @@ import {
   Axis,
   convertWidthToFlexGrow,
   detectFlexDirectionOne,
+  detectParentFlexDirection,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
@@ -155,7 +156,7 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
           ]
         }
 
-        const flexDirection = detectFlexDirectionOne(metadata, EP.parentPath(path)) ?? 'row'
+        const flexDirection = detectParentFlexDirection(metadata, path) ?? 'row'
 
         if (
           (flexDirection.startsWith('row') && axis === 'vertical') ||

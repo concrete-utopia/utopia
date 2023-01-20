@@ -83,6 +83,18 @@ type Detect<T> = (
 
 export const DefaultFlexDirection: FlexDirection = 'row'
 
+export function detectParentFlexDirection(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexDirection | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
+  }
+
+  return element.specialSizeMeasurements.parentFlexDirection
+}
+
 export function detectFlexDirectionOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
