@@ -14,7 +14,7 @@ describe('add layout system', () => {
     setFeatureEnabled('Nine block control', false)
   })
 
-  it('add layout system via keyboard shortcut', async () => {
+  it('add and remove layout system via keyboard shortcut', async () => {
     const editor = await renderTestEditorWithCode(
       project({ width: '100px', height: '100px' }),
       'await-first-dom-report',
@@ -25,6 +25,9 @@ describe('add layout system', () => {
 
     pressKey('a', { modifiers: shiftModifier })
     expect(div.style.display).toEqual('flex')
+
+    pressKey('a', { modifiers: shiftModifier })
+    expect(div.style.display).toEqual('')
   })
 
   it('add and then remove flex layout', async () => {
