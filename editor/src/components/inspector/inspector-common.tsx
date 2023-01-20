@@ -336,3 +336,22 @@ export function sizeToVisualDimensions(
     setProperty('always', elementPath, styleP('height'), height),
   ]
 }
+
+export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): CanvasCommand => {
+  switch (axis) {
+    case 'horizontal':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'width']),
+        PP.create(['style', 'minWidth']),
+        PP.create(['style', 'maxWidth']),
+      ])
+    case 'vertical':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'height']),
+        PP.create(['style', 'minHeight']),
+        PP.create(['style', 'maxHeight']),
+      ])
+    default:
+      assertNever(axis)
+  }
+}
