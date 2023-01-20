@@ -744,11 +744,6 @@ async function createSummaryPng(
 
 testPerformance().catch((e) => {
   console.error(e)
-  const errorMessage = `"There was an error with Puppeteer: ${e.name} – ${e.message}"`
-  console.info(`::set-output name=perf-result::${errorMessage}`)
-
-  // Output the individual parts for building a discord message
-  console.info(`::set-output name=perf-discord-message:: ${errorMessage}`)
-  console.info(`::set-output name=perf-chart:: ""`)
-  return
+  console.error(`"There was an error with Puppeteer: ${e.name} – ${e.message}"`)
+  process.exit(1)
 })

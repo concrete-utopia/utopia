@@ -22,9 +22,10 @@ async function takeScreenshot() {
 
     console.info(`Screenshot captured`)
     console.info(`::set-output name=screenshot:: ${uploadResult}`)
-  } catch (e) {
-    const errorMessage = `"There was an error with Puppeteer: ${e.name} – ${e.message}"`
-    console.info(`::set-output name=screenshot::${errorMessage}`)
+  } catch (e: any) {
+    await browser.close()
+    console.error(`"There was an error with Puppeteer: ${e.name} – ${e.message}"`)
+    process.exit(1)
   } finally {
     await browser.close()
   }
