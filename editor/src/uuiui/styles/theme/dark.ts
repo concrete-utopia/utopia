@@ -15,6 +15,7 @@ const darkBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
+  brandNeonCyan: base.neongreen,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),

@@ -36,6 +36,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
+import { colorTheme } from '../../../../uuiui'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
@@ -110,7 +111,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       resizeControl,
       controlWithProps({
         control: FloatingIndicator,
-        props: props,
+        props: { ...props, color: colorTheme.brandNeonGreen.value },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
