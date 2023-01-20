@@ -22,6 +22,8 @@ import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { hugContentsTextStrategy } from './hug-contents-text'
 import { InspectorStrategy } from './inspector-strategy'
+import { WhenToRun } from '../../../components/canvas/commands/commands'
+import { assertNever } from '../../../core/shared/utils'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -156,7 +158,11 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   },
 ]
 
-export const setPropFixedStrategies = (axis: Axis, value: number): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (
+  whenToRun: WhenToRun,
+  axis: Axis,
+  value: CSSNumber,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fixed',
     strategy: (metadata, elementPaths) => {
@@ -164,9 +170,39 @@ export const setPropFixedStrategies = (axis: Axis, value: number): Array<Inspect
         return null
       }
 
-      return elementPaths.map((path) =>
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), value),
-      )
+      return elementPaths.flatMap((path) => {
+        switch (axis) {
+          case 'horizontal':
+            return [
+              deleteProperties(whenToRun, path, [
+                PP.create(['style', 'minWidth']),
+                PP.create(['style', 'maxWidth']),
+              ]),
+              setProperty(
+                whenToRun,
+                path,
+                PP.create(['style', 'width']),
+                printCSSNumber(value, null),
+              ),
+            ]
+          case 'vertical':
+            return [
+              deleteProperties(whenToRun, path, [
+                PP.create(['style', 'minHeight']),
+                PP.create(['style', 'maxHeight']),
+              ]),
+
+              setProperty(
+                whenToRun,
+                path,
+                PP.create(['style', 'height']),
+                printCSSNumber(value, null),
+              ),
+            ]
+          default:
+            assertNever(axis)
+        }
+      })
     },
   },
 ]
