@@ -12,16 +12,28 @@ export interface InspectorStrategy {
   ) => Array<CanvasCommand> | null
 }
 
+export function commandsForFirstApplicableStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  strategies: Array<InspectorStrategy>,
+): Array<CanvasCommand> | null {
+  for (const strategy of strategies) {
+    const commands = strategy.strategy(metadata, selectedViews)
+    if (commands != null) {
+      return commands
+    }
+  }
+  return null
+}
+
 export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
   strategies: InspectorStrategy[],
 ): void {
-  for (const strategy of strategies) {
-    const commands = strategy.strategy(metadata, selectedViews)
-    if (commands != null) {
-      return dispatch([applyCommandsAction(commands)])
-    }
+  const commands = commandsForFirstApplicableStrategy(metadata, selectedViews, strategies)
+  if (commands != null) {
+    dispatch([applyCommandsAction(commands)])
   }
 }
