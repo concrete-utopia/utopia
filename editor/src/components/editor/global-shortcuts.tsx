@@ -113,7 +113,11 @@ import {
   commandsForFirstApplicableStrategy,
   executeFirstApplicableStrategy,
 } from '../inspector/inspector-strategies/inspector-strategy'
-import { addFlexLayoutStrategies } from '../inspector/inspector-strategies/inspector-strategies'
+import {
+  addFlexLayoutStrategies,
+  removeFlexLayoutStrategies,
+} from '../inspector/inspector-strategies/inspector-strategies'
+import { detectAreElementsFlexContainers } from '../inspector/inspector-common'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -759,10 +763,14 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
+        const selectedElementsFlexContainers = detectAreElementsFlexContainers(
+          editor.jsxMetadata,
+          editor.selectedViews,
+        )
         const commands = commandsForFirstApplicableStrategy(
           editor.jsxMetadata,
           editor.selectedViews,
-          addFlexLayoutStrategies,
+          selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
         )
         if (commands != null) {
           return [EditorActions.applyCommandsAction(commands)]
