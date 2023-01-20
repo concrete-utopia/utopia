@@ -113,13 +113,18 @@ const isSelectedSelector = createSelector(
   justifyAlignSelector,
   flexDirectionSelector,
   (_: MetadataSubstate, x: JustifyContentFlexAlignemt) => x,
-  (detectedJustifyContentFlexAlignment, flexDirection, fixedJustifyContentFlexAlignment) =>
-    detectedJustifyContentFlexAlignment != null &&
-    justifyContentAlignItemsEquals(
+  (detectedJustifyContentFlexAlignment, flexDirection, fixedJustifyContentFlexAlignment) => {
+    const defaultJustifyContentFlexAlignment: JustifyContentFlexAlignemt = {
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
+    }
+
+    return justifyContentAlignItemsEquals(
       flexDirection,
       fixedJustifyContentFlexAlignment,
-      detectedJustifyContentFlexAlignment,
-    ),
+      detectedJustifyContentFlexAlignment ?? defaultJustifyContentFlexAlignment,
+    )
+  },
 )
 
 const opacity = (isSelected: boolean, flexDirectionMatches: boolean): number => {
