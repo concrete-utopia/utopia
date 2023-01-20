@@ -772,10 +772,10 @@ export function handleKeyDown(
           editor.selectedViews,
           selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
         )
-        if (commands != null) {
-          return [EditorActions.applyCommandsAction(commands)]
+        if (commands == null) {
+          return []
         }
-        return []
+        return [EditorActions.applyCommandsAction(commands)]
       },
     })
   }
