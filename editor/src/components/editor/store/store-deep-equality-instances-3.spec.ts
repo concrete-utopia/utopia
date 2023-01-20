@@ -890,9 +890,9 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           left: 40,
         },
         fontSize: '16',
-        fontWeight: '500',
-        fontStyle: 'bold',
-        textDecorationLine: 'strikethrough',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
