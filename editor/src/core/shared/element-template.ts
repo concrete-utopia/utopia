@@ -1642,6 +1642,7 @@ export interface SpecialSizeMeasurements {
   parentTextDirection: TextDirection | null
   hasTransform: boolean
   borderRadius: Sides | null
+  fontSize: string | null
   fontWeight: string | null
   fontStyle: string | null
   textDecorationLine: string | null
@@ -1676,6 +1677,7 @@ export function specialSizeMeasurements(
   parentTextDirection: TextDirection | null,
   hasTransform: boolean,
   borderRadius: Sides | null,
+  fontSize: string | null,
   fontWeight: string | null,
   fontStyle: string | null,
   textDecorationLine: string | null,
@@ -1709,6 +1711,7 @@ export function specialSizeMeasurements(
     parentTextDirection,
     hasTransform,
     borderRadius,
+    fontSize,
     fontWeight,
     fontStyle,
     textDecorationLine,
@@ -1746,6 +1749,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   false,
   'ltr',
   false,
+  null,
   null,
   null,
   null,

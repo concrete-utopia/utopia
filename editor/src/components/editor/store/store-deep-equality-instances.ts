@@ -1281,6 +1281,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.borderRadius,
     ).areEqual
 
+    const fontSizeEquals = oldSize.fontSize === newSize.fontSize
     const fontWeightEquals = oldSize.fontWeight === newSize.fontWeight
     const fontStyleEquals = oldSize.fontStyle === newSize.fontStyle
     const textDecorationLineEquals = oldSize.textDecorationLine === newSize.textDecorationLine
@@ -1314,6 +1315,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       textDirectionEquals &&
       hasTransformEquals &&
       borderRadiusEquals &&
+      fontSizeEquals &&
       fontWeightEquals &&
       fontStyleEquals &&
       textDecorationLineEquals
@@ -1349,6 +1351,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentTextDirection,
         newSize.hasTransform,
         newSize.borderRadius,
+        newSize.fontSize,
         newSize.fontWeight,
         newSize.fontStyle,
         newSize.textDecorationLine,

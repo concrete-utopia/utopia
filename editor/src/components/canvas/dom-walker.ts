@@ -940,6 +940,7 @@ function getSpecialMeasurements(
     ),
   )
 
+  const fontSize = elementStyle.fontSize
   const fontWeight = elementStyle.fontWeight
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
@@ -973,6 +974,7 @@ function getSpecialMeasurements(
     parentTextDirection,
     hasTransform,
     borderRadius,
+    fontSize,
     fontWeight,
     fontStyle,
     textDecorationLine,

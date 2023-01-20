@@ -140,7 +140,7 @@ function getFontSizeFromProp(
   return parseMaybeFontSize(attribute)
 }
 
-function getFontSizeFromComputedStyle(
+function getFontSizeFromMetadata(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): CSSNumber | null {
@@ -149,7 +149,7 @@ function getFontSizeFromComputedStyle(
     return null
   }
 
-  return parseMaybeFontSize(element.computedStyle?.['fontSize'])
+  return parseMaybeFontSize(element.specialSizeMeasurements?.fontSize)
 }
 
 export function adjustFontSize(value: CSSNumber, delta: number): CSSNumber {
@@ -168,8 +168,7 @@ export function getFontSize(
   elementPath: ElementPath,
 ): [CSSNumber, ElementPath] | null {
   const size =
-    getFontSizeFromProp(metadata, elementPath) ??
-    getFontSizeFromComputedStyle(metadata, elementPath)
+    getFontSizeFromProp(metadata, elementPath) ?? getFontSizeFromMetadata(metadata, elementPath)
   if (size != null) {
     return [size, elementPath]
   }

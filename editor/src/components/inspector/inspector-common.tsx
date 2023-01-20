@@ -93,7 +93,7 @@ export function detectFlexDirectionOne(
   }
 
   return (
-    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection
+    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection // KILL COMPUTEDSTYE
   )
 }
 
@@ -117,10 +117,10 @@ function detectFlexAlignJustifyContentOne(
   }
 
   const justifyContent: FlexJustifyContent | null = getFlexJustifyContent(
-    element.computedStyle?.['justifyContent'] ?? null,
+    element.computedStyle?.['justifyContent'] ?? null, // KILL COMPUTEDSTYE
   )
   const alignItems: FlexAlignment | null = getFlexAlignment(
-    element.computedStyle?.['alignItems'] ?? null,
+    element.computedStyle?.['alignItems'] ?? null, // KILL COMPUTEDSTYE
   )
 
   if (justifyContent == null || alignItems == null) {
@@ -262,7 +262,7 @@ export function convertWidthToFlexGrow(
     return []
   }
 
-  const parentFlexDirection =
+  const parentFlexDirection = // KILL COMPUTEDSTYE
     MetadataUtils.findElementByElementPath(metadata, parentPath)?.computedStyle?.[
       'flexDirection'
     ] ?? 'row'
