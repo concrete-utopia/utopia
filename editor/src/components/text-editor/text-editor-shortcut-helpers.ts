@@ -4,34 +4,35 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { EditorAction } from '../editor/action-types'
 
-export function toggleTextBold(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
+export function toggleTextBold(target: ElementPath, fontWeight: string | null): EditorAction {
   const toggledFontWeight = 'bold'
   const defaultFontWeight = 'normal'
-  const currentValue = computedStyle['fontWeight'] === '400' ? defaultFontWeight : toggledFontWeight
+  const currentValue = fontWeight === '400' ? defaultFontWeight : toggledFontWeight
 
   return toggleStyleProp(target, 'fontWeight', currentValue, toggledFontWeight, defaultFontWeight)
 }
 
-export function toggleTextItalic(target: ElementPath, computedStyle: ComputedStyle): EditorAction {
+export function toggleTextItalic(
+  target: ElementPath,
+  currentFontStyle: string | null,
+): EditorAction {
   const toggledFontStyle = 'italic'
   const defaultFontStyle = 'normal'
-  const currentValue = computedStyle['fontStyle']
 
-  return toggleStyleProp(target, 'fontStyle', currentValue, toggledFontStyle, defaultFontStyle)
+  return toggleStyleProp(target, 'fontStyle', currentFontStyle, toggledFontStyle, defaultFontStyle)
 }
 
 export function toggleTextUnderline(
   target: ElementPath,
-  computedStyle: ComputedStyle,
+  currentTextDecorationLine: string | null,
 ): EditorAction {
   const toggledDecoration = 'underline'
   const defaultDecoration = 'none'
-  const currentValue = computedStyle['textDecorationLine']
 
   return toggleStyleProp(
     target,
     'textDecoration',
-    currentValue,
+    currentTextDecorationLine,
     toggledDecoration,
     defaultDecoration,
   )
@@ -39,16 +40,15 @@ export function toggleTextUnderline(
 
 export function toggleTextStrikeThrough(
   target: ElementPath,
-  computedStyle: ComputedStyle,
+  currentTextDecorationLine: string | null,
 ): EditorAction {
   const toggledDecoration = 'line-through'
   const defaultDecoration = 'none'
-  const currentValue = computedStyle['textDecorationLine']
 
   return toggleStyleProp(
     target,
     'textDecoration',
-    currentValue,
+    currentTextDecorationLine,
     toggledDecoration,
     defaultDecoration,
   )
@@ -57,7 +57,7 @@ export function toggleTextStrikeThrough(
 const toggleStyleProp = (
   elementPath: ElementPath,
   prop: string,
-  currentValue: string,
+  currentValue: string | null,
   toggledValue: string,
   defaultValue: string,
 ): EditorAction => {
