@@ -1280,6 +1280,11 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.borderRadius,
       newSize.borderRadius,
     ).areEqual
+
+    const fontWeightEquals = oldSize.fontWeight === newSize.fontWeight
+    const fontStyleEquals = oldSize.fontStyle === newSize.fontStyle
+    const textDecorationLineEquals = oldSize.textDecorationLine === newSize.textDecorationLine
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1308,7 +1313,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       hasPositionOffsetEquals &&
       textDirectionEquals &&
       hasTransformEquals &&
-      borderRadiusEquals
+      borderRadiusEquals &&
+      fontWeightEquals &&
+      fontStyleEquals &&
+      textDecorationLineEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1341,6 +1349,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentTextDirection,
         newSize.hasTransform,
         newSize.borderRadius,
+        newSize.fontWeight,
+        newSize.fontStyle,
+        newSize.textDecorationLine,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

@@ -270,6 +270,9 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -334,6 +337,9 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   it('same reference returns the same reference', () => {
@@ -453,6 +459,9 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -545,6 +554,9 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -663,6 +675,9 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -757,6 +772,9 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -851,6 +869,9 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontWeight: '500',
+        fontStyle: 'bold',
+        textDecorationLine: 'strikethrough',
       },
       computedStyle: {
         a: 'a',

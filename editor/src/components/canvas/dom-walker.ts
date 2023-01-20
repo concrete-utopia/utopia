@@ -940,6 +940,10 @@ function getSpecialMeasurements(
     ),
   )
 
+  const fontWeight = elementStyle.fontWeight
+  const fontStyle = elementStyle.fontStyle
+  const textDecorationLine = elementStyle.textDecorationLine
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -969,6 +973,9 @@ function getSpecialMeasurements(
     parentTextDirection,
     hasTransform,
     borderRadius,
+    fontWeight,
+    fontStyle,
+    textDecorationLine,
   )
 }
 

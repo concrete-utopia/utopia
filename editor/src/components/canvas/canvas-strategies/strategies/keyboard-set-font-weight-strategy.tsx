@@ -64,7 +64,7 @@ export function keyboardSetFontWeightStrategy(
         (path) =>
           optionalMap(
             (w): [number, ElementPath] => [w, path],
-            getFontWeightFromComputedStyle(canvasState.startingMetadata, path),
+            getFontWeightFromMetadata(canvasState.startingMetadata, path),
           ),
         validTargets,
       ).map(([fontWeight, path]) =>
@@ -88,7 +88,7 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   }
   return (
     elementOnlyHasTextChildren(element.element.value) ||
-    getFontWeightFromComputedStyle(metadata, elementPath) != null
+    getFontWeightFromMetadata(metadata, elementPath) != null
   )
 }
 
@@ -118,7 +118,7 @@ function parseMaybeFontWeight(maybeFontSize: unknown): number | null {
   return safeParseInt(maybeFontSize as string)
 }
 
-export function getFontWeightFromComputedStyle(
+export function getFontWeightFromMetadata(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): number | null {
@@ -127,7 +127,7 @@ export function getFontWeightFromComputedStyle(
     return null
   }
 
-  return parseMaybeFontWeight(element.computedStyle?.[FontWeightProp])
+  return parseMaybeFontWeight(element.specialSizeMeasurements.fontWeight ?? null)
 }
 
 export function adjustFontWeight(value: number, delta: number): number {
