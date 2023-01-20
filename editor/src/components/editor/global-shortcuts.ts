@@ -93,6 +93,7 @@ import {
   TOGGLE_TEXT_ITALIC,
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
+  CONVERT_TO_FLEX_CONTAINER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -108,6 +109,11 @@ import {
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from '../text-editor/text-editor-shortcut-helpers'
+import {
+  commandsForFirstApplicableStrategy,
+  executeFirstApplicableStrategy,
+} from '../inspector/inspector-strategies/inspector-strategy'
+import { addFlexLayoutStrategies } from '../inspector/inspector-strategies/inspector-strategies'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -748,6 +754,20 @@ export function handleKeyDown(
               return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
             })
           : []
+      },
+      [CONVERT_TO_FLEX_CONTAINER]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        const commands = commandsForFirstApplicableStrategy(
+          editor.jsxMetadata,
+          editor.selectedViews,
+          addFlexLayoutStrategies,
+        )
+        if (commands != null) {
+          return [EditorActions.applyCommandsAction(commands)]
+        }
+        return []
       },
     })
   }

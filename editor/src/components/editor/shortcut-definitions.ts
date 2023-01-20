@@ -79,6 +79,7 @@ export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
 export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
+export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -228,6 +229,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [TOGGLE_TEXT_STRIKE_THROUGH]: shortcut(
     'Toggle text-decoration to line-through of the currently selected text element.',
     key('x', ['cmd', 'shift']),
+  ),
+  [CONVERT_TO_FLEX_CONTAINER]: shortcut(
+    'Convert selected elements to flex containers',
+    key('a', ['shift']),
   ),
 }
 
