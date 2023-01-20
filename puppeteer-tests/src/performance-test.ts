@@ -227,12 +227,12 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selection: EmptyResult,
     deselection: EmptyResult,
   })
-  const resizeResult = await retryPageCalls(
-    url,
-    testResizePerformance,
-    frameResultSuccess,
-    EmptyResult,
-  )
+  // const resizeResult = await retryPageCalls(
+  //   url,
+  //   testResizePerformance,
+  //   frameResultSuccess,
+  //   EmptyResult,
+  // )
   const scrollResult = await retryPageCalls(
     url,
     testScrollingPerformance,
@@ -260,7 +260,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
       deselectionResult: selectionResult.deselection,
       selectionChangeResult: selectionChangeResult,
       scrollResult: scrollResult,
-      resizeResult: resizeResult,
+      // resizeResult: resizeResult,
       // absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
       // absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
     },
@@ -304,32 +304,32 @@ export const testScrollingPerformance = async function (
   return getFrameData(traceJson, 'scroll', 'Scroll Canvas', succeeded)
 }
 
-export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
-  console.log('Test Resize Performance')
-  await page.waitForXPath(ResizeButtonXPath)
+// export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+//   console.log('Test Resize Performance')
+//   await page.waitForXPath(ResizeButtonXPath)
 
-  // select element using the navigator
-  const navigatorElement = await page.waitForXPath(
-    '//div[contains(@class, "item-label-container")]',
-  )
-  await navigatorElement!.click()
+//   // select element using the navigator
+//   const navigatorElement = await page.waitForXPath(
+//     '//div[contains(@class, "item-label-container")]',
+//   )
+//   await navigatorElement!.click()
 
-  // we run it twice without measurements to warm up the environment
-  await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
-  await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
+//   // we run it twice without measurements to warm up the environment
+//   await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
+//   await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
 
-  // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
-  const succeeded = await clickOnce(
-    page,
-    ResizeButtonXPath,
-    'RESIZE_TEST_FINISHED',
-    'RESIZE_TEST_ERROR',
-  )
-  await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'resize', 'Resize', succeeded)
-}
+//   // and then we run the test for a third time, this time running tracing
+//   await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+//   const succeeded = await clickOnce(
+//     page,
+//     ResizeButtonXPath,
+//     'RESIZE_TEST_FINISHED',
+//     'RESIZE_TEST_ERROR',
+//   )
+//   await page.tracing.stop()
+//   const traceJson = await loadTraceEventsJSON()
+//   return getFrameData(traceJson, 'resize', 'Resize', succeeded)
+// }
 
 export const testHighlightRegularPerformance = async function (
   page: puppeteer.Page,

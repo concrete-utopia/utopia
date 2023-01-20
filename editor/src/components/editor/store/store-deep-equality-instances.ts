@@ -327,6 +327,8 @@ import {
   dragToMoveIndicatorFlags,
   projectGithubSettings,
   ComputedStylesMap,
+  ColorSwatch,
+  newColorSwatch,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3393,6 +3395,14 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
 
+export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
+  (c) => c.id,
+  StringKeepDeepEquality,
+  (c) => c.hex,
+  StringKeepDeepEquality,
+  newColorSwatch,
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3665,6 +3675,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.assetChecksums,
   )
 
+  const colorSwatchesResults = arrayDeepEquality(ColorSwatchDeepEquality)(
+    oldValue.colorSwatches,
+    newValue.colorSwatches,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -3740,7 +3755,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
-    assetChecksumsResults.areEqual
+    assetChecksumsResults.areEqual &&
+    colorSwatchesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3821,6 +3837,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubDataResults.value,
       refreshingDependenciesResults.value,
       assetChecksumsResults.value,
+      colorSwatchesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -315,6 +315,7 @@ import {
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
+  UpdateColorSwatches,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -1014,6 +1015,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
     assetChecksums: currentEditor.assetChecksums,
+    colorSwatches: currentEditor.colorSwatches,
   }
 }
 
@@ -5190,6 +5192,12 @@ export const UPDATE_FNS = {
   },
   APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, action.commands)
+  },
+  UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      colorSwatches: action.colorSwatches,
+    }
   },
 }
 

@@ -60,6 +60,7 @@ import {
   UserConfiguration,
   ThemeSetting,
   ComputedStylesMap,
+  ColorSwatch,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -1081,9 +1082,15 @@ export interface SetImageDragSessionState {
   action: 'SET_IMAGE_DRAG_SESSION_STATE'
   imageDragSessionState: ImageDragSessionState
 }
+
 export interface ApplyCommandsAction {
   action: 'APPLY_COMMANDS'
   commands: CanvasCommand[]
+}
+
+export interface UpdateColorSwatches {
+  action: 'UPDATE_COLOR_SWATCHES'
+  colorSwatches: Array<ColorSwatch>
 }
 
 export type EditorAction =
@@ -1260,6 +1267,7 @@ export type EditorAction =
   | SetRefreshingDependencies
   | SetAssetChecksum
   | ApplyCommandsAction
+  | UpdateColorSwatches
 
 export type DispatchPriority =
   | 'everyone'

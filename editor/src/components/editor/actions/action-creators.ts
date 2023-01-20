@@ -224,6 +224,7 @@ import type {
   SetAssetChecksum,
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
+  UpdateColorSwatches,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -244,6 +245,7 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ComputedStylesMap,
+  ColorSwatch,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1726,5 +1728,12 @@ export function applyCommandsAction(commands: CanvasCommand[]): ApplyCommandsAct
   return {
     action: 'APPLY_COMMANDS',
     commands: commands,
+  }
+}
+
+export function updateColorSwatches(colorSwatches: Array<ColorSwatch>): UpdateColorSwatches {
+  return {
+    action: 'UPDATE_COLOR_SWATCHES',
+    colorSwatches: colorSwatches,
   }
 }

@@ -1230,6 +1230,18 @@ export function emptyGithubData(): GithubData {
   }
 }
 
+export type ColorSwatch = {
+  id: string
+  hex: string
+}
+
+export function newColorSwatch(id: string, hex: string): ColorSwatch {
+  return {
+    id: id,
+    hex: hex,
+  }
+}
+
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
@@ -1309,6 +1321,7 @@ export interface EditorState {
   githubData: GithubData
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
+  colorSwatches: Array<ColorSwatch>
 }
 
 export function editorState(
@@ -1387,6 +1400,7 @@ export function editorState(
   githubData: GithubData,
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
+  colorSwatches: Array<ColorSwatch>,
 ): EditorState {
   return {
     id: id,
@@ -1464,6 +1478,7 @@ export function editorState(
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
+    colorSwatches: colorSwatches,
   }
 }
 
@@ -2064,6 +2079,7 @@ export interface PersistentModel {
   githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
+  colorSwatches: Array<ColorSwatch>
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2107,6 +2123,7 @@ export function mergePersistentModel(
     githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
+    colorSwatches: second.colorSwatches,
   }
 }
 
@@ -2301,6 +2318,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubData: emptyGithubData(),
     refreshingDependencies: false,
     assetChecksums: {},
+    colorSwatches: [],
   }
 }
 
@@ -2616,6 +2634,7 @@ export function editorModelFromPersistentModel(
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
     assetChecksums: {},
+    colorSwatches: persistentModel.colorSwatches,
   }
   return editor
 }
@@ -2655,6 +2674,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
+    colorSwatches: editor.colorSwatches,
   }
 }
 
@@ -2690,6 +2710,7 @@ export function persistentModelForProjectContents(
     githubChecksums: null,
     branchContents: null,
     assetChecksums: {},
+    colorSwatches: [],
   }
 }
 
