@@ -15,7 +15,6 @@ const darkBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
-  brandNeonGreen: base.neongreen,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
@@ -225,4 +224,7 @@ export const dark: typeof light = {
   codeEditorBreadcrumbs: darkBase.fg5,
   codeEditorTabRowFg: darkBase.fg5,
   codeEditorGrid: createUtopiColor('#6d705b'),
+
+  // Gap controls
+  gapControls: createUtopiColor('#FFA500'),
 }

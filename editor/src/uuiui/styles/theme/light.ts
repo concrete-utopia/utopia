@@ -15,7 +15,6 @@ const lightBase = {
   brandPurple: base.purple,
   brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
-  brandNeonGreen: base.neongreen,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#49B6FF'),
   secondaryOrange: createUtopiColor('#EEA544'),
@@ -225,4 +224,7 @@ export const light = {
   codeEditorBreadcrumbs: lightBase.fg5,
   codeEditorTabRowFg: createUtopiColor('rgba(97, 97, 97, 0.8)'),
   codeEditorGrid: createUtopiColor('#6d705b'),
+
+  // Gap controls
+  gapControls: createUtopiColor('#FFA500'),
 }

@@ -42,7 +42,7 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, flexDirection, updatedGapValue } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.brandNeonGreen.value
+  const indicatorColor = colorTheme.gapControls.value
 
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
@@ -246,7 +246,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
             <CanvasLabel
               value={printCSSNumber(gapValue, null)}
               scale={scale}
-              color={colorTheme.brandNeonGreen.value}
+              color={colorTheme.gapControls.value}
               textColor={colorTheme.white.value}
             />,
           )}
@@ -254,7 +254,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         <PillHandle
           width={width}
           height={height}
-          pillColor={colorTheme.brandNeonGreen.value}
+          pillColor={colorTheme.gapControls.value}
           borderWidth={borderWidth}
         />
       </div>
