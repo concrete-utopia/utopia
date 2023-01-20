@@ -224,4 +224,7 @@ export const light = {
   codeEditorBreadcrumbs: lightBase.fg5,
   codeEditorTabRowFg: createUtopiColor('rgba(97, 97, 97, 0.8)'),
   codeEditorGrid: createUtopiColor('#6d705b'),
+
+  // Gap controls
+  gapControls: createUtopiColor('#FFA500'),
 }

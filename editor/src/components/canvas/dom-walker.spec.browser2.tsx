@@ -111,6 +111,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
@@ -127,6 +128,9 @@ describe('DOM Walker tests', () => {
           "display": "initial",
           "flexDirection": null,
           "float": "none",
+          "fontSize": null,
+          "fontStyle": null,
+          "fontWeight": null,
           "globalContentBox": null,
           "hasPositionOffset": false,
           "hasTransform": false,
@@ -138,6 +142,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {},
           "naturalHeight": null,
@@ -154,6 +159,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": null,
           "usesParentBounds": false,
         },
       },
@@ -195,6 +201,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -221,6 +228,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -237,6 +247,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -263,6 +274,7 @@ describe('DOM Walker tests', () => {
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -304,6 +316,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -330,6 +343,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -346,6 +362,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -372,6 +389,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -417,6 +435,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -443,6 +462,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -459,6 +481,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -485,6 +508,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -531,6 +555,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -561,6 +586,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 124,
             "width": 266,
@@ -577,6 +605,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -603,6 +632,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -650,6 +680,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -681,6 +712,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 70,
             "width": 125,
@@ -697,6 +731,7 @@ describe('DOM Walker tests', () => {
             "y": 98,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -723,6 +758,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -816,6 +852,7 @@ describe('DOM Walker tests', () => {
         "y": -Infinity,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": null,
         "clientHeight": 0,
         "clientWidth": 0,
@@ -832,6 +869,9 @@ describe('DOM Walker tests', () => {
         "display": "initial",
         "flexDirection": null,
         "float": "none",
+        "fontSize": null,
+        "fontStyle": null,
+        "fontWeight": null,
         "globalContentBox": null,
         "hasPositionOffset": false,
         "hasTransform": false,
@@ -843,6 +883,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "immediateParentProvidesLayout": true,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {},
         "naturalHeight": null,
@@ -859,6 +900,7 @@ describe('DOM Walker tests', () => {
         "position": "static",
         "providesBoundsForAbsoluteChildren": false,
         "renderedChildrenCount": 0,
+        "textDecorationLine": null,
         "usesParentBounds": false,
       },
     },
@@ -900,6 +942,7 @@ describe('DOM Walker tests', () => {
         "y": 0,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": Object {
           "bottom": 0,
           "left": 0,
@@ -926,6 +969,9 @@ describe('DOM Walker tests', () => {
         "display": "block",
         "flexDirection": "row",
         "float": "none",
+        "fontSize": "16px",
+        "fontStyle": "normal",
+        "fontWeight": "400",
         "globalContentBox": Object {
           "height": 812,
           "width": 375,
@@ -942,6 +988,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "immediateParentProvidesLayout": true,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {
           "bottom": 0,
@@ -968,6 +1015,7 @@ describe('DOM Walker tests', () => {
         "position": "relative",
         "providesBoundsForAbsoluteChildren": true,
         "renderedChildrenCount": 1,
+        "textDecorationLine": "none",
         "usesParentBounds": true,
       },
     },
@@ -1009,6 +1057,7 @@ describe('DOM Walker tests', () => {
         "y": 0,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": Object {
           "bottom": 0,
           "left": 0,
@@ -1035,6 +1084,9 @@ describe('DOM Walker tests', () => {
         "display": "block",
         "flexDirection": "row",
         "float": "none",
+        "fontSize": "16px",
+        "fontStyle": "normal",
+        "fontWeight": "400",
         "globalContentBox": Object {
           "height": 812,
           "width": 375,
@@ -1051,6 +1103,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "immediateParentProvidesLayout": true,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {
           "bottom": 0,
@@ -1077,6 +1130,7 @@ describe('DOM Walker tests', () => {
         "position": "absolute",
         "providesBoundsForAbsoluteChildren": true,
         "renderedChildrenCount": 1,
+        "textDecorationLine": "none",
         "usesParentBounds": true,
       },
     },
@@ -1121,6 +1175,7 @@ describe('DOM Walker tests', () => {
         "y": 0,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": Object {
           "bottom": 0,
           "left": 0,
@@ -1147,6 +1202,9 @@ describe('DOM Walker tests', () => {
         "display": "block",
         "flexDirection": "row",
         "float": "none",
+        "fontSize": "16px",
+        "fontStyle": "normal",
+        "fontWeight": "400",
         "globalContentBox": Object {
           "height": 812,
           "width": 375,
@@ -1163,6 +1221,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "immediateParentProvidesLayout": true,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {
           "bottom": 0,
@@ -1189,6 +1248,7 @@ describe('DOM Walker tests', () => {
         "position": "absolute",
         "providesBoundsForAbsoluteChildren": true,
         "renderedChildrenCount": 1,
+        "textDecorationLine": "none",
         "usesParentBounds": true,
       },
     },
@@ -1234,6 +1294,7 @@ describe('DOM Walker tests', () => {
         "y": 98,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": Object {
           "bottom": 0,
           "left": 0,
@@ -1259,6 +1320,9 @@ describe('DOM Walker tests', () => {
         "display": "block",
         "flexDirection": "row",
         "float": "none",
+        "fontSize": "16px",
+        "fontStyle": "normal",
+        "fontWeight": "400",
         "globalContentBox": Object {
           "height": 164,
           "width": 306,
@@ -1275,6 +1339,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "immediateParentProvidesLayout": false,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {
           "bottom": 0,
@@ -1301,6 +1366,7 @@ describe('DOM Walker tests', () => {
         "position": "fixed",
         "providesBoundsForAbsoluteChildren": true,
         "renderedChildrenCount": 1,
+        "textDecorationLine": "none",
         "usesParentBounds": true,
       },
     },
@@ -1347,6 +1413,7 @@ describe('DOM Walker tests', () => {
         "y": 27,
       },
       "specialSizeMeasurements": Object {
+        "alignItems": null,
         "borderRadius": Object {
           "bottom": 0,
           "left": 0,
@@ -1378,6 +1445,9 @@ describe('DOM Walker tests', () => {
         "display": "block",
         "flexDirection": "row",
         "float": "none",
+        "fontSize": "16px",
+        "fontStyle": "normal",
+        "fontWeight": "400",
         "globalContentBox": Object {
           "height": 70,
           "width": 125,
@@ -1394,6 +1464,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "immediateParentProvidesLayout": true,
+        "justifyContent": null,
         "layoutSystemForChildren": "flow",
         "margin": Object {
           "bottom": 0,
@@ -1420,6 +1491,7 @@ describe('DOM Walker tests', () => {
         "position": "absolute",
         "providesBoundsForAbsoluteChildren": true,
         "renderedChildrenCount": 0,
+        "textDecorationLine": "none",
         "usesParentBounds": true,
       },
     },
@@ -1512,6 +1584,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
@@ -1528,6 +1601,9 @@ describe('DOM Walker tests', () => {
           "display": "initial",
           "flexDirection": null,
           "float": "none",
+          "fontSize": null,
+          "fontStyle": null,
+          "fontWeight": null,
           "globalContentBox": null,
           "hasPositionOffset": false,
           "hasTransform": false,
@@ -1539,6 +1615,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {},
           "naturalHeight": null,
@@ -1555,6 +1632,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": null,
           "usesParentBounds": false,
         },
       },
@@ -1596,6 +1674,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -1622,6 +1701,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -1638,6 +1720,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -1664,6 +1747,7 @@ describe('DOM Walker tests', () => {
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -1705,6 +1789,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -1731,6 +1816,9 @@ describe('DOM Walker tests', () => {
           "display": "flex",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -1747,6 +1835,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flex",
           "margin": Object {
             "bottom": 0,
@@ -1773,6 +1862,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -1817,6 +1907,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -1843,6 +1934,9 @@ describe('DOM Walker tests', () => {
           "display": "flex",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -1859,6 +1953,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flex",
           "margin": Object {
             "bottom": 0,
@@ -1885,6 +1980,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -1930,6 +2026,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -1955,6 +2052,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 164,
             "width": 306,
@@ -1971,6 +2071,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": false,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -1997,6 +2098,7 @@ describe('DOM Walker tests', () => {
           "position": "fixed",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2043,6 +2145,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2074,6 +2177,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 70,
             "width": 125,
@@ -2090,6 +2196,7 @@ describe('DOM Walker tests', () => {
             "y": 98,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2116,6 +2223,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2196,6 +2304,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
@@ -2212,6 +2321,9 @@ describe('DOM Walker tests', () => {
           "display": "initial",
           "flexDirection": null,
           "float": "none",
+          "fontSize": null,
+          "fontStyle": null,
+          "fontWeight": null,
           "globalContentBox": null,
           "hasPositionOffset": false,
           "hasTransform": false,
@@ -2223,6 +2335,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {},
           "naturalHeight": null,
@@ -2239,6 +2352,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": null,
           "usesParentBounds": false,
         },
       },
@@ -2280,6 +2394,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2306,6 +2421,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -2322,6 +2440,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2348,6 +2467,7 @@ describe('DOM Walker tests', () => {
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2389,6 +2509,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2415,6 +2536,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -2431,6 +2555,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2457,6 +2582,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2501,6 +2627,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2527,6 +2654,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -2543,6 +2673,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2569,6 +2700,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2653,6 +2785,7 @@ describe('DOM Walker tests', () => {
           "y": -Infinity,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": null,
           "clientHeight": 0,
           "clientWidth": 0,
@@ -2669,6 +2802,9 @@ describe('DOM Walker tests', () => {
           "display": "initial",
           "flexDirection": null,
           "float": "none",
+          "fontSize": null,
+          "fontStyle": null,
+          "fontWeight": null,
           "globalContentBox": null,
           "hasPositionOffset": false,
           "hasTransform": false,
@@ -2680,6 +2816,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {},
           "naturalHeight": null,
@@ -2696,6 +2833,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": null,
           "usesParentBounds": false,
         },
       },
@@ -2737,6 +2875,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2763,6 +2902,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -2779,6 +2921,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2805,6 +2948,7 @@ describe('DOM Walker tests', () => {
           "position": "relative",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 1,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2846,6 +2990,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2872,6 +3017,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -2888,6 +3036,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -2914,6 +3063,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 3,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -2958,6 +3108,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -2984,6 +3135,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -3000,6 +3154,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -3026,6 +3181,7 @@ describe('DOM Walker tests', () => {
           "position": "absolute",
           "providesBoundsForAbsoluteChildren": true,
           "renderedChildrenCount": 3,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -3071,6 +3227,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -3101,6 +3258,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -3117,6 +3277,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -3143,6 +3304,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -3188,6 +3350,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -3218,6 +3381,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -3234,6 +3400,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -3260,6 +3427,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },
@@ -3305,6 +3473,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "specialSizeMeasurements": Object {
+          "alignItems": null,
           "borderRadius": Object {
             "bottom": 0,
             "left": 0,
@@ -3335,6 +3504,9 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "float": "none",
+          "fontSize": "16px",
+          "fontStyle": "normal",
+          "fontWeight": "400",
           "globalContentBox": Object {
             "height": 812,
             "width": 375,
@@ -3351,6 +3523,7 @@ describe('DOM Walker tests', () => {
             "y": 0,
           },
           "immediateParentProvidesLayout": true,
+          "justifyContent": null,
           "layoutSystemForChildren": "flow",
           "margin": Object {
             "bottom": 0,
@@ -3377,6 +3550,7 @@ describe('DOM Walker tests', () => {
           "position": "static",
           "providesBoundsForAbsoluteChildren": false,
           "renderedChildrenCount": 0,
+          "textDecorationLine": "none",
           "usesParentBounds": true,
         },
       },

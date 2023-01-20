@@ -252,6 +252,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexDirection: 'row',
     parentFlexGap: 0,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -270,6 +272,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontSize: '16',
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -316,6 +322,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexDirection: 'row',
     parentFlexGap: 0,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -334,6 +342,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontSize: '16',
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   it('same reference returns the same reference', () => {
@@ -435,6 +447,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexDirection: 'row',
       parentFlexGap: 0,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -453,6 +467,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontSize: '16',
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -527,6 +545,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexDirection: 'row',
       parentFlexGap: 0,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -545,6 +565,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontSize: '16',
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -645,6 +669,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexDirection: 'row',
         parentFlexGap: 0,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -663,6 +689,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -739,6 +769,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         clientHeight: 400,
         parentFlexDirection: 'row',
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -757,6 +789,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -833,6 +869,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexDirection: 'row',
         parentFlexGap: 0,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -851,6 +889,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',

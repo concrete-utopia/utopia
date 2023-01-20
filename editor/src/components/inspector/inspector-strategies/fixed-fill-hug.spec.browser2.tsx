@@ -107,7 +107,7 @@ describe('Fixed / Fill / Hug control', () => {
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
-      expect(div.style.width).toEqual('212px') // TODO: this should be `min-content` because that's what the action is setting
+      expect(div.style.width).toEqual('min-content')
       expect(div.style.minWidth).toEqual('')
       expect(div.style.maxWidth).toEqual('')
     })
@@ -126,7 +126,7 @@ describe('Fixed / Fill / Hug control', () => {
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
-      expect(div.style.height).toEqual('144px') // TODO: this should be `min-content` because that's what the action is setting
+      expect(div.style.height).toEqual('min-content')
       expect(div.style.minHeight).toEqual('')
       expect(div.style.maxHeight).toEqual('')
     })
@@ -138,7 +138,7 @@ async function select(
   testId: 'child' | 'parent',
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('child')
+  const div = editor.renderedDOM.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,
@@ -161,36 +161,35 @@ import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <div
+  <Storyboard>
+    <Scene
       data-testid='parent'
       style={{
-        backgroundColor: '#aaaaaa33',
+        width: 700,
+        height: 759,
         position: 'absolute',
-        left: 333,
-        top: 314,
-        minWidth: 100,
-        maxWidth: 1000,
-        width: 415,
-        height: 449,
+        left: 212,
+        top: 128,
         display: 'flex',
         flexDirection: '${flexDirection}'
       }}
-      data-uid='c47'
+      data-label='Playground'
     >
       <div
         data-testid='child'
         style={{
           backgroundColor: '#aaaaaa33',
-          width: 212,
-          height: 144,
+          minWidth: 100,
+          maxWidth: 1000,
+          width: 229,
+          height: 149,
           contain: 'layout',
         }}
-        data-uid='945'
       />
-    </div>
+    </Scene>
   </Storyboard>
 )
+
 `
 
 const projectWithHeight = (flexDirection: FlexDirection) => `import * as React from 'react'
@@ -199,33 +198,31 @@ import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <div
+    <Scene
       data-testid='parent'
       style={{
-        backgroundColor: '#aaaaaa33',
+        width: 700,
+        height: 759,
         position: 'absolute',
-        left: 333,
-        top: 314,
-        minHeight: 100,
-        maxHeight: 1000,
-        width: 415,
-        height: 449,
+        left: 212,
+        top: 128,
         display: 'flex',
         flexDirection: '${flexDirection}'
       }}
-      data-uid='c47'
+      data-label='Playground'
     >
       <div
         data-testid='child'
         style={{
           backgroundColor: '#aaaaaa33',
-          width: 212,
-          height: 144,
+          minHeight: 100,
+          maxHeight: 1000,
+          width: 229,
+          height: 149,
           contain: 'layout',
         }}
-        data-uid='945'
       />
-    </div>
+    </Scene>
   </Storyboard>
 )
 `
