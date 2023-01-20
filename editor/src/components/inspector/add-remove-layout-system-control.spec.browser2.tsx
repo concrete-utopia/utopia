@@ -1,6 +1,7 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
+import { shiftModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
@@ -11,6 +12,19 @@ describe('add layout system', () => {
 
   after(() => {
     setFeatureEnabled('Nine block control', false)
+  })
+
+  it('add layout system via keyboard shortcut', async () => {
+    const editor = await renderTestEditorWithCode(
+      project({ width: '100px', height: '100px' }),
+      'await-first-dom-report',
+    )
+    const div = await selectDiv(editor)
+
+    expect(div.style.display).toEqual('')
+
+    pressKey('a', { modifiers: shiftModifier })
+    expect(div.style.display).toEqual('flex')
   })
 
   it('add and then remove flex layout', async () => {
