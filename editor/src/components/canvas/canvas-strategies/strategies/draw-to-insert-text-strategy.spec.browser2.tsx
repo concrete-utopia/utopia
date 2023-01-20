@@ -141,7 +141,7 @@ describe('draw-to-insert text', () => {
     })
   })
   describe('when the target is editable', () => {
-    it('just goes into text edit mode immediately', async () => {
+    it('inserts new text when dragging to insert', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -166,6 +166,10 @@ describe('draw-to-insert text', () => {
       closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
+      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+        .find((k) => k.startsWith('sb/') && k !== 'sb/39e')
+        ?.replace('sb/39e/', '')
+
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(`
@@ -185,7 +189,22 @@ describe('draw-to-insert text', () => {
                     height: 362,
                   }}
                   data-uid='39e'
-                >Hello Utopia</div>
+                >Hello
+                  <span
+                    style={{
+                      position: 'absolute',
+                      wordBreak: 'break-word',
+                      left: 145,
+                      top: 182,
+                      width: 50,
+                      height: 50,
+                    }}
+                    data-uid='${newElementUID}'
+                  >
+                    {' '}
+                    Utopia
+                  </span>
+                </div>
               </Storyboard>
             )`),
       )

@@ -173,4 +173,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubData: null as any,
   refreshingDependencies: false,
   assetChecksums: {},
+  colorSwatches: [],
 }

@@ -29,9 +29,10 @@ const hugContentsTextStrategyI = (
   ]
 }
 
-export const hugContentsTextStrategy =
-  (axis: Axis): InspectorStrategy =>
-  (metadata, elementPaths) => {
+export const hugContentsTextStrategy = (axis: Axis): InspectorStrategy => ({
+  name: 'Hug text contents',
+  strategy: (metadata, elementPaths) => {
     const commands = elementPaths.flatMap((path) => hugContentsTextStrategyI(axis, metadata, path))
     return nullOrNonEmpty(commands)
-  }
+  },
+})
