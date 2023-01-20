@@ -3,21 +3,20 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
   convertWidthToFlexGrow,
-  detectFlexDirectionOne,
+  detectParentFlexDirection,
   fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { assertNever } from '../../../core/shared/utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
@@ -127,48 +126,29 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
         return null
       }
 
-      const nukePropsCommand = (path: ElementPath) => {
-        switch (axis) {
-          case 'horizontal':
-            return deleteProperties('always', path, [
-              PP.create(['style', 'width']),
-              PP.create(['style', 'minWidth']),
-              PP.create(['style', 'maxWidth']),
-            ])
-          case 'vertical':
-            return deleteProperties('always', path, [
-              PP.create(['style', 'height']),
-              PP.create(['style', 'minHeight']),
-              PP.create(['style', 'maxHeight']),
-            ])
-          default:
-            assertNever(axis)
-        }
-      }
-
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
           return [
-            nukePropsCommand(path),
+            nukeSizingPropsForAxisCommand(axis, path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
-        const flexDirection = detectFlexDirectionOne(metadata, EP.parentPath(path)) ?? 'row'
+        const flexDirection = detectParentFlexDirection(metadata, path) ?? 'row'
 
         if (
           (flexDirection.startsWith('row') && axis === 'vertical') ||
           (flexDirection.startsWith('column') && axis === 'horizontal')
         ) {
           return [
-            nukePropsCommand(path),
+            nukeSizingPropsForAxisCommand(axis, path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
-          nukePropsCommand(path),
+          nukeSizingPropsForAxisCommand(axis, path),
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })
@@ -204,9 +184,10 @@ export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
         return null
       }
 
-      return elements.map((path) =>
+      return elements.flatMap((path) => [
+        nukeSizingPropsForAxisCommand(axis, path),
         setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
-      )
+      ])
     },
   },
 ]
