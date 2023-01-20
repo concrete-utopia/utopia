@@ -674,7 +674,6 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
-        allElementProps: newEditorState.allElementProps,
         computedStyles: newEditorState.computedStyles,
         _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
         canvas: {
@@ -697,7 +696,6 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
-        allElementProps: newEditorState.allElementProps,
         computedStyles: newEditorState.computedStyles,
         _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
         canvas: {
@@ -715,7 +713,6 @@ function injectNewMetadataToOldEditorState(
       jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
-      allElementProps: newEditorState.allElementProps,
       computedStyles: newEditorState.computedStyles,
       _currentComputedStyles_KILLME: newEditorState._currentComputedStyles_KILLME,
     }
