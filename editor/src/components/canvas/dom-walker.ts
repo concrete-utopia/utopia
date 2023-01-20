@@ -75,6 +75,7 @@ import type {
 } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { pick } from '../../core/shared/object-utils'
+import { getFlexAlignment, getFlexJustifyContent } from '../inspector/inspector-common'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -864,6 +865,9 @@ function getSpecialMeasurements(
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
+  const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
+  const alignItems = getFlexAlignment(elementStyle.alignItems)
+
   const margin = applicative4Either(
     applicativeSidesPxTransform,
     parseCSSLength(elementStyle.marginTop),
@@ -966,6 +970,8 @@ function getSpecialMeasurements(
     parentFlexDirection,
     parsedFlexGapValue,
     flexDirection,
+    justifyContent,
+    alignItems,
     element.localName,
     childrenCount,
     globalContentBox,

@@ -252,6 +252,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexDirection: 'row',
     parentFlexGap: 0,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -320,6 +322,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexDirection: 'row',
     parentFlexGap: 0,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -443,6 +447,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexDirection: 'row',
       parentFlexGap: 0,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -539,6 +545,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexDirection: 'row',
       parentFlexGap: 0,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -661,6 +669,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexDirection: 'row',
         parentFlexGap: 0,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -759,6 +769,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         clientHeight: 400,
         parentFlexDirection: 'row',
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -857,6 +869,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexDirection: 'row',
         parentFlexGap: 0,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({

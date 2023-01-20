@@ -25,6 +25,7 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1634,6 +1635,8 @@ export interface SpecialSizeMeasurements {
   parentFlexDirection: FlexDirection | null
   parentFlexGap: number
   flexDirection: FlexDirection | null
+  justifyContent: FlexJustifyContent | null
+  alignItems: FlexAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
@@ -1669,6 +1672,8 @@ export function specialSizeMeasurements(
   parentFlexDirection: FlexDirection | null,
   parentFlexGap: number,
   flexDirection: FlexDirection | null,
+  justifyContent: FlexJustifyContent | null,
+  alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
@@ -1703,6 +1708,8 @@ export function specialSizeMeasurements(
     parentFlexDirection,
     parentFlexGap,
     flexDirection,
+    justifyContent,
+    alignItems,
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
@@ -1741,6 +1748,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   null,
   0,
+  null,
+  null,
   null,
   'div',
   0,
