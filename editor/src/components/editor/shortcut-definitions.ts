@@ -77,6 +77,7 @@ export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
 export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
 export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
 export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
+export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 
@@ -229,6 +230,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle text-decoration to line-through of the currently selected text element.',
     key('x', ['cmd', 'shift']),
   ),
+  [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

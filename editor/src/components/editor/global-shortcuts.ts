@@ -93,6 +93,7 @@ import {
   TOGGLE_TEXT_ITALIC,
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
+  PASTE_STYLE_PROPERTIES,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -746,6 +747,13 @@ export function handleKeyDown(
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
               return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
+            })
+          : []
+      },
+      [PASTE_STYLE_PROPERTIES]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              return EditorActions.pasteProperties('style')
             })
           : []
       },

@@ -59,6 +59,7 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
+  isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
@@ -81,6 +82,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
   unsetJSXValuesAtPaths,
+  valueAtPath,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -316,6 +318,7 @@ import {
   SetAssetChecksum,
   ApplyCommandsAction,
   UpdateColorSwatches,
+  PasteProperties,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -1011,6 +1014,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     refreshingDependencies: currentEditor.refreshingDependencies,
     assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
+    styleClipboard: currentEditor.styleClipboard,
   }
 }
 
@@ -2944,12 +2948,75 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
     }
   },
+  PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
+    const layoutKeysToPaste = [
+      'position',
+      'display',
+      'top',
+      'left',
+      'bottom',
+      'right',
+      'width',
+      'height',
+      'flexGrow',
+      'flexShrink',
+      'padding',
+      'paddingLeft',
+      'paddingRight',
+      'paddingBottom',
+      'paddingTop',
+    ]
+    const styleKeysToPaste = ['backgroundColor', 'border', 'opacity', 'borderRadius']
+    if (editor.styleClipboard.length === 0) {
+      return editor
+    }
+    return editor.selectedViews.reduce((working, target) => {
+      return modifyOpenJsxElementAtPath(
+        target,
+        (element) => {
+          const filterForNames = action.type === 'layout' ? layoutKeysToPaste : styleKeysToPaste
+          const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
+            const propName = PP.lastPartToString(styleClipboardData.path)
+            return filterForNames.includes(propName) ? styleClipboardData : null
+          })
+          return foldEither(
+            () => {
+              return element
+            },
+            (updatedProps) => {
+              return {
+                ...element,
+                props: updatedProps,
+              }
+            },
+            setJSXValuesAtPaths(element.props, propsToSet),
+          )
+        },
+        working,
+      )
+    }, editor)
+  },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    const styleClipboardData = (): Array<ValueAtPath> => {
+      if (editorForAction.selectedViews.length === 0) {
+        return []
+      } else {
+        const target = editorForAction.selectedViews[0]
+        const styleProps =
+          editorForAction._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+        return Object.keys(styleProps).map((name) =>
+          valueAtPath(
+            PP.create(['style', name]),
+            jsxAttributeValue(styleProps[name], emptyComments),
+          ),
+        )
+      }
+    }
     return toastOnUncopyableElementsSelected(
       'Cannot copy these elements.',
       editorForAction,
@@ -2960,6 +3027,7 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
+          styleClipboard: styleClipboardData(),
         }
       },
       dispatch,
