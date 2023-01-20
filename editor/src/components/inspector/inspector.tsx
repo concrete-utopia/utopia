@@ -39,7 +39,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -626,6 +626,8 @@ export const InspectorContextProvider = React.memo<{
     ),
   )
 
+  const computedStylesRef = useRefEditorState((store) => store.editor.computedStyles)
+
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []
   let newComputedStyles: Array<ComputedStyle> = []
@@ -633,8 +635,9 @@ export const InspectorContextProvider = React.memo<{
 
   Utils.fastForEach(selectedViews, (path) => {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    const computedStyle = computedStylesRef.current[EP.toString(path)]
     if (elementMetadata != null) {
-      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
+      if (computedStyle == null || elementMetadata.attributeMetadatada == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
          * Because the computedStyle is only used in some cases for some controls,
@@ -654,7 +657,7 @@ export const InspectorContextProvider = React.memo<{
       const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
       newEditedMultiSelectedProps.push(jsxAttributes)
       newSpiedProps.push(allElementProps[EP.toString(path)] ?? {})
-      newComputedStyles.push(elementMetadata.computedStyle)
+      newComputedStyles.push(computedStyle)
       newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
     }
   })

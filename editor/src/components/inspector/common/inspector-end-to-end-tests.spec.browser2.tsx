@@ -124,7 +124,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'padding-T',
@@ -134,7 +135,7 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingTop'], `"20px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingTop'], `"20px"`)
     matchInlineSnapshotBrowser(paddingTopControl.value, `"20"`)
     matchInlineSnapshotBrowser(
       paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -142,7 +143,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     // Padding left is coming from the `paddingLeft` value.
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"15px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingLeft'], `"15px"`)
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"15"`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -180,7 +181,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -201,28 +203,28 @@ describe('inspector tests with real metadata', () => {
       'position-right-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['width'], `"266px"`)
     matchInlineSnapshotBrowser(widthControl.value, `"266"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['height'], `"124px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"124"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['left'], `"55px"`)
     matchInlineSnapshotBrowser(leftControl.value, `"55"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -272,7 +274,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -305,28 +308,28 @@ describe('inspector tests with real metadata', () => {
       `"detected"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['left'], `"55px"`)
     matchInlineSnapshotBrowser(leftControl.value, `"55"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['bottom'], `"200px"`)
     matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
     matchInlineSnapshotBrowser(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['right'], `"10px"`)
     matchInlineSnapshotBrowser(rightControl.value, `"10"`)
     matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -364,7 +367,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -385,14 +389,14 @@ describe('inspector tests with real metadata', () => {
       'position-right-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['width'], `"203px"`)
     matchInlineSnapshotBrowser(widthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -411,14 +415,14 @@ describe('inspector tests with real metadata', () => {
       `"detected"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['bottom'], `"200px"`)
     matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
     matchInlineSnapshotBrowser(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['right'], `"10px"`)
     matchInlineSnapshotBrowser(rightControl.value, `"10"`)
     matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -526,7 +530,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -544,14 +549,14 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['width'], `"203px"`)
     matchInlineSnapshotBrowser(widthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -612,7 +617,8 @@ describe('inspector tests with real metadata', () => {
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
       await dispatchDone
     })
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -693,14 +699,14 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['minWidth'], `"0px"`)
     matchInlineSnapshotBrowser(minWidthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(computedStyle?.['maxWidth'], `"none"`)
     matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
     matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1169,7 +1175,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1232,14 +1239,14 @@ describe('inspector tests with real metadata', () => {
       `"controlled"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"50%"`)
+    matchInlineSnapshotBrowser(computedStyle?.['borderRadius'], `"50%"`)
     matchInlineSnapshotBrowser(radiusControl.value, `"50%"`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"controlled"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.5"`)
+    matchInlineSnapshotBrowser(computedStyle?.['opacity'], `"0.5"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1278,7 +1285,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const earlyMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const earlyComputedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const earlyWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1296,14 +1304,14 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(earlyComputedStyle?.['width'], `"203px"`)
     matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(earlyComputedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1336,7 +1344,8 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const laterMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const laterComputedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const laterWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1354,14 +1363,14 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(laterComputedStyle?.['width'], `"203px"`)
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(laterComputedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1544,7 +1553,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1562,35 +1572,35 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['width'], `"250px"`)
     matchInlineSnapshotBrowser(widthControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['height'], `"250px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingLeft'], `"14px"`)
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"14"`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"10px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['borderRadius'], `"10px"`)
     matchInlineSnapshotBrowser(radiusControl.value, `"10"`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.3"`)
+    matchInlineSnapshotBrowser(computedStyle?.['opacity'], `"0.3"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"0.3"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1664,7 +1674,8 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1682,35 +1693,35 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['minWidth'], `"0px"`)
     matchInlineSnapshotBrowser(minWidthControl.value, `""`)
     matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(computedStyle?.['maxWidth'], `"none"`)
     matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
     matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingLeft'], `"0px"`)
     matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['borderRadius'], `"0px"`)
     matchInlineSnapshotBrowser(radiusControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
+    matchInlineSnapshotBrowser(computedStyle?.['opacity'], `"1"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1773,7 +1784,8 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1791,35 +1803,35 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['minWidth'], `"0px"`)
     matchInlineSnapshotBrowser(minWidthControl.value, `""`)
     matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(computedStyle?.['maxWidth'], `"none"`)
     matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
     matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingLeft'], `"0px"`)
     matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['borderRadius'], `"0px"`)
     matchInlineSnapshotBrowser(radiusControl.value, `""`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
+    matchInlineSnapshotBrowser(computedStyle?.['opacity'], `"1"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1853,13 +1865,14 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const fontSizeControl = (await renderResult.renderedDOM.findByTestId(
       'fontSize',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['fontSize'], `"24px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['fontSize'], `"24px"`)
     matchInlineSnapshotBrowser(fontSizeControl.value, `"24"`)
     matchInlineSnapshotBrowser(
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1889,7 +1902,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     await act(async () => {
       await screen.findByTestId('layout-system-expand')
@@ -1906,19 +1920,19 @@ describe('inspector tests with real metadata', () => {
       'position-flexShrink-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexBasis'], `"15px"`)
     matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
     matchInlineSnapshotBrowser(
       flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexGrow'], `"1"`)
     matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
     matchInlineSnapshotBrowser(
       flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexShrink'], `"0"`)
     matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
     matchInlineSnapshotBrowser(
       flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1955,7 +1969,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1967,19 +1982,19 @@ describe('inspector tests with real metadata', () => {
       'position-flexShrink-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexBasis'], `"15px"`)
     matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
     matchInlineSnapshotBrowser(
       flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexGrow'], `"1"`)
     matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
     matchInlineSnapshotBrowser(
       flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
+    matchInlineSnapshotBrowser(computedStyle?.['flexShrink'], `"0"`)
     matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
     matchInlineSnapshotBrowser(
       flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -2047,7 +2062,8 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const computedStyle =
+      renderResult.getEditorState().editor.computedStyles[EP.toString(targetPath)]
 
     const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'padding-T',
@@ -2057,7 +2073,7 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingTop'], `"8px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingTop'], `"8px"`)
     matchInlineSnapshotBrowser(paddingTopControl.value, `"8"`)
     matchInlineSnapshotBrowser(
       paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -2065,7 +2081,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     // Padding left is coming from the `paddingLeft` value.
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"10px"`)
+    matchInlineSnapshotBrowser(computedStyle?.['paddingLeft'], `"10px"`)
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"10"`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
