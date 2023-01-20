@@ -704,11 +704,16 @@ function editorDispatchInner(
       storedState.unpatchedEditor.canvas.dragState != null &&
       result.unpatchedEditor.canvas.dragState == null
 
+    const interactionSessionLost =
+      storedState.unpatchedEditor.canvas.interactionSession != null &&
+      result.unpatchedEditor.canvas.interactionSession == null
+
     const metadataChanged =
       domMetadataChanged ||
       spyMetadataChanged ||
       allElementPropsChanged ||
       dragStateLost ||
+      interactionSessionLost ||
       computedStylesChanged
 
     if (metadataChanged) {
