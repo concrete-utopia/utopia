@@ -8,6 +8,7 @@ import {
   Axis,
   nullOrNonEmpty,
   hugContentsApplicableForText,
+  nukeSizingPropsForAxisCommand,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 
@@ -20,6 +21,7 @@ const hugContentsTextStrategyI = (
     return []
   }
   return [
+    nukeSizingPropsForAxisCommand(axis, elementPath),
     setProperty(
       'always',
       elementPath,

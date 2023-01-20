@@ -83,6 +83,18 @@ type Detect<T> = (
 
 export const DefaultFlexDirection: FlexDirection = 'row'
 
+export function detectParentFlexDirection(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexDirection | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
+  }
+
+  return element.specialSizeMeasurements.parentFlexDirection
+}
+
 export function detectFlexDirectionOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -323,4 +335,23 @@ export function sizeToVisualDimensions(
     setProperty('always', elementPath, styleP('width'), width),
     setProperty('always', elementPath, styleP('height'), height),
   ]
+}
+
+export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): CanvasCommand => {
+  switch (axis) {
+    case 'horizontal':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'width']),
+        PP.create(['style', 'minWidth']),
+        PP.create(['style', 'maxWidth']),
+      ])
+    case 'vertical':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'height']),
+        PP.create(['style', 'minHeight']),
+        PP.create(['style', 'maxHeight']),
+      ])
+    default:
+      assertNever(axis)
+  }
 }
