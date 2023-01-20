@@ -108,20 +108,20 @@ const flexDirectionSelector = createSelector(
   detectFlexDirection,
 )
 
+const DefaultJustifyContentFlexAlignment: JustifyContentFlexAlignemt = {
+  justifyContent: 'flex-start',
+  alignItems: 'flex-start',
+}
+
 const isSelectedSelector = createSelector(
   justifyAlignSelector,
   flexDirectionSelector,
   (_: MetadataSubstate, x: JustifyContentFlexAlignemt) => x,
   (detectedJustifyContentFlexAlignment, flexDirection, fixedJustifyContentFlexAlignment) => {
-    const defaultJustifyContentFlexAlignment: JustifyContentFlexAlignemt = {
-      justifyContent: 'flex-start',
-      alignItems: 'flex-start',
-    }
-
     return justifyContentAlignItemsEquals(
       flexDirection,
       fixedJustifyContentFlexAlignment,
-      detectedJustifyContentFlexAlignment ?? defaultJustifyContentFlexAlignment,
+      detectedJustifyContentFlexAlignment ?? DefaultJustifyContentFlexAlignment,
     )
   },
 )
