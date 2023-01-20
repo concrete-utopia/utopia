@@ -22,7 +22,7 @@ import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 
 const LayoutSystemSectionTitle = () =>
-  isFeatureEnabled('Nine block control') ? 'Old Layout System' : 'Layout System'
+  isFeatureEnabled('Nine block control') ? 'Layout System Props' : 'Layout System'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
