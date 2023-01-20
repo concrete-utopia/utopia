@@ -5,7 +5,6 @@ import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { EditorStorePatched } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
@@ -139,6 +138,7 @@ const DotContainer = styled('div', {
   justifyContent: 'center',
   width: '100%',
   height: '100%',
+  opacity: 1,
   '&:hover': {
     opacity: 0,
   },
@@ -174,7 +174,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
 
   return (
     <div
-      onClick={onClick}
+      onMouseDown={onClick}
       data-testid={NineBlockTestId(alignItems, justifyContent)}
       style={{
         display: 'flex',
@@ -183,6 +183,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
         position: 'relative',
         boxSizing: 'border-box',
         justifyContent: 'center',
+        cursor: 'pointer',
       }}
     >
       <div
@@ -224,7 +225,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
       <DotContainer
         style={{
           backgroundColor: bgColor,
-          opacity: isSelected ? 0 : 1,
+          opacity: isSelected ? 0 : undefined,
         }}
       >
         <div
