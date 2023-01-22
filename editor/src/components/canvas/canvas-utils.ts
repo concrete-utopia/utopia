@@ -1,18 +1,9 @@
-import {
-  isPercentPin,
-  LayoutSystem,
-  NormalisedFrame,
-  isHorizontalPoint,
-  numberPartOfPin,
-} from 'utopia-api/core'
-import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
+import { NormalisedFrame } from 'utopia-api/core'
 import {
   framePointForPinnedProp,
   LayoutPinnedProps,
-  pinnedPropForFramePoint,
   LayoutPinnedProp,
   LayoutTargetableProp,
-  isLayoutPinnedProp,
   VerticalLayoutPinnedProps,
   HorizontalLayoutPinnedProps,
 } from '../../core/layout/layout-helpers-new'
@@ -21,7 +12,6 @@ import {
   PinningAndFlexPoints,
   PinningAndFlexPointsExceptSize,
   roundJSXElementLayoutValues,
-  roundAttributeLayoutValues,
 } from '../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -37,7 +27,6 @@ import {
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  setJSXAttributesAttribute,
   ArbitraryJSBlock,
   TopLevelElement,
   getJSXElementNameAsString,
@@ -46,16 +35,14 @@ import {
   isUtopiaJSXComponent,
   SettableLayoutSystem,
   emptyComments,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
   getUtopiaID,
   guaranteeUniqueUids,
-  insertJSXElementChild,
   setUtopiaID,
-  transformJSXComponentAtPath,
-  findJSXElementChildAtPath,
-  transformJSXComponentAtElementPath,
   isSceneElement,
   getZIndexOfElement,
 } from '../../core/model/element-template-utils'
@@ -64,41 +51,26 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
   ValueAtPath,
-  setJSXValueAtPath,
-  jsxAttributesToProps,
-  jsxSimpleAttributeToValue,
-  getJSXAttributeAtPath,
   getAllPathsFromAttributes,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
-  isParseFailure,
-  ParsedTextFile,
   ParseSuccess,
-  RevisionsState,
   ElementPath,
-  importAlias,
   PropertyPath,
-  foldParsedTextFile,
-  textFile,
-  textFileContents,
   isParseSuccess,
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
-  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
-  getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
-import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import {
   eitherToMaybe,
   flatMapEither,
   foldEither,
-  forEachRight,
   isRight,
   right,
   isLeft,
@@ -118,26 +90,17 @@ import {
   CanvasVector,
   localRectangle,
   LocalRectangle,
-  offsetPoint,
-  rectFromTwoPoints,
   Size,
-  vectorDifference,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
   EditorState,
-  getOpenUIJSFile,
   insertElementAtPath,
-  modifyOpenParseSuccess,
   OriginalCanvasAndLocalFrame,
-  PersistentModel,
   removeElementAtPath,
   TransientCanvasState,
   transientCanvasState,
   transientFileState,
-  getStoryboardElementPathFromEditorState,
-  addSceneToJSXComponents,
-  StoryboardFilePath,
   modifyUnderlyingTarget,
   modifyParseSuccessAtPath,
   getOpenUIJSFileKey,
@@ -146,8 +109,6 @@ import {
   TransientFilesState,
   forUnderlyingTargetFromEditorState,
   TransientFileState,
-  withUnderlyingTarget,
-  transformElementAtPath,
   ResizeOptions,
   AllElementProps,
   ElementProps,
@@ -191,7 +152,6 @@ import {
   xAxisGuideline,
   yAxisGuideline,
 } from './guideline'
-import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
@@ -207,7 +167,6 @@ import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { styleStringInArray } from '../../utils/common-constants'
 
 export function getOriginalFrames(
@@ -3354,4 +3313,19 @@ export async function pickColorWithEyeDropper(): Promise<{ sRGBHex: string }> {
     return { sRGBHex }
   }
   throw new Error('No result returned')
+}
+
+export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): boolean {
+  const textChildren = foldEither(
+    () => [],
+    (e) => (e.type === 'JSX_ELEMENT' ? e.children : []),
+    element.element,
+  )
+  const allChildrenText = textChildren.every(
+    (c) =>
+      c.type === 'JSX_TEXT_BLOCK' ||
+      (c.type === 'JSX_ELEMENT' && jsxElementNameEquals(c.name, jsxElementName('br', []))),
+  )
+  const hasTextChildren = textChildren.length > 0
+  return hasTextChildren && allChildrenText
 }

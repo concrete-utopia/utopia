@@ -54,6 +54,7 @@ import {
 import { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import { elementHasOnlyTextChildren } from '../../canvas-utils'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -302,9 +303,8 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return true
   }
 
-  const children = MetadataUtils.getChildren(metadata, path)
-  if (children.length === 0) {
-    return false
+  if (elementHasOnlyTextChildren(element)) {
+    return true
   }
 
   const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(

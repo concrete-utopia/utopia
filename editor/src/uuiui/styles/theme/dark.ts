@@ -224,4 +224,7 @@ export const dark: typeof light = {
   codeEditorBreadcrumbs: darkBase.fg5,
   codeEditorTabRowFg: darkBase.fg5,
   codeEditorGrid: createUtopiColor('#6d705b'),
+
+  // Gap controls
+  gapControls: createUtopiColor('#FFA500'),
 }

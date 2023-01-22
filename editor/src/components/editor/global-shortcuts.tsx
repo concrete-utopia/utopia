@@ -731,7 +731,7 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextBold(target, element?.computedStyle ?? {})
+              return toggleTextBold(target, element?.specialSizeMeasurements.fontWeight ?? null)
             })
           : []
       },
@@ -739,7 +739,7 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextItalic(target, element?.computedStyle ?? {})
+              return toggleTextItalic(target, element?.specialSizeMeasurements.fontStyle ?? null)
             })
           : []
       },
@@ -747,7 +747,10 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextUnderline(target, element?.computedStyle ?? {})
+              return toggleTextUnderline(
+                target,
+                element?.specialSizeMeasurements.textDecorationLine ?? null,
+              )
             })
           : []
       },
@@ -755,7 +758,10 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
+              return toggleTextStrikeThrough(
+                target,
+                element?.specialSizeMeasurements.textDecorationLine ?? null,
+              )
             })
           : []
       },
