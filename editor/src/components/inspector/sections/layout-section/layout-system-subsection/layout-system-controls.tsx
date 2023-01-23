@@ -8,6 +8,7 @@ import {
 } from '../../../../../core/shared/element-template'
 import { clamp, clampValue, wrapValue } from '../../../../../core/shared/math-utils'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { assertNever } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
 import {
   ChainedNumberInput,
@@ -210,7 +211,7 @@ interface PaddingValue {
   value: CSSNumber
 }
 
-function valueOrNull(values: PaddingValue[]) {
+function paddingValueOrNull(values: PaddingValue[]) {
   const result = allDirectionsSetWithEqualValues(values)
   return result.equal ? result.value.value : null
 }
@@ -236,13 +237,13 @@ export const PaddingControl = React.memo(() => {
     )
 
   const [aggregateSingleValue, setAggregateSingleValue] = React.useState(
-    valueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]),
+    paddingValueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]),
   )
   const [aggregatePerDirectionHorizontal, setAggregatePerDirectionHorizontal] = React.useState(
-    valueOrNull([paddingLeft, paddingRight]),
+    paddingValueOrNull([paddingLeft, paddingRight]),
   )
   const [aggregatePerDirectionVertical, setAggregatePerDirectionVertical] = React.useState(
-    valueOrNull([paddingTop, paddingBottom]),
+    paddingValueOrNull([paddingTop, paddingBottom]),
   )
 
   const [mode, setMode] = React.useState<ControlMode>(
@@ -259,9 +260,11 @@ export const PaddingControl = React.memo(() => {
   }, [mode])
 
   React.useEffect(() => {
-    setAggregateSingleValue(valueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]))
-    setAggregatePerDirectionHorizontal(valueOrNull([paddingLeft, paddingRight]))
-    setAggregatePerDirectionVertical(valueOrNull([paddingTop, paddingBottom]))
+    setAggregateSingleValue(
+      paddingValueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]),
+    )
+    setAggregatePerDirectionHorizontal(paddingValueOrNull([paddingLeft, paddingRight]))
+    setAggregatePerDirectionVertical(paddingValueOrNull([paddingTop, paddingBottom]))
   }, [paddingBottom, paddingTop, paddingLeft, paddingRight])
 
   const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -466,6 +469,8 @@ export const PaddingControl = React.memo(() => {
         },
       )
       break
+    default:
+      assertNever(mode)
   }
 
   return (
