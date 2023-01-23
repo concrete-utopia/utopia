@@ -18,6 +18,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { deleteValuesAtPath } from './delete-properties-command'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
@@ -113,9 +114,25 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     })
   }
 
+  let propertiesToDelete: Array<PropertyPath> = []
+  switch (PP.lastPart(command.property)) {
+    case 'width':
+      propertiesToDelete = [PP.create(['style', 'minWidth']), PP.create(['style', 'maxWidth'])]
+      break
+    case 'height':
+      propertiesToDelete = [PP.create(['style', 'minHeight']), PP.create(['style', 'maxHeight'])]
+      break
+  }
+
+  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
+    editorState,
+    command.target,
+    propertiesToDelete,
+  )
+
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
+    editorStateWithPropsDeleted,
     command.target,
     propsToUpdate,
   )

@@ -172,53 +172,12 @@ export const setPropFixedStrategies = (
         return null
       }
 
-      return elementPaths.flatMap((path) => {
-        // Only delete these properties when this is a flex child.
-        let propertiesToDelete: Array<PropertyPath> = []
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (
-          elementMetadata != null &&
-          elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        ) {
-          switch (axis) {
-            case 'horizontal':
-              propertiesToDelete = [
-                PP.create(['style', 'minWidth']),
-                PP.create(['style', 'maxWidth']),
-              ]
-              break
-            case 'vertical':
-              propertiesToDelete = [
-                PP.create(['style', 'minHeight']),
-                PP.create(['style', 'maxHeight']),
-              ]
-              break
-            default:
-              assertNever(axis)
-          }
-        }
-
-        switch (axis) {
-          case 'horizontal':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setCssLengthProperty(whenToRun, path, PP.create(['style', 'width']), {
-                type: 'EXPLICIT_CSS_NUMBER',
-                value: value,
-              }),
-            ]
-          case 'vertical':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setCssLengthProperty(whenToRun, path, PP.create(['style', 'height']), {
-                type: 'EXPLICIT_CSS_NUMBER',
-                value: value,
-              }),
-            ]
-          default:
-            assertNever(axis)
-        }
-      })
+      return elementPaths.map((path) =>
+        setCssLengthProperty(whenToRun, path, PP.create(['style', widthHeightFromAxis(axis)]), {
+          type: 'EXPLICIT_CSS_NUMBER',
+          value: value,
+        }),
+      )
     },
   },
 ]
