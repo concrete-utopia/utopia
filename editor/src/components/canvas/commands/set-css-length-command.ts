@@ -19,7 +19,7 @@ import {
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
-type LengthValue =
+type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
   | { type: 'KEEP_ORIGINAL_UNIT'; valuePx: number; parentDimensionPx: number | undefined }
 
@@ -27,14 +27,14 @@ export interface SetCssLengthProperty extends BaseCommand {
   type: 'SET_CSS_LENGTH_PROPERTY'
   target: ElementPath
   property: PropertyPath
-  value: LengthValue
+  value: CssNumberOrKeepOriginalUnit
 }
 
 export function setCssLengthProperty(
   whenToRun: WhenToRun,
   target: ElementPath,
   property: PropertyPath,
-  value: LengthValue,
+  value: CssNumberOrKeepOriginalUnit,
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
