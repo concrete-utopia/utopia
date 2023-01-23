@@ -17,7 +17,7 @@ Utopia is an integrated design and development environment for React. It uses Re
 
 (Please note: you shouldn't install Utopia on your machine in order to use it as a local dev environment: it's slower - sometimes very significantly so - and may still need connection to our servers. Also, you won't be able to edit projects in the file system on your machine if you install it locally.)
 
-To install Utopia, you'll need to clone the repo, install the prerequisites, and then run the editor for the first time.
+To contribute to Utopia, you'll need to clone the repo, install the prerequisites, and then run the editor for the first time.
 
 ## Install the Prerequisites
 
