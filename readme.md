@@ -34,7 +34,7 @@ The first time running the editor, run the following script:
 start-full
 ```
 
-(You'll only need to do this once, and it will take quite some time to download and build various dependencies)
+(You'll only need to do this once, and it will take quite some time to download and build various dependencies. After that, you can usually use `start-minimal`.)
 
 ## Working in the dev environment
 
