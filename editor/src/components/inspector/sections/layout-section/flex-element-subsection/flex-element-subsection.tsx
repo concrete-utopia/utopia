@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'
+import { MarginControl, AlignSelfControl } from './flex-element-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
 import {
   FunctionIcons,
@@ -24,13 +24,16 @@ import {
   InspectorPropsContext,
   stylePropPathMappingFn,
   useGetLayoutControlStatus,
-  useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
-import { useEditorState } from '../../../../editor/store/store-hook'
+import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
+import { useDispatch } from '../../../../../components/editor/store/dispatch-context'
+import { executeFirstApplicableStrategy } from '../../../../../components/inspector/inspector-strategies/inspector-strategy'
+import { CSSNumber } from '../../../../../components/inspector/common/css-utils'
+import { setPropFixedStrategies } from '../../../../../components/inspector/inspector-strategies/inspector-strategies'
 
 function buildMarginProps(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [
@@ -304,10 +307,28 @@ const CrossAxisControls = React.memo((props: FlexElementSubsectionProps) => {
 })
 
 const FlexWidthControls = React.memo(() => {
+  const editorStateRef = useRefEditorState((store) => {
+    return {
+      metadata: store.editor.jsxMetadata,
+      selectedViews: store.editor.selectedViews,
+    }
+  })
+  const dispatch = useDispatch()
+  const fixedSizeHandler = React.useCallback(
+    (value: CSSNumber, transient: boolean) => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        editorStateRef.current.metadata,
+        editorStateRef.current.selectedViews,
+        setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'horizontal', value),
+      )
+    },
+    [dispatch, editorStateRef],
+  )
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <PinsLayoutNumberControl label='W' prop='width' />
+        <PinsLayoutNumberControl label='W' prop='width' fixedSizeHandler={fixedSizeHandler} />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minWidth' />
@@ -317,10 +338,28 @@ const FlexWidthControls = React.memo(() => {
   )
 })
 const FlexHeightControls = React.memo(() => {
+  const editorStateRef = useRefEditorState((store) => {
+    return {
+      metadata: store.editor.jsxMetadata,
+      selectedViews: store.editor.selectedViews,
+    }
+  })
+  const dispatch = useDispatch()
+  const fixedSizeHandler = React.useCallback(
+    (value: CSSNumber, transient: boolean) => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        editorStateRef.current.metadata,
+        editorStateRef.current.selectedViews,
+        setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'vertical', value),
+      )
+    },
+    [dispatch, editorStateRef],
+  )
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <PinsLayoutNumberControl label='H' prop='height' />
+        <PinsLayoutNumberControl label='H' prop='height' fixedSizeHandler={fixedSizeHandler} />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minHeight' />

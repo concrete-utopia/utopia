@@ -10,6 +10,8 @@ import {
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  hugContentsApplicableForText,
+  MaxContent,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -20,8 +22,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { hugContentsTextStrategy } from './hug-contents-text'
 import { InspectorStrategy } from './inspector-strategy'
+import { WhenToRun } from '../../../components/canvas/commands/commands'
+import { assertNever } from '../../../core/shared/utils'
+import { PropertyPath } from 'src/core/shared/project-file-types'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -156,7 +160,11 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   },
 ]
 
-export const setPropFixedStrategies = (axis: Axis, value: number): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (
+  whenToRun: WhenToRun,
+  axis: Axis,
+  value: CSSNumber,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fixed',
     strategy: (metadata, elementPaths) => {
@@ -164,20 +172,69 @@ export const setPropFixedStrategies = (axis: Axis, value: number): Array<Inspect
         return null
       }
 
-      return elementPaths.map((path) =>
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), value),
-      )
+      return elementPaths.flatMap((path) => {
+        // Only delete these properties when this is a flex child.
+        let propertiesToDelete: Array<PropertyPath> = []
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
+        ) {
+          switch (axis) {
+            case 'horizontal':
+              propertiesToDelete = [
+                PP.create(['style', 'minWidth']),
+                PP.create(['style', 'maxWidth']),
+              ]
+              break
+            case 'vertical':
+              propertiesToDelete = [
+                PP.create(['style', 'minHeight']),
+                PP.create(['style', 'maxHeight']),
+              ]
+              break
+            default:
+              assertNever(axis)
+          }
+        }
+
+        switch (axis) {
+          case 'horizontal':
+            return [
+              deleteProperties(whenToRun, path, propertiesToDelete),
+              setProperty(
+                whenToRun,
+                path,
+                PP.create(['style', 'width']),
+                printCSSNumber(value, null),
+              ),
+            ]
+          case 'vertical':
+            return [
+              deleteProperties(whenToRun, path, propertiesToDelete),
+              setProperty(
+                whenToRun,
+                path,
+                PP.create(['style', 'height']),
+                printCSSNumber(value, null),
+              ),
+            ]
+          default:
+            assertNever(axis)
+        }
+      })
     },
   },
 ]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
-  hugContentsTextStrategy(axis),
   {
     name: 'Set to Hug',
     strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter((path) =>
-        hugContentsApplicableForContainer(metadata, path),
+      const elements = elementPaths.filter(
+        (path) =>
+          hugContentsApplicableForContainer(metadata, path) ||
+          hugContentsApplicableForText(metadata, path),
       )
 
       if (elements.length === 0) {
@@ -186,7 +243,7 @@ export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
 
       return elements.flatMap((path) => [
         nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
+        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
       ])
     },
   },
