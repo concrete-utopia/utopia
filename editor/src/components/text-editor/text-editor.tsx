@@ -13,7 +13,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
 import {
   adjustFontWeight,
-  getFontWeightFromComputedStyle,
+  getFontWeightFromMetadata,
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
@@ -84,24 +84,26 @@ const handleToggleShortcuts = (
 ): Array<EditorAction> => {
   const modifiers = Modifier.modifiersForEvent(event)
   const meta = modifiers.cmd || modifiers.ctrl
-  const computedStyle =
-    MetadataUtils.findElementByElementPath(metadata, target)?.computedStyle ?? {}
+  const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+    metadata,
+    target,
+  )?.specialSizeMeasurements
 
   // Meta+b = bold
   if (meta && event.key === 'b') {
-    return [toggleTextBold(target, computedStyle)]
+    return [toggleTextBold(target, specialSizeMeasurements?.fontWeight ?? null)]
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    return [toggleTextItalic(target, computedStyle)]
+    return [toggleTextItalic(target, specialSizeMeasurements?.fontStyle ?? null)]
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
-    return [toggleTextUnderline(target, computedStyle)]
+    return [toggleTextUnderline(target, specialSizeMeasurements?.textDecorationLine ?? null)]
   }
   // Meta+shift+x = strikethrough
   if (meta && modifiers.shift && event.key === 'x') {
-    return [toggleTextStrikeThrough(target, computedStyle)]
+    return [toggleTextStrikeThrough(target, specialSizeMeasurements?.textDecorationLine ?? null)]
   }
   return []
 }
@@ -152,7 +154,7 @@ const handleSetFontWeightShortcut = (
 
   const delta = character === 'period' ? 1 : character === 'comma' ? -1 : 0
 
-  const fontWeight = getFontWeightFromComputedStyle(metadata, elementPath)
+  const fontWeight = getFontWeightFromMetadata(metadata, elementPath)
   if (fontWeight == null) {
     return []
   }

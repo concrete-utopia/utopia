@@ -91,7 +91,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
       return elementPaths.flatMap((path) => [
         setProperty('always', path, PP.create(['style', 'display']), 'flex'),
         ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) =>
-          convertWidthToFlexGrow(metadata, child, path),
+          convertWidthToFlexGrow(metadata, child),
         ),
       ])
     },
@@ -156,7 +156,7 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   },
 ]
 
-export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (axis: Axis, value: number): Array<InspectorStrategy> => [
   {
     name: 'Set to Fixed',
     strategy: (metadata, elementPaths) => {
@@ -165,12 +165,7 @@ export const setPropFixedStrategies = (axis: Axis, value: CSSNumber): Array<Insp
       }
 
       return elementPaths.map((path) =>
-        setProperty(
-          'always',
-          path,
-          PP.create(['style', widthHeightFromAxis(axis)]),
-          printCSSNumber(value, null),
-        ),
+        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), value),
       )
     },
   },

@@ -9,7 +9,7 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import { Sides, sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
 
@@ -167,11 +167,10 @@ export function maybeFlexGapFromElement(
     getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
   )
 
-  if (gapFromProps == null) {
-    return null
-  }
-
   const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
 
-  return { value: { renderedValuePx: flexGap, value: gapFromProps }, direction: flexDirection }
+  return {
+    value: { renderedValuePx: flexGap, value: gapFromProps ?? cssNumber(0) },
+    direction: flexDirection,
+  }
 }

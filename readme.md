@@ -13,21 +13,20 @@ Utopia is an integrated design and development environment for React. It uses Re
 
 [Start the editor](https://utopia.app/project)
 
-# For contributors: Installing Utopia on your machine
+# For contributors only: Installing Utopia on your machine
 
-Utopia is browser-based. To run it locally, clone the repo, and then set up the server and webpack by following these instructions.
+Please note: to use Utopia, visit [utopia.app](https://utopia.app/). Installing it locally is for feature development of Utopia itself: it's slower - sometimes very significantly so. It still needs connection to our servers. And you won't be able to edit projects in the file system on your machine if you install it locally.
 
-## Prerequisites
+To contribute to Utopia, you'll need to clone the repo, install the prerequisites, and then run the editor for the first time.
 
-- **If using Windows** you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
+## Install the Prerequisites
+
 - [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
-- Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
+- [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
-## Contributing and Bug Reporting
+NB: If you're on  Windows, you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 
-We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/NEEnPKCgzC). Please read our [contributing](contributing.md) doc to get started
-
-# Run the Editor
+## Run the Editor for the first time
 
 The first time running the editor, run the following script:
 
@@ -35,11 +34,9 @@ The first time running the editor, run the following script:
 start-full
 ```
 
-Subsequently it should be possible to just run, unless either changes have been made to VS Code or something like the dependencies have changed in the editor project:
+(You'll only need to do this once, and it will take quite some time to download and build various dependencies. After that, you can usually use `start-minimal`.)
 
-```
-start-minimal
-```
+## Working in the dev environment
 
 Both of these scripts result in a tmux session with all of the various servers running and watching for changes. You can see all of the active sessions in the bar along the bottom, prefixed by the "window" number that they are running in. You should be able to click on each of those to switch to viewing that session, or if that doesn't work you can use the key combo `cmd`+`b` (macOS) or `ctrl`+`b` (Linux or Windows), followed by the number for that session. (see [here](https://github.com/tmux/tmux/wiki/Getting-Started#changing-the-current-window) for the relevant tmux docs)
 

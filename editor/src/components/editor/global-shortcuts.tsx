@@ -94,6 +94,7 @@ import {
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
   PASTE_STYLE_PROPERTIES,
+  CONVERT_TO_FLEX_CONTAINER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -109,6 +110,15 @@ import {
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from '../text-editor/text-editor-shortcut-helpers'
+import {
+  commandsForFirstApplicableStrategy,
+  executeFirstApplicableStrategy,
+} from '../inspector/inspector-strategies/inspector-strategy'
+import {
+  addFlexLayoutStrategies,
+  removeFlexLayoutStrategies,
+} from '../inspector/inspector-strategies/inspector-strategies'
+import { detectAreElementsFlexContainers } from '../inspector/inspector-common'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -722,7 +732,7 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextBold(target, element?.computedStyle ?? {})
+              return toggleTextBold(target, element?.specialSizeMeasurements.fontWeight ?? null)
             })
           : []
       },
@@ -730,7 +740,7 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextItalic(target, element?.computedStyle ?? {})
+              return toggleTextItalic(target, element?.specialSizeMeasurements.fontStyle ?? null)
             })
           : []
       },
@@ -738,7 +748,10 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextUnderline(target, element?.computedStyle ?? {})
+              return toggleTextUnderline(
+                target,
+                element?.specialSizeMeasurements.textDecorationLine ?? null,
+              )
             })
           : []
       },
@@ -746,7 +759,10 @@ export function handleKeyDown(
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
               const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextStrikeThrough(target, element?.computedStyle ?? {})
+              return toggleTextStrikeThrough(
+                target,
+                element?.specialSizeMeasurements.textDecorationLine ?? null,
+              )
             })
           : []
       },
@@ -756,6 +772,24 @@ export function handleKeyDown(
               return EditorActions.pasteProperties('style')
             })
           : []
+      },
+      [CONVERT_TO_FLEX_CONTAINER]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        const selectedElementsFlexContainers = detectAreElementsFlexContainers(
+          editor.jsxMetadata,
+          editor.selectedViews,
+        )
+        const commands = commandsForFirstApplicableStrategy(
+          editor.jsxMetadata,
+          editor.selectedViews,
+          selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
+        )
+        if (commands == null) {
+          return []
+        }
+        return [EditorActions.applyCommandsAction(commands)]
       },
     })
   }

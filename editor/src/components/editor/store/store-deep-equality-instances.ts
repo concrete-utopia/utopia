@@ -1267,6 +1267,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
     const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
+
+    const justifyContentEquals = oldSize.justifyContent === newSize.justifyContent
+    const alignItemsEquals = oldSize.alignItems === newSize.alignItems
+
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const renderedChildrenCount = oldSize.renderedChildrenCount === newSize.renderedChildrenCount
@@ -1282,6 +1286,12 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.borderRadius,
       newSize.borderRadius,
     ).areEqual
+
+    const fontSizeEquals = oldSize.fontSize === newSize.fontSize
+    const fontWeightEquals = oldSize.fontWeight === newSize.fontWeight
+    const fontStyleEquals = oldSize.fontStyle === newSize.fontStyle
+    const textDecorationLineEquals = oldSize.textDecorationLine === newSize.textDecorationLine
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1302,6 +1312,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       parentFlexDirectionResult &&
       flexGapEquals &&
       flexDirectionResult &&
+      justifyContentEquals &&
+      alignItemsEquals &&
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
@@ -1310,7 +1322,11 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       hasPositionOffsetEquals &&
       textDirectionEquals &&
       hasTransformEquals &&
-      borderRadiusEquals
+      borderRadiusEquals &&
+      fontSizeEquals &&
+      fontWeightEquals &&
+      fontStyleEquals &&
+      textDecorationLineEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1335,6 +1351,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentFlexDirection,
         newSize.parentFlexGap,
         newSize.flexDirection,
+        newSize.justifyContent,
+        newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
@@ -1343,6 +1361,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentTextDirection,
         newSize.hasTransform,
         newSize.borderRadius,
+        newSize.fontSize,
+        newSize.fontWeight,
+        newSize.fontStyle,
+        newSize.textDecorationLine,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

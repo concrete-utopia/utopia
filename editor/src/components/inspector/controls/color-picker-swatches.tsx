@@ -30,7 +30,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
 
   const storeColorSwatches = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.colorSwatches,
+    (store) => store.editor.colorSwatches ?? [],
     'ColorPickerSwatches color swatches',
   )
 
@@ -130,7 +130,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
                   backgroundImage: `linear-gradient(to bottom right, transparent 65%, ${rgbString} 65%), linear-gradient(${rgbaString}, ${rgbaString}), ${checkerboardBackground.backgroundImage}`,
                   backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
                   backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
-                  border: `1px solid ${colorTheme.bg0.value}`,
+                  border: `1px solid ${colorTheme.bg3.value}`,
                   boxShadow: currentColor === c.hex ? `${c.hex} 0px 0px 3px` : 'none',
                   borderRadius: 2,
                 }}

@@ -80,6 +80,7 @@ export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
 export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
+export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -231,6 +232,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('x', ['cmd', 'shift']),
   ),
   [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
+  [CONVERT_TO_FLEX_CONTAINER]: shortcut(
+    'Convert selected elements to flex containers',
+    key('a', ['shift']),
+  ),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

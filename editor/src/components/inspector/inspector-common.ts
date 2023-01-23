@@ -18,7 +18,7 @@ export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
 export type FlexJustifyContent = StartCenterEnd | 'space-around' | 'space-between' | 'space-evenly'
 
-function getFlexJustifyContent(value: string | null): FlexJustifyContent | null {
+export function getFlexJustifyContent(value: string | null): FlexJustifyContent | null {
   switch (value) {
     case 'flex-start':
       return 'flex-start'
@@ -39,7 +39,7 @@ function getFlexJustifyContent(value: string | null): FlexJustifyContent | null 
 
 export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
 
-function getFlexAlignment(value: string | null): FlexAlignment | null {
+export function getFlexAlignment(value: string | null): FlexAlignment | null {
   switch (value) {
     case 'auto':
       return 'auto'
@@ -105,7 +105,8 @@ export function detectFlexDirectionOne(
   }
 
   return (
-    stringToFlexDirection(element.computedStyle?.['flexDirection'] ?? null) ?? DefaultFlexDirection
+    stringToFlexDirection(element.specialSizeMeasurements?.flexDirection ?? null) ??
+    DefaultFlexDirection
   )
 }
 
@@ -129,10 +130,10 @@ function detectFlexAlignJustifyContentOne(
   }
 
   const justifyContent: FlexJustifyContent | null = getFlexJustifyContent(
-    element.computedStyle?.['justifyContent'] ?? null,
+    element.specialSizeMeasurements.justifyContent ?? null,
   )
   const alignItems: FlexAlignment | null = getFlexAlignment(
-    element.computedStyle?.['alignItems'] ?? null,
+    element.specialSizeMeasurements.alignItems ?? null,
   )
 
   if (justifyContent == null || alignItems == null) {
@@ -265,19 +266,16 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
 }
 
 export function convertWidthToFlexGrow(
-  metadata: ElementInstanceMetadataMap,
+  metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-  parentPath: ElementPath,
 ): Array<CanvasCommand> {
-  const element = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
-  if (element == null) {
+  const element = MetadataUtils.getJSXElementFromMetadata(metadataMap, elementPath)
+  const metadata = MetadataUtils.findElementByElementPath(metadataMap, elementPath)
+  if (element == null || metadata == null) {
     return []
   }
 
-  const parentFlexDirection =
-    MetadataUtils.findElementByElementPath(metadata, parentPath)?.computedStyle?.[
-      'flexDirection'
-    ] ?? 'row'
+  const parentFlexDirection = metadata.specialSizeMeasurements.parentFlexDirection ?? 'row'
   const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
 
   const matches =

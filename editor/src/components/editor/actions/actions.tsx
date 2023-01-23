@@ -474,6 +474,8 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 
+export const MIN_CODE_PANE_REOPEN_WIDTH = 100
+
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
     ...editorState,
@@ -2713,6 +2715,10 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: action.visible,
+            codePaneWidth:
+              action.visible && editor.interfaceDesigner.codePaneWidth < MIN_CODE_PANE_REOPEN_WIDTH
+                ? MIN_CODE_PANE_REOPEN_WIDTH
+                : editor.interfaceDesigner.codePaneWidth,
           },
         }
       case 'misccodeeditor':

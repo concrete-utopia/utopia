@@ -11,11 +11,14 @@ export const FloatingCSSNumberIndicatorTestId = 'PaddingValueIndicatorTestId'
 export interface FloatingIndicatorProps {
   value: string | number
   position: CanvasPoint
+  color?: string
 }
 
 export const FloatingIndicator = controlForStrategyMemoized<FloatingIndicatorProps>((props) => {
   const { value, position } = props
   const colorTheme = useColorTheme()
+
+  const color = props.color ?? colorTheme.brandNeonPink.value
 
   const scale = useEditorState(
     Substores.canvas,
@@ -33,12 +36,7 @@ export const FloatingIndicator = controlForStrategyMemoized<FloatingIndicatorPro
           top: position.y,
         }}
       >
-        <CanvasLabel
-          value={value}
-          scale={scale}
-          color={colorTheme.brandNeonPink.value}
-          textColor={colorTheme.white.value}
-        />
+        <CanvasLabel value={value} scale={scale} color={color} textColor={colorTheme.white.value} />
       </div>
     </CanvasOffsetWrapper>
   )
