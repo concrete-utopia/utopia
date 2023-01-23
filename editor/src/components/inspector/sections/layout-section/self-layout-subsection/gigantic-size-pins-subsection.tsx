@@ -5,7 +5,13 @@ import {
 } from '../../../../../core/layout/layout-helpers-new'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { cssNumber, isCSSNumber } from '../../../common/css-utils'
+import {
+  CSSNumber,
+  cssNumber,
+  isCSSNumber,
+  isFixedSize,
+  UnknownOrEmptyInput,
+} from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
 import {
   InspectorPropsContext,
@@ -32,10 +38,12 @@ import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
+import { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
 
 interface PinsLayoutNumberControlProps {
   label: string
   prop: LayoutPinnedProp
+  fixedSizeHandler: ((value: CSSNumber, transient: boolean) => void) | null
 }
 
 export const pinLabels: { [key in LayoutPinnedProp]: string } = {
@@ -50,13 +58,38 @@ export const pinLabels: { [key in LayoutPinnedProp]: string } = {
 export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberControlProps) => {
   const pointInfo = useInspectorLayoutInfo(props.prop)
 
-  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+  const defaultOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
     pointInfo.onSubmitValue,
     pointInfo.onUnsetValues,
   )
-  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+  const defaultOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
     pointInfo.onTransientSubmitValue,
     pointInfo.onUnsetValues,
+  )
+
+  const onSubmit: OnSubmitValueOrUnknownOrEmpty<CSSNumber | undefined> = React.useCallback(
+    (value: UnknownOrEmptyInput<CSSNumber | undefined>) => {
+      if (props.fixedSizeHandler != null && isCSSNumber(value) && isFixedSize(value)) {
+        // If a fixed size handler is present, use that instead of the regular callback.
+        props.fixedSizeHandler(value, false)
+      } else {
+        // Otherwise default to this.
+        defaultOnSubmit(value, false)
+      }
+    },
+    [defaultOnSubmit, props],
+  )
+  const onTransientSubmit: OnSubmitValueOrUnknownOrEmpty<CSSNumber | undefined> = React.useCallback(
+    (value: UnknownOrEmptyInput<CSSNumber | undefined>) => {
+      if (props.fixedSizeHandler != null && isCSSNumber(value) && isFixedSize(value)) {
+        // If a fixed size handler is present, use that instead of the regular callback.
+        props.fixedSizeHandler(value, false)
+      } else {
+        // Otherwise default to this.
+        defaultOnTransientSubmit(value, false)
+      }
+    },
+    [defaultOnTransientSubmit, props],
   )
 
   return (
@@ -70,8 +103,8 @@ export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberContro
         id={`position-${props.prop}-number-input`}
         testId={`position-${props.prop}-number-input`}
         labelInner={props.label}
-        onSubmitValue={wrappedOnSubmit}
-        onTransientSubmitValue={wrappedOnTransientSubmit}
+        onSubmitValue={onSubmit}
+        onTransientSubmitValue={onTransientSubmit}
         controlStatus={pointInfo.controlStatus}
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
@@ -298,7 +331,7 @@ const PinControls = React.memo((props: PinControlsProps) => {
 })
 
 function pinsLayoutNumberControl(prop: LayoutPinnedProp) {
-  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} />
+  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} fixedSizeHandler={null} />
 }
 
 function flexLayoutNumberControl(label: string, layoutProp: LayoutFlexElementNumericProp) {

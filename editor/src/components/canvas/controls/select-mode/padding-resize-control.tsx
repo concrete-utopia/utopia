@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasSubstate } from 'src/components/editor/store/store-hook-substore-types'
+import { CanvasSubstate } from '../../../../components/editor/store/store-hook-substore-types'
 import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
