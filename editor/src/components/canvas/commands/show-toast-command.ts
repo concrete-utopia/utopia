@@ -1,4 +1,4 @@
-import { Notice } from '../../common/notice'
+import { notice, Notice, NoticeLevel } from '../../common/notice'
 import { EditorState } from '../../editor/store/editor-state'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { CommandFunctionResult, WhenToRun } from './commands'
@@ -9,11 +9,15 @@ export interface ShowToastCommand {
   notice: Notice
 }
 
-export function showToastCommand(notice: Notice): ShowToastCommand {
+export function showToastCommand(
+  message: string,
+  level: NoticeLevel,
+  id: string,
+): ShowToastCommand {
   return {
     type: 'SHOW_TOAST_COMMAND',
     whenToRun: 'on-complete',
-    notice: notice,
+    notice: notice(message, level, false, id),
   }
 }
 
