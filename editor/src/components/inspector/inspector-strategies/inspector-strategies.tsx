@@ -18,10 +18,11 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { hugContentsTextStrategy } from './hug-contents-text'
 import { InspectorStrategy } from './inspector-strategy'
+import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -173,21 +174,5 @@ export const setPropFixedStrategies = (axis: Axis, value: number): Array<Inspect
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsTextStrategy(axis),
-  {
-    name: 'Set to Hug',
-    strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter((path) =>
-        hugContentsApplicableForContainer(metadata, path),
-      )
-
-      if (elements.length === 0) {
-        return null
-      }
-
-      return elements.flatMap((path) => [
-        nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
-      ])
-    },
-  },
+  hugContentsBasicStrategy(axis),
 ]
