@@ -470,7 +470,7 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 
-const MIN_CODE_PANE_REOPEN_WIDTH = 100
+export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
