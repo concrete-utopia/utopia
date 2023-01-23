@@ -49,6 +49,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -2998,29 +2999,31 @@ export const UPDATE_FNS = {
       return editor
     }
     return editor.selectedViews.reduce((working, target) => {
-      return modifyOpenJsxElementAtPath(
-        target,
-        (element) => {
-          const filterForNames = action.type === 'layout' ? layoutKeysToPaste : styleKeysToPaste
-          const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
-            const propName = PP.lastPartToString(styleClipboardData.path)
-            return filterForNames.includes(propName) ? styleClipboardData : null
-          })
-          return foldEither(
-            () => {
-              return element
-            },
-            (updatedProps) => {
-              return {
-                ...element,
-                props: updatedProps,
-              }
-            },
-            setJSXValuesAtPaths(element.props, propsToSet),
-          )
-        },
-        working,
-      )
+      return setPropertyOnTarget(working, target, (attributes) => {
+        const filterForNames = action.type === 'layout' ? layoutKeysToPaste : styleKeysToPaste
+        const originalPropsToUnset = filterForNames.map((propName) =>
+          PP.create(['style', propName]),
+        )
+        const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
+          attributes,
+          originalPropsToUnset,
+        )
+
+        const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
+          const propName = PP.lastPartToString(styleClipboardData.path)
+          return filterForNames.includes(propName) ? styleClipboardData : null
+        })
+
+        return foldEither(
+          () => {
+            return right(attributes)
+          },
+          (withPropertiesCleared) => {
+            return setJSXValuesAtPaths(withPropertiesCleared, propsToSet)
+          },
+          withOriginalPropertiesCleared,
+        )
+      })
     }, editor)
   },
   COPY_SELECTION_TO_CLIPBOARD: (
