@@ -70,7 +70,7 @@ export function escapeHTML(s: string): string {
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
-  const unescaped = unescape(s).replace(/ +$/, '') // prettier fix
+  const unescaped = unescape(s)
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
   // if the string _ends_ with a newline.
