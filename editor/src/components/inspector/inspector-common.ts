@@ -373,3 +373,17 @@ export const nukePositioningPropsForAxisCommand = (
       assertNever(axis)
   }
 }
+
+export const nukeAllAbsolutePositioningPropsCommand = (path: ElementPath): CanvasCommand => {
+  return deleteProperties('always', path, [
+    PP.create(['style', 'position']),
+    PP.create(['style', 'left']),
+    PP.create(['style', 'right']),
+    PP.create(['style', 'top']),
+    PP.create(['style', 'bottom']),
+  ])
+}
+
+export const removeAbsolutePositioningPropCommand = (path: ElementPath): CanvasCommand => {
+  return deleteProperties('always', path, [PP.create(['style', 'position'])])
+}

@@ -10,9 +10,11 @@ import {
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  nukeAllAbsolutePositioningPropsCommand,
   nukePositioningPropsForAxisCommand,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
+  removeAbsolutePositioningPropCommand,
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
@@ -117,7 +119,10 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
+export const setPropFillStrategies = (
+  axis: Axis,
+  otherAxisFilled: boolean,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
     strategy: (metadata, elementPaths) => {
@@ -128,15 +133,13 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       }
 
       return elements.flatMap((path) => {
-        const commonCommands = [
-          nukeSizingPropsForAxisCommand(axis, path),
-          nukePositioningPropsForAxisCommand(axis, path),
-        ]
-
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
           return [
-            ...commonCommands,
+            nukeSizingPropsForAxisCommand(axis, path),
+            otherAxisFilled
+              ? nukeAllAbsolutePositioningPropsCommand(path)
+              : nukePositioningPropsForAxisCommand(axis, path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
@@ -148,13 +151,15 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
           (flexDirection.startsWith('column') && axis === 'horizontal')
         ) {
           return [
-            ...commonCommands,
+            nukeSizingPropsForAxisCommand(axis, path),
+            nukeAllAbsolutePositioningPropsCommand(path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
-          ...commonCommands,
+          nukeSizingPropsForAxisCommand(axis, path),
+          nukeAllAbsolutePositioningPropsCommand(path),
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })

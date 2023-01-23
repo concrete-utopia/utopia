@@ -236,7 +236,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
+      const strategy = strategyForMode(
+        heightComputedValueRef.current,
+        'vertical',
+        value,
+        widthCurrentValue?.type === 'fill',
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -244,7 +249,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
+    [dispatch, widthCurrentValue, heightComputedValueRef, metadataRef, selectedViewsRef],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -278,7 +283,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
+      const strategy = strategyForMode(
+        widthComputedValueRef.current,
+        'horizontal',
+        value,
+        heightCurrentValue?.type === 'fill',
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -286,7 +296,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
+    [dispatch, heightCurrentValue, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
@@ -362,10 +372,11 @@ function strategyForMode(
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
+  otherAxisFilled: boolean,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(axis)
+      return setPropFillStrategies(axis, otherAxisFilled)
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
