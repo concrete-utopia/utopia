@@ -74,6 +74,50 @@ function createProject(
   ).formatted
 }
 
+function createNonFlexProject(
+  flexDirection: FlexDirection,
+  width: string | number,
+  height: string | number,
+): string {
+  const crossCapitalDimension = getCrossCapitalDimension(flexDirection)
+  return applyPrettier(
+    `import * as React from 'react'
+  import { Storyboard } from 'utopia-api'
+  
+  export var storyboard = (
+    <Storyboard data-uid='storyboard'>
+      <div
+        style={{
+          backgroundColor: 'grey',
+          position: 'absolute',
+          left: 111,
+          top: 121,
+          width: 469,
+          height: 310,
+          paddingTop: 0,
+        }}
+        data-testid='flexparent'
+        data-uid='flexparent'
+      >
+        <div
+          style={{
+            backgroundColor: 'blue',
+            height: ${JSON.stringify(height)},
+            width: ${JSON.stringify(width)},
+            min${crossCapitalDimension}: 40,
+            max${crossCapitalDimension}: 100,
+          }}
+          data-testid='flexchild'
+          data-uid='flexchild'
+        />
+      </div>
+    </Storyboard>
+  )
+  `,
+    false,
+  ).formatted
+}
+
 function createProjectWithoutMinAndMax(
   flexDirection: FlexDirection,
   width: string | number,
@@ -218,4 +262,16 @@ describe('flex dimension controls', () => {
       }
     })
   }
+
+  it('do not delete the properties when the parent is not a flex container', async () => {
+    const editor = await renderTestEditorWithCode(
+      createNonFlexProject('row', 100, 120),
+      'await-first-dom-report',
+    )
+    await changeDimensionValue(editor, 'row', '90')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      createNonFlexProject('row', 100, 90),
+    )
+  })
 })
