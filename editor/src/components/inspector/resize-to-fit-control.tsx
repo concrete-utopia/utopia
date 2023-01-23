@@ -6,6 +6,8 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
+export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
+
 interface ResizeToFitControlProps {}
 
 export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
@@ -46,7 +48,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   return (
     <Tooltip title={'Resize to Fit'}>
-      <FlexRow onMouseDown={onMouseDown}>
+      <FlexRow data-testid={ResizeToFitControlTestId} onMouseDown={onMouseDown}>
         <Icn type='warningtriangle' color='warning' width={16} height={16} />
       </FlexRow>
     </Tooltip>
