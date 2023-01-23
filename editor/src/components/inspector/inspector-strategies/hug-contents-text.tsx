@@ -9,6 +9,7 @@ import {
   nullOrNonEmpty,
   hugContentsApplicableForText,
   nukeSizingPropsForAxisCommand,
+  MaxContent,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 
@@ -22,12 +23,7 @@ const hugContentsTextStrategyI = (
   }
   return [
     nukeSizingPropsForAxisCommand(axis, elementPath),
-    setProperty(
-      'always',
-      elementPath,
-      PP.create(['style', widthHeightFromAxis(axis)]),
-      'max-content',
-    ),
+    setProperty('always', elementPath, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
   ]
 }
 

@@ -353,3 +353,5 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
       assertNever(axis)
   }
 }
+
+export const MaxContent = 'max-content' as const

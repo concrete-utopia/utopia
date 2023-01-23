@@ -186,7 +186,7 @@ export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
 
       return elements.flatMap((path) => [
         nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
+        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'max-content'),
       ])
     },
   },

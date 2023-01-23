@@ -26,6 +26,7 @@ import {
   fillContainerApplicable,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
+  MaxContent,
   widthHeightFromAxis,
 } from './inspector-common'
 import {
@@ -141,7 +142,7 @@ function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
-  if (prop === 'min-content') {
+  if (prop === MaxContent) {
     return { type: 'hug' }
   }
 
