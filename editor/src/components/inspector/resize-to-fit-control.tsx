@@ -48,8 +48,12 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   return (
     <Tooltip title={'Resize to Fit'}>
-      <FlexRow data-testid={ResizeToFitControlTestId} onMouseDown={onMouseDown}>
-        <Icn type='warningtriangle' color='warning' width={16} height={16} />
+      <FlexRow
+        data-testid={ResizeToFitControlTestId}
+        onMouseDown={onMouseDown}
+        style={{ cursor: 'pointer' }}
+      >
+        <Icn type='fitToChildren' color='main' category='layout/commands' width={18} height={18} />
       </FlexRow>
     </Tooltip>
   )
