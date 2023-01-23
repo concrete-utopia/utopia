@@ -18,12 +18,6 @@ import {
 import { act, fireEvent } from '@testing-library/react'
 import { applyPrettier } from 'utopia-vscode-common'
 
-function downClickUp(targetElement: HTMLElement, mouseEventInit: MouseEventInit) {
-  fireEvent(targetElement, new MouseEvent('mousedown', mouseEventInit))
-  fireEvent(targetElement, new MouseEvent('click', mouseEventInit))
-  fireEvent(targetElement, new MouseEvent('mouseup', mouseEventInit))
-}
-
 function getCrossCapitalDimension(flexDirection: FlexDirection): string {
   return flexDirection.startsWith('row') ? 'Height' : 'Width'
 }
@@ -181,7 +175,9 @@ async function changeDimensionValue(
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  act(() => {
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  })
 
   // Modify the value.
   const dimensionInput = editor.renderedDOM.getByTestId(
@@ -192,15 +188,9 @@ async function changeDimensionValue(
     x: dimensionInputBounds.x + dimensionInputBounds.width / 2,
     y: dimensionInputBounds.y + dimensionInputBounds.height / 2,
   }
+
   act(() => {
-    downClickUp(dimensionInput, {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      clientX: dimensionInputCenter.x,
-      clientY: dimensionInputCenter.y,
-      buttons: 1,
-    })
+    mouseClickAtPoint(dimensionInput, dimensionInputCenter, {})
   })
 
   act(() => {
