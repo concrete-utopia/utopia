@@ -423,15 +423,13 @@ function createUpdatePinsCommands(
   fastForEach(pinsToSet, (framePin) => {
     const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
     commands.push(
-      setCssLengthProperty(
-        'always',
-        path,
-        stylePropPathMappingFn(framePin, styleStringInArray),
-        pinValue,
-        isHorizontalPoint(framePointForPinnedProp(framePin))
+      setCssLengthProperty('always', path, stylePropPathMappingFn(framePin, styleStringInArray), {
+        type: 'KEEP_ORIGINAL_UNIT',
+        valuePx: pinValue,
+        parentDimensionPx: isHorizontalPoint(framePointForPinnedProp(framePin))
           ? parentFrame?.width
           : parentFrame?.height,
-      ),
+      }),
     )
   })
   return commands

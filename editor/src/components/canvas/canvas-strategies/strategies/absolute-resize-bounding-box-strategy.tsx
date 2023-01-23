@@ -241,8 +241,13 @@ function createResizeCommandsFromFrame(
           'always',
           selectedElement,
           stylePropPathMappingFn(pin, styleStringInArray),
-          roundTo(valueToSet, 0),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          {
+            type: 'KEEP_ORIGINAL_UNIT',
+            valuePx: roundTo(valueToSet, 0),
+            parentDimensionPx: horizontal
+              ? elementParentBounds?.width
+              : elementParentBounds?.height,
+          },
         )
       }
     } else {
