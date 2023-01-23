@@ -473,6 +473,7 @@ import {
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
+import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2956,57 +2957,12 @@ export const UPDATE_FNS = {
     }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
-    const layoutKeysToPaste = [
-      'contain',
-      'position',
-      'display',
-      'width',
-      'height',
-      'minWidth',
-      'maxWidth',
-      'minHeight',
-      'maxHeight',
-      'flex',
-      'flexBasis',
-      'flexGrow',
-      'flexShrink',
-      'flexDirection',
-      'flexWrap',
-      'justifyContent',
-      'alignItems',
-      'alignContent',
-      'gap',
-      'padding',
-      'paddingLeft',
-      'paddingRight',
-      'paddingBottom',
-      'paddingTop',
-    ]
-
-    const styleKeysToPaste = [
-      'backgroundColor',
-      'backgroundImage',
-      'backgroundSize',
-      'border',
-      'borderRadius',
-      'boxShadow',
-      'color',
-      'opacity',
-      'fontFamily',
-      'fontSize',
-      'fontStyle',
-      'fontWeight',
-      'lineHeight',
-      'textDecoration',
-      'textAlign',
-      'textShadow',
-    ]
     if (editor.styleClipboard.length === 0) {
       return editor
     }
     return editor.selectedViews.reduce((working, target) => {
       return setPropertyOnTarget(working, target, (attributes) => {
-        const filterForNames = action.type === 'layout' ? layoutKeysToPaste : styleKeysToPaste
+        const filterForNames = action.type === 'layout' ? LayoutPropsWithoutTLBR : StyleProperties
         const originalPropsToUnset = filterForNames.map((propName) =>
           PP.create(['style', propName]),
         )

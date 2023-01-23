@@ -4922,11 +4922,26 @@ export function maybePrintCSSValue(prop: string, value: unknown): PrintedValue |
   }
 }
 
-const LayoutPropertyList = [
-  'left',
-  'right',
-  'top',
-  'bottom',
+export const StyleProperties = [
+  'backgroundColor',
+  'backgroundImage',
+  'backgroundSize',
+  'border',
+  'borderRadius',
+  'boxShadow',
+  'color',
+  'opacity',
+  'fontFamily',
+  'fontSize',
+  'fontStyle',
+  'fontWeight',
+  'lineHeight',
+  'textDecoration',
+  'textAlign',
+  'textShadow',
+]
+
+export const LayoutPropsWithoutTLBR = [
   'width',
   'height',
   'float',
@@ -4993,6 +5008,8 @@ const LayoutPropertyList = [
   'grid-template-columns',
   'grid-template-rows',
 ]
+
+const LayoutPropertyList = ['left', 'right', 'top', 'bottom', ...LayoutPropsWithoutTLBR]
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1
