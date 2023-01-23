@@ -1,5 +1,4 @@
 import { Key, Keyboard } from '../../utils/keyboard'
-import { objectMap } from '../../core/shared/object-utils'
 import {
   ComplexMap,
   emptyComplexMap,
@@ -7,6 +6,7 @@ import {
   getKeysFromComplexMap,
   getValueFromComplexMap,
 } from '../../utils/map'
+import { CSSProperties } from 'twind'
 
 const key = Keyboard.key
 
@@ -80,6 +80,14 @@ export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
+export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
+export const absolutePositioningProps: Array<keyof CSSProperties> = [
+  'position',
+  'top',
+  'left',
+  'bottom',
+  'right',
+]
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -233,6 +241,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [CONVERT_TO_FLEX_CONTAINER]: shortcut(
     'Convert selected elements to flex containers',
     key('a', ['shift']),
+  ),
+  [REMOVE_ABSOLUTE_POSITIONING]: shortcut(
+    `strips ${absolutePositioningProps.join(', ')} props`,
+    key('x', []),
   ),
 }
 

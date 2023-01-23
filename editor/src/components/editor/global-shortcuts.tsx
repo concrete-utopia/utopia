@@ -94,6 +94,8 @@ import {
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
   CONVERT_TO_FLEX_CONTAINER,
+  REMOVE_ABSOLUTE_POSITIONING,
+  absolutePositioningProps,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -118,6 +120,7 @@ import {
   removeFlexLayoutStrategies,
 } from '../inspector/inspector-strategies/inspector-strategies'
 import { detectAreElementsFlexContainers } from '../inspector/inspector-common'
+import { deleteProperties } from '../canvas/commands/delete-properties-command'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -782,6 +785,22 @@ export function handleKeyDown(
           return []
         }
         return [EditorActions.applyCommandsAction(commands)]
+      },
+      [REMOVE_ABSOLUTE_POSITIONING]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        return [
+          EditorActions.applyCommandsAction(
+            editor.selectedViews.map((view) =>
+              deleteProperties(
+                'always',
+                view,
+                absolutePositioningProps.map((prop) => PP.create(['style', prop])),
+              ),
+            ),
+          ),
+        ]
       },
     })
   }
