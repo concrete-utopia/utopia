@@ -2950,23 +2950,50 @@ export const UPDATE_FNS = {
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
     const layoutKeysToPaste = [
+      'contain',
       'position',
       'display',
-      'top',
-      'left',
-      'bottom',
-      'right',
       'width',
       'height',
+      'minWidth',
+      'maxWidth',
+      'minHeight',
+      'maxHeight',
+      'flex',
+      'flexBasis',
       'flexGrow',
       'flexShrink',
+      'flexDirection',
+      'flexWrap',
+      'justifyContent',
+      'alignItems',
+      'alignContent',
+      'gap',
       'padding',
       'paddingLeft',
       'paddingRight',
       'paddingBottom',
       'paddingTop',
     ]
-    const styleKeysToPaste = ['backgroundColor', 'border', 'opacity', 'borderRadius']
+
+    const styleKeysToPaste = [
+      'backgroundColor',
+      'backgroundImage',
+      'backgroundSize',
+      'border',
+      'borderRadius',
+      'boxShadow',
+      'color',
+      'opacity',
+      'fontFamily',
+      'fontSize',
+      'fontStyle',
+      'fontWeight',
+      'lineHeight',
+      'textDecoration',
+      'textAlign',
+      'textShadow',
+    ]
     if (editor.styleClipboard.length === 0) {
       return editor
     }
