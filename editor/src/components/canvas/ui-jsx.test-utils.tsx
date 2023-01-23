@@ -78,7 +78,7 @@ import {
 } from '../editor/store/editor-state'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { elementPath } from '../../core/shared/element-path'
-import { NO_OP } from '../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
@@ -359,6 +359,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
+      <div id={CanvasContextMenuPortalTargetID}></div>
       <FailJestOnCanvasError />
       <EditorRoot
         dispatch={asyncTestDispatch as EditorDispatch}
