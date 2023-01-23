@@ -353,3 +353,23 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
       assertNever(axis)
   }
 }
+
+export const nukePositioningPropsForAxisCommand = (
+  axis: Axis,
+  path: ElementPath,
+): CanvasCommand => {
+  switch (axis) {
+    case 'horizontal':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'left']),
+        PP.create(['style', 'right']),
+      ])
+    case 'vertical':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'top']),
+        PP.create(['style', 'bottom']),
+      ])
+    default:
+      assertNever(axis)
+  }
+}

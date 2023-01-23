@@ -10,6 +10,7 @@ import {
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  nukePositioningPropsForAxisCommand,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -127,10 +128,15 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       }
 
       return elements.flatMap((path) => {
+        const commonCommands = [
+          nukeSizingPropsForAxisCommand(axis, path),
+          nukePositioningPropsForAxisCommand(axis, path),
+        ]
+
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
           return [
-            nukeSizingPropsForAxisCommand(axis, path),
+            ...commonCommands,
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
@@ -142,13 +148,13 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
           (flexDirection.startsWith('column') && axis === 'horizontal')
         ) {
           return [
-            nukeSizingPropsForAxisCommand(axis, path),
+            ...commonCommands,
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
-          nukeSizingPropsForAxisCommand(axis, path),
+          ...commonCommands,
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })
