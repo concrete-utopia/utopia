@@ -925,6 +925,13 @@ export function clampValue(value: number, minimum: number, maximum: number): num
   return Math.max(Math.min(value, maximum), minimum)
 }
 
+export function wrapValue(value: number, minimum: number, maximum: number): number {
+  if (value > maximum) {
+    return minimum
+  }
+  return value
+}
+
 export function parseNumber(value: string): Either<string, number> {
   const n = parseFloat(value)
   return isNaN(n) ? left(`${value} is not a number`) : right(n)

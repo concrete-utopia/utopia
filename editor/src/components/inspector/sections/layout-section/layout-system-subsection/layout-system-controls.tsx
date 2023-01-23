@@ -6,12 +6,14 @@ import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
+import { clamp, clampValue, wrapValue } from '../../../../../core/shared/math-utils'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { when } from '../../../../../utils/react-conditionals'
 import {
   ChainedNumberInput,
   FunctionIcons,
   Icons,
+  NumberInputProps,
   SquareButton,
   useWrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
@@ -199,11 +201,18 @@ export const PaddingRow = React.memo(() => {
   )
 })
 
-type ControlMode = 'single' | 'axis' | 'global'
+type ControlMode = 'single-value' | 'per-direction' | 'per-side'
+
+const controlModeOrder: ControlMode[] = ['single-value', 'per-direction', 'per-side']
 
 interface PaddingValue {
   controlStatus: ControlStatus
   value: CSSNumber
+}
+
+function valueOrNull(values: PaddingValue[]) {
+  const result = allDirectionsSetWithEqualValues(values)
+  return result.equal ? result.value.value : null
 }
 
 function allDirectionsSetWithEqualValues(values: PaddingValue[]) {
@@ -226,44 +235,33 @@ export const PaddingControl = React.memo(() => {
       stylePropPathMappingFn,
     )
 
-  const initial = {
-    global: allDirectionsSetWithEqualValues([paddingTop, paddingBottom, paddingLeft, paddingRight]),
-    horizontal: allDirectionsSetWithEqualValues([paddingLeft, paddingRight]),
-    vertical: allDirectionsSetWithEqualValues([paddingTop, paddingBottom]),
-  }
+  const [aggregateSingleValue, setAggregateSingleValue] = React.useState(
+    valueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]),
+  )
+  const [aggregatePerDirectionHorizontal, setAggregatePerDirectionHorizontal] = React.useState(
+    valueOrNull([paddingLeft, paddingRight]),
+  )
+  const [aggregatePerDirectionVertical, setAggregatePerDirectionVertical] = React.useState(
+    valueOrNull([paddingTop, paddingBottom]),
+  )
 
   const [mode, setMode] = React.useState<ControlMode>(
-    initial.global.equal
-      ? 'global'
-      : initial.horizontal.equal && initial.vertical.equal
-      ? 'axis'
-      : 'single',
+    aggregateSingleValue != null
+      ? 'single-value'
+      : aggregatePerDirectionHorizontal != null && aggregatePerDirectionVertical != null
+      ? 'per-direction'
+      : 'per-side',
   )
 
-  const [globalValue, setGlobalValue] = React.useState<number | null>(
-    initial.global.equal ? initial.global.value.value : null,
-  )
-  const [horizontalValue, setHorizontalValue] = React.useState<number | null>(
-    initial.horizontal.equal ? initial.horizontal.value.value : null,
-  )
-  const [verticalValue, setVerticalValue] = React.useState<number | null>(
-    initial.vertical.equal ? initial.vertical.value.value : null,
-  )
+  const cycleToNextMode = React.useCallback(() => {
+    const index = controlModeOrder.indexOf(mode) + 1
+    setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
+  }, [mode])
 
   React.useEffect(() => {
-    const global = allDirectionsSetWithEqualValues([
-      paddingTop,
-      paddingBottom,
-      paddingLeft,
-      paddingRight,
-    ])
-    setGlobalValue(global.equal ? global.value.value : null)
-
-    const horizontal = allDirectionsSetWithEqualValues([paddingLeft, paddingRight])
-    setHorizontalValue(horizontal.equal ? horizontal.value.value : null)
-
-    const vertical = allDirectionsSetWithEqualValues([paddingTop, paddingBottom])
-    setVerticalValue(vertical.equal ? vertical.value.value : null)
+    setAggregateSingleValue(valueOrNull([paddingTop, paddingBottom, paddingLeft, paddingRight]))
+    setAggregatePerDirectionHorizontal(valueOrNull([paddingLeft, paddingRight]))
+    setAggregatePerDirectionVertical(valueOrNull([paddingTop, paddingBottom]))
   }, [paddingBottom, paddingTop, paddingLeft, paddingRight])
 
   const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -299,24 +297,10 @@ export const PaddingControl = React.memo(() => {
     paddingLeft.onUnsetValues,
   )
 
-  const cycleMode = React.useCallback(() => {
-    switch (mode) {
-      case 'single':
-        setMode('global')
-        return
-      case 'global':
-        setMode('axis')
-        return
-      case 'axis':
-        setMode('single')
-        return
-    }
-  }, [mode])
-
   const singleValueOnSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setGlobalValue(v.value)
+        setAggregateSingleValue(v.value)
       }
       paddingTopOnSubmitValue(v)
       paddingRightOnSubmitValue(v)
@@ -330,10 +314,11 @@ export const PaddingControl = React.memo(() => {
       paddingLeftOnSubmitValue,
     ],
   )
+
   const singleValueOnTransientSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setGlobalValue(v.value)
+        setAggregateSingleValue(v.value)
       }
       paddingTopOnTransientSubmitValue(v)
       paddingRightOnTransientSubmitValue(v)
@@ -351,17 +336,18 @@ export const PaddingControl = React.memo(() => {
   const horizontalValueOnSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setHorizontalValue(v.value)
+        setAggregatePerDirectionHorizontal(v.value)
       }
       paddingRightOnSubmitValue(v)
       paddingLeftOnSubmitValue(v)
     },
     [paddingRightOnSubmitValue, paddingLeftOnSubmitValue],
   )
+
   const horizontalValueOnTransientSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setHorizontalValue(v.value)
+        setAggregatePerDirectionHorizontal(v.value)
       }
       paddingRightOnTransientSubmitValue(v)
       paddingLeftOnTransientSubmitValue(v)
@@ -372,17 +358,18 @@ export const PaddingControl = React.memo(() => {
   const verticalValueOnSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setVerticalValue(v.value)
+        setAggregatePerDirectionVertical(v.value)
       }
       paddingTopOnSubmitValue(v)
       paddingBottomOnSubmitValue(v)
     },
     [paddingTopOnSubmitValue, paddingBottomOnSubmitValue],
   )
+
   const verticalValueOnTransientSubmitValue = React.useCallback(
     (v: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(v)) {
-        setVerticalValue(v.value)
+        setAggregatePerDirectionVertical(v.value)
       }
       paddingTopOnTransientSubmitValue(v)
       paddingBottomOnTransientSubmitValue(v)
@@ -390,112 +377,109 @@ export const PaddingControl = React.memo(() => {
     [paddingTopOnTransientSubmitValue, paddingBottomOnTransientSubmitValue],
   )
 
+  const cssValueOrNull = (v: number | null): CSSNumber | null => {
+    return v != null ? { value: v, unit: 'px' } : null
+  }
+
+  const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> = []
+  switch (mode) {
+    case 'single-value':
+      chainedPropsToRender.push({
+        DEPRECATED_labelBelow: '↔',
+        value: cssValueOrNull(aggregateSingleValue),
+        numberType: 'Px',
+        defaultUnitToHide: 'px',
+        testId: 'padding-single',
+        onSubmitValue: singleValueOnSubmitValue,
+        onTransientSubmitValue: singleValueOnTransientSubmitValue,
+        style: { width: '100%' },
+      })
+      break
+    case 'per-direction':
+      chainedPropsToRender.push(
+        {
+          DEPRECATED_labelBelow: 'H',
+          value: cssValueOrNull(aggregatePerDirectionHorizontal),
+          numberType: 'Px',
+          defaultUnitToHide: 'px',
+          testId: 'padding-single',
+          onSubmitValue: horizontalValueOnSubmitValue,
+          onTransientSubmitValue: horizontalValueOnTransientSubmitValue,
+          style: { width: '100%' },
+        },
+        {
+          DEPRECATED_labelBelow: 'V',
+          value: cssValueOrNull(aggregatePerDirectionVertical),
+          numberType: 'Px',
+          defaultUnitToHide: 'px',
+          testId: 'padding-single',
+          onSubmitValue: verticalValueOnSubmitValue,
+          onTransientSubmitValue: verticalValueOnTransientSubmitValue,
+        },
+      )
+      break
+    case 'per-side':
+      chainedPropsToRender.push(
+        {
+          value: paddingTop.value,
+          DEPRECATED_labelBelow: 'T',
+          minimum: 0,
+          onSubmitValue: paddingTopOnSubmitValue,
+          onTransientSubmitValue: paddingTopOnTransientSubmitValue,
+          controlStatus: paddingTop.controlStatus,
+          numberType: 'LengthPercent',
+          defaultUnitToHide: 'px',
+          testId: 'padding-T',
+        },
+        {
+          value: paddingRight.value,
+          DEPRECATED_labelBelow: 'R',
+          minimum: 0,
+          onSubmitValue: paddingRightOnSubmitValue,
+          onTransientSubmitValue: paddingRightOnTransientSubmitValue,
+          controlStatus: paddingRight.controlStatus,
+          numberType: 'LengthPercent',
+          defaultUnitToHide: 'px',
+          testId: 'padding-R',
+        },
+        {
+          value: paddingBottom.value,
+          DEPRECATED_labelBelow: 'B',
+          minimum: 0,
+          onSubmitValue: paddingBottomOnSubmitValue,
+          onTransientSubmitValue: paddingBottomOnTransientSubmitValue,
+          controlStatus: paddingBottom.controlStatus,
+          numberType: 'LengthPercent',
+          defaultUnitToHide: 'px',
+          testId: 'padding-B',
+        },
+        {
+          value: paddingLeft.value,
+          DEPRECATED_labelBelow: 'L',
+          minimum: 0,
+          onSubmitValue: paddingLeftOnSubmitValue,
+          onTransientSubmitValue: paddingLeftOnTransientSubmitValue,
+          controlStatus: paddingLeft.controlStatus,
+          numberType: 'LengthPercent',
+          defaultUnitToHide: 'px',
+          testId: 'padding-L',
+        },
+      )
+      break
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4, padding: 0, margin: 0 }}>
-      {when(
-        mode === 'global',
-        <ChainedNumberInput
-          idPrefix='padding'
-          style={{ flex: 1 }}
-          propsArray={[
-            {
-              DEPRECATED_labelBelow: '↔',
-              value: globalValue != null ? { value: globalValue, unit: 'px' } : null,
-              numberType: 'Px',
-              defaultUnitToHide: 'px',
-              testId: 'padding-single',
-              onSubmitValue: singleValueOnSubmitValue,
-              onTransientSubmitValue: singleValueOnTransientSubmitValue,
-              style: { width: '100%' },
-            },
-          ]}
-        />,
-      )}
-      {when(
-        mode === 'axis',
-        <ChainedNumberInput
-          idPrefix='padding'
-          style={{ flex: 1, gap: 4 }}
-          propsArray={[
-            {
-              DEPRECATED_labelBelow: 'H',
-              value: horizontalValue != null ? { value: horizontalValue, unit: 'px' } : null,
-              numberType: 'Px',
-              defaultUnitToHide: 'px',
-              testId: 'padding-single',
-              onSubmitValue: horizontalValueOnSubmitValue,
-              onTransientSubmitValue: horizontalValueOnTransientSubmitValue,
-              style: { width: '100%' },
-            },
-            {
-              DEPRECATED_labelBelow: 'V',
-              value: verticalValue != null ? { value: verticalValue, unit: 'px' } : null,
-              numberType: 'Px',
-              defaultUnitToHide: 'px',
-              testId: 'padding-single',
-              onSubmitValue: verticalValueOnSubmitValue,
-              onTransientSubmitValue: verticalValueOnTransientSubmitValue,
-            },
-          ]}
-        />,
-      )}
-      {when(
-        mode === 'single',
-        <ChainedNumberInput
-          idPrefix='padding'
-          style={{ flex: 1, gap: 4 }}
-          propsArray={[
-            {
-              value: paddingTop.value,
-              DEPRECATED_labelBelow: 'T',
-              minimum: 0,
-              onSubmitValue: paddingTopOnSubmitValue,
-              onTransientSubmitValue: paddingTopOnTransientSubmitValue,
-              controlStatus: paddingTop.controlStatus,
-              numberType: 'LengthPercent',
-              defaultUnitToHide: 'px',
-              testId: 'padding-T',
-            },
-            {
-              value: paddingRight.value,
-              DEPRECATED_labelBelow: 'R',
-              minimum: 0,
-              onSubmitValue: paddingRightOnSubmitValue,
-              onTransientSubmitValue: paddingRightOnTransientSubmitValue,
-              controlStatus: paddingRight.controlStatus,
-              numberType: 'LengthPercent',
-              defaultUnitToHide: 'px',
-              testId: 'padding-R',
-            },
-            {
-              value: paddingBottom.value,
-              DEPRECATED_labelBelow: 'B',
-              minimum: 0,
-              onSubmitValue: paddingBottomOnSubmitValue,
-              onTransientSubmitValue: paddingBottomOnTransientSubmitValue,
-              controlStatus: paddingBottom.controlStatus,
-              numberType: 'LengthPercent',
-              defaultUnitToHide: 'px',
-              testId: 'padding-B',
-            },
-            {
-              value: paddingLeft.value,
-              DEPRECATED_labelBelow: 'L',
-              minimum: 0,
-              onSubmitValue: paddingLeftOnSubmitValue,
-              onTransientSubmitValue: paddingLeftOnTransientSubmitValue,
-              controlStatus: paddingLeft.controlStatus,
-              numberType: 'LengthPercent',
-              defaultUnitToHide: 'px',
-              testId: 'padding-L',
-            },
-          ]}
-        />,
-      )}
-      <SquareButton highlight onClick={cycleMode}>
-        {when(mode === 'global', <Icons.Dot />)}
-        {when(mode === 'single', <Icons.Dot />)}
-        {when(mode === 'axis', <Icons.FourDots />)}
+      <ChainedNumberInput
+        idPrefix='padding'
+        style={{ flex: 1, gap: 4 }}
+        propsArray={chainedPropsToRender}
+      />
+      ,
+      <SquareButton highlight onClick={cycleToNextMode}>
+        {when(mode === 'single-value', <Icons.Dot />)}
+        {when(mode === 'per-direction', <Icons.FourDots />)}
+        {when(mode === 'per-side', <Icons.Dot />)}
       </SquareButton>
     </div>
   )
