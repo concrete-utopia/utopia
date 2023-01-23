@@ -30,7 +30,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
 
   const storeColorSwatches = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.colorSwatches,
+    (store) => store.editor.colorSwatches ?? [],
     'ColorPickerSwatches color swatches',
   )
 
