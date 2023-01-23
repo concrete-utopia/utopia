@@ -211,12 +211,15 @@ interface PaddingValue {
   value: CSSNumber
 }
 
-function paddingValueOrNull(values: PaddingValue[]) {
+function paddingValueOrNull(values: PaddingValue[]): number | null {
   const result = allDirectionsSetWithEqualValues(values)
   return result.equal ? result.value.value : null
 }
 
-function allDirectionsSetWithEqualValues(values: PaddingValue[]) {
+function allDirectionsSetWithEqualValues(values: PaddingValue[]): {
+  equal: boolean
+  value: CSSNumber
+} {
   return {
     equal: values.every(
       (v) =>
