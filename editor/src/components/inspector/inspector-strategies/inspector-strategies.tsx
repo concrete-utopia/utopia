@@ -10,6 +10,8 @@ import {
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
+  hugContentsApplicableForText,
+  MaxContent,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -18,9 +20,8 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { hugContentsTextStrategy } from './hug-contents-text'
 import { InspectorStrategy } from './inspector-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (
@@ -172,12 +173,13 @@ export const setPropFixedStrategies = (axis: Axis, value: number): Array<Inspect
 ]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
-  hugContentsTextStrategy(axis),
   {
     name: 'Set to Hug',
     strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter((path) =>
-        hugContentsApplicableForContainer(metadata, path),
+      const elements = elementPaths.filter(
+        (path) =>
+          hugContentsApplicableForContainer(metadata, path) ||
+          hugContentsApplicableForText(metadata, path),
       )
 
       if (elements.length === 0) {
@@ -186,7 +188,7 @@ export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
 
       return elements.flatMap((path) => [
         nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'max-content'),
+        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
       ])
     },
   },
