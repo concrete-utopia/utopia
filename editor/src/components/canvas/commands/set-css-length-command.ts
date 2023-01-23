@@ -16,9 +16,9 @@ import {
   parseCSSPercent,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
+import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
-import { deleteValuesAtPath } from './delete-properties-command'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
@@ -50,6 +50,13 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
   command: SetCssLengthProperty,
 ) => {
+  // in case of width or height change, delete min, max and flex props
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    command.target,
+    command.property,
+  )
+
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -113,22 +120,6 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
       value: jsxAttributeValue(printedValue, emptyComments),
     })
   }
-
-  let propertiesToDelete: Array<PropertyPath> = []
-  switch (PP.lastPart(command.property)) {
-    case 'width':
-      propertiesToDelete = [PP.create(['style', 'minWidth']), PP.create(['style', 'maxWidth'])]
-      break
-    case 'height':
-      propertiesToDelete = [PP.create(['style', 'minHeight']), PP.create(['style', 'maxHeight'])]
-      break
-  }
-
-  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
-    editorState,
-    command.target,
-    propertiesToDelete,
-  )
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
