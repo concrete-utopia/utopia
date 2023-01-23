@@ -388,36 +388,38 @@ export const PaddingControl = React.memo(() => {
   switch (mode) {
     case 'single-value':
       chainedPropsToRender.push({
-        DEPRECATED_labelBelow: '↔',
+        style: { width: '100%' },
         value: cssValueOrNull(aggregateSingleValue),
+        DEPRECATED_labelBelow: '↔',
+        minimum: 0,
+        onSubmitValue: singleValueOnSubmitValue,
+        onTransientSubmitValue: singleValueOnTransientSubmitValue,
         numberType: 'Px',
         defaultUnitToHide: 'px',
         testId: 'padding-single',
-        onSubmitValue: singleValueOnSubmitValue,
-        onTransientSubmitValue: singleValueOnTransientSubmitValue,
-        style: { width: '100%' },
       })
       break
     case 'per-direction':
       chainedPropsToRender.push(
         {
-          DEPRECATED_labelBelow: 'H',
           value: cssValueOrNull(aggregatePerDirectionHorizontal),
-          numberType: 'Px',
-          defaultUnitToHide: 'px',
-          testId: 'padding-single',
+          DEPRECATED_labelBelow: 'H',
+          minimum: 0,
           onSubmitValue: horizontalValueOnSubmitValue,
           onTransientSubmitValue: horizontalValueOnTransientSubmitValue,
-          style: { width: '100%' },
-        },
-        {
-          DEPRECATED_labelBelow: 'V',
-          value: cssValueOrNull(aggregatePerDirectionVertical),
           numberType: 'Px',
           defaultUnitToHide: 'px',
           testId: 'padding-single',
+        },
+        {
+          value: cssValueOrNull(aggregatePerDirectionVertical),
+          DEPRECATED_labelBelow: 'V',
+          minimum: 0,
           onSubmitValue: verticalValueOnSubmitValue,
           onTransientSubmitValue: verticalValueOnTransientSubmitValue,
+          numberType: 'Px',
+          defaultUnitToHide: 'px',
+          testId: 'padding-single',
         },
       )
       break
