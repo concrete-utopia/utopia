@@ -130,6 +130,48 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.minHeight).toEqual('')
       expect(div.style.maxHeight).toEqual('')
     })
+
+    it('sets children to fixed size on the horizontal axis to avoid parent collapsing', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildSetToHorizontalFill,
+        'await-first-dom-report',
+      )
+      const div = await select(editor, 'parent')
+      const child = editor.renderedDOM.getByTestId('child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(div.style.height).toEqual('759px')
+      expect(child.style.height).toEqual('149px')
+      expect(div.style.width).toEqual('min-content')
+      expect(child.style.width).toEqual('759px')
+    })
+  })
+
+  it('sets children to fixed size on the vertical axis to avoid parent collapsing', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithChildSetToVerticalFill,
+      'await-first-dom-report',
+    )
+    const div = await select(editor, 'parent')
+    const child = editor.renderedDOM.getByTestId('child')
+
+    const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+    mouseClickAtPoint(control, { x: 5, y: 5 })
+
+    const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+    mouseClickAtPoint(button, { x: 5, y: 5 })
+
+    expect(div.style.width).toEqual('700px')
+    expect(child.style.width).toEqual('149px')
+    expect(div.style.height).toEqual('min-content')
+    expect(child.style.height).toEqual('700px')
   })
 })
 
@@ -219,6 +261,71 @@ export var storyboard = (
           maxHeight: 1000,
           width: 229,
           height: 149,
+          contain: 'layout',
+        }}
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToHorizontalFill = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex'
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          flexGrow: 1,
+          height: 149,
+          contain: 'layout',
+        }}
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToVerticalFill = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          flexGrow: 1,
+          width: 149,
           contain: 'layout',
         }}
       />
