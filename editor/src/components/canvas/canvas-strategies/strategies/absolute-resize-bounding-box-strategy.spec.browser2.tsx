@@ -39,6 +39,7 @@ import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-help
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
+import { MaxContent } from '../../../inspector/inspector-common'
 
 function resizeElement(
   renderResult: EditorRenderResult,
@@ -1182,35 +1183,33 @@ describe('Double click on resize edge', () => {
 
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
-  const minContent = 'min-content'
-  const maxContent = 'max-content'
 
   it('double click left edge', async () => {
     const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionLeft))
     expect(div.style.height).toEqual('445px')
-    expect(div.style.width).toEqual(minContent)
+    expect(div.style.width).toEqual(MaxContent)
   })
 
   it('double click right edge', async () => {
     const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
     expect(div.style.height).toEqual('445px')
-    expect(div.style.width).toEqual(minContent)
+    expect(div.style.width).toEqual(MaxContent)
   })
 
   it('double click top edge', async () => {
     const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionTop))
     expect(div.style.width).toEqual('637px')
-    expect(div.style.height).toEqual(minContent)
+    expect(div.style.height).toEqual(MaxContent)
   })
 
   it('double click bottom edge', async () => {
     const editor = await renderTestEditorWithCode(projectForEdgeDblClick, 'await-first-dom-report')
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
     expect(div.style.width).toEqual('637px')
-    expect(div.style.height).toEqual(minContent)
+    expect(div.style.height).toEqual(MaxContent)
   })
 
   it("not applicable when children don't participate in the layout", async () => {
@@ -1260,7 +1259,7 @@ describe('Double click on resize edge', () => {
     )
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
     expect(div.style.width).toEqual('637px')
-    expect(div.style.height).toEqual(maxContent)
+    expect(div.style.height).toEqual(MaxContent)
   })
 
   it('`max-content` is applied to `width` when element only has text children', async () => {
@@ -1269,7 +1268,7 @@ describe('Double click on resize edge', () => {
       'await-first-dom-report',
     )
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
-    expect(div.style.width).toEqual(maxContent)
+    expect(div.style.width).toEqual(MaxContent)
     expect(div.style.height).toEqual('445px')
   })
 })

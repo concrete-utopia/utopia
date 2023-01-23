@@ -3,6 +3,7 @@ import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
 
 describe('Resize to fit control', () => {
@@ -14,10 +15,10 @@ describe('Resize to fit control', () => {
     const view = await selectView(editor)
     await clickResizeToFit(editor)
 
-    expect(view.style.width).toEqual('min-content')
+    expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
     expect(view.style.maxWidth).toEqual('')
-    expect(view.style.height).toEqual('min-content')
+    expect(view.style.height).toEqual(MaxContent)
     expect(view.style.minHeight).toEqual('')
     expect(view.style.maxHeight).toEqual('')
   })
