@@ -20,12 +20,13 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { cssNumber, CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { assertNever } from '../../../core/shared/utils'
 import { PropertyPath } from 'src/core/shared/project-file-types'
+import { clamp } from '../../../core/shared/math-utils'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -120,7 +121,10 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
+export const setPropFillStrategies = (
+  axis: Axis,
+  value: 'default' | number,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
     strategy: (metadata, elementPaths) => {
@@ -133,9 +137,16 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+          const checkedValue =
+            value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
           return [
             nukeSizingPropsForAxisCommand(axis, path),
-            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+            setProperty(
+              'always',
+              path,
+              PP.create(['style', widthHeightFromAxis(axis)]),
+              printCSSNumber(checkedValue, null),
+            ),
           ]
         }
 
@@ -145,15 +156,29 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
           (flexDirection.startsWith('row') && axis === 'vertical') ||
           (flexDirection.startsWith('column') && axis === 'horizontal')
         ) {
+          const checkedValue =
+            value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
           return [
             nukeSizingPropsForAxisCommand(axis, path),
-            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+            setProperty(
+              'always',
+              path,
+              PP.create(['style', widthHeightFromAxis(axis)]),
+              printCSSNumber(checkedValue, null),
+            ),
           ]
         }
 
+        const checkedValue = value === 'default' ? cssNumber(1, null) : cssNumber(value, null)
+
         return [
           nukeSizingPropsForAxisCommand(axis, path),
-          setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
+          setProperty(
+            'always',
+            path,
+            PP.create(['style', 'flexGrow']),
+            printCSSNumber(checkedValue, null),
+          ),
         ]
       })
     },

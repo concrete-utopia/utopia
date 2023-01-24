@@ -801,7 +801,11 @@ export const NumberInput = React.memo<NumberInputProps>(
   },
 )
 
-interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
+type NumberInputOptionalNumberType = Omit<AbstractNumberInputProps<number>, 'numberType'> & {
+  numberType?: CSSNumberType
+}
+
+interface SimpleNumberInputProps extends NumberInputOptionalNumberType {
   onSubmitValue: OnSubmitValueOrEmpty<number>
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>
   onForcedSubmitValue: OnSubmitValueOrEmpty<number>
@@ -824,6 +828,7 @@ export const SimpleNumberInput = React.memo(
     onSubmitValue,
     onTransientSubmitValue,
     onForcedSubmitValue,
+    numberType,
     ...sharedProps
   }: SimpleNumberInputProps) => {
     const wrappedProps: NumberInputProps = {
@@ -832,7 +837,7 @@ export const SimpleNumberInput = React.memo(
       onSubmitValue: wrappedSimpleOnSubmitValue(onSubmitValue),
       onTransientSubmitValue: wrappedSimpleOnSubmitValue(onTransientSubmitValue),
       onForcedSubmitValue: wrappedSimpleOnSubmitValue(onForcedSubmitValue),
-      numberType: 'Unitless',
+      numberType: numberType ?? 'Unitless',
     }
     return <NumberInput {...wrappedProps} />
   },
