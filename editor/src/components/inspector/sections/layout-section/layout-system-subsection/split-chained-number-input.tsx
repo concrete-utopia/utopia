@@ -11,7 +11,7 @@ import {
   Tooltip,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
-import { ControlStatus } from '../../../common/control-status'
+import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
 
 export type ControlMode =
@@ -23,20 +23,36 @@ const controlModeOrder: ControlMode[] = ['one-value', 'per-direction', 'per-side
 
 interface ControlCSSNumber {
   controlStatus: ControlStatus
+  propertyStatus: PropertyStatus
   value: CSSNumber
   onSubmitValue: (newValue: CSSNumber, transient?: boolean) => void
   onTransientSubmitValue: (newValue: CSSNumber) => void
   onUnsetValues: () => void
 }
 
+function isControlStatusActive(status: ControlStatus): boolean {
+  switch (status) {
+    case 'off':
+    case 'unset':
+    case 'disabled':
+    case 'detected':
+    case 'multiselect-disabled':
+    case 'trivial-default':
+      return false
+    default:
+      return true
+  }
+}
+
 // compare the given values and if they're equal return their shared value, or null otherwise
 function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | null {
-  const areEqual = values.every(
-    (v) =>
-      v.controlStatus === 'simple' &&
+  const areEqual = values.every((v) => {
+    return (
+      isControlStatusActive(v.controlStatus) &&
       v.value.value === values[0].value.value &&
-      v.value.unit === values[0].value.unit,
-  )
+      v.value.unit === values[0].value.unit
+    )
+  })
   if (!areEqual) {
     return null
   }
@@ -44,7 +60,7 @@ function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | nul
 }
 
 function areAllSidesUnset(values: ControlCSSNumber[]): boolean {
-  return values.every((v) => v.controlStatus !== 'simple')
+  return values.every((v) => !isControlStatusActive(v.controlStatus))
 }
 
 function cssNumberValueOrNull(values: ControlCSSNumber[]): number | null {
@@ -68,45 +84,41 @@ export interface SplitChainedNumberInputProps {
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps) => {
   const { name, top, left, bottom, right } = props
 
+  const [aggOneValue, setAggOneValue] = React.useState<number | null>(null)
+  const [aggHorizontal, setAggHorizontal] = React.useState<number | null>(null)
+  const [aggVertical, setAggVertical] = React.useState<number | null>(null)
+  const [mode, setMode] = React.useState<ControlMode | null>(null)
+
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
   const horizontalSides = React.useMemo(() => [left, right], [left, right])
   const verticalSides = React.useMemo(() => [top, bottom], [top, bottom])
   const allSidesUnset = React.useMemo(() => areAllSidesUnset(allSides), [allSides])
 
-  const [aggregateSingleValue, setAggregateSingleValue] = React.useState(
-    cssNumberValueOrNull(allSides),
-  )
-  const [aggregatePerDirectionHorizontal, setAggregatePerDirectionHorizontal] = React.useState(
-    cssNumberValueOrNull(horizontalSides),
-  )
-  const [aggregatePerDirectionVertical, setAggregatePerDirectionVertical] = React.useState(
-    cssNumberValueOrNull(verticalSides),
-  )
-
   const getInitialMode = React.useCallback(() => {
-    return aggregateSingleValue != null
+    return aggOneValue != null
       ? 'one-value'
-      : aggregatePerDirectionHorizontal != null && aggregatePerDirectionVertical != null
+      : aggHorizontal != null && aggVertical != null
       ? 'per-direction'
       : allSidesUnset
       ? props.defaultMode ?? 'per-side'
       : 'per-side'
-  }, [
-    aggregateSingleValue,
-    aggregatePerDirectionHorizontal,
-    aggregatePerDirectionVertical,
-    allSidesUnset,
-    props.defaultMode,
-  ])
+  }, [aggOneValue, aggHorizontal, aggVertical, allSidesUnset, props.defaultMode])
 
-  const [mode, setMode] = React.useState<ControlMode | null>(null)
+  React.useEffect(() => {
+    if (mode != null) {
+      return
+    }
+    setAggOneValue(cssNumberValueOrNull(allSides))
+    setAggHorizontal(cssNumberValueOrNull(horizontalSides))
+    setAggVertical(cssNumberValueOrNull(verticalSides))
+  }, [props.selectedViews, mode, allSides, horizontalSides, verticalSides])
 
   React.useEffect(() => {
     if (mode != null) {
       return
     }
     setMode(getInitialMode())
-  }, [props.selectedViews, getInitialMode, mode])
+  }, [getInitialMode, mode])
 
   React.useEffect(() => {
     return function () {
@@ -122,19 +134,13 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
   }, [mode])
 
-  React.useEffect(() => {
-    setAggregateSingleValue(cssNumberValueOrNull(allSides))
-    setAggregatePerDirectionHorizontal(cssNumberValueOrNull(horizontalSides))
-    setAggregatePerDirectionVertical(cssNumberValueOrNull(verticalSides))
-  }, [allSides, horizontalSides, verticalSides])
-
   const onSubmitValue = (old: ControlCSSNumber) =>
     wrappedEmptyOrUnknownOnSubmitValue(old.onSubmitValue, old.onUnsetValues)
 
   const onTransientSubmitValue = (old: ControlCSSNumber) =>
     wrappedEmptyOrUnknownOnSubmitValue(old.onTransientSubmitValue, old.onUnsetValues)
 
-  const aggregateOnSubmitValue =
+  const aggOnSubmitValue =
     (update: (v: number) => void, sides: ControlCSSNumber[]) =>
     (input: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(input)) {
@@ -143,7 +149,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       sides.forEach((side) => onSubmitValue(side)(input))
     }
 
-  const aggregateTransientOnSubmitValue =
+  const aggTransientOnSubmitValue =
     (update: (v: number) => void, sides: ControlCSSNumber[]) =>
     (input: UnknownOrEmptyInput<CSSNumber>) => {
       if (isCSSNumber(input)) {
@@ -161,46 +167,40 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     case 'one-value':
       chainedPropsToRender.push({
         style: { width: '100%' },
-        value: cssValueOrNull(aggregateSingleValue),
+        value: cssValueOrNull(aggOneValue),
         DEPRECATED_labelBelow: '↔',
         minimum: 0,
-        onSubmitValue: aggregateOnSubmitValue(setAggregateSingleValue, allSides),
-        onTransientSubmitValue: aggregateTransientOnSubmitValue(setAggregateSingleValue, allSides),
+        onSubmitValue: aggOnSubmitValue(setAggOneValue, allSides),
+        onTransientSubmitValue: aggTransientOnSubmitValue(setAggOneValue, allSides),
         numberType: 'Px',
         defaultUnitToHide: 'px',
-        testId: `${name}-one-value`,
+        controlStatus: allSides[0].controlStatus,
+        testId: `${name}-one`,
       })
       break
     case 'per-direction':
       chainedPropsToRender.push(
         {
-          value: cssValueOrNull(aggregatePerDirectionHorizontal),
+          value: cssValueOrNull(aggHorizontal),
           DEPRECATED_labelBelow: 'H',
           minimum: 0,
-          onSubmitValue: aggregateOnSubmitValue(
-            setAggregatePerDirectionHorizontal,
-            horizontalSides,
-          ),
-          onTransientSubmitValue: aggregateTransientOnSubmitValue(
-            setAggregatePerDirectionHorizontal,
-            horizontalSides,
-          ),
+          onSubmitValue: aggOnSubmitValue(setAggHorizontal, horizontalSides),
+          onTransientSubmitValue: aggTransientOnSubmitValue(setAggHorizontal, horizontalSides),
           numberType: 'Px',
+          controlStatus: horizontalSides[0].controlStatus,
           defaultUnitToHide: 'px',
-          testId: `${name}-horizontal`,
+          testId: `${name}-H`,
         },
         {
-          value: cssValueOrNull(aggregatePerDirectionVertical),
+          value: cssValueOrNull(aggVertical),
           DEPRECATED_labelBelow: 'V',
           minimum: 0,
-          onSubmitValue: aggregateOnSubmitValue(setAggregatePerDirectionVertical, verticalSides),
-          onTransientSubmitValue: aggregateTransientOnSubmitValue(
-            setAggregatePerDirectionVertical,
-            verticalSides,
-          ),
+          onSubmitValue: aggOnSubmitValue(setAggVertical, verticalSides),
+          onTransientSubmitValue: aggTransientOnSubmitValue(setAggVertical, verticalSides),
           numberType: 'Px',
+          controlStatus: verticalSides[0].controlStatus,
           defaultUnitToHide: 'px',
-          testId: `${name}-vertical`,
+          testId: `${name}-V`,
         },
       )
       break

@@ -39,6 +39,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
+import { wait } from '../../../utils/utils.test-utils'
 
 async function getControl(
   controlTestId: string,
@@ -1661,7 +1662,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('padding-L')
+      await screen.findByTestId('padding-H')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1672,8 +1673,8 @@ describe('inspector tests with real metadata', () => {
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-maxWidth-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingHorizontalControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1697,9 +1698,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
@@ -1717,7 +1718,6 @@ describe('inspector tests with real metadata', () => {
       `"detected-fromcss"`,
     )
   })
-
   it('Empty style with lots of trivial defaults', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
@@ -1770,7 +1770,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('padding-L')
+      await screen.findByTestId('padding-H')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1781,8 +1781,8 @@ describe('inspector tests with real metadata', () => {
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-maxHeight-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingHorizontalControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1806,9 +1806,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
