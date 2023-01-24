@@ -8,6 +8,8 @@ import {
   Axis,
   detectFillHugFixedState,
   hugContentsApplicableForContainer,
+  hugContentsApplicableForText,
+  MaxContent,
   nukeSizingPropsForAxisCommand,
   sizeToVisualDimensions,
   widthHeightFromAxis,
@@ -21,21 +23,16 @@ function hugContentsSingleElement(
 ): Array<CanvasCommand> {
   const basicCommands = [
     nukeSizingPropsForAxisCommand(axis, elementPath),
-    setProperty(
-      'always',
-      elementPath,
-      PP.create(['style', widthHeightFromAxis(axis)]),
-      'min-content',
-    ),
+    setProperty('always', elementPath, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
   ]
 
   const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)
   const transformChildrenToFixedCommands = chilren.flatMap((child) => {
     const state = detectFillHugFixedState(axis, metadata, child)
-    if (state == null || state.type === 'fill') {
-      return sizeToVisualDimensions(metadata, child)
+    if (state?.type === 'fixed' || state?.type === 'hug') {
+      return []
     }
-    return []
+    return sizeToVisualDimensions(metadata, child)
   })
 
   return [...basicCommands, ...transformChildrenToFixedCommands]
@@ -44,8 +41,10 @@ function hugContentsSingleElement(
 export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
   name: 'Set to Hug',
   strategy: (metadata, elementPaths) => {
-    const elements = elementPaths.filter((path) =>
-      hugContentsApplicableForContainer(metadata, path),
+    const elements = elementPaths.filter(
+      (path) =>
+        hugContentsApplicableForContainer(metadata, path) ||
+        hugContentsApplicableForText(metadata, path),
     )
 
     if (elements.length === 0) {
