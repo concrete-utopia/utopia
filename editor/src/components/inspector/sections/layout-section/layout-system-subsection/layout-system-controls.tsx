@@ -203,6 +203,7 @@ export const PaddingControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       name='padding'
+      defaultMode='per-direction'
       top={paddingTop}
       left={paddingLeft}
       bottom={paddingBottom}

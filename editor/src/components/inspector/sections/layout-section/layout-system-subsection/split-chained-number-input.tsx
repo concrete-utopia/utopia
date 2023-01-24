@@ -12,7 +12,7 @@ import {
 import { ControlStatus } from '../../../common/control-status'
 import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
 
-type ControlMode =
+export type ControlMode =
   | 'one-value' // a single value that applies to all sides
   | 'per-direction' // two values that group per direction (vertical / horizontal)
   | 'per-side' // one distinct value per side (TLBR)
@@ -41,6 +41,10 @@ function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | nul
   return values[0].value
 }
 
+function areAllSidesUnset(values: ControlCSSNumber[]): boolean {
+  return values.every((v) => v.controlStatus !== 'simple')
+}
+
 function cssNumberValueOrNull(values: ControlCSSNumber[]): number | null {
   const result = getSharedValueIfEqualSides(values)
   if (result == null) {
@@ -51,6 +55,7 @@ function cssNumberValueOrNull(values: ControlCSSNumber[]): number | null {
 
 export interface SplitChainedNumberInputProps {
   name: string
+  defaultMode?: ControlMode
   top: ControlCSSNumber
   left: ControlCSSNumber
   bottom: ControlCSSNumber
@@ -63,6 +68,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
   const horizontalSides = React.useMemo(() => [left, right], [left, right])
   const verticalSides = React.useMemo(() => [top, bottom], [top, bottom])
+  const defaultMode = props.defaultMode ?? 'per-side'
 
   const [aggregateSingleValue, setAggregateSingleValue] = React.useState(
     cssNumberValueOrNull([top, left, bottom, right]),
@@ -79,6 +85,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       ? 'one-value'
       : aggregatePerDirectionHorizontal != null && aggregatePerDirectionVertical != null
       ? 'per-direction'
+      : areAllSidesUnset([top, left, bottom, right])
+      ? defaultMode
       : 'per-side',
   )
 
