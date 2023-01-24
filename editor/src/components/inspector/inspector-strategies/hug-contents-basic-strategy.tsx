@@ -4,6 +4,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { setProperty } from '../../canvas/commands/set-property-command'
+import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import {
   Axis,
   detectFillHugFixedState,
@@ -15,6 +16,8 @@ import {
   widthHeightFromAxis,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
+
+const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
 function hugContentsSingleElement(
   axis: Axis,
@@ -32,7 +35,10 @@ function hugContentsSingleElement(
     if (state?.type === 'fixed' || state?.type === 'hug') {
       return []
     }
-    return sizeToVisualDimensions(metadata, child)
+    return [
+      ...sizeToVisualDimensions(metadata, child),
+      showToastCommand('Children converted to fixed size', 'INFO', CHILDREN_CONVERTED_TOAST_ID),
+    ]
   })
 
   return [...basicCommands, ...transformChildrenToFixedCommands]
