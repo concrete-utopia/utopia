@@ -125,7 +125,7 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
 
 export const setPropFillStrategies = (
   axis: Axis,
-  otherAxisFilled: boolean,
+  otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
@@ -141,7 +141,7 @@ export const setPropFillStrategies = (
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
           return [
             nukeSizingPropsForAxisCommand(axis, path),
-            otherAxisFilled
+            otherAxisSetToFill
               ? nukeAllAbsolutePositioningPropsCommand(path)
               : nukePositioningPropsForAxisCommand(axis, path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),

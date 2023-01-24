@@ -204,6 +204,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerHorizontallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'horizontal',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const widthComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -225,6 +234,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerVerticallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'vertical',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const heightComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -241,7 +259,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         heightComputedValueRef.current,
         'vertical',
         value,
-        widthCurrentValue?.type === 'fill',
+        fillsContainerHorizontallyRef.current,
       )
       executeFirstApplicableStrategy(
         dispatch,
@@ -250,7 +268,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, widthCurrentValue, heightComputedValueRef, metadataRef, selectedViewsRef],
+    [
+      dispatch,
+      fillsContainerHorizontallyRef,
+      heightComputedValueRef,
+      metadataRef,
+      selectedViewsRef,
+    ],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -288,7 +312,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         widthComputedValueRef.current,
         'horizontal',
         value,
-        heightCurrentValue?.type === 'fill',
+        fillsContainerVerticallyRef.current,
       )
       executeFirstApplicableStrategy(
         dispatch,
@@ -297,7 +321,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, heightCurrentValue, metadataRef, selectedViewsRef, widthComputedValueRef],
+    [dispatch, fillsContainerVerticallyRef, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
@@ -373,11 +397,11 @@ function strategyForMode(
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
-  otherAxisFilled: boolean,
+  otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(axis, otherAxisFilled)
+      return setPropFillStrategies(axis, otherAxisSetToFill)
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
