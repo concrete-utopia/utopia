@@ -179,6 +179,7 @@ export const Icons = {
   ExternalLinkSmaller: makeIcon({ type: 'externallink-smaller', color: 'main' }),
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
+  TwoDots: makeIcon({ type: 'twodots', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
   FlexRow: makeIcon({
     type: 'flexDirection-row-regular-nowrap',

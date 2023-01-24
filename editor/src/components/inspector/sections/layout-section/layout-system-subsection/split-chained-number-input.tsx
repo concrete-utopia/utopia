@@ -3,10 +3,10 @@ import { wrapValue } from '../../../../../core/shared/math-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
 import {
-  Button,
   ChainedNumberInput,
   Icons,
   NumberInputProps,
+  SquareButton,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
@@ -228,13 +228,13 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         style={{ flex: 1, gap: 4 }}
         propsArray={chainedPropsToRender}
       />
-      <Button highlight onClick={cycleToNextMode}>
+      <SquareButton highlight onClick={cycleToNextMode}>
         <>
-          {when(mode === 'one-value', <Icons.Dot />)}
+          {when(mode === 'one-value', <Icons.TwoDots />)}
           {when(mode === 'per-direction', <Icons.FourDots />)}
           {when(mode === 'per-side', <Icons.Dot />)}
         </>
-      </Button>
+      </SquareButton>
     </div>
   )
 })
