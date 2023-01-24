@@ -59,6 +59,7 @@ import {
   runConvertCssPercentToPx,
 } from './convert-css-percent-to-px-command'
 import { HideInNavigatorCommand, runHideInNavigatorCommand } from './hide-in-navigator-command'
+import { runShowToastCommand, ShowToastCommand } from './show-toast-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -103,6 +104,7 @@ export type CanvasCommand =
   | HighlightElementsCommand
   | ConvertCssPercentToPx
   | HideInNavigatorCommand
+  | ShowToastCommand
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -168,6 +170,8 @@ export const runCanvasCommand = (
       return runConvertCssPercentToPx(editorState, command)
     case 'HIDE_IN_NAVIGATOR_COMMAND':
       return runHideInNavigatorCommand(editorState, command)
+    case 'SHOW_TOAST_COMMAND':
+      return runShowToastCommand(editorState, command, commandLifecycle)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
