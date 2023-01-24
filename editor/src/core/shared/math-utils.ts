@@ -929,6 +929,9 @@ export function wrapValue(value: number, minimum: number, maximum: number): numb
   if (value > maximum) {
     return minimum
   }
+  if (value < minimum) {
+    return maximum
+  }
   return value
 }
 
