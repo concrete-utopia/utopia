@@ -9,7 +9,7 @@ import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CSSNumber, EmptyInputValue } from './common/css-utils'
+import { cssNumber, CSSNumber, EmptyInputValue } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   Axis,
@@ -185,7 +185,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('vertical', value),
+          setPropFixedStrategies('always', 'vertical', cssNumber(value, null)),
         )
       }
     },
@@ -199,7 +199,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('horizontal', value),
+          setPropFixedStrategies('always', 'horizontal', cssNumber(value, null)),
         )
       }
     },
@@ -300,7 +300,7 @@ function strategyForMode(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
-      return setPropFixedStrategies(axis, fixedValue)
+      return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
   }

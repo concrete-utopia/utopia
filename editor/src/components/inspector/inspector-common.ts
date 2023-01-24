@@ -405,7 +405,7 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
-  if (prop === 'min-content') {
+  if (prop === MaxContent) {
     return { type: 'hug' }
   }
 
@@ -420,3 +420,5 @@ export function detectFillHugFixedState(
 
   return null
 }
+
+export const MaxContent = 'max-content' as const

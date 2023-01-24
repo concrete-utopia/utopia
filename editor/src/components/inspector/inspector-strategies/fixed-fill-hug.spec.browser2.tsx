@@ -5,6 +5,7 @@ import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-h
 import { EditorRenderResult, renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
 import { FlexDirection } from '../common/css-utils'
 import { FillContainerLabel, FixedLabel, HugContentsLabel } from '../fill-hug-fixed-control'
+import { MaxContent } from '../inspector-common'
 
 describe('Fixed / Fill / Hug control', () => {
   before(() => setFeatureEnabled('Nine block control', true))
@@ -107,7 +108,7 @@ describe('Fixed / Fill / Hug control', () => {
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
-      expect(div.style.width).toEqual('min-content')
+      expect(div.style.width).toEqual(MaxContent)
       expect(div.style.minWidth).toEqual('')
       expect(div.style.maxWidth).toEqual('')
     })
@@ -126,7 +127,7 @@ describe('Fixed / Fill / Hug control', () => {
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
-      expect(div.style.height).toEqual('min-content')
+      expect(div.style.height).toEqual(MaxContent)
       expect(div.style.minHeight).toEqual('')
       expect(div.style.maxHeight).toEqual('')
     })
