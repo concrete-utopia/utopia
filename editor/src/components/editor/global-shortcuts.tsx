@@ -93,6 +93,7 @@ import {
   TOGGLE_TEXT_ITALIC,
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
+  PASTE_STYLE_PROPERTIES,
   CONVERT_TO_FLEX_CONTAINER,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
@@ -762,6 +763,13 @@ export function handleKeyDown(
                 target,
                 element?.specialSizeMeasurements.textDecorationLine ?? null,
               )
+            })
+          : []
+      },
+      [PASTE_STYLE_PROPERTIES]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              return EditorActions.pasteProperties('style')
             })
           : []
       },

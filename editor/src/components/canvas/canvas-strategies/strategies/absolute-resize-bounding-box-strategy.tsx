@@ -8,8 +8,10 @@ import { isRight, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
 import {
   CanvasRectangle,
+  canvasRectangleToLocalRectangle,
   rectangleDifference,
   roundTo,
+  SimpleRectangle,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -236,7 +238,12 @@ function createResizeCommandsFromFrame(
           true,
         )
       } else {
-        const valueToSet = allPinsFromFrame(newFrame)[pin]
+        // If this element has a parent, we need to take that parent's bounds into account
+        const frameToUse =
+          elementParentBounds == null
+            ? newFrame
+            : canvasRectangleToLocalRectangle(newFrame, elementParentBounds)
+        const valueToSet = allPinsFromFrame(frameToUse)[pin]
         return setCssLengthProperty(
           'always',
           selectedElement,
@@ -251,7 +258,7 @@ function createResizeCommandsFromFrame(
   }, pins)
 }
 
-function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
+function allPinsFromFrame(frame: SimpleRectangle): { [key: string]: number } {
   return {
     left: frame.x,
     top: frame.y,

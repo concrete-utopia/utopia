@@ -642,6 +642,12 @@ export interface ValueAtPath {
   path: PropertyPath
   value: JSXAttribute
 }
+export function valueAtPath(path: PropertyPath, value: JSXAttribute): ValueAtPath {
+  return {
+    path,
+    value,
+  }
+}
 
 export function setJSXValuesAtPaths(
   attributes: JSXAttributes,

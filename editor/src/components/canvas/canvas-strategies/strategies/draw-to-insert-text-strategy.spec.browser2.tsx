@@ -1,4 +1,5 @@
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import { wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -35,7 +36,7 @@ describe('draw-to-insert text', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText('Utopia')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
@@ -98,7 +99,7 @@ describe('draw-to-insert text', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText('Utopia')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
@@ -163,7 +164,7 @@ describe('draw-to-insert text', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText(' Utopia')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
@@ -239,7 +240,7 @@ describe('draw-to-insert text', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText('Hello Utopia')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -298,7 +299,7 @@ describe('draw-to-insert text', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText('Hey root')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
@@ -335,8 +336,9 @@ function typeText(text: string) {
   document.execCommand('insertText', false, text)
 }
 
-function closeTextEditor() {
+async function closeTextEditor() {
   pressKey('Escape')
+  await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 
 const projectWithText = formatTestProjectCode(`import * as React from 'react'

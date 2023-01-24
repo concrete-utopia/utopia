@@ -347,6 +347,10 @@ export interface PasteJSXElements {
 export interface CopySelectionToClipboard {
   action: 'COPY_SELECTION_TO_CLIPBOARD'
 }
+export interface PasteProperties {
+  action: 'PASTE_PROPERTIES'
+  type: 'style' | 'layout'
+}
 
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
@@ -1128,6 +1132,7 @@ export type EditorAction =
   | OpenPopup
   | PasteJSXElements
   | CopySelectionToClipboard
+  | PasteProperties
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor

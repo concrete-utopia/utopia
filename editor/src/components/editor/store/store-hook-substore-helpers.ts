@@ -174,4 +174,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   refreshingDependencies: false,
   assetChecksums: {},
   colorSwatches: [],
+  styleClipboard: [],
 }

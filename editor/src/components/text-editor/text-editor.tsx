@@ -232,10 +232,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          dispatch([deleteView(elementPath)])
+          setTimeout(() => dispatch([deleteView(elementPath)]))
         } else {
           if (elementState != null) {
-            dispatch([updateChildText(elementPath, escapeHTML(content))])
+            setTimeout(() => dispatch([updateChildText(elementPath, escapeHTML(content))]))
           }
         }
       }
