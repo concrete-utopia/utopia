@@ -149,7 +149,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.height).toEqual('759px')
       expect(child.style.height).toEqual('149px')
       expect(div.style.width).toEqual('min-content')
-      expect(child.style.width).toEqual('759px')
+      expect(child.style.width).toEqual('700px')
     })
   })
 
@@ -171,7 +171,7 @@ describe('Fixed / Fill / Hug control', () => {
     expect(div.style.width).toEqual('700px')
     expect(child.style.width).toEqual('149px')
     expect(div.style.height).toEqual('min-content')
-    expect(child.style.height).toEqual('700px')
+    expect(child.style.height).toEqual('759px')
   })
 })
 
