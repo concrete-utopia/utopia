@@ -113,7 +113,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
         ? command.value.value
         : cssPixelLength(command.value.valuePx)
 
-    const printedValue = printCSSNumber(newCssValue, null)
+    const printedValue = printCSSNumber(newCssValue, 'px')
 
     propsToUpdate.push({
       path: command.property,
