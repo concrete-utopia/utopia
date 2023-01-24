@@ -13,6 +13,7 @@ import {
   emptyJsxMetadata,
   JSXAttribute,
   walkElements,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -175,6 +176,7 @@ import {
 } from '../../../core/shared/github'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1317,6 +1319,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
+  styleClipboard: Array<ValueAtPath>
 }
 
 export function editorState(
@@ -1394,6 +1397,7 @@ export function editorState(
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
   colorSwatches: Array<ColorSwatch>,
+  styleClipboard: Array<ValueAtPath>,
 ): EditorState {
   return {
     id: id,
@@ -1470,6 +1474,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
     colorSwatches: colorSwatches,
+    styleClipboard: styleClipboard,
   }
 }
 
@@ -2308,6 +2313,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     refreshingDependencies: false,
     assetChecksums: {},
     colorSwatches: [],
+    styleClipboard: [],
   }
 }
 
@@ -2622,6 +2628,7 @@ export function editorModelFromPersistentModel(
     githubData: emptyGithubData(),
     assetChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
+    styleClipboard: [],
   }
   return editor
 }
