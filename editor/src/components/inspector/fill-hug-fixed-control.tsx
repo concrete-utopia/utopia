@@ -26,6 +26,7 @@ import {
   fillContainerApplicable,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
+  MaxContent,
   widthHeightFromAxis,
 } from './inspector-common'
 import {
@@ -141,7 +142,7 @@ function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
   )
 
-  if (prop === 'min-content') {
+  if (prop === MaxContent) {
     return { type: 'hug' }
   }
 
@@ -259,7 +260,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('vertical', value),
+          setPropFixedStrategies('always', 'vertical', cssNumber(value, null)),
         )
       }
     },
@@ -273,7 +274,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('horizontal', value),
+          setPropFixedStrategies('always', 'horizontal', cssNumber(value, null)),
         )
       }
     },
@@ -380,7 +381,7 @@ function strategyForMode(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
-      return setPropFixedStrategies(axis, fixedValue)
+      return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
   }

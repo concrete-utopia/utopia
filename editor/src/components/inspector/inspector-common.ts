@@ -384,6 +384,4 @@ export const nukeAllAbsolutePositioningPropsCommand = (path: ElementPath): Canva
   ])
 }
 
-export const removeAbsolutePositioningPropCommand = (path: ElementPath): CanvasCommand => {
-  return deleteProperties('always', path, [PP.create(['style', 'position'])])
-}
+export const MaxContent = 'max-content' as const

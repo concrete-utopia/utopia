@@ -59,7 +59,7 @@ export var storyboard = (
 
     expect(gapControls).toEqual([])
   })
-  it('gap controls are not present when flex gap is not set on element', async () => {
+  it('gap controls are present when flex gap is not set on element and element has more than 1 child', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -117,9 +117,9 @@ export var storyboard = (
       ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
     ]
 
-    expect(gapControls).toEqual([])
+    expect(gapControls.length).toEqual(2)
   })
-  it('gap controls are present when flex gap is set on element and element has children', async () => {
+  it('gap controls are not present when flex gap is not set on element and element only has 1 child', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -149,15 +149,6 @@ export var storyboard = (
         }}
         data-uid='fed'
       />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 187,
-          height: 150,
-          contain: 'layout',
-        }}
-        data-uid='a39'
-      />
     </div>
   </Storyboard>
 )
@@ -173,11 +164,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlContainer = editor.renderedDOM.getByTestId(FlexGapControlTestId)
     const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)
 
-    expect(gapControlContainer).toBeTruthy()
-    expect(gapControlHandles.length).toEqual(1)
+    expect(gapControlHandles).toEqual([])
   })
 
   it('gap controls are not present when elements are wrapped', async () => {

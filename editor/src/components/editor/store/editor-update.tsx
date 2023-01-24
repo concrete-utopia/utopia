@@ -119,6 +119,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_JSX_ELEMENTS':
       return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
+    case 'PASTE_PROPERTIES':
+      return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'OPEN_TEXT_EDITOR':
