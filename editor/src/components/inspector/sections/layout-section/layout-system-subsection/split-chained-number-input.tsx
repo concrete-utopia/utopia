@@ -7,6 +7,7 @@ import {
   Icons,
   NumberInputProps,
   SquareButton,
+  Tooltip,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
@@ -236,13 +237,23 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         style={{ flex: 1, gap: 4 }}
         propsArray={chainedPropsToRender}
       />
-      <SquareButton highlight onClick={cycleToNextMode}>
-        <>
-          {when(mode === 'one-value', <Icons.TwoDots />)}
-          {when(mode === 'per-direction', <Icons.FourDots />)}
-          {when(mode === 'per-side', <Icons.Dot />)}
-        </>
-      </SquareButton>
+      <Tooltip
+        title={
+          mode === 'one-value'
+            ? 'Padding'
+            : mode === 'per-direction'
+            ? 'Padding per direction'
+            : 'Padding per side'
+        }
+      >
+        <SquareButton highlight onClick={cycleToNextMode}>
+          <>
+            {when(mode === 'one-value', <Icons.Dot />)}
+            {when(mode === 'per-direction', <Icons.TwoDots />)}
+            {when(mode === 'per-side', <Icons.FourDots />)}
+          </>
+        </SquareButton>
+      </Tooltip>
     </div>
   )
 })
