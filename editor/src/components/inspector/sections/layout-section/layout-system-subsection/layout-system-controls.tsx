@@ -24,6 +24,7 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   stylePropPathMappingFn,
+  useInspectorContext,
   useInspectorInfoSimpleUntyped,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
@@ -200,8 +201,11 @@ export const PaddingControl = React.memo(() => {
       stylePropPathMappingFn,
     )
 
+  const { selectedViewsRef } = useInspectorContext()
+
   return (
     <SplitChainedNumberInput
+      selectedViews={selectedViewsRef.current}
       name='padding'
       defaultMode='per-direction'
       top={paddingTop}

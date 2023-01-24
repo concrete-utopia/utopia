@@ -1,5 +1,6 @@
 import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
 import {
@@ -61,6 +62,7 @@ export interface SplitChainedNumberInputProps {
   left: ControlCSSNumber
   bottom: ControlCSSNumber
   right: ControlCSSNumber
+  selectedViews: ElementPath[]
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps) => {
@@ -69,38 +71,62 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
   const horizontalSides = React.useMemo(() => [left, right], [left, right])
   const verticalSides = React.useMemo(() => [top, bottom], [top, bottom])
-  const defaultMode = props.defaultMode ?? 'per-side'
+  const allSidesUnset = React.useMemo(() => areAllSidesUnset(allSides), [allSides])
 
   const [aggregateSingleValue, setAggregateSingleValue] = React.useState(
-    cssNumberValueOrNull([top, left, bottom, right]),
+    cssNumberValueOrNull(allSides),
   )
   const [aggregatePerDirectionHorizontal, setAggregatePerDirectionHorizontal] = React.useState(
-    cssNumberValueOrNull([left, right]),
+    cssNumberValueOrNull(horizontalSides),
   )
   const [aggregatePerDirectionVertical, setAggregatePerDirectionVertical] = React.useState(
-    cssNumberValueOrNull([top, bottom]),
+    cssNumberValueOrNull(verticalSides),
   )
 
-  const [mode, setMode] = React.useState<ControlMode>(
-    aggregateSingleValue != null
+  const getInitialMode = React.useCallback(() => {
+    return aggregateSingleValue != null
       ? 'one-value'
       : aggregatePerDirectionHorizontal != null && aggregatePerDirectionVertical != null
       ? 'per-direction'
-      : areAllSidesUnset([top, left, bottom, right])
-      ? defaultMode
-      : 'per-side',
-  )
+      : allSidesUnset
+      ? props.defaultMode ?? 'per-side'
+      : 'per-side'
+  }, [
+    aggregateSingleValue,
+    aggregatePerDirectionHorizontal,
+    aggregatePerDirectionVertical,
+    allSidesUnset,
+    props.defaultMode,
+  ])
+
+  const [mode, setMode] = React.useState<ControlMode | null>(null)
+
+  React.useEffect(() => {
+    if (mode != null) {
+      return
+    }
+    setMode(getInitialMode())
+  }, [props.selectedViews, getInitialMode, mode])
+
+  React.useEffect(() => {
+    return function () {
+      setMode(null)
+    }
+  }, [props.selectedViews])
 
   const cycleToNextMode = React.useCallback(() => {
+    if (mode == null) {
+      return
+    }
     const index = controlModeOrder.indexOf(mode) + 1
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
   }, [mode])
 
   React.useEffect(() => {
-    setAggregateSingleValue(cssNumberValueOrNull([top, bottom, left, right]))
-    setAggregatePerDirectionHorizontal(cssNumberValueOrNull([left, right]))
-    setAggregatePerDirectionVertical(cssNumberValueOrNull([top, bottom]))
-  }, [top, left, bottom, right])
+    setAggregateSingleValue(cssNumberValueOrNull(allSides))
+    setAggregatePerDirectionHorizontal(cssNumberValueOrNull(horizontalSides))
+    setAggregatePerDirectionVertical(cssNumberValueOrNull(verticalSides))
+  }, [allSides, horizontalSides, verticalSides])
 
   const onSubmitValue = (old: ControlCSSNumber) =>
     wrappedEmptyOrUnknownOnSubmitValue(old.onSubmitValue, old.onUnsetValues)
@@ -142,7 +168,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         onTransientSubmitValue: aggregateTransientOnSubmitValue(setAggregateSingleValue, allSides),
         numberType: 'Px',
         defaultUnitToHide: 'px',
-        testId: `${name}-single`,
+        testId: `${name}-one-value`,
       })
       break
     case 'per-direction':
@@ -161,7 +187,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           ),
           numberType: 'Px',
           defaultUnitToHide: 'px',
-          testId: `${name}-single`,
+          testId: `${name}-horizontal`,
         },
         {
           value: cssValueOrNull(aggregatePerDirectionVertical),
@@ -174,7 +200,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           ),
           numberType: 'Px',
           defaultUnitToHide: 'px',
-          testId: `${name}-single`,
+          testId: `${name}-vertical`,
         },
       )
       break
@@ -225,6 +251,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           testId: `${name}-L`,
         },
       )
+      break
+    case null:
       break
     default:
       assertNever(mode)
