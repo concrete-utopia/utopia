@@ -26,6 +26,7 @@ import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { assertNever } from '../../../core/shared/utils'
 import { PropertyPath } from 'src/core/shared/project-file-types'
+import { setFixedBasicStrategy } from './set-fixed-basic-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -164,68 +165,7 @@ export const setPropFixedStrategies = (
   whenToRun: WhenToRun,
   axis: Axis,
   value: CSSNumber,
-): Array<InspectorStrategy> => [
-  {
-    name: 'Set to Fixed',
-    strategy: (metadata, elementPaths) => {
-      if (elementPaths.length === 0) {
-        return null
-      }
-
-      return elementPaths.flatMap((path) => {
-        // Only delete these properties when this is a flex child.
-        let propertiesToDelete: Array<PropertyPath> = []
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (
-          elementMetadata != null &&
-          elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        ) {
-          switch (axis) {
-            case 'horizontal':
-              propertiesToDelete = [
-                PP.create(['style', 'minWidth']),
-                PP.create(['style', 'maxWidth']),
-              ]
-              break
-            case 'vertical':
-              propertiesToDelete = [
-                PP.create(['style', 'minHeight']),
-                PP.create(['style', 'maxHeight']),
-              ]
-              break
-            default:
-              assertNever(axis)
-          }
-        }
-
-        switch (axis) {
-          case 'horizontal':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'width']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          case 'vertical':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'height']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          default:
-            assertNever(axis)
-        }
-      })
-    },
-  },
-]
+): Array<InspectorStrategy> => [setFixedBasicStrategy(whenToRun, axis, value)]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   {
