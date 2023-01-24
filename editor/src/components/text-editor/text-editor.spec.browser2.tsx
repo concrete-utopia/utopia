@@ -816,7 +816,7 @@ function typeText(text: string) {
 
 async function closeTextEditor() {
   pressKey('Escape')
-  await wait(0)
+  await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 
 const projectWithText = formatTestProjectCode(`import * as React from 'react'
