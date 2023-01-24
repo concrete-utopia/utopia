@@ -487,7 +487,12 @@ export type CSSNumberType =
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
 export type ViewportPercentageLengthUnit = 'vh' | 'vw' | 'vi' | 'vb' | 'vmin' | 'vmax'
 export type AbsoluteLengthUnit = 'px' | 'cm' | 'mm' | 'Q' | 'in' | 'pc' | 'pt'
-export type LengthUnit = FontRelativeLengthUnit | ViewportPercentageLengthUnit | AbsoluteLengthUnit
+export type FlexibleLengthUnit = 'fr' // https://www.w3.org/TR/css3-grid-layout/#fr-unit
+export type LengthUnit =
+  | FontRelativeLengthUnit
+  | ViewportPercentageLengthUnit
+  | AbsoluteLengthUnit
+  | FlexibleLengthUnit
 
 const FontRelativeLengthUnits: Array<FontRelativeLengthUnit> = [
   'cap',
@@ -516,10 +521,12 @@ export const AbsoluteLengthUnits: Array<AbsoluteLengthUnit> = [
   'pc',
   'pt',
 ]
+export const FlexibleLengthUnits: Array<FlexibleLengthUnit> = ['fr']
 export const LengthUnits: Array<LengthUnit> = [
   ...FontRelativeLengthUnits,
   ...ViewportPercentageLengthUnits,
   ...AbsoluteLengthUnits,
+  ...FlexibleLengthUnits,
 ]
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length-percentage
