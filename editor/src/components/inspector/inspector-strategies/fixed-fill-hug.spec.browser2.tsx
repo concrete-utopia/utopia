@@ -131,12 +131,56 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.maxHeight).toEqual('')
     })
 
-    it('sets children to fixed size on the horizontal axis to avoid parent collapsing', async () => {
+    describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
+      it('child is set to fill container on the horizontal axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToHorizontalFill,
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.height).toEqual('759px')
+        expect(child.style.height).toEqual('149px')
+        expect(parent.style.width).toEqual('min-content')
+        expect(child.style.width).toEqual('700px')
+      })
+    })
+
+    it('child is set to fill container on the vertical axis', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithChildSetToHorizontalFill,
+        projectWithChildSetToVerticalFill,
         'await-first-dom-report',
       )
-      const div = await select(editor, 'parent')
+      const parent = await select(editor, 'parent')
+      const child = editor.renderedDOM.getByTestId('child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(parent.style.width).toEqual('700px')
+      expect(child.style.width).toEqual('149px')
+      expect(parent.style.height).toEqual('min-content')
+      expect(child.style.height).toEqual('759px')
+    })
+
+    it('child is set to fixed size on the horizontal axis', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildSetToFixed('row'),
+        'await-first-dom-report',
+      )
+      const parent = await select(editor, 'parent')
       const child = editor.renderedDOM.getByTestId('child')
 
       const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
@@ -146,32 +190,32 @@ describe('Fixed / Fill / Hug control', () => {
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
-      expect(div.style.height).toEqual('759px')
-      expect(child.style.height).toEqual('149px')
-      expect(div.style.width).toEqual('min-content')
-      expect(child.style.width).toEqual('700px')
+      expect(parent.style.width).toEqual('302px')
+      expect(child.style.width).toEqual('302px')
+      expect(parent.style.height).toEqual('min-content')
+      expect(child.style.height).toEqual('141px')
     })
-  })
 
-  it('sets children to fixed size on the vertical axis to avoid parent collapsing', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithChildSetToVerticalFill,
-      'await-first-dom-report',
-    )
-    const div = await select(editor, 'parent')
-    const child = editor.renderedDOM.getByTestId('child')
+    it('child is set to fixed size on the vertical axis', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildSetToFixed('column'),
+        'await-first-dom-report',
+      )
+      const parent = await select(editor, 'parent')
+      const child = editor.renderedDOM.getByTestId('child')
 
-    const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
 
-    mouseClickAtPoint(control, { x: 5, y: 5 })
+      mouseClickAtPoint(control, { x: 5, y: 5 })
 
-    const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-    mouseClickAtPoint(button, { x: 5, y: 5 })
+      const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
 
-    expect(div.style.width).toEqual('700px')
-    expect(child.style.width).toEqual('149px')
-    expect(div.style.height).toEqual('min-content')
-    expect(child.style.height).toEqual('759px')
+      expect(parent.style.width).toEqual('302px')
+      expect(child.style.width).toEqual('302px')
+      expect(parent.style.height).toEqual('141px')
+      expect(child.style.height).toEqual('141px')
+    })
   })
 })
 
@@ -328,6 +372,41 @@ export var storyboard = (
           width: 149,
           contain: 'layout',
         }}
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToFixed = (flexDirection: FlexDirection) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='33d'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: '${flexDirection}'
+      }}
+      data-label='Playground'
+      data-uid='26c'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 141,
+          contain: 'layout',
+          width: 302,
+        }}
+        data-uid='744'
       />
     </Scene>
   </Storyboard>
