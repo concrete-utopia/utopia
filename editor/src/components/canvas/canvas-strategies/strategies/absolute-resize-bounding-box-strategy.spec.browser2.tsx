@@ -509,6 +509,39 @@ describe('Absolute Resize Strategy', () => {
       `),
     )
   })
+  it('resizes absolute positioned element with missing position values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ left: 100, top: 100, width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = windowPoint({ x: 40, y: 50 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ left: 100, top: 100, width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 160, height: 70, left: 40, top: 50 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+    )
+  })
   it('resizes absolute element with snapping, `bbb` should snap to `ccc`', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
