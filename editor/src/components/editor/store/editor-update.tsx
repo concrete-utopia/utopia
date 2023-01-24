@@ -123,6 +123,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
+    case 'COPY_PROPERTIES':
+      return UPDATE_FNS.COPY_PROPERTIES(action, state)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
     case 'CLOSE_TEXT_EDITOR':

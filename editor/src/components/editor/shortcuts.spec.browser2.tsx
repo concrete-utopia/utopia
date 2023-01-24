@@ -292,7 +292,7 @@ describe('global shortcuts to set properties', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy style properties first
-    pressKey('c', { modifiers: cmdModifier })
+    pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
