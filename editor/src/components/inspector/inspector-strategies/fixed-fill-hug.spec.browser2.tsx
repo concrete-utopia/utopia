@@ -206,7 +206,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual('141px')
       })
 
-      it('child is set to fixed size on the vertical axis', async () => {
+      it('child is set to fixed size on the vertical axis, no conversion happens', async () => {
         const editor = await renderTestEditorWithCode(
           projectWithChildSetToFixed('column'),
           'await-first-dom-report',
@@ -230,7 +230,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual('141px')
       })
 
-      it('child is set to hug contents on the horizontal axis', async () => {
+      it('child is set to hug contents on the horizontal axis, no conversion happens', async () => {
         const editor = await renderTestEditorWithCode(
           projectWithChildSetToHugContents('row'),
           'await-first-dom-report',
@@ -254,7 +254,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual(MaxContent)
       })
 
-      it('child is set to hug contents on the vertical axis', async () => {
+      it('child is set to hug contents on the vertical axis, no conversion happens', async () => {
         const editor = await renderTestEditorWithCode(
           projectWithChildSetToHugContents('column'),
           'await-first-dom-report',
