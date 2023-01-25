@@ -26,12 +26,13 @@ import {
   stylePropPathMappingFn,
   useInspectorContext,
   useInspectorInfoSimpleUntyped,
+  useInspectorLayoutInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { SplitChainedNumberInput } from './split-chained-number-input'
+import { Sides, SplitChainedNumberInput } from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -203,6 +204,24 @@ export const PaddingControl = React.memo(() => {
       stylePropPathMappingFn,
     )
 
+  const shorthand = useInspectorLayoutInfo('padding')
+
+  const updateShorthand = React.useCallback(
+    (sides: Sides, transient?: boolean) => {
+      const { top, bottom, left, right } = sides
+      shorthand.onSubmitValue(
+        {
+          paddingTop: top,
+          paddingBottom: bottom,
+          paddingLeft: left,
+          paddingRight: right,
+        },
+        transient,
+      )
+    },
+    [shorthand],
+  )
+
   const { selectedViewsRef } = useInspectorContext()
 
   return (
@@ -214,6 +233,8 @@ export const PaddingControl = React.memo(() => {
       left={paddingLeft}
       bottom={paddingBottom}
       right={paddingRight}
+      shorthand={shorthand}
+      updateShorthand={updateShorthand}
     />
   )
 })
