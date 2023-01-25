@@ -1,7 +1,11 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { shiftModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import {
+  expectSingleUndoStep,
+  mouseClickAtPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
@@ -23,10 +27,11 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('')
 
-    pressKey('a', { modifiers: shiftModifier })
+    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
+
     expect(div.style.display).toEqual('flex')
 
-    pressKey('a', { modifiers: shiftModifier })
+    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
     expect(div.style.display).toEqual('')
   })
 
@@ -36,11 +41,11 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await clickOn(editor)
+    await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
-    await clickOn(editor)
+    await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(div.style.display).toEqual('')
   })
@@ -51,7 +56,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await clickOn(editor)
+    await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
@@ -66,7 +71,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await clickOn(editor)
+    await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
