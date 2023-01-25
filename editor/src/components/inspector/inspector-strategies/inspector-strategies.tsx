@@ -169,7 +169,8 @@ export const setPropFillStrategies = (
           ]
         }
 
-        const checkedValue = value === 'default' ? cssNumber(1, null) : cssNumber(value, null)
+        const checkedValue =
+          value === 'default' ? cssNumber(1, null) : cssNumber(clamp(0, Infinity, value), null)
 
         return [
           nukeSizingPropsForAxisCommand(axis, path),
