@@ -97,7 +97,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
       return elementPaths.flatMap((path) => [
         setProperty('always', path, PP.create(['style', 'display']), 'flex'),
         ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
-          nukeAllAbsolutePositioningPropsCommand(child),
+          ...nukeAllAbsolutePositioningPropsCommands(child),
           ...sizeToVisualDimensions(metadata, child),
           ...convertWidthToFlexGrow(metadata, child),
         ]),
