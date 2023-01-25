@@ -150,6 +150,27 @@ export const InspectorSectionIcons = {
     width: 16,
     height: 16,
   }),
+  SplitFull: makeIcon({
+    category: 'inspector',
+    type: 'split-full',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitHalf: makeIcon({
+    category: 'inspector',
+    type: 'split-half',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitQuarter: makeIcon({
+    category: 'inspector',
+    type: 'split-quarter',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
 }
 
 export const SmallerIcons = {
@@ -179,7 +200,6 @@ export const Icons = {
   ExternalLinkSmaller: makeIcon({ type: 'externallink-smaller', color: 'main' }),
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
-  TwoDots: makeIcon({ type: 'twodots', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
   FlexRow: makeIcon({
     type: 'flexDirection-row-regular-nowrap',
