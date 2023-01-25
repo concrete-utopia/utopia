@@ -5,7 +5,7 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
 import {
   ChainedNumberInput,
-  Icons,
+  InspectorSectionIcons,
   NumberInputProps,
   SquareButton,
   Tooltip,
@@ -260,11 +260,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-      <ChainedNumberInput
-        idPrefix={name}
-        style={{ flex: 1, gap: 4 }}
-        propsArray={chainedPropsToRender}
-      />
       <Tooltip
         title={
           mode === 'one-value'
@@ -274,14 +269,19 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             : 'Padding per side'
         }
       >
-        <SquareButton highlight onClick={cycleToNextMode}>
+        <SquareButton onClick={cycleToNextMode}>
           <>
-            {when(mode === 'one-value', <Icons.Dot />)}
-            {when(mode === 'per-direction', <Icons.TwoDots />)}
-            {when(mode === 'per-side', <Icons.FourDots />)}
+            {when(mode === 'one-value', <InspectorSectionIcons.SplitFull />)}
+            {when(mode === 'per-direction', <InspectorSectionIcons.SplitHalf />)}
+            {when(mode === 'per-side', <InspectorSectionIcons.SplitQuarter />)}
           </>
         </SquareButton>
       </Tooltip>
+      <ChainedNumberInput
+        idPrefix={name}
+        style={{ flex: 1, gap: 4 }}
+        propsArray={chainedPropsToRender}
+      />
     </div>
   )
 })

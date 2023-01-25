@@ -179,11 +179,13 @@ export const PaddingRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow tall padded={true} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel
           target={paddingPropsToUnset}
           propNamesToUnset={contextMenuLabel}
-          style={{ paddingBottom: 12 }}
+          style={{
+            paddingBottom: 20,
+          }}
         >
           Padding
         </PropertyLabel>
