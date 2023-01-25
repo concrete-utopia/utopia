@@ -46,11 +46,14 @@ function isControlStatusActive(status: ControlStatus): boolean {
 
 // compare the given values and if they're equal return their shared value, or null otherwise
 function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | null {
+  const normalUnit = (unit: CSSNumber['unit'] | null) => {
+    return unit == null ? 'px' : unit
+  }
   const areEqual = values.every((v) => {
     return (
       isControlStatusActive(v.controlStatus) &&
       v.value.value === values[0].value.value &&
-      v.value.unit === values[0].value.unit
+      normalUnit(v.value.unit) === normalUnit(values[0].value.unit)
     )
   })
   if (!areEqual) {
@@ -145,33 +148,62 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const horizontalSides = React.useMemo(() => [left, right], [left, right])
   const verticalSides = React.useMemo(() => [top, bottom], [top, bottom])
 
-  React.useEffect(() => {
-    if (mode != null) {
-      return
+  const isCurrentModeApplicable = React.useCallback(() => {
+    if (mode === 'one-value' && aggOneValue == null) {
+      return false
     }
+    if (mode === 'per-direction' && aggHorizontal == null && aggVertical == null) {
+      return false
+    }
+    return true
+  }, [mode, aggOneValue, aggHorizontal, aggVertical])
 
+  const updateAggregates = React.useCallback(() => {
     const newAggOneValue = cssNumberValueOrNull(allSides)
     setAggOneValue(newAggOneValue)
     const newAggHorizontal = cssNumberValueOrNull(horizontalSides)
     setAggHorizontal(newAggHorizontal)
     const newAggVertical = cssNumberValueOrNull(verticalSides)
     setAggVertical(newAggVertical)
+    return { oneValue: newAggOneValue, horizontal: newAggHorizontal, vertical: newAggVertical }
+  }, [allSides, horizontalSides, verticalSides])
+
+  const updateMode = React.useCallback(() => {
+    if (mode != null) {
+      return
+    }
+
+    const { oneValue, horizontal, vertical } = updateAggregates()
 
     const newMode = getInitialMode(
-      newAggOneValue,
-      newAggHorizontal,
-      newAggVertical,
+      oneValue,
+      horizontal,
+      vertical,
       areAllSidesSet(allSides),
       props.defaultMode ?? 'per-side',
     )
     setMode(newMode)
-  }, [props.selectedViews, props.defaultMode, mode, allSides, horizontalSides, verticalSides])
+  }, [props.defaultMode, mode, allSides, updateAggregates])
+
+  React.useEffect(() => {
+    updateMode()
+  }, [props.selectedViews, updateMode])
+
+  React.useEffect(() => {
+    updateAggregates()
+  }, [updateAggregates])
 
   React.useEffect(() => {
     return function () {
       setMode(null)
     }
   }, [props.selectedViews])
+
+  React.useEffect(() => {
+    if (!isCurrentModeApplicable()) {
+      updateMode()
+    }
+  }, [isCurrentModeApplicable, updateMode])
 
   const cycleToNextMode = React.useCallback(() => {
     if (mode == null) {
