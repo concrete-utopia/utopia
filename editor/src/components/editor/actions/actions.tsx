@@ -63,6 +63,7 @@ import {
   isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
+  isJSXFragment,
   isPartOfJSXAttributeValue,
   JSXAttributes,
   jsxAttributesFromMap,
