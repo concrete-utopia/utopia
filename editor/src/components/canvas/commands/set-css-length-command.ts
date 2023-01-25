@@ -24,6 +24,17 @@ type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
   | { type: 'KEEP_ORIGINAL_UNIT'; valuePx: number; parentDimensionPx: number | undefined }
 
+export function setExplicitCssValue(value: CSSNumber): CssNumberOrKeepOriginalUnit {
+  return { type: 'EXPLICIT_CSS_NUMBER', value: value }
+}
+
+export function setValueKeepingOriginalUnit(
+  valuePx: number,
+  parentDimensionPx: number | undefined,
+): CssNumberOrKeepOriginalUnit {
+  return { type: 'KEEP_ORIGINAL_UNIT', valuePx: valuePx, parentDimensionPx: parentDimensionPx }
+}
+
 export interface SetCssLengthProperty extends BaseCommand {
   type: 'SET_CSS_LENGTH_PROPERTY'
   target: ElementPath

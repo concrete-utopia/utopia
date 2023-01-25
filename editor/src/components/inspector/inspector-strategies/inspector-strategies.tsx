@@ -25,7 +25,10 @@ import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { assertNever } from '../../../core/shared/utils'
 import { PropertyPath } from 'src/core/shared/project-file-types'
-import { setCssLengthProperty } from '../../canvas/commands/set-css-length-command'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -173,10 +176,12 @@ export const setPropFixedStrategies = (
       }
 
       return elementPaths.map((path) =>
-        setCssLengthProperty(whenToRun, path, PP.create(['style', widthHeightFromAxis(axis)]), {
-          type: 'EXPLICIT_CSS_NUMBER',
-          value: value,
-        }),
+        setCssLengthProperty(
+          whenToRun,
+          path,
+          PP.create(['style', widthHeightFromAxis(axis)]),
+          setExplicitCssValue(value),
+        ),
       )
     },
   },

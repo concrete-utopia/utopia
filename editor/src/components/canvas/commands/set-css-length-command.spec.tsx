@@ -7,7 +7,11 @@ import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-s
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
-import { runSetCssLengthProperty, setCssLengthProperty } from './set-css-length-command'
+import {
+  runSetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from './set-css-length-command'
 
 describe('setCssLengthProperty', () => {
   it('works for height style prop', async () => {
@@ -27,7 +31,7 @@ describe('setCssLengthProperty', () => {
       'always',
       cardInstancePath,
       stylePropPathMappingFn('height', styleStringInArray),
-      { type: 'KEEP_ORIGINAL_UNIT', valuePx: valueToSet, parentDimensionPx: 400 },
+      setValueKeepingOriginalUnit(valueToSet, 400),
     )
 
     const result = runSetCssLengthProperty(

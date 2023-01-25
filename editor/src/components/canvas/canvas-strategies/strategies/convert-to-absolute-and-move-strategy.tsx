@@ -32,7 +32,11 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { CanvasFrameAndTarget } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -423,13 +427,17 @@ function createUpdatePinsCommands(
   fastForEach(pinsToSet, (framePin) => {
     const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
     commands.push(
-      setCssLengthProperty('always', path, stylePropPathMappingFn(framePin, styleStringInArray), {
-        type: 'KEEP_ORIGINAL_UNIT',
-        valuePx: pinValue,
-        parentDimensionPx: isHorizontalPoint(framePointForPinnedProp(framePin))
-          ? parentFrame?.width
-          : parentFrame?.height,
-      }),
+      setCssLengthProperty(
+        'always',
+        path,
+        stylePropPathMappingFn(framePin, styleStringInArray),
+        setValueKeepingOriginalUnit(
+          pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
+        ),
+      ),
     )
   })
   return commands
