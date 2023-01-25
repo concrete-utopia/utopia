@@ -251,7 +251,18 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const onAdjustHeight = React.useCallback(
     (value: number | EmptyInputValue) => {
-      if (typeof value === 'number') {
+      if (typeof value !== 'number') {
+        return
+      }
+      if (heightCurrentValue?.type === 'fill') {
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          setPropFillStrategies('vertical', value),
+        )
+      }
+      if (heightCurrentValue?.type === 'fixed') {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -260,7 +271,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         )
       }
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [dispatch, heightCurrentValue?.type, metadataRef, selectedViewsRef],
   )
 
   const onAdjustWidth = React.useCallback(
