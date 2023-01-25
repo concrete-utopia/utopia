@@ -1,6 +1,6 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import { expectSingleUndoStep, mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { FlexDirection } from './common/css-utils'
 import { FlexDirectionToggleTestId } from './flex-direction-control'
@@ -17,7 +17,8 @@ describe('set flex direction', () => {
   it('set flex direction to row from not set', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const div = await selectDiv(editor)
-    await clickOn(editor, 'row')
+
+    await expectSingleUndoStep(editor, () => clickOn(editor, 'row'))
 
     expect(div.style.flexDirection).toEqual('row')
 
@@ -33,7 +34,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
 
-    await clickOn(editor, 'column')
+    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
 
     expect(div.style.flexDirection).toEqual('column')
   })
@@ -45,7 +46,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await rightClickOn(editor, 'column')
+    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
 
     expect(div.style.flexDirection).toEqual('')
   })
