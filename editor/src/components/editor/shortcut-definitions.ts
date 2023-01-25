@@ -78,6 +78,7 @@ export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
 export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
 export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
 export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
+export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
@@ -231,11 +232,12 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle text-decoration to line-through of the currently selected text element.',
     key('x', ['cmd', 'shift']),
   ),
-  [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
   [CONVERT_TO_FLEX_CONTAINER]: shortcut(
     'Convert selected elements to flex containers',
     key('a', ['shift']),
   ),
+  [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
+  [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

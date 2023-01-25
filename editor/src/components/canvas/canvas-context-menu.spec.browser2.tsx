@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
-import { cmdModifier } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
 import { selectComponents } from '../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from './event-helpers.test-utils'
@@ -53,7 +53,7 @@ describe('canvas context menu', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy properties first
-    pressKey('c', { modifiers: cmdModifier })
+    pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
@@ -101,7 +101,7 @@ describe('canvas context menu', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy properties first
-    pressKey('c', { modifiers: cmdModifier })
+    pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
