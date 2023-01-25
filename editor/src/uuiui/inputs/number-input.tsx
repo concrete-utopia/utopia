@@ -860,7 +860,7 @@ export const SimpleCSSNumberInput = React.memo(
       onSubmitValue: wrappedSimpleOnSubmitValue(onSubmitValue),
       onTransientSubmitValue: wrappedSimpleOnSubmitValue(onTransientSubmitValue),
       onForcedSubmitValue: wrappedSimpleOnSubmitValue(onForcedSubmitValue),
-      numberType: numberType ?? 'Percent',
+      numberType: 'AnyValid',
     }
     return <NumberInput {...wrappedProps} />
   },

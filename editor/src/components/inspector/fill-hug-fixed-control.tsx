@@ -267,7 +267,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('always', 'vertical', cssNumber(value, null)),
+          setPropFixedStrategies('always', 'vertical', cssNumber(value, 'px')),
         )
       }
     },
@@ -292,7 +292,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('always', 'horizontal', cssNumber(value, null)),
+          setPropFixedStrategies('always', 'horizontal', cssNumber(value, 'px')),
         )
       }
     },
