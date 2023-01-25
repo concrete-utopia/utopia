@@ -123,6 +123,61 @@ describe('add layout system', () => {
     expect(child.style.left).toEqual('')
     expect(child.style.bottom).toEqual('')
     expect(child.style.right).toEqual('')
+    expect(child.style.contain).toEqual('layout')
+    expect(child.style.width).toEqual('100px')
+    expect(child.style.height).toEqual('120px')
+  })
+
+  it('adding flex layout does not add contain layout to static positioned child', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='0cd'>
+          <div
+            data-testid='mydiv'
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 120,
+              height: 140,
+            }}
+            data-uid='5f9'
+          >
+            <div
+              data-testid='child'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 120,
+              }}
+              data-uid='9e4'
+            />
+          </div>
+        </Storyboard>
+      )`,
+      'await-first-dom-report',
+    )
+    const div = await selectDiv(editor)
+    await clickOn(editor)
+
+    expect(div.style.display).toEqual('flex')
+
+    const child = editor.renderedDOM.getByTestId('child')
+
+    // Ensure contain layout was not added
+    expect(child.style.contain).toEqual('')
+
+    // Might as well check the other props are correct whilst we're here
+    expect(child.style.position).toEqual('')
+    expect(child.style.top).toEqual('')
+    expect(child.style.left).toEqual('')
+    expect(child.style.bottom).toEqual('')
+    expect(child.style.right).toEqual('')
     expect(child.style.width).toEqual('100px')
     expect(child.style.height).toEqual('120px')
   })
