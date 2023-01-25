@@ -1,6 +1,6 @@
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
-import { cmdModifier, ctrlModifier } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
 import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
@@ -265,6 +265,53 @@ describe('global shortcuts to set properties', () => {
             style={{ textDecoration: 'none' }}
             data-uid='bbb'
           >hello text</div>
+        </div>`,
+      ),
+    )
+  })
+  it('alt + cmd + v to paste style properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ width: 200, opacity: 0.5, fontSize: 20, borderRadius: 5 }}
+            data-uid='bbb'
+          >paste</div>
+          <div
+            style={{ position: 'absolute', top: 20, opacity: 0.2, color: 'hotpink' }}
+            data-uid='ccc'
+          >hello</div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const copyPropertiesFrom = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+    )
+    await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
+
+    // copy style properties first
+    pressKey('c', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+
+    // paste style properties
+    pressKey('v', { modifiers: altCmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{  width: 200, opacity: 0.5, fontSize: 20, borderRadius: 5 }}
+            data-uid='bbb'
+          >paste</div>
+          <div
+            style={{ position: 'absolute', top: 20, opacity: 0.5, fontSize: 20, borderRadius: 5 }}
+            data-uid='ccc'
+          >hello</div>
         </div>`,
       ),
     )

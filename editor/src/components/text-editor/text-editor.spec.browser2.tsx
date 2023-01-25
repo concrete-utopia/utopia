@@ -21,7 +21,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText(' Utopia')
-    closeTextEditor()
+    await closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -54,7 +54,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('Utopia')
-    closeTextEditor()
+    await closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -119,7 +119,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
-    closeTextEditor()
+    await closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -243,7 +243,7 @@ describe('Use the text editor', () => {
 
     typeText('--HEY--')
 
-    closeTextEditor()
+    await closeTextEditor()
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -280,7 +280,7 @@ describe('Use the text editor', () => {
 
         deleteTypedText()
 
-        closeTextEditor()
+        await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -321,7 +321,7 @@ describe('Use the text editor', () => {
 
         deleteTypedText()
 
-        closeTextEditor()
+        await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -357,7 +357,7 @@ describe('Use the text editor', () => {
 
         await wait(50) // give it time to adjust the caret position
 
-        closeTextEditor()
+        await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -413,7 +413,7 @@ describe('Use the text editor', () => {
 
         typeText(' there')
 
-        closeTextEditor()
+        await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -456,7 +456,7 @@ describe('Use the text editor', () => {
 
       await enterTextEditMode(editor)
       typeText('\nHow are you?')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -490,7 +490,7 @@ describe('Use the text editor', () => {
 
       await enterTextEditMode(editor)
       typeText('\n\nblablabla')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -530,7 +530,7 @@ describe('Use the text editor', () => {
 
       await enterTextEditMode(editor)
       typeText('\n\n')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -564,7 +564,7 @@ describe('Use the text editor', () => {
 
       await enterTextEditMode(editor)
       typeText('test')
-      closeTextEditor()
+      await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -597,6 +597,74 @@ describe('Use the text editor', () => {
         )`),
       )
     })
+    it('trims all whitespaces', async () => {
+      const editor = await renderTestEditorWithCode(
+        formatTestProjectCode(`import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            data-testid='div'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 288,
+              height: 362,
+            }}
+            data-uid='39e'
+          >
+            
+           Lorem   ipsum dolor sit amet, consectetur
+           adipiscing elit, sed    do eiusmod
+           
+           tempor
+
+
+          </div>
+        </Storyboard>
+      )
+      `),
+        'await-first-dom-report',
+      )
+
+      await enterTextEditMode(editor)
+      typeText('\n\n')
+      await closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+              <br />
+              <br />
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
   })
   describe('inline expressions', () => {
     it('handles expressions', async () => {
@@ -604,7 +672,7 @@ describe('Use the text editor', () => {
 
       await enterTextEditMode(editor)
       typeText('the answer is {41 + 1}')
-      closeTextEditor()
+      await closeTextEditor()
 
       await editor.getDispatchFollowUpActionsFinished()
       await wait(50)
@@ -709,7 +777,7 @@ async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: st
     modifiers: mod,
     targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
   })
-  closeTextEditor()
+  await closeTextEditor()
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -746,8 +814,9 @@ function typeText(text: string) {
   document.execCommand('insertText', false, text)
 }
 
-function closeTextEditor() {
+async function closeTextEditor() {
   pressKey('Escape')
+  await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 
 const projectWithText = formatTestProjectCode(`import * as React from 'react'

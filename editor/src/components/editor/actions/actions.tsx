@@ -49,6 +49,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -59,6 +60,7 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
+  isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
@@ -81,6 +83,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
   unsetJSXValuesAtPaths,
+  valueAtPath,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -316,6 +319,7 @@ import {
   SetAssetChecksum,
   ApplyCommandsAction,
   UpdateColorSwatches,
+  PasteProperties,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -469,6 +473,7 @@ import {
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
+import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1013,6 +1018,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     refreshingDependencies: currentEditor.refreshingDependencies,
     assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
+    styleClipboard: currentEditor.styleClipboard,
   }
 }
 
@@ -2950,12 +2956,59 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
     }
   },
+  PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
+    if (editor.styleClipboard.length === 0) {
+      return editor
+    }
+    return editor.selectedViews.reduce((working, target) => {
+      return setPropertyOnTarget(working, target, (attributes) => {
+        const filterForNames = action.type === 'layout' ? LayoutPropsWithoutTLBR : StyleProperties
+        const originalPropsToUnset = filterForNames.map((propName) =>
+          PP.create(['style', propName]),
+        )
+        const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
+          attributes,
+          originalPropsToUnset,
+        )
+
+        const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
+          const propName = PP.lastPartToString(styleClipboardData.path)
+          return filterForNames.includes(propName) ? styleClipboardData : null
+        })
+
+        return foldEither(
+          () => {
+            return right(attributes)
+          },
+          (withPropertiesCleared) => {
+            return setJSXValuesAtPaths(withPropertiesCleared, propsToSet)
+          },
+          withOriginalPropertiesCleared,
+        )
+      })
+    }, editor)
+  },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    const styleClipboardData = (): Array<ValueAtPath> => {
+      if (editorForAction.selectedViews.length === 0) {
+        return []
+      } else {
+        const target = editorForAction.selectedViews[0]
+        const styleProps =
+          editorForAction._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+        return Object.keys(styleProps).map((name) =>
+          valueAtPath(
+            PP.create(['style', name]),
+            jsxAttributeValue(styleProps[name], emptyComments),
+          ),
+        )
+      }
+    }
     return toastOnUncopyableElementsSelected(
       'Cannot copy these elements.',
       editorForAction,
@@ -2966,6 +3019,7 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
+          styleClipboard: styleClipboardData(),
         }
       },
       dispatch,
