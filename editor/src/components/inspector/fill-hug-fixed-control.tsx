@@ -29,7 +29,8 @@ import {
   InspectorStrategy,
 } from './inspector-strategies/inspector-strategy'
 
-export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
+export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
+  `hug-fixed-fill-${segment}`
 
 type FixedHugFillMode = FixedHugFill['type']
 
@@ -269,8 +270,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
-        id={controlId('width')}
-        testId={controlId('width')}
+        id={FillFixedHugControlId('width')}
+        testId={FillFixedHugControlId('width')}
         value={widthValue}
         onSubmitValue={onAdjustWidth}
         onTransientSubmitValue={NO_OP}
@@ -293,8 +294,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
-        id={controlId('height')}
-        testId={controlId('height')}
+        id={FillFixedHugControlId('height')}
+        testId={FillFixedHugControlId('height')}
         value={heightValue}
         onSubmitValue={onAdjustHeight}
         onTransientSubmitValue={NO_OP}

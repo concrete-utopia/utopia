@@ -604,7 +604,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div style={style}>
+      <div data-testid={testId} style={style}>
         <div
           className='number-input-container'
           css={{

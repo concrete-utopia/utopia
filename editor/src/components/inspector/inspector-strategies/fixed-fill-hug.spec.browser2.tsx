@@ -1,10 +1,20 @@
 import { assertNever } from '../../../core/shared/utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
+import { wait } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
 import { FlexDirection } from '../common/css-utils'
-import { FillContainerLabel, FixedLabel, HugContentsLabel } from '../fill-hug-fixed-control'
+import {
+  FillContainerLabel,
+  FillFixedHugControlId,
+  FixedLabel,
+  HugContentsLabel,
+} from '../fill-hug-fixed-control'
 import { MaxContent } from '../inspector-common'
 
 describe('Fixed / Fill / Hug control', () => {
@@ -90,6 +100,53 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.maxHeight).toEqual('')
       expect(div.style.height).toEqual('')
       expect(div.style.flexGrow).toEqual('1')
+    })
+
+    it('edit fill container value in flex', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFlexChildInFill,
+        'await-first-dom-report',
+      )
+      const child = await select(editor, 'child')
+
+      expect(child.style.flexGrow).toEqual('1')
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      // await wait(5000)
+
+      pressKey('3', { targetElement: control })
+
+      // await wait(5000)
+      pressKey('Enter', { targetElement: control })
+
+      // await wait(5000)
+
+      expect(child.style.flexGrow).toEqual('3')
+    })
+
+    it('edit fill container value in flow', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlowLayout,
+        'await-first-dom-report',
+      )
+      const child = await select(editor, 'child')
+
+      expect(child.style.width).toEqual('100%')
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      // await wait(5000)
+
+      pressKey('5', { targetElement: control })
+      pressKey('0', { targetElement: control })
+
+      // await wait(5000)
+      pressKey('Enter', { targetElement: control })
+
+      // await wait(5000)
+
+      expect(child.style.width).toEqual('50%')
     })
   })
 
@@ -289,8 +346,8 @@ async function select(
   const div = editor.renderedDOM.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+    x: divBounds.x + 5,
+    y: divBounds.y + 4,
   }
 
   if (testId === 'child') {
@@ -528,6 +585,111 @@ export var storyboard = (
         />
       </div>
     </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithFlexChildInFill = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 38,
+        width: 533,
+        height: 354,
+        display: 'flex',
+        padding: '30px 50px 30px 50px',
+        gap: 55,
+        flexDirection: 'row',
+      }}
+      data-uid='6b7'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          flexGrow: 1,
+        }}
+        data-uid='a9d'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          flexGrow: 1,
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          flexGrow: 1,
+        }}
+        data-uid='aab'
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithChildInFlowLayout = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 300,
+        top: 38,
+        width: 533,
+        height: 354,
+        padding: '30px 50px 30px 50px',
+      }}
+      data-uid='6b7'
+    >
+      <div
+        data-testid='div'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          width: '100%',
+        }}
+        data-uid='a9d'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          width: 65,
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 61,
+          contain: 'layout',
+          width: 65,
+        }}
+        data-uid='aab'
+      />
+    </div>
   </Storyboard>
 )
 `
