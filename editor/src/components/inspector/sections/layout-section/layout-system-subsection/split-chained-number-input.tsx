@@ -59,8 +59,8 @@ function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | nul
   return values[0].value
 }
 
-function areAllSidesUnset(values: ControlCSSNumber[]): boolean {
-  return values.every((v) => !isControlStatusActive(v.controlStatus))
+function areAllSidesSet(values: ControlCSSNumber[]): boolean {
+  return values.every((v) => isControlStatusActive(v.controlStatus))
 }
 
 function cssNumberValueOrNull(values: ControlCSSNumber[]): number | null {
@@ -81,6 +81,58 @@ export interface SplitChainedNumberInputProps {
   selectedViews: ElementPath[]
 }
 
+function getInitialMode(
+  aggOne: number | null,
+  aggHorizontal: number | null,
+  aggVertical: number | null,
+  allSidesSet: boolean,
+  defaultMode: ControlMode,
+): ControlMode {
+  if (aggOne != null) {
+    return 'one-value'
+  }
+  if (aggHorizontal != null && aggVertical != null) {
+    return 'per-direction'
+  }
+  if (allSidesSet) {
+    return 'per-side'
+  }
+  if (aggHorizontal != null || aggVertical != null) {
+    return 'per-direction'
+  }
+  return defaultMode
+}
+
+function onSubmitValue(old: ControlCSSNumber) {
+  return wrappedEmptyOrUnknownOnSubmitValue(old.onSubmitValue, old.onUnsetValues)
+}
+
+function onTransientSubmitValue(old: ControlCSSNumber) {
+  return wrappedEmptyOrUnknownOnSubmitValue(old.onTransientSubmitValue, old.onUnsetValues)
+}
+
+const aggOnSubmitValue =
+  (update: (v: number) => void, sides: ControlCSSNumber[]) =>
+  (input: UnknownOrEmptyInput<CSSNumber>) => {
+    if (isCSSNumber(input)) {
+      update(input.value)
+    }
+    sides.forEach((side) => onSubmitValue(side)(input))
+  }
+
+const aggTransientOnSubmitValue =
+  (update: (v: number) => void, sides: ControlCSSNumber[]) =>
+  (input: UnknownOrEmptyInput<CSSNumber>) => {
+    if (isCSSNumber(input)) {
+      update(input.value)
+    }
+    sides.forEach((side) => onTransientSubmitValue(side)(input))
+  }
+
+function cssValueOrNull(v: number | null): CSSNumber | null {
+  return v != null ? { value: v, unit: 'px' } : null
+}
+
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps) => {
   const { name, top, left, bottom, right } = props
 
@@ -92,33 +144,28 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
   const horizontalSides = React.useMemo(() => [left, right], [left, right])
   const verticalSides = React.useMemo(() => [top, bottom], [top, bottom])
-  const allSidesUnset = React.useMemo(() => areAllSidesUnset(allSides), [allSides])
-
-  const getInitialMode = React.useCallback(() => {
-    return aggOneValue != null
-      ? 'one-value'
-      : aggHorizontal != null || aggVertical != null
-      ? 'per-direction'
-      : allSidesUnset
-      ? props.defaultMode ?? 'per-side'
-      : 'per-side'
-  }, [aggOneValue, aggHorizontal, aggVertical, allSidesUnset, props.defaultMode])
 
   React.useEffect(() => {
     if (mode != null) {
       return
     }
-    setAggOneValue(cssNumberValueOrNull(allSides))
-    setAggHorizontal(cssNumberValueOrNull(horizontalSides))
-    setAggVertical(cssNumberValueOrNull(verticalSides))
-  }, [props.selectedViews, mode, allSides, horizontalSides, verticalSides])
 
-  React.useEffect(() => {
-    if (mode != null) {
-      return
-    }
-    setMode(getInitialMode())
-  }, [getInitialMode, mode])
+    const newAggOneValue = cssNumberValueOrNull(allSides)
+    setAggOneValue(newAggOneValue)
+    const newAggHorizontal = cssNumberValueOrNull(horizontalSides)
+    setAggHorizontal(newAggHorizontal)
+    const newAggVertical = cssNumberValueOrNull(verticalSides)
+    setAggVertical(newAggVertical)
+
+    const newMode = getInitialMode(
+      newAggOneValue,
+      newAggHorizontal,
+      newAggVertical,
+      areAllSidesSet(allSides),
+      props.defaultMode ?? 'per-side',
+    )
+    setMode(newMode)
+  }, [props.selectedViews, props.defaultMode, mode, allSides, horizontalSides, verticalSides])
 
   React.useEffect(() => {
     return function () {
@@ -133,34 +180,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     const index = controlModeOrder.indexOf(mode) + 1
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
   }, [mode])
-
-  const onSubmitValue = (old: ControlCSSNumber) =>
-    wrappedEmptyOrUnknownOnSubmitValue(old.onSubmitValue, old.onUnsetValues)
-
-  const onTransientSubmitValue = (old: ControlCSSNumber) =>
-    wrappedEmptyOrUnknownOnSubmitValue(old.onTransientSubmitValue, old.onUnsetValues)
-
-  const aggOnSubmitValue =
-    (update: (v: number) => void, sides: ControlCSSNumber[]) =>
-    (input: UnknownOrEmptyInput<CSSNumber>) => {
-      if (isCSSNumber(input)) {
-        update(input.value)
-      }
-      sides.forEach((side) => onSubmitValue(side)(input))
-    }
-
-  const aggTransientOnSubmitValue =
-    (update: (v: number) => void, sides: ControlCSSNumber[]) =>
-    (input: UnknownOrEmptyInput<CSSNumber>) => {
-      if (isCSSNumber(input)) {
-        update(input.value)
-      }
-      sides.forEach((side) => onTransientSubmitValue(side)(input))
-    }
-
-  const cssValueOrNull = (v: number | null): CSSNumber | null => {
-    return v != null ? { value: v, unit: 'px' } : null
-  }
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> = []
   switch (mode) {
