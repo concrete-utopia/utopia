@@ -2,9 +2,8 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { setProperty } from '../../canvas/commands/set-property-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
-import { Axis, nullOrNonEmpty } from '../inspector-common'
+import { CSSNumber, FlexDirection } from '../common/css-utils'
+import { Axis, nullOrNonEmpty, widthHeightFromAxis } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand, WhenToRun } from '../../canvas/commands/commands'
@@ -13,6 +12,10 @@ import {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { CSSProperties } from 'twind'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 const styleProp = (prop: keyof CSSProperties) => PP.create(['style', prop])
 
@@ -70,30 +73,15 @@ function setElementToFixedCommands(
     ...getFlexPropsToDelete(axis, element),
   ]
 
-  switch (axis) {
-    case 'horizontal':
-      return [
-        deleteProperties(whenToRun, elementPath, propertiesToDelete),
-        setProperty(
-          whenToRun,
-          elementPath,
-          PP.create(['style', 'width']),
-          printCSSNumber(value, null),
-        ),
-      ]
-    case 'vertical':
-      return [
-        deleteProperties(whenToRun, elementPath, propertiesToDelete),
-        setProperty(
-          whenToRun,
-          elementPath,
-          PP.create(['style', 'height']),
-          printCSSNumber(value, null),
-        ),
-      ]
-    default:
-      assertNever(axis)
-  }
+  return [
+    deleteProperties(whenToRun, elementPath, propertiesToDelete),
+    setCssLengthProperty(
+      whenToRun,
+      elementPath,
+      PP.create(['style', widthHeightFromAxis(axis)]),
+      setExplicitCssValue(value),
+    ),
+  ]
 }
 
 export const setFixedBasicStrategy = (

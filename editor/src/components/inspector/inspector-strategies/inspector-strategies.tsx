@@ -20,12 +20,10 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
-import { assertNever } from '../../../core/shared/utils'
-import { PropertyPath } from 'src/core/shared/project-file-types'
 import { setFixedBasicStrategy } from './set-fixed-basic-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (

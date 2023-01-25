@@ -1,3 +1,5 @@
+process.env.CHROME_BIN = require('puppeteer').executablePath() // Puppeteer v19.6.0 uses Chromium 110.0.5479.0
+
 const webpack = require('webpack')
 var webpackConfig = require('./webpack.config')
 delete webpackConfig['entry']

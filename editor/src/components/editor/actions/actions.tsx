@@ -320,6 +320,7 @@ import {
   ApplyCommandsAction,
   UpdateColorSwatches,
   PasteProperties,
+  CopyProperties,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -2994,21 +2995,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const styleClipboardData = (): Array<ValueAtPath> => {
-      if (editorForAction.selectedViews.length === 0) {
-        return []
-      } else {
-        const target = editorForAction.selectedViews[0]
-        const styleProps =
-          editorForAction._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
-        return Object.keys(styleProps).map((name) =>
-          valueAtPath(
-            PP.create(['style', name]),
-            jsxAttributeValue(styleProps[name], emptyComments),
-          ),
-        )
-      }
-    }
     return toastOnUncopyableElementsSelected(
       'Cannot copy these elements.',
       editorForAction,
@@ -3019,11 +3005,26 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
-          styleClipboard: styleClipboardData(),
+          styleClipboard: [],
         }
       },
       dispatch,
     )
+  },
+  COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
+    if (editor.selectedViews.length === 0) {
+      return editor
+    } else {
+      const target = editor.selectedViews[0]
+      const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+      const styleClipboardData = Object.keys(styleProps).map((name) =>
+        valueAtPath(PP.create(['style', name]), jsxAttributeValue(styleProps[name], emptyComments)),
+      )
+      return {
+        ...editor,
+        styleClipboard: styleClipboardData,
+      }
+    }
   },
   OPEN_TEXT_EDITOR: (action: OpenTextEditor, editor: EditorModel): EditorModel => {
     return {

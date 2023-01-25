@@ -101,6 +101,15 @@ export const pasteElements: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const copyPropertiesMenuItem: ContextMenuItem<CanvasData> = {
+  name: 'Copy Properties',
+  enabled: true,
+  shortcut: '⌥⌘C',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.copyProperties()], 'noone')
+  },
+}
+
 export const pasteStyle: ContextMenuItem<CanvasData> = {
   name: 'Paste Style',
   enabled: true,
