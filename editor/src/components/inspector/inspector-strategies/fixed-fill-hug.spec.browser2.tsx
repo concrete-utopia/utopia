@@ -233,10 +233,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       // Should not add contain: layout
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-        absoluteProjectWithInjectedStyle(`
-          width: '100%',
-          height: '100%',
-        `),
+        absoluteProjectWithInjectedStyle(`width: '100%', height: '100%'`),
       )
     })
   })
