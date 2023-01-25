@@ -1,12 +1,18 @@
 import * as PP from '../../core/shared/property-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isStoryboardChild } from '../../core/shared/element-path'
+import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { FlexDirection } from './common/css-utils'
+import {
+  CSSNumber,
+  cssNumber,
+  FlexDirection,
+  parseCSSLengthPercent,
+  parseCSSNumber,
+} from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
-import { defaultEither, right } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
@@ -352,6 +358,67 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
     default:
       assertNever(axis)
   }
+}
+
+export type FixedHugFill =
+  | { type: 'fixed'; amount: CSSNumber }
+  | { type: 'hug' }
+  | { type: 'fill'; value: CSSNumber }
+
+export function detectFillHugFixedState(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): FixedHugFill | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return null
+  }
+
+  const flexGrow = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'flexGrow'])),
+  )
+
+  if (flexGrow != null) {
+    const flexDirection = optionalMap(
+      (e) => detectFlexDirectionOne(metadata, parentPath(e)),
+      elementPath,
+    )
+
+    const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
+    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
+      return { type: 'fill', value: flexGrow }
+    }
+
+    const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
+    if (axis === 'vertical' && isFlexDirectionVertical) {
+      return { type: 'fill', value: flexGrow }
+    }
+  }
+
+  const property = widthHeightFromAxis(axis)
+
+  const prop = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
+  )
+
+  if (prop === MaxContent) {
+    return { type: 'hug' }
+  }
+
+  if (prop === '100%') {
+    return { type: 'fill', value: cssNumber(100, '%') }
+  }
+
+  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+  if (parsed != null) {
+    return { type: 'fixed', amount: parsed }
+  }
+
+  return null
 }
 
 export const MaxContent = 'max-content' as const
