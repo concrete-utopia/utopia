@@ -3,6 +3,7 @@ import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
 import { assertNever, NO_OP } from '../../core/shared/utils'
+import { EditorRenderResult } from './ui-jsx.test-utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -693,4 +694,14 @@ export function switchDragAndDropElementTargets(
   act(() => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
+}
+
+export async function expectSingleUndoStep<T>(
+  editor: EditorRenderResult,
+  action: () => Promise<T>,
+): Promise<T> {
+  const undoCount = editor.getUndoCount()
+  const result = await action()
+  expect(editor.getUndoCount()).toEqual(undoCount + 1)
+  return result
 }
