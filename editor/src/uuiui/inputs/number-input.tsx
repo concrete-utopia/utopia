@@ -812,6 +812,13 @@ interface SimpleNumberInputProps extends NumberInputOptionalNumberType {
   setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
+interface SimpleCSSNumberInputProps extends AbstractNumberInputProps<CSSNumber> {
+  onSubmitValue: OnSubmitValueOrEmpty<number>
+  onTransientSubmitValue: OnSubmitValueOrEmpty<number>
+  onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+  setGlobalCursor?: (cursor: CSSCursor | null) => void
+}
+
 function wrappedSimpleOnSubmitValue(
   onSubmitValue: OnSubmitValueOrEmpty<number>,
 ): OnSubmitValueOrUnknownOrEmpty<CSSNumber> {
@@ -837,7 +844,28 @@ export const SimpleNumberInput = React.memo(
       onSubmitValue: wrappedSimpleOnSubmitValue(onSubmitValue),
       onTransientSubmitValue: wrappedSimpleOnSubmitValue(onTransientSubmitValue),
       onForcedSubmitValue: wrappedSimpleOnSubmitValue(onForcedSubmitValue),
-      numberType: numberType ?? 'Unitless',
+      numberType: numberType ?? 'Percent',
+    }
+    return <NumberInput {...wrappedProps} />
+  },
+)
+
+export const SimpleCSSNumberInput = React.memo(
+  ({
+    value,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onForcedSubmitValue,
+    numberType,
+    ...sharedProps
+  }: SimpleCSSNumberInputProps) => {
+    const wrappedProps: NumberInputProps = {
+      ...sharedProps,
+      value: value == null ? null : value,
+      onSubmitValue: wrappedSimpleOnSubmitValue(onSubmitValue),
+      onTransientSubmitValue: wrappedSimpleOnSubmitValue(onTransientSubmitValue),
+      onForcedSubmitValue: wrappedSimpleOnSubmitValue(onForcedSubmitValue),
+      numberType: numberType ?? 'Percent',
     }
     return <NumberInput {...wrappedProps} />
   },

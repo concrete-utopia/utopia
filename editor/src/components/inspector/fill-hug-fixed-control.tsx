@@ -8,7 +8,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { PopupList, SimpleNumberInput } from '../../uuiui'
+import { PopupList, SimpleCSSNumberInput, SimpleNumberInput, SimplePercentInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -339,10 +339,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
       />
-      <SimpleNumberInput
+      <SimpleCSSNumberInput
         id={controlId('width')}
         testId={controlId('width')}
-        value={widthValue?.value}
+        value={widthValue}
         onSubmitValue={onAdjustWidth}
         onTransientSubmitValue={NO_OP}
         onForcedSubmitValue={NO_OP}
@@ -353,7 +353,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         minimum={0}
         maximum={Infinity}
         labelInner={'W'}
-        defaultUnitToHide={'%'}
+        defaultUnitToHide={null}
         focusOnMount={false}
       />
       <PopupList
@@ -363,10 +363,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
       />
-      <SimpleNumberInput
+      <SimpleCSSNumberInput
         id={controlId('height')}
         testId={controlId('height')}
-        value={heightValue?.value}
+        value={heightValue}
         onSubmitValue={onAdjustHeight}
         onTransientSubmitValue={NO_OP}
         onForcedSubmitValue={NO_OP}
