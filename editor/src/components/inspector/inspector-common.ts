@@ -361,9 +361,9 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
 }
 
 export type FixedHugFill =
-  | { type: 'fixed'; amount: CSSNumber }
-  | { type: 'hug' }
+  | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
+  | { type: 'hug' }
 
 export function detectFillHugFixedState(
   axis: Axis,
@@ -415,7 +415,7 @@ export function detectFillHugFixedState(
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
   if (parsed != null) {
-    return { type: 'fixed', amount: parsed }
+    return { type: 'fixed', value: parsed }
   }
 
   return null
