@@ -409,11 +409,12 @@ export function detectFillHugFixedState(
     return { type: 'hug' }
   }
 
-  if (prop === '100%') {
-    return { type: 'fill', value: cssNumber(100, '%') }
+  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+
+  if (parsed != null && parsed.unit === '%') {
+    return { type: 'fill', value: parsed }
   }
 
-  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
   if (parsed != null) {
     return { type: 'fixed', value: parsed }
   }
