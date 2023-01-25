@@ -19,6 +19,7 @@ import { CSSProperties } from 'react'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
+import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -384,6 +385,7 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   path: ElementPath,
 ): Array<CanvasCommand> => {
   return [
+    addContainLayoutIfNeeded('always', path),
     deleteProperties('always', path, [
       PP.create(['style', 'position']),
       PP.create(['style', 'left']),
@@ -391,7 +393,6 @@ export const nukeAllAbsolutePositioningPropsCommands = (
       PP.create(['style', 'top']),
       PP.create(['style', 'bottom']),
     ]),
-    setProperty('always', path, PP.create(['style', 'contain']), 'layout'),
   ]
 }
 

@@ -243,6 +243,9 @@ export const MetadataUtils = {
   isPositionFixed(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'fixed'
   },
+  isPositionStatic(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'static'
+  },
   isPositionSticky(instance: ElementInstanceMetadata | null): boolean {
     return (
       instance?.specialSizeMeasurements.position === 'sticky' ||

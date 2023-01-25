@@ -212,6 +212,33 @@ describe('Fixed / Fill / Hug control', () => {
         `),
       )
     })
+
+    it('set height to fill container on static positioned element with width already set to fill', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          top: 10,
+          width: '100%',
+          height: 100,
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      // Should not add contain: layout
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`
+          width: '100%',
+          height: '100%',
+        `),
+      )
+    })
   })
 
   describe('hug contents', () => {
