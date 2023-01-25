@@ -5,21 +5,16 @@ import type {
   ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, foldEither, isLeft, left, right } from './either'
+import { Either, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api/core'
+import { Sides, sides, LayoutSystem } from 'utopia-api/core'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import {
-  dropKeyFromNestedObject,
-  getJSXAttributeAtPathInner,
-  ModifiableAttribute,
-  setJSXValueInAttributeAtPath,
-} from './jsx-attributes'
+import { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -1028,20 +1023,23 @@ export function jsxTextBlock(text: string): JSXTextBlock {
 
 export interface JSXFragment {
   type: 'JSX_FRAGMENT'
+  uid: string
   children: JSXElementChildren
-  uniqueID: string
-  longForm: boolean // When true, <React.Fragment> instead of <>.
 }
 
-export function jsxFragment(children: JSXElementChildren, longForm: boolean): JSXFragment {
+export function jsxFragment(
+  uid: string,
+  children: JSXElementChildren,
+  longForm: boolean,
+): JSXFragment {
   return {
     type: 'JSX_FRAGMENT',
+    uid: uid,
     children: children,
-    uniqueID: UUID(),
-    longForm: longForm,
   }
 }
 
+export type JSXElementLike = JSXElement | JSXFragment
 export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
@@ -1060,9 +1058,7 @@ export function isJSXFragment(element: JSXElementChild): element is JSXFragment 
   return element.type === 'JSX_FRAGMENT'
 }
 
-export function isJSXElementLikeWithChildren(
-  element: JSXElementChild,
-): element is JSXElement | JSXFragment {
+export function isJSXElementLikeWithChildren(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
 }
 

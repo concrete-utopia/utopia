@@ -252,7 +252,7 @@ function withUID<T>(
       return node.getText(sourceFile)
     }
   }
-  for (const property of attributes.properties) {
+  for (const property of attributes?.properties ?? []) {
     if (TS.isJsxAttribute(property)) {
       if (nodeGetText(property.name) === 'data-uid') {
         if (property.initializer != null) {
@@ -470,22 +470,11 @@ function jsxElementToExpression(
       const children = element.children.map((child) => {
         return jsxElementToExpression(child, imports, stripUIDs)
       })
-      if (element.longForm) {
-        const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
-        if (element.children.length === 0) {
-          return TS.createJsxSelfClosingElement(tagName, undefined, TS.createJsxAttributes([]))
-        } else {
-          const opening = TS.createJsxOpeningElement(tagName, undefined, TS.createJsxAttributes([]))
-          const closing = TS.createJsxClosingElement(tagName)
-          return TS.createJsxElement(opening, children, closing)
-        }
-      } else {
-        return TS.createJsxFragment(
-          TS.createJsxOpeningFragment(),
-          children,
-          TS.createJsxJsxClosingFragment(),
-        )
-      }
+      return TS.createJsxFragment(
+        TS.createJsxOpeningFragment(),
+        children,
+        TS.createJsxJsxClosingFragment(),
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       return TS.createJsxText(element.text)

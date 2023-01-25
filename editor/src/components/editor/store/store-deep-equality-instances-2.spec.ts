@@ -16,6 +16,7 @@ import {
   DestructuredArray,
   BoundParam,
   UtopiaJSXComponent,
+  jsxElementName,
 } from '../../../core/shared/element-template'
 import {
   ArbitraryJSBlockKeepDeepEquality,
@@ -322,8 +323,7 @@ describe('JSXFragmentKeepDeepEquality', () => {
         uniqueID: 'uid',
       },
     ],
-    uniqueID: 'uid',
-    longForm: false,
+    uid: 'uid',
   }
   const newSameValue: JSXFragment = {
     type: 'JSX_FRAGMENT',
@@ -334,8 +334,7 @@ describe('JSXFragmentKeepDeepEquality', () => {
         uniqueID: 'uid',
       },
     ],
-    uniqueID: 'uid',
-    longForm: false,
+    uid: 'uid',
   }
   const newDifferentValue: JSXFragment = {
     type: 'JSX_FRAGMENT',
@@ -346,8 +345,7 @@ describe('JSXFragmentKeepDeepEquality', () => {
         uniqueID: 'uid',
       },
     ],
-    uniqueID: 'new-uid',
-    longForm: false,
+    uid: 'new-uid',
   }
 
   it('same reference returns the same reference', () => {
@@ -364,8 +362,7 @@ describe('JSXFragmentKeepDeepEquality', () => {
     const result = JSXFragmentKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.children).toBe(oldValue.children)
-    expect(result.value.uniqueID).toBe(newDifferentValue.uniqueID)
-    expect(result.value.longForm).toBe(oldValue.longForm)
+    expect(result.value.uid).toBe(newDifferentValue.uid)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })

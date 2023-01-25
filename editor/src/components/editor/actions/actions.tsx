@@ -1911,7 +1911,10 @@ export const UPDATE_FNS = {
       (path) => !EP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = newlySelectedPaths
+    const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
+      const element = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, path)
+      return element != null && !isJSXFragment(element)
+    })
     const updatedEditor: EditorModel = {
       ...editor,
       highlightedViews: newHighlightedViews,
@@ -1922,12 +1925,8 @@ export const UPDATE_FNS = {
           : updateNavigatorCollapsedState(filteredNewlySelectedPaths, editor.navigator),
       pasteTargetsToIgnore: [],
     }
-    if (filteredNewlySelectedPaths === newlySelectedPaths) {
-      return updatedEditor
-    } else {
-      const showToastAction = showToast(notice(`Only one scene can be selected`, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(showToastAction, updatedEditor, dispatch)
-    }
+
+    return updatedEditor
   },
   CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {

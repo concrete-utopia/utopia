@@ -47,6 +47,7 @@ import {
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
   isImportedOrigin,
+  isJSXFragment,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -59,7 +60,6 @@ import {
   getLocalRectangleInNewParentContext,
   localRectangle,
   LocalRectangle,
-  roundPointToNearestHalf,
   Size,
   zeroCanvasRect,
 } from '../shared/math-utils'
@@ -79,7 +79,6 @@ import {
   isImportedComponent,
   isAnimatedElement,
   isUtopiaAPIComponent,
-  getUtopiaJSXComponentsFromSuccess,
   isViewLikeFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
@@ -1208,7 +1207,7 @@ export const MetadataUtils = {
             case 'JSX_ARBITRARY_BLOCK':
               return '(code)'
             case 'JSX_FRAGMENT':
-              return '(fragment)'
+              return 'Fragment'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)
@@ -1637,6 +1636,9 @@ export const MetadataUtils = {
     })
 
     return result
+  },
+  isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return element != null && isRight(element.element) && isJSXFragment(element.element.value)
   },
 }
 

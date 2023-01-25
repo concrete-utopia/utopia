@@ -24,18 +24,17 @@ import {
   UtopiaJSXComponent,
   isJSXFragment,
   getJSXAttribute,
-  getJSXElementNameAsString,
   Param,
   JSXAttributes,
   JSXAttributesPart,
   JSXAttribute,
-  JSXAttributesSpread,
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
   isJSXAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
+  isJSXElementLikeWithChildren,
 } from '../shared/element-template'
 import {
   Imports,
@@ -43,7 +42,6 @@ import {
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
-  ElementPath,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -57,12 +55,9 @@ import { assertNever, fastForEach } from '../shared/utils'
 import {
   isUtopiaAPIComponent,
   getComponentsFromTopLevelElements,
-  isGivenUtopiaAPIElement,
   isSceneAgainstImports,
 } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { TransientFilesState } from '../../components/editor/store/editor-state'
-import { getSimpleAttributeAtPath } from './element-metadata-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
 
@@ -201,7 +196,7 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
-    return element.uniqueID
+    return element.uid
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
@@ -254,11 +249,11 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
         if (tailPath.length === 0) {
-          return transform(element)
+          return isJSXElement(element) ? transform(element) : element
         } else {
           // we will want to transform one of our children
           let childrenUpdated: boolean = false
@@ -292,21 +287,6 @@ function transformAtPathOptionally(
             ...element,
             elementsWithin: newElementsWithin,
           }
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      let childrenUpdated: boolean = false
-      const updatedChildren = element.children.map((child) => {
-        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
-        if (possibleUpdate != null) {
-          childrenUpdated = true
-        }
-        return Utils.defaultIfNull(child, possibleUpdate)
-      })
-      if (childrenUpdated) {
-        return {
-          ...element,
-          children: updatedChildren,
         }
       }
     }
@@ -343,7 +323,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
         const tailPath = workingPath.slice(1)
@@ -367,14 +347,6 @@ export function findJSXElementChildAtPath(
         const withinResult = findAtPathInner(elementWithin, workingPath)
         if (withinResult != null) {
           return withinResult
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      const children = element.children
-      for (const child of children) {
-        const childResult = findAtPathInner(child, workingPath)
-        if (childResult != null) {
-          return childResult
         }
       }
     }

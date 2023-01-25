@@ -37,6 +37,7 @@ import {
   emptyComments,
   jsxElementName,
   jsxElementNameEquals,
+  isJSXElementLikeWithChildren,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -2921,7 +2922,7 @@ export function getValidElementPathsFromElement(
   transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  if (isJSXElement(element)) {
+  if (isJSXElementLikeWithChildren(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
     const path = parentIsInstance
@@ -2944,7 +2945,7 @@ export function getValidElementPathsFromElement(
       ),
     )
 
-    const name = getJSXElementNameAsString(element.name)
+    const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
     const lastElementPathPart = EP.lastElementPathForPath(path)
     const matchingFocusedPathPart =
       focusedElementPath == null || lastElementPathPart == null
@@ -2985,24 +2986,6 @@ export function getValidElementPathsFromElement(
     // }
     let paths: Array<ElementPath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
-          focusedElementPath,
-          e,
-          parentPath,
-          projectContents,
-          filePath,
-          parentIsScene,
-          parentIsInstance,
-          transientFilesState,
-          resolve,
-        ),
-      ),
-    )
-    return paths
-  } else if (isJSXFragment(element)) {
-    let paths: Array<ElementPath> = []
-    fastForEach(Object.values(element.children), (e) =>
       paths.push(
         ...getValidElementPathsFromElement(
           focusedElementPath,

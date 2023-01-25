@@ -109,6 +109,7 @@ const mainComponentForTests = utopiaJSXComponent(
     }),
     [
       jsxFragment(
+        'kkk',
         [
           jsxElement(
             'Ellipse',
