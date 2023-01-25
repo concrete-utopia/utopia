@@ -164,7 +164,7 @@ function getCrossDimensionTestId(flexDirection: FlexDirection): string {
 async function changeDimensionValue(
   editor: EditorRenderResult,
   flexDirection: FlexDirection,
-  newValue: string,
+  newValue: string | number,
 ): Promise<void> {
   // Select the flex child.
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -203,10 +203,10 @@ async function changeDimensionValue(
 
 describe('flex dimension controls', () => {
   // For every unit added on the end and for when no unit is explicitly supplied...
-  for (const lengthUnit of [...LengthPercentUnits, null]) {
+  for (const lengthUnit of ['fr', '%', null] as const) {
     // Common values relating to the length unit.
     const unitText = lengthUnit == null ? 'with no unit' : `with a unit of ${lengthUnit}`
-    const newValue = lengthUnit == null ? '90px' : `90${lengthUnit}`
+    const newValue = lengthUnit == null ? 90 : `90${lengthUnit}`
     const isFixedUnit =
       lengthUnit == null
         ? true

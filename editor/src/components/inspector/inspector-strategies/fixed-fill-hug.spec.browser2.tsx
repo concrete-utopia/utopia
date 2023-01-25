@@ -252,6 +252,153 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.minHeight).toEqual('')
       expect(div.style.maxHeight).toEqual('')
     })
+
+    describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
+      it('child is set to fill container on the horizontal axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToHorizontalFill,
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.height).toEqual('149px')
+        expect(child.style.width).toEqual('')
+        expect(child.style.flexGrow).toEqual('1')
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.height).toEqual('759px')
+        expect(child.style.height).toEqual('149px')
+        expect(parent.style.width).toEqual(MaxContent)
+        expect(child.style.width).toEqual('700px')
+      })
+      it('child is set to fill container on the vertical axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToVerticalFill,
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.width).toEqual('149px')
+        expect(child.style.height).toEqual('')
+        expect(child.style.flexGrow).toEqual('1')
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.width).toEqual('700px')
+        expect(child.style.width).toEqual('149px')
+        expect(parent.style.height).toEqual(MaxContent)
+        expect(child.style.height).toEqual('759px')
+      })
+
+      it('child is set to fixed size on the horizontal axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToFixed('row'),
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.width).toEqual('302px')
+        expect(child.style.height).toEqual('141px')
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.width).toEqual(MaxContent)
+        expect(child.style.width).toEqual('302px')
+        expect(parent.style.height).toEqual('759px')
+        expect(child.style.height).toEqual('141px')
+      })
+
+      it('child is set to fixed size on the vertical axis, no conversion happens', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToFixed('column'),
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.width).toEqual('302px')
+        expect(child.style.height).toEqual('141px')
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.width).toEqual('700px')
+        expect(child.style.width).toEqual('302px')
+        expect(parent.style.height).toEqual(MaxContent)
+        expect(child.style.height).toEqual('141px')
+      })
+
+      it('child is set to hug contents on the horizontal axis, no conversion happens', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToHugContents('row'),
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.width).toEqual(MaxContent)
+        expect(child.style.height).toEqual(MaxContent)
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.width).toEqual(MaxContent)
+        expect(child.style.width).toEqual(MaxContent)
+        expect(parent.style.height).toEqual('751px')
+        expect(child.style.height).toEqual(MaxContent)
+      })
+
+      it('child is set to hug contents on the vertical axis, no conversion happens', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithChildSetToHugContents('column'),
+          'await-first-dom-report',
+        )
+        const parent = await select(editor, 'parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        expect(child.style.width).toEqual(MaxContent)
+        expect(child.style.height).toEqual(MaxContent)
+
+        const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+        mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+        mouseClickAtPoint(button, { x: 5, y: 5 })
+
+        expect(parent.style.width).toEqual('508px')
+        expect(child.style.width).toEqual(MaxContent)
+        expect(parent.style.height).toEqual(MaxContent)
+        expect(child.style.height).toEqual(MaxContent)
+      })
+    })
   })
 })
 
@@ -349,11 +496,167 @@ export var storyboard = (
 )
 `
 
+const projectWithChildSetToHorizontalFill = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex'
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          flexGrow: 1,
+          height: 149,
+          contain: 'layout',
+        }}
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToVerticalFill = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          flexGrow: 1,
+          width: 149,
+          contain: 'layout',
+        }}
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToFixed = (flexDirection: FlexDirection) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='33d'>
+    <Scene
+      data-testid='parent'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: '${flexDirection}'
+      }}
+      data-label='Playground'
+      data-uid='26c'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 141,
+          contain: 'layout',
+          width: 302,
+        }}
+        data-uid='744'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithChildSetToHugContents = (
+  flexDirection: FlexDirection,
+) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      data-testid='parent'
+      style={{
+        height: 751,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: '${flexDirection}',
+        width: 508,
+      }}
+      data-label='Playground'
+      data-uid='26c'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          contain: 'layout',
+          display: 'flex',
+          width: 'max-content',
+          height: 'max-content',
+        }}
+        data-uid='744'
+      >
+        <div
+          style={{
+            backgroundColor: '#ffa19c',
+            contain: 'layout',
+            height: 208,
+            width: 165.5,
+          }}
+          data-uid='0b9'
+        />
+        <div
+          style={{
+            backgroundColor: '#c4ded1',
+            contain: 'layout',
+            height: 208,
+            width: 165.5,
+          }}
+          data-uid='741'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
 const absoluteProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
-
 export var storyboard = (
   <Storyboard>
     <Scene
