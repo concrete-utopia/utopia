@@ -10,7 +10,7 @@ import {
   flexChildProps,
   FlexJustifyContent,
   hugContentsApplicableForContainer,
-  nukeAllAbsolutePositioningPropsCommand,
+  nukeAllAbsolutePositioningPropsCommands,
   nukePositioningPropsForAxisCommand,
   hugContentsApplicableForText,
   MaxContent,
@@ -138,11 +138,13 @@ export const setPropFillStrategies = (
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+          const nukePositioningCommands = otherAxisSetToFill
+            ? nukeAllAbsolutePositioningPropsCommands(path)
+            : [nukePositioningPropsForAxisCommand(axis, path)]
+
           return [
             nukeSizingPropsForAxisCommand(axis, path),
-            otherAxisSetToFill
-              ? nukeAllAbsolutePositioningPropsCommand(path)
-              : nukePositioningPropsForAxisCommand(axis, path),
+            ...nukePositioningCommands,
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
@@ -155,14 +157,14 @@ export const setPropFillStrategies = (
         ) {
           return [
             nukeSizingPropsForAxisCommand(axis, path),
-            nukeAllAbsolutePositioningPropsCommand(path),
+            ...nukeAllAbsolutePositioningPropsCommands(path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
           nukeSizingPropsForAxisCommand(axis, path),
-          nukeAllAbsolutePositioningPropsCommand(path),
+          ...nukeAllAbsolutePositioningPropsCommands(path),
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })

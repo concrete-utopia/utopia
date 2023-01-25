@@ -374,14 +374,19 @@ export const nukePositioningPropsForAxisCommand = (
   }
 }
 
-export const nukeAllAbsolutePositioningPropsCommand = (path: ElementPath): CanvasCommand => {
-  return deleteProperties('always', path, [
-    PP.create(['style', 'position']),
-    PP.create(['style', 'left']),
-    PP.create(['style', 'right']),
-    PP.create(['style', 'top']),
-    PP.create(['style', 'bottom']),
-  ])
+export const nukeAllAbsolutePositioningPropsCommands = (
+  path: ElementPath,
+): Array<CanvasCommand> => {
+  return [
+    deleteProperties('always', path, [
+      PP.create(['style', 'position']),
+      PP.create(['style', 'left']),
+      PP.create(['style', 'right']),
+      PP.create(['style', 'top']),
+      PP.create(['style', 'bottom']),
+    ]),
+    setProperty('always', path, PP.create(['style', 'contain']), 'layout'),
+  ]
 }
 
 export const MaxContent = 'max-content' as const

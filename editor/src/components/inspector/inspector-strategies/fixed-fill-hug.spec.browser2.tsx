@@ -147,7 +147,11 @@ describe('Fixed / Fill / Hug control', () => {
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-        absoluteProjectWithInjectedStyle(`height: '100%', width: '100%'`),
+        absoluteProjectWithInjectedStyle(`
+        height: '100%',
+        contain: 'layout',
+        width: '100%',
+        `),
       )
     })
 
@@ -201,7 +205,11 @@ describe('Fixed / Fill / Hug control', () => {
       mouseClickAtPoint(button, { x: 5, y: 5 })
 
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-        absoluteProjectWithInjectedStyle(`width: '100%', height: '100%'`),
+        absoluteProjectWithInjectedStyle(`
+          width: '100%',
+          contain: 'layout',
+          height: '100%',
+        `),
       )
     })
   })
