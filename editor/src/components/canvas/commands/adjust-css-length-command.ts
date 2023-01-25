@@ -12,6 +12,7 @@ import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   CSSNumber,
+  FlexDirection,
   parseCSSPercent,
   parseCSSPx,
   printCSSNumber,
@@ -20,13 +21,16 @@ import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 
+type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
+
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
   target: ElementPath
   property: PropertyPath
   valuePx: number
   parentDimensionPx: number | undefined
-  createIfNonExistant: boolean
+  parentFlexDirection: FlexDirection | null
+  createIfNonExistant: CreateIfNotExistant
 }
 
 export function adjustCssLengthProperty(
@@ -35,7 +39,8 @@ export function adjustCssLengthProperty(
   property: PropertyPath,
   valuePx: number,
   parentDimensionPx: number | undefined,
-  createIfNonExistant: boolean,
+  parentFlexDirection: FlexDirection | null,
+  createIfNonExistant: CreateIfNotExistant,
 ): AdjustCssLengthProperty {
   return {
     type: 'ADJUST_CSS_LENGTH_PROPERTY',
@@ -44,6 +49,7 @@ export function adjustCssLengthProperty(
     property: property,
     valuePx: valuePx,
     parentDimensionPx: parentDimensionPx,
+    parentFlexDirection: parentFlexDirection,
     createIfNonExistant: createIfNonExistant,
   }
 }
@@ -57,6 +63,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     editorState,
     command.target,
     command.property,
+    command.parentFlexDirection,
   )
 
   // Identify the current value, whatever that may be.
@@ -81,7 +88,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const valueProbablyExpression = isLeft(simpleValueResult)
   const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
 
-  if (targetPropertyNonExistant && !command.createIfNonExistant) {
+  if (
+    targetPropertyNonExistant &&
+    command.createIfNonExistant === 'do-not-create-if-doesnt-exist'
+  ) {
     return {
       editorStatePatches: [],
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
@@ -124,7 +134,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     )
   }
 
-  if (command.createIfNonExistant) {
+  if (command.createIfNonExistant === 'create-if-not-existing') {
     return setPixelValue(
       editorStateWithPropsDeleted,
       command.target,
@@ -278,6 +288,7 @@ export function deleteConflictingPropsForWidthHeight(
   editorState: EditorState,
   target: ElementPath,
   propertyPath: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
 ): EditorState {
   let propertiesToDelete: Array<PropertyPath> = []
   switch (PP.lastPart(propertyPath)) {

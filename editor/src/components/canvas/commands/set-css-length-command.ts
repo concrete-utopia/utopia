@@ -13,6 +13,7 @@ import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/s
 import {
   CSSNumber,
   cssPixelLength,
+  FlexDirection,
   parseCSSPercent,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
@@ -40,6 +41,7 @@ export interface SetCssLengthProperty extends BaseCommand {
   target: ElementPath
   property: PropertyPath
   value: CssNumberOrKeepOriginalUnit
+  parentFlexDirection: FlexDirection | null
 }
 
 export function setCssLengthProperty(
@@ -47,6 +49,7 @@ export function setCssLengthProperty(
   target: ElementPath,
   property: PropertyPath,
   value: CssNumberOrKeepOriginalUnit,
+  parentFlexDirection: FlexDirection | null,
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
@@ -54,6 +57,7 @@ export function setCssLengthProperty(
     target: target,
     property: property,
     value: value,
+    parentFlexDirection: parentFlexDirection,
   }
 }
 
@@ -66,6 +70,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     editorState,
     command.target,
     command.property,
+    command.parentFlexDirection,
   )
 
   // Identify the current value, whatever that may be.

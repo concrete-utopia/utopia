@@ -32,6 +32,7 @@ describe('setCssLengthProperty', () => {
       cardInstancePath,
       stylePropPathMappingFn('height', styleStringInArray),
       setValueKeepingOriginalUnit(valueToSet, 400),
+      null,
     )
 
     const result = runSetCssLengthProperty(
@@ -56,5 +57,21 @@ describe('setCssLengthProperty', () => {
     )
 
     expect(updatedHeightProp).toEqual(valueToSet)
+  })
+
+  it('Setting width removes min-width and max-width props', () => {
+    throw new Error('implement me Balazs')
+  })
+
+  it('Setting width removes flex props if the parent is a horizontal flex', () => {
+    throw new Error('implement me Balazs')
+  })
+
+  it('Setting width keeps flex props if the parent is a vertical flex', () => {
+    throw new Error('implement me Balazs')
+  })
+
+  it('Setting width keeps flex props if the parent is not flex', () => {
+    throw new Error('implement me Balazs')
   })
 })

@@ -44,6 +44,7 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -67,6 +68,7 @@ export function flexResizeBasicStrategy(
   )
   const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+  const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
   const hasDimensions =
     elementDimensions != null &&
@@ -159,6 +161,7 @@ export function flexResizeBasicStrategy(
             original: number,
             resized: number,
             parent: number | undefined,
+            parentFlexDirection: FlexDirection | null,
           ): AdjustCssLengthProperty[] => {
             if (elementDimension == null && (original === resized || hasSizedParent)) {
               return []
@@ -170,7 +173,8 @@ export function flexResizeBasicStrategy(
                 stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
-                true,
+                parentFlexDirection,
+                'create-if-not-existing',
               ),
             ]
           }
@@ -182,6 +186,7 @@ export function flexResizeBasicStrategy(
               originalBounds.width,
               resizedBounds.width,
               elementParentBounds?.width,
+              elementParentFlexDirection,
             ),
             ...makeResizeCommand(
               'height',
@@ -189,6 +194,7 @@ export function flexResizeBasicStrategy(
               originalBounds.height,
               resizedBounds.height,
               elementParentBounds?.height,
+              elementParentFlexDirection,
             ),
           ]
 
