@@ -627,11 +627,8 @@ describe('inspector tests with real metadata', () => {
     const leftControl = (await renderResult.renderedDOM.findByTestId(
       'position-left-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
-    )) as HTMLInputElement
-    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-R',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -670,15 +667,9 @@ describe('inspector tests with real metadata', () => {
       `"simple-unknown-css"`,
     )
 
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
@@ -1437,11 +1428,8 @@ describe('inspector tests with real metadata', () => {
     const heightControl = (await renderResult.renderedDOM.findByTestId(
       'position-height-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
-    )) as HTMLInputElement
-    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-R',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1462,15 +1450,9 @@ describe('inspector tests with real metadata', () => {
       `"simple-unknown-css"`,
     )
 
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
@@ -1553,8 +1535,8 @@ describe('inspector tests with real metadata', () => {
     const heightControl = (await renderResult.renderedDOM.findByTestId(
       'position-height-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1578,9 +1560,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"14"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"14"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
