@@ -1,6 +1,6 @@
 import { setFeatureEnabled } from '../../../utils/feature-switches'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
+import { expectSingleUndoStep, mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from '../add-remove-layout-system-control'
 
@@ -17,7 +17,7 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)
 
-    await clickOn(editor)
+    await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(root.style.display).toEqual('')
     expect(root.style.alignItems).toEqual('')
