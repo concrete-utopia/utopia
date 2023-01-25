@@ -23,7 +23,11 @@ import {
   adjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
 import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -248,8 +252,10 @@ function createResizeCommandsFromFrame(
           'always',
           selectedElement,
           stylePropPathMappingFn(pin, styleStringInArray),
-          roundTo(valueToSet, 0),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          setValueKeepingOriginalUnit(
+            roundTo(valueToSet, 0),
+            horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          ),
         )
       }
     } else {

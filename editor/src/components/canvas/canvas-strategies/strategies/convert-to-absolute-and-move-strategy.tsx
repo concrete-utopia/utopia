@@ -32,7 +32,11 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { CanvasFrameAndTarget } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -427,10 +431,12 @@ function createUpdatePinsCommands(
         'always',
         path,
         stylePropPathMappingFn(framePin, styleStringInArray),
-        pinValue,
-        isHorizontalPoint(framePointForPinnedProp(framePin))
-          ? parentFrame?.width
-          : parentFrame?.height,
+        setValueKeepingOriginalUnit(
+          pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
+        ),
       ),
     )
   })

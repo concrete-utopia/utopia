@@ -18,6 +18,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import { deleteValuesAtPath } from './delete-properties-command'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
@@ -51,10 +52,17 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   editorState: EditorState,
   command: AdjustCssLengthProperty,
 ) => {
+  // in case of width or height change, delete min, max and flex props
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    command.target,
+    command.property,
+  )
+
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
-    editorState,
+    editorStateWithPropsDeleted,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       return getModifiableJSXAttributeAtPath(element.props, command.property)
@@ -96,7 +104,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
-      editorState,
+      editorStateWithPropsDeleted,
       command.target,
       command.property,
       parsePxResult.value,
@@ -107,7 +115,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
   if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
-      editorState,
+      editorStateWithPropsDeleted,
       command.target,
       command.property,
       command.parentDimensionPx,
@@ -117,7 +125,12 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   }
 
   if (command.createIfNonExistant) {
-    return setPixelValue(editorState, command.target, command.property, command.valuePx)
+    return setPixelValue(
+      editorStateWithPropsDeleted,
+      command.target,
+      command.property,
+      command.valuePx,
+    )
   }
 
   // fallback return
@@ -259,4 +272,28 @@ function updatePercentageValueByPixel(
       targetProperty,
     )} by ${byValue}`,
   }
+}
+
+export function deleteConflictingPropsForWidthHeight(
+  editorState: EditorState,
+  target: ElementPath,
+  propertyPath: PropertyPath,
+): EditorState {
+  let propertiesToDelete: Array<PropertyPath> = []
+  switch (PP.lastPart(propertyPath)) {
+    case 'width':
+      propertiesToDelete = [PP.create(['style', 'minWidth']), PP.create(['style', 'maxWidth'])]
+      break
+    case 'height':
+      propertiesToDelete = [PP.create(['style', 'minHeight']), PP.create(['style', 'maxHeight'])]
+      break
+  }
+
+  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
+    editorState,
+    target,
+    propertiesToDelete,
+  )
+
+  return editorStateWithPropsDeleted
 }

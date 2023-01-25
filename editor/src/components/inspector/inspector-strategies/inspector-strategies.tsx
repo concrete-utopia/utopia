@@ -26,6 +26,10 @@ import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { assertNever } from '../../../core/shared/utils'
 import { PropertyPath } from 'src/core/shared/project-file-types'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -172,57 +176,14 @@ export const setPropFixedStrategies = (
         return null
       }
 
-      return elementPaths.flatMap((path) => {
-        // Only delete these properties when this is a flex child.
-        let propertiesToDelete: Array<PropertyPath> = []
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (
-          elementMetadata != null &&
-          elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        ) {
-          switch (axis) {
-            case 'horizontal':
-              propertiesToDelete = [
-                PP.create(['style', 'minWidth']),
-                PP.create(['style', 'maxWidth']),
-              ]
-              break
-            case 'vertical':
-              propertiesToDelete = [
-                PP.create(['style', 'minHeight']),
-                PP.create(['style', 'maxHeight']),
-              ]
-              break
-            default:
-              assertNever(axis)
-          }
-        }
-
-        switch (axis) {
-          case 'horizontal':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'width']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          case 'vertical':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'height']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          default:
-            assertNever(axis)
-        }
-      })
+      return elementPaths.map((path) =>
+        setCssLengthProperty(
+          whenToRun,
+          path,
+          PP.create(['style', widthHeightFromAxis(axis)]),
+          setExplicitCssValue(value),
+        ),
+      )
     },
   },
 ]
