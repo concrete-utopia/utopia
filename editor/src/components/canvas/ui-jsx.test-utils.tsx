@@ -116,6 +116,7 @@ import {
   RegisteredCanvasStrategies,
 } from './canvas-strategies/canvas-strategies'
 import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
+import { isTransientAction } from '../editor/actions/action-utils'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -160,6 +161,7 @@ export interface EditorRenderResult {
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
+  getUndoCount: () => number
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
 }
@@ -199,6 +201,7 @@ export async function renderTestEditorWithModel(
   loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
+  let undoCount = 0
   let recordedActions: Array<EditorAction> = []
 
   let emptyEditorState = createEditorState(NO_OP)
@@ -227,6 +230,8 @@ export async function renderTestEditorWithModel(
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
+    const allTransientActions = actions.every((a) => isTransientAction(a))
+    undoCount += allTransientActions ? 0 : 1
     const result = editorDispatch(
       asyncTestDispatch,
       actions,
@@ -416,6 +421,7 @@ export async function renderTestEditorWithModel(
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    getUndoCount: () => undoCount,
     clearRecordedActions: () => {
       recordedActions = []
     },
