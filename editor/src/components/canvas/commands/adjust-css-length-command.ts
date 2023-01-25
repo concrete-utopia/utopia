@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
@@ -284,6 +285,13 @@ function updatePercentageValueByPixel(
   }
 }
 
+const FlexSizeProperties: Array<PropertyPath> = [
+  PP.create(['style', 'flex']),
+  PP.create(['style', 'flexGrow']),
+  PP.create(['style', 'flexShrink']),
+  PP.create(['style', 'flexBasis']),
+]
+
 export function deleteConflictingPropsForWidthHeight(
   editorState: EditorState,
   target: ElementPath,
@@ -291,12 +299,24 @@ export function deleteConflictingPropsForWidthHeight(
   parentFlexDirection: FlexDirection | null,
 ): EditorState {
   let propertiesToDelete: Array<PropertyPath> = []
+
+  const parentFlexDimension =
+    parentFlexDirection == null
+      ? null
+      : MetadataUtils.flexDirectionToSimpleFlexDirection(parentFlexDirection).direction
+
   switch (PP.lastPart(propertyPath)) {
     case 'width':
       propertiesToDelete = [PP.create(['style', 'minWidth']), PP.create(['style', 'maxWidth'])]
+      if (parentFlexDimension === 'horizontal') {
+        propertiesToDelete.push(...FlexSizeProperties)
+      }
       break
     case 'height':
       propertiesToDelete = [PP.create(['style', 'minHeight']), PP.create(['style', 'maxHeight'])]
+      if (parentFlexDimension === 'vertical') {
+        propertiesToDelete.push(...FlexSizeProperties)
+      }
       break
   }
 
