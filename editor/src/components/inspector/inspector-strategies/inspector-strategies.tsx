@@ -9,9 +9,6 @@ import {
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
-  hugContentsApplicableForContainer,
-  hugContentsApplicableForText,
-  MaxContent,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -24,9 +21,12 @@ import { cssNumber, CSSNumber, FlexDirection, printCSSNumber } from '../common/c
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
-import { assertNever } from '../../../core/shared/utils'
-import { PropertyPath } from 'src/core/shared/project-file-types'
 import { clamp } from '../../../core/shared/math-utils'
+import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -198,79 +198,18 @@ export const setPropFixedStrategies = (
         return null
       }
 
-      return elementPaths.flatMap((path) => {
-        // Only delete these properties when this is a flex child.
-        let propertiesToDelete: Array<PropertyPath> = []
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (
-          elementMetadata != null &&
-          elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        ) {
-          switch (axis) {
-            case 'horizontal':
-              propertiesToDelete = [
-                PP.create(['style', 'minWidth']),
-                PP.create(['style', 'maxWidth']),
-              ]
-              break
-            case 'vertical':
-              propertiesToDelete = [
-                PP.create(['style', 'minHeight']),
-                PP.create(['style', 'maxHeight']),
-              ]
-              break
-            default:
-              assertNever(axis)
-          }
-        }
-
-        switch (axis) {
-          case 'horizontal':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'width']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          case 'vertical':
-            return [
-              deleteProperties(whenToRun, path, propertiesToDelete),
-              setProperty(
-                whenToRun,
-                path,
-                PP.create(['style', 'height']),
-                printCSSNumber(value, null),
-              ),
-            ]
-          default:
-            assertNever(axis)
-        }
-      })
+      return elementPaths.map((path) =>
+        setCssLengthProperty(
+          whenToRun,
+          path,
+          PP.create(['style', widthHeightFromAxis(axis)]),
+          setExplicitCssValue(value),
+        ),
+      )
     },
   },
 ]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
-  {
-    name: 'Set to Hug',
-    strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter(
-        (path) =>
-          hugContentsApplicableForContainer(metadata, path) ||
-          hugContentsApplicableForText(metadata, path),
-      )
-
-      if (elements.length === 0) {
-        return null
-      }
-
-      return elements.flatMap((path) => [
-        nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
-      ])
-    },
-  },
+  hugContentsBasicStrategy(axis),
 ]
