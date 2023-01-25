@@ -463,7 +463,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             <ProjectCard
               project={null}
               key={null}
-              url={'https://utopia.pizza/p/43456bfb-before-i-go-premium/'}
+              url={'https://utopia.app/p/b7508bfa-before-i-go-(premium)/'}
               thumbnail={'https://cdn.utopia.app/editor/sample-assets/preview-images/premium.png'}
               modifiedAt={null}
               title={'Before I Go Premium'}
