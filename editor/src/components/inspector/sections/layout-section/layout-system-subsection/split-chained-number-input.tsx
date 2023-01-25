@@ -97,7 +97,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const getInitialMode = React.useCallback(() => {
     return aggOneValue != null
       ? 'one-value'
-      : aggHorizontal != null && aggVertical != null
+      : aggHorizontal != null || aggVertical != null
       ? 'per-direction'
       : allSidesUnset
       ? props.defaultMode ?? 'per-side'
